@@ -1,6 +1,7 @@
 import {} from "mocha";
 import * as request from "supertest";
 import * as express from "express";
+import * as nock from "nock";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 import fakeArgv from "@magda/typescript-common/dist/test/fakeArgv";
 import createApiRouter from "../createApiRouter";
@@ -27,7 +28,8 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 listenPort: 6999,
                 dbHost: "localhost",
                 dbPort: 5432,
-                jwtSecret: "squirrel"
+                jwtSecret: "squirrel",
+                authApiUrl: "http://admin.example.com"
             })
         );
         return argv;
@@ -36,17 +38,18 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
     function buildExpressApp() {
         const apiRouter = createApiRouter({
             jwtSecret: argv.jwtSecret,
-            database: new mockDatabase() as Database
+            database: new mockDatabase() as Database,
+            authApiUrl: argv.authApiUrl
         });
 
         const app = express();
-        app.use(require("body-parser").json());
+        //app.use(require("body-parser").json());
         app.use(apiRouter);
 
         return app;
     }
 
-    describe("GET /:contentId.:format", () => {
+    describe("READ", () => {
         it("should return data for existing - text", done => {
             agent
                 .get("/text-1.text")
@@ -91,6 +94,63 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
             agent
                 .get("/svg-id.json")
                 .expect(500)
+                .end(done);
+        });
+    });
+
+    describe("UPDATE", () => {
+        const gifImage = new Buffer(
+            "R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
+            "base64"
+        );
+
+        const jwt = require("jsonwebtoken");
+
+        function admin(req: request.Test): request.Test {
+            const userId = "1";
+            const isAdmin = true;
+            nock(argv.authApiUrl)
+                .get(`/private/users/${userId}`)
+                .reply(200, { isAdmin });
+            const id = jwt.sign({ userId: userId }, argv.jwtSecret);
+            return req.set("X-Magda-Session", id);
+        }
+
+        it("should write and read", done => {
+            admin(agent.post("/logo"))
+                .set("Content-type", "image/gif")
+                .send(gifImage)
+                .expect(201)
+                .then(() => {
+                    agent
+                        .get("/logo.text")
+                        .expect(gifImage.toString("base64"))
+                        .end(done);
+                });
+        });
+
+        it("should not write non-existing", done => {
+            admin(agent.post("/lego"))
+                .set("Content-type", "image/gif")
+                .send(gifImage)
+                .expect(404)
+                .end(done);
+        });
+
+        it("should not write non-conforming", done => {
+            admin(agent.post("/logo"))
+                .set("Content-type", "text/plain")
+                .send(gifImage)
+                .expect(500)
+                .end(done);
+        });
+
+        it("should not write without access", done => {
+            agent
+                .post("/logo")
+                .set("Content-type", "image/gif")
+                .send(gifImage)
+                .expect(401)
                 .end(done);
         });
     });

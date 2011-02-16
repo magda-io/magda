@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import govtLogo from "../../assets/au-govt-logo.svg";
 import govtLogoMobile from "../../assets/au-govt-logo-mobile.svg";
-import dgaLogo from "../../assets/dga-logo.svg";
 import HeaderNav from "./HeaderNav";
 import "./Header.css";
 import { config } from "../../config";
@@ -32,6 +31,7 @@ class Header extends Component {
     }
 
     render() {
+        const logoUrl = `${config.contentApiURL}/logo.bin`;
         return (
             <div className="header">
                 <div className="au-header">
@@ -58,8 +58,9 @@ class Header extends Component {
                                         </Medium>
                                         <div className="au-header__text">
                                             <img
-                                                src={dgaLogo}
+                                                src={logoUrl}
                                                 height={70}
+                                                style="max-width: 103px;"
                                                 alt={config.appName}
                                                 className="au-header__heading"
                                             />
