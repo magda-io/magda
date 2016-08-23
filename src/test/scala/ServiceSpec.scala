@@ -16,7 +16,7 @@ class ServiceSpec extends FlatSpec with Matchers with ScalatestRouteTest with Se
   val ip2Info = IpInfo("8.8.4.4", Option("United States"), None, Option(38.0), Option(-97.0))
   val ipPairSummary = IpPairSummary(ip1Info, ip2Info)
 
-  override lazy val ipApiConnectionFlow = Flow[HttpRequest].map { request =>
+  override lazy val ckanApiConnectionFlow = Flow[HttpRequest].map { request =>
     if (request.uri.toString().endsWith(ip1Info.query))
       HttpResponse(status = OK, entity = marshal(ip1Info))
     else if(request.uri.toString().endsWith(ip2Info.query))
