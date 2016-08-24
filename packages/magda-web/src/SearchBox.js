@@ -17,13 +17,17 @@ class SearchBox extends Component {
         <h2 className="SearchBox-header">
           <label>Find data</label>
         </h2>
+        <div className='input-group'>
         <input
           type="text"
           name="search"
+          className='form-control'
           value={this.props.searchValue}
           onChange={this.handleChange}
         />
-        <div className='searcbox-suggestions'>Try environment or water in Victoria</div>
+        <span className="input-group-addon"><i className="fa fa-search" aria-hidden="true"></i> </span>
+        </div>
+        {!this.props.searchValue && <div className='searcbox-suggestions'>Try environment or water in Victoria</div>}
       </form>
     );
   }

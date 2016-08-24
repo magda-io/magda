@@ -35,16 +35,16 @@ class Search extends Component {
   render() {
     return (
       <div className='search'>
-        <div className='search-header'>
+        <div className='search-header jumbotron'>
           <SearchBox updateSearchText={this.updateSearchText}
                      searchValue={this.state.searchValue}/>
         </div>
         <div className='search-body row'>
-          <div className='col-sm-3'>
-            <SearchFilters />
+          <div className='col-sm-4'>
+            {this.state.searchResults.length > 0 && <SearchFilters searchResults={this.state.searchResults} />}
           </div>
-          <div className='col-sm-9'>
-            <SearchResults searchResults={this.state.searchResults} />
+          <div className='col-sm-8'>
+            {this.state.searchResults.length > 0 && <SearchResults searchResults={this.state.searchResults} />}
           </div>
         </div>
       </div>

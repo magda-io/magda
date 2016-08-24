@@ -12,7 +12,7 @@ class SearchResults extends Component {
           <ul className='list-unstyled tags'>
             {
               result.tags.map((tag)=>
-                <li key={tag}>{tag}</li>
+                <li key={tag} className='badge'>{tag}</li>
               )
             }
           </ul>
