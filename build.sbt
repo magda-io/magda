@@ -20,4 +20,7 @@ libraryDependencies ++= {
   )
 }
 
+EclipseKeys.withJavadoc := true
+EclipseKeys.withSource := true
+
 Revolver.settings
