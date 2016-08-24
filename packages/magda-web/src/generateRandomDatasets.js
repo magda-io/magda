@@ -66,7 +66,8 @@ export default function (text) {
 
 
   let dummy = [];
-  for(let i = 0; i < 10; i ++){
+  let size = 20 - text.split('').length;
+  for(let i = 0; i < size; i ++){
     let data = {
       title: `${makeRandom(jurisdictions)} ${text} dataset`,
       description: 'Description of this dataset',

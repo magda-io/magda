@@ -8,12 +8,9 @@ import Filter from './Filter';
 class SearchFilters extends Component {
   constructor(props) {
     super(props);
-    this.state ={
-      publisher: this.getFilters('publisher'),
-      dateRange: this.getFilters('dateRange'),
-      dataFormat: this.getFilters('dataFormat', true),
-    }
   }
+
+
 
   getFilters(key, needsFlatten){
     if (needsFlatten){
@@ -25,9 +22,9 @@ class SearchFilters extends Component {
   render() {
     return (
       <div>
-        <Filter conditions={this.state.publisher} title='publisher'/>
-        <Filter conditions={this.state.dateRange} title='dateRange'/>
-        <Filter conditions={this.state.dataFormat} title='dataFormat'/>
+        <Filter conditions={this.getFilters('publisher')} title='publisher'/>
+        <Filter conditions={this.getFilters('dateRange')} title='dateRange'/>
+        <Filter conditions={this.getFilters('dataFormat', true)} title='dataFormat'/>
       </div>
     );
   }

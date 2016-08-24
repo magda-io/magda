@@ -8,7 +8,16 @@ import './Search.css';
 class Search extends Component {
   constructor(props) {
     super(props);
-    this.state = {searchValue: '', results : [], searchResults: []};
+    this.state = {
+      searchValue: '',
+      results : [],
+      searchResults: [],
+      filters: {
+        publisher: [],
+        dateRange: [],
+        dataFormat: []
+      }
+    };
     this.updateSearchText = this.updateSearchText.bind(this);
     this.onFilterChange = this.onFilterChange.bind(this);
   }
@@ -41,10 +50,10 @@ class Search extends Component {
         </div>
         <div className='search-body row'>
           <div className='col-sm-4'>
-            {this.state.searchResults.length > 0 && <SearchFilters searchResults={this.state.searchResults} />}
+            {this.state.searchValue.length > 0 && <SearchFilters searchResults={this.state.searchResults} />}
           </div>
           <div className='col-sm-8'>
-            {this.state.searchResults.length > 0 && <SearchResults searchResults={this.state.searchResults} />}
+            {this.state.searchValue.length > 0 && <SearchResults searchResults={this.state.searchResults} />}
           </div>
         </div>
       </div>
