@@ -4,11 +4,11 @@ import './SearchBox.css';
 class SearchBox extends Component {
   constructor(props) {
     super(props);
-    this.state = {value: ''};
+    this.handleChange = this.handleChange.bind(this);
   }
 
-  handleChange(){
-
+  handleChange(event){
+    this.props.updateSearchText(event.target.value);
   }
 
   render() {
@@ -20,7 +20,7 @@ class SearchBox extends Component {
         <input
           type="text"
           name="search"
-          value={this.state.value}
+          value={this.props.searchValue}
           onChange={this.handleChange}
         />
         <div className='searcbox-suggestions'>Try environment or water in Victoria</div>
@@ -28,5 +28,10 @@ class SearchBox extends Component {
     );
   }
 }
+SearchBox.propTypes =
+  {searchValue: React.PropTypes.string,
+   updateSearchText: React.PropTypes.func
+  };
+SearchBox.defaultProps = { searchValue: '' };
 
 export default SearchBox;
