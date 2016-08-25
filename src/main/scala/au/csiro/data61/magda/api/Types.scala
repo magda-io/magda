@@ -10,10 +10,11 @@ object Types {
 
   case class DataSet(
     title: String,
-    description: String)
+    description: String,
+    source: String)
 
   trait Protocols extends DefaultJsonProtocol {
-    implicit val dataSetFormat = jsonFormat2(DataSet.apply)
+    implicit val dataSetFormat = jsonFormat3(DataSet.apply)
     implicit val searchResultFormat = jsonFormat2(SearchResult.apply)
   }
 }

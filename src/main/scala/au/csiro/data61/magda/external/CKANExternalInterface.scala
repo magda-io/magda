@@ -22,7 +22,7 @@ import au.csiro.data61.magda.api.Types._
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)
 case class CKANSearchResult(count: Int, results: List[CKANSearchHit])
-case class CKANSearchHit(title: String, url: String)
+case class CKANSearchHit(title: Option[String], url: Option[String])
 
 trait CKANProtocols extends DefaultJsonProtocol {
   implicit val searchHitFormat = jsonFormat2(CKANSearchHit.apply)
@@ -30,18 +30,18 @@ trait CKANProtocols extends DefaultJsonProtocol {
   implicit val searchResponseFormat = jsonFormat2(CKANSearchResponse.apply)
 }
 
-object CKANExternalInterface {
-  def apply(implicit config: Config, system: ActorSystem, executor: ExecutionContextExecutor, materializer: Materializer) = new CKANExternalInterface()
-}
+//object CKANExternalInterface {
+//  def apply(implicit config: Config, system: ActorSystem, executor: ExecutionContextExecutor, materializer: Materializer) = new CKANExternalInterface()
+//}
 
 class CKANExternalInterface(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContextExecutor, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface {
   implicit val logger = Logging(system, getClass)
   implicit def ckanSearchConv(ckanResponse: CKANSearchResponse): SearchResult = SearchResult(hitCount = ckanResponse.result.count, dataSets = ckanResponse.result.results)
-  implicit def ckanDataSetConv(hit: CKANSearchHit): DataSet = DataSet(title = hit.title, description = hit.url)
+  implicit def ckanDataSetConv(hit: CKANSearchHit): DataSet = DataSet(title = hit.title.getOrElse("no title"), description = hit.url.getOrElse("no desc"), source = "CKAN")
   implicit def ckanDataSetListConv(l: List[CKANSearchHit]): List[DataSet] = l map ckanDataSetConv
 
   lazy val ckanApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
-    Http().outgoingConnection(config.getString("services.ckan-api.host"), config.getInt("services.ckan-api.port"))
+    Http().outgoingConnection(config.getString("services.dga-api.host"), config.getInt("services.dga-api.port"))
 
   def ckanRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(ckanApiConnectionFlow).runWith(Sink.head)
 

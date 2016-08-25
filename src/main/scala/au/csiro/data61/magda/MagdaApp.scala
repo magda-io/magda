@@ -20,6 +20,7 @@ import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.math._
 import spray.json.DefaultJsonProtocol
 import au.csiro.data61.magda.api.Api
+import akka.actor.{ Actor, DeadLetter, Props }
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
@@ -30,4 +31,14 @@ object MagdaApp extends App {
   val logger = Logging(system, getClass)
 
   val api = Api(config, system, executor, materializer)
+
+  val listener = system.actorOf(Props(classOf[Listener]))
+  system.eventStream.subscribe(listener, classOf[DeadLetter])
+}
+
+class Listener extends Actor {
+
+  def receive = {
+    case d: DeadLetter => println(d)
+  }
 }

@@ -19,8 +19,7 @@ import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.math._
 import spray.json.DefaultJsonProtocol
 import au.csiro.data61.magda.api.Types._
-import au.csiro.data61.magda.external.CKANExternalInterface
-import au.csiro.data61.magda.external.ExternalInterface
+import au.csiro.data61.magda.external._
 
 object Api {
   def apply(implicit config: Config, system: ActorSystem, executor: ExecutionContextExecutor, materializer: Materializer) = new Api()
@@ -28,15 +27,15 @@ object Api {
 
 class Api(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContextExecutor, implicit val materializer: Materializer) extends Protocols {
   val logger = Logging(system, getClass)
-  val ckan : ExternalInterface = new CKANExternalInterface()
+  val external: ExternalInterface = new FederatedExternalInterface(interfaces = Seq(new CKANExternalInterface(), new CSWExternalInterface()))
 
   val routes = {
     logRequestResult("akka-http-microservice") {
       pathPrefix("search") {
         (get & path(Segment)) { query =>
           complete {
-            ckan.search(query).map[ToResponseMarshallable] {
-              case Right(ipInfo)      => ipInfo
+            external.search(query).map[ToResponseMarshallable] {
+              case Right(result)      => result
               case Left(errorMessage) => BadRequest -> errorMessage
             }
           }
