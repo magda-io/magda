@@ -32,14 +32,13 @@ class CSWExternalInterface(implicit val config: Config, implicit val system: Act
   val logger = Logging(system, getClass)
 
   implicit def responseConv(res: NodeSeq): SearchResult = {
-    logger.debug(res.toString())
     val results = res \ "SearchResults";
 
     SearchResult(hitCount = Integer parseInt (results \@ "numberOfRecordsMatched"), dataSets = results \ "SummaryRecord")
   }
 
   implicit def dataSetConv(res: NodeSeq): List[DataSet] =
-    res map { summaryRecord => DataSet(title = summaryRecord \ "identifier" text, description = summaryRecord \ "abstract" text, source = "CSW") } toList
+    res map { summaryRecord => DataSet(identifier = summaryRecord \ "identifier" text, description = Some(summaryRecord \ "abstract" text), catalog = "FIND") } toList
 
   lazy val cswApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
     Http().outgoingConnection(config.getString("services.find-api.host"), config.getInt("services.find-api.port"))

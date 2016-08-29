@@ -2,6 +2,7 @@ package au.csiro.data61.magda.api
 
 import spray.json.DefaultJsonProtocol
 import spray.json._
+import java.time.{ Instant, Period, Duration }
 
 object Types {
   case class SearchResult(
@@ -9,12 +10,68 @@ object Types {
     dataSets: List[DataSet])
 
   case class DataSet(
+    identifier: String,
+    catalog: String,
+    title: Option[String] = None,
+    description: Option[String] = None,
+    issued: Option[Instant] = None,
+    modified: Option[Instant] = None,
+    language: Option[String] = None,
+    publisher: Option[Agent] = None,
+    accrualPeriodicity: Option[Duration] = None,
+    spatial: Option[Location] = None,
+    temporal: Option[PeriodOfTime] = None,
+    theme: Seq[String] = List(),
+    keyword: Seq[String] = List(),
+    contactPoint: Option[Agent] = None,
+    distribution: Option[Seq[Distribution]] = None,
+    landingPage: Option[String] = None)
+
+  case class PeriodOfTime(start: Instant, end: Instant)
+
+  case class Agent(
+    name: Option[String] = None,
+    homepage: Option[String] = None,
+    extraFields: Map[String, String] = Map())
+
+  case class Location(
+    name: Option[String] = None,
+    latLong: Option[LatLong] = None // This is supposed to be able to define shapes and stuff too, god knows how to do that yet...  
+    )
+
+  case class LatLong(latitude: Double, longitude: Double)
+
+  case class Distribution(
     title: String,
-    description: String,
-    source: String)
+    description: Option[String] = None,
+    issued: Option[Instant] = None,
+    modified: Option[Instant] = None,
+    license: Option[License] = None,
+    rights: Option[License] = None,
+    accessURL: Option[String] = None,
+    downloadURL: Option[String] = None,
+    byteSize: Option[Int] = None,
+    mediaType: Option[String] = None,
+    format: Option[String] = None)
+
+  case class License(name: String, url: String)
 
   trait Protocols extends DefaultJsonProtocol {
-    implicit val dataSetFormat = jsonFormat3(DataSet.apply)
+    implicit val licenseFormat = jsonFormat2(License.apply)
+    implicit object InstantFormat extends JsonFormat[Instant] {
+      override def write(instant: Instant): JsString = JsString.apply(instant.toString())
+      override def read(json: JsValue): Instant = Instant.parse(json.convertTo[String])
+    }
+    implicit val distributionFormat = jsonFormat11(Distribution.apply)
+    implicit val periodOfTimeFormat = jsonFormat2(PeriodOfTime.apply)
+    implicit object DurationFormat extends JsonFormat[Duration] {
+      override def write(duration: Duration): JsNumber = JsNumber(duration.toMillis())
+      override def read(json: JsValue): Duration = Duration.ofMillis(json.convertTo[Long])
+    }
+    implicit val latLngFormat = jsonFormat2(LatLong.apply)
+    implicit val locationFormat = jsonFormat2(Location.apply)
+    implicit val agentFormat = jsonFormat3(Agent.apply)
+    implicit val dataSetFormat = jsonFormat16(DataSet.apply)
     implicit val searchResultFormat = jsonFormat2(SearchResult.apply)
   }
 }
