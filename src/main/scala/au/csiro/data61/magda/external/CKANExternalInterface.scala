@@ -74,14 +74,19 @@ case class CKANDataSet(
   groups: Seq[CKANGroup],
 
   /** the id of the dataset’s owning organization, see organization_list() or organization_list_for_user() for available values (optional) */
-  owner_org: Option[String],
+  organization: Option[CKANOrganization],
+
+  spatial: Option[String],
+  spatial_coverage: Option[String],
 
   license_title: Option[String],
   metadata_created: String,
   metadata_modified: String,
   contact_point: Option[String],
   temporal_coverage_from: Option[String],
-  update_freq: Option[String])
+  temporal_coverage_to: Option[String],
+  update_freq: Option[String],
+  language: Option[String])
 
 case class CKANGroup(
   name: Option[String],
@@ -117,6 +122,16 @@ case class CKANTag(
   display_name: String,
   vocabulary_id: Option[String])
 
+case class CKANOrganization(
+  id: String,
+  name: String,
+  title: Option[String],
+  description: Option[String],
+  created: Option[String],
+  state: Option[CKANState],
+  image_url: Option[String],
+  `type`: Option[String])
+
 trait CKANProtocols extends DefaultJsonProtocol {
   implicit val resourceFormat = jsonFormat14(CKANResource.apply)
   implicit val tagFormat = jsonFormat4(CKANTag.apply)
@@ -126,6 +141,7 @@ trait CKANProtocols extends DefaultJsonProtocol {
   }
   implicit val relationshipFormat = jsonFormat4(CKANRelationship.apply)
   implicit val groupFormat = jsonFormat2(CKANGroup.apply)
+  implicit val orgFormat = jsonFormat8(CKANOrganization.apply)
   implicit object CKANDataSetFormat extends JsonFormat[CKANDataSet] {
     override def write(dataSet: CKANDataSet): JsString = ???
     override def read(json: JsValue): CKANDataSet = {
@@ -157,13 +173,17 @@ trait CKANProtocols extends DefaultJsonProtocol {
         relationships_as_object = convertOption[Seq[CKANRelationship]]("relationships_as_object"),
         relationships_as_subject = convertOption[Seq[CKANRelationship]]("relationships_as_subject"),
         groups = jsObject.getFields("groups").head.convertTo[Seq[CKANGroup]],
-        owner_org = convertOption[String]("owner_org"),
+        organization = convertOption[CKANOrganization]("organization"),
         license_title = convertOption[String]("license_title"),
         metadata_created = jsObject.getFields("metadata_created").head.convertTo[String],
         metadata_modified = jsObject.getFields("metadata_modified").head.convertTo[String],
         contact_point = convertOption[String]("contact_point"),
         temporal_coverage_from = convertOption[String]("temporal_coverage_from"),
-        update_freq = convertOption[String]("update_freq")
+        temporal_coverage_to = convertOption[String]("temporal_coverage_to"),
+        update_freq = convertOption[String]("update_freq"),
+        spatial = convertOption[String]("spatial"),
+        spatial_coverage = convertOption[String]("spatial_coverage"),
+        language = convertOption[String]("language")
       )
     }
   }
@@ -179,10 +199,43 @@ trait CKANProtocols extends DefaultJsonProtocol {
 class CKANExternalInterface(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContextExecutor, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface {
   implicit val logger = Logging(system, getClass)
   implicit def ckanSearchConv(ckanResponse: CKANSearchResponse): SearchResult = SearchResult(hitCount = ckanResponse.result.count, dataSets = ckanResponse.result.results)
+  implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
+    name = ckanOrg.title,
+    extraFields = Map(
+      "description" -> ckanOrg.description.getOrElse("")
+
+    ).filterNot(tuple => tuple._2 == "")
+  )
+  implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
   implicit def ckanDataSetConv(hit: CKANDataSet): DataSet = DataSet(
+    identifier = hit.name,
+    catalog = "DGA",
     title = hit.title,
-    identifier = hit.url.getOrElse("no url"),
-    catalog = "DGA")
+    description = hit.notes,
+    issued = Some(Instant.parse(hit.metadata_created + "Z")),
+    modified = Some(Instant.parse(hit.metadata_modified + "Z")),
+    language = hit.language,
+    publisher = hit.organization,
+    accrualPeriodicity = hit.update_freq map (new Periodicity(_)),
+    spatial = hit.spatial_coverage map (name => new Location(name = Some(name))),
+    temporal = {
+      if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
+      else Some(new PeriodOfTime(
+        start = hit.temporal_coverage_from.map(text => new ApiInstant(text = Some(text))),
+        end = hit.temporal_coverage_to.map(text => new ApiInstant(text = Some(text)))
+      ))
+    },
+    theme = List(), // ???
+    keyword = hit.tags match {
+      case Some(tags) => tags.map(_.display_name)
+      case None       => List()
+    },
+    contactPoint = {
+      val email = if (hit.contact_point.isDefined) hit.contact_point else hit.author_email
+      email.map(email => new Agent(email = Some(email), name = hit.author))
+    },
+    landingPage = Some("https://data.gov.au/dataset/" + hit.name) // FIXME!!!
+  )
   implicit def ckanDataSetListConv(l: List[CKANDataSet]): List[DataSet] = l map ckanDataSetConv
 
   lazy val ckanApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
