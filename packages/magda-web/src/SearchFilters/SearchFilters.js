@@ -3,6 +3,7 @@ import uniq from 'lodash.uniq';
 import flattenDeep from'lodash.flattendeep';
 import isEqual from 'lodash.isequal';
 import Filter from './Filter';
+import FilterPublisher from './FilterPublisher';
 
 
 class SearchFilters extends Component {
@@ -10,19 +11,14 @@ class SearchFilters extends Component {
     super(props);
   }
 
-
-
   getFilters(key, needsFlatten){
-    if (needsFlatten){
-      return uniq(flattenDeep(this.props.searchResults.map((result)=>result[key])));
-    }
-    return uniq(this.props.searchResults.map((result)=>result[key]));
+
   }
 
   render() {
     return (
       <div>
-        <Filter conditions={this.getFilters('publisher')} title='publisher'/>
+        <FilterPublisher conditions={this.getFilters('publisher')} title='publisher'/>
         <Filter conditions={this.getFilters('dateRange')} title='dateRange'/>
         <Filter conditions={this.getFilters('dataFormat', true)} title='dataFormat'/>
       </div>

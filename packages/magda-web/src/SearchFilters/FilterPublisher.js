@@ -1,17 +1,8 @@
 import React, { Component } from 'react';
+import Filter from './Filter';
+import FilterCondition from './FilterCondition';
 
-class FilterPublisher extends Component {
-  constructor(props) {
-    super(props);
-  }
+class FilterPublisher extends Filter {
 
-  render() {
-    return (
-      <div> FilterPublisher</div>
-    );
-  }
 }
-FilterPublisher.propTypes = {};
-FilterPublisher.defaultProps = {};
-
 export default FilterPublisher;
