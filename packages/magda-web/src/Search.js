@@ -4,6 +4,7 @@ import SearchFilters from './SearchFilters/SearchFilters';
 import SearchBox from './SearchBox';
 import generateRandomDatasets from './generateRandomDatasets';
 import getOrganisations from './dummyData/getOrganisations';
+import find from 'lodash.find';
 import './Search.css';
 
 class Search extends Component {
@@ -36,7 +37,9 @@ class Search extends Component {
 
   toggleFilter(condition, i, filterType){
     let filters = this.state.filters;
-    filters[filterType][i].isActive = !filters[filterType][i].isActive;
+    let filter = find(filters[filterType], (f)=>f.name === condition.name);
+    console.log(filter);
+    filter.isActive = !filter.isActive;
     this.setState({
       filters: filters
     })
