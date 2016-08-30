@@ -38,7 +38,7 @@ class Search extends Component {
     console.log(condition);
     console.log(filterType);
     let filters = this.state.filters;
-    filters[filterType][i].isActive = true;
+    filters[filterType][i].isActive = !filters[filterType][i].isActive;
     this.setState({
       filters: filters
     })
