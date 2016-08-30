@@ -1,5 +1,5 @@
 <projectDescription>
-  <name>akka-http-microservice</name>
+  <name>magda-metadata</name>
   <buildSpec>
     <buildCommand>
       <name>org.scala-ide.sdt.core.scalabuilder</name>

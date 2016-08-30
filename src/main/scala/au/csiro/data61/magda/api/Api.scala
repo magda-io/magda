@@ -1,6 +1,8 @@
 package au.csiro.data61.magda.api
 
 import akka.actor.ActorSystem
+import ch.megard.akka.http.cors.CorsDirectives
+import ch.megard.akka.http.cors.CorsSettings
 import akka.event.{ LoggingAdapter, Logging }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
@@ -20,24 +22,25 @@ import scala.math._
 import spray.json.DefaultJsonProtocol
 import au.csiro.data61.magda.api.Types._
 import au.csiro.data61.magda.external._
+import akka.http.scaladsl.model.headers.HttpOriginRange
 
 object Api {
   def apply(implicit config: Config, system: ActorSystem, executor: ExecutionContextExecutor, materializer: Materializer) = new Api()
 }
 
-class Api(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContextExecutor, implicit val materializer: Materializer) extends Protocols {
+class Api(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContextExecutor, implicit val materializer: Materializer) extends Protocols with CorsDirectives {
   val logger = Logging(system, getClass)
   val external: ExternalInterface = new FederatedExternalInterface(interfaces = Seq(new CKANExternalInterface(), new CSWExternalInterface()))
 
-  val routes = {
-    logRequestResult("akka-http-microservice") {
-      pathPrefix("search") {
-        (get & path(Segment)) { query =>
-          complete {
-            external.search(query).map[ToResponseMarshallable] {
-              case Right(result)      => result
-              case Left(errorMessage) => BadRequest -> errorMessage
-            }
+  val routes = cors() {
+    pathPrefix("search") {
+      options {
+        complete("")
+      } ~ (get & path(Segment)) { query =>
+        complete {
+          external.search(query).map[ToResponseMarshallable] {
+            case Right(result)      => result
+            case Left(errorMessage) => BadRequest -> errorMessage
           }
         }
       }

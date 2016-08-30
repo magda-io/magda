@@ -1,5 +1,3 @@
-import sbtdocker.DockerKeys._
-
 enablePlugins(JavaServerAppPackaging)
 
 name := "magda-metadata"
@@ -19,6 +17,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaV,
     "com.typesafe.akka" %% "akka-http-xml-experimental" % akkaV,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
+    "ch.megard" %% "akka-http-cors" % "0.1.5",
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
   )
 }
