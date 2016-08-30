@@ -11,21 +11,19 @@ class SearchFilters extends Component {
     super(props);
   }
 
-  getFilters(key, needsFlatten){
 
-  }
 
   render() {
     return (
       <div>
-        <FilterPublisher conditions={this.getFilters('publisher')} title='publisher'/>
-        <Filter conditions={this.getFilters('dateRange')} title='dateRange'/>
-        <Filter conditions={this.getFilters('dataFormat', true)} title='dataFormat'/>
+        <FilterPublisher conditions={this.props.filters.publisher}
+                         toggleFilter={this.props.toggleFilter}
+                         title='publisher'/>
       </div>
     );
   }
 }
-SearchFilters.propTypes = {searchResults: React.PropTypes.array};
-SearchFilters.defaultProps = {searchResults: []};
+SearchFilters.propTypes = {searchResults: React.PropTypes.array, filters: React.PropTypes.object};
+SearchFilters.defaultProps = {searchResults: [], filters: {}};
 
 export default SearchFilters;
