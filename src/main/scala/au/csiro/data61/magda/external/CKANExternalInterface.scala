@@ -192,13 +192,25 @@ trait CKANProtocols extends DefaultJsonProtocol {
   implicit val searchResponseFormat = jsonFormat2(CKANSearchResponse.apply)
 }
 
-//object CKANExternalInterface {
-//  def apply(implicit config: Config, system: ActorSystem, executor: ExecutionContextExecutor, materializer: Materializer) = new CKANExternalInterface()
-//}
-
 class CKANExternalInterface(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContextExecutor, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface {
   implicit val logger = Logging(system, getClass)
-  implicit def ckanSearchConv(ckanResponse: CKANSearchResponse): SearchResult = SearchResult(hitCount = ckanResponse.result.count, dataSets = ckanResponse.result.results)
+  implicit def ckanSearchConv(ckanResponse: CKANSearchResponse): SearchResult = {
+    val dataSets = ckanResponse.result.results
+
+    val facets = Seq(new Facet(
+      name = "Publishers",
+      id = "publisher",
+      options = dataSets.groupBy(_.publisher)
+        .filter(a => a._1.isDefined && a._1.get.name.isDefined)
+        .map {
+          case (publisher: Some[Agent], dataSets) => new FacetOption(id = publisher.get.name.get, name = publisher.get.name.get, hitCount = dataSets.length)
+          case (None, _) => ???
+        }
+        .toSeq
+    ))
+
+    SearchResult(hitCount = ckanResponse.result.count, dataSets = dataSets, facets = facets)
+  }
   implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
     name = ckanOrg.title,
     extraFields = Map(

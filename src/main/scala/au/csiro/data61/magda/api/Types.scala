@@ -9,7 +9,18 @@ object Types {
 
   case class SearchResult(
     hitCount: Int,
+    facets: Seq[Facet] = Seq(),
     dataSets: List[DataSet])
+
+  case class Facet(
+    id: String,
+    name: String,
+    options: Seq[FacetOption])
+
+  case class FacetOption(
+    id: String,
+    name: String,
+    hitCount: Int)
 
   object Periodicity {
     val asNeeded: Periodicity = new Periodicity("As Needed")
@@ -103,6 +114,8 @@ object Types {
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
     implicit val dataSetFormat = jsonFormat16(DataSet.apply)
-    implicit val searchResultFormat = jsonFormat2(SearchResult.apply)
+    implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)
+    implicit val facetFormat = jsonFormat3(Facet.apply)
+    implicit val searchResultFormat = jsonFormat3(SearchResult.apply)
   }
 }
