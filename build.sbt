@@ -1,8 +1,10 @@
-enablePlugins(JavaAppPackaging)
+import sbtdocker.DockerKeys._
 
-name := "akka-http-microservice"
-organization := "com.theiterators"
-version := "1.0"
+enablePlugins(JavaServerAppPackaging)
+
+name := "magda-metadata"
+organization := "au.com.csiro.data61"
+version := "0.0.1"
 scalaVersion := "2.11.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
@@ -25,3 +27,22 @@ EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
 
 Revolver.settings
+
+dockerExposedPorts := Seq(9000)
+
+/*
+lazy val dockerSettings = Seq(
+    // things the docker file generation depends on are listed here
+    dockerfile in docker := {
+    
+		// The assembly task generates a fat JAR file
+		val artifact: File = assembly.value
+		val artifactTargetPath = s"/app/${artifact.name}"
+    
+    new Dockerfile {
+	    from("java")
+	    add(artifact, artifactTargetPath)
+	    entryPoint("java", "-jar", artifactTargetPath)
+ 		}
+	}
+)  */
