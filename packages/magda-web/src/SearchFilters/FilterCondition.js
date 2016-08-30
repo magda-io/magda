@@ -12,7 +12,7 @@ class FilterCondition extends Component {
   toggleFilter(){
     this.setState({
       isActive: !this.state.isActive
-    })
+    });
   }
 
   render() {

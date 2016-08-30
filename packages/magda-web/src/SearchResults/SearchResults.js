@@ -11,7 +11,7 @@ class SearchResults extends Component {
           <p>{result.description}</p>
           <ul className='list-unstyled tags'>
             {
-              result.tags.map((tag)=>
+              result.keyword.map((tag)=>
                 <li key={tag} className='badge'>{tag}</li>
               )
             }

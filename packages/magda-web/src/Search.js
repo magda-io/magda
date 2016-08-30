@@ -35,8 +35,6 @@ class Search extends Component {
   }
 
   toggleFilter(condition, i, filterType){
-    console.log(condition);
-    console.log(filterType);
     let filters = this.state.filters;
     filters[filterType][i].isActive = !filters[filterType][i].isActive;
     this.setState({
@@ -45,16 +43,17 @@ class Search extends Component {
   }
 
   doSearch(newText){
-    let result = generateRandomDatasets(newText);
-    // search this.state.searchValue
+    let result = getJSON('http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/' + newText).then((data)=>{
     this.setState({
-      results : result,
-      searchResults: result
+      results : data.dataSets,
+      searchResults: data.dataSets
     });
+    }, (err)=>{console.warn(err)})
   }
 
 
   render() {
+    console.log(this.state.searchResults);
     return (
       <div className='search'>
         <div className='search-header jumbotron'>
@@ -70,12 +69,32 @@ class Search extends Component {
                 toggleFilter={this.toggleFilter} />}
           </div>
           <div className='col-sm-8'>
-            {this.state.searchValue.length > 0 && <SearchResults searchResults={this.state.searchResults} />}
+            {this.state.searchValue.length > 0 &&
+              <SearchResults
+                searchResults={this.state.searchResults} />}
           </div>
         </div>
       </div>
     );
   }
 }
+
+
+let getJSON = function(url) {
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('get', url, true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status == 200) {
+        resolve(xhr.response);
+      } else {
+        reject(status);
+      }
+    };
+    xhr.send();
+  });
+};
 
 export default Search;

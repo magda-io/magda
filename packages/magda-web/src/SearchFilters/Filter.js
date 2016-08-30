@@ -8,7 +8,8 @@ class Filter extends Component {
     this.handleChange = this.handleChange.bind(this);
 
     this.state = {
-      searchText: ''
+      searchText: '',
+      resultConditions: []
     }
   }
 
@@ -20,6 +21,19 @@ class Filter extends Component {
     this.setState({
       searchText: e.target.value
     })
+
+    //  filter inactive conditions
+    let conditionsToSearch = this.props.conditions.filter(c=>!c.isActive);
+    let resultConditions = [];
+
+    if(conditionsToSearch.forEach((c)=>{
+      if(c.name.toLowerCase().indexOf(e.target.value) !== -1){
+        resultConditions.push(c);
+        this.setState({
+          resultConditions: resultConditions
+        })
+      }
+    }));
   }
 
   renderCondition(condition, i){
@@ -36,9 +50,15 @@ class Filter extends Component {
               condition.isActive && <div key={i}>{this.renderCondition(condition, i)}</div>
           )}
         </div>
+
         <input className='form-control' type="text" value={this.state.searchText} onChange={this.handleChange}/>
+        <div className='filtered-conditions'>
+          {this.state.searchText.length !== 0 && this.state.resultConditions.map((condition, i)=>
+              <div key={i}>{this.renderCondition(condition, i)}</div>
+          )}
+        </div>
         <div>
-          {this.props.conditions.map((condition, i)=>
+          {this.state.searchText.length === 0 &&  this.props.conditions.map((condition, i)=>
             !condition.isActive && <div key={i}>{this.renderCondition(condition, i)}</div>
           )}
         </div>
