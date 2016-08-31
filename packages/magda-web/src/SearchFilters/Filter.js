@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import FilterCondition from './FilterCondition';
+import find from 'lodash.find';
 
 class Filter extends Component {
   constructor(props) {
@@ -13,8 +14,8 @@ class Filter extends Component {
     }
   }
 
-  toggleFilter(condition, i){
-    this.props.toggleFilter(condition, i, this.props.title);
+  toggleFilter(option, i){
+    this.props.toggleFilter(option, i, this.props.filter.id);
   }
 
   handleChange(e){
@@ -22,11 +23,11 @@ class Filter extends Component {
       searchText: e.target.value
     })
 
-    //  filter inactive conditions
-    let conditionsToSearch = this.props.conditions.filter(c=>!c.isActive);
+    //  filter inactive options
+    let optionsToSearch = this.props.filter.options.filter(option=>!this.checkActiveOption(option));
     let resultConditions = [];
 
-    if(conditionsToSearch.forEach((c)=>{
+    if(optionsToSearch.forEach((c)=>{
       if(c.name.toLowerCase().indexOf(e.target.value) !== -1){
         resultConditions.push(c);
         this.setState({
@@ -36,37 +37,40 @@ class Filter extends Component {
     }));
   }
 
-  renderCondition(condition, i){
-    return <button type='button' className={`${condition.isActive ? 'btn-primary' : 'btn-default'} btn`} onClick={this.toggleFilter.bind(this, condition, i)}>{condition.name} {condition.count}</button>;
+  renderCondition(option, i){
+    return <button type='button' className={`${this.checkActiveOption(option) ? 'btn-primary' : 'btn-default'} btn`} onClick={this.toggleFilter.bind(this, option, i)}>{option.name} {option.count}</button>;
+  }
+
+  checkActiveOption(option){
+    return find(this.props.activeFilter.options, f=>option.id === f.id);
   }
 
   render() {
     return (
       <div>
-        <h4>{this.props.title}</h4>
-
+        <h4>{this.props.filter.name}</h4>
         <div className='filter-selected'>
-          {this.props.conditions.map((condition, i)=>
-              condition.isActive && <div key={i}>{this.renderCondition(condition, i)}</div>
+          {this.props.filter.options.map((option, i)=>
+              this.checkActiveOption(option) && <div key={i}>{this.renderCondition(option, i)}</div>
           )}
         </div>
 
         <input className='form-control' type="text" value={this.state.searchText} onChange={this.handleChange}/>
-        <div className='filtered-conditions'>
-          {this.state.searchText.length !== 0 && this.state.resultConditions.map((condition, i)=>
-              <div key={i}>{this.renderCondition(condition, i)}</div>
+        <div className='filtered-options'>
+          {this.state.searchText.length !== 0 && this.state.resultConditions.map((option, i)=>
+              <div key={i}>{this.renderCondition(option, i)}</div>
           )}
         </div>
         <div>
-          {this.state.searchText.length === 0 &&  this.props.conditions.map((condition, i)=>
-            !condition.isActive && <div key={i}>{this.renderCondition(condition, i)}</div>
+          {this.state.searchText.length === 0 &&  this.props.filter.options.map((option, i)=>
+            !this.checkActiveOption(option) && <div key={i}>{this.renderCondition(option, i)}</div>
           )}
         </div>
       </div>
     );
   }
 }
-Filter.propTypes = {conditions: React.PropTypes.array, title: React.PropTypes.string};
-Filter.defaultProps = {conditions: []};
+Filter.propTypes = {filter: React.PropTypes.object, activeFilter: React.PropTypes.object, title: React.PropTypes.string};
+Filter.defaultProps = {filter: {}, activeFilter: {}};
 
 export default Filter;

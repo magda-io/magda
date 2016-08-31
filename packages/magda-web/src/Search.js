@@ -5,6 +5,7 @@ import SearchBox from './SearchBox';
 import generateRandomDatasets from './generateRandomDatasets';
 import getOrganisations from './dummyData/getOrganisations';
 import find from 'lodash.find';
+import remove from 'lodash.remove';
 import './Search.css';
 
 class Search extends Component {
@@ -14,12 +15,9 @@ class Search extends Component {
       searchValue: '',
       results : [],
       searchResults: [],
-
-      filters: {
-        publisher: getOrganisations(),
-        dateRange: [],
-        dataFormat: []
-      }
+      filters: [],
+      // get this from url
+      activeFilters: [{id: 'publisher', options: []}]
     };
     this.updateSearchText = this.updateSearchText.bind(this);
     this.onFilterChange = this.onFilterChange.bind(this);
@@ -35,28 +33,31 @@ class Search extends Component {
 
   }
 
-  toggleFilter(condition, i, filterType){
-    let filters = this.state.filters;
-    let filter = find(filters[filterType], (f)=>f.name === condition.name);
-    console.log(filter);
-    filter.isActive = !filter.isActive;
+  toggleFilter(option, i, filterId){
+    let activeFilters = this.state.activeFilters;
+    let filterToUpdate = find(activeFilters, f=> f.id = filterId).options;
+    let filterState = find(filterToUpdate, (f)=>f.id === option.id);
+    if(!filterState){
+      filterToUpdate.push(option);
+    }else{
+      remove(filterToUpdate, f=>f.id === option.id)
+    }
     this.setState({
-      filters: filters
-    })
+      activeFilters: activeFilters
+    });
   }
 
   doSearch(newText){
-    let result = getJSON('http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/' + newText).then((data)=>{
+    getJSON('http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/' + newText).then((data)=>{
     this.setState({
       results : data.dataSets,
-      searchResults: data.dataSets
+      searchResults: data.dataSets,
+      filters: data.facets
     });
-    }, (err)=>{console.warn(err)})
+    }, (err)=>{console.warn(err)});
   }
 
-
   render() {
-    console.log(this.state.searchResults);
     return (
       <div className='search'>
         <div className='search-header jumbotron'>
@@ -69,7 +70,8 @@ class Search extends Component {
               <SearchFilters
                 searchResults={this.state.searchResults}
                 filters={this.state.filters}
-                toggleFilter={this.toggleFilter} />}
+                toggleFilter={this.toggleFilter}
+                activeFilters={this.state.activeFilters} />}
           </div>
           <div className='col-sm-8'>
             {this.state.searchValue.length > 0 &&

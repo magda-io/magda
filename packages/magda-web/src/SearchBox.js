@@ -11,6 +11,12 @@ class SearchBox extends Component {
     this.props.updateSearchText(event.target.value);
   }
 
+  handleKeyPress(event) {
+    if(event.charCode==13){
+        event.preventDefault();
+    }
+  }
+
   render() {
     return (
       <form className="SearchBox">
@@ -24,6 +30,7 @@ class SearchBox extends Component {
           className='form-control'
           value={this.props.searchValue}
           onChange={this.handleChange}
+          onKeyPress={this.handleKeyPress}
         />
         <span className="input-group-addon"><i className="fa fa-search" aria-hidden="true"></i> </span>
         </div>

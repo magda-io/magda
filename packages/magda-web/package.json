@@ -9,6 +9,7 @@
     "lodash.find": "^4.6.0",
     "lodash.flattendeep": "^4.4.0",
     "lodash.isequal": "^4.4.0",
+    "lodash.remove": "^4.7.0",
     "lodash.uniq": "^4.5.0",
     "lodash.uniqwith": "^4.5.0",
     "react": "^15.3.1",

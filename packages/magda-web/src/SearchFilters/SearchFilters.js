@@ -14,14 +14,15 @@ class SearchFilters extends Component {
   render() {
     return (
       <div>
-        <FilterPublisher conditions={this.props.filters.publisher}
+        {this.props.filters.length > 0 &&
+        <FilterPublisher filter={this.props.filters[0]}
                          toggleFilter={this.props.toggleFilter}
-                         title='publisher'/>
+                         activeFilter ={this.props.activeFilters[0]} />}
       </div>
     );
   }
 }
-SearchFilters.propTypes = {searchResults: React.PropTypes.array, filters: React.PropTypes.object};
-SearchFilters.defaultProps = {searchResults: [], filters: {}};
+SearchFilters.propTypes = {searchResults: React.PropTypes.array, filters: React.PropTypes.array, activeFilters: React.PropTypes.array};
+SearchFilters.defaultProps = {searchResults: [], filters: [], activeFilters: []};
 
 export default SearchFilters;
