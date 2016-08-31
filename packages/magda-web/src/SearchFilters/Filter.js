@@ -7,6 +7,7 @@ class Filter extends Component {
     super(props);
     this.toggleFilter = this.toggleFilter.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.clearSearch = this.clearSearch.bind(this);
 
     this.state = {
       searchText: '',
@@ -16,6 +17,12 @@ class Filter extends Component {
 
   toggleFilter(option, i){
     this.props.toggleFilter(option, i, this.props.filter.id);
+  }
+
+  clearSearch(){
+    this.setState({
+      searchText: ''
+    })
   }
 
   handleChange(e){
@@ -55,7 +62,11 @@ class Filter extends Component {
           )}
         </div>
 
-        <input className='form-control' type="text" value={this.state.searchText} onChange={this.handleChange}/>
+        <form className='form-inline'>
+          <input className='form-control' type="text" value={this.state.searchText} onChange={this.handleChange}/>
+          <button type='button' onClick={this.clearSearch}>clear</button>
+        </form>
+
         <div className='filtered-options'>
           {this.state.searchText.length !== 0 && this.state.resultConditions.map((option, i)=>
               <div key={i}>{this.renderCondition(option, i)}</div>
