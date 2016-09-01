@@ -8,10 +8,13 @@ import { Router, Route, browserHistory, indexRoute } from 'react-router'
 // http://baseurl.com/dataset?publisher=australianbroadcastingcorporation&q=tax
 
 
+//<Route path="/magda-web/build/" component={Search}>
+
+let baseurl = location.hostname === "localhost" ? '/' : '/magda-web/build/';
 
 ReactDOM.render(
   <Router history={browserHistory}>
-      <Route path="/magda-web/build/" component={Search}>
+      <Route path={baseurl} component={Search}>
         <indexRoute component={Search}/>
         <Route path="/dataset" component={SearchBody}/>
       </Route>
