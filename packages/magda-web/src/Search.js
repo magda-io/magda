@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import SearchBox from './SearchBox';
-import { browserHistory } from 'react-router';
+import { browserHistory, RouterContext } from 'react-router';
 import './Search.css';
 
 
@@ -11,7 +11,12 @@ class Search extends Component {
   }
 
   updateSearchText(newText) {
-
+    this.context.router.push({
+      pathname: this.props.location.pathname,
+      query: { q: newText },
+    });
+    console.log(newText);
+    console.log(this.props.location.query);
   }
 
   render() {
@@ -19,7 +24,6 @@ class Search extends Component {
       <div className='search'>
         <div className='search-header jumbotron'>
           <SearchBox searchValue={this.props.location.query.q}
-                     search={this.updateSearchText}
                      updateSearchText={this.updateSearchText}
                      />
         </div>
@@ -27,5 +31,9 @@ class Search extends Component {
       </div>
     );
   }
+}
+
+Search.contextTypes ={
+  router: React.PropTypes.object.isRequired
 }
 export default Search;

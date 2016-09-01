@@ -41,7 +41,6 @@ class SearchBody extends Component {
   doSearch(){
     let query = this.props.location.query;
     let q = query.q;
-    console.log(q);
     getJSON('http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/' + q).then((data)=>{
       this.setState({
         searchResults: data.dataSets,
