@@ -2,6 +2,7 @@
   "name": "magda-web",
   "version": "0.0.1",
   "private": true,
+  "homepage": "http://terria.io/magda-web/build",
   "devDependencies": {
     "react-scripts": "0.2.2"
   },

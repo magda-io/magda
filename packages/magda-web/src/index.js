@@ -11,7 +11,7 @@ import { Router, Route, browserHistory, indexRoute } from 'react-router'
 
 ReactDOM.render(
   <Router history={browserHistory}>
-      <Route path="/" component={Search}>
+      <Route path="/magda-web/build/" component={Search}>
         <indexRoute component={Search}/>
         <Route path="/dataset" component={SearchBody}/>
       </Route>

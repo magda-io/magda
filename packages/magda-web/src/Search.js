@@ -15,7 +15,7 @@ class Search extends Component {
   }
 
   render() {
-    console.log();
+    console.log(this.props);
     return (
       <div className='search'>
         <div className='search-header jumbotron'>
