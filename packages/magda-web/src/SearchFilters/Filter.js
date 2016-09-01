@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
-import FilterCondition from './FilterCondition';
 import find from 'lodash.find';
 
 class Filter extends Component {
   constructor(props) {
     super(props);
-    this.toggleFilter = this.toggleFilter.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.clearSearch = this.clearSearch.bind(this);
+    this.toggleFilter=this.toggleFilter.bind(this);
+    this.handleChange=this.handleChange.bind(this);
+    this.clearSearch=this.clearSearch.bind(this);
 
-    this.state = {
+    this.state={
       searchText: '',
       resultConditions: []
     }
@@ -35,7 +34,7 @@ class Filter extends Component {
     let resultConditions = [];
 
     if(optionsToSearch.forEach((c)=>{
-      if(c.name.toLowerCase().indexOf(e.target.value) !== -1){
+      if(c.name.toLowerCase().indexOf(e.target.value)!==-1){
         resultConditions.push(c);
         this.setState({
           resultConditions: resultConditions
