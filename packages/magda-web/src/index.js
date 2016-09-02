@@ -17,7 +17,6 @@ ReactDOM.render(
   <Router history={history}>
       <Route path={baseurl} component={Search}>
         <indexRoute component={Search}/>
-        <Route path="/dataset" component={SearchBody}/>
       </Route>
     </Router>,
   document.getElementById('root')
