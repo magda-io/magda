@@ -13,10 +13,10 @@ class SearchFilters extends Component {
   render() {
     return (
       <div>
-        <FilterPublisher options = {this.props.filters.publisher}
-                         title='publisher'
-                         toggleFilter={this.props.toggleFilter}
-                         location={this.props.location}/>
+        {this.props.filters.publisher && <FilterPublisher options={this.props.filters.publisher}
+                                 title='publisher'
+                                 toggleFilter={this.props.toggleFilter}
+                                 location={this.props.location}/>}
       </div>
     )
   }

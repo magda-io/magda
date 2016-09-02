@@ -25,6 +25,9 @@ class Filter extends Component {
   }
 
   renderCondition(option){
+    if(!option){
+      return null;
+    }
     return <button type='button' className={`${this.checkActiveOption(option) ? 'btn-primary' : 'btn-default'} btn`} onClick={this.toggleFilter.bind(this, option)}>{option.name} {option.count}</button>;
   }
 

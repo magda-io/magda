@@ -1,9 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Search from './Search';
-import SearchBody from './SearchBody';
 import './index.css';
-import { Router, Route, hashHistory, browserHistory, indexRoute } from 'react-router'
+import { Router, Route, browserHistory, indexRoute } from 'react-router'
 
 // http://baseurl.com/dataset?publisher=australianbroadcastingcorporation&q=tax
 

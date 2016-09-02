@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { browserHistory, RouterContext } from 'react-router';
+import {RouterContext } from 'react-router';
 import SearchResults from './SearchResults/SearchResults';
 import SearchFilters from './SearchFilters/SearchFilters';
 import SearchBox from './SearchBox';
@@ -34,7 +34,7 @@ class Search extends Component {
     this.state = {
       searchResults: [],
       filters: {
-        publisher: getOrganisations()
+        publisher: getOrganisations(),
       }
     };
   }
@@ -58,13 +58,13 @@ class Search extends Component {
       let query = this.props.location.query;
       let keyword = query.q.split(' ').join('+');
 
-      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/${keyword}`).then((data)=>{
+      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search?query=${keyword}`).then((data)=>{
         let results= [];
         if(keyword.length > 0){
           results = data.dataSets;
         }
         this.setState({
-            searchResults: data.dataSets,
+            searchResults: results,
           });
         }, (err)=>{console.warn(err)});
   }
