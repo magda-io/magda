@@ -15,7 +15,8 @@ class SearchFilters extends Component {
       <div>
         <FilterPublisher options = {this.props.filters.publisher}
                          title='publisher'
-                         toggleFilter={this.props.toggleFilter}/>
+                         toggleFilter={this.props.toggleFilter}
+                         location={this.props.location}/>
       </div>
     )
   }

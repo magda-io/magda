@@ -90,7 +90,8 @@ class Search extends Component {
           <div className='col-sm-4'>
               <SearchFilters
                 filters={this.state.filters}
-                toggleFilter={this.toggleFilter}/>
+                toggleFilter={this.toggleFilter}
+                location={this.props.location}/>
           </div>
           <div className='col-sm-8'>
               <SearchResults
