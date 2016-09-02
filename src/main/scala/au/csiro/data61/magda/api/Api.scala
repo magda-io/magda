@@ -23,6 +23,12 @@ import spray.json.DefaultJsonProtocol
 import au.csiro.data61.magda.api.Types._
 import au.csiro.data61.magda.external._
 import akka.http.scaladsl.model.headers.HttpOriginRange
+import akka.http.scaladsl.server.RejectionHandler
+import akka.http.scaladsl.model.headers.Allow
+import akka.http.scaladsl.server.MethodRejection
+import akka.http.scaladsl.server.Rejection
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.ExceptionHandler
 
 object Api {
   def apply(implicit config: Config, system: ActorSystem, executor: ExecutionContextExecutor, materializer: Materializer) = new Api()
@@ -32,15 +38,42 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
   val logger = Logging(system, getClass)
   val external: ExternalInterface = new FederatedExternalInterface(interfaces = Seq(new CKANExternalInterface(), new CSWExternalInterface()))
 
+  implicit def rejectionHandler = RejectionHandler.newBuilder()
+    .handleAll[MethodRejection] { rejections =>
+      val methods = rejections map (_.supported)
+      lazy val names = methods map (_.name) mkString ", "
+
+      cors() {
+        options {
+          complete(s"Supported methods : $names.")
+        } ~
+          complete(MethodNotAllowed,
+            s"HTTP method not allowed, supported methods: $names!")
+      }
+    }
+    .result()
+
+  val myExceptionHandler = ExceptionHandler {
+    case _: Exception =>
+      cors() {
+        complete(HttpResponse(InternalServerError, entity = "You are probably seeing this message because Alex messed up"))
+      }
+  }
+
   val routes = cors() {
-    pathPrefix("search") {
-      options {
-        complete("")
-      } ~ (get & path(Segment)) { query =>
-        complete {
-          external.search(query).map[ToResponseMarshallable] {
-            case Right(result)      => result
-            case Left(errorMessage) => BadRequest -> errorMessage
+    handleExceptions(myExceptionHandler) {
+      pathPrefix("search") {
+        pathPrefix("facets") {
+          get {
+            complete("")
+          }
+        }
+        (get & path(Segment)) { query =>
+          complete {
+            external.search(query).map[ToResponseMarshallable] {
+              case Right(result)      => result
+              case Left(errorMessage) => BadRequest -> errorMessage
+            }
           }
         }
       }
