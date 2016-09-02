@@ -209,7 +209,7 @@ class CKANExternalInterface(implicit val config: Config, implicit val system: Ac
         .toSeq
     ))
 
-    SearchResult(hitCount = ckanResponse.result.count, dataSets = dataSets, facets = facets)
+    SearchResult(hitCount = ckanResponse.result.count, dataSets = dataSets, facets = Some(facets))
   }
   implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
     name = ckanOrg.title,
@@ -256,7 +256,9 @@ class CKANExternalInterface(implicit val config: Config, implicit val system: Ac
   def ckanRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(ckanApiConnectionFlow).runWith(Sink.head)
 
   def search(query: String): Future[Either[String, SearchResult]] = {
-    ckanRequest(RequestBuilding.Get(s"/api/3/action/package_search?q=$query")).flatMap { response =>
+    val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
+    
+    ckanRequest(RequestBuilding.Get(s"/api/3/action/package_search?q=$encodedQuery")).flatMap { response =>
       response.status match {
         case OK         => Unmarshal(response.entity).to[CKANSearchResponse].map(Right(_))
         case BadRequest => Future.successful(Left(s"$query: incorrect IP format"))

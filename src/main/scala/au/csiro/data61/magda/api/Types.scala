@@ -9,7 +9,7 @@ object Types {
 
   case class SearchResult(
     hitCount: Int,
-    facets: Seq[Facet] = Seq(),
+    facets: Option[Seq[Facet]] = None,
     dataSets: List[DataSet])
 
   case class Facet(

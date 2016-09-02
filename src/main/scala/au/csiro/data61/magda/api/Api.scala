@@ -54,25 +54,42 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
     .result()
 
   val myExceptionHandler = ExceptionHandler {
-    case _: Exception =>
+    case e: Exception => {
+      logger.error(e, "Exception encountered")
+
       cors() {
         complete(HttpResponse(InternalServerError, entity = "You are probably seeing this message because Alex messed up"))
       }
+    }
   }
 
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
       pathPrefix("search") {
-        pathPrefix("facets") {
-          get {
-            complete("")
-          }
-        }
-        (get & path(Segment)) { query =>
-          complete {
-            external.search(query).map[ToResponseMarshallable] {
-              case Right(result)      => result
-              case Left(errorMessage) => BadRequest -> errorMessage
+        (get & parameters("query")) { (query) =>
+          val search = external.search(query)
+          //TODO: Directive for this repeated code?
+
+          pathPrefix("datasets") {
+            complete {
+              search.map[ToResponseMarshallable] {
+                case Right(result)      => result.copy(facets = None)
+                case Left(errorMessage) => BadRequest -> errorMessage
+              }
+            }
+          } ~ pathPrefix("facets") {
+            complete {
+              search.map[ToResponseMarshallable] {
+                case Right(result: SearchResult) => result.facets
+                case Left(errorMessage)          => BadRequest -> errorMessage
+              }
+            }
+          } ~ pathEnd {
+            complete {
+              search.map[ToResponseMarshallable] {
+                case Right(result: SearchResult) => result
+                case Left(errorMessage)          => BadRequest -> errorMessage
+              }
             }
           }
         }
