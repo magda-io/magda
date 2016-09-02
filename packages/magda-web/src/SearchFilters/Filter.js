@@ -12,8 +12,10 @@ class Filter extends Component {
     this.renderCondition = this.renderCondition.bind(this);
   }
 
-  handleChange(){
-
+  handleChange(e){
+    this.setState({
+      searchText: e.target.value
+    });
   }
 
   toggleFilter(option){
@@ -21,7 +23,9 @@ class Filter extends Component {
   }
 
   clearSearch(){
-
+    this.setState({
+      searchText: ''
+    })
   }
 
   renderCondition(option){
@@ -34,21 +38,46 @@ class Filter extends Component {
   checkActiveOption(option){
     let query = this.props.location.query;
     let publisher = query.publisher;
+
     if(!publisher){
       return false;
-    } else if(publisher !== option.id){
-      return false;
     }
-    return true;
+    if(Array.isArray(this.props.location.query[this.props.title])){
+      if(publisher.indexOf(option.id) < 0){
+        return false;
+      }
+      return true;
+    }
+    if(publisher === option.id){
+      return true;
+    }
+    return false;
   }
 
   getActiveOption(){
     let query = this.props.location.query;
-    let publisher = find(this.props.options, o=>o.id === query[this.props.title]);
-    return this.renderCondition(publisher);
+    let publisher = query.publisher;
+    if(!publisher){
+      return null;
+    }
+    if(Array.isArray(this.props.location.query[this.props.title])){
+      return publisher.map(p=>{
+        return <div key={p}>{this.renderCondition(find(this.props.options, o=>o.id === p))}</div>;
+      });
+    }else{
+      return this.renderCondition(find(this.props.options, o=>o.id === publisher))
+    }
   }
 
   render() {
+    let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
+    let filteredInactiveOptions = [];
+    inactiveOptions.forEach((c)=>{
+      if(c.name.toLowerCase().indexOf(this.state.searchText)!==-1){
+        filteredInactiveOptions.push(c);
+      }
+    });
+
     return (
       <div>
         <h4>{this.props.title}</h4>
@@ -58,9 +87,16 @@ class Filter extends Component {
           <button type='button' onClick={this.clearSearch}>clear</button>
         </form>
 
-        {this.props.options.map((option, i)=>
-            !this.checkActiveOption(option) && <div key={i}>{this.renderCondition(option)}</div>
+        <div className='filtered-options'>
+          {this.state.searchText.length !== 0 && filteredInactiveOptions.map((option, i)=>
+              <div key={i}>{this.renderCondition(option)}</div>
+          )}
+        </div>
+        <div className='other-options'>
+        {this.state.searchText.length === 0 && inactiveOptions.map((option, i)=>
+              <div key={i}>{this.renderCondition(option)}</div>
         )}
+        </div>
       </div>
     );
   }

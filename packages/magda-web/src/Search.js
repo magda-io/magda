@@ -34,7 +34,7 @@ class Search extends Component {
     this.state = {
       searchResults: [],
       filters: {
-        publisher: getOrganisations(),
+        publisher: [],
       }
     };
   }
@@ -44,14 +44,28 @@ class Search extends Component {
       pathname: this.props.location.pathname,
       query: { q: newText },
     });
-
+    this.getFacets();
     this.debouncedSearch();
   }
 
   componentWillMount(){
     if(this.props.location.query.q && this.props.location.query.q.length > 0){
       this.doSearch();
+      this.getFacets();
     }
+  }
+
+  getFacets(){
+    let query = this.props.location.query;
+    let keyword = query.q.split(' ').join('+');
+    getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/facets?query=${keyword}`).then((data)=>{
+      console.log(data);
+      this.setState({
+        filters: {
+          publisher: data[0].options
+        }
+      })
+    }, (err)=>{console.warn(err)});
   }
 
   doSearch(){
@@ -70,9 +84,24 @@ class Search extends Component {
   }
 
   toggleFilter(option, filterTitle){
+    let currrentFilters;
+    if (!this.props.location.query[filterTitle]){
+      currrentFilters = [];
+    }
+    else if(Array.isArray(this.props.location.query[filterTitle])){
+      currrentFilters = this.props.location.query[filterTitle];
+    } else{
+      currrentFilters = [this.props.location.query[filterTitle]];
+    }
+    if(currrentFilters.indexOf(option.id) > -1){
+      currrentFilters.splice(currrentFilters.indexOf(option.id), 1);
+    } else{
+      currrentFilters.push(option.id)
+    }
+
     this.context.router.push({
       pathname: this.props.location.pathname,
-      query: Object.assign(this.props.location.query, { publisher: option.id })
+      query: Object.assign(this.props.location.query, { [filterTitle]: currrentFilters })
     });
 
     this.debouncedSearch();
@@ -87,12 +116,12 @@ class Search extends Component {
                      />
         </div>
         <div className='search-body row'>
-          <div className='col-sm-4'>
-              <SearchFilters
-                filters={this.state.filters}
-                toggleFilter={this.toggleFilter}
-                location={this.props.location}/>
-          </div>
+          {this.props.location.query.q.length > 0 && <div className='col-sm-4'>
+                        <SearchFilters
+                          filters={this.state.filters}
+                          toggleFilter={this.toggleFilter}
+                          location={this.props.location}/>
+                    </div>}
           <div className='col-sm-8'>
               <SearchResults
                 searchResults={this.state.searchResults}
