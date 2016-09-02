@@ -3,6 +3,7 @@ import { browserHistory, RouterContext } from 'react-router';
 import SearchResults from './SearchResults/SearchResults';
 import SearchFilters from './SearchFilters/SearchFilters';
 import SearchBox from './SearchBox';
+import debounce from 'lodash.debounce';
 import './Search.css';
 
 let getJSON = function(url) {
@@ -27,6 +28,7 @@ class Search extends Component {
   constructor(props) {
     super(props);
     this.updateSearchText=this.updateSearchText.bind(this);
+    this.debouncedSearch = debounce(this.doSearch, 150);
     this.state = {
       searchResults: []
     };
@@ -37,28 +39,29 @@ class Search extends Component {
       pathname: this.props.location.pathname,
       query: { q: newText },
     });
-    this.doSearch(newText);
+
+    this.debouncedSearch();
   }
 
   componentWillMount(){
     if(this.props.location.query.q && this.props.location.query.q.length > 0){
-      this.doSearch(this.props.location.query.q);
+      this.doSearch();
     }
   }
 
-  doSearch(newText){
-    console.log(newText);
+  doSearch(){
+      let query = this.props.location.query;
+      let keyword = query.q.split(' ').join('+');
 
-      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/${newText}`).then((data)=>{
-      this.setState({
-        searchResults: data.dataSets,
-      });
-      }, (err)=>{
-        console.warn(err);
+      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/${keyword}`).then((data)=>{
+        let results= [];
+        if(keyword.length > 0){
+          results = data.dataSets;
+        }
         this.setState({
-          searchResults: [],
-        });
-    });
+            searchResults: data.dataSets,
+          });
+        }, (err)=>{console.warn(err)});
   }
 
   render() {
