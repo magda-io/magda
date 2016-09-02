@@ -30,6 +30,7 @@ class Search extends Component {
     super(props);
     this.updateSearchText=this.updateSearchText.bind(this);
     this.debouncedSearch = debounce(this.doSearch, 150);
+    this.debouncedGetFacets = debounce(this.getFacets, 150);
     this.toggleFilter = this.toggleFilter.bind(this);
     this.state = {
       searchResults: [],
@@ -44,14 +45,14 @@ class Search extends Component {
       pathname: this.props.location.pathname,
       query: { q: newText },
     });
-    this.getFacets();
+    this.debouncedGetFacets();
     this.debouncedSearch();
   }
 
   componentWillMount(){
     if(this.props.location.query.q && this.props.location.query.q.length > 0){
       this.doSearch();
-      this.getFacets();
+      this.debouncedGetFacets();
     }
   }
 
@@ -59,7 +60,6 @@ class Search extends Component {
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
     getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/facets?query=${keyword}`).then((data)=>{
-      console.log(data);
       this.setState({
         filters: {
           publisher: data[0].options
@@ -85,6 +85,7 @@ class Search extends Component {
 
   toggleFilter(option, filterTitle){
     let currrentFilters;
+    // force filters into array
     if (!this.props.location.query[filterTitle]){
       currrentFilters = [];
     }
@@ -116,7 +117,7 @@ class Search extends Component {
                      />
         </div>
         <div className='search-body row'>
-          {this.props.location.query.q.length > 0 && <div className='col-sm-4'>
+          {this.props.location.query.q && this.props.location.query.q.length > 0 && <div className='col-sm-4'>
                         <SearchFilters
                           filters={this.state.filters}
                           toggleFilter={this.toggleFilter}
