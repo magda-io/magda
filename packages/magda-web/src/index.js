@@ -11,10 +11,9 @@ import { Router, Route, hashHistory, browserHistory, indexRoute } from 'react-ro
 //<Route path="/magda-web/build/" component={Search}>
 
 let baseurl = location.hostname === "localhost" ? '/' : '/magda-web/build/';
-let history = location.hostname === "localhost" ? browserHistory : hashHistory;
 
 ReactDOM.render(
-  <Router history={history}>
+  <Router history={browserHistory}>
       <Route path={baseurl} component={Search}>
         <indexRoute component={Search}/>
       </Route>

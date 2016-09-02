@@ -3,6 +3,7 @@ import { browserHistory, RouterContext } from 'react-router';
 import SearchResults from './SearchResults/SearchResults';
 import SearchFilters from './SearchFilters/SearchFilters';
 import SearchBox from './SearchBox';
+import getOrganisations from './dummyData/getOrganisations';
 import debounce from 'lodash.debounce';
 import './Search.css';
 
@@ -29,8 +30,12 @@ class Search extends Component {
     super(props);
     this.updateSearchText=this.updateSearchText.bind(this);
     this.debouncedSearch = debounce(this.doSearch, 150);
+    this.toggleFilter = this.toggleFilter.bind(this);
     this.state = {
-      searchResults: []
+      searchResults: [],
+      filters: {
+        publisher: getOrganisations()
+      }
     };
   }
 
@@ -64,6 +69,15 @@ class Search extends Component {
         }, (err)=>{console.warn(err)});
   }
 
+  toggleFilter(option, filterTitle){
+    this.context.router.push({
+      pathname: this.props.location.pathname,
+      query: Object.assign(this.props.location.query, { publisher: option.id })
+    });
+
+    this.debouncedSearch();
+  }
+
   render() {
     return (
       <div className='search'>
@@ -74,7 +88,9 @@ class Search extends Component {
         </div>
         <div className='search-body row'>
           <div className='col-sm-4'>
-              <SearchFilters />
+              <SearchFilters
+                filters={this.state.filters}
+                toggleFilter={this.toggleFilter}/>
           </div>
           <div className='col-sm-8'>
               <SearchResults

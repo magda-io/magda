@@ -7,22 +7,20 @@ import FilterPublisher from './FilterPublisher';
 
 
 class SearchFilters extends Component {
-  // constructor(props) {
-  //   super(props);
-  // }
-
+  constructor(props) {
+    super(props);
+  }
   render() {
     return (
       <div>
-        {this.props.filters.length > 0 &&
-        <FilterPublisher filter={this.props.filters[0]}
-                         toggleFilter={this.props.toggleFilter}
-                         activeFilter={this.props.activeFilters[0]} />}
+        <FilterPublisher options = {this.props.filters.publisher}
+                         title='publisher'
+                         toggleFilter={this.props.toggleFilter}/>
       </div>
-    );
+    )
   }
 }
-SearchFilters.propTypes={searchResults: React.PropTypes.array, filters: React.PropTypes.array, activeFilters: React.PropTypes.array};
-SearchFilters.defaultProps={searchResults: [], filters: [], activeFilters: []};
+SearchFilters.propTypes={filters: React.PropTypes.object, toggleFilter: React.PropTypes.func};
+SearchFilters.defaultProps={filters: {}};
 
 export default SearchFilters;
