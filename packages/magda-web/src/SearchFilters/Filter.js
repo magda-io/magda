@@ -10,6 +10,8 @@ class Filter extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
     this.renderCondition = this.renderCondition.bind(this);
+    this.resetFilter = this.resetFilter.bind(this);
+    this.toggleFilter= this.toggleFilter.bind(this);
   }
 
   handleChange(e){
@@ -19,7 +21,34 @@ class Filter extends Component {
   }
 
   toggleFilter(option){
-    this.props.toggleFilter(option, this.props.id);
+    let currrentFilters;
+    // force filters into array
+    if (!this.props.location.query[this.props.id]){
+      currrentFilters = [];
+    }
+    // if already array
+    else if(Array.isArray(this.props.location.query[this.props.id])){
+      currrentFilters = this.props.location.query[this.props.id];
+    } 
+    // if only one item, create array
+    else{
+      currrentFilters = [this.props.location.query[this.props.id]];
+    }
+    // add or remove from array
+    if(currrentFilters.indexOf(option.id) > -1){
+      currrentFilters.splice(currrentFilters.indexOf(option.id), 1);
+    } else{
+      currrentFilters.push(option.id)
+    }
+
+    this.props.updateQuery({
+      [this.props.id]: currrentFilters
+    });
+
+  }
+
+  resetFilter(){
+    this.props.updateQuery({[this.props.id]: []});
   }
 
   clearSearch(){
@@ -29,7 +58,6 @@ class Filter extends Component {
   }
 
   renderCondition(option){
-
     if(!option){
       return null;
     }
@@ -82,6 +110,7 @@ class Filter extends Component {
     return (
       <div>
         <h4>{this.props.title}</h4>
+        <button className='btn' onClick={this.resetFilter} >reset</button>
         {this.getActiveOption()}
         <form className='form-inline'>
           <input className='form-control' type="text" value={this.state.searchText} onChange={this.handleChange}/>
@@ -102,7 +131,11 @@ class Filter extends Component {
     );
   }
 }
-Filter.propTypes = {options: React.PropTypes.array, title: React.PropTypes.string, toggleFilter: React.PropTypes.func, id: React.PropTypes.string };
+Filter.propTypes = {options: React.PropTypes.array, 
+                    title: React.PropTypes.string, 
+                    toggleFilter: React.PropTypes.func, 
+                    id: React.PropTypes.string,
+                    updateQuery: React.PropTypes.func};
 Filter.defaultProps = {options: []};
 
 export default Filter;

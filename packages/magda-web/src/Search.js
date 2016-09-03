@@ -31,13 +31,16 @@ class Search extends Component {
   constructor(props) {
     super(props);
     this.updateSearchText=this.updateSearchText.bind(this);
+    this.updateQuery = this.updateQuery.bind(this);
     this.debouncedSearch = debounce(this.doSearch, 150);
     this.debouncedGetFacets = debounce(this.getFacets, 150);
-    this.toggleFilter = this.toggleFilter.bind(this);
     this.state = {
       searchResults: [],
       filters: {
         publisher: [],
+        temporal: [],
+        jurisdiction: [],
+        format: []
       }
     };
   }
@@ -88,33 +91,18 @@ class Search extends Component {
         }, (err)=>{console.warn(err)});
   }
 
-  toggleFilter(option, filterTitle){
-    let currrentFilters;
-    // force filters into array
-    if (!this.props.location.query[filterTitle]){
-      currrentFilters = [];
-    }
-    else if(Array.isArray(this.props.location.query[filterTitle])){
-      currrentFilters = this.props.location.query[filterTitle];
-    } else{
-      currrentFilters = [this.props.location.query[filterTitle]];
-    }
-    if(currrentFilters.indexOf(option.id) > -1){
-      currrentFilters.splice(currrentFilters.indexOf(option.id), 1);
-    } else{
-      currrentFilters.push(option.id)
-    }
 
+  updateQuery(query){
     this.context.router.push({
       pathname: this.props.location.pathname,
-      query: Object.assign(this.props.location.query, { [filterTitle]: currrentFilters })
+      query: Object.assign(this.props.location.query, query)
     });
-
-    this.debouncedSearch();
+    // uncomment this when facet search is activated
+    // this.debouncedSearch();
   }
 
+
   render() {
-    console.log(this.state.filters);
     return (
       <div className='search'>
         <div className='search-header jumbotron'>
@@ -126,8 +114,8 @@ class Search extends Component {
           {this.props.location.query.q && this.props.location.query.q.length > 0 && <div className='col-sm-4'>
                         <SearchFilters
                           filters={this.state.filters}
-                          toggleFilter={this.toggleFilter}
-                          location={this.props.location}/>
+                          location={this.props.location}
+                          updateQuery ={this.updateQuery} />
                     </div>}
           <div className='col-sm-8'>
               <SearchResults
