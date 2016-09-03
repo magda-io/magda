@@ -1,0 +1,12 @@
+.search-result{
+    margin-bottom: 30px;
+}
+
+.search-result .badge{
+    margin: 5px;
+}
+
+.result-title{
+    font-size: 18px;
+    color: #2980b9;
+}

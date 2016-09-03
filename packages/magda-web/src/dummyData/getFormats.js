@@ -1,12 +1,12 @@
 export default function () {
   return [
-    {'id':'csv', 'name':'csv', count: 20},
-    {'id':'json', 'name':'json' , count: 20},
-    {'id':'excel', 'name':'excel' , count: 20},
-    {'id':'xlsx', 'name':'xlsx' , count: 20},
-    {'id':'xls', 'name':'xls' , count: 20},
-    {'id':'pdf', 'name':'pdf' , count: 20},
-    {'id':'xls', 'name': 'xls', count: 20},
-    {'id':'zip', 'name':'zip' , count: 20},
+    {'id':'csv', 'name':'csv', hitCount: 10},
+    {'id':'json', 'name':'json' , hitCount: 60},
+    {'id':'excel', 'name':'excel' , hitCount: 80},
+    {'id':'xlsx', 'name':'xlsx' , hitCount: 70},
+    {'id':'xls', 'name':'xls' , hitCount: 120},
+    {'id':'pdf', 'name':'pdf' , hitCount: 50},
+    {'id':'xls', 'name': 'xls', hitCount: 70},
+    {'id':'zip', 'name':'zip' , hitCount: 30},
   ]
 }

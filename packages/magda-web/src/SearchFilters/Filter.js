@@ -1,17 +1,21 @@
 import React, { Component } from 'react';
 import find from 'lodash.find';
+import './Filter.css';
+
 
 class Filter extends Component {
   constructor(props) {
     super(props);
     this.state={
-      searchText: ''
+      searchText: '',
+      isOpen: false
     }
     this.handleChange = this.handleChange.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
     this.renderCondition = this.renderCondition.bind(this);
     this.resetFilter = this.resetFilter.bind(this);
     this.toggleFilter= this.toggleFilter.bind(this);
+    this.toggleOpen = this.toggleOpen.bind(this);
   }
 
   handleChange(e){
@@ -57,11 +61,20 @@ class Filter extends Component {
     })
   }
 
+  toggleOpen(){
+    this.setState({
+      isOpen: !this.state.isOpen
+    })
+  }
+
   renderCondition(option){
     if(!option){
       return null;
     }
-    return <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option`} onClick={this.toggleFilter.bind(this, option)}>{option.name} {option.hitCount}{this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}</button>;
+    return <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`} onClick={this.toggleFilter.bind(this, option)}>
+      <span className='option-name'>{option.name}</span>
+      <span className='option-count'>{option.hitCount}</span>
+      {this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}</button>;
   }
 
   checkActiveOption(option){
@@ -110,13 +123,19 @@ class Filter extends Component {
     });
 
     return (
-      <div>
-        <h4>{this.props.title}</h4>
-        <button className='btn' onClick={this.resetFilter} >reset</button>
+      <div className='filter'>
+      <div className='clearfix filter-header'>
+        <h4 className='filter-title'>{this.props.title}</h4>
+        <button type='button' className='btn btn-reset' onClick={this.resetFilter} >Reset</button>
+      </div>
         {this.getActiveOption()}
-        <form className='form-inline'>
+        <form>
+          <i className="fa fa-search search-icon" aria-hidden="true"></i>
           <input className='form-control' type="text" value={this.state.searchText} onChange={this.handleChange}/>
-          <button type='button' onClick={this.clearSearch}>clear</button>
+          {this.state.searchText.length > 0 && 
+            <button type='button' className='btn btn-clear-search' onClick={this.clearSearch}>
+              <i className="fa fa-times" aria-hidden="true"></i>
+            </button>}
         </form>
 
         <div className='filtered-options'>
@@ -129,6 +148,7 @@ class Filter extends Component {
               <div key={i}>{this.renderCondition(option)}</div>
         )}
         </div>
+        <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? 'Show less...' : 'Show more...'}</button>
       </div>
     );
   }

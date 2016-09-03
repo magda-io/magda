@@ -101,6 +101,16 @@ class Search extends Component {
     // this.debouncedSearch();
   }
 
+  queryToString(key, query){
+    if (!query){
+      return '';
+    }
+    else if(Array.isArray(query)){
+      return key + ': ' + query.join(' or ');
+    }
+    return key + ': ' + query;
+  }
+
 
   render() {
     return (
@@ -118,6 +128,28 @@ class Search extends Component {
                           updateQuery ={this.updateQuery} />
                     </div>}
           <div className='col-sm-8'>
+          <div className='summary'>
+            <p><strong>Current query: </strong></p>
+              <p>
+                {this.queryToString('Keyword', this.props.location.query.q)}
+              </p>
+              <p> 
+                {this.queryToString('Publisher', this.props.location.query.publisher)}
+              </p>
+              <p>
+                {this.queryToString('Start date', this.props.location.query.startDate)}
+              </p>
+              <p>
+                {this.queryToString('End date', this.props.location.query.endDate)}
+              </p>
+              <p>
+                {this.queryToString('Jurisdiction', this.props.location.query.jurisdiction)}
+              </p>
+              <p>
+                {this.queryToString('Format', this.props.location.query.format)}
+              </p>
+              </div>
+
               <SearchResults
                 searchResults={this.state.searchResults}
                 location={this.props.location}

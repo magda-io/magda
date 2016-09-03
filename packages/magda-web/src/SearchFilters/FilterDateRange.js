@@ -1,5 +1,6 @@
 import React from 'react'
 import Filter from './Filter';
+import maxBy from 'lodash.maxby';
 
 
 class FilterDateRange extends Filter {
@@ -59,19 +60,33 @@ class FilterDateRange extends Filter {
     return false;
   }
 
+  renderCondition(option){
+    if(!option){
+      return null;
+    }
+    let divStyle = {
+      width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 200 + 'px'
+    }
+
+    return <button style={divStyle} type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-date-option btn`} onClick={this.toggleFilter.bind(this, option)}>{option.name}</button>;
+  }
+
   render(){
+
     return (
-      <div>
-        <h4>{this.props.title}</h4>
-        <button className='btn' onClick={this.resetFilter} >reset</button>
-        <button className='btn' onClick={this.resetStartDate}>any start date </button>
+      <div className='filter'>
+        <div className='clearfix filter-header'>
+          <h4 className='filter-title'>{this.props.title}</h4>
+          <button type='button' className='btn btn-reset' onClick={this.resetFilter} >Reset</button>
+        </div>
+        <button className='btn' onClick={this.resetStartDate}>Any start date </button>
 
         <div className='options'>
             {this.state.searchText.length === 0 && this.props.options.map((option, i)=>
                   <div key={i}>{this.renderCondition(option)}</div>
             )}
         </div>
-        <button className='btn' onClick={this.resetEndDate}>any end date </button>
+        <button className='btn' onClick={this.resetEndDate}>Any end date </button>
       </div>
     );
   }

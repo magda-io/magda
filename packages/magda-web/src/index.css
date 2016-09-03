@@ -4,25 +4,5 @@ body {
   font-family: sans-serif;
 }
 
-.btn-option{
-   display: block;
-   width: 100%;
-   overflow: hidden;
-   background: #fff;
-   border: 0;
-   box-shadow: 0;
-   text-align: left;
-   line-height: 2;
-   margin: 5px 0;
-}
 
-.btn-option.is-active{
-    background: rgb(102, 181, 252);
-    color: #fff;
-}
-
-.btn-option .fa{
-    float: right;
-    line-height: 2;
-}
 

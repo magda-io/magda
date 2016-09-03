@@ -1,14 +1,19 @@
 import React, { Component } from 'react';
+import './SearchResults.css';
 
 class SearchResults extends Component {
+  truncate(s) {
+    return s.substring(0,200) + '...'; 
+  }
+
   render() {
     return (
       <ul className='list-unstyled'>
       {
         this.props.searchResults.map((result, i)=>
-          <li key={i} >
-          <h3>{result.title}</h3>
-          <p>{result.description}</p>
+          <li key={i} className='search-result'>
+          <h3 className='result-title'>{result.title}</h3>
+          <p>{this.truncate(result.description)}</p>
           <ul className='list-unstyled tags'>
             {
               result.keyword.map((tag)=>
