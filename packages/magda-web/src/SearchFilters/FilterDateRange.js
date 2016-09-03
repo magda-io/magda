@@ -1,17 +1,11 @@
 import React, { Component } from 'react';
+import Filter from './Filter';
 
-class FilterDateRange extends Component {
+
+class FilterDateRange extends Filter {
   constructor(props) {
     super(props);
   }
-
-  render() {
-    return (
-      <div> FilterDateRange</div>
-    );
-  }
 }
-FilterDateRange.propTypes = {};
-FilterDateRange.defaultProps = {};
 
 export default FilterDateRange;

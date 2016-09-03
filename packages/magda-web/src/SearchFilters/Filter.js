@@ -19,7 +19,7 @@ class Filter extends Component {
   }
 
   toggleFilter(option){
-    this.props.toggleFilter(option, this.props.title);
+    this.props.toggleFilter(option, this.props.id);
   }
 
   clearSearch(){
@@ -38,18 +38,18 @@ class Filter extends Component {
 
   checkActiveOption(option){
     let query = this.props.location.query;
-    let publisher = query.publisher;
+    let filter = query[this.props.id];
 
-    if(!publisher){
+    if(!filter){
       return false;
     }
-    if(Array.isArray(this.props.location.query[this.props.title])){
-      if(publisher.indexOf(option.id) < 0){
+    if(Array.isArray(this.props.location.query[this.props.id])){
+      if(filter.indexOf(option.id) < 0){
         return false;
       }
       return true;
     }
-    if(publisher === option.id){
+    if(filter === option.id){
       return true;
     }
     return false;
@@ -57,16 +57,16 @@ class Filter extends Component {
 
   getActiveOption(){
     let query = this.props.location.query;
-    let publisher = query.publisher;
-    if(!publisher){
+    let filter = query[this.props.id];
+    if(!filter){
       return null;
     }
-    if(Array.isArray(this.props.location.query[this.props.title])){
-      return publisher.map(p=>{
+    if(Array.isArray(this.props.location.query[this.props.id])){
+      return filter.map(p=>{
         return <div key={p}>{this.renderCondition(find(this.props.options, o=>o.id === p))}</div>;
       });
     }else{
-      return this.renderCondition(find(this.props.options, o=>o.id === publisher))
+      return this.renderCondition(find(this.props.options, o=>o.id === filter))
     }
   }
 
@@ -102,7 +102,7 @@ class Filter extends Component {
     );
   }
 }
-Filter.propTypes = {options: React.PropTypes.array, title: React.PropTypes.string, toggleFilter: React.PropTypes.func};
+Filter.propTypes = {options: React.PropTypes.array, title: React.PropTypes.string, toggleFilter: React.PropTypes.func, id: React.PropTypes.string };
 Filter.defaultProps = {options: []};
 
 export default Filter;

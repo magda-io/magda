@@ -1,17 +1,11 @@
 import React, { Component } from 'react';
+import Filter from './Filter';
 
-class FilterDataFormat extends Component {
+
+class FilterDataFormat extends Filter {
   constructor(props) {
     super(props);
   }
-
-  render() {
-    return (
-      <div> FilterDataFormat</div>
-    );
-  }
 }
-FilterDataFormat.propTypes = {};
-FilterDataFormat.defaultProps = {};
 
 export default FilterDataFormat;

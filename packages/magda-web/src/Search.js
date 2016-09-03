@@ -3,7 +3,9 @@ import {RouterContext } from 'react-router';
 import SearchResults from './SearchResults/SearchResults';
 import SearchFilters from './SearchFilters/SearchFilters';
 import SearchBox from './SearchBox';
-import getOrganisations from './dummyData/getOrganisations';
+import getTemporals from './dummyData/getTemporals';
+import getFormats from './dummyData/getFormats';
+import getJurisdictions from './dummyData/getJurisdictions';
 import debounce from 'lodash.debounce';
 import './Search.css';
 
@@ -62,7 +64,10 @@ class Search extends Component {
     getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/facets?query=${keyword}`).then((data)=>{
       this.setState({
         filters: {
-          publisher: data[0].options
+          publisher: data[0].options,
+          temporal: getTemporals(),
+          jurisdiction: getJurisdictions(),
+          format: getFormats()
         }
       })
     }, (err)=>{console.warn(err)});
@@ -109,6 +114,7 @@ class Search extends Component {
   }
 
   render() {
+    console.log(this.state.filters);
     return (
       <div className='search'>
         <div className='search-header jumbotron'>
@@ -126,6 +132,7 @@ class Search extends Component {
           <div className='col-sm-8'>
               <SearchResults
                 searchResults={this.state.searchResults}
+                location={this.props.location}
                 />
           </div>
         </div>
