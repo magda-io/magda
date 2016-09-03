@@ -61,7 +61,7 @@ class Filter extends Component {
     if(!option){
       return null;
     }
-    return <button type='button' className={`${this.checkActiveOption(option) ? 'btn-primary' : 'btn-default'} btn`} onClick={this.toggleFilter.bind(this, option)}>{option.name} {option.hitCount}</button>;
+    return <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option`} onClick={this.toggleFilter.bind(this, option)}>{option.name} {option.hitCount}{this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}</button>;
   }
 
   checkActiveOption(option){
@@ -71,12 +71,14 @@ class Filter extends Component {
     if(!filter){
       return false;
     }
+    /// if query is already array, check if item exist in array already
     if(Array.isArray(this.props.location.query[this.props.id])){
       if(filter.indexOf(option.id) < 0){
         return false;
       }
       return true;
     }
+    // if query is string, check directly 
     if(filter === option.id){
       return true;
     }
