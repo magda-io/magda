@@ -20,9 +20,6 @@ class SearchBox extends Component {
   render() {
     return (
       <form className="SearchBox">
-        <h2 className="SearchBox-header">
-          <label>Find data</label>
-        </h2>
         <div className='input-group'>
         <input
           type="text"

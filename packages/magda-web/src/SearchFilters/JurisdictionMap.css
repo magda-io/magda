@@ -1,0 +1,16 @@
+.jurisdiction-map{
+    position: fixed;
+    top: 5vh;
+    z-index: 999;
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    left: 10vw;
+}
+
+.map-in-popup{
+    height: 80vh;
+    width: 80vw;
+    max-width: 800px;
+    min-height: 300px;
+}

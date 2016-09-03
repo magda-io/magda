@@ -1,8 +1,4 @@
 import React, { Component } from 'react';
-// import uniq from 'lodash.uniq';
-// import flattenDeep from'lodash.flattendeep';
-// import isEqual from 'lodash.isequal';
-// import Filter from './Filter';
 import FilterPublisher from './FilterPublisher';
 import FilterDataFormat from './FilterDataFormat';
 import FilterDateRange from './FilterDateRange';
