@@ -29,7 +29,7 @@ class JurisdictionMap extends Filter {
         this.map.on('click', function(e) {
             // bring pop up
             // get jurisdiction
-            getJSON(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${e.latlng.lat},${e.latlng.lng}&sensor=false&result_type=administrative_area_level_1&key=AIzaSyBvqg7oM1c-Cpl0EF8urYxKLuW-D_YWD9o`).then(data=>{
+            getJSON(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${e.latlng.lat},${e.latlng.lng}&language=en&sensor=false&result_type=administrative_area_level_1&key=AIzaSyBvqg7oM1c-Cpl0EF8urYxKLuW-D_YWD9o`).then(data=>{
                 let jurisdiction = data.results[0].address_components[0].long_name.replace(/\s/g,'').toLowerCase();
                 that.props.updateQuery({
                     jurisdiction: jurisdiction
