@@ -1,6 +1,5 @@
 import React from 'react'
 import Filter from './Filter';
-import find from 'lodash.find';
 
 
 class FilterDateRange extends Filter {
