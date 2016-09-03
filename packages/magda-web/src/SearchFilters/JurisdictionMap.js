@@ -55,12 +55,14 @@ class JurisdictionMap extends Filter {
 
     render(){
         return (
+            <div className='jurisdiction-map-wrapper'>
             <div className='filter jurisdiction-map'>
                <div className='clearfix filter-header'>
                     <h4 className='filter-title'>{this.props.title}</h4>
                     <button type='button' className='btn btn-reset' onClick={this.props.closePopUp}>Close</button>
                 </div>
               <div className='map-in-popup' ref={(c) => this._c = c}/>
+            </div>
             </div>
       );
     }

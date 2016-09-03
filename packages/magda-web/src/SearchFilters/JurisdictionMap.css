@@ -1,16 +1,23 @@
-.jurisdiction-map{
+.jurisdiction-map-wrapper{
     position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.3);
+}
+.jurisdiction-map{
+    position: absolute;
     top: 10vh;
     bottom: 10vh;
-    z-index: 999;
     background: #fff;
     padding: 20px;
     border: 1px solid #ddd;
     left: 10vw;
     right: 10vw;
-    max-width: 100%;
-    box-shadow: 0px 0px 20px #DAE7EF;
-    background: #DAE7EF;
+    box-shadow: 0px 0px 20px #000;
+    background: #fff;
 }
 
 .map-in-popup{
