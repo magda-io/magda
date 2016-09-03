@@ -30,7 +30,9 @@ class FilterJurisdiction extends Filter {
         this.map.doubleClickZoom.disable();
         this.map.scrollWheelZoom.disable();
         this.map.boxZoom.disable();
+        this.map.touchZoom.disable();
         this.map.keyboard.disable();
+        this.map.dragging.disable();
         this.layer = L.geoJson(statesData).addTo(this.map);
 
         // temp
