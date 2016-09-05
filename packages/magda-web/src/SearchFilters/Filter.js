@@ -33,7 +33,7 @@ class Filter extends Component {
     // if already array
     else if(Array.isArray(this.props.location.query[this.props.id])){
       currrentFilters = this.props.location.query[this.props.id];
-    } 
+    }
     // if only one item, create array
     else{
       currrentFilters = [this.props.location.query[this.props.id]];
@@ -91,7 +91,7 @@ class Filter extends Component {
       }
       return true;
     }
-    // if query is string, check directly 
+    // if query is string, check directly
     if(filter === option.id){
       return true;
     }
@@ -114,7 +114,7 @@ class Filter extends Component {
   }
 
   render() {
-    let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
+    let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o1.hitCount < o2.hitCount);
     let filteredInactiveOptions = [];
     inactiveOptions.forEach((c)=>{
       if(c.name.toLowerCase().indexOf(this.state.searchText)!==-1){
@@ -132,7 +132,7 @@ class Filter extends Component {
         <form>
           <i className="fa fa-search search-icon" aria-hidden="true"></i>
           <input className='form-control' type="text" value={this.state.searchText} onChange={this.handleChange}/>
-          {this.state.searchText.length > 0 && 
+          {this.state.searchText.length > 0 &&
             <button type='button' className='btn btn-clear-search' onClick={this.clearSearch}>
               <i className="fa fa-times" aria-hidden="true"></i>
             </button>}
@@ -153,9 +153,9 @@ class Filter extends Component {
     );
   }
 }
-Filter.propTypes = {options: React.PropTypes.array, 
-                    title: React.PropTypes.string, 
-                    toggleFilter: React.PropTypes.func, 
+Filter.propTypes = {options: React.PropTypes.array,
+                    title: React.PropTypes.string,
+                    toggleFilter: React.PropTypes.func,
                     id: React.PropTypes.string,
                     updateQuery: React.PropTypes.func};
 Filter.defaultProps = {options: []};
