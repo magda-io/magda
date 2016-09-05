@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import find from 'lodash.find';
 import './Filter.css';
 
+const DEFAULTSIZE = 5;
+
 
 class Filter extends Component {
   constructor(props) {
@@ -116,6 +118,8 @@ class Filter extends Component {
   render() {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o1.hitCount < o2.hitCount);
     let filteredInactiveOptions = [];
+    let size = this.state.isOpen ? inactiveOptions.length : (DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE);
+
     inactiveOptions.forEach((c)=>{
       if(c.name.toLowerCase().indexOf(this.state.searchText)!==-1){
         filteredInactiveOptions.push(c);
@@ -144,11 +148,11 @@ class Filter extends Component {
           )}
         </div>
         <div className='other-options'>
-        {this.state.searchText.length === 0 && inactiveOptions.map((option, i)=>
+        {this.state.searchText.length === 0 && inactiveOptions.slice(0, size+1).map((option, i)=>
               <div key={i}>{this.renderCondition(option)}</div>
         )}
         </div>
-        <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? 'Show less...' : 'Show more...'}</button>
+        <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? `Show less...` : `Show ${inactiveOptions.length - size} more...`}</button>
       </div>
     );
   }
