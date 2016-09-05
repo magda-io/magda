@@ -8,6 +8,7 @@
     margin-bottom: 10px;
     display: flex;
 }
+
 .filter-title{
     font-weight: bold;
     text-transform: capitalize;
@@ -33,11 +34,12 @@
    overflow: hidden;
    text-align: left;
    margin: 3px 0;
-   
+   color: #777;
+
 }
 
 .btn-option:hover {
-    color: rgb(102, 181, 252);
+    color: #000;
 }
 
 .btn-option.is-active{
@@ -54,19 +56,24 @@
     padding: 0 5px;
 }
 
-
 .option-name{
     display: block;
     flex-grow: 2;
     float: left;
     text-overflow: ellipsis;
     overflow: hidden;
+    color: #000;
+}
+
+.option-name:hover{
+    text-decoration: underline;
 }
 
 .option-count{
     display: block;
     float: left;
 }
+
 
 form{
     position: relative;

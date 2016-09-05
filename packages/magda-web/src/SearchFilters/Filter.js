@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import find from 'lodash.find';
 import './Filter.css';
-
 const DEFAULTSIZE = 5;
-
 
 class Filter extends Component {
   constructor(props) {
@@ -73,10 +71,12 @@ class Filter extends Component {
     if(!option){
       return null;
     }
-    return <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`} onClick={this.toggleFilter.bind(this, option)}>
-      <span className='option-name'>{option.name}</span>
-      <span className='option-count'>{option.hitCount}</span>
-      {this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}</button>;
+    return (
+          <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`} onClick={this.toggleFilter.bind(this, option)}>
+          <span className='option-name'>{option.name}</span>
+          <span className='option-count'>{option.hitCount}</span>
+          {this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}
+          </button>);
   }
 
   checkActiveOption(option){
