@@ -85,7 +85,7 @@ class Filter extends Component {
   highlightSearchedText(text){
     if(this.state.searchText.length>0){
       // need to escape special chars
-      let highlighted = new RegExp('(' + this.state.searchText + ')', 'i');
+      let highlighted = new RegExp('(' + RegExp.escape(this.state.searchText) + ')', 'gi');
       let modifiedText = text.replace(highlighted, '<strong>$1</strong>');
       return {
         __html: modifiedText
@@ -186,5 +186,11 @@ Filter.propTypes = {options: React.PropTypes.array,
                     id: React.PropTypes.string,
                     updateQuery: React.PropTypes.func};
 Filter.defaultProps = {options: []};
+
+RegExp.escape = function(str)
+{
+  var specials = new RegExp("[.*+?|()\\[\\]{}\\\\]", "g"); // .*+?|()[]{}\
+  return str.replace(specials, "\\$&");
+}
 
 export default Filter;
