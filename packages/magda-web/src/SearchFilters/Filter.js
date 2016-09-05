@@ -169,7 +169,13 @@ class Filter extends Component {
               <div key={i}>{this.renderCondition(option)}</div>
         )}
         </div>
-        <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${inactiveOptions.length - size} more`}</button>
+        {
+          this.state.searchText.length > 0 ?
+          <button className='btn btn-reset' onClick={this.clearSearch}> Clear search</button> :
+          <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${inactiveOptions.length - size} more`}
+          </button>
+        }
+
       </div>
     );
   }
