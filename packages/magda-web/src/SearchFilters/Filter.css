@@ -44,10 +44,11 @@
 
 .btn-option.is-active{
     background: rgb(102, 181, 252);
-    color: #fff;
+    color: #fff!important;
 }
 .btn-option.is-active:hover{
     background: rgba(102, 181, 252, 0.6);
+    text-decoration: none;
 }
 
 .btn-option .fa{
@@ -62,7 +63,7 @@
     float: left;
     text-overflow: ellipsis;
     overflow: hidden;
-    color: #000;
+
 }
 
 .option-name:hover{
