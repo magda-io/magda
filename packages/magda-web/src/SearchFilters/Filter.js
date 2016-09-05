@@ -67,16 +67,33 @@ class Filter extends Component {
     })
   }
 
-  renderCondition(option){
+  renderCondition(option, highlight){
     if(!option){
       return null;
     }
     return (
           <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`} onClick={this.toggleFilter.bind(this, option)}>
-          <span className='option-name'>{option.name}</span>
+          { highlight ?
+            <span className='option-name' dangerouslySetInnerHTML={this.highlightSearchedText(option.name)}/> :
+            <span className='option-name'>{option.name}</span>
+          }
           <span className='option-count'>{option.hitCount}</span>
           {this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}
           </button>);
+  }
+
+  highlightSearchedText(text){
+    if(this.state.searchText.length>0){
+      // need to escape special chars
+      let highlighted = new RegExp('(' + this.state.searchText + ')', 'i');
+      let modifiedText = text.replace(highlighted, '<strong>$1</strong>');
+      return {
+        __html: modifiedText
+      }
+    }
+    return {
+      __html: ''
+    }
   }
 
   checkActiveOption(option){
@@ -144,7 +161,7 @@ class Filter extends Component {
 
         <div className='filtered-options'>
           {this.state.searchText.length !== 0 && filteredInactiveOptions.map((option, i)=>
-              <div key={i}>{this.renderCondition(option)}</div>
+              <div key={i}>{this.renderCondition(option, true)}</div>
           )}
         </div>
         <div className='other-options'>
