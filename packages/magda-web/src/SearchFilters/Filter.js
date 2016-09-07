@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import find from 'lodash.find';
 import './Filter.css';
-import FilterSearchBox from './FilterSearchBox'
+import FilterSearchBox from './FilterSearchBox';
+import FilterHeader from './FilterHeader';
 const DEFAULTSIZE = 5;
 
 class Filter extends Component {
@@ -146,10 +147,9 @@ class Filter extends Component {
     let size = this.state.isOpen ? inactiveOptions.length : (DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE);
     return (
       <div className='filter'>
-      <div className='clearfix filter-header'>
-        <h4 className='filter-title'>{this.props.title}</h4>
-        <button type='button' className='btn btn-reset' onClick={this.resetFilter} >Reset</button>
-      </div>
+        <FilterHeader searchText={this.state.searchText}
+                      resetFilter={this.resetFilter}
+                      title={this.props.title} />
         {this.getActiveOption()}
         <FilterSearchBox options={inactiveOptions}
                          toggleFilter={this.toggleFilter}

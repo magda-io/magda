@@ -4,7 +4,8 @@ import L from 'leaflet';
 import ozStates from '../dummyData/ozStates';
 import '../../node_modules/leaflet/dist/leaflet.css';
 import JurisdictionMap from './JurisdictionMap';
-import FilterSearchBox from './FilterSearchBox'
+import FilterSearchBox from './FilterSearchBox';
+import FilterHeader from './FilterHeader';
 
 class FilterJurisdiction extends Filter {
     constructor(props) {
@@ -72,10 +73,10 @@ class FilterJurisdiction extends Filter {
     render(){
         return (
             <div className='filter jurisdiction'>
-              <div className='clearfix filter-header'>
-                <h4 className='filter-title'>{this.props.title}</h4>
-                <button type='button' className='btn btn-reset' onClick={this.resetFilter} >Reset</button>
-              </div>
+              <FilterHeader searchText={this.state.searchText}
+                            resetFilter={this.resetFilter}
+                            title={this.props.title}/>
+
               <FilterSearchBox options={this.props.options}
                                toggleFilter={this.toggleFilter}
                                searchText={this.state.searchText}
