@@ -1,11 +1,10 @@
+import '../../node_modules/leaflet/dist/leaflet.css';
+import './JurisdictionMap.css';
 import Filter from './Filter';
-import React from 'react';
+import getJSON from'../getJSON';
 import L from 'leaflet';
 import ozStates from '../dummyData/ozStates';
-import '../../node_modules/leaflet/dist/leaflet.css';
-import getJSON from'../getJSON';
-import './JurisdictionMap.css';
-
+import React from 'react';
 
 class JurisdictionMap extends Filter {
     constructor(props) {
@@ -61,6 +60,7 @@ class JurisdictionMap extends Filter {
                     <h4 className='filter-title'>{this.props.title}</h4>
                     <button type='button' className='btn btn-reset' onClick={this.props.closePopUp}>Close</button>
                 </div>
+
               <div className='map-in-popup' ref={(c) => this._c = c}/>
             </div>
             </div>

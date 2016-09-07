@@ -4,6 +4,7 @@ import L from 'leaflet';
 import ozStates from '../dummyData/ozStates';
 import '../../node_modules/leaflet/dist/leaflet.css';
 import JurisdictionMap from './JurisdictionMap';
+import FilterSearchBox from './FilterSearchBox'
 
 class FilterJurisdiction extends Filter {
     constructor(props) {
@@ -12,11 +13,14 @@ class FilterJurisdiction extends Filter {
         this.layer = undefined;
         this.closePopUp = this.closePopUp.bind(this);
         this.state={
-            popUpIsOpen: false
+            popUpIsOpen: false,
+            searchText: '',
         }
     }
 
     componentDidMount(){
+        super.componentDidMount();
+
         let that = this;
         let statesData = ozStates()[this.props.location.query.jurisdiction];
 
@@ -72,6 +76,13 @@ class FilterJurisdiction extends Filter {
                 <h4 className='filter-title'>{this.props.title}</h4>
                 <button type='button' className='btn btn-reset' onClick={this.resetFilter} >Reset</button>
               </div>
+              <FilterSearchBox options={this.props.options}
+                               toggleFilter={this.toggleFilter}
+                               searchText={this.state.searchText}
+                               clearSearch={this.clearSearch}
+                               handleChange={this.handleChange}
+                               renderCondition={this.renderCondition}
+              />
               <div className='map' ref={(c) => this._c = c}/>
               {this.state.popUpIsOpen && <JurisdictionMap title='jurisdiction'
                                              id='jurisdiction'

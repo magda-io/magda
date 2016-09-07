@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import find from 'lodash.find';
 import './Filter.css';
+import FilterSearchBox from './FilterSearchBox'
 const DEFAULTSIZE = 5;
 
 class Filter extends Component {
@@ -16,6 +17,14 @@ class Filter extends Component {
     this.resetFilter = this.resetFilter.bind(this);
     this.toggleFilter= this.toggleFilter.bind(this);
     this.toggleOpen = this.toggleOpen.bind(this);
+  }
+
+  componentDidMount(){
+    window.addEventListener('keydown', (event)=>{
+      if(event.which === 27){
+        this.clearSearch();
+      }
+    })
   }
 
   handleChange(e){
@@ -134,15 +143,7 @@ class Filter extends Component {
 
   render() {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o1.hitCount < o2.hitCount);
-    let filteredInactiveOptions = [];
     let size = this.state.isOpen ? inactiveOptions.length : (DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE);
-
-    inactiveOptions.forEach((c)=>{
-      if(c.name.toLowerCase().indexOf(this.state.searchText)!==-1){
-        filteredInactiveOptions.push(c);
-      }
-    });
-
     return (
       <div className='filter'>
       <div className='clearfix filter-header'>
@@ -150,20 +151,14 @@ class Filter extends Component {
         <button type='button' className='btn btn-reset' onClick={this.resetFilter} >Reset</button>
       </div>
         {this.getActiveOption()}
-        <form>
-          <i className="fa fa-search search-icon" aria-hidden="true"></i>
-          <input className='form-control' type="text" value={this.state.searchText} onChange={this.handleChange}/>
-          {this.state.searchText.length > 0 &&
-            <button type='button' className='btn btn-clear-search' onClick={this.clearSearch}>
-              <i className="fa fa-times" aria-hidden="true"></i>
-            </button>}
-        </form>
+        <FilterSearchBox options={inactiveOptions}
+                         toggleFilter={this.toggleFilter}
+                         searchText={this.state.searchText}
+                         clearSearch={this.clearSearch}
+                         handleChange={this.handleChange}
+                         renderCondition={this.renderCondition}
+        />
 
-        <div className='filtered-options'>
-          {this.state.searchText.length !== 0 && filteredInactiveOptions.map((option, i)=>
-              <div key={i}>{this.renderCondition(option, true)}</div>
-          )}
-        </div>
         <div className='other-options'>
         {this.state.searchText.length === 0 && inactiveOptions.slice(0, size+1).map((option, i)=>
               <div key={i}>{this.renderCondition(option)}</div>
