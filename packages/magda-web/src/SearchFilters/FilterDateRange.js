@@ -1,6 +1,7 @@
 import React from 'react'
 import Filter from './Filter';
 import maxBy from 'lodash.maxby';
+import FilterHeader from './FilterHeader';
 
 
 class FilterDateRange extends Filter {
@@ -40,7 +41,7 @@ class FilterDateRange extends Filter {
     this.props.updateQuery({'endDate': []});
   }
 
-  
+
 
   checkActiveOption(option){
 
@@ -56,7 +57,7 @@ class FilterDateRange extends Filter {
     if(+option.id >= +this.props.location.query.startDate && +option.id <= +this.props.location.query.endDate){
             return true;
     }
-    
+
     return false;
   }
 
@@ -72,13 +73,12 @@ class FilterDateRange extends Filter {
   }
 
   render(){
-
+    console.log(this.props.location.query['startDate']);
     return (
       <div className='filter'>
-        <div className='clearfix filter-header'>
-          <h4 className='filter-title'>{this.props.title}</h4>
-          <button type='button' className='btn btn-reset' onClick={this.resetFilter} >Reset</button>
-        </div>
+        <FilterHeader query={this.props.location.query['startDate']}
+                      resetFilter={this.resetFilter}
+                      title={this.props.title}/>
         <button className='btn' onClick={this.resetStartDate}>Any start date </button>
 
         <div className='options'>

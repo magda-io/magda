@@ -147,9 +147,9 @@ class Filter extends Component {
     let size = this.state.isOpen ? inactiveOptions.length : (DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE);
     return (
       <div className='filter'>
-        <FilterHeader searchText={this.state.searchText}
+        <FilterHeader query={this.props.location.query[this.props.id]}
                       resetFilter={this.resetFilter}
-                      title={this.props.title} />
+                      title={this.props.title}/>
         {this.getActiveOption()}
         <FilterSearchBox options={inactiveOptions}
                          toggleFilter={this.toggleFilter}
