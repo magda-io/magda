@@ -73,7 +73,7 @@ class FilterJurisdiction extends Filter {
     render(){
         return (
             <div className='filter jurisdiction'>
-              <FilterHeader searchText={this.state.searchText}
+              <FilterHeader query={this.props.location.query[this.props.id]}
                             resetFilter={this.resetFilter}
                             title={this.props.title}/>
 
