@@ -64,7 +64,7 @@ class Search extends Component {
       let query = this.props.location.query;
       let keyword = query.q.split(' ').join('+');
 
-      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search?query=${keyword}`).then((data)=>{
+      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search?query=${keyword}`, updateProgress, transferComplete, transferFailed, transferCanceled).then((data)=>{
         let results= [];
         if(keyword.length > 0){
           results = data.dataSets;
@@ -117,5 +117,28 @@ class Search extends Component {
 
 Search.contextTypes ={
   router: React.PropTypes.object.isRequired
+}
+
+// progress on transfers from the server to the client (downloads)
+function updateProgress (oEvent) {
+  if (oEvent.lengthComputable) {
+    let percentComplete = oEvent.loaded / oEvent.total;
+    console.log(percentComplete);
+  } else {
+    // Unable to compute progress information since the total size is unknown
+    console.log('Unable to compute progress information since the total size is unknown');
+  }
+}
+
+function transferComplete(evt) {
+  console.log("The transfer is complete.");
+}
+
+function transferFailed(evt) {
+  console.warn("An error occurred while transferring the file.");
+}
+
+function transferCanceled(evt) {
+  console.warn("The transfer has been canceled by the user.");
 }
 export default Search;

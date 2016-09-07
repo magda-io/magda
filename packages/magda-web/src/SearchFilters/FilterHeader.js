@@ -30,9 +30,9 @@ class FilterHeader extends Component {
   }
 }
 
+//NOTE: not validating prop query here since it can either be undefined, string or array
 FilterHeader.propTypes = {title: React.PropTypes.string,
-                          resetFilter: React.PropTypes.func,
-                          query: React.PropTypes.string};
+                          resetFilter: React.PropTypes.func};
 FilterHeader.defaultProps = {searchText: ''};
 
 export default FilterHeader;

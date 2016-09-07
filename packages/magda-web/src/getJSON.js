@@ -1,10 +1,16 @@
-export default function (url) {
+export default function (url, updateProgress, transferComplete, transferFailed, transferCanceled) {
     return new Promise(function(resolve, reject) {
-      var xhr = new XMLHttpRequest();
+      let xhr = new XMLHttpRequest();
+
+      updateProgress && xhr.addEventListener("progress", updateProgress);
+      transferComplete && xhr.addEventListener("load", transferComplete);
+      transferFailed && xhr.addEventListener("error", transferFailed);
+      transferCanceled && xhr.addEventListener("abort", transferCanceled);
+
       xhr.open('get', url, true);
       xhr.responseType = 'json';
       xhr.onload = function() {
-        var status = xhr.status;
+        let status = xhr.status;
         if (status === 200) {
           resolve(xhr.response);
         } else {

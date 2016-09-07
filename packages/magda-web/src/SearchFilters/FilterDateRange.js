@@ -73,7 +73,6 @@ class FilterDateRange extends Filter {
   }
 
   render(){
-    console.log(this.props.location.query['startDate']);
     return (
       <div className='filter'>
         <FilterHeader query={this.props.location.query['startDate']}
