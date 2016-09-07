@@ -1,11 +1,11 @@
+import '../../node_modules/leaflet/dist/leaflet.css';
 import Filter from './Filter';
-import React from 'react'
+import FilterHeader from './FilterHeader';
+import FilterSearchBox from './FilterSearchBox';
+import JurisdictionMap from './JurisdictionMap';
 import L from 'leaflet';
 import ozStates from '../dummyData/ozStates';
-import '../../node_modules/leaflet/dist/leaflet.css';
-import JurisdictionMap from './JurisdictionMap';
-import FilterSearchBox from './FilterSearchBox';
-import FilterHeader from './FilterHeader';
+import React from 'react'
 
 class FilterJurisdiction extends Filter {
     constructor(props) {
@@ -17,6 +17,10 @@ class FilterJurisdiction extends Filter {
             popUpIsOpen: false,
             searchText: '',
         }
+    }
+
+    handleChange(e){
+
     }
 
     componentDidMount(){
