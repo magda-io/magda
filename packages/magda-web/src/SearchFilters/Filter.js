@@ -82,7 +82,10 @@ class Filter extends Component {
       return null;
     }
     return (
-          <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`} onClick={this.toggleFilter.bind(this, option)}>
+          <button type='button'
+                  className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`}
+                  onClick={this.toggleFilter.bind(this, option)}
+                  title={option.name}>
           { highlight ?
             <span className='option-name' dangerouslySetInnerHTML={this.highlightSearchedText(option.name)}/> :
             <span className='option-name'>{option.name}</span>
@@ -144,13 +147,17 @@ class Filter extends Component {
 
   render() {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o2.hitCount - o1.hitCount);
-    let size = this.state.isOpen ? inactiveOptions.length : (DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE);
+    let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
+    let size = this.state.isOpen ? inactiveOptions.length : tempSize;
+    let overflow = inactiveOptions.length - tempSize;
     return (
       <div className='filter'>
         <FilterHeader query={this.props.location.query[this.props.id]}
                       resetFilter={this.resetFilter}
                       title={this.props.title}/>
+
         {this.getActiveOption()}
+
         <FilterSearchBox options={inactiveOptions}
                          toggleFilter={this.toggleFilter}
                          searchText={this.state.searchText}
@@ -160,17 +167,15 @@ class Filter extends Component {
         />
 
         <div className='other-options'>
-        {this.state.searchText.length === 0 && inactiveOptions.slice(0, size+1).map((option, i)=>
+        {this.state.searchText.length === 0 && inactiveOptions.slice(0, size).map((option, i)=>
               <div key={i}>{this.renderCondition(option)}</div>
         )}
         </div>
         {
           this.state.searchText.length > 0 ?
           <button className='btn btn-reset' onClick={this.clearSearch}> Clear search</button> :
-          <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${inactiveOptions.length - size} more`}
-          </button>
+          (overflow > 0 ? <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${overflow} more`}</button> : null)
         }
-
       </div>
     );
   }
