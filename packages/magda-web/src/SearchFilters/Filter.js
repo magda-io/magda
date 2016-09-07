@@ -143,7 +143,7 @@ class Filter extends Component {
   }
 
   render() {
-    let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o1.hitCount < o2.hitCount);
+    let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o2.hitCount - o1.hitCount);
     let size = this.state.isOpen ? inactiveOptions.length : (DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE);
     return (
       <div className='filter'>
