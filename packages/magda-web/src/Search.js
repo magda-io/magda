@@ -86,6 +86,7 @@ class Search extends Component {
   }
 
   render() {
+    console.log(this.props.location.query);
     return (
       <div className='search'>
         <div className='search-header jumbotron'>

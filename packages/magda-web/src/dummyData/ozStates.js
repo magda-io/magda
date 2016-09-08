@@ -50,7 +50,7 @@ export default function () {
                 [141.195465,-34.075413 ],
                 [140.985901,-34.016243]
         ]]}},
-        {"type":"Feature","id":"02","properties":{"name":"newsouthwales"},"geometry":{"type":"Polygon","coordinates":[[[140.974915,-28.998531],
+        {"type":"Feature","id":"02","properties":{"name":"New South Wales"},"geometry":{"type":"Polygon","coordinates":[[[140.974915,-28.998531],
         [148.983948,-28.998531],
         [149.544250,-28.574875],
         [150.258362,-28.536276],
@@ -133,7 +133,7 @@ export default function () {
         [141.528214,-34.204987],
         [140.998123,-34.018517],
         [140.974915,-28.998531]]]}},
-        {"type":"Feature","id":"03","properties":{"name":"ACT"},"geometry":{"type":"Polygon","coordinates":[[
+        {"type":"Feature","id":"03","properties":{"name":"Australian Capital Territory"},"geometry":{"type":"Polygon","coordinates":[[
         [148.809021,-35.308399],
         [149.091919,-35.142372],
         [149.120071,-35.124962],

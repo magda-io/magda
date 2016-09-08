@@ -23,51 +23,52 @@ class JurisdictionMap extends Filter {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(this.map);
 
-        this.highlightRegion();
+        this.addRegion();
 
-        this.map.on('click', function(e) {
-            // bring pop up
-            // get jurisdiction
-            getJSON(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${e.latlng.lat},${e.latlng.lng}&language=en&sensor=false&result_type=administrative_area_level_1&key=AIzaSyBvqg7oM1c-Cpl0EF8urYxKLuW-D_YWD9o`).then(data=>{
-                let jurisdiction = data.results[0].address_components[0].long_name.replace(/\s/g,'').toLowerCase();
-                that.props.updateQuery({
-                    jurisdiction: jurisdiction
-                });
-            }, error=> console.warn(error));
-        });
     }
 
     componentWillReceiveProps(){
         // could check if update is required
         this.map.removeLayer(this.layer);
-        this.highlightRegion();
+        this.addRegion();
     }
 
-    highlightRegion(){
+    addRegion(){
         let that = this;
         let statesData = ozStates();
         function style(feature) {
+            let opacity = feature.properties.name === that.props.location.query.jurisdiction ? 1 : 0;
+
             return {
                 fillColor: '#00B5FF',
-                weight: 0,
+                weight: 1,
                 opacity: 0,
-                fillOpacity: 0
+                fillOpacity: opacity
             };
         }
 
         function onEachFeature(feature, layer) {
             layer.on({
                 mouseover: highlightFeature,
-                mouseout: resetHighlight
+                mouseout: resetHighlight,
+                click: click
             });
         }
 
         this.layer = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(this.map);
 
+        function click(e){
+            let jurisdiction = e.target.feature.properties.name;
+            that.props.updateQuery({
+                    jurisdiction: jurisdiction
+            });
+
+        }
+
         function highlightFeature(e){
             let layer = e.target;
             layer.setStyle({
-                fillOpacity: 1
+                opacity: 1
             });
             if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
                 layer.bringToFront();

@@ -34,31 +34,37 @@ class Filter extends Component {
     });
   }
 
-  toggleFilter(option){
+  toggleFilter(option, allowMultiple){
     let currrentFilters;
-    // force filters into array
-    if (!this.props.location.query[this.props.id]){
-      currrentFilters = [];
-    }
-    // if already array
-    else if(Array.isArray(this.props.location.query[this.props.id])){
-      currrentFilters = this.props.location.query[this.props.id];
-    }
-    // if only one item, create array
-    else{
-      currrentFilters = [this.props.location.query[this.props.id]];
-    }
-    // add or remove from array
-    if(currrentFilters.indexOf(option.id) > -1){
-      currrentFilters.splice(currrentFilters.indexOf(option.id), 1);
+    if (allowMultiple === true){
+      // force filters into array
+      if (!this.props.location.query[this.props.id]){
+        currrentFilters = [];
+      }
+      // if already array
+      else if(Array.isArray(this.props.location.query[this.props.id])){
+        currrentFilters = this.props.location.query[this.props.id];
+      }
+      // if only one item, create array
+      else{
+        currrentFilters = [this.props.location.query[this.props.id]];
+      }
+      // add or remove from array
+      if(currrentFilters.indexOf(option.id) > -1){
+        currrentFilters.splice(currrentFilters.indexOf(option.id), 1);
+      } else{
+        currrentFilters.push(option.id)
+      }
+
+      this.props.updateQuery({
+        [this.props.id]: currrentFilters
+      });
+
     } else{
-      currrentFilters.push(option.id)
+      this.props.updateQuery({
+        [this.props.id]: option.id
+      });
     }
-
-    this.props.updateQuery({
-      [this.props.id]: currrentFilters
-    });
-
   }
 
   resetFilter(){

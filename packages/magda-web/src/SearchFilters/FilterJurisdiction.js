@@ -6,6 +6,7 @@ import JurisdictionMap from './JurisdictionMap';
 import L from 'leaflet';
 import ozStates from '../dummyData/ozStates';
 import React from 'react'
+const statesData = ozStates();
 
 class FilterJurisdiction extends Filter {
     constructor(props) {
@@ -20,15 +21,14 @@ class FilterJurisdiction extends Filter {
     }
 
     handleChange(e){
-
+        this.setState({
+            searchText: e.target.value
+        });
     }
 
     componentDidMount(){
         super.componentDidMount();
-
         let that = this;
-        let statesData = ozStates()[this.props.location.query.jurisdiction];
-
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 3);
 
@@ -42,14 +42,8 @@ class FilterJurisdiction extends Filter {
         this.map.touchZoom.disable();
         this.map.keyboard.disable();
         this.map.dragging.disable();
-        this.layer = L.geoJson(statesData).addTo(this.map);
 
-        // temp
-        this.map.on('click', function(e) {
-            that.setState({
-                popUpIsOpen: true
-            });
-        });
+        this.addRegion();
     }
 
     closePopUp(){
@@ -63,11 +57,31 @@ class FilterJurisdiction extends Filter {
         this.map.removeLayer(this.layer);
     }
 
+    addRegion(){
+        let that = this;
+        function style(feature) {
+            let opacity = feature.properties.name === that.props.location.query.jurisdiction ? 1 : 0;
+            return {
+                fillColor: '#00B5FF',
+                weight: 1,
+                opacity: 0,
+                fillOpacity: opacity
+            };
+        }
+
+        function onEachFeature(feature, layer) {
+            layer.on({
+                click: ()=>{that.setState({popUpIsOpen: true})}
+            });
+        }
+
+        this.layer = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(this.map);
+    }
+
     componentWillReceiveProps(){
         // could check if update is required
         this.map.removeLayer(this.layer);
-        let statesData = ozStates()[this.props.location.query.jurisdiction];
-        this.layer = L.geoJson(statesData).addTo(this.map);
+        this.addRegion();
     }
 
     componentWillUnmount(){
@@ -87,13 +101,18 @@ class FilterJurisdiction extends Filter {
                                clearSearch={this.clearSearch}
                                handleChange={this.handleChange}
                                renderCondition={this.renderCondition}
+                               allowMultiple={false}
               />
+
               <div className='map' ref={(c) => this._c = c}/>
               {this.state.popUpIsOpen && <JurisdictionMap title='jurisdiction'
                                              id='jurisdiction'
                                              location={this.props.location}
                                              updateQuery={this.props.updateQuery}
                                              closePopUp={this.closePopUp}/>}
+              <div className='jurisdiction-summray'>
+                {this.props.location.query[this.props.id]}
+              </div>
             </div>
       );
     }

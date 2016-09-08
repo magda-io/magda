@@ -22,7 +22,7 @@ class FilterSearchBox extends Component {
   }
 
   toggleFilter(option){
-    this.props.toggleFilter(option);
+    this.props.toggleFilter(option, this.props.allowMultiple);
   }
 
   render(){
@@ -60,7 +60,8 @@ FilterSearchBox.propTypes = {options: React.PropTypes.array,
                              toggleFilter: React.PropTypes.func,
                              searchText:React.PropTypes.string,
                              clearSearch: React.PropTypes.func,
-                             handleChange: React.PropTypes.func};
-FilterSearchBox.defaultProps = {options: []};
+                             handleChange: React.PropTypes.func,
+                             allowMultiple: React.PropTypes.bool};
+FilterSearchBox.defaultProps = {options: [], allowMultiple: false};
 
 export default FilterSearchBox;
