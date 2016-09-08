@@ -19,6 +19,14 @@ import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.math._
 import spray.json.DefaultJsonProtocol
 import au.csiro.data61.magda.api.Types._
+import spray.json.JsonFormat
+import spray.json.JsValue
+import spray.json.JsString
+import java.time.Instant
+import spray.json.JsonReader
+import spray.json.JsNull
+import scala.concurrent.ExecutionContext
+import java.net.URL
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)
 case class CKANSearchResult(count: Int, results: List[CKANDataSet])
@@ -27,12 +35,6 @@ object CKANState extends Enumeration {
   val active, deleted = Value
 }
 import CKANState._
-import spray.json.JsonFormat
-import spray.json.JsValue
-import spray.json.JsString
-import java.time.Instant
-import spray.json.JsonReader
-import spray.json.JsNull
 
 case class CKANDataSet(
   id: String,
@@ -192,7 +194,7 @@ trait CKANProtocols extends DefaultJsonProtocol {
   implicit val searchResponseFormat = jsonFormat2(CKANSearchResponse.apply)
 }
 
-class CKANExternalInterface(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContextExecutor, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface {
+class CKANExternalInterface(baseUrl: URL, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface {
   implicit val logger = Logging(system, getClass)
   implicit def ckanSearchConv(ckanResponse: CKANSearchResponse): SearchResult = {
     val dataSets = ckanResponse.result.results
@@ -204,7 +206,7 @@ class CKANExternalInterface(implicit val config: Config, implicit val system: Ac
         .filter(a => a._1.isDefined && a._1.get.name.isDefined)
         .map {
           case (publisher: Some[Agent], dataSets) => new FacetOption(id = publisher.get.name.get, name = publisher.get.name.get, hitCount = dataSets.length)
-          case (None, _) => ???
+          case (None, _)                          => ???
         }
         .toSeq
     ))
@@ -251,14 +253,16 @@ class CKANExternalInterface(implicit val config: Config, implicit val system: Ac
   implicit def ckanDataSetListConv(l: List[CKANDataSet]): List[DataSet] = l map ckanDataSetConv
 
   lazy val ckanApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
-    Http().outgoingConnection(config.getString("services.dga-api.host"), config.getInt("services.dga-api.port"))
+    Http().outgoingConnection(baseUrl.getHost, getPort)
+
+  def getPort = if (baseUrl.getPort == -1) 80 else baseUrl.getPort
 
   def ckanRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(ckanApiConnectionFlow).runWith(Sink.head)
 
   def search(query: String): Future[Either[String, SearchResult]] = {
     val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
-    
-    ckanRequest(RequestBuilding.Get(s"/api/3/action/package_search?q=$encodedQuery")).flatMap { response =>
+    val path = baseUrl.getPath
+    ckanRequest(RequestBuilding.Get(s"${path}action/package_search?rows=500&q=$encodedQuery")).flatMap { response =>
       response.status match {
         case OK         => Unmarshal(response.entity).to[CKANSearchResponse].map(Right(_))
         case BadRequest => Future.successful(Left(s"$query: incorrect IP format"))
@@ -267,6 +271,28 @@ class CKANExternalInterface(implicit val config: Config, implicit val system: Ac
           logger.error(error)
           Future.failed(new IOException(error))
         }
+      }
+    }
+  }
+
+  def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = ckanRequest(RequestBuilding.Get(s"${baseUrl.getPath}action/package_search?start=$start&rows=$number")).flatMap { response =>
+    response.status match {
+      case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.results)
+      case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
+        val error = s"CKAN request failed with status code ${response.status} and entity $entity"
+        logger.error(error)
+        Future.failed(new IOException(error))
+      }
+    }
+  }
+
+  def getTotalDataSetCount(): scala.concurrent.Future[Long] = ckanRequest(RequestBuilding.Get(s"${baseUrl.getPath}action/package_search?rows=0")).flatMap { response =>
+    response.status match {
+      case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.count)
+      case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
+        val error = s"CKAN request failed with status code ${response.status} and entity $entity"
+        logger.error(error)
+        Future.failed(new IOException(error))
       }
     }
   }

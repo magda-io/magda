@@ -93,6 +93,46 @@
       <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-testkit_2.11/docs/akka-testkit_2.11-2.4.9-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
+  <classpathentry sourcepath="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-contrib_2.11/srcs/akka-contrib_2.11-2.4.9-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-contrib_2.11/jars/akka-contrib_2.11-2.4.9.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-contrib_2.11/docs/akka-contrib_2.11-2.4.9-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-remote_2.11/srcs/akka-remote_2.11-2.4.9-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-remote_2.11/jars/akka-remote_2.11-2.4.9.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-remote_2.11/docs/akka-remote_2.11-2.4.9-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-protobuf_2.11/srcs/akka-protobuf_2.11-2.4.9-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-protobuf_2.11/jars/akka-protobuf_2.11-2.4.9.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-protobuf_2.11/docs/akka-protobuf_2.11-2.4.9-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gil308/.ivy2/cache/io.netty/netty/srcs/netty-3.10.6.Final-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/io.netty/netty/bundles/netty-3.10.6.Final.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/io.netty/netty/docs/netty-3.10.6.Final-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gil308/.ivy2/cache/org.uncommons.maths/uncommons-maths/srcs/uncommons-maths-1.2.2a-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/org.uncommons.maths/uncommons-maths/jars/uncommons-maths-1.2.2a.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/org.uncommons.maths/uncommons-maths/docs/uncommons-maths-1.2.2a-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-cluster_2.11/srcs/akka-cluster_2.11-2.4.9-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-cluster_2.11/jars/akka-cluster_2.11-2.4.9.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-cluster_2.11/docs/akka-cluster_2.11-2.4.9-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-cluster-tools_2.11/srcs/akka-cluster-tools_2.11-2.4.9-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-cluster-tools_2.11/jars/akka-cluster-tools_2.11-2.4.9.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-cluster-tools_2.11/docs/akka-cluster-tools_2.11-2.4.9-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-persistence_2.11/srcs/akka-persistence_2.11-2.4.9-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-persistence_2.11/jars/akka-persistence_2.11-2.4.9.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/com.typesafe.akka/akka-persistence_2.11/docs/akka-persistence_2.11-2.4.9-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
   <classpathentry sourcepath="/Users/gil308/.ivy2/cache/ch.megard/akka-http-cors_2.11/srcs/akka-http-cors_2.11-0.1.5-sources.jar" kind="lib" path="/Users/gil308/.ivy2/cache/ch.megard/akka-http-cors_2.11/jars/akka-http-cors_2.11-0.1.5.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:/Users/gil308/.ivy2/cache/ch.megard/akka-http-cors_2.11/docs/akka-http-cors_2.11-0.1.5-javadoc.jar!/"/>

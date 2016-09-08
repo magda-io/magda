@@ -21,6 +21,10 @@ import scala.math._
 import spray.json.DefaultJsonProtocol
 import au.csiro.data61.magda.api.Api
 import akka.actor.{ Actor, DeadLetter, Props }
+import au.csiro.data61.magda.crawler.Supervisor
+import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType
+import au.csiro.data61.magda.crawler.Start
+import java.net.URL
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
@@ -34,6 +38,9 @@ object MagdaApp extends App {
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
+
+  val supervisor = system.actorOf(Props(new Supervisor(system)))
+  supervisor ! Start(ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl")))
 }
 
 class Listener extends Actor {
