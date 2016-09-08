@@ -25,6 +25,8 @@ import au.csiro.data61.magda.crawler.Supervisor
 import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType
 import au.csiro.data61.magda.crawler.Start
 import java.net.URL
+import akka.actor.ActorLogging
+import scala.concurrent.duration._
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
@@ -40,12 +42,13 @@ object MagdaApp extends App {
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
   val supervisor = system.actorOf(Props(new Supervisor(system)))
-  supervisor ! Start(ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl")))
+
+  // Index erryday 
+  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
 }
 
-class Listener extends Actor {
-
+class Listener extends Actor with ActorLogging {
   def receive = {
-    case d: DeadLetter => println(d)
+    case d: DeadLetter => log.info(d.toString)
   }
 }

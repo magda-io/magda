@@ -9,12 +9,13 @@ import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType._
  * @author Foat Akhmadeev
  *         17/01/16
  */
-case class Start(interfaceType: ExternalInterfaceType, baseUrl: URL)
+case class Start(externalInterfaces: Seq[(ExternalInterfaceType, URL)])
 case class ScrapeRepo()
+case class ScrapeRepoFinished(baseUrl: URL)
+case class ScrapeRepoFailed(baseUrl: URL, reason: Throwable)
 case class ScrapeDataSets(start: Long, number: Long)
-case class ScrapeDataSetsFinished(apiType: String, baseUrl: String)
-case class Index(dataSets: List[DataSet])
-case class Content(dataSets: List[DataSet])
-case class ScrapeFinished(apiType: String, baseUrl: String)
-case class IndexFinished(dataSets: List[DataSet])
-case class ScrapeFailure(start: Long, number: Int, reason: Throwable)
+case class ScrapeDataSetsFinished(start: Long, number: Long)
+case class ScrapeDataSetsFailed(start: Long, number: Long, reason: Throwable)
+case class Index(baseUrl: URL, dataSets: List[DataSet])
+case class IndexFinished(dataSets: List[DataSet], baseUrl: URL)
+case class IndexFailed(baseUrl: URL, reason: Throwable)

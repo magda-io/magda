@@ -1,35 +1,15 @@
-package au.csiro.data61.magda.external
+package au.csiro.data61.magda.external.ckan
 
-import akka.actor.ActorSystem
-import akka.event.{ LoggingAdapter, Logging }
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding
+import spray.json.DefaultJsonProtocol
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import akka.http.scaladsl.model.{ HttpResponse, HttpRequest }
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.{ ActorMaterializer, Materializer }
-import akka.stream.scaladsl.{ Flow, Sink, Source }
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import java.io.IOException
-import scala.concurrent.{ ExecutionContextExecutor, Future }
-import scala.math._
-import spray.json.DefaultJsonProtocol
+import spray.json._
 import au.csiro.data61.magda.api.Types._
-import spray.json.JsonFormat
-import spray.json.JsValue
-import spray.json.JsString
 import java.time.Instant
-import spray.json.JsonReader
-import spray.json.JsNull
-import scala.concurrent.ExecutionContext
-import java.net.URL
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)
 case class CKANSearchResult(count: Int, results: List[CKANDataSet])
+
 object CKANState extends Enumeration {
   type CKANState = Value
   val active, deleted = Value
@@ -135,6 +115,61 @@ case class CKANOrganization(
   `type`: Option[String])
 
 trait CKANProtocols extends DefaultJsonProtocol {
+  implicit def ckanSearchConv(ckanResponse: CKANSearchResponse): SearchResult = {
+    val dataSets = ckanResponse.result.results
+
+    val facets = Seq(new Facet(
+      name = "Publishers",
+      id = "publisher",
+      options = dataSets.groupBy(_.publisher)
+        .filter(a => a._1.isDefined && a._1.get.name.isDefined)
+        .map {
+          case (publisher: Some[Agent], dataSets) => new FacetOption(id = publisher.get.name.get, name = publisher.get.name.get, hitCount = dataSets.length)
+          case (None, _)                          => ???
+        }
+        .toSeq
+    ))
+
+    SearchResult(hitCount = ckanResponse.result.count, dataSets = dataSets, facets = Some(facets))
+  }
+  implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
+    name = ckanOrg.title,
+    extraFields = Map(
+      "description" -> ckanOrg.description.getOrElse("")
+
+    ).filterNot(tuple => tuple._2 == "")
+  )
+  implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
+  implicit def ckanDataSetConv(hit: CKANDataSet): DataSet = DataSet(
+    identifier = hit.name,
+    catalog = "DGA",
+    title = hit.title,
+    description = hit.notes,
+    issued = Some(Instant.parse(hit.metadata_created + "Z")),
+    modified = Some(Instant.parse(hit.metadata_modified + "Z")),
+    language = hit.language,
+    publisher = hit.organization,
+    accrualPeriodicity = hit.update_freq map (new Periodicity(_)),
+    spatial = hit.spatial_coverage map (name => new Location(name = Some(name))),
+    temporal = {
+      if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
+      else Some(new PeriodOfTime(
+        start = hit.temporal_coverage_from.map(text => new ApiInstant(text = Some(text))),
+        end = hit.temporal_coverage_to.map(text => new ApiInstant(text = Some(text)))
+      ))
+    },
+    theme = List(), // ???
+    keyword = hit.tags match {
+      case Some(tags) => tags.map(_.display_name)
+      case None       => List()
+    },
+    contactPoint = {
+      val email = if (hit.contact_point.isDefined) hit.contact_point else hit.author_email
+      email.map(email => new Agent(email = Some(email), name = hit.author))
+    },
+    landingPage = Some("https://data.gov.au/dataset/" + hit.name) // FIXME!!!
+  )
+  implicit def ckanDataSetListConv(l: List[CKANDataSet]): List[DataSet] = l map ckanDataSetConv
   implicit val resourceFormat = jsonFormat14(CKANResource.apply)
   implicit val tagFormat = jsonFormat4(CKANTag.apply)
   implicit object CKANStateFormat extends JsonFormat[CKANState] {
@@ -192,108 +227,5 @@ trait CKANProtocols extends DefaultJsonProtocol {
 
   implicit val searchResultFormat = jsonFormat2(CKANSearchResult.apply)
   implicit val searchResponseFormat = jsonFormat2(CKANSearchResponse.apply)
-}
 
-class CKANExternalInterface(baseUrl: URL, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface {
-  implicit val logger = Logging(system, getClass)
-  implicit def ckanSearchConv(ckanResponse: CKANSearchResponse): SearchResult = {
-    val dataSets = ckanResponse.result.results
-
-    val facets = Seq(new Facet(
-      name = "Publishers",
-      id = "publisher",
-      options = dataSets.groupBy(_.publisher)
-        .filter(a => a._1.isDefined && a._1.get.name.isDefined)
-        .map {
-          case (publisher: Some[Agent], dataSets) => new FacetOption(id = publisher.get.name.get, name = publisher.get.name.get, hitCount = dataSets.length)
-          case (None, _)                          => ???
-        }
-        .toSeq
-    ))
-
-    SearchResult(hitCount = ckanResponse.result.count, dataSets = dataSets, facets = Some(facets))
-  }
-  implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
-    name = ckanOrg.title,
-    extraFields = Map(
-      "description" -> ckanOrg.description.getOrElse("")
-
-    ).filterNot(tuple => tuple._2 == "")
-  )
-  implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
-  implicit def ckanDataSetConv(hit: CKANDataSet): DataSet = DataSet(
-    identifier = hit.name,
-    catalog = "DGA",
-    title = hit.title,
-    description = hit.notes,
-    issued = Some(Instant.parse(hit.metadata_created + "Z")),
-    modified = Some(Instant.parse(hit.metadata_modified + "Z")),
-    language = hit.language,
-    publisher = hit.organization,
-    accrualPeriodicity = hit.update_freq map (new Periodicity(_)),
-    spatial = hit.spatial_coverage map (name => new Location(name = Some(name))),
-    temporal = {
-      if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
-      else Some(new PeriodOfTime(
-        start = hit.temporal_coverage_from.map(text => new ApiInstant(text = Some(text))),
-        end = hit.temporal_coverage_to.map(text => new ApiInstant(text = Some(text)))
-      ))
-    },
-    theme = List(), // ???
-    keyword = hit.tags match {
-      case Some(tags) => tags.map(_.display_name)
-      case None       => List()
-    },
-    contactPoint = {
-      val email = if (hit.contact_point.isDefined) hit.contact_point else hit.author_email
-      email.map(email => new Agent(email = Some(email), name = hit.author))
-    },
-    landingPage = Some("https://data.gov.au/dataset/" + hit.name) // FIXME!!!
-  )
-  implicit def ckanDataSetListConv(l: List[CKANDataSet]): List[DataSet] = l map ckanDataSetConv
-
-  lazy val ckanApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
-    Http().outgoingConnection(baseUrl.getHost, getPort)
-
-  def getPort = if (baseUrl.getPort == -1) 80 else baseUrl.getPort
-
-  def ckanRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(ckanApiConnectionFlow).runWith(Sink.head)
-
-  def search(query: String): Future[Either[String, SearchResult]] = {
-    val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
-    val path = baseUrl.getPath
-    ckanRequest(RequestBuilding.Get(s"${path}action/package_search?rows=500&q=$encodedQuery")).flatMap { response =>
-      response.status match {
-        case OK         => Unmarshal(response.entity).to[CKANSearchResponse].map(Right(_))
-        case BadRequest => Future.successful(Left(s"$query: incorrect IP format"))
-        case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-          val error = s"CKAN request failed with status code ${response.status} and entity $entity"
-          logger.error(error)
-          Future.failed(new IOException(error))
-        }
-      }
-    }
-  }
-
-  def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = ckanRequest(RequestBuilding.Get(s"${baseUrl.getPath}action/package_search?start=$start&rows=$number")).flatMap { response =>
-    response.status match {
-      case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.results)
-      case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-        val error = s"CKAN request failed with status code ${response.status} and entity $entity"
-        logger.error(error)
-        Future.failed(new IOException(error))
-      }
-    }
-  }
-
-  def getTotalDataSetCount(): scala.concurrent.Future[Long] = ckanRequest(RequestBuilding.Get(s"${baseUrl.getPath}action/package_search?rows=0")).flatMap { response =>
-    response.status match {
-      case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.count)
-      case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-        val error = s"CKAN request failed with status code ${response.status} and entity $entity"
-        logger.error(error)
-        Future.failed(new IOException(error))
-      }
-    }
-  }
 }

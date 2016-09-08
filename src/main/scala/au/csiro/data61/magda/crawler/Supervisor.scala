@@ -8,61 +8,33 @@ import akka.actor.{ Actor, ActorSystem, Props, _ }
 import scala.language.postfixOps
 import au.csiro.data61.magda.crawler._
 import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType.ExternalInterfaceType
+import akka.event.Logging
 
-class Supervisor(system: ActorSystem) extends Actor {
+class Supervisor(system: ActorSystem) extends Actor with ActorLogging {
+  var host2Actor = Map.empty[URL, ActorRef]
   val indexer = context actorOf Props(new Indexer(self))
 
-  val maxPages = 100
-  val maxRetries = 2
-
-  var numVisited = 0
-  var toScrape = Set.empty[URL]
-  var scrapeCounts = Map.empty[URL, Int]
-  var host2Actor = Map.empty[URL, ActorRef]
-
   def receive: Receive = {
-    case Start(interfaceType, baseUrl) =>
-      println(s"starting for $baseUrl")
-      scrape(interfaceType, baseUrl)
-    case ScrapeFinished(start, count) =>
-      println(s"scrapeing finished $start")
-    case IndexFinished(dataSets) =>
-      println(s"index finished")
-    //      if (numVisited < maxPages)
-    //        urls.toSet.filter(l => !scrapeCounts.contains(l)).foreach(scrape)
-    //      checkAndShutdown(url)
-    //    case ScrapeFailure(url, reason) =>
-    //      val retries: Int = scrapeCounts(url)
-    //      println(s"scrapeing failed $url, $retries, reason = $reason")
-    //      if (retries < maxRetries) {
-    //        countVisits(url)
-    //        host2Actor(url.getHost) ! Scrape(url)
-    //      } else
-    //        checkAndShutdown(url)
+    case Start(externalInterfaces) =>
+      log.info("Beginning scrape with {} interfaces", externalInterfaces.length)
+
+      externalInterfaces
+        .map(interface => host2Actor.getOrElse(interface._2, {
+          val newActor = system.actorOf(Props(new RepoCrawler(self, indexer, interface._1, interface._2)))
+          host2Actor += (interface._2 -> newActor)
+          newActor
+        }))
+        .map(actor => actor ! ScrapeRepo())
+    case ScrapeRepoFailed(baseUrl, reason) =>
+      log.error(reason, "Failed to start index for {} due to {}", baseUrl, reason.getMessage)
+    case ScrapeRepoFinished(baseUrl) =>
+      host2Actor.get(baseUrl).get ! PoisonPill
+      host2Actor -= baseUrl
+      log.info("Finished scraping {}", baseUrl)
+    case IndexFinished(dataSets, baseUrl) =>
+      val ids = dataSets.map { ds => s"${ds.title.getOrElse("")}" }
+      log.info("Finished indexing datasets {} from {}", ids, baseUrl)
+    case IndexFailed(baseUrl, reason) =>
+      log.error(reason, "Failed to index datasets for {} due to {}", baseUrl, reason.getMessage)
   }
-
-  //  def checkAndShutdown(url: URL): Unit = {
-  //    toScrape -= url
-  //    // if nothing to visit
-  //    if (toScrape.isEmpty) {
-  //      self ! PoisonPill
-  //      system.terminate()
-  //    }
-  //  }
-
-  def scrape(interfaceType: ExternalInterfaceType, baseUrl: URL) = {
-
-    println(s"url = $baseUrl")
-    val actor = host2Actor.getOrElse(baseUrl, {
-      val buff = system.actorOf(Props(new RepoCrawler(self, indexer, interfaceType, baseUrl)))
-      host2Actor += (baseUrl -> buff)
-      buff
-    })
-
-    //    numVisited += 1
-    //    toScrape += baseUrl
-    actor ! ScrapeRepo()
-  }
-
-  def countVisits(url: URL): Unit = scrapeCounts += (url -> (scrapeCounts.getOrElse(url, 0) + 1))
 }
