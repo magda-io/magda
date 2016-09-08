@@ -44,11 +44,44 @@ class JurisdictionMap extends Filter {
     }
 
     highlightRegion(){
-        let statesData = ozStates()[this.props.location.query.jurisdiction];
-        this.layer = L.geoJson(statesData).addTo(this.map);
+        let that = this;
+        let statesData = ozStates();
+        function style(feature) {
+            return {
+                fillColor: '#00B5FF',
+                weight: 0,
+                opacity: 0,
+                fillOpacity: 0
+            };
+        }
+
+        function onEachFeature(feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight
+            });
+        }
+
+        this.layer = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(this.map);
+
+        function highlightFeature(e){
+            let layer = e.target;
+            layer.setStyle({
+                fillOpacity: 1
+            });
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                layer.bringToFront();
+            }
+        }
+
+        function resetHighlight(e) {
+             that.layer.resetStyle(e.target);
+        }
     }
 
-     componentWillUnmount(){
+
+
+    componentWillUnmount(){
         this.map.remove();
     }
 
