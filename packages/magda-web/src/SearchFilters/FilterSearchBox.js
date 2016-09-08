@@ -28,7 +28,7 @@ class FilterSearchBox extends Component {
   render(){
     let filteredOptions = [];
     this.props.options.forEach((c)=>{
-      if(c.name.toLowerCase().indexOf(this.props.searchText)!==-1){
+      if(c.name.toLowerCase().indexOf(this.props.searchText.toLowerCase())!==-1){
         filteredOptions.push(c);
       }
     });

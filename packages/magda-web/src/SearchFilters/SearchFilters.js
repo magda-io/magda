@@ -9,25 +9,25 @@ class SearchFilters extends Component {
   renderFilters(){
       return( 
             <div>
-              <FilterPublisher options={this.props.filters.publisher}
+              <FilterPublisher options={this.props.filterPublisher}
                                        title='publisher'
                                        id='publisher'
                                        location={this.props.location}
                                        updateQuery={this.props.updateQuery}/>
 
-              <FilterJurisdiction options={this.props.filters.jurisdiction}
+              <FilterJurisdiction options={this.props.filterJurisdiction}
                                        title='jurisdiction'
                                        id='jurisdiction'
                                        location={this.props.location}
                                        updateQuery={this.props.updateQuery}/>
 
-              <FilterDateRange options={this.props.filters.temporal}
+              <FilterDateRange options={this.props.filterTemporal}
                                        title='date range'
                                        id='temporal'
                                        location={this.props.location}
                                        updateQuery={this.props.updateQuery}/>
 
-              <FilterDataFormat options={this.props.filters.format}
+              <FilterDataFormat options={this.props.filterFormat}
                                        title='data format'
                                        id='format'
                                        location={this.props.location}

@@ -1,0 +1,14 @@
+.location-search-btn{
+  width: 100%;
+  border-bottom: 1px solid #777;
+  border-radius: 0;
+  margin-bottom: 3px;
+}
+
+.location-search-btn span{
+    display: block;
+    width: 100%;
+    white-space: normal;
+    text-align: left;
+    line-height: 1;
+  }

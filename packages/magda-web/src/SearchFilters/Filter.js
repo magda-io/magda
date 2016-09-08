@@ -90,7 +90,7 @@ class Filter extends Component {
     return (
           <button type='button'
                   className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`}
-                  onClick={this.toggleFilter.bind(this, option)}
+                  onClick={this.toggleFilter.bind(this, option, true)}
                   title={option.name}>
           { highlight ?
             <span className='option-name' dangerouslySetInnerHTML={this.highlightSearchedText(option.name)}/> :
@@ -151,7 +151,7 @@ class Filter extends Component {
     }
   }
 
-  render() {
+  render() {    
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o2.hitCount - o1.hitCount);
     let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
     let size = this.state.isOpen ? inactiveOptions.length : tempSize;
@@ -170,6 +170,7 @@ class Filter extends Component {
                          clearSearch={this.clearSearch}
                          handleChange={this.handleChange}
                          renderCondition={this.renderCondition}
+                         allowMultiple={true}
         />
 
         <div className='other-options'>

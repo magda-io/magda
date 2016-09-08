@@ -1,5 +1,6 @@
-export default function (url, options) {
+export default function (url) {
   var CALLBACK_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let timeout = 1000;
 
     return new Promise(function (resolve, reject) {
       var callback;
@@ -22,7 +23,7 @@ export default function (url, options) {
       var ticket = setTimeout(function () {
         reject('no response');
         cleanup();
-      },  options.timeout);
+      },  timeout);
 
       window[callback] = function (data) {
         resolve(data);
@@ -30,5 +31,4 @@ export default function (url, options) {
         cleanup();
       };
     });
-  }
-};
+  };

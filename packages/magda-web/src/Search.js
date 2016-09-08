@@ -20,12 +20,10 @@ class Search extends Component {
     this.debouncedGetFacets = debounce(this.getFacets, 150);
     this.state = {
       searchResults: [],
-      filters: {
-        publisher: [],
-        temporal: [],
-        jurisdiction: [],
-        format: []
-      }
+      filterPublisher: [],
+      filterTemporal: [],
+      filterJurisdiction: [],
+      filterFormat: []
     };
   }
 
@@ -48,23 +46,24 @@ class Search extends Component {
   getFacets(){
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
-    getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search/facets?query=${keyword}`).then((data)=>{
+
+    getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/facets/publisher/options/search?query=${keyword}`).then((data)=>{
       this.setState({
-        filters: {
-          publisher: data[0].options,
-          temporal: getTemporals(),
-          jurisdiction: getJurisdictions(),
-          format: getFormats()
-        }
+        filterPublisher: data.options
       })
     }, (err)=>{console.warn(err)});
+
+    this.setState({
+        filterTemporal: getTemporals(),
+        filterFormat: getFormats()
+    });
   }
 
   doSearch(){
       let query = this.props.location.query;
       let keyword = query.q.split(' ').join('+');
 
-      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/search?query=${keyword}`, updateProgress, transferComplete, transferFailed, transferCanceled).then((data)=>{
+      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/datasets/search?query=${keyword}`, updateProgress, transferComplete, transferFailed, transferCanceled).then((data)=>{
         let results= [];
         if(keyword.length > 0){
           results = data.dataSets;
@@ -96,6 +95,10 @@ class Search extends Component {
         <div className='search-body row'>
           {this.props.location.query.q && this.props.location.query.q.length > 0 && <div className='col-sm-4'>
                         <SearchFilters
+                          filterPublisher={this.state.filterPublisher}
+                          filterTemporal={this.state.filterTemporal}
+                          filterFormat={this.state.filterFormat}
+                          filterJurisdiction={[]}
                           filters={this.state.filters}
                           location={this.props.location}
                           updateQuery ={this.updateQuery} />

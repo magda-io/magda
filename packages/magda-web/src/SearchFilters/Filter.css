@@ -112,6 +112,7 @@ form{
 
 .map{
     height: 200px;
+    margin-top: 10px;
 }
 
 .map .leaflet-control-attribution{

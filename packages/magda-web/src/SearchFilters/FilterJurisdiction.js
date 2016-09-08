@@ -1,11 +1,14 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
 import Filter from './Filter';
 import FilterHeader from './FilterHeader';
-import FilterSearchBox from './FilterSearchBox';
+import LocationSearchBox from './LocationSearchBox';
 import JurisdictionMap from './JurisdictionMap';
 import L from 'leaflet';
 import ozStates from '../dummyData/ozStates';
 import React from 'react'
+import getJsonp from '../getJsonp';
+import getJSON from'../getJSON';
+
 const statesData = ozStates();
 
 class FilterJurisdiction extends Filter {
@@ -17,6 +20,8 @@ class FilterJurisdiction extends Filter {
         this.state={
             popUpIsOpen: false,
             searchText: '',
+            locationSearchResults: [],
+            mapData: {}
         }
     }
 
@@ -24,7 +29,14 @@ class FilterJurisdiction extends Filter {
         this.setState({
             searchText: e.target.value
         });
+
+        getJsonp(`http://www.censusdata.abs.gov.au/census_services/search?query=${e.target.value || ' '}&cycle=2011&results=15&type=jsonp&cb=`).then(data=>{
+            this.setState({
+                locationSearchResults: data
+            });
+        }, error =>{console.log(error)});
     }
+
 
     componentDidMount(){
         super.componentDidMount();
@@ -43,7 +55,7 @@ class FilterJurisdiction extends Filter {
         this.map.keyboard.disable();
         this.map.dragging.disable();
 
-        this.addRegion();
+        this.addRegion(statesData);
     }
 
     closePopUp(){
@@ -57,8 +69,16 @@ class FilterJurisdiction extends Filter {
         this.map.removeLayer(this.layer);
     }
 
-    addRegion(){
+    toggleFilter(option){
+        super.toggleFilter(option);
+    }
+
+    addRegion(data){
         let that = this;
+
+        if(this.layer){
+            this.map.removeLayer(this.layer);
+        }
         function style(feature) {
             let opacity = feature.properties.name === that.props.location.query.jurisdiction ? 1 : 0;
             return {
@@ -75,13 +95,7 @@ class FilterJurisdiction extends Filter {
             });
         }
 
-        this.layer = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(this.map);
-    }
-
-    componentWillReceiveProps(){
-        // could check if update is required
-        this.map.removeLayer(this.layer);
-        this.addRegion();
+        this.layer = L.geoJson(data, {style: style, onEachFeature: onEachFeature}).addTo(this.map);
     }
 
     componentWillUnmount(){
@@ -95,13 +109,12 @@ class FilterJurisdiction extends Filter {
                             resetFilter={this.resetFilter}
                             title={this.props.title}/>
 
-              <FilterSearchBox options={this.props.options}
-                               toggleFilter={this.toggleFilter}
-                               searchText={this.state.searchText}
-                               clearSearch={this.clearSearch}
-                               handleChange={this.handleChange}
-                               renderCondition={this.renderCondition}
-                               allowMultiple={false}
+              <LocationSearchBox options={this.state.locationSearchResults}
+                                 toggleFilter={this.toggleFilter}
+                                 searchText={this.state.searchText}
+                                 clearSearch={this.clearSearch}
+                                 handleChange={this.handleChange}
+                                 allowMultiple={false}
               />
 
               <div className='map' ref={(c) => this._c = c}/>
