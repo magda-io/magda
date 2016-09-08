@@ -9,10 +9,15 @@ import scala.language.postfixOps
 import au.csiro.data61.magda.crawler._
 import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType.ExternalInterfaceType
 import akka.event.Logging
+import au.csiro.data61.magda.api.Api
+import com.typesafe.config.Config
+import akka.stream.ActorMaterializer
 
-class Supervisor(system: ActorSystem) extends Actor with ActorLogging {
+class Supervisor(system: ActorSystem, config: Config) extends Actor with ActorLogging {
   var host2Actor = Map.empty[URL, ActorRef]
   val indexer = context actorOf Props(new Indexer(self))
+
+  val api = new Api(indexer, config, system, context.dispatcher, ActorMaterializer.create(context))
 
   def receive: Receive = {
     case Start(externalInterfaces) =>

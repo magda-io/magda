@@ -26,7 +26,7 @@ class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, apiType: ExternalInte
   implicit val ec = context.dispatcher
   val interface: ExternalInterface = ExternalInterface(apiType, baseUrl)(context.system, context.dispatcher, ActorMaterializer.create(context))
 
-  val throttler = context.actorOf(Props(classOf[TimerBasedThrottler], 1 msgsPer 10.second))
+  val throttler = context.actorOf(Props(classOf[TimerBasedThrottler], 1 msgsPer 1.second))
   throttler ! SetTarget(Some(context.self))
 
   def receive: Receive = {
@@ -34,7 +34,7 @@ class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, apiType: ExternalInte
       log.info("Starting scrape of {}", baseUrl)
 
       interface.getTotalDataSetCount() onComplete {
-        case Success(count)  => createBatches(0, count).map(batch => throttler ! ScrapeDataSets(batch._1, batch._2.toInt))
+        case Success(count)  => createBatches(0, /*count*/10000).map(batch => throttler ! ScrapeDataSets(batch._1, batch._2.toInt))
         case Failure(reason) => supervisor ! ScrapeRepoFailed(baseUrl, reason)
       }
     case ScrapeDataSets(start, number) =>

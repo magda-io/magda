@@ -12,6 +12,10 @@ object Types {
     facets: Option[Seq[Facet]] = None,
     dataSets: List[DataSet])
 
+  case class FacetSearchResult(
+    hitCount: Int,
+    options: Seq[FacetOption])
+
   case class Facet(
     id: String,
     name: String,
@@ -20,7 +24,7 @@ object Types {
   case class FacetOption(
     id: String,
     name: String,
-    hitCount: Int)
+    hitCount: Option[Int] = None)
 
   object Periodicity {
     val asNeeded: Periodicity = new Periodicity("As Needed")
@@ -117,5 +121,6 @@ object Types {
     implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)
     implicit val facetFormat = jsonFormat3(Facet.apply)
     implicit val searchResultFormat = jsonFormat3(SearchResult.apply)
+    implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }
 }

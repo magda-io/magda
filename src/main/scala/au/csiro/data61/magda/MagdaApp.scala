@@ -36,12 +36,10 @@ object MagdaApp extends App {
 
   val logger = Logging(system, getClass)
 
-  val api = Api(config, system, executor, materializer)
-
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
-  val supervisor = system.actorOf(Props(new Supervisor(system)))
+  val supervisor = system.actorOf(Props(new Supervisor(system, config)))
 
   // Index erryday 
   system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))

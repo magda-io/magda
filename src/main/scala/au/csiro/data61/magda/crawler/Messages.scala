@@ -19,3 +19,8 @@ case class ScrapeDataSetsFailed(start: Long, number: Long, reason: Throwable)
 case class Index(baseUrl: URL, dataSets: List[DataSet])
 case class IndexFinished(dataSets: List[DataSet], baseUrl: URL)
 case class IndexFailed(baseUrl: URL, reason: Throwable)
+
+
+
+case class Search(query: String)
+case class SearchFacets(facetName: String, query: String)
