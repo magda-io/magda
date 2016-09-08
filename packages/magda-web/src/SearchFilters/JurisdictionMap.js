@@ -3,7 +3,8 @@ import './JurisdictionMap.css';
 import Filter from './Filter';
 import getJSON from'../getJSON';
 import L from 'leaflet';
-import ozStates from '../dummyData/ozStates';
+import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.js';
+import regions from '../dummyData/regions';
 import React from 'react';
 
 class JurisdictionMap extends Filter {
@@ -19,7 +20,7 @@ class JurisdictionMap extends Filter {
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 5);
 
-        L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+        L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',  {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(this.map);
 
@@ -35,27 +36,44 @@ class JurisdictionMap extends Filter {
 
     addRegion(){
         let that = this;
-        let statesData = ozStates();
+        let regionType = 'SA1'
+        let region = regions()[regionType];
         function style(feature) {
             let opacity = feature.properties.name === that.props.location.query.jurisdiction ? 1 : 0;
 
             return {
-                fillColor: '#00B5FF',
-                weight: 1,
-                opacity: 0,
-                fillOpacity: opacity
+                color: 'rgba(0,0,0,0)',
+                outline: {
+                    color: 'black',
+                    size: 1
+                },
+                selected: {
+                    color: '#00B5FF',
+                    outline: {
+                        color: 'red'
+                    }
+                }
             };
         }
 
-        function onEachFeature(feature, layer) {
+        /*function onEachFeature(feature, layer) {
             layer.on({
                 mouseover: highlightFeature,
                 mouseout: resetHighlight,
                 click: click
             });
-        }
+        }*/
 
-        this.layer = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}).addTo(this.map);
+        this.layer = new L.TileLayer.MVTSource({
+            url: region.url, 
+            style: style, 
+            /*onEachFeature: onEachFeature, */
+            /*clickableLayers: ['FID_SA4_2011_AUST'],*/
+            mutexToggle: true,
+            onClick: function(evt) { if (evt.type == 'click' && evt.feature) alert('Region type: ' + regionType + ' code: ' + evt.feature.id); },
+            getIDForLayerFeature: function(feature) { return feature.properties[region.id]; }
+        });
+        this.layer.addTo(this.map);
 
         function click(e){
             let jurisdiction = e.target.feature.properties.name;
