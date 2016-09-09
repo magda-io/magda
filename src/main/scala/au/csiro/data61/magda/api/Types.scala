@@ -123,4 +123,8 @@ object Types {
     implicit val searchResultFormat = jsonFormat3(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }
+  
+  object Protocols extends Protocols {
+    
+  }
 }

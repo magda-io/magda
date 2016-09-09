@@ -5,4 +5,4 @@ services:
      - "9000"
   search:
     expose:
-     - "8080"
+     - "9200"
