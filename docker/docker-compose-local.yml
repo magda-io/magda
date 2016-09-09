@@ -1,0 +1,25 @@
+version: '2'
+services:
+  api:
+    extends:
+      file: docker-compose-base.yml
+      service: api
+    environment:
+      - SCALA_ENV=localdocker
+    build:
+      context: .
+      dockerfile: api.local.dockerfile
+    volumes:
+      - ../:/usr/src/app/
+      - ~/.ivy2/:/root/.ivy2/
+    links:
+      - search
+    ports:
+      - "9000:9000"
+  search:
+    extends:
+      file: docker-compose-base.yml
+      service: search
+    build:
+      context: .
+      dockerfile: search.local.dockerfile

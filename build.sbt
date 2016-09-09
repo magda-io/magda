@@ -1,4 +1,4 @@
-enablePlugins(JavaServerAppPackaging)
+enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 name := "magda-metadata"
 organization := "au.com.csiro.data61"
@@ -16,10 +16,10 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaV,
     "com.typesafe.akka" %% "akka-http-xml-experimental" % akkaV,
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "com.typesafe.akka" %% "akka-contrib" % akkaV,
     "ch.megard" %% "akka-http-cors" % "0.1.5",
-    
+
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
   )
 }
@@ -29,21 +29,13 @@ EclipseKeys.withSource := true
 
 Revolver.settings
 
-dockerExposedPorts := Seq(9000)
+dockerfile in docker := {
+  val appDir: File = stage.value
+  val targetDir = "/app"
 
-/*
-lazy val dockerSettings = Seq(
-    // things the docker file generation depends on are listed here
-    dockerfile in docker := {
-    
-		// The assembly task generates a fat JAR file
-		val artifact: File = assembly.value
-		val artifactTargetPath = s"/app/${artifact.name}"
-    
-    new Dockerfile {
-	    from("java")
-	    add(artifact, artifactTargetPath)
-	    entryPoint("java", "-jar", artifactTargetPath)
- 		}
-	}
-)  */
+  new Dockerfile {
+    from("scala-sbt")
+    entryPoint(s"$targetDir/bin/${executableScriptName.value}")
+    copy(appDir, targetDir)
+  }
+}

@@ -34,7 +34,7 @@ class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, apiType: ExternalInte
       log.info("Starting scrape of {}", baseUrl)
 
       interface.getTotalDataSetCount() onComplete {
-        case Success(count)  => createBatches(0, /*count*/10000).map(batch => throttler ! ScrapeDataSets(batch._1, batch._2.toInt))
+        case Success(count)  => createBatches(0, /*count*/100).map(batch => throttler ! ScrapeDataSets(batch._1, batch._2.toInt))
         case Failure(reason) => supervisor ! ScrapeRepoFailed(baseUrl, reason)
       }
     case ScrapeDataSets(start, number) =>

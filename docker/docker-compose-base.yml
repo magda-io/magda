@@ -1,0 +1,8 @@
+version: '2'
+services:
+  api:
+    expose:
+     - "9000"
+  search:
+    expose:
+     - "8080"
