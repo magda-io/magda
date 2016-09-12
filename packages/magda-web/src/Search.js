@@ -5,7 +5,6 @@ import SearchFilters from './SearchFilters/SearchFilters';
 import SearchBox from './SearchBox';
 import getTemporals from './dummyData/getTemporals';
 import getFormats from './dummyData/getFormats';
-import getJurisdictions from './dummyData/getJurisdictions';
 import debounce from 'lodash.debounce';
 import './Search.css';
 import getJSON from'./getJSON';
@@ -101,7 +100,7 @@ class Search extends Component {
                           filterJurisdiction={[]}
                           filters={this.state.filters}
                           location={this.props.location}
-                          updateQuery ={this.updateQuery} />
+                          updateQuery={this.updateQuery} />
                     </div>}
           <div className='col-sm-8'>
           <div className='summary'>

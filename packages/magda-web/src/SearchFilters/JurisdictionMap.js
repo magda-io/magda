@@ -1,7 +1,6 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
 import './JurisdictionMap.css';
 import Filter from './Filter';
-import getJSON from'../getJSON';
 import L from 'leaflet';
 import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.js';
 import regions from '../dummyData/regions';
@@ -15,8 +14,6 @@ class JurisdictionMap extends Filter {
     }
 
     componentDidMount(){
-        let that = this;
-
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 5);
 
@@ -39,8 +36,6 @@ class JurisdictionMap extends Filter {
         let regionType = 'SA1'
         let region = regions()[regionType];
         function style(feature) {
-            let opacity = feature.properties.name === that.props.location.query.jurisdiction ? 1 : 0;
-
             return {
                 color: 'rgba(0,0,0,0)',
                 outline: {
@@ -56,49 +51,24 @@ class JurisdictionMap extends Filter {
             };
         }
 
-        /*function onEachFeature(feature, layer) {
-            layer.on({
-                mouseover: highlightFeature,
-                mouseout: resetHighlight,
-                click: click
-            });
-        }*/
-
         this.layer = new L.TileLayer.MVTSource({
-            url: region.url, 
-            style: style, 
+            url: region.url,
+            style: style,
             /*onEachFeature: onEachFeature, */
             /*clickableLayers: ['FID_SA4_2011_AUST'],*/
             mutexToggle: true,
-            onClick: function(evt) { if (evt.type == 'click' && evt.feature) alert('Region type: ' + regionType + ' code: ' + evt.feature.id); },
+            onClick: function(evt) {
+                if (evt.type === 'click' && evt.feature) {
+                    alert('Region type: ' + regionType + ' code: ' + evt.feature.id);
+                    that.props.updateQuery({
+                            jurisdiction: evt.feature.id
+                    });
+                    }
+                },
             getIDForLayerFeature: function(feature) { return feature.properties[region.id]; }
         });
         this.layer.addTo(this.map);
-
-        function click(e){
-            let jurisdiction = e.target.feature.properties.name;
-            that.props.updateQuery({
-                    jurisdiction: jurisdiction
-            });
-
-        }
-
-        function highlightFeature(e){
-            let layer = e.target;
-            layer.setStyle({
-                opacity: 1
-            });
-            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-                layer.bringToFront();
-            }
-        }
-
-        function resetHighlight(e) {
-             that.layer.resetStyle(e.target);
-        }
     }
-
-
 
     componentWillUnmount(){
         this.map.remove();
@@ -110,9 +80,9 @@ class JurisdictionMap extends Filter {
             <div className='filter jurisdiction-map'>
                <div className='clearfix filter-header'>
                     <h4 className='filter-title'>{this.props.title}</h4>
-                    <button type='button' className='btn btn-reset' onClick={this.props.closePopUp}>Close</button>
+                    <button type='button' className='btn btn-reset' onClick={this.props.closePopUp}>Close
+                    </button>
                 </div>
-
               <div className='map-in-popup' ref={(c) => this._c = c}/>
             </div>
             </div>

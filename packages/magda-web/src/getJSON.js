@@ -2,10 +2,21 @@ export default function (url, updateProgress, transferComplete, transferFailed, 
     return new Promise(function(resolve, reject) {
       let xhr = new XMLHttpRequest();
 
-      updateProgress && xhr.addEventListener("progress", updateProgress);
-      transferComplete && xhr.addEventListener("load", transferComplete);
-      transferFailed && xhr.addEventListener("error", transferFailed);
-      transferCanceled && xhr.addEventListener("abort", transferCanceled);
+      if(updateProgress && typeof updateProgress === 'function'){
+        xhr.addEventListener("progress", updateProgress);
+      }
+
+      if(transferComplete && typeof transferComplete === 'function'){
+        xhr.addEventListener("load", transferComplete);
+      }
+
+      if(transferFailed && typeof transferFailed === 'function'){
+        xhr.addEventListener("error", transferFailed);
+      }
+
+      if(transferCanceled && typeof transferCanceled === 'function'){
+        xhr.addEventListener("abort", transferCanceled);
+      }
 
       xhr.open('get', url, true);
       xhr.responseType = 'json';

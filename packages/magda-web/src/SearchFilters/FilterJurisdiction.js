@@ -7,7 +7,6 @@ import L from 'leaflet';
 import ozStates from '../dummyData/ozStates';
 import React from 'react'
 import getJsonp from '../getJsonp';
-import getJSON from'../getJSON';
 
 const statesData = ozStates();
 
@@ -40,7 +39,6 @@ class FilterJurisdiction extends Filter {
 
     componentDidMount(){
         super.componentDidMount();
-        let that = this;
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 3);
 
