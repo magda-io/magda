@@ -17,8 +17,8 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import com.sksamuel.elastic4s.RichSearchHit
 import com.sksamuel.elastic4s.HitAs
-
-
+import com.sksamuel.elastic4s.analyzers.SimpleAnalyzer
+import com.sksamuel.elastic4s.analyzers.StandardAnalyzer
 
 class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchProvider {
   implicit object SprayJsonIndexable extends Indexable[JsValue] {
@@ -41,14 +41,20 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
     } map { a =>
       client.execute {
         create index "magda" mappings (
-          "datasets" as (
-            "temporal" nested (
-              "end" nested (
-                "text" typed StringType
+          "datasets" fields (
+            "temporal" inner (
+              "end" inner (
+                field("text") typed StringType
               ),
-                "start" nested (
+                "start" inner (
                   "text" typed StringType
                 )
+            ),
+            "publisher" inner (
+              "name" typed StringType
+              fields (
+                "untouched" typed StringType index "not_analyzed"
+              )
             )
           )
         )
@@ -71,8 +77,13 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
   override def search(queryText: String) =
     setupFuture.flatMap(a =>
       client.execute {
-        ElasticDsl.search in "magda" / "datasets" query queryText
+        ElasticDsl.search in "magda" / "datasets" query queryText aggregations (
+          aggregation terms "publisher" field "publisher"
+        )
       } map { response =>
+        val aggs = response.aggregations.asMap()
+        //        aggs.get("publisher").
+
         new SearchResult(
           hitCount = response.getHits.totalHits().toInt,
           dataSets = response.as[DataSet].toList
