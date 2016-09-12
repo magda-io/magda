@@ -19,6 +19,9 @@ import com.sksamuel.elastic4s.RichSearchHit
 import com.sksamuel.elastic4s.HitAs
 import com.sksamuel.elastic4s.analyzers.SimpleAnalyzer
 import com.sksamuel.elastic4s.analyzers.StandardAnalyzer
+import scala.collection.JavaConverters._
+import org.elasticsearch.search.aggregations.Aggregation
+import org.elasticsearch.search.aggregations.bucket.terms.StringTerms
 
 class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchProvider {
   implicit object SprayJsonIndexable extends Indexable[JsValue] {
@@ -50,12 +53,12 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
                   "text" typed StringType
                 )
             ),
-            "publisher" inner (
-              "name" typed StringType
-              fields (
-                "untouched" typed StringType index "not_analyzed"
-              )
-            )
+                  "publisher" inner (
+                    "name" typed StringType
+                    fields (
+                      "untouched" typed StringType index "not_analyzed"
+                    )
+                  )
           )
         )
       }
@@ -78,15 +81,29 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
     setupFuture.flatMap(a =>
       client.execute {
         ElasticDsl.search in "magda" / "datasets" query queryText aggregations (
-          aggregation terms "publisher" field "publisher"
+          aggregation terms "publisher" field "publisher.name.untouched",
+//          aggregation terms "issued" field "issued"
         )
       } map { response =>
-        val aggs = response.aggregations.asMap()
-        //        aggs.get("publisher").
+        val aggs = response.aggregations.asList().asScala
 
         new SearchResult(
           hitCount = response.getHits.totalHits().toInt,
-          dataSets = response.as[DataSet].toList
+          dataSets = response.as[DataSet].toList,
+          facets = Some(aggs.map(agg => agg match {
+            case (st: StringTerms) => new Facet(
+              id = agg.getName,
+              name = agg.getName,
+              options = st.getBuckets.asScala.map { bucket =>
+                new FacetOption(
+                  id = bucket.getKeyAsString,
+                  name = bucket.getKeyAsString,
+                  hitCount = Some(bucket.getDocCount.toInt)
+                )
+              }
+            )
+            case _ => ???
+          }).toSeq)
         )
       }
     )
