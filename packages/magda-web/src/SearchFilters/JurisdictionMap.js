@@ -1,6 +1,7 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
 import './JurisdictionMap.css';
 import Filter from './Filter';
+import getJSON from'../getJSON';
 import L from 'leaflet';
 import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.js';
 import regions from '../dummyData/regions';
@@ -14,6 +15,8 @@ class JurisdictionMap extends Filter {
     }
 
     componentDidMount(){
+        let that = this;
+
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 5);
 
@@ -26,18 +29,18 @@ class JurisdictionMap extends Filter {
     }
 
     componentWillReceiveProps(){
-        // could check if update is required
-        this.map.removeLayer(this.layer);
-        this.addRegion();
+
     }
 
     addRegion(){
         let that = this;
         let regionType = 'SA1'
         let region = regions()[regionType];
+        let query = this.props.location.query;
         function style(feature) {
+            console.log(query.jurisdiction, feature.id);
             return {
-                color: 'rgba(0,0,0,0)',
+                color: (+query.jurisdiction === feature.id) ? 'red' : 'rgba(0,0,0,0)',
                 outline: {
                     color: 'black',
                     size: 1
@@ -45,7 +48,7 @@ class JurisdictionMap extends Filter {
                 selected: {
                     color: '#00B5FF',
                     outline: {
-                        color: 'red'
+                        color: '#00B5FF'
                     }
                 }
             };
@@ -57,18 +60,17 @@ class JurisdictionMap extends Filter {
             /*onEachFeature: onEachFeature, */
             /*clickableLayers: ['FID_SA4_2011_AUST'],*/
             mutexToggle: true,
-            onClick: function(evt) {
-                if (evt.type === 'click' && evt.feature) {
-                    alert('Region type: ' + regionType + ' code: ' + evt.feature.id);
-                    that.props.updateQuery({
-                            jurisdiction: evt.feature.id
-                    });
-                    }
-                },
+            onClick: function(evt) { if (evt.type == 'click' && evt.feature){
+                that.props.updateQuery({
+                    jurisdiction: evt.feature.id
+                });
+            }},
             getIDForLayerFeature: function(feature) { return feature.properties[region.id]; }
         });
         this.layer.addTo(this.map);
     }
+
+
 
     componentWillUnmount(){
         this.map.remove();
@@ -80,9 +82,9 @@ class JurisdictionMap extends Filter {
             <div className='filter jurisdiction-map'>
                <div className='clearfix filter-header'>
                     <h4 className='filter-title'>{this.props.title}</h4>
-                    <button type='button' className='btn btn-reset' onClick={this.props.closePopUp}>Close
-                    </button>
+                    <button type='button' className='btn btn-reset' onClick={this.props.closePopUp}>Close</button>
                 </div>
+
               <div className='map-in-popup' ref={(c) => this._c = c}/>
             </div>
             </div>
