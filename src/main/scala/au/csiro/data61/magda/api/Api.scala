@@ -32,12 +32,8 @@ import au.csiro.data61.magda.api.Types._
 import au.csiro.data61.magda.external._
 import ch.megard.akka.http.cors.CorsDirectives
 import ch.megard.akka.http.cors.CorsSettings
-import au.csiro.data61.magda.crawler.Search
-import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.crawler.SearchFacets
-import java.time.format.DateTimeFormatter
-import java.time.LocalDateTime
-import java.time.ZoneId
+import au.csiro.data61.magda.search.SearchProvider
 
 class Api(val indexer: ActorRef, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends Protocols with CorsDirectives {
   val logger = Logging(system, getClass)
@@ -100,14 +96,7 @@ class Api(val indexer: ActorRef, implicit val config: Config, implicit val syste
         pathPrefix("datasets") {
           pathPrefix("search") {
             (get & parameters("query")) { (query) =>
-              val result = (indexer ? Search(query)).mapTo[List[DataSet]].map { dataSets: List[DataSet] =>
-                val facets = Seq(
-                  createFacet(dataSets, "Publisher", "publisher", dataSet => dataSet.publisher.flatMap(_.name)),
-                  createFacet(dataSets, "Year", "year", dataSet => dataSet.issued.map(LocalDateTime.ofInstant(_, ZoneId.systemDefault()).getYear.toString))
-                )
-
-                SearchResult(dataSets.length, Some(facets), dataSets.take(50))
-              }
+              val result = SearchProvider().search(query)
 
               pathPrefix("datasets") {
                 complete {

@@ -149,7 +149,7 @@ trait CKANProtocols extends DefaultJsonProtocol {
     modified = Some(Instant.parse(hit.metadata_modified + "Z")),
     language = hit.language,
     publisher = hit.organization,
-    accrualPeriodicity = hit.update_freq map (new Periodicity(_)),
+    accrualPeriodicity = hit.update_freq map (Periodicity.fromString(_)),
     spatial = hit.spatial_coverage map (name => new Location(name = Some(name))),
     temporal = {
       if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None

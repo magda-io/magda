@@ -42,11 +42,12 @@ object MagdaApp extends App {
   val supervisor = system.actorOf(Props(new Supervisor(system, config)))
 
   // Index erryday 
-  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
+  supervisor ! Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl")))))
+//  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
 }
 
 class Listener extends Actor with ActorLogging {
   def receive = {
-    case d: DeadLetter => log.info(d.toString)
+    case d: DeadLetter => //log.info(d.message)
   }
 }

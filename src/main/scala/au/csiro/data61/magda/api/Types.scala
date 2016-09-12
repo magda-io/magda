@@ -5,8 +5,6 @@ import spray.json._
 import java.time.{ Instant, Period, Duration }
 
 object Types {
-  //  import Periodicity.jsonConv
-
   case class SearchResult(
     hitCount: Int,
     facets: Option[Seq[Facet]] = None,
@@ -27,25 +25,12 @@ object Types {
     hitCount: Option[Int] = None)
 
   object Periodicity {
-    val asNeeded: Periodicity = new Periodicity("As Needed")
-    implicit object JSONConv extends JsonFormat[Periodicity] {
-      override def write(periodicity: Periodicity): JsString = JsString(periodicity.toString)
-      override def read(json: JsValue) = ???
-    }
+    val asNeeded: Periodicity = new Periodicity(text = Some("As Needed"))
+    
+    def fromString(string: String) = Periodicity(text = Some(string))
   }
 
-  class Periodicity private (name: Option[String] = None, duration: Option[Duration] = None) {
-    def this(name: String) = this(name = Some(name))
-    def this(duration: Duration) = this(duration = Some(duration))
-
-    override def toString() = duration match {
-      case Some(duration) => duration.toString()
-      case None => name match {
-        case Some(name) => name
-        case None       => ""
-      }
-    }
-  }
+  case class Periodicity private (text: Option[String] = None, duration: Option[Duration] = None)
 
   case class DataSet(
     identifier: String,
@@ -117,6 +102,7 @@ object Types {
     implicit val latLngFormat = jsonFormat2(LatLong.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
+    implicit val periodicityFormat = jsonFormat2(Periodicity.apply)
     implicit val dataSetFormat = jsonFormat16(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)
     implicit val facetFormat = jsonFormat3(Facet.apply)
