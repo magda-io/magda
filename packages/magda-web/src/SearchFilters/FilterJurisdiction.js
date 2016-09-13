@@ -17,6 +17,7 @@ class FilterJurisdiction extends Filter {
         this.layer = undefined;
         this.closePopUp = this.closePopUp.bind(this);
         this.openPopup = this.openPopup.bind(this);
+        this.onFeatureClick = this.onFeatureClick.bind(this);
         this.state={
             popUpIsOpen: false,
             searchText: '',
@@ -61,8 +62,8 @@ class FilterJurisdiction extends Filter {
 
     onFeatureClick(evt){
         this.props.updateQuery({
-                    jurisdiction: evt.feature.id
-                });
+            jurisdiction: evt.feature.id
+        });
     }
 
     render(){

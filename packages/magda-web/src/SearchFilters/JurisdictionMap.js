@@ -21,6 +21,13 @@ class JurisdictionMap extends Filter {
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 5);
 
+        if(this.props.interaction === false){
+            this._c.addEventListener('click', ()=>{
+                this.props.onClick();
+            })
+        }
+
+
         L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',  {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(this.map);
@@ -31,7 +38,6 @@ class JurisdictionMap extends Filter {
             this.map.dragging.disable();
             this.map.touchZoom.disable();
             this.map.scrollWheelZoom.disable();
-            this.map.tap.disable();
         }
 
     }
@@ -73,6 +79,7 @@ class JurisdictionMap extends Filter {
             clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
             mutexToggle: true,
             onClick: function(evt) { if (evt.type == 'click' && evt.feature){
+                console.log('evt');
                 that.props.onClick(evt);
             }},
             getIDForLayerFeature: this.getID
