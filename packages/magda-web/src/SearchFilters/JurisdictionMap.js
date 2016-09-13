@@ -68,8 +68,9 @@ class JurisdictionMap extends Filter {
         this.layer = new L.TileLayer.MVTSource({
             url: region.url,
             style: this.generateStyle(this.props.location.query.jurisdiction),
+            hoverInteraction: this.props.interaction,
             /*onEachFeature: onEachFeature, */
-            /*clickableLayers: ['FID_SA4_2011_AUST'],*/
+            clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
             mutexToggle: true,
             onClick: function(evt) { if (evt.type == 'click' && evt.feature){
                 that.props.onClick(evt);
