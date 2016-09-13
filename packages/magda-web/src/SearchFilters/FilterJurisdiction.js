@@ -41,7 +41,7 @@ class FilterJurisdiction extends Filter {
     componentDidMount(){
         super.componentDidMount();
 
-        this._c.addEventListener('click', ()=>{console.log('click')});
+        this._c.addEventListener('click', ()=>{this.openPopup()});
 
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 3);

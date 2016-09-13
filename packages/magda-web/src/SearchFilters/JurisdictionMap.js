@@ -12,6 +12,7 @@ class JurisdictionMap extends Filter {
         super(props);
         this.map = undefined;
         this.layer = undefined;
+        this.getID = undefined;
     }
 
     componentDidMount(){
@@ -28,34 +29,38 @@ class JurisdictionMap extends Filter {
 
     }
 
-    componentWillReceiveProps(){
+    componentWillReceiveProps(nextProps) {
+        // Is this condition needed? Can props be updated before the layer is created?
+        if (this.layer) {
+            this.layer.setStyle(this.generateStyle(nextProps.location.query.jurisdiction));
+        }
+    }
 
+    generateStyle(jurisdiction) {
+        return (feature) => ({
+            color: (jurisdiction == this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
+                outline: {
+                    color: 'black',
+                    size: 1
+                },
+                selected: {
+                    color: (jurisdiction == this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
+                    outline: {
+                        color: '#00B5FF'
+                    }
+                }
+        });
     }
 
     addRegion(){
         let that = this;
         let regionType = 'SA1'
         let region = regions()[regionType];
-        let query = this.props.location.query;
-        function style(feature) {
-            return {
-                color: (+query.jurisdiction === feature.id) ? 'red' : 'rgba(0,0,0,0)',
-                outline: {
-                    color: 'black',
-                    size: 1
-                },
-                selected: {
-                    color: '#00B5FF',
-                    outline: {
-                        color: '#00B5FF'
-                    }
-                }
-            };
-        }
+        this.getID = function(feature) { return feature.properties[region.id]; };
 
         this.layer = new L.TileLayer.MVTSource({
             url: region.url,
-            style: style,
+            style: this.generateStyle(this.props.location.query.jurisdiction),
             /*onEachFeature: onEachFeature, */
             /*clickableLayers: ['FID_SA4_2011_AUST'],*/
             mutexToggle: true,
@@ -64,7 +69,7 @@ class JurisdictionMap extends Filter {
                     jurisdiction: evt.feature.id
                 });
             }},
-            getIDForLayerFeature: function(feature) { return feature.properties[region.id]; }
+            getIDForLayerFeature: this.getID
         });
         this.layer.addTo(this.map);
     }
