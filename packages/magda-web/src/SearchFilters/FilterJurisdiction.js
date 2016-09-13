@@ -16,6 +16,7 @@ class FilterJurisdiction extends Filter {
         this.map = undefined;
         this.layer = undefined;
         this.closePopUp = this.closePopUp.bind(this);
+        this.openPopup = this.openPopup.bind(this);
         this.state={
             popUpIsOpen: false,
             searchText: '',
@@ -39,6 +40,9 @@ class FilterJurisdiction extends Filter {
 
     componentDidMount(){
         super.componentDidMount();
+
+        this._c.addEventListener('click', ()=>{console.log('click')});
+
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 3);
 
@@ -56,9 +60,15 @@ class FilterJurisdiction extends Filter {
         this.addRegion(statesData);
     }
 
+    openPopup(){
+        this.setState({
+            popUpIsOpen: true
+        });
+    }
+
     closePopUp(){
         this.setState({
-                popUpIsOpen: false
+            popUpIsOpen: false
         });
     }
 
@@ -87,13 +97,9 @@ class FilterJurisdiction extends Filter {
             };
         }
 
-        function onEachFeature(feature, layer) {
-            layer.on({
-                click: ()=>{that.setState({popUpIsOpen: true})}
-            });
-        }
 
-        this.layer = L.geoJson(data, {style: style, onEachFeature: onEachFeature}).addTo(this.map);
+
+        this.layer = L.geoJson(data, {style: style}).addTo(this.map);
     }
 
     componentWillUnmount(){
@@ -116,6 +122,7 @@ class FilterJurisdiction extends Filter {
               />
 
               <div className='map' ref={(c) => this._c = c}/>
+
               {this.state.popUpIsOpen && <JurisdictionMap title='jurisdiction'
                                              id='jurisdiction'
                                              location={this.props.location}

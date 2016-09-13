@@ -38,7 +38,6 @@ class JurisdictionMap extends Filter {
         let region = regions()[regionType];
         let query = this.props.location.query;
         function style(feature) {
-            console.log(query.jurisdiction, feature.id);
             return {
                 color: (+query.jurisdiction === feature.id) ? 'red' : 'rgba(0,0,0,0)',
                 outline: {
