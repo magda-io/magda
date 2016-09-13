@@ -49,6 +49,7 @@ class JurisdictionMap extends Filter {
         }
         if(this.props.locationInfo !== nextProps.locationInfo){
             console.log(nextProps.locationInfo);
+
         }
     }
 
@@ -82,7 +83,6 @@ class JurisdictionMap extends Filter {
             clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
             mutexToggle: true,
             onClick: function(evt) { if (evt.type == 'click' && evt.feature){
-                console.log('evt');
                 that.props.onClick(evt);
             }},
             getIDForLayerFeature: this.getID
