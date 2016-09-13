@@ -27,6 +27,13 @@ class JurisdictionMap extends Filter {
 
         this.addRegion();
 
+        if(this.props.interaction === false){
+            this.map.dragging.disable();
+            this.map.touchZoom.disable();
+            this.map.scrollWheelZoom.disable();
+            this.map.tap.disable();
+        }
+
     }
 
     componentWillReceiveProps(nextProps) {
@@ -65,16 +72,12 @@ class JurisdictionMap extends Filter {
             /*clickableLayers: ['FID_SA4_2011_AUST'],*/
             mutexToggle: true,
             onClick: function(evt) { if (evt.type == 'click' && evt.feature){
-                that.props.updateQuery({
-                    jurisdiction: evt.feature.id
-                });
+                that.props.onClick(evt);
             }},
             getIDForLayerFeature: this.getID
         });
         this.layer.addTo(this.map);
     }
-
-
 
     componentWillUnmount(){
         this.map.remove();
@@ -82,15 +85,8 @@ class JurisdictionMap extends Filter {
 
     render(){
         return (
-            <div className='jurisdiction-map-wrapper'>
-            <div className='filter jurisdiction-map'>
-               <div className='clearfix filter-header'>
-                    <h4 className='filter-title'>{this.props.title}</h4>
-                    <button type='button' className='btn btn-reset' onClick={this.props.closePopUp}>Close</button>
-                </div>
-
-              <div className='map-in-popup' ref={(c) => this._c = c}/>
-            </div>
+            <div className='jurisdiction-map'>
+              <div className='map' ref={(c) => this._c = c}/>
             </div>
       );
     }

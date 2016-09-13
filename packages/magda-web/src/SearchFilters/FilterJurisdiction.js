@@ -38,28 +38,6 @@ class FilterJurisdiction extends Filter {
     }
 
 
-    componentDidMount(){
-        super.componentDidMount();
-
-        this._c.addEventListener('click', ()=>{this.openPopup()});
-
-        this.map = L.map(this._c);
-        this.map.setView([-27, 133], 3);
-
-        L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        }).addTo(this.map);
-
-        this.map.doubleClickZoom.disable();
-        this.map.scrollWheelZoom.disable();
-        this.map.boxZoom.disable();
-        this.map.touchZoom.disable();
-        this.map.keyboard.disable();
-        this.map.dragging.disable();
-
-        this.addRegion(statesData);
-    }
-
     openPopup(){
         this.setState({
             popUpIsOpen: true
@@ -81,29 +59,10 @@ class FilterJurisdiction extends Filter {
         super.toggleFilter(option);
     }
 
-    addRegion(data){
-        let that = this;
-
-        if(this.layer){
-            this.map.removeLayer(this.layer);
-        }
-        function style(feature) {
-            let opacity = feature.properties.name === that.props.location.query.jurisdiction ? 1 : 0;
-            return {
-                fillColor: '#00B5FF',
-                weight: 1,
-                opacity: 0,
-                fillOpacity: opacity
-            };
-        }
-
-
-
-        this.layer = L.geoJson(data, {style: style}).addTo(this.map);
-    }
-
-    componentWillUnmount(){
-        this.map.remove();
+    onFeatureClick(evt){
+        this.props.updateQuery({
+                    jurisdiction: evt.feature.id
+                });
     }
 
     render(){
@@ -120,14 +79,30 @@ class FilterJurisdiction extends Filter {
                                  handleChange={this.handleChange}
                                  allowMultiple={false}
               />
+              <div className='preview'>
+                    <JurisdictionMap title='jurisdiction'
+                                     id='jurisdiction'
+                                     location={this.props.location}
+                                     updateQuery={this.props.updateQuery}
+                                     onClick={this.openPopup}
+                                     interaction={false}
+                                     />
+              </div>
 
-              <div className='map' ref={(c) => this._c = c}/>
-
-              {this.state.popUpIsOpen && <JurisdictionMap title='jurisdiction'
-                                             id='jurisdiction'
-                                             location={this.props.location}
-                                             updateQuery={this.props.updateQuery}
-                                             closePopUp={this.closePopUp}/>}
+              {this.state.popUpIsOpen && <div className='popup'>
+                                            <div className='popup-inner'>
+                                                <button className='btn' onClick={this.closePopUp}>
+                                                    Close
+                                                </button>
+                                                <JurisdictionMap title='jurisdiction'
+                                                                 id='jurisdiction'
+                                                                 location={this.props.location}
+                                                                 updateQuery={this.props.updateQuery}
+                                                                 onClick={this.onFeatureClick}
+                                                                 interaction={true}
+                                                                 />
+                                            </div>
+                                            </div>}
               <div className='jurisdiction-summray'>
                 {this.props.location.query[this.props.id]}
               </div>
