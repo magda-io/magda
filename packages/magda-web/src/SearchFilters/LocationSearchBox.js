@@ -35,10 +35,7 @@ class LocationSearchBox extends Component {
 
   toggleFilter(option){
     this.props.clearSearch();
-    let optionWithId = {
-      id: option.suggestion.code
-    }
-    this.props.toggleFilter(optionWithId, this.props.allowMultiple);
+    this.props.toggleFilter(option);
   }
 
   render(){

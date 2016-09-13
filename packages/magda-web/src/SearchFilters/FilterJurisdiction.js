@@ -22,7 +22,8 @@ class FilterJurisdiction extends Filter {
             popUpIsOpen: false,
             searchText: '',
             locationSearchResults: [],
-            mapData: {}
+            mapData: {},
+            locationInfo: {}
         }
     }
 
@@ -57,7 +58,15 @@ class FilterJurisdiction extends Filter {
     }
 
     toggleFilter(option){
-        super.toggleFilter(option);
+        let optionWithId = {
+          id: option.suggestion.code
+        }
+        let allowMultiple = false;
+        super.toggleFilter(optionWithId, allowMultiple);
+
+        this.setState({
+            locationInfo: option
+        });
     }
 
     onFeatureClick(evt){
@@ -78,7 +87,6 @@ class FilterJurisdiction extends Filter {
                                  searchText={this.state.searchText}
                                  clearSearch={this.clearSearch}
                                  handleChange={this.handleChange}
-                                 allowMultiple={false}
               />
               <div className='preview'>
                     <JurisdictionMap title='jurisdiction'
@@ -87,6 +95,7 @@ class FilterJurisdiction extends Filter {
                                      updateQuery={this.props.updateQuery}
                                      onClick={this.openPopup}
                                      interaction={false}
+                                     locationInfo={this.state.locationInfo}
                                      />
               </div>
 
@@ -101,6 +110,7 @@ class FilterJurisdiction extends Filter {
                                                                  updateQuery={this.props.updateQuery}
                                                                  onClick={this.onFeatureClick}
                                                                  interaction={true}
+                                                                 locationInfo={this.state.locationInfo}
                                                                  />
                                             </div>
                                             </div>}

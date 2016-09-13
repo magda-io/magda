@@ -47,6 +47,9 @@ class JurisdictionMap extends Filter {
         if (this.layer) {
             this.layer.setStyle(this.generateStyle(nextProps.location.query.jurisdiction));
         }
+        if(this.props.locationInfo !== nextProps.locationInfo){
+            console.log(nextProps.locationInfo);
+        }
     }
 
     generateStyle(jurisdiction) {
@@ -92,6 +95,7 @@ class JurisdictionMap extends Filter {
     }
 
     render(){
+
         return (
             <div className='jurisdiction-map'>
               <div className='map' ref={(c) => this._c = c}/>
