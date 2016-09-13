@@ -115,23 +115,6 @@ case class CKANOrganization(
   `type`: Option[String])
 
 trait CKANProtocols extends DefaultJsonProtocol {
-  implicit def ckanSearchConv(ckanResponse: CKANSearchResponse): SearchResult = {
-    val dataSets = ckanResponse.result.results
-
-    val facets = Seq(new Facet(
-      name = "Publishers",
-      id = "publisher",
-      options = dataSets.groupBy(_.publisher)
-        .filter(a => a._1.isDefined && a._1.get.name.isDefined)
-        .map {
-          case (publisher: Some[Agent], dataSets) => new FacetOption(id = publisher.get.name.get, name = publisher.get.name.get, hitCount = Some(dataSets.length))
-          case (None, _)                          => ???
-        }
-        .toSeq
-    ))
-
-    SearchResult(hitCount = ckanResponse.result.count, dataSets = dataSets, facets = Some(facets))
-  }
   implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
     name = ckanOrg.title,
     extraFields = Map(

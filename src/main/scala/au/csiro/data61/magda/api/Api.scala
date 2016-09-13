@@ -63,26 +63,15 @@ class Api(val indexer: ActorRef, implicit val config: Config, implicit val syste
     }
   }
 
-  def createFacet(dataSets: Seq[DataSet], id: String, name: String, extractor: DataSet => Option[String]) = new Facet(
-    name = id,
-    id = name,
-    options = dataSets.groupBy(extractor)
-      .filter(a => a._1.isDefined)
-      .map {
-        case (option: Some[String], dataSets) => new FacetOption(id = option.get, name = option.get, hitCount = Some(dataSets.length))
-        case (None, _)                        => ???
-      }
-      .toSeq
-  )
-
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
       pathPrefix("facets") {
         path(Segment / "options" / "search") { facetId =>
           (get & parameters("query")) { (query) =>
-            complete {
-              ???
+            FacetType.fromId(facetId) match {
+              case Some(facetType) => complete(SearchProvider().searchFacets(facetType, query))
+              case None            => complete(NotFound)
             }
           }
         }

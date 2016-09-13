@@ -1,8 +1,8 @@
 package au.csiro.data61.magda.api
 
-import spray.json.DefaultJsonProtocol
+import java.time.Duration
+import java.time.Instant
 import spray.json._
-import java.time.{ Instant, Period, Duration }
 
 object Types {
   case class SearchResult(
@@ -10,18 +10,28 @@ object Types {
     facets: Option[Seq[Facet]] = None,
     dataSets: List[DataSet])
 
+  case class FacetType(id: String)
+  case object FacetType {
+    val Publisher = FacetType("publisher")
+    val Year = FacetType("year")
+
+    val all = Seq(Publisher, Year)
+
+    private val idToFacet = all.groupBy(_.id).mapValues(_.head)
+
+    def fromId(id: String): Option[FacetType] = idToFacet get id
+  }
+
   case class FacetSearchResult(
     hitCount: Int,
     options: Seq[FacetOption])
 
   case class Facet(
-    id: String,
-    name: String,
+    id: FacetType,
     options: Seq[FacetOption])
 
   case class FacetOption(
-    id: String,
-    name: String,
+    value: String,
     hitCount: Option[Int] = None)
 
   object Periodicity {
@@ -95,6 +105,10 @@ object Types {
       override def write(instant: Instant): JsString = JsString.apply(instant.toString())
       override def read(json: JsValue): Instant = Instant.parse(json.convertTo[String])
     }
+    implicit object FacetTypeFormat extends JsonFormat[FacetType] {
+      override def write(facetType: FacetType): JsString = JsString.apply(facetType.id)
+      override def read(json: JsValue): FacetType = FacetType.fromId(json.convertTo[String]).get
+    }
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val apiInstant = jsonFormat2(ApiInstant.apply)
     implicit val periodOfTimeFormat = jsonFormat2(PeriodOfTime.apply)
@@ -107,8 +121,8 @@ object Types {
     implicit val agentFormat = jsonFormat4(Agent.apply)
     implicit val periodicityFormat = jsonFormat2(Periodicity.apply)
     implicit val dataSetFormat = jsonFormat16(DataSet.apply)
-    implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)
-    implicit val facetFormat = jsonFormat3(Facet.apply)
+    implicit val facetOptionFormat = jsonFormat2(FacetOption.apply)
+    implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val searchResultFormat = jsonFormat3(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }

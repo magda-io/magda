@@ -34,22 +34,6 @@ class CKANExternalInterface(baseUrl: URL, implicit val system: ActorSystem, impl
 
   def ckanRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(ckanApiConnectionFlow).runWith(Sink.head)
 
-  def search(query: String): Future[Either[String, SearchResult]] = {
-    val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
-    val path = baseUrl.getPath
-    ckanRequest(RequestBuilding.Get(s"${path}action/package_search?rows=500&q=$encodedQuery")).flatMap { response =>
-      response.status match {
-        case OK         => Unmarshal(response.entity).to[CKANSearchResponse].map(Right(_))
-        case BadRequest => Future.successful(Left(s"$query: incorrect IP format"))
-        case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-          val error = s"CKAN request failed with status code ${response.status} and entity $entity"
-          logger.error(error)
-          Future.failed(new IOException(error))
-        }
-      }
-    }
-  }
-
   def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = ckanRequest(RequestBuilding.Get(s"${baseUrl.getPath}action/package_search?start=$start&rows=$number")).flatMap { response =>
     response.status match {
       case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.results)
