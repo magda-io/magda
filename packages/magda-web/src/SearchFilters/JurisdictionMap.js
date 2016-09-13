@@ -40,7 +40,7 @@ class JurisdictionMap extends Filter {
         return (feature) => ({
             color: (jurisdiction == this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
                 outline: {
-                    color: 'black',
+                    color: '#ddd',
                     size: 1
                 },
                 selected: {
