@@ -26,29 +26,32 @@ object Types {
 
   object Periodicity {
     val asNeeded: Periodicity = new Periodicity(text = Some("As Needed"))
-    
+
     def fromString(string: String) = Periodicity(text = Some(string))
   }
 
   case class Periodicity private (text: Option[String] = None, duration: Option[Duration] = None)
 
   case class DataSet(
-    identifier: String,
-    catalog: String,
-    title: Option[String] = None,
-    description: Option[String] = None,
-    issued: Option[Instant] = None,
-    modified: Option[Instant] = None,
-    language: Option[String] = None,
-    publisher: Option[Agent] = None,
-    accrualPeriodicity: Option[Periodicity] = None,
-    spatial: Option[Location] = None,
-    temporal: Option[PeriodOfTime] = None,
-    theme: Seq[String] = List(),
-    keyword: Seq[String] = List(),
-    contactPoint: Option[Agent] = None,
-    distribution: Option[Seq[Distribution]] = None,
-    landingPage: Option[String] = None)
+      identifier: String,
+      catalog: String,
+      title: Option[String] = None,
+      description: Option[String] = None,
+      issued: Option[Instant] = None,
+      modified: Option[Instant] = None,
+      language: Option[String] = None,
+      publisher: Option[Agent] = None,
+      accrualPeriodicity: Option[Periodicity] = None,
+      spatial: Option[Location] = None,
+      temporal: Option[PeriodOfTime] = None,
+      theme: Seq[String] = List(),
+      keyword: Seq[String] = List(),
+      contactPoint: Option[Agent] = None,
+      distribution: Option[Seq[Distribution]] = None,
+      landingPage: Option[String] = None) {
+
+    def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
+  }
 
   case class PeriodOfTime(
     start: Option[ApiInstant] = None,
@@ -109,8 +112,8 @@ object Types {
     implicit val searchResultFormat = jsonFormat3(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }
-  
+
   object Protocols extends Protocols {
-    
+
   }
 }

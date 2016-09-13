@@ -21,34 +21,35 @@ import scala.util.Failure
  * @author Foat Akhmadeev
  *         17/01/16
  */
-class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, apiType: ExternalInterfaceType, baseUrl: URL) extends Actor with ActorLogging {
+class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, interfaceDef: InterfaceDefinition) extends Actor with ActorLogging {
   val PAGE_SIZE = 50
   implicit val ec = context.dispatcher
-  val interface: ExternalInterface = ExternalInterface(apiType, baseUrl)(context.system, context.dispatcher, ActorMaterializer.create(context))
+  val interface: ExternalInterface = ExternalInterface(interfaceDef.implementation, interfaceDef.baseUrl)(context.system, context.dispatcher, ActorMaterializer.create(context))
 
   val throttler = context.actorOf(Props(classOf[TimerBasedThrottler], 1 msgsPer 1.second))
   throttler ! SetTarget(Some(context.self))
 
   def receive: Receive = {
     case ScrapeRepo() =>
-      log.info("Starting scrape of {}", baseUrl)
+      log.info("Starting scrape of {}", interfaceDef.baseUrl)
 
       interface.getTotalDataSetCount() onComplete {
         case Success(count)  => createBatches(0, /*count*/100).map(batch => throttler ! ScrapeDataSets(batch._1, batch._2.toInt))
-        case Failure(reason) => supervisor ! ScrapeRepoFailed(baseUrl, reason)
+        case Failure(reason) => supervisor ! ScrapeRepoFailed(interfaceDef.baseUrl, reason)
       }
     case ScrapeDataSets(start, number) =>
-      log.info("Scraping datasets from {} to {} in {}", start, start + number, baseUrl)
+      log.info("Scraping datasets from {} to {} in {}", start, start + number, interfaceDef.baseUrl)
 
       interface.getDataSets(start, number.toInt) onComplete {
         case Success(dataSets) => {
-          indexer ! Index(baseUrl, dataSets)
+          val dataSetsWithCatalog = dataSets.map(_.copy(catalog = interfaceDef.name))
+          indexer ! Index(interfaceDef.name, dataSetsWithCatalog)
           context.self ! ScrapeDataSetsFinished(start, number)
         }
         case Failure(reason) => context.self ! ScrapeDataSetsFailed(start, number, reason)
       }
     case ScrapeDataSetsFailed(start, number, reason) =>
-      log.error(reason, "Failed to scrape datasets from {} to {} in {} due to {}", start, start + number, baseUrl, reason)
+      log.error(reason, "Failed to scrape datasets from {} to {} in {} due to {}", start, start + number, interfaceDef.baseUrl, reason)
       // TODO: Retry!
   }
 

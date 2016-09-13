@@ -24,9 +24,9 @@ class Supervisor(system: ActorSystem, config: Config) extends Actor with ActorLo
       log.info("Beginning scrape with {} interfaces", externalInterfaces.length)
 
       externalInterfaces
-        .map(interface => host2Actor.getOrElse(interface._2, {
-          val newActor = system.actorOf(Props(new RepoCrawler(self, indexer, interface._1, interface._2)))
-          host2Actor += (interface._2 -> newActor)
+        .map(interface => host2Actor.getOrElse(interface.baseUrl, {
+          val newActor = system.actorOf(Props(new RepoCrawler(self, indexer, interface)))
+          host2Actor += (interface.baseUrl -> newActor)
           newActor
         }))
         .map(actor => actor ! ScrapeRepo())

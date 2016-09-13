@@ -26,5 +26,4 @@ object ExternalInterface {
 trait ExternalInterface {
   def getDataSets(start: Long = 0, number: Int = 10): Future[List[DataSet]]
   def getTotalDataSetCount(): Future[Long]
-  def search(query: String): Future[Either[String, SearchResult]]
 }

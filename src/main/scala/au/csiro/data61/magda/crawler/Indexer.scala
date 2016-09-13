@@ -19,10 +19,10 @@ class Indexer(supervisor: ActorRef) extends Actor {
   val searchProvider: SearchProvider = SearchProvider()
 
   def receive: Receive = {
-    case Index(baseUrl, dataSets) =>
-      searchProvider.index(dataSets) onComplete {
-        case Success(_)      => supervisor ! IndexFinished(dataSets, baseUrl)
-        case Failure(reason) => supervisor ! IndexFailed(baseUrl, reason)
+    case Index(source, dataSets) =>
+      searchProvider.index(source, dataSets) onComplete {
+        case Success(_)      => supervisor ! IndexFinished(dataSets, source)
+        case Failure(reason) => supervisor ! IndexFailed(source, reason)
       }
 
   }
