@@ -18,13 +18,10 @@ class FilterHeader extends Component {
     return (
       <div className='clearfix filter-header'>
         <h4 className='filter-title'>{this.props.title}</h4>
-        <button
-          type='button'
-          disabled={!this.hasQuery(this.props.query)}
-          className='btn btn-reset'
-          onClick={()=>{this.props.resetFilter()}}>
-            Reset
-        </button>
+        {this.hasQuery(this.props.query) && <button type='button'
+                                                    className='btn btn-reset'
+                                                    onClick={()=>{this.props.resetFilter()}}>Reset</button>}
+
       </div>
       );
   }
