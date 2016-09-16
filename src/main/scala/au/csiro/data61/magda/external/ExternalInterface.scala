@@ -17,8 +17,8 @@ object ExternalInterface {
   }
   import ExternalInterfaceType._
 
-  def apply(interfaceType: ExternalInterfaceType, baseUrl: URL)(implicit system: ActorSystem, executor: ExecutionContext, materializer: Materializer): ExternalInterface = interfaceType match {
-    case CKAN => new CKANExternalInterface(baseUrl, system, executor, materializer)
+  def apply(interfaceConfig: InterfaceConfig)(implicit system: ActorSystem, executor: ExecutionContext, materializer: Materializer): ExternalInterface = interfaceConfig.interfaceType match {
+    case CKAN => new CKANExternalInterface(interfaceConfig, system, executor, materializer)
     //    case CSW  => new CSWExternalInterface()
   }
 }

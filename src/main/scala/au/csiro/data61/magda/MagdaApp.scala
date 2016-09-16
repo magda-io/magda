@@ -1,50 +1,52 @@
 
 package au.csiro.data61.magda
 
+import scala.concurrent.ExecutionContextExecutor
+
+import collection.JavaConversions._
+import akka.actor.Actor
+import akka.actor.ActorLogging
 import akka.actor.ActorSystem
-import akka.event.{ LoggingAdapter, Logging }
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding
+import akka.actor.DeadLetter
+import akka.actor.Props
+import akka.event.Logging
+import akka.event.LoggingAdapter
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import akka.http.scaladsl.model.{ HttpResponse, HttpRequest }
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.{ ActorMaterializer, Materializer }
-import akka.stream.scaladsl.{ Flow, Sink, Source }
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import java.io.IOException
-import scala.concurrent.{ ExecutionContextExecutor, Future }
-import scala.math._
-import spray.json.DefaultJsonProtocol
+import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import au.csiro.data61.magda.api.Api
-import akka.actor.{ Actor, DeadLetter, Props }
-import au.csiro.data61.magda.crawler.Supervisor
-import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType
 import au.csiro.data61.magda.crawler.Start
-import java.net.URL
-import akka.actor.ActorLogging
-import scala.concurrent.duration._
-import au.csiro.data61.magda.crawler.InterfaceDefinition
+import au.csiro.data61.magda.crawler.Supervisor
+import au.csiro.data61.magda.external.InterfaceConfig
+import com.typesafe.config.ConfigValue
+import com.typesafe.config.ConfigObject
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  implicit val config = ConfigFactory.load()
+  implicit val config = Config.conf
 
   val logger = Logging(system, getClass)
+
+  logger.info("Starting MAGDA Metadata with env {}", Config.env)
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
   val supervisor = system.actorOf(Props(new Supervisor(system, config)))
 
+  config.getConfig("indexedServices").root().foreach {
+    case (name: String, serviceConfig: ConfigValue) =>
+      supervisor ! Start(List(InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)))
+  }
+
   // Index erryday 
-  supervisor ! Start(List((new InterfaceDefinition(ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl")), "data.gov.au"))))
   //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
+
+  val api = new Api()
 }
 
 class Listener extends Actor with ActorLogging {

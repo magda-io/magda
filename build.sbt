@@ -35,7 +35,7 @@ dockerfile in docker := {
   val targetDir = "/app"
 
   new Dockerfile {
-    from("scala-sbt")
+    from("java")
     entryPoint(s"$targetDir/bin/${executableScriptName.value}")
     copy(appDir, targetDir)
   }

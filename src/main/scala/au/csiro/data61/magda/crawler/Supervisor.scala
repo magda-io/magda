@@ -17,8 +17,6 @@ class Supervisor(system: ActorSystem, config: Config) extends Actor with ActorLo
   var host2Actor = Map.empty[URL, ActorRef]
   val indexer = context actorOf Props(new Indexer(self))
 
-  val api = new Api(indexer, config, system, context.dispatcher, ActorMaterializer.create(context))
-
   def receive: Receive = {
     case Start(externalInterfaces) =>
       log.info("Beginning scrape with {} interfaces", externalInterfaces.length)

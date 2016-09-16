@@ -4,28 +4,23 @@ services:
     extends:
       file: docker-compose-base.yml
       service: api
+    links:
+      - search
     environment:
-      - SCALA_ENV=localdocker
+      - SCALA_ENV=local
     build:
       context: .
       dockerfile: api.local.dockerfile
     volumes:
       - ../:/usr/src/app/
       - ~/.ivy2/:/root/.ivy2/
-    links:
-      - search
-    ports:
-      - "9000:9000"
   search:
     extends:
       file: docker-compose-base.yml
       service: search
-    build:
-      context: ../elasticsearch
-      dockerfile: search.local.dockerfile
     ports:
       - "9200:9200"
-      - "9300:9300"
+      - "9300"
   kibana:
     image: seeruk/docker-kibana-sense
     ports:
