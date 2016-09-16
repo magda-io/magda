@@ -19,6 +19,8 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-contrib" % akkaV,
     "ch.megard" %% "akka-http-cors" % "0.1.5",
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.3.0",
+    "net.time4j" % "time4j-core" % "4.18",
+    "net.time4j" % "time4j-i18n" % "4.18",
 
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"

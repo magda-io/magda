@@ -5,6 +5,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import spray.json._
 import au.csiro.data61.magda.api.Types._
+import au.csiro.data61.magda.model._
 import java.time.Instant
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)

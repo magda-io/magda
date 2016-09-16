@@ -3,6 +3,7 @@ package au.csiro.data61.magda.api
 import java.time.Duration
 import java.time.Instant
 import spray.json._
+import au.csiro.data61.magda.model._
 
 object Types {
   case class SearchResult(
@@ -33,15 +34,7 @@ object Types {
   case class FacetOption(
     value: String,
     hitCount: Option[Int] = None)
-
-  object Periodicity {
-    val asNeeded: Periodicity = new Periodicity(text = Some("As Needed"))
-
-    def fromString(string: String) = Periodicity(text = Some(string))
-  }
-
-  case class Periodicity private (text: Option[String] = None, duration: Option[Duration] = None)
-
+    
   case class DataSet(
       identifier: String,
       catalog: String,
@@ -62,14 +55,6 @@ object Types {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
   }
-
-  case class PeriodOfTime(
-    start: Option[ApiInstant] = None,
-    end: Option[ApiInstant] = None)
-
-  case class ApiInstant(
-    date: Option[Instant] = None,
-    text: Option[String] = None)
 
   case class Agent(
     name: Option[String] = None,
