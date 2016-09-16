@@ -46,23 +46,20 @@ class Search extends Component {
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
 
-    getJSON(`http://thunderer.it.csiro.au:9000/facets/publisher/options/search?query=${keyword}`).then((data)=>{
+    getJSON(`http://thunderer.it.csiro.au:9000/datasets/search?query=${keyword}`).then((data)=>{
       this.setState({
-        filterPublisher: data
+        filterPublisher: data.facets[1].options,
+        filterTemporal: data.facets[0].options,
+        filterFormat: getFormats()
       })
     }, (err)=>{console.warn(err)});
-
-    this.setState({
-        filterTemporal: getTemporals(),
-        filterFormat: getFormats()
-    });
   }
 
   doSearch(){
       let query = this.props.location.query;
       let keyword = query.q.split(' ').join('+');
 
-      getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/datasets/search?query=${keyword}`, updateProgress, transferComplete, transferFailed, transferCanceled).then((data)=>{
+      getJSON(`http://thunderer.it.csiro.au:9000/datasets/search?query=${keyword}`, updateProgress, transferComplete, transferFailed, transferCanceled).then((data)=>{
         let results= [];
         if(keyword.length > 0){
           results = data.dataSets;
@@ -81,6 +78,15 @@ class Search extends Component {
     });
     // uncomment this when facet search is activated
     // this.debouncedSearch();
+  }
+
+  getSummaryText(){
+    if(this.state.searchResults.length){
+      return (<div className='summary'>
+            <p>{this.state.searchResults.length} results found</p>
+          </div>);
+    }
+    return null;
   }
 
   render() {
@@ -103,9 +109,7 @@ class Search extends Component {
                           updateQuery={this.updateQuery} />
                     </div>}
           <div className='col-sm-8'>
-          <div className='summary'>
-            <p>{this.state.searchResults.length} results found</p>
-          </div>
+              {this.getSummaryText()}
               <SearchResults
                 searchResults={this.state.searchResults}
                 location={this.props.location}
