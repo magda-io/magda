@@ -14,7 +14,7 @@ class FilterDateRange extends Filter {
   toggleFilter(option){
     let currentStartDate = +this.props.location.query.startDate;
     let currentEndDate = +this.props.location.query.endDate;
-    let optionDate = + option.id;
+    let optionDate = + option.value;
     // if neither current Start date and end date, then set selection to both
     if(!currentEndDate && !currentEndDate){
         this.props.updateQuery({ 'startDate': optionDate});
@@ -29,11 +29,11 @@ class FilterDateRange extends Filter {
   }
 
   resetStartDate(){
-    this.props.updateQuery({ 'startDate': this.props.options[0].id });
+    this.props.updateQuery({ 'startDate': this.props.options[0].value });
   }
 
   resetEndDate(){
-    this.props.updateQuery({ 'endDate': this.props.options[this.props.options.length-1].id });
+    this.props.updateQuery({ 'endDate': this.props.options[this.props.options.length-1].value });
   }
 
   resetFilter(){
@@ -49,12 +49,12 @@ class FilterDateRange extends Filter {
         return false;
     }
     if(this.props.location.query.startDate === 'any' || this.props.location.query.endDate === 'any'){
-        if(+option.id === +this.props.location.query.startDate || +option.id === +this.props.location.query.endDate){
+        if(+option.value === +this.props.location.query.startDate || +option.value === +this.props.location.query.endDate){
             return true;
         }
     }
 
-    if(+option.id >= +this.props.location.query.startDate && +option.id <= +this.props.location.query.endDate){
+    if(+option.value >= +this.props.location.query.startDate && +option.value <= +this.props.location.query.endDate){
             return true;
     }
 
@@ -69,7 +69,7 @@ class FilterDateRange extends Filter {
       width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 200 + 'px'
     }
 
-    return <button style={divStyle} type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-date-option btn`} onClick={this.toggleFilter.bind(this, option)}>{option.name}</button>;
+    return <button style={divStyle} type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-date-option btn`} onClick={this.toggleFilter.bind(this, option)}>{option.value}</button>;
   }
 
   render(){

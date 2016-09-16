@@ -4,11 +4,9 @@ import FilterHeader from './FilterHeader';
 import LocationSearchBox from './LocationSearchBox';
 import JurisdictionMap from './JurisdictionMap';
 import L from 'leaflet';
-import ozStates from '../dummyData/ozStates';
 import React from 'react'
 import getJsonp from '../getJsonp';
 
-const statesData = ozStates();
 
 class FilterJurisdiction extends Filter {
     constructor(props) {

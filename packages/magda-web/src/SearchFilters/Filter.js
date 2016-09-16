@@ -50,10 +50,10 @@ class Filter extends Component {
         currrentFilters = [this.props.location.query[this.props.id]];
       }
       // add or remove from array
-      if(currrentFilters.indexOf(option.id) > -1){
-        currrentFilters.splice(currrentFilters.indexOf(option.id), 1);
+      if(currrentFilters.indexOf(option.value) > -1){
+        currrentFilters.splice(currrentFilters.indexOf(option.value), 1);
       } else{
-        currrentFilters.push(option.id)
+        currrentFilters.push(option.value)
       }
 
       this.props.updateQuery({
@@ -62,7 +62,7 @@ class Filter extends Component {
 
     } else{
       this.props.updateQuery({
-        [this.props.id]: option.id
+        [this.props.id]: option.value
       });
     }
   }
@@ -91,10 +91,10 @@ class Filter extends Component {
           <button type='button'
                   className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`}
                   onClick={this.toggleFilter.bind(this, option, true)}
-                  title={option.name}>
+                  title={option.value}>
           { highlight ?
-            <span className='option-name' dangerouslySetInnerHTML={this.highlightSearchedText(option.name)}/> :
-            <span className='option-name'>{option.name}</span>
+            <span className='option-name' dangerouslySetInnerHTML={this.highlightSearchedText(option.value)}/> :
+            <span className='option-name'>{option.value}</span>
           }
           <span className='option-count'>{option.hitCount}</span>
           {this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}
@@ -124,13 +124,13 @@ class Filter extends Component {
     }
     /// if query is already array, check if item exist in array already
     if(Array.isArray(this.props.location.query[this.props.id])){
-      if(filter.indexOf(option.id) < 0){
+      if(filter.indexOf(option.value) < 0){
         return false;
       }
       return true;
     }
     // if query is string, check directly
-    if(filter === option.id){
+    if(filter === option.value){
       return true;
     }
     return false;
@@ -144,14 +144,14 @@ class Filter extends Component {
     }
     if(Array.isArray(this.props.location.query[this.props.id])){
       return filter.map(p=>{
-        return <div key={p}>{this.renderCondition(find(this.props.options, o=>o.id === p))}</div>;
+        return <div key={p}>{this.renderCondition(find(this.props.options, o=>o.value === p))}</div>;
       });
     }else{
-      return this.renderCondition(find(this.props.options, o=>o.id === filter))
+      return this.renderCondition(find(this.props.options, o=>o.value === filter))
     }
   }
 
-  render() {    
+  render() {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o2.hitCount - o1.hitCount);
     let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
     let size = this.state.isOpen ? inactiveOptions.length : tempSize;

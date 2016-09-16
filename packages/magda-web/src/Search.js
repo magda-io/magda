@@ -46,9 +46,9 @@ class Search extends Component {
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
 
-    getJSON(`http://default-environment.mrinzybhbv.us-west-2.elasticbeanstalk.com/facets/publisher/options/search?query=${keyword}`).then((data)=>{
+    getJSON(`http://thunderer.it.csiro.au:9000/facets/publisher/options/search?query=${keyword}`).then((data)=>{
       this.setState({
-        filterPublisher: data.options
+        filterPublisher: data
       })
     }, (err)=>{console.warn(err)});
 
