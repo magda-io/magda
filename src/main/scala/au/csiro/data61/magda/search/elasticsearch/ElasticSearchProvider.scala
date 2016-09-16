@@ -29,15 +29,15 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
   val uri = ElasticsearchClientUri("elasticsearch://search:9300")
   val client = ElasticClient.transport(uri)
 
-  case class FacetDefinition(queryModifier: (String, SearchDefinition) => SearchDefinition, aggDef: AbstractAggregationDefinition)
+  case class FacetDefinition(queryModifier: (String, SearchDefinition) => SearchDefinition, aggDef: Int => AbstractAggregationDefinition)
   val facetAggregations = Map[FacetType, FacetDefinition](
     Publisher -> FacetDefinition(
-      (queryText, searchDef) => searchDef query { matchQuery("publisher.name", queryText) },
-      aggregation terms Publisher.id field "publisher.name.untouched"
+      (queryText: String, searchDef) => if (queryText.length > 0) searchDef query { matchQuery("publisher.name", queryText) } else searchDef,
+      (limit: Int) => aggregation terms Publisher.id field "publisher.name.untouched" size limit
     ),
     Year -> FacetDefinition(
       (queryText, searchDef) => searchDef rawQuery {  s"""{ "range": { "issued": { "gte": "$queryText||/y", "lte": "$queryText||/y", "format": "yyyy" } } }"""},
-      aggregation datehistogram Year.id field "issued" interval DateHistogramInterval.YEAR format "yyyy"
+      (limit: Int) => aggregation datehistogram Year.id field "issued" interval DateHistogramInterval.YEAR format "yyyy"
     )
   )
 
@@ -81,10 +81,10 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
     )
   }
 
-  override def search(queryText: String) =
+  override def search(queryText: String, limit: Int) =
     setupFuture.flatMap(a =>
       client.execute {
-        ElasticDsl.search in "magda" / "datasets" query queryText aggregations facetAggregations.values.map(_.aggDef)
+        ElasticDsl.search in "magda" / "datasets" query queryText limit limit aggregations facetAggregations.values.map(_.aggDef(10))
       } map { response =>
         val aggs = response.aggregations.asList().asScala
 
@@ -99,13 +99,13 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
       }
     )
 
-  override def searchFacets(facetType: FacetType, queryText: String): Future[Option[Seq[FacetOption]]] =
+  override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[Option[Seq[FacetOption]]] =
     setupFuture.flatMap(a =>
       client.execute {
         val facetDef: FacetDefinition = facetAggregations.get(facetType).get
-        facetDef.queryModifier(queryText, ElasticDsl.search in "magda" / "datasets" limit 0 aggregations facetDef.aggDef)
+        facetDef.queryModifier(queryText, ElasticDsl.search in "magda" / "datasets" limit 0 aggregations facetDef.aggDef(limit))
       } map { response =>
-        response.aggregations.asScala.headOption map (a => a)
+        response.aggregations.asScala.headOption map (a => a.take(limit)) 
       }
     )
 }
