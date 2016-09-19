@@ -4,7 +4,6 @@ import SearchResults from './SearchResults/SearchResults';
 import SearchFilters from './SearchFilters/SearchFilters';
 import SearchBox from './SearchBox';
 import ProgressBar from './ProgressBar';
-import getTemporals from './dummyData/getTemporals';
 import getFormats from './dummyData/getFormats';
 import debounce from 'lodash.debounce';
 import './Search.css';
@@ -31,7 +30,8 @@ class Search extends Component {
       filterJurisdiction: [],
       filterFormat: [],
       loadingProgress: 0,
-      isLoading: false
+      isLoading: false,
+      allPublishers: []
     };
   }
 
@@ -102,7 +102,7 @@ class Search extends Component {
     if(this.state.searchResults.length){
       return (
           <div className='summary'>
-            <p>{this.state.searchResults.length} results found</p>
+            <p><strong>{this.state.searchResults.length} results found</strong></p>
           </div>);
     }
     return null;

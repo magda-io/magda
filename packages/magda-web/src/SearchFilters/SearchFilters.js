@@ -7,13 +7,13 @@ import FilterJurisdiction from './FilterJurisdiction';
 
 class SearchFilters extends Component {
   renderFilters(){
-      return( 
+      return(
             <div>
               <FilterPublisher options={this.props.filterPublisher}
-                                       title='publisher'
-                                       id='publisher'
-                                       location={this.props.location}
-                                       updateQuery={this.props.updateQuery}/>
+                               title='publisher'
+                               id='publisher'
+                               location={this.props.location}
+                               updateQuery={this.props.updateQuery}/>
 
               <FilterJurisdiction options={this.props.filterJurisdiction}
                                        title='jurisdiction'
@@ -32,7 +32,7 @@ class SearchFilters extends Component {
                                        id='format'
                                        location={this.props.location}
                                        updateQuery={this.props.updateQuery}/>
-      
+
             </div>);
   }
 
@@ -45,8 +45,8 @@ class SearchFilters extends Component {
   }
 }
 
-SearchFilters.propTypes={filters: React.PropTypes.object, 
-                         toggleFilter: React.PropTypes.func, 
+SearchFilters.propTypes={filters: React.PropTypes.object,
+                         toggleFilter: React.PropTypes.func,
                          location: React.PropTypes.object,
                          updateQuery: React.PropTypes.func};
 SearchFilters.defaultProps={filters: {}};

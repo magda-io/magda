@@ -1,7 +1,6 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
 import './JurisdictionMap.css';
 import Filter from './Filter';
-import getJSON from'../getJSON';
 import L from 'leaflet';
 import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.js';
 import regions from '../dummyData/regions';
@@ -16,8 +15,6 @@ class JurisdictionMap extends Filter {
     }
 
     componentDidMount(){
-        let that = this;
-
         this.map = L.map(this._c);
         this.map.setView([-27, 133], 5);
 
@@ -26,7 +23,6 @@ class JurisdictionMap extends Filter {
                 this.props.onClick();
             })
         }
-
 
         L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',  {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -39,7 +35,6 @@ class JurisdictionMap extends Filter {
             this.map.touchZoom.disable();
             this.map.scrollWheelZoom.disable();
         }
-
     }
 
     componentWillReceiveProps(nextProps) {
@@ -49,19 +44,18 @@ class JurisdictionMap extends Filter {
         }
         if(this.props.locationInfo !== nextProps.locationInfo){
             console.log(nextProps.locationInfo);
-
         }
     }
 
     generateStyle(jurisdiction) {
         return (feature) => ({
-            color: (jurisdiction == this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
+            color: (jurisdiction === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
                 outline: {
                     color: '#ddd',
                     size: 1
                 },
                 selected: {
-                    color: (jurisdiction == this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
+                    color: (jurisdiction === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
                     outline: {
                         color: '#00B5FF'
                     }
@@ -82,7 +76,7 @@ class JurisdictionMap extends Filter {
             /*onEachFeature: onEachFeature, */
             clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
             mutexToggle: true,
-            onClick: function(evt) { if (evt.type == 'click' && evt.feature){
+            onClick: function(evt) { if (evt.type === 'click' && evt.feature){
                 that.props.onClick(evt);
             }},
             getIDForLayerFeature: this.getID

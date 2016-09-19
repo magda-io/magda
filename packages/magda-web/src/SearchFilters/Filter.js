@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
-import find from 'lodash.find';
 import './Filter.css';
-import FilterSearchBox from './FilterSearchBox';
 import FilterHeader from './FilterHeader';
+import FilterSearchBox from './FilterSearchBox';
+import find from 'lodash.find';
+import getJSON from'../getJSON';
+import React, { Component } from 'react';
 const DEFAULTSIZE = 5;
 
 class Filter extends Component {
@@ -10,7 +11,8 @@ class Filter extends Component {
     super(props);
     this.state={
       searchText: '',
-      isOpen: false
+      isOpen: false,
+      allOptions: []
     }
     this.handleChange = this.handleChange.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
@@ -18,6 +20,7 @@ class Filter extends Component {
     this.resetFilter = this.resetFilter.bind(this);
     this.toggleFilter= this.toggleFilter.bind(this);
     this.toggleOpen = this.toggleOpen.bind(this);
+    this.getAllOptions = this.getAllOptions.bind(this);
   }
 
   componentDidMount(){
@@ -32,6 +35,7 @@ class Filter extends Component {
     this.setState({
       searchText: e.target.value
     });
+    this.getAllOptions();
   }
 
   toggleFilter(option, allowMultiple){
@@ -81,6 +85,16 @@ class Filter extends Component {
     this.setState({
       isOpen: !this.state.isOpen
     })
+  }
+
+  getAllOptions(){
+    let keyword = this.props.location.query.q.split(' ').join('+');
+    // needs to use [this.props.id] when format facet is ready
+    getJSON(`http://thunderer.it.csiro.au:9000/facets/publisher/options/search?query=${keyword}`).then((data)=>{
+      this.setState({
+        allOptions: data,
+      })
+    }, (err)=>{console.warn(err)});
   }
 
   renderCondition(option, highlight){
@@ -164,7 +178,7 @@ class Filter extends Component {
 
         {this.getActiveOption()}
 
-        <FilterSearchBox options={inactiveOptions}
+        <FilterSearchBox options={this.state.allOptions}
                          toggleFilter={this.toggleFilter}
                          searchText={this.state.searchText}
                          clearSearch={this.clearSearch}

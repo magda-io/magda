@@ -7,7 +7,7 @@ class ProgressBar extends Component {
         height: '100%'
       }
       return <div className='progress-bar'>
-                <div className='progress' style ={style}>
+                <div className='progress' style={style}>
                 </div>
              </div>
     }
