@@ -65,7 +65,7 @@ class JurisdictionMap extends Filter {
 
     addRegion(){
         let that = this;
-        let regionType = 'SA1'
+        let regionType = this.props.jurisdictionType
         let region = regions()[regionType];
         this.getID = function(feature) { return feature.properties[region.id]; };
 
