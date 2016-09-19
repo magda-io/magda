@@ -21,7 +21,7 @@ class FilterJurisdiction extends Filter {
             searchText: '',
             locationSearchResults: [],
             mapData: {},
-            locationInfo: {}
+            locationInfo: {},
         }
     }
 
@@ -56,11 +56,10 @@ class FilterJurisdiction extends Filter {
     }
 
     toggleFilter(option){
-        let optionWithId = {
-          id: option.suggestion.code
-        }
-        let allowMultiple = false;
-        super.toggleFilter(optionWithId, allowMultiple);
+        this.props.updateQuery({
+            jurisdiction: option.suggestion.code,
+            jurisdictionType: option.suggestion.type
+        });
 
         this.setState({
             locationInfo: option
@@ -69,9 +68,20 @@ class FilterJurisdiction extends Filter {
 
     onFeatureClick(evt){
         this.props.updateQuery({
-            jurisdiction: evt.feature.id
+            jurisdiction: evt.feature.id,
+            jurisdictionType: 'SA2_MAIN'
         });
+        let info = evt.feature.properties;
     }
+
+    getLocationInfoInPlainText(){
+        let result = this.state.locationInfo.suggestion;
+        if(!result){
+          return null;
+        }
+        return (`${result.geographyLabel}, ${result.stateLabel}, ${result.typeLabel}, ${result.type}`);
+    }
+
 
     render(){
         return (
@@ -113,7 +123,7 @@ class FilterJurisdiction extends Filter {
                                             </div>
                                             </div>}
               <div className='jurisdiction-summray'>
-                {this.props.location.query[this.props.id]}
+                {this.getLocationInfoInPlainText()}
               </div>
             </div>
       );
