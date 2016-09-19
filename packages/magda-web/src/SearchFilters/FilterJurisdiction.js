@@ -60,7 +60,6 @@ class FilterJurisdiction extends Filter {
 
     resetFilter(){
         super.resetFilter();
-        this.map.removeLayer(this.layer);
     }
 
     toggleFilter(option){
