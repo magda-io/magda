@@ -6,8 +6,8 @@ import scala.concurrent.Future
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import au.csiro.data61.magda.api.Types.DataSet
-import au.csiro.data61.magda.api.Types.SearchResult
+import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.misc._
 import java.net.URL
 
 object ExternalInterface {

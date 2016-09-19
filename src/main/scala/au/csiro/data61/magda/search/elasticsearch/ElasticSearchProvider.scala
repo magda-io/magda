@@ -16,13 +16,13 @@ import com.sksamuel.elastic4s.AbstractAggregationDefinition
 import com.sksamuel.elastic4s.IndexAndTypes.apply
 import com.sksamuel.elastic4s.IndexesAndTypes.apply
 
-import au.csiro.data61.magda.api.Types._
-import au.csiro.data61.magda.api.Types.Protocols._
-import au.csiro.data61.magda.api.Types.FacetType._
 import spray.json._
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import au.csiro.data61.magda.search.SearchProvider
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
+import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.Protocols._
 
 class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchProvider {
 
@@ -31,13 +31,13 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
 
   case class FacetDefinition(queryModifier: (String, SearchDefinition) => SearchDefinition, aggDef: Int => AbstractAggregationDefinition)
   val facetAggregations = Map[FacetType, FacetDefinition](
-    Publisher -> FacetDefinition(
+    FacetType.Publisher -> FacetDefinition(
       (queryText: String, searchDef) => if (queryText.length > 0) searchDef query { matchQuery("publisher.name", queryText) } else searchDef,
-      (limit: Int) => aggregation terms Publisher.id field "publisher.name.untouched" size limit
+      (limit: Int) => aggregation terms FacetType.Publisher.id field "publisher.name.untouched" size limit
     ),
-    Year -> FacetDefinition(
+    FacetType.Year -> FacetDefinition(
       (queryText, searchDef) => searchDef rawQuery {  s"""{ "range": { "issued": { "gte": "$queryText||/y", "lte": "$queryText||/y", "format": "yyyy" } } }"""},
-      (limit: Int) => aggregation datehistogram Year.id field "issued" interval DateHistogramInterval.YEAR format "yyyy"
+      (limit: Int) => aggregation datehistogram FacetType.Year.id field "issued" interval DateHistogramInterval.YEAR format "yyyy"
     )
   )
 

@@ -7,7 +7,9 @@ import scala.util.Success
 
 import akka.actor.Actor
 import akka.actor.ActorRef
-import au.csiro.data61.magda.api.Types._
+import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.search.SearchProvider
 
 /**

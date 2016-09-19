@@ -24,8 +24,9 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.api.Types._
 import scala.concurrent.ExecutionContext
+import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.misc._
 
 //class CSWExternalInterface(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends ExternalInterface with ScalaXmlSupport {
 //  val logger = Logging(system, getClass)

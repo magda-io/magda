@@ -1,11 +1,11 @@
-package au.csiro.data61.magda.api
+package au.csiro.data61.magda.model
 
 import java.time.Duration
 import java.time.Instant
 import spray.json._
-import au.csiro.data61.magda.model._
+import au.csiro.data61.magda.model.temporal._
 
-object Types {
+package misc {
   case class SearchResult(
     hitCount: Int,
     facets: Option[Seq[Facet]] = None,
@@ -34,7 +34,7 @@ object Types {
   case class FacetOption(
     value: String,
     hitCount: Option[Int] = None)
-    
+
   case class DataSet(
       identifier: String,
       catalog: String,

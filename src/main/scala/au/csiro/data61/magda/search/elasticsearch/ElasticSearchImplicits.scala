@@ -4,10 +4,10 @@ import scala.collection.JavaConverters._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.source.Indexable
 import spray.json._
-import au.csiro.data61.magda.api.Types.Protocols._
-import au.csiro.data61.magda.api.Types._
 import org.elasticsearch.search.aggregations.Aggregation
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.Protocols._
 
 object ElasticSearchImplicits {
   implicit object SprayJsonIndexable extends Indexable[JsValue] {

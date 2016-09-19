@@ -1,10 +1,10 @@
 package au.csiro.data61.magda.crawler
 
 import java.net.URL
-import au.csiro.data61.magda.api.Types._
 import au.csiro.data61.magda.external.ExternalInterface
 import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType._
 import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.model.misc._
 
 case class Start(externalInterfaces: Seq[InterfaceConfig])
 case class ScrapeRepo()

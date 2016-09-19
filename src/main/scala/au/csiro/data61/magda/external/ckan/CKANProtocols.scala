@@ -4,7 +4,9 @@ import spray.json.DefaultJsonProtocol
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import spray.json._
-import au.csiro.data61.magda.api.Types._
+import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.model._
 import java.time.Instant
 
@@ -138,8 +140,8 @@ trait CKANProtocols extends DefaultJsonProtocol {
     temporal = {
       if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
       else Some(new PeriodOfTime(
-        start = hit.temporal_coverage_from.map(text => new ApiInstant(text = Some(text))),
-        end = hit.temporal_coverage_to.map(text => new ApiInstant(text = Some(text)))
+        start = hit.temporal_coverage_from.map(ApiInstant(_)),
+        end = hit.temporal_coverage_to.map(ApiInstant(_))
       ))
     },
     theme = List(), // ???

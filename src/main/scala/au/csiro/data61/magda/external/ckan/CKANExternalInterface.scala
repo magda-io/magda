@@ -24,8 +24,10 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.api.Types._
+import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.external.ckan._
+import au.csiro.data61.magda.model.misc.Protocols._
 
 class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface {
   implicit val logger = Logging(system, getClass)

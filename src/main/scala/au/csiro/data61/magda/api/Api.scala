@@ -28,11 +28,13 @@ import akka.http.scaladsl.server.RejectionHandler
 import akka.pattern.ask
 import akka.stream.Materializer
 import akka.util.Timeout
-import au.csiro.data61.magda.api.Types._
 import au.csiro.data61.magda.external._
 import au.csiro.data61.magda.search.SearchProvider
 import ch.megard.akka.http.cors.CorsDirectives
 import ch.megard.akka.http.cors.CorsSettings
+import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.Protocols._
 
 class Api(implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends Protocols with CorsDirectives {
   val logger = Logging(system, getClass)
