@@ -84,27 +84,16 @@ package misc {
 
   case class License(name: String, url: String)
 
-  trait Protocols extends DefaultJsonProtocol {
+  trait Protocols extends DefaultJsonProtocol with temporal.Protocols {
     implicit val licenseFormat = jsonFormat2(License.apply)
-    implicit object InstantFormat extends JsonFormat[Instant] {
-      override def write(instant: Instant): JsString = JsString.apply(instant.toString())
-      override def read(json: JsValue): Instant = Instant.parse(json.convertTo[String])
-    }
     implicit object FacetTypeFormat extends JsonFormat[FacetType] {
       override def write(facetType: FacetType): JsString = JsString.apply(facetType.id)
       override def read(json: JsValue): FacetType = FacetType.fromId(json.convertTo[String]).get
     }
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
-    implicit val apiInstant = jsonFormat2(ApiInstant.apply)
-    implicit val periodOfTimeFormat = jsonFormat2(PeriodOfTime.apply)
-    implicit object DurationFormat extends JsonFormat[Duration] {
-      override def write(duration: Duration): JsNumber = JsNumber(duration.toMillis())
-      override def read(json: JsValue): Duration = Duration.ofMillis(json.convertTo[Long])
-    }
     implicit val latLngFormat = jsonFormat2(LatLong.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
-    implicit val periodicityFormat = jsonFormat2(Periodicity.apply)
     implicit val dataSetFormat = jsonFormat16(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat2(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)

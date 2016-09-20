@@ -126,35 +126,37 @@ trait CKANProtocols extends DefaultJsonProtocol {
     ).filterNot(tuple => tuple._2 == "")
   )
   implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
-  implicit def ckanDataSetConv(hit: CKANDataSet): DataSet = DataSet(
-    identifier = hit.name,
-    catalog = "DGA",
-    title = hit.title,
-    description = hit.notes,
-    issued = Some(Instant.parse(hit.metadata_created + "Z")),
-    modified = Some(Instant.parse(hit.metadata_modified + "Z")),
-    language = hit.language,
-    publisher = hit.organization,
-    accrualPeriodicity = hit.update_freq map (Periodicity.fromString(_)),
-    spatial = hit.spatial_coverage map (name => new Location(name = Some(name))),
-    temporal = {
-      if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
-      else Some(new PeriodOfTime(
-        start = hit.temporal_coverage_from.map(ApiInstant(_)),
-        end = hit.temporal_coverage_to.map(ApiInstant(_))
-      ))
-    },
-    theme = List(), // ???
-    keyword = hit.tags match {
-      case Some(tags) => tags.map(_.display_name)
-      case None       => List()
-    },
-    contactPoint = {
-      val email = if (hit.contact_point.isDefined) hit.contact_point else hit.author_email
-      email.map(email => new Agent(email = Some(email), name = hit.author))
-    },
-    landingPage = Some("https://data.gov.au/dataset/" + hit.name) // FIXME!!!
-  )
+  implicit def ckanDataSetConv(hit: CKANDataSet): DataSet = {
+    val modified = Instant.parse(hit.metadata_modified + "Z")
+    DataSet(
+      identifier = hit.name,
+      catalog = "DGA",
+      title = hit.title,
+      description = hit.notes,
+      issued = Some(Instant.parse(hit.metadata_created + "Z")),
+      modified = Some(modified),
+      language = hit.language,
+      publisher = hit.organization,
+      accrualPeriodicity = hit.update_freq map (Periodicity.fromString(_)),
+      spatial = hit.spatial_coverage map (name => new Location(name = Some(name))),
+      temporal = {
+        if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
+        else Some(new PeriodOfTime(
+          start = hit.temporal_coverage_from.flatMap(ApiInstant.parse(_, modified)), end = hit.temporal_coverage_to.flatMap(ApiInstant.parse(_, modified))
+        ))
+      },
+      theme = List(), // ???
+      keyword = hit.tags match {
+        case Some(tags) => tags.map(_.display_name)
+        case None       => List()
+      },
+      contactPoint = {
+        val email = if (hit.contact_point.isDefined) hit.contact_point else hit.author_email
+        email.map(email => new Agent(email = Some(email), name = hit.author))
+      },
+      landingPage = Some("https://data.gov.au/dataset/" + hit.name) // FIXME!!!
+    )
+  }
   implicit def ckanDataSetListConv(l: List[CKANDataSet]): List[DataSet] = l map ckanDataSetConv
   implicit val resourceFormat = jsonFormat14(CKANResource.apply)
   implicit val tagFormat = jsonFormat4(CKANTag.apply)
