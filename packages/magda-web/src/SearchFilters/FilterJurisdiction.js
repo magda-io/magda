@@ -59,7 +59,10 @@ class FilterJurisdiction extends Filter {
     }
 
     resetFilter(){
-        super.resetFilter();
+        this.props.updateQuery({
+            jurisdiction: [],
+            jurisdictionType: []
+        });
     }
 
     toggleFilter(option){
@@ -76,7 +79,7 @@ class FilterJurisdiction extends Filter {
 
     onFeatureClick(evt){
         this.props.updateQuery({
-            jurisdiction: evt.feature.id,
+            jurisdiction: evt.feature.properties.GCC_CODE11,
             jurisdictionType: this.state.jurisdictionType
         });
         this.getLocationInfo();
