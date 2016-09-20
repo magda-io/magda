@@ -9,6 +9,7 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.model._
 import java.time.Instant
+import java.text.SimpleDateFormat
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)
 case class CKANSearchResult(count: Int, results: List[CKANDataSet])
@@ -118,6 +119,8 @@ case class CKANOrganization(
   `type`: Option[String])
 
 trait CKANProtocols extends DefaultJsonProtocol {
+  val ckanDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:ss:mm.SSSSS")
+  
   implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
     name = ckanOrg.title,
     extraFields = Map(
@@ -127,13 +130,13 @@ trait CKANProtocols extends DefaultJsonProtocol {
   )
   implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
   implicit def ckanDataSetConv(hit: CKANDataSet): DataSet = {
-    val modified = Instant.parse(hit.metadata_modified + "Z")
+    val modified = ckanDateFormat.parse(hit.metadata_modified).toInstant
     DataSet(
       identifier = hit.name,
       catalog = "DGA",
       title = hit.title,
       description = hit.notes,
-      issued = Some(Instant.parse(hit.metadata_created + "Z")),
+      issued = Some(ckanDateFormat.parse(hit.metadata_created).toInstant),
       modified = Some(modified),
       language = hit.language,
       publisher = hit.organization,
@@ -141,9 +144,7 @@ trait CKANProtocols extends DefaultJsonProtocol {
       spatial = hit.spatial_coverage map (name => new Location(name = Some(name))),
       temporal = {
         if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
-        else Some(new PeriodOfTime(
-          start = hit.temporal_coverage_from.flatMap(ApiInstant.parse(_, modified)), end = hit.temporal_coverage_to.flatMap(ApiInstant.parse(_, modified))
-        ))
+        else PeriodOfTime.parse(hit.temporal_coverage_from, hit.temporal_coverage_to, modified)
       },
       theme = List(), // ???
       keyword = hit.tags match {

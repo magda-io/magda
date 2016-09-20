@@ -23,7 +23,7 @@ package temporal {
     start: Option[ApiInstant] = None,
     end: Option[ApiInstant] = None)
 
-  object PeriodOfType {
+  object PeriodOfTime {
     val splitters = List("\\s*to\\s*", "\\s*-\\s*")
 
     def trySplit(raw: String, modified: Instant): Option[PeriodOfTime] =
@@ -41,25 +41,31 @@ package temporal {
 
           options match {
             // The circumstances in which left is better are if it has a date and right doesn't
-            case List(Some(_), None) => true
-            case _                   => false
+            case List(Some(_), Some(_), _, _)    => true
+            case List(Some(_), None, None, None) => true
+            case List(None, Some(_), None, None) => true
+            case _                               => false
           }
         }.headOption
 
-    def parse(start: Option[String], end: Option[String], modified: Instant) {
+    def parse(start: Option[String], end: Option[String], modified: Instant): Option[PeriodOfTime] = {
       val startInstant = start.flatMap(ApiInstant.parse(_, modified))
       val endInstant = end.flatMap(ApiInstant.parse(_, modified))
+      lazy val defaultPeriod = Some(new PeriodOfTime(startInstant, endInstant))
 
-      (startInstant.map(_.text), endInstant.map(_.text), startInstant.map(_.date), endInstant.map(_.date)) match {
+      (startInstant.map(_.text), endInstant.map(_.text), startInstant.flatMap(_.date), endInstant.flatMap(_.date)) match {
         // Unparsable text in both start and end - this might mean that there's split values in both (e.g. start=1999-2000, end=2010-2011).
         // In this case we split each and take the earlier value for start and later value for end.
-        case (Some(start), Some(end), None, None) => new PeriodOfTime(
+        case (Some(start), Some(end), None, None) => Some(new PeriodOfTime(
           start = trySplit(start, modified).flatMap(_.start),
-          end = trySplit(end, modified).flatMap(_.end))
+          end = trySplit(end, modified).flatMap(_.end)))
         // We didn't get any dates, so maybe one of the text fields conflates both, e.g. "2015-2016"
-        case (Some(start), None, None, None) => trySplit(start, modified)
-        case (None, Some(end), None, None)   => trySplit(end, modified)
-        case _                               => new PeriodOfTime(startInstant, endInstant)
+        case (Some(start), None, None, None) => trySplit(start, modified) orElse defaultPeriod
+        case (None, Some(end), None, None)   => trySplit(end, modified) orElse defaultPeriod
+        // No values for anything
+        case (None, None, None, None)        => None
+        // We already managed to parse a date, so leave this alone
+        case _                               => defaultPeriod
       }
     }
   }
@@ -87,7 +93,7 @@ package temporal {
     val timeFormats = List("HH:mm:ss.SSSXXX", "HH:mm:ss", "HH:mm", "")
     val dateTimeSeparators = List("'T'", "")
     val dateSeparators = List("\\/", "-", " ")
-    val dateFormats = List("dd{sep}MM{sep}yyyy", "yyyy{sep}MM{sep}dd", "MM{sep}dd{sep}yyyy", "yyyy")
+    val dateFormats = List("dd{sep}MM{sep}yyyy", "yyyy{sep}MM{sep}dd", "MM{sep}dd{sep}yyyy", "MMMMM{sep}yyyy", "MMMMM{sep}yy", "yyyy", "yy")
 
     val formats = for {
       timeFormat <- timeFormats
@@ -97,9 +103,11 @@ package temporal {
     } yield {
       val fullFormat: String = s"${dateFormat}${dateTimeSeparator}${timeFormat}"
       val replacedDateFormat = fullFormat.replace("{sep}", dateSeparator)
-      val regex = replacedDateFormat.replaceAll("[H|m|s|S|X|d|M|y]", "\\\\d")
+      val regex = replacedDateFormat
+        .replaceAll("[E|M]{5}", "[A-Za-z]+")
+        .replaceAll("[E|M]{3}", "[A-Za-z]{3}")
+        .replaceAll("[H|m|s|S|X|d|M|y]", "\\\\d")
       val javaFormat = new SimpleDateFormat(replacedDateFormat);
-      javaFormat.setTimeZone(TimeZone.getTimeZone("Australia/Sydney"))
 
       (regex, javaFormat)
     }
