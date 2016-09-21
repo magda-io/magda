@@ -4,6 +4,8 @@ import java.time.Duration
 import java.time.Instant
 import spray.json._
 import au.csiro.data61.magda.model.temporal._
+import akka.http.scaladsl.model.MediaType
+import akka.http.scaladsl.model.MediaTypes
 
 package misc {
   case class SearchResult(
@@ -50,7 +52,7 @@ package misc {
       theme: Seq[String] = List(),
       keyword: Seq[String] = List(),
       contactPoint: Option[Agent] = None,
-      distribution: Option[Seq[Distribution]] = None,
+      distributions: Option[Seq[Distribution]] = None,
       landingPage: Option[String] = None) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
@@ -79,8 +81,66 @@ package misc {
     accessURL: Option[String] = None,
     downloadURL: Option[String] = None,
     byteSize: Option[Int] = None,
-    mediaType: Option[String] = None,
+    mediaType: Option[MediaType] = None,
     format: Option[String] = None)
+
+  object Distribution {
+    private val extensionRegex = new scala.util.matching.Regex("\\.([^./]+)$", "extension")
+    // TODO: Push into config
+    private val formatToMimeType: Map[String, MediaType] = Map(
+      "GeoJSON" -> MediaTypes.`application/json`,
+      "KML" -> MediaTypes.`application/vnd.google-earth.kml+xml`,
+      "CSV" -> MediaTypes.`text/csv`,
+      "WMS" -> MediaTypes.`text/xml`,
+      "WFS" -> MediaTypes.`application/xml`,
+      "JSON" -> MediaTypes.`application/json`,
+      "SHP" -> MediaTypes.`application/octet-stream`
+    )
+
+    private val caseInsensitiveFormatToMimeType = formatToMimeType.map {
+      case (key: String, mediaType: MediaType) =>
+        Map(
+          key.toUpperCase -> mediaType,
+          key.toLowerCase -> mediaType,
+          key -> mediaType
+        )
+    }.reduce(_ ++ _)
+
+    private val urlToFormat = Map(
+      ".*.geojson^" -> "GeoJSON",
+      ".*?.*service=wms.*" -> "WMS",
+      ".*?.*service=wfs.*" -> "WFS",
+      ".*.(shp|shz|dbf)^" -> "SHP"
+    )
+
+    private def mediaTypeFromMimeType(mimeType: String): Option[MediaType] = MediaType.parse(mimeType) match {
+      case Right(mediaType) => Some(mediaType)
+      case Left(_)          => None
+    }
+
+    def mediaTypeFromFormat(format: String): Option[MediaType] = caseInsensitiveFormatToMimeType.get(format)
+      .orElse(MediaTypes.forExtensionOption(format.toLowerCase()))
+
+    private def mediaTypeFromExtension(url: String): Option[MediaType] = extensionRegex
+      .findFirstIn(url)
+      .flatMap { case extensionRegex(extension) => MediaTypes.forExtensionOption(extension) }
+
+    def parseMediaType(mimeType: Option[String], rawFormat: Option[String], url: Option[String]) = mimeType
+      .flatMap(mediaTypeFromMimeType(_))
+      .orElse(rawFormat flatMap (mediaTypeFromFormat(_)))
+      .orElse(url flatMap (mediaTypeFromExtension(_)))
+
+    def formatFromUrl(url: String) = urlToFormat
+      .view
+      .filter { case (regex, _) => regex.matches(url) }
+      .map { case (_, format) => format }
+      .headOption
+
+    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType]) : Option[String] = rawFormat
+      .orElse(url.flatMap(Distribution.formatFromUrl(_)))
+      .orElse(parsedMediaType.map(_.subType))
+
+  }
 
   case class License(name: String, url: String)
 
@@ -89,6 +149,10 @@ package misc {
     implicit object FacetTypeFormat extends JsonFormat[FacetType] {
       override def write(facetType: FacetType): JsString = JsString.apply(facetType.id)
       override def read(json: JsValue): FacetType = FacetType.fromId(json.convertTo[String]).get
+    }
+    implicit object MediaTypeFormat extends JsonFormat[MediaType] {
+      override def write(mediaType: MediaType): JsString = JsString.apply(mediaType.value)
+      override def read(json: JsValue): MediaType = MediaType.parse(json.convertTo[String]).right.get
     }
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val latLngFormat = jsonFormat2(LatLong.apply)

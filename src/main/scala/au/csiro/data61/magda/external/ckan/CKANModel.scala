@@ -1,15 +1,18 @@
 package au.csiro.data61.magda.external.ckan
 
 import spray.json.DefaultJsonProtocol
+import akka.http.scaladsl.model.MediaTypes
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import spray.json._
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.Distribution
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.model._
 import java.time.Instant
 import java.text.SimpleDateFormat
+import akka.http.scaladsl.model.MediaType
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)
 case class CKANSearchResult(count: Int, results: List[CKANDataSet])
@@ -100,7 +103,9 @@ case class CKANResource(
   size: Option[String],
   created: Option[String],
   last_modified: Option[String],
-  cache_last_modified: Option[String])
+  cache_last_modified: Option[String],
+  url: Option[String],
+  webstore_url: Option[String])
 
 case class CKANTag(
   id: String,
@@ -118,9 +123,10 @@ case class CKANOrganization(
   image_url: Option[String],
   `type`: Option[String])
 
-trait CKANProtocols extends DefaultJsonProtocol {
-  val ckanDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:ss:mm.SSSSS")
-  
+trait CKANConverters {
+  val ckanDateTimeWithMsFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSSS")
+  val ckanDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss")
+
   implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
     name = ckanOrg.title,
     extraFields = Map(
@@ -129,14 +135,15 @@ trait CKANProtocols extends DefaultJsonProtocol {
     ).filterNot(tuple => tuple._2 == "")
   )
   implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
+
   implicit def ckanDataSetConv(hit: CKANDataSet): DataSet = {
-    val modified = ckanDateFormat.parse(hit.metadata_modified).toInstant
+    val modified = ckanDateTimeWithMsFormat.parse(hit.metadata_modified).toInstant
     DataSet(
       identifier = hit.name,
       catalog = "DGA",
       title = hit.title,
       description = hit.notes,
-      issued = Some(ckanDateFormat.parse(hit.metadata_created).toInstant),
+      issued = Some(ckanDateTimeWithMsFormat.parse(hit.metadata_created).toInstant),
       modified = Some(modified),
       language = hit.language,
       publisher = hit.organization,
@@ -155,11 +162,38 @@ trait CKANProtocols extends DefaultJsonProtocol {
         val email = if (hit.contact_point.isDefined) hit.contact_point else hit.author_email
         email.map(email => new Agent(email = Some(email), name = hit.author))
       },
-      landingPage = Some("https://data.gov.au/dataset/" + hit.name) // FIXME!!!
+      landingPage = Some("https://data.gov.au/dataset/" + hit.name), // FIXME!!!
+      distributions = hit.resources.map(_.map(ckanDistributionConv(_, hit)))
     )
   }
   implicit def ckanDataSetListConv(l: List[CKANDataSet]): List[DataSet] = l map ckanDataSetConv
-  implicit val resourceFormat = jsonFormat14(CKANResource.apply)
+
+  def ckanDistributionConv(resource: CKANResource, dataset: CKANDataSet): Distribution = {
+    // Get the mediatype first because we'll need it to determine the format if none is provided.
+    val mediaType = Distribution.parseMediaType(resource.mimetype orElse resource.mimetype_inner, resource.format, resource.url)
+    val format = Distribution.parseFormat(resource.format, resource.url, mediaType)
+
+    new Distribution(
+      title = resource.name.getOrElse(resource.id),
+      description = resource.description,
+      issued = resource.created.map(ckanDateTimeFormat.parse(_).toInstant),
+      modified = resource.last_modified.map(ckanDateTimeFormat.parse(_).toInstant),
+      license = (dataset.license_id, dataset.license_title) match {
+        case (None, None)           => None
+        case (idOption, nameOption) => Some(new License(idOption.getOrElse(""), nameOption.getOrElse("")))
+      },
+      rights = None,
+      accessURL = resource.webstore_url,
+      downloadURL = resource.url,
+      byteSize = None,
+      mediaType = mediaType orElse (format.flatMap(Distribution.mediaTypeFromFormat(_))),
+      format = format
+    )
+  }
+}
+
+trait CKANProtocols extends DefaultJsonProtocol {
+  implicit val resourceFormat = jsonFormat16(CKANResource.apply)
   implicit val tagFormat = jsonFormat4(CKANTag.apply)
   implicit object CKANStateFormat extends JsonFormat[CKANState] {
     override def write(state: CKANState): JsString = JsString.apply(state.toString())

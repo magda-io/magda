@@ -29,7 +29,7 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.external.ckan._
 import au.csiro.data61.magda.model.misc.Protocols._
 
-class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface {
+class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
   implicit val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
 
