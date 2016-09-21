@@ -17,8 +17,9 @@ package misc {
   case object FacetType {
     val Publisher = FacetType("publisher")
     val Year = FacetType("year")
+    val Format = FacetType("format")
 
-    val all = Seq(Publisher, Year)
+    val all = Seq(Publisher, Year, Format)
 
     private val idToFacet = all.groupBy(_.id).mapValues(_.head)
 

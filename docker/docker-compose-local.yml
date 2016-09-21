@@ -21,6 +21,8 @@ services:
     ports:
       - "9200:9200"
       - "9300"
+    volumes:
+      - ../elasticsearch/scripts:/usr/share/elasticsearch/config/scripts
   kibana:
     image: seeruk/docker-kibana-sense
     ports:
