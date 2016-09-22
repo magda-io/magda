@@ -54,7 +54,9 @@ package misc {
       keyword: Seq[String] = List(),
       contactPoint: Option[Agent] = None,
       distributions: Option[Seq[Distribution]] = None,
-      landingPage: Option[String] = None) {
+      landingPage: Option[String] = None,
+      // TODO: Investigate making this only exist in ElasticSearch
+      years: Option[List[String]] = None) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
   }
@@ -159,7 +161,7 @@ package misc {
     implicit val latLngFormat = jsonFormat2(LatLong.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
-    implicit val dataSetFormat = jsonFormat16(DataSet.apply)
+    implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat2(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val searchResultFormat = jsonFormat3(SearchResult.apply)

@@ -25,10 +25,8 @@ import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Protocols._
 import scala.collection.mutable.Buffer
-import com.sksamuel.elastic4s.analyzers.KeywordAnalyzer
-import com.sksamuel.elastic4s.analyzers.LowercaseTokenFilter
-import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
-import com.sksamuel.elastic4s.analyzers.KeywordTokenizer
+import com.sksamuel.elastic4s.analyzers._
+import java.time._
 
 class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchProvider {
 
@@ -36,35 +34,21 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
   val client = ElasticClient.transport(uri)
 
   case class FacetDefinition(
-    queryModifier: (String, SearchDefinition) => SearchDefinition,
     generalAggDef: Int => AbstractAggregationDefinition,
-    searchAggDef: (String, Int) => AbstractAggregationDefinition,
-    getOptionsGeneral: (FacetType, Map[String, Seq[Aggregation]]) => Seq[FacetOption] = (facetType, aggsMap) => aggsMap.get(facetType.id).get.head,
-    getOptionsSearch: (FacetType, Map[String, Seq[Aggregation]]) => Seq[FacetOption] = (facetType, aggsMap) => aggsMap.get(facetType.id).get.head)
+    getOptionsGeneral: (FacetType, Map[String, Seq[Aggregation]]) => Seq[FacetOption] = (facetType, aggsMap) => aggsMap.get(facetType.id).get.head)
 
-  val facetAggregations = Map[FacetType, FacetDefinition](
-    FacetType.Publisher ->
-      FacetDefinition(
-        queryModifier = (queryText: String, searchDef) => if (queryText.length > 0) searchDef query { matchQuery("publisher.name", queryText) } else searchDef,
-        generalAggDef = (limit: Int) => aggregation.terms(FacetType.Publisher.id).field("publisher.name.untouched").size(limit),
-        searchAggDef = (query, limit) => aggregation
-          .terms("publisher").field("publisher.name.untouched").size(limit).order(Terms.Order.aggregation("avg_score", false))
-          .aggregations(
-            aggregation.avg("avg_score").script(script("_score").lang("expression"))
-          )),
+  val facetAggregations: Map[FacetType, FacetDefinition] = Map(
+    FacetType.Publisher -> FacetDefinition(
+      generalAggDef = (limit: Int) => aggregation.terms(FacetType.Publisher.id).field("publisher.name.untouched").size(limit)),
 
-    FacetType.Year ->
-      FacetDefinition(
-        queryModifier = (queryText, searchDef) => searchDef,
-        generalAggDef = (limit: Int) => aggregation datehistogram FacetType.Year.id field "issued" interval DateHistogramInterval.YEAR format "yyyy",
-        searchAggDef = (queryText, limit) => aggregation.datehistogram(FacetType.Year.id).field("issued").interval(DateHistogramInterval.YEAR).format("yyyy"),
-        getOptionsSearch = (facetType, aggsMap) => aggsMap.get("filter").get.head.getProperty("year").asInstanceOf[Aggregation])
-  ) //,
-  //    FacetType.Format -> FacetDefinition(
-  //      //      queryModifier = (queryText, searchDef) => searchDef query { nestedQuery("distributions") query { matchQuery("distributions.format", queryText) } },
-  //      generalAggDef = (limit: Int) => aggregation nested "distributions" path "distributions" aggregations { aggregation terms "format" field "distributions.format.untokenized" size limit },
-  //      getOptions = (facetType, aggsMap) => aggsMap.get("distributions").get.head.getProperty("format").asInstanceOf[Aggregation]
-  //    )
+    FacetType.Year -> FacetDefinition(
+      generalAggDef = (limit: Int) => aggregation.terms(FacetType.Year.id).field("years").size(limit)),
+
+    FacetType.Format -> FacetDefinition(
+      generalAggDef = (limit: Int) => aggregation nested "distributions" path "distributions" aggregations { aggregation terms "format" field "distributions.format.untokenized" size limit },
+      getOptionsGeneral = (facetType, aggsMap) => aggsMap.get("distributions").get.head.getProperty("format").asInstanceOf[Aggregation]
+    )
+  )
 
   val setupFuture = setup()
 
@@ -93,8 +77,26 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
                 field("untokenized").typed(StringType).analyzer("untokenized")
               )
             )
-          )
+          ),
+          mapping(FacetType.Format.id),
+          mapping(FacetType.Year.id),
+          mapping(FacetType.Format.id)
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+      }
+    }
+  }
+
+  def getYears(from: Option[Instant], to: Option[Instant]): List[String] = {
+    def getYearsInner(from: LocalDate, to: LocalDate): List[String] =
+      from.getYear.toString :: (if (from.isBefore(to)) getYearsInner(from.plusYears(1), to) else Nil)
+
+    (from, to) match {
+      case (None, None) => Nil
+      case _ => {
+        val newFrom = from.getOrElse(to.get).atZone(ZoneId.systemDefault).toLocalDate
+        val newTo = to.getOrElse(from.get).atZone(ZoneId.systemDefault).toLocalDate
+
+        getYearsInner(newFrom, newTo)
       }
     }
   }
@@ -103,9 +105,33 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
     setupFuture.flatMap(a =>
       client.execute {
         bulk(
-          dataSets.map(dataSet =>
-            ElasticDsl.index into "magda" / "datasets" id dataSet.uniqueId source dataSet.toJson
-          )
+          dataSets.map { dataSet =>
+            val indexDataSet = ElasticDsl.index into "magda" / "datasets" id dataSet.uniqueId source dataSet.copy(
+              years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
+                case Nil => None
+                case list => Some(list)
+              }
+            ).toJson
+
+            val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
+              ElasticDsl.index into "magda" / FacetType.Publisher.id
+                id publisherName.toLowerCase
+                source Map("value" -> publisherName).toJson
+            ))
+
+            val indexYears = getYears(
+              dataSet.temporal.flatMap(_.start.flatMap(_.date)),
+              dataSet.temporal.flatMap(_.end.flatMap(_.date))
+            ).map(year => ElasticDsl.index into "magda" / FacetType.Year.id id year source Map("value" -> year).toJson)
+
+            val indexFormats = dataSet.distributions.map(_.filter(_.format.isDefined).map { distribution =>
+              val format = distribution.format.get
+
+              ElasticDsl.index into "magda" / FacetType.Format.id id format.toLowerCase source Map("value" -> format).toJson
+            }).getOrElse(Nil)
+
+            indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
+          }.reduce(_ ++ _)
         )
       }
     )
@@ -132,14 +158,13 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
     )
 
   override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[Option[Seq[FacetOption]]] = {
-    val facetDef: FacetDefinition = facetAggregations.get(facetType).get
     setupFuture.flatMap(a =>
       client.execute {
-        facetDef.queryModifier(queryText, ElasticDsl.search in "magda" / "datasets" limit 0 aggregations facetDef.searchAggDef(queryText, limit))
+        ElasticDsl.search in "magda" / facetType.id query queryText limit limit
       } map { response =>
-        println(response)
-        val aggs = response.aggregations.asList().asScala.toSeq.groupBy { agg => agg.getName }
-        Some(facetDef.getOptionsSearch(facetType, aggs))
+        Some(response.hits.toList.map(hit => new FacetOption(
+          value = hit.getSource.get("value").toString
+        )))
       }
     )
   }
