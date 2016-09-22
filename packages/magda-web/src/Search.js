@@ -56,10 +56,11 @@ class Search extends Component {
     let keyword = query.q.split(' ').join('+');
 
     getJSON(`http://thunderer.it.csiro.au:9000/datasets/search?query=${keyword}`).then((data)=>{
+      console.log(data.facets)
       this.setState({
-        filterPublisher: data.facets[1].options,
-        filterTemporal: data.facets[0].options,
-        filterFormat: getFormats()
+        filterPublisher: data.facets[0].options,
+        filterTemporal: data.facets[1].options,
+        filterFormat: data.facets[2].options
       })
     }, (err)=>{console.warn(err)});
   }
