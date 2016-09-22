@@ -9,7 +9,7 @@ import au.csiro.data61.magda.model.misc._
 trait SearchProvider {
   def index(source: String, dataSets: List[DataSet]): Future[Any]
   def search(query: String, limit: Int = 50): Future[SearchResult]
-  def searchFacets(facetType: FacetType, query: String, limit: Int = 50): Future[Option[Seq[FacetOption]]]
+  def searchFacets(facetType: FacetType, query: String, limit: Int = 50): Future[FacetSearchResult]
 }
 object SearchProvider {
   // TODO: There's undoubtably a cleverer way to do this in scala 

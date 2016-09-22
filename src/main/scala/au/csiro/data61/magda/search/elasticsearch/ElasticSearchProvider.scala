@@ -108,7 +108,7 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
           dataSets.map { dataSet =>
             val indexDataSet = ElasticDsl.index into "magda" / "datasets" id dataSet.uniqueId source dataSet.copy(
               years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
-                case Nil => None
+                case Nil  => None
                 case list => Some(list)
               }
             ).toJson
@@ -157,14 +157,18 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
       }
     )
 
-  override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[Option[Seq[FacetOption]]] = {
+  override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[FacetSearchResult] = {
     setupFuture.flatMap(a =>
       client.execute {
         ElasticDsl.search in "magda" / facetType.id query queryText limit limit
       } map { response =>
-        Some(response.hits.toList.map(hit => new FacetOption(
-          value = hit.getSource.get("value").toString
-        )))
+        new FacetSearchResult(
+          hitCount = response.getHits.totalHits.toInt,
+          // TODO: Maybe return more meaningful data?
+          options = response.hits.toList.map(hit => new FacetOption(
+            value = hit.getSource.get("value").toString
+          ))
+        )
       }
     )
   }
