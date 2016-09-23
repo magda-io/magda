@@ -1,7 +1,9 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
 import './JurisdictionMap.css';
 import Filter from './Filter';
+// eslint-disable-next-line
 import L from 'leaflet';
+// eslint-disable-next-line
 import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.js';
 import regions from '../dummyData/regions';
 import React from 'react';
@@ -92,7 +94,7 @@ class JurisdictionMap extends Filter {
 
         return (
             <div className='jurisdiction-map'>
-              <div className='map' ref={(c) => this._c = c}/>
+              <div className='map' ref={(c) => {this._c = c}}/>
             </div>
       );
     }

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
+// eslint-disable-next-line
 import {RouterContext } from 'react-router';
 import SearchResults from './SearchResults/SearchResults';
 import SearchFilters from './SearchFilters/SearchFilters';
 import SearchBox from './SearchBox';
 import ProgressBar from './ProgressBar';
-import getFormats from './dummyData/getFormats';
 import debounce from 'lodash.debounce';
 import './Search.css';
 import getJSON from'./getJSON';

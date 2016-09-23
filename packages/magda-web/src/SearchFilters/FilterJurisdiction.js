@@ -3,7 +3,6 @@ import Filter from './Filter';
 import FilterHeader from './FilterHeader';
 import LocationSearchBox from './LocationSearchBox';
 import JurisdictionMap from './JurisdictionMap';
-import L from 'leaflet';
 import React from 'react'
 import getJsonp from '../getJsonp';
 import getJSON from '../getJSON';
