@@ -67,9 +67,9 @@ class JurisdictionMap extends Filter {
 
     addRegion(){
         let that = this;
-        let regionType = this.props.jurisdictionType
+        let regionType = this.props.location.query.jurisdictionType || 'SA1';
         let region = regions()[regionType];
-        this.getID = function(feature) { return feature.properties[region.id]; };
+        this.getID = function(feature) { return feature.properties[region.id];};
 
         this.layer = new L.TileLayer.MVTSource({
             url: region.url,
@@ -79,7 +79,7 @@ class JurisdictionMap extends Filter {
             clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
             mutexToggle: true,
             onClick: function(evt) { if (evt.type === 'click' && evt.feature){
-                that.props.onClick(evt);
+                that.props.onClick(evt.feature.properties[region.id], regionType);
             }},
             getIDForLayerFeature: this.getID
         });

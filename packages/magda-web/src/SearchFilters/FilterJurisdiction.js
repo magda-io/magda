@@ -24,7 +24,6 @@ class FilterJurisdiction extends Filter {
             locationSearchResults: [],
             mapData: {},
             locationInfo: {},
-            jurisdictionType: 'SA1'
         }
     }
 
@@ -72,14 +71,13 @@ class FilterJurisdiction extends Filter {
 
         this.setState({
             locationInfo: option.suggestion,
-            jurisdictionType: option.suggestion.type
         });
     }
 
-    onFeatureClick(evt){
+    onFeatureClick(evt, regionType){
         this.props.updateQuery({
-            jurisdiction: evt.feature.properties.GCC_CODE11,
-            jurisdictionType: this.state.jurisdictionType
+            jurisdiction: evt,
+            jurisdictionType: regionType
         });
         this.getLocationInfo();
     }
@@ -89,13 +87,28 @@ class FilterJurisdiction extends Filter {
         if(!result){
           return null;
         }
-        return (`${result.geographyLabel}, ${result.stateLabel}, ${result.typeLabel}, ${result.type}`);
+        if(result.geographyLabel){
+          return (`${result.geographyLabel}, ${result.stateLabel}, ${result.typeLabel}, ${result.type}`);
+        }
+        if(result.displayFieldName){
+          let propName = result.displayFieldName;
+          return result.attributes[propName];
+        }
+        return null;
     }
 
     getLocationInfo(){
         let jurisdiction = this.props.location.query.jurisdiction;
         let jurisdictionType = this.props.location.query.jurisdictionType;
-        getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=27&searchFields=${jurisdictionType}&sr=3857`).then(data=>{
+        let idRegionTypeMap = {
+          SA1: [26, 'MAIN'],
+          SA2: [27, 'MAIN'],
+          SA3: [28, 'CODE'],
+          SA4: [29, 'CODE']
+        };
+
+        getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
+          console.log(data);
             this.setState({
                 locationInfo: data.results[0]
             });
@@ -124,8 +137,7 @@ class FilterJurisdiction extends Filter {
                                      onClick={this.openPopup}
                                      interaction={false}
                                      locationInfo={this.state.locationInfo}
-                                     jurisdictionType={this.state.jurisdictionType}
-                                     />
+                    />
               </div>
 
               {this.state.popUpIsOpen && <div className='popup'>
@@ -140,8 +152,7 @@ class FilterJurisdiction extends Filter {
                                                                  onClick={this.onFeatureClick}
                                                                  interaction={true}
                                                                  locationInfo={this.state.locationInfo}
-                                                                 jurisdictionType={this.state.jurisdictionType}
-                                                                 />
+                                                />
                                             </div>
                                             </div>}
               <div className='jurisdiction-summray'>
