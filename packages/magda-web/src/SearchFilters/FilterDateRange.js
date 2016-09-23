@@ -81,7 +81,7 @@ class FilterDateRange extends Filter {
         <button className='btn' onClick={this.resetStartDate}>Any start date </button>
 
         <div className='options'>
-            {this.state.searchText.length === 0 && this.props.options.map((option, i)=>
+            {this.state.searchText.length === 0 && this.props.options.sort((a,b)=>+a.value - b.value).map((option, i)=>
                   <div key={i}>{this.renderCondition(option)}</div>
             )}
         </div>

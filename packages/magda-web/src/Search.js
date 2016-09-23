@@ -56,7 +56,6 @@ class Search extends Component {
     let keyword = query.q.split(' ').join('+');
 
     getJSON(`http://thunderer.it.csiro.au:9000/datasets/search?query=${keyword}`).then((data)=>{
-      console.log(data.facets)
       this.setState({
         filterPublisher: data.facets[0].options,
         filterTemporal: data.facets[1].options,
@@ -73,7 +72,7 @@ class Search extends Component {
       this.setState({
         isLoading: true
       })
-
+      // This query will have facets as well
       getJSON(`http://thunderer.it.csiro.au:9000/datasets/search?query=${keyword}`,
         this.updateProgress,
         this.transferComplete,
