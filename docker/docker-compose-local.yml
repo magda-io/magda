@@ -4,8 +4,8 @@ services:
     extends:
       file: docker-compose-base.yml
       service: api
-    links:
-      - search
+#    links:
+ #     - search
     environment:
       - SCALA_ENV=local
     build:

@@ -10,7 +10,7 @@ case class FakeConfig(datasetCount: Long, datasetPath: String)
 
 object InterfaceConfig {
   def apply(config: Config): InterfaceConfig = {
-    val isFaked = config.hasPath("isFaked")
+    val isFaked = config.hasPath("isFaked") && config.getBoolean("isFaked")
 
     new InterfaceConfig(
       name = config.getString("name"),

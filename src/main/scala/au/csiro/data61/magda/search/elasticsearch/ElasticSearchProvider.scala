@@ -5,6 +5,8 @@ import spray.json._
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.collection.mutable.Buffer
+import scala.util.control.Exception._
 
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -13,6 +15,7 @@ import com.sksamuel.elastic4s.source.Indexable
 import com.sksamuel.elastic4s.AbstractAggregationDefinition
 import com.sksamuel.elastic4s.IndexAndTypes.apply
 import com.sksamuel.elastic4s.IndexesAndTypes.apply
+import com.sksamuel.elastic4s.analyzers._
 
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval
 import org.elasticsearch.search.aggregations.bucket.terms._
@@ -24,14 +27,20 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Protocols._
-import scala.collection.mutable.Buffer
-import com.sksamuel.elastic4s.analyzers._
+import au.csiro.data61.magda.util.FutureRetry.retry
+
+import akka.actor.ActorSystem
+import akka.event.Logging
+
 import java.time._
+import scala.concurrent.duration._
+import org.elasticsearch.action.ActionRequestValidationException
+import org.elasticsearch.index.IndexNotFoundException
+import org.elasticsearch.client.transport.NoNodeAvailableException
+import org.elasticsearch.transport.RemoteTransportException
 
-class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchProvider {
-
-  val uri = ElasticsearchClientUri("elasticsearch://search:9300")
-  val client = ElasticClient.transport(uri)
+class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext) extends SearchProvider {
+  val logger = Logging(system, getClass)
 
   case class FacetDefinition(
     generalAggDef: Int => AbstractAggregationDefinition,
@@ -50,40 +59,61 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
     )
   )
 
-  val setupFuture = setup()
+  /**
+   * Returns an initialised {@link ElasticClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
+   *  ensures that all queries will only complete after the client is initialised.
+   */
+  private val setupFuture = setup()
 
-  def setup(): Future[Any] = {
-    client.execute {
-      delete index "magda"
-    } recover { case cause => println(cause) } map { a =>
-      client.execute {
-        create.index("magda").mappings(
-          mapping("datasets").fields(
-            field("temporal").inner(
-              field("start").inner(
-                field("text").typed(StringType)
+  /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the index */
+  private def setup(): Future[ElasticClient] = {
+    implicit val scheduler = system.scheduler
+
+    def onRetry = (retriesLeft: Int) => logger.warning("Failed to make initial contact with ES server, {} retries left", retriesLeft)
+
+    retry(Future {
+      val uri = ElasticsearchClientUri("elasticsearch://search:9300")
+      val client = ElasticClient.transport(uri)
+      client.execute(get cluster health).map(_ => client)
+    }.flatMap(a => a), 10 seconds, 10, onRetry)
+      .flatMap { client =>
+        client.execute {
+          delete index "magda"
+        } recover {
+          // No magda index, this is probably first boot.
+          case (outer: RemoteTransportException) => outer.getCause match {
+            case (inner: IndexNotFoundException) => logger.error(outer, "Could not delete existing magda index, this is probably fine")
+          }
+        } map { a =>
+          client.execute {
+            create.index("magda").mappings(
+              mapping("datasets").fields(
+                field("temporal").inner(
+                  field("start").inner(
+                    field("text").typed(StringType)
+                  ),
+                  field("end").inner(
+                    field("text").typed(StringType)
+                  )
+                ),
+                field("publisher").inner(
+                  field("name").typed(StringType).fields(
+                    field("untouched").typed(StringType).index("not_analyzed")
+                  )
+                ),
+                field("distributions").nested(
+                  field("format").typed(StringType).fields(
+                    field("untokenized").typed(StringType).analyzer("untokenized")
+                  )
+                )
               ),
-              field("end").inner(
-                field("text").typed(StringType)
-              )
-            ),
-            field("publisher").inner(
-              field("name").typed(StringType).fields(
-                field("untouched").typed(StringType).index("not_analyzed")
-              )
-            ),
-            field("distributions").nested(
-              field("format").typed(StringType).fields(
-                field("untokenized").typed(StringType).analyzer("untokenized")
-              )
-            )
-          ),
-          mapping(FacetType.Format.id),
-          mapping(FacetType.Year.id),
-          mapping(FacetType.Format.id)
-        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+              mapping(FacetType.Format.id),
+              mapping(FacetType.Year.id),
+              mapping(FacetType.Format.id)
+            ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+          }
+        } map { _ => client }
       }
-    }
   }
 
   def getYears(from: Option[Instant], to: Option[Instant]): List[String] = {
@@ -102,7 +132,7 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
   }
 
   override def index(source: String, dataSets: List[DataSet]) = {
-    setupFuture.flatMap(a =>
+    setupFuture.flatMap(client =>
       client.execute {
         bulk(
           dataSets.map { dataSet =>
@@ -138,7 +168,7 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
   }
 
   override def search(queryText: String, limit: Int) =
-    setupFuture.flatMap(a =>
+    setupFuture.flatMap(client =>
       client.execute {
         ElasticDsl.search in "magda" / "datasets" query queryText limit limit aggregations facetAggregations.values.map(_.generalAggDef(10))
       } map { response =>
@@ -158,7 +188,7 @@ class ElasticSearchProvider(implicit val ec: ExecutionContext) extends SearchPro
     )
 
   override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[FacetSearchResult] = {
-    setupFuture.flatMap(a =>
+    setupFuture.flatMap(client =>
       client.execute {
         ElasticDsl.search in "magda" / facetType.id query queryText limit limit
       } map { response =>

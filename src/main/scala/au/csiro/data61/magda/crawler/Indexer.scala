@@ -18,6 +18,7 @@ import au.csiro.data61.magda.search.SearchProvider
  */
 class Indexer(supervisor: ActorRef) extends Actor {
   implicit val ec = context.dispatcher
+  implicit val system = context.system
   val searchProvider: SearchProvider = SearchProvider()
 
   def receive: Receive = {
