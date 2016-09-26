@@ -15,11 +15,10 @@ class SearchFilters extends Component {
                                location={this.props.location}
                                updateQuery={this.props.updateQuery}/>
 
-              <FilterJurisdiction options={this.props.filterJurisdiction}
-                                       title='jurisdiction'
-                                       id='jurisdiction'
-                                       location={this.props.location}
-                                       updateQuery={this.props.updateQuery}/>
+              <FilterJurisdiction title='jurisdiction'
+                                  id='jurisdiction'
+                                  location={this.props.location}
+                                  updateQuery={this.props.updateQuery}/>
 
               <FilterDateRange options={this.props.filterTemporal}
                                        title='date range'

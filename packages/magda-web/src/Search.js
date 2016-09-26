@@ -27,7 +27,6 @@ class Search extends Component {
       searchResults: [],
       filterPublisher: [],
       filterTemporal: [],
-      filterJurisdiction: [],
       filterFormat: [],
       loadingProgress: 0,
       isLoading: false,
@@ -55,7 +54,7 @@ class Search extends Component {
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
 
-    getJSON(`http://thunderer.it.csiro.au:9000/datasets/search?query=${keyword}`).then((data)=>{
+    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/datasets/search?query=${keyword}`).then((data)=>{
       this.setState({
         filterPublisher: data.facets[0].options,
         filterTemporal: data.facets[1].options,
@@ -73,7 +72,7 @@ class Search extends Component {
         isLoading: true
       })
       // This query will have facets as well
-      getJSON(`http://thunderer.it.csiro.au:9000/datasets/search?query=${keyword}`,
+      getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/datasets/search?query=${keyword}`,
         this.updateProgress,
         this.transferComplete,
         this.transferFailed,
@@ -157,10 +156,9 @@ class Search extends Component {
                             filterPublisher={this.state.filterPublisher}
                             filterTemporal={this.state.filterTemporal}
                             filterFormat={this.state.filterFormat}
-                            filterJurisdiction={[]}
-                            filters={this.state.filters}
                             location={this.props.location}
-                            updateQuery={this.updateQuery} />
+                            updateQuery={this.updateQuery}
+                          />
                       </div>}
             <div className='col-sm-8'>
                 {this.getSummaryText()}

@@ -23,7 +23,7 @@ class FilterJurisdiction extends Filter {
             searchText: '',
             locationSearchResults: [],
             mapData: {},
-            locationInfo: {},
+            locationInfo: undefined,
         }
     }
 
@@ -107,12 +107,13 @@ class FilterJurisdiction extends Filter {
           SA4: [29, 'CODE']
         };
 
-        getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
-          console.log(data);
-            this.setState({
-                locationInfo: data.results[0]
-            });
-        }, error =>{console.log(error)});
+        if(jurisdiction && jurisdictionType){
+          getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
+              this.setState({
+                  locationInfo: data.results[0]
+              });
+          }, error =>{console.log(error)});
+        }
     }
 
 
