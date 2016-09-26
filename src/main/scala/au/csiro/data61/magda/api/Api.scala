@@ -82,6 +82,8 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
             (get & parameters("query" ? "*", "limit" ? 50)) { (query, limit) =>
               val result = SearchProvider().search(query, limit)
 
+              logger.debug(QueryCompiler(query).toString)
+
               pathPrefix("datasets") {
                 complete {
                   result.map(_.copy(facets = None))

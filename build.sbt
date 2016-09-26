@@ -19,7 +19,8 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-contrib" % akkaV,
     "ch.megard" %% "akka-http-cors" % "0.1.5",
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.3.0",
-
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+    
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
   )

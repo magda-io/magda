@@ -3,8 +3,8 @@ package au.csiro.data61.magda.util
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import akka.pattern.after
 import akka.actor.Scheduler
+import akka.pattern.after
 
 object FutureRetry {
   /**

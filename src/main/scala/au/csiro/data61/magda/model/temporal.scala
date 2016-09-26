@@ -1,14 +1,10 @@
 package au.csiro.data61.magda.model
 
-import java.text.ParseException
-import java.time._
 import java.util.Locale
-
-import scala.util.control.Exception._
-import java.text.SimpleDateFormat
-import java.util.TimeZone
+import java.time._
 import spray.json._
 import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.util.DateParser._
 
 package temporal {
   object Periodicity {
@@ -70,68 +66,18 @@ package temporal {
     }
   }
 
-  sealed trait ApiInstantConstant {
-    override def toString() = this.getClass.getSimpleName.split("\\$").last
-    def strings: List[String]
-  }
-  case object Now extends ApiInstantConstant {
-    override def strings = List("Current", "Now", "Ongoing")
-  }
-
   case class ApiInstant(
     date: Option[Instant] = None,
     text: String)
 
   object ApiInstant {
-    val constants: List[ApiInstantConstant] = List(Now)
-    val constantMap = constants
-      .flatMap(constant => constant.strings.flatMap(string => List(string, string.toUpperCase(), string.toLowerCase()).map((constant, _))))
-      .map { case (constant, string) => (string, constant) }
-      .toMap
-
-    // TODO: push the strings into config.
-    val timeFormats = List("HH:mm:ss.SSSXXX", "HH:mm:ss", "HH:mm", "")
-    val dateTimeSeparators = List("'T'", "")
-    val dateSeparators = List("\\/", "-", " ")
-    val dateFormats = List("dd{sep}MM{sep}yyyy", "yyyy{sep}MM{sep}dd", "MM{sep}dd{sep}yyyy", "MMMMM{sep}yyyy", "MMMMM{sep}yy", "yyyy", "yy")
-
-    val formats = for {
-      timeFormat <- timeFormats
-      dateTimeSeparator <- dateTimeSeparators
-      dateSeparator <- dateSeparators
-      dateFormat <- dateFormats
-    } yield {
-      val fullFormat: String = s"${dateFormat}${dateTimeSeparator}${timeFormat}"
-      val replacedDateFormat = fullFormat.replace("{sep}", dateSeparator)
-      val regex = replacedDateFormat
-        .replaceAll("[E|M]{5}", "[A-Za-z]+")
-        .replaceAll("[E|M]{3}", "[A-Za-z]{3}")
-        .replaceAll("[H|m|s|S|X|d|M|y]", "\\\\d")
-      val javaFormat = new SimpleDateFormat(replacedDateFormat);
-
-      (regex, javaFormat)
+    def parse(raw: String, modified: Instant): Option[ApiInstant] = parseDate(raw) match {
+      case InstantResult(instant) => Some(ApiInstant(Some(instant), raw))
+      case ConstantResult(constant) => constant match {
+        case Now => Some(ApiInstant(Some(modified), raw))
+      }
+      case ParseFailure => None
     }
-
-    def parse(raw: String, modified: Instant): Option[ApiInstant] =
-      if (raw.isEmpty())
-        None
-      else
-        new Some(ApiInstant(
-          text = raw,
-          date =
-            constantMap.get(raw) match {
-              case Some(Now) => Some(modified) // If the date is a constant representation of "Now", assume the temporal coverage is the last modified date.
-              case None =>
-                formats
-                  .view
-                  .filter { case (regex, _) => raw.matches(regex) }
-                  .map { case (_, format) => catching(classOf[ParseException]) opt (format.parse(raw)) }
-                  .filter(_.isDefined)
-                  .map(_.get)
-                  .headOption
-                  .map(_.toInstant())
-            }
-        ))
   }
 
   trait Protocols extends DefaultJsonProtocol {
@@ -139,13 +85,6 @@ package temporal {
       override def write(instant: Instant): JsString = JsString.apply(instant.toString())
       override def read(json: JsValue): Instant = Instant.parse(json.convertTo[String])
     }
-    //    implicit object ApiInstantConstant extends JsonFormat[ApiInstantConstant] {
-    //      override def write(constant: ApiInstantConstant): JsString = JsString(constant.toString)
-    //      override def read(json: JsValue): ApiInstantConstant = {
-    //        if (!ApiInstant.constantMap.get(json.convertTo[String]).isDefined) println(json)
-    //        ApiInstant.constantMap.get(json.convertTo[String]).get
-    //      }
-    //    }
     implicit val apiInstant = jsonFormat2(ApiInstant.apply)
     implicit val periodOfTimeFormat = jsonFormat2(PeriodOfTime.apply)
     implicit object DurationFormat extends JsonFormat[Duration] {
