@@ -109,9 +109,11 @@ class FilterJurisdiction extends Filter {
 
         if(jurisdiction && jurisdictionType){
           getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
+            if(data.results && data.results.length > 0 ){
               this.setState({
                   locationInfo: data.results[0]
               });
+            }
           }, error =>{console.log(error)});
         }
     }
