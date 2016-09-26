@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 class DragBar extends Component {
     render(){
-      return <syg className='progress-bar'>
-             </syg>
+      return <svg className='progress-bar'>
+             </svg>
     }
 }
 
