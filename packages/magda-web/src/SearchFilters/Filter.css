@@ -119,3 +119,8 @@ form{
     display: none;
 }
 
+/*for debugging*/
+svg{
+  display: block;
+  background: #ddd;
+}
