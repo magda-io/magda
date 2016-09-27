@@ -4,16 +4,22 @@ import maxBy from 'lodash.maxby';
 import FilterHeader from './FilterHeader';
 import DragBar from './DragBar';
 
+const itemHeight = 32;
+const r = 30;
+
 
 class FilterDateRange extends Filter {
   constructor(props) {
     super(props);
     this.resetStartDate = this.resetStartDate.bind(this);
     this.resetEndDate = this.resetEndDate.bind(this);
+    this.updateDragBar = this.updateDragBar.bind(this);
     this.state={
       searchText: '',
-      startDatePos: undefined,
-      endDatePos: undefined
+      dragBarData: [
+        {id: 0, y: r/2},
+        {id: 1, y: r/2}
+      ]
     }
   }
 
@@ -79,9 +85,22 @@ class FilterDateRange extends Filter {
     return <button style={divStyle} type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-date-option btn`} onClick={this.toggleFilter.bind(this, option, i)}>{option.value}</button>;
   }
 
+  updateDragBar(id, value){
+    let index = Math.round(value / itemHeight);
+    let data = this.state.dragBarData.map(d=>{
+      if(d.id === id){
+        d.y = index*itemHeight + r/2
+      }
+      return d;
+    });
+    this.setState({
+      dragBarData: data
+    });
+  }
+
   render(){
     // temp, 32 is the height of each option
-    let height = this.props.options.length * 32;
+    let height = this.props.options.length * itemHeight;
     return (
       <div className='filter'>
         <FilterHeader query={this.props.location.query['startDate']}
@@ -91,7 +110,7 @@ class FilterDateRange extends Filter {
         {this.state.searchText.length === 0 &&
             <div className='clearfix' id='drag-bar'>
               <div className='col-xs-1'>
-                <DragBar startDatePos={this.state.startDatePos} endDatePos={this.state.endDatePos} height={height}/>
+                <DragBar dragBarData={this.state.dragBarData} updateDragBar={this.updateDragBar} height={height}/>
               </div>
               <div className='col-xs-11'>
                 <div className='options'>
