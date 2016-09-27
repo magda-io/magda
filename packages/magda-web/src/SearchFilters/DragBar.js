@@ -12,6 +12,14 @@ class DragBar extends Component {
 
     componentDidMount(){
       let that = this;
+
+      this._bar = d3Select(this._g).append('rect')
+      .attr('width', r*2)
+      .attr('height', Math.abs(this.props.dragBarData[0].y - this.props.dragBarData[1].y))
+      .attr('x', 0)
+      .attr('y', this.props.dragBarData[0].y - this.props.dragBarData[1].y < 0 ? this.props.dragBarData[0].y : this.props.dragBarData[1].y)
+      .style('fill', 'yellow');
+
       // create the circles
       this._circles = d3Select(this._g).selectAll('circle')
       .data(this.props.dragBarData).enter().append('circle')
@@ -19,6 +27,8 @@ class DragBar extends Component {
       .attr('r', r)
       .style('fill','#3498db')
       .attr('cy', d=>d.y);
+
+
 
       let dragInteraction = d3Drag().on('start', start).on('drag', drag).on('end', end);
       this._circles.call(dragInteraction);
@@ -40,12 +50,15 @@ class DragBar extends Component {
       }
     }
 
-    update(){
-      this._circles.data(this.props.dragBarData).attr('cy', d=> d.y)
+    update(nextProps){
+      this._circles.data(nextProps.dragBarData).attr('cy', d=> d.y);
+      this._bar.attr('height', Math.abs(nextProps.dragBarData[0].y - nextProps.dragBarData[1].y))
+               .attr('y', nextProps.dragBarData[0].y - nextProps.dragBarData[1].y < 0 ? nextProps.dragBarData[0].y : nextProps.dragBarData[1].y);
+
     }
 
-    componentWillReceiveProps(){
-      this.update();
+    componentWillReceiveProps(nextProps){
+      this.update(nextProps);
     }
 
 
