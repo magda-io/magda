@@ -11,9 +11,6 @@ const colorHighlight = '#8ac4ea';
 class DragBar extends Component {
     constructor(props){
       super(props);
-      this.dragStart = this.dragStart.bind(this);
-      this.drag = this.drag.bind(this);
-      this.dragEnd = this.drag.bind(this);
     }
 
     componentDidMount(){
@@ -30,17 +27,20 @@ class DragBar extends Component {
     }
 
     dragStart(evt){
-      console.log(evt);
+      // evt.preventDefault();
+      // console.log(evt);
 
     }
 
-    drag(evt){
+    drag(id, evt){
+      evt.preventDefault();
       console.log(evt);
-
+      // this.props.updateDragBar(id, 100);
     }
 
     dragEnd(evt){
-      console.log(evt);
+      // evt.preventDefault();
+      // console.log(evt);
 
     }
 
@@ -60,7 +60,7 @@ class DragBar extends Component {
 
       let barStyle={
         top: `${this.props.dragBarData[0] + r}px`,
-        height: `${this.props.dragBarData[1] + 2*r}px`
+        height: `${this.props.dragBarData[1] - this.props.dragBarData[0] + 2*r}px`
       }
 
 
@@ -68,18 +68,18 @@ class DragBar extends Component {
                 <div className='bar' style={barStyle}></div>
                 <div className='top-handle handle'
                       draggable="true"
-                      onDragStart={this.dragStart}
-                      onDrag={this.drag}
-                      onDragEnd={this.dragEnd}
+                      onDragStart={this.dragStart.bind(this, 0)}
+                      onDrag={this.drag.bind(this, 0)}
+                      onDragEnd={this.dragEnd.bind(this, 0)}
                       style={topHandleStyle}>
                     <i className="fa fa-angle-up"></i>
                 </div>
 
                 <div className='bottom-handle handle'
                       draggable="true"
-                      onDragStart={this.dragStart}
-                      onDrag={this.drag}
-                      onDragEnd={this.dragEnd}
+                      onDragStart={this.dragStart.bind(this, 1)}
+                      onDrag={this.drag.bind(this, 1)}
+                      onDragEnd={this.dragEnd.bind(this, 1)}
                       style={bottomHandleStyle}>
                     <i className="fa fa-angle-down"></i>
               </div>
