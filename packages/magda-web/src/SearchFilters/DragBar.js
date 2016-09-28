@@ -11,6 +11,9 @@ const colorHighlight = '#8ac4ea';
 class DragBar extends Component {
     constructor(props){
       super(props);
+      this.dragStart = this.dragStart.bind(this);
+      this.drag = this.drag.bind(this);
+      this.dragEnd = this.drag.bind(this);
     }
 
     componentDidMount(){
@@ -26,25 +29,29 @@ class DragBar extends Component {
       this.update(nextProps);
     }
 
+    dragStart(evt){
+      console.log(evt);
+
+    }
+
+    drag(evt){
+      console.log(evt);
+
+    }
+
+    dragEnd(evt){
+      console.log(evt);
+
+    }
+
 
     render(){
       let wrapperStyle ={
-        width: r*2 + 'px',
-        height: this.props.height + 'px',
-        background: '#f5f5f5'
-      }
-
-      let handleStyle ={
-        height: r*2 + 'px',
-        width: r*2 + 'px',
-        background: color,
-        borderRadius: '50%',
-        textAlign: 'center'
+        height: this.props.height + 'px'
       }
 
       let topHandleStyle ={
         transform: `translate(0, ${this.props.dragBarData[0]}px)`,
-
       }
 
       let bottomHandleStyle={
@@ -52,25 +59,30 @@ class DragBar extends Component {
       }
 
       let barStyle={
-        position: 'absolute',
         top: `${this.props.dragBarData[0] + r}px`,
-        height: `${this.props.dragBarData[1] + 2*r}px`,
-        left: 0,
-        right: 0,
-        background: colorLight
+        height: `${this.props.dragBarData[1] + 2*r}px`
       }
 
-      let iconStyle={
-        color: '#fff',
-        fontSize: '20px',
-        lineHeight: 1.3,
-      }
 
       return <div className='drag-bar__inner' style={wrapperStyle}>
                 <div className='bar' style={barStyle}></div>
-                <div className='top-handle' style={Object.assign(Object.assign({}, handleStyle), topHandleStyle)}><i className="fa fa-angle-up" style={iconStyle}></i></div>
+                <div className='top-handle handle'
+                      draggable="true"
+                      onDragStart={this.dragStart}
+                      onDrag={this.drag}
+                      onDragEnd={this.dragEnd}
+                      style={topHandleStyle}>
+                    <i className="fa fa-angle-up"></i>
+                </div>
 
-                <div className='bottom-handle' style={Object.assign(Object.assign({}, handleStyle), bottomHandleStyle)}><i className="fa fa-angle-down" style={iconStyle}></i></div>
+                <div className='bottom-handle handle'
+                      draggable="true"
+                      onDragStart={this.dragStart}
+                      onDrag={this.drag}
+                      onDragEnd={this.dragEnd}
+                      style={bottomHandleStyle}>
+                    <i className="fa fa-angle-down"></i>
+              </div>
              </div>
     }
 }
