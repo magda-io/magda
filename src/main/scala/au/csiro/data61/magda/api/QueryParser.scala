@@ -11,10 +11,7 @@ import java.time.Instant
 private object Tokens {
   sealed trait QueryToken
   case class Quote(exactQuery: String) extends QueryToken
-  case class DateFrom(rawDate: String) extends QueryToken
-  case class DateTo(rawDate: String) extends QueryToken
-  case class Publisher(rawPublisher: String) extends QueryToken
-  case class Format(rawFormat: String) extends QueryToken
+  case class Filter(filterName: String) extends QueryToken
   case class FreeTextWord(general: String) extends QueryToken
 }
 
@@ -26,24 +23,21 @@ private object QueryLexer extends RegexParsers {
   override def skipWhitespace = true
   override val whiteSpace = "[\t\r\f\n]+".r
 
+  val filterWords = Seq("From", "To", "By", "As")
+
   def quote: Parser[Tokens.Quote] = {
     """"[^"]*"""".r ^^ { str => Tokens.Quote(str.substring(1, str.length - 1)) }
   }
 
-  private def keyword[R](word: String, constructor: String => R)(): Parser[R] = {
-    s"$word [a-zA-Z0-9_]+".r ^^ { str => constructor(str.substring(1 + word.length)) }
-  }
-
   def freeTextWord: Parser[Tokens.FreeTextWord] = {
-    "\\s?[^\\s]+\\s?".r ^^ { str => Tokens.FreeTextWord(str) }
+    "\\s*[^\\s]+\\s*".r ^^ { str => Tokens.FreeTextWord(str.trim) }
+  }
+  def filterWord: Parser[Tokens.Filter] = {
+    val filterWordsJoined = filterWords.reduce { (left, right) => left + "|" + right }
+    s"(?i)($filterWordsJoined)".r ^^ { str => Tokens.Filter(str) }
   }
 
-  def from = keyword("from", Tokens.DateFrom.apply)
-  def to = keyword("to", Tokens.DateTo.apply)
-  def by = keyword("by", Tokens.Publisher.apply)
-  def as = keyword("as", Tokens.Format.apply)
-
-  def tokens: Parser[List[Tokens.QueryToken]] = phrase(rep1(quote | as | from | to | by | freeTextWord))
+  def tokens: Parser[List[Tokens.QueryToken]] = phrase(rep1(quote | filterWord | freeTextWord))
 
   def apply(code: String): Either[QueryLexerError, List[Tokens.QueryToken]] = {
     parse(tokens, code) match {
@@ -57,11 +51,22 @@ object AST {
   sealed trait QueryAST
   case class And(left: QueryAST, right: QueryAST) extends QueryAST
   case class Quote(quote: String) extends QueryAST
-  case class DateFrom(instant: Instant) extends QueryAST
-  case class DateTo(instant: Instant) extends QueryAST
-  case class Publisher(quote: String) extends QueryAST
-  case class Format(quote: String) extends QueryAST
   case class FreeTextWord(freeText: String) extends QueryAST
+  case class FilterStatement(filterType: FilterType, value: FilterValue) extends QueryAST
+
+  sealed trait FilterType extends QueryAST
+  case object FromType extends QueryAST
+  case object ToType extends QueryAST
+  case object PublisherType extends QueryAST
+  case object FormatType extends QueryAST
+
+  case class FilterValue(value: String) extends QueryAST
+
+  sealed trait Filter extends QueryAST
+  case class DateFrom(value: Instant) extends Filter
+  case class DateTo(value: Instant) extends Filter
+  case class Publisher(value: String) extends Filter
+  case class Format(value: String) extends Filter
 }
 
 private object QueryParser extends Parsers {
@@ -75,21 +80,43 @@ private object QueryParser extends Parsers {
     override def rest: Reader[Tokens.QueryToken] = new QueryTokenReader(tokens.tail)
   }
 
-  def query: Parser[AST.QueryAST] = phrase(queryPartList)
-  def queryPartList: Parser[AST.QueryAST] = rep1(queryPart) ^^ { case list => list reduceRight AST.And }
-  def queryPart: Parser[AST.QueryAST] = {
-    quote | format | dateFrom | dateTo | publisher | freeTextWord
+  def query = phrase(queryMakeup)
+  def queryMakeup = (freeText ~ filters) ^^ { case a ~ b => AST.And(a, b) }
+  def freeText = rep1(freeTextWord) ^^ { case list => list reduceRight AST.And }
+  def filters = rep1(filterStatement) ^^ { case list => list reduceRight AST.And }
+  def filterStatement = filterType ~ filterBody ^^ {
+    case AST.FromType ~ AST.FilterValue(filterValue)      => parseDateFromRaw(filterValue, AST.DateFrom.apply, AST.And(AST.FreeTextWord("from"), AST.FreeTextWord(filterValue)))
+    case AST.ToType ~ AST.FilterValue(filterValue)        => parseDateFromRaw(filterValue, AST.DateTo.apply, AST.And(AST.FreeTextWord("to"), AST.FreeTextWord(filterValue)))
+    case AST.PublisherType ~ AST.FilterValue(filterValue) => AST.Publisher(filterValue)
+    case AST.FormatType ~ AST.FilterValue(filterValue)    => AST.Format(filterValue)
+  }
+
+  def filterType =
+    accept("filter type", {
+      case Tokens.Filter(name) => name.toLowerCase() match {
+        case "from" => AST.FromType
+        case "to"   => AST.ToType
+        case "by"   => AST.PublisherType
+        case "as"   => AST.FormatType
+      }
+    })
+
+  private def filterBody: Parser[AST.FilterValue] =
+    rep1(filterBodyWord) ^^ {
+      case list => list.reduce((a, b) => (a, b) match {
+        case (AST.FilterValue(a), AST.FilterValue(b)) => AST.FilterValue(a + " " + b)
+      })
+    }
+
+  private def filterBodyWord: Parser[AST.FilterValue] = {
+    accept("filter body word", { case Tokens.FreeTextWord(formatString) => AST.FilterValue(formatString) })
   }
 
   private def quote: Parser[AST.Quote] = {
     accept("quote", { case Tokens.Quote(name) => AST.Quote(name) })
   }
 
-  private def format: Parser[AST.Format] = {
-    accept("format", { case Tokens.Format(formatString) => AST.Format(formatString) })
-  }
-
-  private def parseDateFromRaw[A >: AST.QueryAST](rawDate: String, applyFn: Instant => A, recoveryFn: => AST.QueryAST) : A = {
+  private def parseDateFromRaw[A >: AST.QueryAST](rawDate: String, applyFn: Instant => A, recoveryFn: => AST.QueryAST): A = {
     val date = parseDate(rawDate)
     date match {
       case InstantResult(instant) => applyFn(instant)
@@ -98,22 +125,6 @@ private object QueryParser extends Parsers {
       }
       case _ => recoveryFn
     }
-  }
-
-  private def dateFrom: Parser[AST.QueryAST] = {
-    accept("from date", {
-      case Tokens.DateFrom(rawDate) => parseDateFromRaw(rawDate, AST.DateFrom.apply, AST.And(AST.FreeTextWord("from"), AST.FreeTextWord(rawDate)))
-    })
-  }
-
-  private def dateTo: Parser[AST.QueryAST] = {
-    accept("to date", {
-      case Tokens.DateTo(rawDate) => parseDateFromRaw(rawDate, AST.DateTo.apply, AST.And(AST.FreeTextWord("to"), AST.FreeTextWord(rawDate)))
-    })
-  }
-
-  private def publisher: Parser[AST.Publisher] = {
-    accept("publisher", { case Tokens.Publisher(publisher) => AST.Publisher(publisher) })
   }
 
   private def freeTextWord: Parser[AST.FreeTextWord] = {
