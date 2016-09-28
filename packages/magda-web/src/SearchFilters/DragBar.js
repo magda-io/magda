@@ -31,26 +31,34 @@ class DragBar extends Component {
       .style('fill',colorLight)
       .attr('cy', d=>d.y);
 
-
-
-      let dragInteraction = d3Drag().on('start', start).on('drag', drag).on('end', end);
-      this._circles.call(dragInteraction);
-
-      function start(d){
-        d3Select(this).style('fill', colorHighlight);
-      }
-
-      function drag(d){
-        let target = d3Select(this);
-        if(d3Event.y > 0&& d3Event.y < that.props.height - r){
-          that.props.updateDragBar(d.id, d3Event.y);
-        }
-        target.style('fill', colorHighlight);
-      }
-
-      function end(d){
-        d3Select(this).style('fill', colorLight);
-      }
+      // let dragInteraction = d3Drag().on('start', start).on('drag', drag).on('end', end);
+      // this._circles.call(dragInteraction);
+      //
+      // function start(d){
+      //   d3Select(this).style('fill', colorHighlight);
+      // }
+      //
+      // function drag(d){
+      //   let target = d3Select(this);
+      //   debugger
+      //   if(d.id === 0){
+      //     // top slider, need to > 0, < second slider
+      //     if(d3Event.y > 0 && d3Event.y < that.props.dragBarData[1].y){
+      //       console.log('dragging');
+      //       that.props.updateDragBar(d.id, d3Event.y);
+      //     }
+      //   } else {
+      //     // bottom slider
+      //     if(d3Event.y < that.props.height - r && d3Event.y > that.props.dragBarData[0].y){
+      //       that.props.updateDragBar(d.id, d3Event.y);
+      //     }
+      //   }
+      //   target.style('fill', colorHighlight);
+      // }
+      //
+      // function end(d){
+      //   d3Select(this).style('fill', colorLight);
+      // }
     }
 
     update(nextProps){
