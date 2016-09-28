@@ -119,12 +119,6 @@ form{
     display: none;
 }
 
-/*for debugging*/
-svg{
-  display: block;
-  background: #ddd;
-}
-
 .slider{
   width: 30px;
   float: left;
@@ -133,4 +127,8 @@ svg{
 .list{
   width: calc(100% - 40px);
   float: right;
+}
+
+.drag-bar__inner{
+  position: relative;
 }
