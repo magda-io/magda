@@ -3,6 +3,9 @@ import {event as d3Event, select as d3Select} from 'd3-selection';
 import {drag as d3Drag} from 'd3-drag';
 
 const r = 15;
+const color = '#3498db';
+const colorLight = '#a0cfee';
+const colorHighlight = '#8ac4ea';
 
 
 class DragBar extends Component {
@@ -18,14 +21,14 @@ class DragBar extends Component {
       .attr('height', Math.abs(this.props.dragBarData[0].y - this.props.dragBarData[1].y))
       .attr('x', 0)
       .attr('y', this.props.dragBarData[0].y - this.props.dragBarData[1].y < 0 ? this.props.dragBarData[0].y : this.props.dragBarData[1].y)
-      .style('fill', 'yellow');
+      .style('fill', color);
 
       // create the circles
       this._circles = d3Select(this._g).selectAll('circle')
       .data(this.props.dragBarData).enter().append('circle')
       .attr('cx', r)
       .attr('r', r)
-      .style('fill','#3498db')
+      .style('fill',colorLight)
       .attr('cy', d=>d.y);
 
 
@@ -34,7 +37,7 @@ class DragBar extends Component {
       this._circles.call(dragInteraction);
 
       function start(d){
-        d3Select(this).style('fill', 'red');
+        d3Select(this).style('fill', colorHighlight);
       }
 
       function drag(d){
@@ -42,11 +45,11 @@ class DragBar extends Component {
         if(d3Event.y > 0&& d3Event.y < that.props.height - r){
           that.props.updateDragBar(d.id, d3Event.y);
         }
-        target.style('fill', 'red');
+        target.style('fill', colorHighlight);
       }
 
       function end(d){
-        d3Select(this).style('fill', '#3498db');
+        d3Select(this).style('fill', colorLight);
       }
     }
 

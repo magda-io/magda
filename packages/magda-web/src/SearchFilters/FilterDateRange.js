@@ -15,65 +15,81 @@ class FilterDateRange extends Filter {
     this.resetStartDate = this.resetStartDate.bind(this);
     this.resetEndDate = this.resetEndDate.bind(this);
     this.updateDragBar = this.updateDragBar.bind(this);
+    this.setStartDateIndex= this.setStartDateIndex.bind(this);
+    this.setEndDateIndex = this.setEndDateIndex.bind(this);
+    this.renderDragBar = this.renderDragBar.bind(this);
+
     this.state={
       searchText: '',
-      dragBarData: undefined
+      startDateIndex: -1,
+      endDateIndex: -1
     }
   }
 
   componentWillReceiveProps(nextProps){
-    // get index from props
-    let startIndex = findIndex(nextProps.options, o=> +o.value == +nextProps.location.query.startDate);
-    let endIndex = findIndex(nextProps.options, o=> +o.value == +nextProps.location.query.endDate);
-    this.setState({
-      dragBarData: [
-        {id: 0, y: startIndex*itemHeight + r/2},
-        {id: 1, y: endIndex*itemHeight + r/2}
-      ]
-    })
+    let sortedOptions = nextProps.options.sort((a,b)=>+a.value - b.value);
+
+    this.setStartDateIndex(sortedOptions, nextProps.location.query.startDate);
+    this.setEndDateIndex(sortedOptions, nextProps.location.query.endDate);
   }
 
+  setStartDateIndex(options, startDate){
+    let start = findIndex(options, o=> +o.value == +startDate);
+    if(start !== -1){
+      this.setState({
+        startDateIndex: start
+      });
+    }
+  }
+
+  setEndDateIndex(options, endDate){
+    let end = findIndex(options, o=> +o.value == +endDate);
+    if(end !== -1){
+      this.setState({
+        endDateIndex: end
+      });
+    }
+  }
 
   toggleFilter(option, i){
     let currentStartDate = +this.props.location.query.startDate;
     let currentEndDate = +this.props.location.query.endDate;
     let optionDate = + option.value;
     let data = this.state.dragBarData;
+    let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
 
     // if neither current Start date and end date, then set selection to both
     if(!currentStartDate && !currentEndDate){
         this.props.updateQuery({ 'startDate': optionDate});
         this.props.updateQuery({ 'endDate': optionDate});
-        data.map(d=>{d.y = i*itemHeight + r/2; return d});
+        this.setStartDateIndex(sortedOptions, optionDate);
+        this.setEndDateIndex(sortedOptions, optionDate);
 
     } else {
         if(optionDate < currentStartDate){
             this.props.updateQuery({ 'startDate': optionDate});
-            data[0].y = i * itemHeight + r/2;
+            this.setStartDateIndex(sortedOptions, optionDate);
         } else{
             this.props.updateQuery({ 'endDate': optionDate});
-            data[1].y = i * itemHeight + r/2;
+            this.setEndDateIndex(sortedOptions, optionDate);
         }
     }
-    this.setState({
-      dragBarData: data
-    });
   }
 
   resetStartDate(){
-    this.props.updateQuery({ 'startDate': this.props.options[0].value });
+    let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
+    this.props.updateQuery({ 'startDate': sortedOptions[0].value });
   }
 
   resetEndDate(){
-    this.props.updateQuery({ 'endDate': this.props.options[this.props.options.length-1].value });
+    let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
+    this.props.updateQuery({ 'endDate': sortedOptions[sortedOptions-1].value });
   }
 
   resetFilter(){
     this.props.updateQuery({'startDate': []});
     this.props.updateQuery({'endDate': []});
   }
-
-
 
   checkActiveOption(option){
 
@@ -106,22 +122,40 @@ class FilterDateRange extends Filter {
 
   updateDragBar(id, value){
     let index = Math.round(value / itemHeight);
-    this.toggleFilter(this.props.options[index], index);
+    let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
+    if(id === 0){
+      this.setStartDateIndex(sortedOptions, index);
+      this.props.updateQuery({ 'startDate': sortedOptions[index].value});
+    } else{
+      this.setEndDateIndex(sortedOptions, index);
+      this.props.updateQuery({ 'endDate': sortedOptions[index].value});
+    }
+  }
+
+  renderDragBar(){
+    let height = this.props.options.length * itemHeight;
+    let dragBarData=[
+      {id: 0, y: +this.state.startDateIndex* itemHeight + 15},
+      {id: 0, y: +this.state.endDateIndex* itemHeight + 15},
+    ];
+
+    if(this.state.startDateIndex !== -1 && this.state.endDateIndex !== -1){
+      return <DragBar dragBarData={dragBarData} updateDragBar={this.updateDragBar} height={height}/>
+    }
+    return null;
   }
 
   render(){
-    // temp, 32 is the height of each option
-    let height = this.props.options.length * itemHeight;
     return (
       <div className='filter'>
-        <FilterHeader query={this.props.location.query['startDate']}
+        <FilterHeader query={this.props.location.query.startDate}
                       resetFilter={this.resetFilter}
                       title={this.props.title}/>
         <button className='btn' onClick={this.resetStartDate}>Any start date </button>
-        {(this.state.searchText.length === 0 && this.state.dragBarData) &&
+        {(this.state.searchText.length === 0) &&
             <div className='clearfix' id='drag-bar'>
               <div className='col-xs-1'>
-                <DragBar dragBarData={this.state.dragBarData} updateDragBar={this.updateDragBar} height={height}/>
+                {this.renderDragBar()}
               </div>
               <div className='col-xs-11'>
                 <div className='options'>
