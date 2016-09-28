@@ -6,9 +6,11 @@ import spray.json._
 import au.csiro.data61.magda.model.temporal._
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
+import au.csiro.data61.magda.api.Query
 
 package misc {
   case class SearchResult(
+    query: Query,
     hitCount: Int,
     facets: Option[Seq[Facet]] = None,
     dataSets: List[DataSet])
@@ -139,7 +141,7 @@ package misc {
       .map { case (_, format) => format }
       .headOption
 
-    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType]) : Option[String] = rawFormat
+    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType]): Option[String] = rawFormat
       .orElse(url.flatMap(Distribution.formatFromUrl(_)))
       .orElse(parsedMediaType.map(_.subType))
 
@@ -164,7 +166,8 @@ package misc {
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat2(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
-    implicit val searchResultFormat = jsonFormat3(SearchResult.apply)
+    implicit val queryFormat = jsonFormat7(Query.apply)
+    implicit val searchResultFormat = jsonFormat4(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }
 

@@ -6,10 +6,11 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchProvider
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc._
 import akka.actor.ActorSystem
+import au.csiro.data61.magda.api.Query
 
 trait SearchProvider {
   def index(source: String, dataSets: List[DataSet]): Future[Any]
-  def search(query: String, limit: Int = 50): Future[SearchResult]
+  def search(query: Query, limit: Int = 50): Future[SearchResult]
   def searchFacets(facetType: FacetType, query: String, limit: Int = 50): Future[FacetSearchResult]
 }
 object SearchProvider {

@@ -38,6 +38,7 @@ import org.elasticsearch.action.ActionRequestValidationException
 import org.elasticsearch.index.IndexNotFoundException
 import org.elasticsearch.client.transport.NoNodeAvailableException
 import org.elasticsearch.transport.RemoteTransportException
+import au.csiro.data61.magda.api.Query
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext) extends SearchProvider {
   val logger = Logging(system, getClass)
@@ -167,14 +168,16 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     )
   }
 
-  override def search(queryText: String, limit: Int) =
+  override def search(query: Query, limit: Int) = {
+
     setupFuture.flatMap(client =>
       client.execute {
-        ElasticDsl.search in "magda" / "datasets" query queryText limit limit aggregations facetAggregations.values.map(_.generalAggDef(10))
+        addQuery(ElasticDsl.search in "magda" / "datasets" limit limit aggregations facetAggregations.values.map(_.generalAggDef(10)), query)
       } map { response =>
         val aggs = response.aggregations.asList().asScala.toSeq.groupBy { agg => agg.getName }
 
         new SearchResult(
+          query = query,
           hitCount = response.getHits.totalHits().toInt,
           dataSets = response.as[DataSet].toList,
           facets = Some(facetAggregations.map {
@@ -186,6 +189,42 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         )
       }
     )
+  }
+
+  def addQuery(searchDef: SearchDefinition, query: Query): SearchDefinition = {
+    val processedQuote = query.quotes.map(quote => s"""${quote}""") match {
+      case Nil => None
+      case xs  => Some(xs.reduce(_ + " " + _))
+    }
+
+    val stringQuery: Option[String] = (query.freeText, processedQuote) match {
+      case (None, None)       => None
+      case (None, some)       => some
+      case (some, None)       => some
+      case (freeText, quotes) => Some(freeText + " " + quotes)
+    }
+
+    searchDef.query(stringQuery.getOrElse("*")).query {
+      should(
+        query.formats.map(format =>
+          nestedQuery("distributions").query(
+            matchQuery("distributions.format", format)
+          )
+        )
+          ++
+          query.publishers.map(matchQuery("publisher.name", _))
+          ++
+          query.dateFrom.map(dateFrom => Seq(
+            rangeQuery("temporal.start.date").gte(dateFrom.toString)
+          )).getOrElse(Nil)
+          ++
+          query.dateTo.map(dateTo => Seq(
+            rangeQuery("temporal.end.date").gte(dateTo.toString)
+          )).getOrElse(Nil)
+
+      )
+    }
+  }
 
   override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[FacetSearchResult] = {
     setupFuture.flatMap(client =>

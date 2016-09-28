@@ -15,11 +15,9 @@ private object Tokens {
   case class FreeTextWord(general: String) extends QueryToken
 }
 
-trait QueryCompilationError
+case class QueryCompilationError(error: String)
 
 private object QueryLexer extends RegexParsers {
-  case class QueryLexerError(message: String) extends QueryCompilationError
-
   override def skipWhitespace = true
   override val whiteSpace = "[\t\r\f\n]+".r
 
@@ -34,14 +32,14 @@ private object QueryLexer extends RegexParsers {
   }
   def filterWord: Parser[Tokens.Filter] = {
     val filterWordsJoined = filterWords.reduce { (left, right) => left + "|" + right }
-    s"(?i)($filterWordsJoined)".r ^^ { str => Tokens.Filter(str) }
+    s"(^|\\s)(?i)($filterWordsJoined)(\\s|$$)".r ^^ { str => Tokens.Filter(str.trim) }
   }
 
   def tokens: Parser[List[Tokens.QueryToken]] = phrase(rep1(quote | filterWord | freeTextWord))
 
-  def apply(code: String): Either[QueryLexerError, List[Tokens.QueryToken]] = {
+  def apply(code: String): Either[QueryCompilationError, List[Tokens.QueryToken]] = {
     parse(tokens, code) match {
-      case NoSuccess(msg, next)  => Left(QueryLexerError(msg))
+      case NoSuccess(msg, next)  => Left(QueryCompilationError(msg))
       case Success(result, next) => Right(result)
     }
   }
@@ -49,28 +47,28 @@ private object QueryLexer extends RegexParsers {
 
 object AST {
   sealed trait QueryAST
-  case class And(left: QueryAST, right: QueryAST) extends QueryAST
-  case class Quote(quote: String) extends QueryAST
-  case class FreeTextWord(freeText: String) extends QueryAST
-  case class FilterStatement(filterType: FilterType, value: FilterValue) extends QueryAST
+  sealed trait ReturnedAST extends QueryAST
+  case class And(left: ReturnedAST, right: ReturnedAST) extends ReturnedAST
+  case class Quote(quote: String) extends ReturnedAST
+  case class FreeTextWord(freeText: String) extends ReturnedAST
 
-  sealed trait FilterType extends QueryAST
-  case object FromType extends QueryAST
-  case object ToType extends QueryAST
-  case object PublisherType extends QueryAST
-  case object FormatType extends QueryAST
-
-  case class FilterValue(value: String) extends QueryAST
-
-  sealed trait Filter extends QueryAST
+  sealed trait Filter extends ReturnedAST
   case class DateFrom(value: Instant) extends Filter
   case class DateTo(value: Instant) extends Filter
   case class Publisher(value: String) extends Filter
   case class Format(value: String) extends Filter
+
+  sealed trait FilterType extends QueryAST
+  case object FromType extends FilterType
+  case object ToType extends FilterType
+  case object PublisherType extends FilterType
+  case object FormatType extends FilterType
+
+  case class FilterStatement(filterType: FilterType, value: FilterValue) extends QueryAST
+  case class FilterValue(value: String) extends QueryAST
 }
 
 private object QueryParser extends Parsers {
-  case class QueryParserError(msg: String) extends QueryCompilationError
   override type Elem = Tokens.QueryToken
 
   class QueryTokenReader(tokens: Seq[Tokens.QueryToken]) extends Reader[Tokens.QueryToken] {
@@ -81,8 +79,9 @@ private object QueryParser extends Parsers {
   }
 
   def query = phrase(queryMakeup)
-  def queryMakeup = (freeText ~ filters) ^^ { case a ~ b => AST.And(a, b) }
-  def freeText = rep1(freeTextWord) ^^ { case list => list reduceRight AST.And }
+  def queryMakeup = queryAndFilters | queryText | filters 
+  def queryAndFilters = (queryText ~ filters) ^^ { case a ~ b => AST.And(a, b) }
+  def queryText = rep1(freeTextWord | quote) ^^ { case list => list reduceRight AST.And }
   def filters = rep1(filterStatement) ^^ { case list => list reduceRight AST.And }
   def filterStatement = filterType ~ filterBody ^^ {
     case AST.FromType ~ AST.FilterValue(filterValue)      => parseDateFromRaw(filterValue, AST.DateFrom.apply, AST.And(AST.FreeTextWord("from"), AST.FreeTextWord(filterValue)))
@@ -116,7 +115,7 @@ private object QueryParser extends Parsers {
     accept("quote", { case Tokens.Quote(name) => AST.Quote(name) })
   }
 
-  private def parseDateFromRaw[A >: AST.QueryAST](rawDate: String, applyFn: Instant => A, recoveryFn: => AST.QueryAST): A = {
+  private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: String, applyFn: Instant => A, recoveryFn: => AST.ReturnedAST): A = {
     val date = parseDate(rawDate)
     date match {
       case InstantResult(instant) => applyFn(instant)
@@ -131,20 +130,60 @@ private object QueryParser extends Parsers {
     accept("free text", { case Tokens.FreeTextWord(freeText) => AST.FreeTextWord(freeText.trim) })
   }
 
-  def apply(tokens: Seq[Tokens.QueryToken]): Either[QueryParserError, AST.QueryAST] = {
+  def apply(tokens: Seq[Tokens.QueryToken]): Either[QueryCompilationError, AST.ReturnedAST] = {
     val reader = new QueryTokenReader(tokens)
     query(reader) match {
-      case NoSuccess(msg, next)  => Left(QueryParserError(msg))
+      case NoSuccess(msg, next)  => Left(QueryCompilationError(msg))
       case Success(result, next) => Right(result)
     }
   }
 }
 
 object QueryCompiler {
-  def apply(code: String): Either[QueryCompilationError, AST.QueryAST] = {
-    for {
+  def apply(code: String): Query = {
+    val result = for {
       tokens <- QueryLexer(code).right
       ast <- QueryParser(tokens).right
     } yield ast
+
+    result match {
+      case Right(ast)  => flattenAST(ast)
+      case Left(QueryCompilationError(error)) => Query(freeText = Some(code), error = Some(error))
+    }
+  }
+
+  def flattenAST(ast: AST.ReturnedAST): Query = {
+    def merge(left: Query, right: Query): Query = left.copy(
+      freeText = (left.freeText, right.freeText) match {
+        case (None, None) => None
+        case (some, None) => some
+        case (None, some) => some
+        case (Some(left), Some(right)) => Some(left + " " + right)
+      },
+      publishers = left.publishers ++ right.publishers,
+      dateFrom = right.dateFrom.orElse(left.dateFrom),
+      dateTo = right.dateTo.orElse(left.dateTo),
+      formats = left.formats ++ right.formats,
+      quotes = left.quotes ++ right.quotes
+    )
+
+    ast match {
+      case AST.And(left, right)   => merge(flattenAST(left), flattenAST(right))
+      case AST.DateFrom(instant)  => Query(dateFrom = Some(instant))
+      case AST.DateTo(instant)    => Query(dateTo = Some(instant))
+      case AST.Publisher(name)    => Query(publishers = Seq(name))
+      case AST.Format(format)     => Query(formats = Seq(format))
+      case AST.FreeTextWord(word) => Query(freeText = Some(word))
+      case AST.Quote(quote)       => Query(quotes = Seq(quote))
+    }
   }
 }
+
+case class Query(
+  freeText: Option[String] = None,
+  quotes: Seq[String] = Nil,
+  publishers: Seq[String] = Nil,
+  dateFrom: Option[Instant] = None,
+  dateTo: Option[Instant] = None,
+  formats: Seq[String] = Nil,
+  error: Option[String] = None)

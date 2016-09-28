@@ -80,9 +80,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
         pathPrefix("datasets") {
           pathPrefix("search") {
             (get & parameters("query" ? "*", "limit" ? 50)) { (query, limit) =>
-              val result = SearchProvider().search(query, limit)
-
-              logger.debug(QueryCompiler(query).toString)
+              val result = SearchProvider().search(QueryCompiler(query), limit)
 
               pathPrefix("datasets") {
                 complete {
