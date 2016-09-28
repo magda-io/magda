@@ -28,27 +28,22 @@ class FilterDateRange extends Filter {
 
   componentWillReceiveProps(nextProps){
     let sortedOptions = nextProps.options.sort((a,b)=>+a.value - b.value);
-
     this.setStartDateIndex(sortedOptions, nextProps.location.query.startDate);
     this.setEndDateIndex(sortedOptions, nextProps.location.query.endDate);
   }
 
   setStartDateIndex(options, startDate){
-    let start = findIndex(options, o=> +o.value == +startDate);
-    if(start !== -1){
-      this.setState({
-        startDateIndex: start
-      });
-    }
+    let start = startDate ? findIndex(options, o=> +o.value == +startDate) : -1;
+    this.setState({
+      startDateIndex: start
+    });
   }
 
   setEndDateIndex(options, endDate){
-    let end = findIndex(options, o=> +o.value == +endDate);
-    if(end !== -1){
-      this.setState({
-        endDateIndex: end
-      });
-    }
+    let end = endDate ? findIndex(options, o=> +o.value == +endDate) : -1;
+    this.setState({
+      endDateIndex: end
+    });
   }
 
   toggleFilter(option, i){
