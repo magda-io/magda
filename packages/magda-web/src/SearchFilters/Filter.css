@@ -124,3 +124,13 @@ svg{
   display: block;
   background: #ddd;
 }
+
+.slider{
+  width: 30px;
+  float: left;
+}
+
+.list{
+  width: calc(100% - 40px);
+  float: right;
+}

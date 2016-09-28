@@ -149,10 +149,10 @@ class FilterDateRange extends Filter {
         <button className='btn' onClick={this.resetStartDate}>Any start date </button>
         {(this.state.searchText.length === 0) &&
             <div className='clearfix' id='drag-bar'>
-              <div className='col-xs-1'>
+              <div className='slider'>
                 {this.renderDragBar()}
               </div>
-              <div className='col-xs-11'>
+              <div className='list'>
                 <div className='options'>
                   {this.props.options.sort((a,b)=>+a.value - b.value).map((option, i)=>
                         <div key={i}>{this.renderCondition(option, i)}</div>
