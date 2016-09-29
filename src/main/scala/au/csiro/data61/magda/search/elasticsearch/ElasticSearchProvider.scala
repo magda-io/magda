@@ -41,28 +41,29 @@ import org.elasticsearch.client.transport.NoNodeAvailableException
 import org.elasticsearch.transport.RemoteTransportException
 import au.csiro.data61.magda.api.Query
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
+import org.elasticsearch.search.aggregations.InvalidAggregationPathException
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext) extends SearchProvider {
   val logger = Logging(system, getClass)
 
   case class FacetDefinition(
-    generalAggDef: (Query, Int) => AbstractAggregationDefinition,
-    getOptionsGeneral: (FacetType, String => Aggregation) => Seq[FacetOption] = (facetType, getAgg) => getAgg(facetType.id))
+    aggregationDefinition: (Query, Int) => AbstractAggregationDefinition,
+    getFacetDetails: Aggregation => Seq[FacetOption] = aggregation => aggregation)
 
   val facetAggregations: Map[FacetType, FacetDefinition] = Map(
     Publisher -> FacetDefinition(
-      generalAggDef = (query: Query, limit) => {
+      aggregationDefinition = (query: Query, limit) => {
         aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit)
       }),
 
     misc.Year -> FacetDefinition(
-      generalAggDef = (query, limit) => aggregation.terms(misc.Year.id).field("years").order(Order.term(false)).size(limit)),
+      aggregationDefinition = (query, limit) => aggregation.terms(misc.Year.id).field("years").order(Order.term(false)).size(limit)),
 
     Format -> FacetDefinition(
-      generalAggDef = (query, limit) => aggregation nested "distributions" path "distributions" aggregations {
-        aggregation terms "format" field "distributions.format.untokenized" size limit
+      aggregationDefinition = (query, limit) => aggregation nested Format.id path "distributions" aggregations {
+        aggregation terms "abc" field "distributions.format.untokenized" size limit
       },
-      getOptionsGeneral = (facetType, getAgg) => getAgg("distributions").getProperty("format").asInstanceOf[Aggregation]
+      getFacetDetails = aggregation => aggregation.getProperty("abc").asInstanceOf[Aggregation]
     )
   )
 
@@ -147,12 +148,14 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       client.execute {
         bulk(
           dataSets.map { dataSet =>
-            val indexDataSet = ElasticDsl.index into "magda" / "datasets" id dataSet.uniqueId source dataSet.copy(
-              years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
-                case Nil  => None
-                case list => Some(list)
-              }
-            ).toJson
+            val indexDataSet = ElasticDsl.index into "magda" / "datasets" id dataSet.uniqueId source (
+              dataSet.copy(
+                years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
+                  case Nil  => None
+                  case list => Some(list)
+                }
+              ).toJson
+            )
 
             val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
               ElasticDsl.index into "magda" / Publisher.id
@@ -183,9 +186,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       client.execute {
         addAggregations(addQuery(ElasticDsl.search in "magda" / "datasets" limit limit, query), query)
       } map { response =>
-        val aggs = response.aggregations.asMap().asScala
-        val filter = aggs.get("filter").get
-        def getAgg(key: String) : Aggregation = aggs.getOrElse(key, filter.getProperty(key).asInstanceOf[Aggregation])
+        val aggsMap = response.aggregations.asMap().asScala
 
         new SearchResult(
           query = query,
@@ -194,7 +195,9 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
           facets = Some(facetAggregations.map {
             case (facetType, definition) => new Facet(
               id = facetType,
-              options = definition.getOptionsGeneral(facetType, getAgg)
+              options = {
+                definition.getFacetDetails(aggsMap.get(facetType.id).get.getProperty(facetType.id).asInstanceOf[Aggregation])
+              }
             )
           }.toSeq)
         )
@@ -204,30 +207,28 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
 
   def addAggregations(searchDef: SearchDefinition, query: Query) = {
     searchDef aggregations (
-      facetAggregations.filter(_._1 match {
-        // Only include facets in the filtered aggregation if they're not themselves being filtered
-        case misc.Year => query.dateFrom.isDefined || query.dateTo.isDefined
-        case Format    => !query.formats.isEmpty
-        case Publisher => !query.publishers.isEmpty
-      }).map(_._2.generalAggDef(query, 10)).toList :+
-
-      aggregation.filter("filter").filter(
-        should(Seq(
-          query.publishers.map(publisher => matchQuery("publisher.name", publisher)),
-          query.formats.map(format => nestedQuery("distributions").query(
-            matchQuery("distributions.format", format)
-          )),
-          query.dateFrom.map(dateFrom => rangeQuery("temporal.end.date").gte(dateFrom.toString)).map(Seq(_)).getOrElse(Nil),
-          query.dateTo.map(dateTo => rangeQuery("temporal.start.date").lte(dateTo.toString)).map(Seq(_)).getOrElse(Nil)
-        ).flatten)
-      ).aggs(facetAggregations.filter(_._1 match {
-          // Only include facets in the filtered aggregation if they're not themselves being filtered
-          case misc.Year => !query.dateFrom.isDefined && !query.dateTo.isDefined
-          case Format    => query.formats.isEmpty
-          case Publisher => query.publishers.isEmpty
-        }).map(_._2.generalAggDef(query, 10)))
+      facetAggregations.map {
+        case (facetType, facetAgg) => aggregation.filter(facetType.id).filter(getFilterQueryDef(facetType, query)).aggs(facetAgg.aggregationDefinition(query, 10))
+      }
     )
   }
+
+  def getFilterQueryDef(facetType: FacetType, query: Query): BoolQueryDefinition = queryToQueryDef(
+    facetType match {
+      case misc.Year => query.copy(dateFrom = None, dateTo = None)
+      case Format    => query.copy(formats = Nil)
+      case Publisher => query.copy(publishers = Nil)
+    }
+  )
+
+  def queryToQueryDef(query: Query): BoolQueryDefinition = should(Seq(
+    query.publishers.map(publisher => matchPhraseQuery("publisher.name", publisher).boost(30)),
+    query.formats.map(format => nestedQuery("distributions").query(
+      matchQuery("distributions.format", format)
+    )),
+    query.dateFrom.map(dateFrom => rangeQuery("temporal.end.date").gte(dateFrom.toString)).map(Seq(_)).getOrElse(Nil),
+    query.dateTo.map(dateTo => rangeQuery("temporal.start.date").lte(dateTo.toString)).map(Seq(_)).getOrElse(Nil)
+  ).flatten)
 
   def addQuery(searchDef: SearchDefinition, query: Query): SearchDefinition = {
     val processedQuote = query.quotes.map(quote => s"""${quote}""") match {
@@ -242,22 +243,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       case (freeText, quotes) => Some(freeText + " " + quotes)
     }
 
-    searchDef.query(stringQuery.getOrElse("*")).postFilter {
-      should(Seq(
-        query.formats.map(format =>
-          nestedQuery("distributions").query(
-            matchQuery("distributions.format", format)
-          )
-        ),
-        query.publishers.map(matchPhraseQuery("publisher.name", _)),
-        query.dateFrom.map(dateFrom => Seq(
-          rangeQuery("temporal.end.date").gte(dateFrom.toString)
-        )).getOrElse(Nil),
-        query.dateTo.map(dateTo => Seq(
-          rangeQuery("temporal.start.date").lte(dateTo.toString)
-        )).getOrElse(Nil)
-      ).flatten)
-    }
+    searchDef.query(stringQuery.getOrElse("*")).postFilter(queryToQueryDef(query))
   }
 
   override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[FacetSearchResult] = {
