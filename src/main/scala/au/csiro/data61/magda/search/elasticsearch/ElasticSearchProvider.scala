@@ -25,6 +25,7 @@ import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import au.csiro.data61.magda.search.SearchProvider
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.util.FutureRetry.retry
@@ -45,19 +46,23 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   val logger = Logging(system, getClass)
 
   case class FacetDefinition(
-    generalAggDef: Int => AbstractAggregationDefinition,
-    getOptionsGeneral: (FacetType, Map[String, Seq[Aggregation]]) => Seq[FacetOption] = (facetType, aggsMap) => aggsMap.get(facetType.id).get.head)
+    generalAggDef: (Query, Int) => AbstractAggregationDefinition,
+    getOptionsGeneral: (FacetType, String => Aggregation) => Seq[FacetOption] = (facetType, getAgg) => getAgg(facetType.id))
 
   val facetAggregations: Map[FacetType, FacetDefinition] = Map(
-    FacetType.Publisher -> FacetDefinition(
-      generalAggDef = (limit: Int) => aggregation.terms(FacetType.Publisher.id).field("publisher.name.untouched").size(limit)),
+    Publisher -> FacetDefinition(
+      generalAggDef = (query: Query, limit) => {
+        aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit)
+      }),
 
-    FacetType.Year -> FacetDefinition(
-      generalAggDef = (limit: Int) => aggregation.terms(FacetType.Year.id).field("years").order(Order.term(false)).size(limit)),
+    misc.Year -> FacetDefinition(
+      generalAggDef = (query, limit) => aggregation.terms(misc.Year.id).field("years").order(Order.term(false)).size(limit)),
 
-    FacetType.Format -> FacetDefinition(
-      generalAggDef = (limit: Int) => aggregation nested "distributions" path "distributions" aggregations { aggregation terms "format" field "distributions.format.untokenized" size limit },
-      getOptionsGeneral = (facetType, aggsMap) => aggsMap.get("distributions").get.head.getProperty("format").asInstanceOf[Aggregation]
+    Format -> FacetDefinition(
+      generalAggDef = (query, limit) => aggregation nested "distributions" path "distributions" aggregations {
+        aggregation terms "format" field "distributions.format.untokenized" size limit
+      },
+      getOptionsGeneral = (facetType, getAgg) => getAgg("distributions").getProperty("format").asInstanceOf[Aggregation]
     )
   )
 
@@ -109,9 +114,9 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
                   )
                 )
               ),
-              mapping(FacetType.Format.id),
-              mapping(FacetType.Year.id),
-              mapping(FacetType.Format.id)
+              mapping(Format.id),
+              mapping(misc.Year.id),
+              mapping(Format.id)
             ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
           }
         } map { _ => client }
@@ -150,7 +155,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
             ).toJson
 
             val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-              ElasticDsl.index into "magda" / FacetType.Publisher.id
+              ElasticDsl.index into "magda" / Publisher.id
                 id publisherName.toLowerCase
                 source Map("value" -> publisherName).toJson
             ))
@@ -158,28 +163,29 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
             val indexYears = getYears(
               dataSet.temporal.flatMap(_.start.flatMap(_.date)),
               dataSet.temporal.flatMap(_.end.flatMap(_.date))
-            ).map(year => ElasticDsl.index into "magda" / FacetType.Year.id id year source Map("value" -> year).toJson)
+            ).map(year => ElasticDsl.index into "magda" / misc.Year.id id year source Map("value" -> year).toJson)
 
             val indexFormats = dataSet.distributions.map(_.filter(_.format.isDefined).map { distribution =>
               val format = distribution.format.get
 
-              ElasticDsl.index into "magda" / FacetType.Format.id id format.toLowerCase source Map("value" -> format).toJson
+              ElasticDsl.index into "magda" / Format.id id format.toLowerCase source Map("value" -> format).toJson
             }).getOrElse(Nil)
 
             indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
-          }.reduce(_ ++ _)
+          }.flatten
         )
       }
     )
   }
 
   override def search(query: Query, limit: Int) = {
-
     setupFuture.flatMap(client =>
       client.execute {
-        addQuery(ElasticDsl.search in "magda" / "datasets" limit limit aggregations facetAggregations.values.map(_.generalAggDef(10)), query)
+        addAggregations(addQuery(ElasticDsl.search in "magda" / "datasets" limit limit, query), query)
       } map { response =>
-        val aggs = response.aggregations.asList().asScala.toSeq.groupBy { agg => agg.getName }
+        val aggs = response.aggregations.asMap().asScala
+        val filter = aggs.get("filter").get
+        def getAgg(key: String) : Aggregation = aggs.getOrElse(key, filter.getProperty(key).asInstanceOf[Aggregation])
 
         new SearchResult(
           query = query,
@@ -188,11 +194,38 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
           facets = Some(facetAggregations.map {
             case (facetType, definition) => new Facet(
               id = facetType,
-              options = definition.getOptionsGeneral(facetType, aggs)
+              options = definition.getOptionsGeneral(facetType, getAgg)
             )
           }.toSeq)
         )
       }
+    )
+  }
+
+  def addAggregations(searchDef: SearchDefinition, query: Query) = {
+    searchDef aggregations (
+      facetAggregations.filter(_._1 match {
+        // Only include facets in the filtered aggregation if they're not themselves being filtered
+        case misc.Year => query.dateFrom.isDefined || query.dateTo.isDefined
+        case Format    => !query.formats.isEmpty
+        case Publisher => !query.publishers.isEmpty
+      }).map(_._2.generalAggDef(query, 10)).toList :+
+
+      aggregation.filter("filter").filter(
+        should(Seq(
+          query.publishers.map(publisher => matchQuery("publisher.name", publisher)),
+          query.formats.map(format => nestedQuery("distributions").query(
+            matchQuery("distributions.format", format)
+          )),
+          query.dateFrom.map(dateFrom => rangeQuery("temporal.end.date").gte(dateFrom.toString)).map(Seq(_)).getOrElse(Nil),
+          query.dateTo.map(dateTo => rangeQuery("temporal.start.date").lte(dateTo.toString)).map(Seq(_)).getOrElse(Nil)
+        ).flatten)
+      ).aggs(facetAggregations.filter(_._1 match {
+          // Only include facets in the filtered aggregation if they're not themselves being filtered
+          case misc.Year => !query.dateFrom.isDefined && !query.dateTo.isDefined
+          case Format    => query.formats.isEmpty
+          case Publisher => query.publishers.isEmpty
+        }).map(_._2.generalAggDef(query, 10)))
     )
   }
 
@@ -209,21 +242,21 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       case (freeText, quotes) => Some(freeText + " " + quotes)
     }
 
-    searchDef.query(stringQuery.getOrElse("*")).query {
+    searchDef.query(stringQuery.getOrElse("*")).postFilter {
       should(Seq(
         query.formats.map(format =>
           nestedQuery("distributions").query(
             matchQuery("distributions.format", format)
           )
         ),
-        query.publishers.map(matchQuery("publisher.name", _)),
+        query.publishers.map(matchPhraseQuery("publisher.name", _)),
         query.dateFrom.map(dateFrom => Seq(
           rangeQuery("temporal.end.date").gte(dateFrom.toString)
         )).getOrElse(Nil),
         query.dateTo.map(dateTo => Seq(
           rangeQuery("temporal.start.date").lte(dateTo.toString)
         )).getOrElse(Nil)
-      ).reduce(_ ++ _))
+      ).flatten)
     }
   }
 

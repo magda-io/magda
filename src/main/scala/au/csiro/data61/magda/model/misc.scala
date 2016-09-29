@@ -15,17 +15,24 @@ package misc {
     facets: Option[Seq[Facet]] = None,
     dataSets: List[DataSet])
 
-  case class FacetType(id: String)
-  case object FacetType {
-    val Publisher = FacetType("publisher")
-    val Year = FacetType("year")
-    val Format = FacetType("format")
-
+  sealed trait FacetType {
+    def id: String
+  }
+  object FacetType {
     val all = Seq(Publisher, Year, Format)
 
     private val idToFacet = all.groupBy(_.id).mapValues(_.head)
 
     def fromId(id: String): Option[FacetType] = idToFacet get id
+  }
+  case object Publisher extends FacetType {
+    override def id = "publisher"
+  }
+  case object Year extends FacetType {
+    override def id = "year"
+  }
+  case object Format extends FacetType {
+    override def id = "format"
   }
 
   case class FacetSearchResult(

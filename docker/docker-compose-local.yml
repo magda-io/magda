@@ -11,6 +11,8 @@ services:
     build:
       context: .
       dockerfile: api.local.dockerfile
+    ports: 
+      - "8000:8000"
     volumes:
       - ../:/usr/src/app/
       - ~/.ivy2/:/root/.ivy2/

@@ -30,6 +30,7 @@ EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
 
 Revolver.settings
+Revolver.enableDebugging(port = 8000, suspend = false)
 
 dockerfile in docker := {
   val appDir: File = stage.value
