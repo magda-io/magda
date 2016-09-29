@@ -56,8 +56,8 @@ package temporal {
           start = trySplit(start, modified).flatMap(_.start),
           end = trySplit(end, modified).flatMap(_.end)))
         // We didn't get any dates, so maybe one of the text fields conflates both, e.g. "2015-2016"
-        case (Some(start), None, None, None) => trySplit(start, modified) orElse defaultPeriod
-        case (None, Some(end), None, None)   => trySplit(end, modified) orElse defaultPeriod
+        case (Some(start), None, _, None) => trySplit(start, modified) orElse defaultPeriod
+        case (None, Some(end), None, _)   => trySplit(end, modified) orElse defaultPeriod
         // No values for anything
         case (None, None, None, None)        => None
         // We already managed to parse a date, so leave this alone

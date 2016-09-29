@@ -39,6 +39,7 @@ import org.elasticsearch.index.IndexNotFoundException
 import org.elasticsearch.client.transport.NoNodeAvailableException
 import org.elasticsearch.transport.RemoteTransportException
 import au.csiro.data61.magda.api.Query
+import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext) extends SearchProvider {
   val logger = Logging(system, getClass)
@@ -52,7 +53,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       generalAggDef = (limit: Int) => aggregation.terms(FacetType.Publisher.id).field("publisher.name.untouched").size(limit)),
 
     FacetType.Year -> FacetDefinition(
-      generalAggDef = (limit: Int) => aggregation.terms(FacetType.Year.id).field("years").size(limit)),
+      generalAggDef = (limit: Int) => aggregation.terms(FacetType.Year.id).field("years").order(Order.term(false)).size(limit)),
 
     FacetType.Format -> FacetDefinition(
       generalAggDef = (limit: Int) => aggregation nested "distributions" path "distributions" aggregations { aggregation terms "format" field "distributions.format.untokenized" size limit },
@@ -119,7 +120,11 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
 
   def getYears(from: Option[Instant], to: Option[Instant]): List[String] = {
     def getYearsInner(from: LocalDate, to: LocalDate): List[String] =
-      from.getYear.toString :: (if (from.isBefore(to)) getYearsInner(from.plusYears(1), to) else Nil)
+      if (from.isAfter(to)) {
+        Nil
+      } else {
+        from.getYear.toString :: getYearsInner(from.plusYears(1), to)
+      }
 
     (from, to) match {
       case (None, None) => Nil
@@ -205,24 +210,20 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     }
 
     searchDef.query(stringQuery.getOrElse("*")).query {
-      should(
+      should(Seq(
         query.formats.map(format =>
           nestedQuery("distributions").query(
             matchQuery("distributions.format", format)
           )
-        )
-          ++
-          query.publishers.map(matchQuery("publisher.name", _))
-          ++
-          query.dateFrom.map(dateFrom => Seq(
-            rangeQuery("temporal.start.date").gte(dateFrom.toString)
-          )).getOrElse(Nil)
-          ++
-          query.dateTo.map(dateTo => Seq(
-            rangeQuery("temporal.end.date").gte(dateTo.toString)
-          )).getOrElse(Nil)
-
-      )
+        ),
+        query.publishers.map(matchQuery("publisher.name", _)),
+        query.dateFrom.map(dateFrom => Seq(
+          rangeQuery("temporal.end.date").gte(dateFrom.toString)
+        )).getOrElse(Nil),
+        query.dateTo.map(dateTo => Seq(
+          rangeQuery("temporal.start.date").lte(dateTo.toString)
+        )).getOrElse(Nil)
+      ).reduce(_ ++ _))
     }
   }
 
