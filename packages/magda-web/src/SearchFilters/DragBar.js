@@ -11,6 +11,10 @@ const colorHighlight = '#8ac4ea';
 class DragBar extends Component {
     constructor(props){
       super(props);
+      this.handleStart=this.handleStart.bind(this);
+      this.handleDrag=this.handleDrag.bind(this);
+      this.handleEnd=this.handleEnd.bind(this);
+      this.handleNoop=this.handleNoop.bind(this);
     }
 
     componentDidMount(){
@@ -26,22 +30,29 @@ class DragBar extends Component {
       this.update(nextProps);
     }
 
-    dragStart(evt){
-      // evt.preventDefault();
-      // console.log(evt);
-
+    handleStart(id){
+      document.addEventListener('mousemove', this.handleDrag.bind(this, id));
+      document.addEventListener('mouseup', this.handleEnd.bind(this, id));
+      console.log('start');
     }
 
-    drag(id, evt){
-      evt.preventDefault();
-      console.log(evt);
-      // this.props.updateDragBar(id, 100);
+
+    handleDrag(id, evt){
+      this.handleNoop(evt);
+      console.log(id);
+      console.log('dragging');
     }
 
-    dragEnd(evt){
-      // evt.preventDefault();
-      // console.log(evt);
+    handleEnd(id, evt){
+      console.log('end');
+      console.log(id);
+      document.removeEventListener('mousemove', this.handleDrag.bind(this, id));
+      document.removeEventListener('mouseup', this.handleEnd.bind(this, id));
+    }
 
+    handleNoop(evt){
+      evt.stopPropagation()
+      evt.preventDefault()
     }
 
 
@@ -67,19 +78,13 @@ class DragBar extends Component {
       return <div className='drag-bar__inner' style={wrapperStyle}>
                 <div className='bar' style={barStyle}></div>
                 <div className='top-handle handle'
-                      draggable="true"
-                      onDragStart={this.dragStart.bind(this, 0)}
-                      onDrag={this.drag.bind(this, 0)}
-                      onDragEnd={this.dragEnd.bind(this, 0)}
+                      onMouseDown={this.handleStart.bind(this, 0)}
                       style={topHandleStyle}>
                     <i className="fa fa-angle-up"></i>
                 </div>
 
                 <div className='bottom-handle handle'
-                      draggable="true"
-                      onDragStart={this.dragStart.bind(this, 1)}
-                      onDrag={this.drag.bind(this, 1)}
-                      onDragEnd={this.dragEnd.bind(this, 1)}
+                      onMouseDown={this.handleStart.bind(this, 1)}
                       style={bottomHandleStyle}>
                     <i className="fa fa-angle-down"></i>
               </div>
