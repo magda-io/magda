@@ -153,6 +153,11 @@ form{
   border-radius: 50%;
   text-align: center;
   background: #3498db;
+  cursor: pointer;
+}
+
+.drag-bar__inner .handle:hover{
+  background: #a0cfee;
 }
 
 .drag-bar__inner .bar{

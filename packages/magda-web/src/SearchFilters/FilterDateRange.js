@@ -6,8 +6,6 @@ import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
 
 const itemHeight = 32;
-const r = 30;
-
 
 class FilterDateRange extends Filter {
   constructor(props) {
@@ -33,14 +31,14 @@ class FilterDateRange extends Filter {
   }
 
   setStartDateIndex(options, startDate){
-    let start = startDate ? findIndex(options, o=> +o.value == +startDate) : -1;
+    let start = startDate ? findIndex(options, o=> +o.value === +startDate) : -1;
     this.setState({
       startDateIndex: start
     });
   }
 
   setEndDateIndex(options, endDate){
-    let end = endDate ? findIndex(options, o=> +o.value == +endDate) : -1;
+    let end = endDate ? findIndex(options, o=> +o.value === +endDate) : -1;
     this.setState({
       endDateIndex: end
     });
@@ -50,7 +48,6 @@ class FilterDateRange extends Filter {
     let currentStartDate = +this.props.location.query.startDate;
     let currentEndDate = +this.props.location.query.endDate;
     let optionDate = + option.value;
-    let data = this.state.dragBarData;
     let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
 
     // if neither current Start date and end date, then set selection to both
@@ -115,7 +112,7 @@ class FilterDateRange extends Filter {
     return <button style={divStyle} type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-date-option btn`} onClick={this.toggleFilter.bind(this, option, i )}>{option.value}</button>;
   }
 
-  updateDragBar(id, value){
+  updateDragBar(id, value){    
     let index = Math.round(value / itemHeight);
     let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
     if(id === 0){
