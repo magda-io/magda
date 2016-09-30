@@ -221,14 +221,26 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     }
   )
 
-  def queryToQueryDef(query: Query): BoolQueryDefinition = should(Seq(
-    query.publishers.map(publisher => matchPhraseQuery("publisher.name", publisher).boost(30)),
-    query.formats.map(format => nestedQuery("distributions").query(
-      matchQuery("distributions.format", format)
-    )),
-    query.dateFrom.map(dateFrom => rangeQuery("temporal.end.date").gte(dateFrom.toString)).map(Seq(_)).getOrElse(Nil),
-    query.dateTo.map(dateTo => rangeQuery("temporal.start.date").lte(dateTo.toString)).map(Seq(_)).getOrElse(Nil)
-  ).flatten)
+  /**
+   * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.
+   */
+  def seqToOption[X, Y](seq: Seq[X])(fn: Seq[X] => Y): Option[Y] = seq match {
+    case Nil => None
+    case x   => Some(fn(x))
+  }
+
+  def queryToQueryDef(query: Query): BoolQueryDefinition = {
+    val shouldClauses: Seq[Option[QueryDefinition]] = Seq(
+      seqToOption(query.publishers)(seq => should(seq.map(publisher => matchPhraseQuery("publisher.name", publisher)))),
+      seqToOption(query.formats)(seq => should(seq.map(format => nestedQuery("distributions").query(
+        matchQuery("distributions.format", format)
+      )))),
+      query.dateFrom.map(dateFrom => rangeQuery("temporal.end.date").gte(dateFrom.toString)),
+      query.dateTo.map(dateTo => rangeQuery("temporal.start.date").lte(dateTo.toString))
+    )
+
+    should(shouldClauses.filter(_.isDefined).map(_.get))
+  }
 
   def addQuery(searchDef: SearchDefinition, query: Query): SearchDefinition = {
     val processedQuote = query.quotes.map(quote => s"""${quote}""") match {
@@ -243,7 +255,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       case (freeText, quotes) => Some(freeText + " " + quotes)
     }
 
-    searchDef.query(stringQuery.getOrElse("*")).postFilter(queryToQueryDef(query))
+    searchDef.query(stringQuery.getOrElse("*")).query(queryToQueryDef(query))
   }
 
   override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[FacetSearchResult] = {
