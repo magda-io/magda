@@ -84,8 +84,8 @@ private object QueryParser extends Parsers {
   def queryText = rep1(freeTextWord | quote) ^^ { case list => list reduceRight AST.And }
   def filters = rep1(filterStatement) ^^ { case list => list reduceRight AST.And }
   def filterStatement = filterType ~ filterBody ^^ {
-    case AST.FromType ~ AST.FilterValue(filterValue)      => parseDateFromRaw(filterValue, AST.DateFrom.apply, AST.And(AST.FreeTextWord("from"), AST.FreeTextWord(filterValue)))
-    case AST.ToType ~ AST.FilterValue(filterValue)        => parseDateFromRaw(filterValue, AST.DateTo.apply, AST.And(AST.FreeTextWord("to"), AST.FreeTextWord(filterValue)))
+    case AST.FromType ~ AST.FilterValue(filterValue)      => parseDateFromRaw(filterValue, false, AST.DateFrom.apply, AST.And(AST.FreeTextWord("from"), AST.FreeTextWord(filterValue)))
+    case AST.ToType ~ AST.FilterValue(filterValue)        => parseDateFromRaw(filterValue, true, AST.DateTo.apply, AST.And(AST.FreeTextWord("to"), AST.FreeTextWord(filterValue)))
     case AST.PublisherType ~ AST.FilterValue(filterValue) => AST.Publisher(filterValue)
     case AST.FormatType ~ AST.FilterValue(filterValue)    => AST.Format(filterValue)
   }
@@ -115,8 +115,8 @@ private object QueryParser extends Parsers {
     accept("quote", { case Tokens.Quote(name) => AST.Quote(name) })
   }
 
-  private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: String, applyFn: Instant => A, recoveryFn: => AST.ReturnedAST): A = {
-    val date = parseDate(rawDate)
+  private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: String, atEnd: Boolean, applyFn: Instant => A, recoveryFn: => AST.ReturnedAST): A = {
+    val date = parseDate(rawDate, atEnd)
     date match {
       case InstantResult(instant) => applyFn(instant)
       case ConstantResult(constant) => constant match {

@@ -27,7 +27,7 @@ package temporal {
         .view
         .map(raw.split(_))
         .filter(_.length == 2)
-        .map(array => PeriodOfTime(ApiInstant.parse(array(0), modified), (ApiInstant.parse(array(1), modified))))
+        .map(array => PeriodOfTime(ApiInstant.parse(array(0), modified, false), (ApiInstant.parse(array(1), modified, true))))
         .filter(x => x.start.map(_.date).isDefined || x.end.map(_.date).isDefined)
         .sortWith { (leftPeriod, rightPeriod) =>
           // Create a list of tuples where _1 is the text option and _2 is the parsed date option
@@ -45,8 +45,8 @@ package temporal {
         }.headOption
 
     def parse(start: Option[String], end: Option[String], modified: Instant): Option[PeriodOfTime] = {
-      val startInstant = start.flatMap(ApiInstant.parse(_, modified))
-      val endInstant = end.flatMap(ApiInstant.parse(_, modified))
+      val startInstant = start.flatMap(ApiInstant.parse(_, modified, false))
+      val endInstant = end.flatMap(ApiInstant.parse(_, modified, true))
       lazy val defaultPeriod = Some(new PeriodOfTime(startInstant, endInstant))
 
       (startInstant.map(_.text), endInstant.map(_.text), startInstant.flatMap(_.date), endInstant.flatMap(_.date)) match {
@@ -71,7 +71,7 @@ package temporal {
     text: String)
 
   object ApiInstant {
-    def parse(raw: String, modified: Instant): Option[ApiInstant] = parseDate(raw) match {
+    def parse(raw: String, modified: Instant, atEnd: Boolean): Option[ApiInstant] = parseDate(raw, atEnd) match {
       case InstantResult(instant) => Some(ApiInstant(Some(instant), raw))
       case ConstantResult(constant) => constant match {
         case Now => Some(ApiInstant(Some(modified), raw))
