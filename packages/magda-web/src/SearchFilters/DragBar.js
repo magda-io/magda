@@ -73,10 +73,10 @@ class DragBar extends Component {
           return +this.props.dragBarData[1];
         }
       }
-      if(y >= +this.props.dragBarData[0] && y <= this.props.height){
+      if(y >= +this.props.dragBarData[0] + 2*r && y <= this.props.height){
         return y;
       } else if (y < +this.props.dragBarData[0]) {
-        return +this.props.dragBarData[0];
+        return +this.props.dragBarData[0] + 2*r;
       } else{
         return this.props.height;
       }
@@ -108,12 +108,11 @@ class DragBar extends Component {
                      style={topHandleStyle}>
                     <i className="fa fa-angle-up"></i>
                 </div>
-
                 <div className='bottom-handle handle'
                      onMouseDown={this.handleStart.bind(this, 1)}
                      style={bottomHandleStyle}>
                     <i className="fa fa-angle-down"></i>
-              </div>
+                </div>
              </div>
     }
 }

@@ -25,7 +25,7 @@ class FilterDateRange extends Filter {
   }
 
   componentWillReceiveProps(nextProps){
-    let sortedOptions = nextProps.options.sort((a,b)=>+a.value - b.value);
+    let sortedOptions = nextProps.options;
     this.setStartDateIndex(sortedOptions, nextProps.location.query.startDate);
     this.setEndDateIndex(sortedOptions, nextProps.location.query.endDate);
   }
@@ -48,8 +48,8 @@ class FilterDateRange extends Filter {
     let currentStartDate = +this.props.location.query.startDate;
     let currentEndDate = +this.props.location.query.endDate;
     let optionDate = + option.value;
-    let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
-
+    let data = this.state.dragBarData;
+    let sortedOptions = this.props.options;
     // if neither current Start date and end date, then set selection to both
     if(!currentStartDate && !currentEndDate){
         this.props.updateQuery({ 'startDate': optionDate});
@@ -69,13 +69,13 @@ class FilterDateRange extends Filter {
   }
 
   resetStartDate(){
-    let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
-    this.props.updateQuery({ 'startDate': sortedOptions[0].value });
+    // let sortedOptions = this.props.options;
+    // this.props.updateQuery({ 'startDate': sortedOptions[0].value });
   }
 
   resetEndDate(){
-    let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
-    this.props.updateQuery({ 'endDate': sortedOptions[sortedOptions-1].value });
+    // let sortedOptions = this.props.options;
+    // this.props.updateQuery({ 'endDate': sortedOptions[sortedOptions-1].value });
   }
 
   resetFilter(){
@@ -112,21 +112,22 @@ class FilterDateRange extends Filter {
     return <button style={divStyle} type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-date-option btn`} onClick={this.toggleFilter.bind(this, option, i )}>{option.value}</button>;
   }
 
-  updateDragBar(id, value){    
+  updateDragBar(id, value){
     let index = Math.round(value / itemHeight);
-    let sortedOptions = this.props.options.sort((a,b)=>+a.value - b.value);
+    let sortedOptions = this.props.options;
     if(id === 0){
-      this.setStartDateIndex(sortedOptions, index);
-      this.props.updateQuery({ 'startDate': sortedOptions[index].value});
-    } else{
       this.setEndDateIndex(sortedOptions, index);
       this.props.updateQuery({ 'endDate': sortedOptions[index].value});
+    } else{
+      this.setStartDateIndex(sortedOptions, index);
+      this.props.updateQuery({ 'startDate': sortedOptions[index].value});
     }
   }
 
   renderDragBar(){
     let height = this.props.options.length * itemHeight;
-    let dragBarData=[+this.state.startDateIndex* itemHeight, (+this.state.endDateIndex - 1)* itemHeight];
+    // [endPos, startPos]
+    let dragBarData=[+this.state.endDateIndex * itemHeight, (+this.state.startDateIndex - 1) * itemHeight];
 
     if(this.state.startDateIndex !== -1 && this.state.endDateIndex !== -1){
       return <DragBar dragBarData={dragBarData} updateDragBar={this.updateDragBar} height={height}/>
@@ -140,7 +141,7 @@ class FilterDateRange extends Filter {
         <FilterHeader query={this.props.location.query.startDate}
                       resetFilter={this.resetFilter}
                       title={this.props.title}/>
-        <button className='btn' onClick={this.resetStartDate}>Any start date </button>
+        <button className='btn' onClick={this.resetEndDate}>Any end date </button>
         {(this.state.searchText.length === 0) &&
             <div className='clearfix' id='drag-bar'>
               <div className='slider'>
@@ -148,14 +149,13 @@ class FilterDateRange extends Filter {
               </div>
               <div className='list'>
                 <div className='options'>
-                  {this.props.options.sort((a,b)=>+a.value - b.value).map((option, i)=>
+                  {this.props.options.map((option, i)=>
                         <div key={i}>{this.renderCondition(option, i)}</div>
                   )}
                 </div>
             </div>
         </div>}
-
-        <button className='btn' onClick={this.resetEndDate}>Any end date </button>
+        <button className='btn' onClick={this.resetStartDate}>Any start date </button>
       </div>
     );
   }
