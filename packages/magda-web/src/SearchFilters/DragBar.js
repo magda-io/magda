@@ -30,7 +30,10 @@ class DragBar extends Component {
     }
 
     componentWillReceiveProps(nextProps){
-      this.update(nextProps);
+      if(nextProps.dragBarData[0] !== this.props.dragBarData[0] &&
+         nextProps.dragBarData[1] !== this.props.dragBarData[1] ){
+        this.update(nextProps);
+      }
     }
 
     handleStart(id, evt){
