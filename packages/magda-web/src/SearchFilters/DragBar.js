@@ -43,9 +43,6 @@ class DragBar extends Component {
       function drag(d, i){
         let y = null;
         let data = that.props.dragBarData;
-
-        console.log('dragging');
-
         if(i === 0){
           if (d3Event.y >=r && d3Event.y <= data[1]){
             y = d3Event.y;

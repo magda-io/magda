@@ -11,7 +11,7 @@ class SearchFilters extends Component {
             <div>
               <FilterPublisher options={this.props.filterPublisher}
                                title='publisher'
-                               id='publisher'
+                               id='publishers'
                                location={this.props.location}
                                updateQuery={this.props.updateQuery}/>
 
@@ -28,7 +28,7 @@ class SearchFilters extends Component {
 
               <FilterDataFormat options={this.props.filterFormat}
                                        title='data format'
-                                       id='format'
+                                       id='formats'
                                        location={this.props.location}
                                        updateQuery={this.props.updateQuery}/>
 
