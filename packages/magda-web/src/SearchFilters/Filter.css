@@ -163,3 +163,8 @@ form{
 .drag-bar__inner .bar{
   background: #8ac4ea;
 }
+
+svg{
+  display: block;
+  background: #f5f5f5;
+}

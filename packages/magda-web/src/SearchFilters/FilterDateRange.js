@@ -6,6 +6,7 @@ import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
 
 const itemHeight = 32;
+const r = 15;
 
 class FilterDateRange extends Filter {
   constructor(props) {
@@ -113,12 +114,12 @@ class FilterDateRange extends Filter {
   }
 
   updateDragBar(id, value){
-    let index = Math.round(value / itemHeight);
+    let index = Math.floor(value / itemHeight);
     let sortedOptions = this.props.options;
     if(id === 0){
       this.setEndDateIndex(sortedOptions, index);
       this.props.updateQuery({ 'endDate': sortedOptions[index].value});
-    } else{
+    } else{      
       this.setStartDateIndex(sortedOptions, index);
       this.props.updateQuery({ 'startDate': sortedOptions[index].value});
     }
@@ -127,7 +128,7 @@ class FilterDateRange extends Filter {
   renderDragBar(){
     let height = this.props.options.length * itemHeight;
     // [endPos, startPos]
-    let dragBarData=[+this.state.endDateIndex * itemHeight, (+this.state.startDateIndex - 1) * itemHeight];
+    let dragBarData=[(this.state.endDateIndex * itemHeight + r), (this.state.startDateIndex * itemHeight + r)];
 
     if(this.state.startDateIndex !== -1 && this.state.endDateIndex !== -1){
       return <DragBar dragBarData={dragBarData} updateDragBar={this.updateDragBar} height={height}/>
