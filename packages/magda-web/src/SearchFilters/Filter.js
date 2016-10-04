@@ -104,7 +104,6 @@ class Filter extends Component {
     if(!option){
       return null;
     }
-    
     let divStyle = {
       width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 200 + 'px'
     }
@@ -115,7 +114,6 @@ class Filter extends Component {
       <span className='btn-facet-option__name'>{option.value}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-${this.checkActiveOption(option) ? 'times' : 'plus'}`}/></span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
-
     </button>);
 
   }

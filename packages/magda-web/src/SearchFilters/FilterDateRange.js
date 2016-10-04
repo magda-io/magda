@@ -5,7 +5,7 @@ import FilterHeader from './FilterHeader';
 import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
 
-const itemHeight = 32;
+const itemHeight = 38;
 const r = 15;
 
 class FilterDateRange extends Filter {
@@ -110,7 +110,13 @@ class FilterDateRange extends Filter {
       width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 160 + 'px'
     }
 
-    return <button style={divStyle} type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-date-option btn`} onClick={this.toggleFilter.bind(this, option, i )}>{option.value}</button>;
+    return (
+    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`}           onClick={this.toggleFilter.bind(this, option, i)}>
+      <span style={divStyle} className='btn-facet-option__volume-indicator'/>
+      <span className='btn-facet-option__name'>{option.value}</span>
+      <span className='btn-facet-option__count'>{option.hitCount}</span>
+    </button>)
+
   }
 
   updateDragBar(id, value){
@@ -119,7 +125,7 @@ class FilterDateRange extends Filter {
     if(id === 0){
       this.setdateToIndex(sortedOptions, index);
       this.props.updateQuery({ 'dateTo': sortedOptions[index].value});
-    } else{      
+    } else{
       this.setdateFromIndex(sortedOptions, index);
       this.props.updateQuery({ 'dateFrom': sortedOptions[index].value});
     }

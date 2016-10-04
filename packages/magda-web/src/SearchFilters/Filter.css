@@ -121,18 +121,6 @@ form{
     padding-left: 25px;
 }
 
-.btn-date-option{
-    background: #ecf0f1;
-    margin: 3px 0;
-    text-align: left;
-    padding: 3px 5px;
-}
-
-.btn-date-option.is-active{
-    background: rgb(102, 181, 252);
-    color: #fff;
-}
-
 .map{
     height: 200px;
     margin-top: 10px;
