@@ -104,18 +104,7 @@ class Filter extends Component {
     if(!option){
       return null;
     }
-    // return (
-    //       <button type='button'
-    //               className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`}
-    //               onClick={this.toggleFilter.bind(this, option, true)}
-    //               title={option.value}>
-    //       { highlight ?
-    //         <span className='option-name' dangerouslySetInnerHTML={this.highlightSearchedText(option.value)}/> :
-    //         <span className='option-name'>{option.value}</span>
-    //       }
-    //       <span className='option-count'>{option.hitCount}</span>
-    //       {this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}
-    //       </button>);
+    
     let divStyle = {
       width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 200 + 'px'
     }
