@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import {RouterContext } from 'react-router';
 import SearchResults from './SearchResults/SearchResults';
 import SearchFilters from './SearchFilters/SearchFilters';
+import SearchTabs from './SearchTabs';
 import SearchBox from './SearchBox';
 import ProgressBar from './ProgressBar';
 import debounce from 'lodash.debounce';
@@ -55,7 +56,7 @@ class Search extends Component {
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
 
-    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/datasets/search?query=${keyword}`).then((data)=>{      
+    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/datasets/search?query=${keyword}`).then((data)=>{
       this.setState({
         filterPublisher: data.facets[0].options,
         filterTemporal: data.facets[1].options,
@@ -119,16 +120,6 @@ class Search extends Component {
     // this.debouncedSearch();
   }
 
-  getSummaryText(){
-    if(this.state.searchResults.length){
-      return (
-          <div className='summary'>
-            <p><strong>{this.state.searchResults.length} results found</strong></p>
-          </div>);
-    }
-    return null;
-  }
-
   // progress on transfers from the server to the client (downloads)
   updateProgress (oEvent) {
     if (oEvent.lengthComputable) {
@@ -166,28 +157,34 @@ class Search extends Component {
     return (
       <div>
         {this.state.isLoading && <ProgressBar progress={this.state.loadingProgress}/>}
-        <div className='search container'>
-          <div className='search-header jumbotron'>
-            <SearchBox searchValue={this.props.location.query.q}
-                       updateSearchText={this.updateSearchText}
-                       />
+        <div className='search'>
+          <div className='search__search-header'>
+            <div className='container'>
+              <SearchBox searchValue={this.props.location.query.q}
+                         updateSearchText={this.updateSearchText}
+                         />
+            </div>
           </div>
-          <div className='search-body row'>
-            {this.props.location.query.q && this.props.location.query.q.length > 0 && <div className='col-sm-4'>
-                          <SearchFilters
-                            filterPublisher={this.state.filterPublisher}
-                            filterTemporal={this.state.filterTemporal}
-                            filterFormat={this.state.filterFormat}
-                            location={this.props.location}
-                            updateQuery={this.updateQuery}
-                          />
-                      </div>}
-            <div className='col-sm-8'>
-                {this.getSummaryText()}
-                <SearchResults
-                  searchResults={this.state.searchResults}
-                  location={this.props.location}
+          <div className='container search__search-body'>
+            <div className='search__search-body__header clearfix'>
+              <SearchTabs />
+            </div>
+            <div className='row search__search-body__body'>
+              {this.props.location.query.q && this.props.location.query.q.length > 0 && <div className='col-sm-4'>
+                  <SearchFilters
+                    filterPublisher={this.state.filterPublisher}
+                    filterTemporal={this.state.filterTemporal}
+                    filterFormat={this.state.filterFormat}
+                    location={this.props.location}
+                    updateQuery={this.updateQuery}
                   />
+              </div>}
+              <div className='col-sm-8'>
+                  <SearchResults
+                    searchResults={this.state.searchResults}
+                    location={this.props.location}
+                    />
+              </div>
             </div>
           </div>
         </div>

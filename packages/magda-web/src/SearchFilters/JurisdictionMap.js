@@ -18,7 +18,7 @@ class JurisdictionMap extends Filter {
 
     componentDidMount(){
         this.map = L.map(this._c);
-        this.map.setView([-27, 133], 5);
+        this.map.setView([-27, 133], 3);
 
         if(this.props.interaction === false){
             this._c.addEventListener('click', ()=>{

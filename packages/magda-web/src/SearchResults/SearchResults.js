@@ -6,6 +6,16 @@ class SearchResults extends Component {
     return s.substring(0,200) + '...';
   }
 
+  getSummaryText(){
+    if(this.props.searchResults.length){
+      return (
+          <div className='summary'>
+            <p><strong>{this.props.searchResults.length} results found</strong></p>
+          </div>);
+    }
+    return null;
+  }
+
   render() {
     return (
       <ul className='list-unstyled'>

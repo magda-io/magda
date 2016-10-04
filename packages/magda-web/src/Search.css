@@ -1,3 +1,14 @@
+.search__search-header{
+  height: 86px;
+	background-color: #ecf0f1;
+  padding: 23px 0;
+  margin-bottom: 10px;
+}
+
+.search__search-body__header{
+  border-bottom: 1px solid #ecf0f1;
+}
+
 .summary{
     background: #ecf0f1;
     padding: 10px;

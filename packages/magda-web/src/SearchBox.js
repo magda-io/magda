@@ -19,7 +19,7 @@ class SearchBox extends Component {
 
   render() {
     return (
-      <form className="SearchBox">
+      <form className="search-box col-sm-8 col-sm-offset-4">
         <div className='input-group'>
         <input
           type="text"
@@ -31,7 +31,6 @@ class SearchBox extends Component {
         />
         <span className="input-group-addon"><i className="fa fa-search" aria-hidden="true"></i> </span>
         </div>
-        {!this.props.searchValue && <div className='searcbox-suggestions'>Try environment or water in Victoria</div>}
       </form>
     );
   }

@@ -1,11 +1,8 @@
+import './index.css';
+import { Router, Route, browserHistory, indexRoute } from 'react-router'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Search from './Search';
-import './index.css';
-import { Router, Route, browserHistory, indexRoute } from 'react-router'
-
-// http://baseurl.com/dataset?publisher=australianbroadcastingcorporation&q=tax
-
 
 //<Route path="/magda-web/build/" component={Search}>
 

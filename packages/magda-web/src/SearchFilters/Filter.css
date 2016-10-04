@@ -74,14 +74,7 @@
     color: #fff;
 }
 
-.btn-facet-date-option.is-active{
-  background: transparent;
-  color: #333;
-}
 
-.btn-facet-date-option.is-active .btn-facet-option__volume-indicator{
-  background: rgba(52, 151, 219, 0.25);
-}
 
 .btn-facet-option.is-active:hover{
 

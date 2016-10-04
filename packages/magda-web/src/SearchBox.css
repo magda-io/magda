@@ -1,4 +1,14 @@
-.SearchBox {
+.search-box input {
+  height: 40px;
+	border-radius: 1px;
+	background-color: #ffffff;
+	border: solid 1px #3498db;
 }
-.SearchBox-header {
+
+.search-box .input-group-addon{
+	height: 40px;
+	border-radius: 1px;
+	background-color: #3498db;
+  border: 1px solid #3498db;
+  color: #fff;
 }
