@@ -7,6 +7,8 @@ import au.csiro.data61.magda.model.temporal._
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.api.Query
+import com.monsanto.labs.mwundo.GeoJson._
+import com.monsanto.labs.mwundo.GeoJsonFormats._
 
 package misc {
   case class SearchResult(
@@ -58,7 +60,7 @@ package misc {
       language: Option[String] = None,
       publisher: Option[Agent] = None,
       accrualPeriodicity: Option[Periodicity] = None,
-      spatial: Option[Location] = None,
+      spatial: Option[GeoJsonLocation] = None,
       temporal: Option[PeriodOfTime] = None,
       theme: Seq[String] = List(),
       keyword: Seq[String] = List(),
@@ -77,12 +79,10 @@ package misc {
     email: Option[String] = None,
     extraFields: Map[String, String] = Map())
 
-  case class Location(
-    name: Option[String] = None,
-    // This is supposed to be able to define shapes and stuff too, god knows how to do that yet...
-    latLong: Option[LatLong] = None)
+  sealed trait Location
+  case class GeoJsonLocation(geometry: Polygon) extends Location
 
-  case class LatLong(latitude: Double, longitude: Double)
+  //  case class LatLong(latitude: Double, longitude: Double)
 
   case class Distribution(
     title: String,
@@ -104,8 +104,6 @@ package misc {
       "GeoJSON" -> MediaTypes.`application/json`,
       "KML" -> MediaTypes.`application/vnd.google-earth.kml+xml`,
       "CSV" -> MediaTypes.`text/csv`,
-      "WMS" -> MediaTypes.`text/xml`,
-      "WFS" -> MediaTypes.`application/xml`,
       "JSON" -> MediaTypes.`application/json`,
       "SHP" -> MediaTypes.`application/octet-stream`
     )
@@ -158,6 +156,7 @@ package misc {
   case class License(name: String, url: String)
 
   trait Protocols extends DefaultJsonProtocol with temporal.Protocols {
+
     implicit val licenseFormat = jsonFormat2(License.apply)
     implicit object FacetTypeFormat extends JsonFormat[FacetType] {
       override def write(facetType: FacetType): JsString = JsString.apply(facetType.id)
@@ -168,8 +167,7 @@ package misc {
       override def read(json: JsValue): MediaType = MediaType.parse(json.convertTo[String]).right.get
     }
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
-    implicit val latLngFormat = jsonFormat2(LatLong.apply)
-    implicit val locationFormat = jsonFormat2(Location.apply)
+    implicit val locationFormat = jsonFormat1(GeoJsonLocation.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)

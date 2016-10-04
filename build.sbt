@@ -7,6 +7,8 @@ scalaVersion := "2.11.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
+resolvers += Resolver.bintrayRepo("monsanto", "maven")
+
 libraryDependencies ++= {
   val akkaV       = "2.4.9"
   val scalaTestV  = "2.2.6"
@@ -21,6 +23,7 @@ libraryDependencies ++= {
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.3.0",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
+    "com.monsanto.labs" %% "mwundo" % "0.1.0",
     
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
