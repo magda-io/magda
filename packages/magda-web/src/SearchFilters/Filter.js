@@ -5,7 +5,7 @@ import find from 'lodash.find';
 import getJSON from'../getJSON';
 import React, { Component } from 'react';
 import maxBy from 'lodash.maxby';
-const DEFAULTSIZE = 8;
+const DEFAULTSIZE = 5;
 
 class Filter extends Component {
   constructor(props) {
@@ -91,14 +91,14 @@ class Filter extends Component {
   getAllOptions(){
     let keyword = this.props.location.query.q.split(' ').join('+');
     // needs to use [this.props.id] when format facet is ready
-    getJSON(`http://thunderer.it.csiro.au:9000/facets/publisher/options/search?query=${keyword}`).then((data)=>{
+    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/facets/${this.props.id}/options/search?query=${keyword}`).then((data)=>{
       this.setState({
         allOptions: data,
       })
     }, (err)=>{console.warn(err)});
   }
 
-  renderCondition(option, highlight){
+  renderCondition(option){
     let allowMultiple = true;
 
     if(!option){
@@ -208,11 +208,11 @@ class Filter extends Component {
                 <div key={i}>{this.renderCondition(option)}</div>
           )}
         </div>
-        {
-          // this.state.searchText.length > 0 ?
-          // <button className='btn btn-reset' onClick={this.clearSearch}> Clear search</button> :
-          // (overflow > 0 ? <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${overflow} more`}</button> : null)
-        }
+        {overflow > 0 && <button onClick={this.toggleOpen}
+                                 className='btn btn-reset'>
+                                    {this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${overflow} more`}
+                          </button>}
+
       </div>
     );
   }

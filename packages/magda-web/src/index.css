@@ -3,4 +3,9 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Open Sans', sans-serif;
+  color: #333333;
+}
+
+.form-control{
+  border-radius: 2px;
 }

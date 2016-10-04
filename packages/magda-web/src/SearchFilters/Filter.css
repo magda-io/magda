@@ -1,6 +1,5 @@
 .filter{
     margin-bottom: 30px;
-    color: #777;
 }
 
 .filter-header{
@@ -19,7 +18,6 @@
    background: transparent;
    border: 0;
    box-shadow: 0;
-   color: #444;
    padding: 3px;
 }
 
@@ -51,11 +49,8 @@
 }
 
 .btn-facet-option:hover {
-  font-weight: 700;
-
+  font-weight: 600;
 }
-
-
 
 .btn-facet-option__action{
   display: none;
@@ -108,8 +103,6 @@
 form{
     position: relative;
 }
-
-
 
 .btn-clear-search{
     position: absolute;;
