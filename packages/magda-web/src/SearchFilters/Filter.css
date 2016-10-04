@@ -30,7 +30,7 @@
    width: 100%;
    overflow: hidden;
    text-align: left;
-   margin: 3px 0;
+   margin: 0 0 6px 0;
    color: #777;
    border-radius: 2px;
    position: relative;
@@ -71,8 +71,18 @@
 
 .btn-facet-option.is-active{
     background: #3498DB;
-    color: #fff!important;
+    color: #fff;
 }
+
+.btn-facet-date-option.is-active{
+  background: transparent;
+  color: #333;
+}
+
+.btn-facet-date-option.is-active .btn-facet-option__volume-indicator{
+  background: rgba(52, 151, 219, 0.25);
+}
+
 .btn-facet-option.is-active:hover{
 
 }
@@ -100,8 +110,11 @@
 }
 
 
-form{
+
+
+.filter form{
     position: relative;
+    margin-bottom: 10px;
 }
 
 .btn-clear-search{
