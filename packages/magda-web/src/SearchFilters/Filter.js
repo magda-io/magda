@@ -4,7 +4,8 @@ import FilterSearchBox from './FilterSearchBox';
 import find from 'lodash.find';
 import getJSON from'../getJSON';
 import React, { Component } from 'react';
-const DEFAULTSIZE = 5;
+import maxBy from 'lodash.maxby';
+const DEFAULTSIZE = 8;
 
 class Filter extends Component {
   constructor(props) {
@@ -98,21 +99,36 @@ class Filter extends Component {
   }
 
   renderCondition(option, highlight){
+    let allowMultiple = true;
+
     if(!option){
       return null;
     }
-    return (
-          <button type='button'
-                  className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`}
-                  onClick={this.toggleFilter.bind(this, option, true)}
-                  title={option.value}>
-          { highlight ?
-            <span className='option-name' dangerouslySetInnerHTML={this.highlightSearchedText(option.value)}/> :
-            <span className='option-name'>{option.value}</span>
-          }
-          <span className='option-count'>{option.hitCount}</span>
-          {this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}
-          </button>);
+    // return (
+    //       <button type='button'
+    //               className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-option btn`}
+    //               onClick={this.toggleFilter.bind(this, option, true)}
+    //               title={option.value}>
+    //       { highlight ?
+    //         <span className='option-name' dangerouslySetInnerHTML={this.highlightSearchedText(option.value)}/> :
+    //         <span className='option-name'>{option.value}</span>
+    //       }
+    //       <span className='option-count'>{option.hitCount}</span>
+    //       {this.checkActiveOption(option) ? <i className="fa fa-times" aria-hidden="true"></i> : ''}
+    //       </button>);
+    let divStyle = {
+      width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 200 + 'px'
+    }
+
+    return(
+    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`}           onClick={this.toggleFilter.bind(this, option, allowMultiple)}>
+      <span style={divStyle} className='btn-facet-option__volume-indicator'/>
+      <span className='btn-facet-option__name'>{option.value}</span>
+      <span className='btn-facet-option__action'><i className={`fa fa-${this.checkActiveOption(option) ? 'times' : 'plus'}`}/></span>
+      <span className='btn-facet-option__count'>{option.hitCount}</span>
+
+    </button>);
+
   }
 
   highlightSearchedText(text){
@@ -176,8 +192,6 @@ class Filter extends Component {
                       resetFilter={this.resetFilter}
                       title={this.props.title}/>
 
-        {this.getActiveOption()}
-
         <FilterSearchBox options={this.state.allOptions}
                          toggleFilter={this.toggleFilter}
                          searchText={this.state.searchText}
@@ -187,15 +201,17 @@ class Filter extends Component {
                          allowMultiple={true}
         />
 
+        {this.getActiveOption()}
+
         <div className='other-options'>
-        {this.state.searchText.length === 0 && inactiveOptions.slice(0, size).map((option, i)=>
-              <div key={i}>{this.renderCondition(option)}</div>
-        )}
+          {inactiveOptions.slice(0, size).map((option, i)=>
+                <div key={i}>{this.renderCondition(option)}</div>
+          )}
         </div>
         {
-          this.state.searchText.length > 0 ?
-          <button className='btn btn-reset' onClick={this.clearSearch}> Clear search</button> :
-          (overflow > 0 ? <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${overflow} more`}</button> : null)
+          // this.state.searchText.length > 0 ?
+          // <button className='btn btn-reset' onClick={this.clearSearch}> Clear search</button> :
+          // (overflow > 0 ? <button onClick={this.toggleOpen} className='btn btn-reset'>{this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${overflow} more`}</button> : null)
         }
       </div>
     );
