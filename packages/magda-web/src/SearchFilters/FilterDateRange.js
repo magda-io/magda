@@ -6,7 +6,7 @@ import FilterHeader from './FilterHeader';
 import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
 
-const itemHeight = 38;
+const itemHeight = 35;
 const r = 15;
 
 class FilterDateRange extends Filter {

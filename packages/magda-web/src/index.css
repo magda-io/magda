@@ -8,4 +8,5 @@ body {
 
 .form-control{
   border-radius: 2px;
+  box-shadow: none;
 }

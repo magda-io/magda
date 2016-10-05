@@ -3,25 +3,22 @@
 }
 
 .filter-header{
-    border-bottom: 2px solid #ddd;
-    margin-bottom: 10px;
     display: flex;
 }
 
 .filter-title{
     font-weight: bold;
-    text-transform: capitalize;
+    text-transform: uppercase;
     flex-grow: 2;
 }
 
-.btn{
+.filter .btn{
    background: transparent;
    border: 0;
    box-shadow: 0;
-   padding: 3px;
 }
 
-.btn-reset{
+.filter .btn-reset{
     color: rgb(102, 181, 252);
     line-height: 2;
 }
@@ -30,7 +27,7 @@
    width: 100%;
    overflow: hidden;
    text-align: left;
-   margin: 0 0 6px 0;
+   margin: 0 0 3px 0;
    color: #777;
    border-radius: 2px;
    position: relative;
@@ -100,6 +97,12 @@
     float: right;
     text-align: right;
     padding: 0 5px;
+    font-weight: 600;
+    color: #2b2b2b;
+}
+
+.btn-facet-option.is-active .btn-facet-option__count{
+  color: #fff;
 }
 
 
@@ -114,7 +117,10 @@
     position: absolute;;
     right: 1px;
     top: 1px;
+    right: 5px;
+    top: 1px;
     color: #777;
+    bottom: 1px;
 }
 
 .search-icon{

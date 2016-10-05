@@ -10,3 +10,11 @@
     font-size: 18px;
     color: #2980b9;
 }
+
+.search-results-count{
+  font-size: 18px;
+	font-weight: bold;
+	color: #2b2b2b;
+  margin: 15px 0;
+  text-transform: uppercase;
+}
