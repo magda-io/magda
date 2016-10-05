@@ -196,7 +196,7 @@ class Filter extends Component {
           )}
         </div>
         {overflow > 0 && <button onClick={this.toggleOpen}
-                                 className='btn btn-reset'>
+                                 className='btn btn-toggle'>
                                     {this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${overflow} more`}
                           </button>}
 

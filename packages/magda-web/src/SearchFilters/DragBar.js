@@ -19,13 +19,7 @@ class DragBar extends Component {
       let g = this.refs['g'];
       let data = this.props.dragBarData;
       let debouncedUpdate = debounce(this.props.updateDragBar, 150);
-      this._circles = d3Select(g).selectAll('circle')
-        .data(data).enter().append('circle')
-        .attr('cx', r)
-        .attr('cy', d=>d)
-        .attr('r', r)
-        .style('fill',color);
-      
+
       this._bar = d3Select(g).append('rect')
       .attr('width', r*2)
       .attr('height', Math.abs(this.props.dragBarData[0] - this.props.dragBarData[1]))
@@ -33,13 +27,22 @@ class DragBar extends Component {
       .attr('y', this.props.dragBarData[0] - this.props.dragBarData[1] < 0 ? this.props.dragBarData[0] : this.props.dragBarData[1])
       .style('fill', colorLight);
 
+      this._handles = d3Select(g).selectAll('rect.handle')
+        .data(data).enter().append('rect')
+        .attr('class', 'handle')
+        .attr('x', 0)
+        .attr('y', d=>d)
+        .attr('width', r*2)
+        .attr('height', r*2)
+        .style('fill',color);
+
       let dragInteraction = d3Drag().on('start', start).on('drag', drag).on('end', end);
-      this._circles.call(dragInteraction);
+      this._handles.call(dragInteraction);
 
       function start(d){
         d3Select(this).style('fill', colorHighlight);
       }
-      
+
       function drag(d, i){
         let y = null;
         let data = that.props.dragBarData;
@@ -65,14 +68,14 @@ class DragBar extends Component {
         that.update(data);
         debouncedUpdate(i, y);
       }
-      
+
       function end(d){
         d3Select(this).style('fill', color);
       }
     }
 
     update(data){
-      this._circles.data(data).attr('cy', d=> d);
+      this._handles.data(data).attr('y', d=> d);
       this._bar.attr('height', Math.abs(data[0] - data[1]))
                .attr('y', data[0] - data[1] < 0 ? data[0] : data[1]);
     }

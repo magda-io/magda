@@ -6,3 +6,7 @@
 .btn-facet-date-option.is-active .btn-facet-option__volume-indicator{
   background: rgba(52, 151, 219, 0.25);
 }
+
+.btn-facet-date-option.is-active .btn-facet-option__count{
+  color: #2b2b2b;
+}

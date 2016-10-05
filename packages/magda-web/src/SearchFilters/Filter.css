@@ -18,9 +18,13 @@
    box-shadow: 0;
 }
 
-.filter .btn-reset{
+.filter .btn-reset, .filter .btn-toggle{
     color: rgb(102, 181, 252);
     line-height: 2;
+}
+
+.filter .btn-toggle{
+  padding-left: 0;
 }
 
 .btn-facet-option{

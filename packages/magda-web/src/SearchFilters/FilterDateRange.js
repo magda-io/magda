@@ -5,6 +5,7 @@ import maxBy from 'lodash.maxby';
 import FilterHeader from './FilterHeader';
 import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
+import defined from './../defined';
 
 const itemHeight = 35;
 const r = 15;
@@ -33,14 +34,28 @@ class FilterDateRange extends Filter {
   }
 
   setdateFromIndex(options, dateFrom){
-    let start = dateFrom ? findIndex(options, o=> +o.value === +dateFrom) : -1;
+    let start = -1;
+    if(defined(dateFrom)){
+      if(dateFrom === 'undefined'){
+        start = options.length + 1;
+      } else{
+        start = findIndex(options, o=> +o.value === +dateFrom) + 1;
+      }
+    }
     this.setState({
       dateFromIndex: start
     });
   }
 
   setdateToIndex(options, dateTo){
-    let end = dateTo ? findIndex(options, o=> +o.value === +dateTo) : -1;
+    let end = -1;
+    if(defined(dateTo)){
+      if(dateTo === 'undefined'){
+        end = 0;
+      } else{
+        end = findIndex(options, o=> +o.value === +dateTo) + 1;
+      }
+    }
     this.setState({
       dateToIndex: end
     });
@@ -72,12 +87,12 @@ class FilterDateRange extends Filter {
 
   resetdateFrom(){
     // let sortedOptions = this.props.options;
-    // this.props.updateQuery({ 'dateFrom': sortedOptions[0].value });
+    this.props.updateQuery({ 'dateFrom': 'undefined' });
   }
 
   resetdateTo(){
     // let sortedOptions = this.props.options;
-    // this.props.updateQuery({ 'dateTo': sortedOptions[sortedOptions-1].value });
+    this.props.updateQuery({ 'dateTo': 'undefined' });
   }
 
   resetFilter(){
@@ -123,24 +138,28 @@ class FilterDateRange extends Filter {
   updateDragBar(id, value){
     let index = Math.floor(value / itemHeight);
     let sortedOptions = this.props.options;
-    if(id === 0){
-      this.setdateToIndex(sortedOptions, index);
-      this.props.updateQuery({ 'dateTo': sortedOptions[index].value});
+    if(index > 0 && index < sortedOptions.length){
+      if(id === 0){
+        this.props.updateQuery({ 'dateTo': sortedOptions[index].value});
+      } else{
+        this.props.updateQuery({ 'dateFrom': sortedOptions[index].value});
+      }
     } else{
-      this.setdateFromIndex(sortedOptions, index);
-      this.props.updateQuery({ 'dateFrom': sortedOptions[index].value});
+      if(id=== 0){
+        this.props.updateQuery({ 'dateTo': 'undefined'});
+      } else {
+        this.props.updateQuery({ 'dateFrom': 'undefined'});
+      }
     }
   }
 
   renderDragBar(){
-    let height = this.props.options.length * itemHeight;
-    // [endPos, startPos]
-    let dragBarData=[(this.state.dateToIndex * itemHeight + r), (this.state.dateFromIndex * itemHeight + r)];
+    let height = (this.props.options.length + 2) * itemHeight;
 
-    if(this.state.dateFromIndex !== -1 && this.state.dateToIndex !== -1){
-      return <DragBar dragBarData={dragBarData} updateDragBar={this.updateDragBar} height={height}/>
-    }
-    return null;
+    // [endPos, startPos]
+    console.log(this.state.dateToIndex, this.state.dateFromIndex);
+    let dragBarData=[(this.state.dateToIndex * itemHeight), (this.state.dateFromIndex * itemHeight)];
+    return <DragBar dragBarData={dragBarData} updateDragBar={this.updateDragBar} height={height}/>
   }
 
   render(){
@@ -149,7 +168,7 @@ class FilterDateRange extends Filter {
         <FilterHeader query={this.props.location.query.dateFrom}
                       resetFilter={this.resetFilter}
                       title={this.props.title}/>
-        <button className='btn' onClick={this.resetdateTo}>Any end date </button>
+
         {(this.state.searchText.length === 0) &&
             <div className='clearfix' id='drag-bar'>
               <div className='slider'>
@@ -157,13 +176,15 @@ class FilterDateRange extends Filter {
               </div>
               <div className='list'>
                 <div className='options'>
+                <div> <button className='btn btn-facet-option btn-facet-date-option' onClick={this.resetdateTo}>Any end date </button></div>
                   {this.props.options.map((option, i)=>
                         <div key={i}>{this.renderCondition(option, i)}</div>
                   )}
+                <div> <button className='btn btn-facet-option btn-facet-date-option' onClick={this.resetdateFrom}>Any start date </button></div>
                 </div>
             </div>
         </div>}
-        <button className='btn' onClick={this.resetdateFrom}>Any start date </button>
+
       </div>
     );
   }
