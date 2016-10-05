@@ -90,10 +90,11 @@ class Filter extends Component {
 
   getAllOptions(){
     let keyword = this.props.location.query.q.split(' ').join('+');
+    let facet = this.props.id.replace(/s+$/, "");
     // needs to use [this.props.id] when format facet is ready
-    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/facets/${this.props.id}/options/search?query=${keyword}`).then((data)=>{
+    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/facets/${facet}/options/search?query=${keyword}`).then((data)=>{
       this.setState({
-        allOptions: data,
+        allOptions: data.options,
       })
     }, (err)=>{console.warn(err)});
   }
@@ -109,9 +110,9 @@ class Filter extends Component {
     }
 
     return(
-    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`}           onClick={this.toggleFilter.bind(this, option, allowMultiple)}>
+    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`} onClick={this.toggleFilter.bind(this, option, allowMultiple)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
-      <span className='btn-facet-option__name'>{option.value}</span>
+      <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-${this.checkActiveOption(option) ? 'times' : 'plus'}`}/></span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
     </button>);
@@ -169,7 +170,7 @@ class Filter extends Component {
   }
 
   render() {
-    let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o)).sort((o1, o2)=>o2.hitCount - o1.hitCount);
+    let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
     let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
     let size = this.state.isOpen ? inactiveOptions.length : tempSize;
     let overflow = inactiveOptions.length - tempSize;

@@ -37,6 +37,8 @@ class FilterDateRange extends Filter {
     let start = -1;
     if(defined(dateFrom)){
       if(dateFrom === 'undefined'){
+        // take into account the any start date and any end date option
+        // the index of any start date is actually the index will be length of valid options + 1
         start = options.length + 1;
       } else{
         start = findIndex(options, o=> +o.value === +dateFrom) + 1;
@@ -157,7 +159,6 @@ class FilterDateRange extends Filter {
     let height = (this.props.options.length + 2) * itemHeight;
 
     // [endPos, startPos]
-    console.log(this.state.dateToIndex, this.state.dateFromIndex);
     let dragBarData=[(this.state.dateToIndex * itemHeight), (this.state.dateFromIndex * itemHeight)];
     return <DragBar dragBarData={dragBarData} updateDragBar={this.updateDragBar} height={height}/>
   }

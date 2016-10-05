@@ -53,11 +53,13 @@ class LocationSearchBox extends Component {
                 <i className="fa fa-times" aria-hidden="true"></i>
               </button>}
           </form>
-          <div className='filtered-options'>
-            {this.props.searchText.length > 0 && this.props.options.map((option, i)=>
-                <div key={i}>{this.renderCondition(option, true)}</div>
-            )}
-          </div>
+          {this.props.searchText.length > 0 &&
+            <div className='filtered-options'>
+              {this.props.searchText.length > 0 && this.props.options.map((option, i)=>
+                  <div key={i}>{this.renderCondition(option, true)}</div>
+              )}
+            </div>
+          }
         </div>);
   }
 }

@@ -21,10 +21,28 @@
 .filter .btn-reset, .filter .btn-toggle{
     color: rgb(102, 181, 252);
     line-height: 2;
+    font-weight: 600;
 }
 
 .filter .btn-toggle{
   padding-left: 0;
+}
+
+
+.filter form{
+  position: relative;
+}
+
+
+.filter .filtered-options{
+  position: absolute;
+  background: #ecf0f1;
+  z-index: 999;
+  right: 15px;
+  left: 15px;
+  margin-top: -10px;
+  border-radius: 1px;
+  min-height: 220px;
 }
 
 .btn-facet-option{
@@ -109,7 +127,13 @@
   color: #fff;
 }
 
-
+.btn-facet-option__recomended-badge{
+  color: red;
+  font-size: 10px;
+  vertical-align: baseline;
+  display: inline;
+  padding-left: 3px;
+}
 
 
 .filter form{
@@ -120,8 +144,6 @@
 .btn-clear-search{
     position: absolute;;
     right: 1px;
-    top: 1px;
-    right: 5px;
     top: 1px;
     color: #777;
     bottom: 1px;

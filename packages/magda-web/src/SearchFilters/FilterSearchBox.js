@@ -47,11 +47,13 @@ class FilterSearchBox extends Component {
                 <i className="fa fa-times" aria-hidden="true"></i>
               </button>}
           </form>
-          <div className='filtered-options'>
-            {this.props.searchText.length > 0 && filteredOptions.map((option, i)=>
-                <div key={i}>{this.props.renderCondition(option, true)}</div>
-            )}
-        </div>
+          {this.props.searchText.length > 0 &&
+            <div className='filtered-options'>
+              {filteredOptions.map((option, i)=>
+                  <div key={i}>{this.props.renderCondition(option, true)}</div>
+              )}
+            </div>
+          }
         </div>);
   }
 }
