@@ -19,7 +19,7 @@ object ElasticSearchImplicits {
       hit.sourceAsString.parseJson.convertTo[DataSet]
     }
   }
-
+  
   implicit def aggregationsToFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation match {
     case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket =>
       new FacetOption(
