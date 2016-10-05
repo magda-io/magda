@@ -28,12 +28,15 @@ import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.external.ckan._
 import au.csiro.data61.magda.model.misc.Protocols._
+import scala.util.{ Success, Failure }
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
   implicit val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
 
-  def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = fetcher.request(s"action/package_search?start=$start&rows=$number").flatMap { response =>
+  override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = fetcher.request(s"action/package_search?start=$start&rows=$number").flatMap { response =>
     response.status match {
       case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.results)
       case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
@@ -43,7 +46,7 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val syste
     }
   }
 
-  def getTotalDataSetCount(): scala.concurrent.Future[Long] = fetcher.request(s"action/package_search?rows=0").flatMap { response =>
+  override def getTotalDataSetCount(): scala.concurrent.Future[Long] = fetcher.request(s"action/package_search?rows=0").flatMap { response =>
     response.status match {
       case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.count)
       case _ => Unmarshal(response.entity).to[String].flatMap { entity =>

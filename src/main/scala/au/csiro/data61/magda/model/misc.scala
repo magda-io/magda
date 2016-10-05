@@ -9,6 +9,7 @@ import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.api.Query
 import com.monsanto.labs.mwundo.GeoJson._
 import com.monsanto.labs.mwundo.GeoJsonFormats._
+import java.util.regex.Pattern
 
 package misc {
   case class SearchResult(
@@ -60,7 +61,7 @@ package misc {
       language: Option[String] = None,
       publisher: Option[Agent] = None,
       accrualPeriodicity: Option[Periodicity] = None,
-      spatial: Option[GeoJsonLocation] = None,
+      spatial: Option[Location] = None,
       temporal: Option[PeriodOfTime] = None,
       theme: Seq[String] = List(),
       keyword: Seq[String] = List(),
@@ -79,10 +80,22 @@ package misc {
     email: Option[String] = None,
     extraFields: Map[String, String] = Map())
 
-  sealed trait Location
-  case class GeoJsonLocation(geometry: Polygon) extends Location
+  case class Location(
+    text: String,
+    geoJson: Option[Polygon] = None)
 
-  //  case class LatLong(latitude: Double, longitude: Double)
+  object Location {
+    val polygonPattern = ".*\\{\"type\": \"Polygon\",.*\\}.*".r
+
+    def apply(string: String): Location = {
+      string match {
+        case polygonPattern() => {
+          Location(string, Some(string.parseJson.convertTo[Polygon]))
+        }
+        case _ => Location(text = string)
+      }
+    }
+  }
 
   case class Distribution(
     title: String,
@@ -167,7 +180,7 @@ package misc {
       override def read(json: JsValue): MediaType = MediaType.parse(json.convertTo[String]).right.get
     }
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
-    implicit val locationFormat = jsonFormat1(GeoJsonLocation.apply)
+    implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)

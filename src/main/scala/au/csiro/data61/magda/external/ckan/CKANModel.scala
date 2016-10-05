@@ -148,7 +148,7 @@ trait CKANConverters {
       language = hit.language,
       publisher = hit.organization,
       accrualPeriodicity = hit.update_freq map (Periodicity.fromString(_)),
-      spatial = hit.spatial_coverage map (name => new Location(name = Some(name))),
+      spatial = hit.spatial_coverage.map(Location(_)),
       temporal = {
         if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
         else PeriodOfTime.parse(hit.temporal_coverage_from, hit.temporal_coverage_to, modified)

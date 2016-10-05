@@ -24,7 +24,7 @@ import au.csiro.data61.magda.external.InterfaceConfig
  *         17/01/16
  */
 class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, interfaceDef: InterfaceConfig) extends Actor with ActorLogging {
-//  val PAGE_SIZE = supervisor.
+  //  val PAGE_SIZE = supervisor.
   implicit val ec = context.dispatcher
   val interface: ExternalInterface = ExternalInterface(interfaceDef)(context.system, context.dispatcher, ActorMaterializer.create(context))
 
@@ -34,9 +34,9 @@ class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, interfaceDef: Interfa
   def receive: Receive = {
     case ScrapeRepo() =>
       log.info("Starting scrape of {}", interfaceDef.baseUrl)
-     
+
       interface.getTotalDataSetCount() onComplete {
-        case Success(count)  => {
+        case Success(count) => {
           val maxFromConfig = if (Config.conf.hasPath("crawler.maxResults")) Config.conf.getLong("crawler.maxResults") else Long.MaxValue
           createBatches(0, Math.min(maxFromConfig, count)).map(batch => throttler ! ScrapeDataSets(batch._1, batch._2.toInt))
         }
@@ -55,7 +55,7 @@ class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, interfaceDef: Interfa
       }
     case ScrapeDataSetsFailed(start, number, reason) =>
       log.error(reason, "Failed to scrape datasets from {} to {} in {} due to {}", start, start + number, interfaceDef.baseUrl, reason)
-      // TODO: Retry!
+    // TODO: Retry!
   }
 
   def createBatches(start: Long, end: Long): List[(Long, Long)] = (end - start) match {

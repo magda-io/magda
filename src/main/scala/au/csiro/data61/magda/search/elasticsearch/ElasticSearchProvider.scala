@@ -142,6 +142,9 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
                   field("format").typed(StringType).fields(
                     field("untokenized").typed(StringType).analyzer("untokenized")
                   )
+                ),
+                field("spatial").inner(
+                  field("geoJson").typed(GeoShapeType)
                 )
               ),
               mapping(Format.id),
