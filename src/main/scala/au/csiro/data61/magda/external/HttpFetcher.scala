@@ -18,7 +18,7 @@ import akka.http.scaladsl.model.ContentTypes
 
 class HttpFetcher(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val materializer: Materializer, implicit val ec: ExecutionContext) {
 
-  lazy val ckanApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
+  lazy val connectionFlow: Flow[HttpRequest, HttpResponse, Any] =
     Http().outgoingConnection(interfaceConfig.baseUrl.getHost, getPort)
 
   private def getPort = if (interfaceConfig.baseUrl.getPort == -1) 80 else interfaceConfig.baseUrl.getPort
@@ -41,7 +41,7 @@ class HttpFetcher(interfaceConfig: InterfaceConfig, implicit val system: ActorSy
       }
       case None             => {
         val request = RequestBuilding.Get(s"${interfaceConfig.baseUrl.getPath}${path}")
-        Source.single(request).via(ckanApiConnectionFlow).runWith(Sink.head)
+        Source.single(request).via(connectionFlow).runWith(Sink.head)
       }
     }
 }

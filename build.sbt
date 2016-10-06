@@ -24,6 +24,8 @@ libraryDependencies ++= {
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
     "com.monsanto.labs" %% "mwundo" % "0.1.0",
+    "org.spire-math" %% "jawn-parser" % "0.10.1",
+    "org.spire-math" %% "jawn-ast" % "0.10.1",
     
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
@@ -46,3 +48,16 @@ dockerfile in docker := {
     copy(appDir, targetDir)
   }
 }
+
+resourceGenerators in Compile += Def.task {
+  val log = streams.value.log
+  val file = (resourceManaged in Compile).value / "regions.geojson"
+  if (!file.exists) { 
+    log.info("Downloading region mapping GeoJSON (167mb), this may take some time...")
+    IO.download(new URL("https://s3-ap-southeast-2.amazonaws.com/magda-files/regions.geojson"), file)
+    log.info("Finished getting geojson")
+  } else {
+    log.info("We already have the regions geojson, skipping download")
+  }
+  Seq(file)
+}.taskValue

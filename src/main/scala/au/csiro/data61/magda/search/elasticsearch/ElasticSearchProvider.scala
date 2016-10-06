@@ -43,8 +43,22 @@ import au.csiro.data61.magda.api.Query
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
 import org.elasticsearch.search.aggregations.InvalidAggregationPathException
 import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
+import akka.stream.scaladsl.FileIO
+import java.io.File
+import java.nio.file.Paths
+import akka.http.scaladsl.common.EntityStreamingSupport
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
+import akka.stream.Materializer
+import akka.util.ByteString
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
+import jawn.ast.JValue
+import akka.stream.ThrottleMode
 
-class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext) extends SearchProvider {
+class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = Logging(system, getClass)
 
   case class FacetDefinition(
@@ -152,6 +166,43 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
               mapping(Format.id)
             ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
           }
+        } flatMap { _ =>
+          import jawn.ast
+          import jawn.AsyncParser
+          import jawn.ParseException
+
+          val parser = ast.JParser.async(mode = AsyncParser.UnwrapArray)
+
+          val url = getClass.getResource("/regions.geojson")
+          val questionMark = FileIO.fromPath(Paths.get(url.toURI))
+
+          val q2 = questionMark
+            // Batch into 800kb chunks if reading the file gets ahead of parsing
+            .batch(100, x => x)(_ ++ _)
+            // Parse the incoming byte chunks, pass through any complete json objects that are returned
+            .map(st => parser.absorb(st.toByteBuffer) match {
+              case Right(js) =>
+                js
+              case Left(e) =>
+                throw e
+            })
+            // Sometimes the parser can parse a chunk but emit an empty list of objects, so filter those
+            .filter { values => !values.isEmpty }
+            // This batch + throttle means that we'll only make one index call per second - any regions that stack up
+            // during the preceding second will be bulk-indexed.
+            .batch(1000, x => x)(_ ++ _)
+            .throttle(1, 1 seconds, 10, ThrottleMode.Shaping)
+            .map({ values =>
+              client.execute(bulk(values.map({ j =>
+                ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11") source j.render()
+              })))
+            })
+            .runWith(Sink.seq)
+
+          // Create a future that will resolve when every index operation has resolved.
+          q2.flatMap { x => Future.sequence(x) }
+        } map { results =>
+          logger.info("Successfully indexed {} regions", results.map(_.successes.size).reduce(_ + _))
         } map { _ => client }
       }
   }
