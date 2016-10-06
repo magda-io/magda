@@ -1,3 +1,7 @@
+.search-tabs{
+  padding-left: 15px;
+}
+
 .search-tabs li{
   display: inline-block;
   float: left;
@@ -10,5 +14,5 @@
 .search-tabs li.active a{
   font-weight: 600;
 	color: #3498db;
-  border-bottom: solid 3px #3498db; 
+  border-bottom: solid 3px #3498db;
 }

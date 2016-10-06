@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import './FilterSearchBox.css';
+import ProgressBar from '../ProgressBar';
 
 class FilterSearchBox extends Component {
   constructor(props) {
@@ -32,9 +34,8 @@ class FilterSearchBox extends Component {
         filteredOptions.push(c);
       }
     });
-
     return (
-      <div>
+      <div className='filter-search-box'>
         <form>
             <i className="fa fa-search search-icon" aria-hidden="true"></i>
             <input className='form-control'
@@ -48,11 +49,12 @@ class FilterSearchBox extends Component {
               </button>}
           </form>
           {this.props.searchText.length > 0 &&
-            <div className='filtered-options'>
+            <ul className='filtered-options list-unstyled'>
+              <li><ProgressBar progress={this.props.loadingProgress}/></li>
               {filteredOptions.map((option, i)=>
-                  <div key={i}>{this.props.renderCondition(option, true)}</div>
+                  <li key={i}>{this.props.renderCondition(option, true)}</li>
               )}
-            </div>
+            </ul>
           }
         </div>);
   }
@@ -63,7 +65,8 @@ FilterSearchBox.propTypes = {options: React.PropTypes.array,
                              searchText:React.PropTypes.string,
                              clearSearch: React.PropTypes.func,
                              handleChange: React.PropTypes.func,
-                             allowMultiple: React.PropTypes.bool};
+                             allowMultiple: React.PropTypes.bool,
+                             loadingProgress: React.PropTypes.number};
 FilterSearchBox.defaultProps = {options: [], allowMultiple: false};
 
 export default FilterSearchBox;

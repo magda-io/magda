@@ -1,0 +1,37 @@
+.filter-search-box .btn-facet-option:hover{
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.filter-search-box form{
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.filter-search-box .btn-clear-search{
+    position: absolute;;
+    right: 1px;
+    top: 1px;
+    color: #777;
+    bottom: 1px;
+}
+
+.filter-search-box .search-icon{
+    position: absolute;
+    left: 10px;
+    top: 10px;
+}
+
+.filter-search-box .form-control{
+    padding-left: 25px;
+}
+
+
+.filter-search-box .filtered-options{
+  position: absolute;
+  background: #ecf0f1;
+  z-index: 999;
+  right: 15px;
+  left: 15px;
+  border-radius: 1px;
+  min-height: 220px;
+}

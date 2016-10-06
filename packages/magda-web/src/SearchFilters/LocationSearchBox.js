@@ -40,7 +40,7 @@ class LocationSearchBox extends Component {
 
   render(){
     return (
-      <div>
+      <div className='filter-search-box'>
         <form>
             <i className="fa fa-search search-icon" aria-hidden="true"></i>
             <input className='form-control'

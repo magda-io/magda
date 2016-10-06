@@ -13,7 +13,8 @@ class Filter extends Component {
     this.state={
       searchText: '',
       isOpen: false,
-      allOptions: []
+      allOptions: [],
+      loadingProgress: 0
     }
     this.handleChange = this.handleChange.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
@@ -22,6 +23,8 @@ class Filter extends Component {
     this.toggleFilter= this.toggleFilter.bind(this);
     this.toggleOpen = this.toggleOpen.bind(this);
     this.getAllOptions = this.getAllOptions.bind(this);
+    this.updateProgress = this.updateProgress.bind(this);
+
   }
 
   componentDidMount(){
@@ -34,7 +37,8 @@ class Filter extends Component {
 
   handleChange(e){
     this.setState({
-      searchText: e.target.value
+      searchText: e.target.value,
+      loadingProgress: 0
     });
     this.getAllOptions();
   }
@@ -92,11 +96,24 @@ class Filter extends Component {
     let keyword = this.props.location.query.q.split(' ').join('+');
     let facet = this.props.id.replace(/s+$/, "");
     // needs to use [this.props.id] when format facet is ready
-    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/facets/${facet}/options/search?query=${keyword}`).then((data)=>{
+    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/facets/${facet}/options/search?query=${keyword}`,
+       this.updateProgress
+     ).then((data)=>{
       this.setState({
         allOptions: data.options,
       })
     }, (err)=>{console.warn(err)});
+  }
+
+  updateProgress (oEvent) {
+    if (oEvent.lengthComputable) {
+      this.setState({
+        loadingProgress: oEvent.loaded / oEvent.total
+      })
+    } else {
+      // Unable to compute progress information since the total size is unknown
+      console.log('Unable to compute progress information since the total size is unknown');
+    }
   }
 
   renderCondition(option){
@@ -180,13 +197,15 @@ class Filter extends Component {
                       resetFilter={this.resetFilter}
                       title={this.props.title}/>
 
-        <FilterSearchBox options={this.state.allOptions}
-                         toggleFilter={this.toggleFilter}
-                         searchText={this.state.searchText}
+        <FilterSearchBox allowMultiple={true}
                          clearSearch={this.clearSearch}
                          handleChange={this.handleChange}
+                         loadingProgress={this.state.loadingProgress}
                          renderCondition={this.renderCondition}
-                         allowMultiple={true}
+                         searchText={this.state.searchText}
+                         toggleFilter={this.toggleFilter}
+                         options={this.state.allOptions}
+
         />
 
         {this.getActiveOption()}

@@ -29,21 +29,8 @@
 }
 
 
-.filter form{
-  position: relative;
-}
 
 
-.filter .filtered-options{
-  position: absolute;
-  background: #ecf0f1;
-  z-index: 999;
-  right: 15px;
-  left: 15px;
-  margin-top: -10px;
-  border-radius: 1px;
-  min-height: 220px;
-}
 
 .btn-facet-option{
    width: 100%;
@@ -110,7 +97,7 @@
     float: left;
     text-overflow: ellipsis;
     overflow: hidden;
-    padding: 0 5px;
+    padding: 0 5px 0 10px;
 }
 
 .btn-facet-option__count{
@@ -136,28 +123,6 @@
 }
 
 
-.filter form{
-    position: relative;
-    margin-bottom: 10px;
-}
-
-.btn-clear-search{
-    position: absolute;;
-    right: 1px;
-    top: 1px;
-    color: #777;
-    bottom: 1px;
-}
-
-.search-icon{
-    position: absolute;
-    left: 10px;
-    top: 10px;
-}
-
-.filter .form-control{
-    padding-left: 25px;
-}
 
 .map{
     height: 200px;

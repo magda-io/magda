@@ -2,11 +2,12 @@
   height: 86px;
 	background-color: #ecf0f1;
   padding: 23px 0;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .search__search-body__header{
   border-bottom: 1px solid #ecf0f1;
+  margin-bottom: 20px;
 }
 
 .summary{
