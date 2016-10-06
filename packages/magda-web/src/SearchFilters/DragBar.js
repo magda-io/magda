@@ -47,7 +47,7 @@ class DragBar extends Component {
         let y = null;
         let data = that.props.dragBarData;
         if(i === 0){
-          if (d3Event.y >=r && d3Event.y <= data[1]){
+          if (d3Event.y >=0 && d3Event.y <= data[1]){
             y = d3Event.y;
           } else if(d3Event.y > data[1]){
             y = data[1];
@@ -55,12 +55,12 @@ class DragBar extends Component {
             y = r;
           }
         } else{
-          if (d3Event.y >=data[0] && d3Event.y <= that.props.height - r){
+          if (d3Event.y >=data[0] && d3Event.y <= that.props.height - 2*r){
             y = d3Event.y;
           } else if(d3Event.y < data[0]){
             y = data[0];
           } else {
-            y = that.props.height - r;
+            y = that.props.height - 2*r;
           }
         }
 

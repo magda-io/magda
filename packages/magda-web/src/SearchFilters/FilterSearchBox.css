@@ -29,6 +29,7 @@
 .filter-search-box .filtered-options{
   position: absolute;
   background: #ecf0f1;
+  box-shadow: 0px 2px 5px 0px rgba(50, 50, 50, 0.5);
   z-index: 999;
   right: 15px;
   left: 15px;

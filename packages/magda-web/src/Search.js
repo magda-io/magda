@@ -30,8 +30,7 @@ class Search extends Component {
       filterPublisher: [],
       filterTemporal: [],
       filterFormat: [],
-      loadingProgress: 0,
-      isLoading: false,
+      loadingProgress: null,
       allPublishers: []
     };
   }
@@ -43,6 +42,7 @@ class Search extends Component {
     });
     this.debouncedGetFacets();
     this.debouncedSearch();
+
   }
 
   componentWillMount(){
@@ -68,11 +68,10 @@ class Search extends Component {
   doSearch(){
       let query = this.props.location.query;
       let keyword = query.q.split(' ').join('+');
-
-      // loading starts
       this.setState({
-        isLoading: true
+        loadingProgress: 0
       })
+
       // This query will have facets as well
       getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/datasets/search?query=${keyword}`,
         this.updateProgress,
@@ -134,29 +133,34 @@ class Search extends Component {
 
   transferComplete(evt) {
     this.setState({
-      isLoading: false
-    })
-    console.log("The transfer is complete.");
+      loadingProgress: 1
+    });
+
+    // window.setTimeout(()=>{
+    //   this.setState({
+    //     loadingProgress: null
+    //   });
+    // }, 2000)
   }
 
   transferFailed(evt) {
     console.warn("An error occurred while transferring the file.");
     this.setState({
-      isLoading: false
+      loadingProgress: null
     })
   }
 
   transferCanceled(evt) {
     console.warn("The transfer has been canceled by the user.");
     this.setState({
-      isLoading: false
+      loadingProgress: null
     })
   }
 
   render() {
     return (
       <div>
-        {this.state.isLoading && <ProgressBar progress={this.state.loadingProgress}/>}
+        {defined(this.state.loadingProgress) && <ProgressBar progress={this.state.loadingProgress}/>}
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>

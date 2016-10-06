@@ -49,8 +49,11 @@ class FilterSearchBox extends Component {
               </button>}
           </form>
           {this.props.searchText.length > 0 &&
+            <ProgressBar progress={this.props.loadingProgress}/>
+          }
+          {this.props.searchText.length > 0 &&
             <ul className='filtered-options list-unstyled'>
-              <li><ProgressBar progress={this.props.loadingProgress}/></li>
+
               {filteredOptions.map((option, i)=>
                   <li key={i}>{this.props.renderCondition(option, true)}</li>
               )}

@@ -5,6 +5,7 @@ import find from 'lodash.find';
 import getJSON from'../getJSON';
 import React, { Component } from 'react';
 import maxBy from 'lodash.maxby';
+import defined from '../defined';
 const DEFAULTSIZE = 5;
 
 class Filter extends Component {
@@ -116,15 +117,15 @@ class Filter extends Component {
     }
   }
 
-  renderCondition(option){
+  renderCondition(option, optionMax){
     let allowMultiple = true;
 
     if(!option){
       return null;
     }
-    let divStyle = {
-      width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 200 + 'px'
-    }
+
+    let maxWidth = defined(optionMax) ? +option.hitCount/optionMax.hitCount * 200 : 0;
+    let divStyle = {width: maxWidth + 'px'}
 
     return(
     <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`} onClick={this.toggleFilter.bind(this, option, allowMultiple)}>
@@ -177,17 +178,21 @@ class Filter extends Component {
     if(!filter){
       return null;
     }
-    if(Array.isArray(this.props.location.query[this.props.id])){
-      return filter.map(p=>{
-        return <div key={p}>{this.renderCondition(find(this.props.options, o=>o.value === p))}</div>;
-      });
-    }else{
-      return this.renderCondition(find(this.props.options, o=>o.value === filter))
+    if(!Array.isArray(filter)){
+      filter = [filter];
     }
+    return filter.map(p=>{
+      let correspondingOptionInDefaultList = find(this.props.options, o=>o.value === p);
+
+      let hitCount = defined(correspondingOptionInDefaultList) ? correspondingOptionInDefaultList.hitCount : 0;
+      let option = {'value': p, 'hitCount': hitCount}
+      return <li key={p}>{this.renderCondition(option)}</li>;
+    });
   }
 
   render() {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
+    let maxOptionFromDefaultOptionList = maxBy(this.props.options, o=> +o.hitCount);
     let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
     let size = this.state.isOpen ? inactiveOptions.length : tempSize;
     let overflow = inactiveOptions.length - tempSize;
@@ -207,14 +212,15 @@ class Filter extends Component {
                          options={this.state.allOptions}
 
         />
+        <ul className='list-unstyled'>
+          {this.getActiveOption()}
+        </ul>
 
-        {this.getActiveOption()}
-
-        <div className='other-options'>
+        <ul className='other-options list-unstyled'>
           {inactiveOptions.slice(0, size).map((option, i)=>
-                <div key={i}>{this.renderCondition(option)}</div>
+                <li key={i}>{this.renderCondition(option,maxOptionFromDefaultOptionList)}</li>
           )}
-        </div>
+        </ul>
         {overflow > 0 && <button onClick={this.toggleOpen}
                                  className='btn btn-toggle'>
                                     {this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${overflow} more`}
