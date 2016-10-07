@@ -57,6 +57,7 @@ import scala.util.Success
 import scala.util.Failure
 import jawn.ast.JValue
 import akka.stream.ThrottleMode
+import scala.concurrent.Await
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val INDEX_VERSION = 2
@@ -134,19 +135,19 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         // Now get the version of the index on the ES server, which we've stored as a document in ES unless this ES server is brand new.
         client.execute {
           get id "indexversion" from "magda" / "config"
-        } map { a =>
+        } flatMap { a =>
           // If there was no stored index version at all, default to 0
           val indexVersion = if (a.isSourceEmpty || !a.isExists) 0 else a.source.get("version").asInstanceOf[Int]
           logger.info("Magda index version is {}", indexVersion)
 
           // If the index version on ES is lower than the code's version, wipe it all and start again.
-          if (indexVersion < INDEX_VERSION) {
+          if (indexVersion != INDEX_VERSION) {
             client.execute {
               delete index "magda"
-            } flatMap { _ =>
+            } flatMap { x =>
               createIndex(client)
             }
-          } else Future.successful(Unit)
+          } else Future.successful(Right(Unit))
         } recover {
           // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
           case outer: RemoteTransportException => outer.getCause match {
@@ -154,19 +155,21 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
               logger.warning("Magda index was not present, if this is the first boot with a new index version this is fine: {}", outer.getMessage)
               createIndex(client)
             }
+            case e =>
+              logger.error(e, "Failed to set up the index")
+              throw e
           }
-          case e => {
+          case e =>
             logger.error(e, "Failed to set up the index")
             throw e
-          }
-        } map { _ =>
+        } map { x =>
           // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
           client
         }
       }
   }
 
-  private def createIndex(client: ElasticClient): Future[Any] = {
+  private def createIndex(client: ElasticClient): Future[IndexResult] = {
     logger.info("Creating index with version {}", INDEX_VERSION)
 
     client.execute {
@@ -196,17 +199,30 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         ),
         mapping(Format.id),
         mapping(misc.Year.id),
-        mapping(Format.id)
+        mapping(Format.id),
+        mapping("regions").fields(
+          field("geometry").typed(GeoShapeType)
+        )
       ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
     } flatMap { _ =>
+      logger.info("Index created")
+
+      // Create ABS regions 
+      loadABSRegions(client).map { results =>
+        val failures = results.filter(_.hasFailures)
+
+        if (failures.size > 0) {
+          logger.error("Failures when indexing regions, this means spatial search won't work:\n{}" + failures.foldLeft("")(_ + "\n" + _.failureMessage))
+        } else {
+          logger.info("Successfully indexed {} regions", results.foldLeft(0)((a, b: BulkResult) => a + b.successes.length))
+        }
+      }
+
       // Now we've created the index, record the version of it so we can look at it next time we boot up.
+      logger.info("Recording index version")
       client.execute {
         ElasticDsl.index into "magda" / "config" id "indexversion" source Map("version" -> INDEX_VERSION).toJson
       }
-    } flatMap { _ =>
-      loadABSRegions(client)
-    } map { results =>
-      logger.info("Successfully indexed {} regions", results.map(_.successes.size).reduce(_ + _))
     }
   }
 
@@ -223,7 +239,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
 
     // This should be here as a result of a task in build.sbt - it's stored on S3 rather than in git because it's huge.
     val url = getClass.getResource("/regions.geojson")
-    
+
     // Here we use an akka stream to read the file chunk by chunk and pass it down the stream to the parser.
     val fileSource = FileIO.fromPath(Paths.get(url.toURI))
     val parseResult = fileSource
@@ -241,17 +257,19 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       // This batch + throttle means that we'll only make one ES call per second - any regions that stack up
       // during the preceding second will be bulk-indexed.
       .batch(1000, x => x)(_ ++ _)
-      .throttle(1, 1 seconds, 10, ThrottleMode.Shaping)
+      //      .throttle(1, 1 seconds, 10, ThrottleMode.Shaping)
       .map({ values =>
-        client.execute(bulk(values.map({ j =>
-          ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11") source j.render()
-        })))
+        Await.result(
+          client.execute(bulk(values.map({ j =>
+            ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11").asString source j.render()
+          }))), 10 seconds
+        )
       })
       // Finally the end result of all this streaming is a seq of futures representing all our ES calls
       .runWith(Sink.seq)
 
     // Create a future that will resolve when every index operation has resolved.
-    parseResult.flatMap { x => Future.sequence(x) }
+    parseResult
   }
 
   def getYears(from: Option[Instant], to: Option[Instant]): List[String] = {
@@ -278,6 +296,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       client.execute {
         ElasticDsl.search in "magda" / "datasets" limit 0
       } map { result =>
+        logger.debug("Reindex check hit count: {}", result.getHits.getTotalHits)
         result.getHits.getTotalHits == 0
       }
     )
