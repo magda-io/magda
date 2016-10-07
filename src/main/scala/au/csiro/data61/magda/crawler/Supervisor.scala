@@ -12,31 +12,27 @@ import akka.event.Logging
 import au.csiro.data61.magda.api.Api
 import com.typesafe.config.Config
 import akka.stream.ActorMaterializer
+import au.csiro.data61.magda.external.InterfaceConfig
 
-class Supervisor(system: ActorSystem, config: Config) extends Actor with ActorLogging {
-  var host2Actor = Map.empty[URL, ActorRef]
+class Supervisor(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig]) extends Actor with ActorLogging {
   val indexer = context actorOf Props(new Indexer(self))
+  val host2Actor: Map[URL, ActorRef] = externalInterfaces
+    .groupBy(_.baseUrl)
+    .mapValues(interfaceConfig => system.actorOf(Props(new RepoCrawler(self, indexer, interfaceConfig.head))))
 
   def receive: Receive = {
-    case Start(externalInterfaces) =>
-      log.info("Beginning scrape with {} interfaces", externalInterfaces.length)
-
-      externalInterfaces
-        .map(interface => host2Actor.getOrElse(interface.baseUrl, {
-          val newActor = system.actorOf(Props(new RepoCrawler(self, indexer, interface)))
-          host2Actor += (interface.baseUrl -> newActor)
-          newActor
-        }))
-        .map(actor => actor ! ScrapeRepo())
+    case ScrapeAll =>
+      log.info("Beginning scrape with interfaces {}", host2Actor.map { case (url, _) => url.toString })
+      host2Actor.foreach { case (_, interface) => interface ! ScrapeRepo }
+    case NeedsReIndexing =>
+      log.info("Search index is empty, commanding crawlers to rebuild it 🐜🐜🐜")
+      self ! ScrapeAll
     case ScrapeRepoFailed(baseUrl, reason) =>
       log.error(reason, "Failed to start index for {} due to {}", baseUrl, reason.getMessage)
     case ScrapeRepoFinished(baseUrl) =>
-      host2Actor.get(baseUrl).get ! PoisonPill
-      host2Actor -= baseUrl
       log.info("Finished scraping {}", baseUrl)
     case IndexFinished(dataSets, baseUrl) =>
-      val ids = dataSets.map { ds => s"${ds.title.getOrElse("")}" }
-      log.info("Finished indexing datasets {} from {}", ids, baseUrl)
+      log.info("Finished indexing {} datasets from {}", dataSets.length, baseUrl)
     case IndexFailed(baseUrl, reason) =>
       log.error(reason, "Failed to index datasets for {} due to {}", baseUrl, reason.getMessage)
   }

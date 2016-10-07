@@ -17,7 +17,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.Materializer
 import au.csiro.data61.magda.api.Api
-import au.csiro.data61.magda.crawler.Start
+import au.csiro.data61.magda.crawler.ScrapeAll
 import au.csiro.data61.magda.crawler.Supervisor
 import au.csiro.data61.magda.external.InterfaceConfig
 import com.typesafe.config.ConfigValue
@@ -36,12 +36,11 @@ object MagdaApp extends App {
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
-  val supervisor = system.actorOf(Props(new Supervisor(system, config)))
-
-  config.getConfig("indexedServices").root().foreach {
+  val interfaceConfigs = config.getConfig("indexedServices").root().map {
     case (name: String, serviceConfig: ConfigValue) =>
-      supervisor ! Start(List(InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)))
-  }
+      InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)
+  }.toSeq
+  val supervisor = system.actorOf(Props(new Supervisor(system, config, interfaceConfigs)))
 
   // Index erryday 
   //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))

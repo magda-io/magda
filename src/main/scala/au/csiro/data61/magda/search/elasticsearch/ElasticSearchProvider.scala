@@ -59,6 +59,7 @@ import jawn.ast.JValue
 import akka.stream.ThrottleMode
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
+  val INDEX_VERSION = 2
   val logger = Logging(system, getClass)
 
   case class FacetDefinition(
@@ -120,91 +121,137 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   private def setup(): Future[ElasticClient] = {
     implicit val scheduler = system.scheduler
 
+    // Connect to the ES client - quite often the API will actually start before ES starts accepting connections, so keep retrying until it lets us in.
     def onRetry = (retriesLeft: Int) => logger.warning("Failed to make initial contact with ES server, {} retries left", retriesLeft)
-
     retry(Future {
       val uri = ElasticsearchClientUri("elasticsearch://search:9300")
       val client = ElasticClient.transport(uri)
       client.execute(get cluster health).map(_ => client)
     }.flatMap(a => a), 10 seconds, 10, onRetry)
       .flatMap { client =>
+        logger.debug("Successfully connected to ES client")
+
+        // Now get the version of the index on the ES server, which we've stored as a document in ES unless this ES server is brand new.
         client.execute {
-          delete index "magda"
-        } recover {
-          // No magda index, this is probably first boot.
-          case (outer: RemoteTransportException) => outer.getCause match {
-            case (inner: IndexNotFoundException) => logger.error(outer, "Could not delete existing magda index, this is probably fine")
-          }
+          get id "indexversion" from "magda" / "config"
         } map { a =>
-          client.execute {
-            create.index("magda").mappings(
-              mapping("datasets").fields(
-                field("temporal").inner(
-                  field("start").inner(
-                    field("text").typed(StringType)
-                  ),
-                  field("end").inner(
-                    field("text").typed(StringType)
-                  )
-                ),
-                field("publisher").inner(
-                  field("name").typed(StringType).fields(
-                    field("untouched").typed(StringType).index("not_analyzed")
-                  )
-                ),
-                field("distributions").nested(
-                  field("format").typed(StringType).fields(
-                    field("untokenized").typed(StringType).analyzer("untokenized")
-                  )
-                ),
-                field("spatial").inner(
-                  field("geoJson").typed(GeoShapeType)
-                )
-              ),
-              mapping(Format.id),
-              mapping(misc.Year.id),
-              mapping(Format.id)
-            ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+          // If there was no stored index version at all, default to 0
+          val indexVersion = if (a.isSourceEmpty || !a.isExists) 0 else a.source.get("version").asInstanceOf[Int]
+          logger.info("Magda index version is {}", indexVersion)
+
+          // If the index version on ES is lower than the code's version, wipe it all and start again.
+          if (indexVersion < INDEX_VERSION) {
+            client.execute {
+              delete index "magda"
+            } flatMap { _ =>
+              createIndex(client)
+            }
+          } else Future.successful(Unit)
+        } recover {
+          // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
+          case outer: RemoteTransportException => outer.getCause match {
+            case (inner: IndexNotFoundException) => {
+              logger.warning("Magda index was not present, if this is the first boot with a new index version this is fine: {}", outer.getMessage)
+              createIndex(client)
+            }
           }
-        } flatMap { _ =>
-          import jawn.ast
-          import jawn.AsyncParser
-          import jawn.ParseException
-
-          val parser = ast.JParser.async(mode = AsyncParser.UnwrapArray)
-
-          val url = getClass.getResource("/regions.geojson")
-          val questionMark = FileIO.fromPath(Paths.get(url.toURI))
-
-          val q2 = questionMark
-            // Batch into 800kb chunks if reading the file gets ahead of parsing
-            .batch(100, x => x)(_ ++ _)
-            // Parse the incoming byte chunks, pass through any complete json objects that are returned
-            .map(st => parser.absorb(st.toByteBuffer) match {
-              case Right(js) =>
-                js
-              case Left(e) =>
-                throw e
-            })
-            // Sometimes the parser can parse a chunk but emit an empty list of objects, so filter those
-            .filter { values => !values.isEmpty }
-            // This batch + throttle means that we'll only make one index call per second - any regions that stack up
-            // during the preceding second will be bulk-indexed.
-            .batch(1000, x => x)(_ ++ _)
-            .throttle(1, 1 seconds, 10, ThrottleMode.Shaping)
-            .map({ values =>
-              client.execute(bulk(values.map({ j =>
-                ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11") source j.render()
-              })))
-            })
-            .runWith(Sink.seq)
-
-          // Create a future that will resolve when every index operation has resolved.
-          q2.flatMap { x => Future.sequence(x) }
-        } map { results =>
-          logger.info("Successfully indexed {} regions", results.map(_.successes.size).reduce(_ + _))
-        } map { _ => client }
+          case e => {
+            logger.error(e, "Failed to set up the index")
+            throw e
+          }
+        } map { _ =>
+          // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
+          client
+        }
       }
+  }
+
+  private def createIndex(client: ElasticClient): Future[Any] = {
+    logger.info("Creating index with version {}", INDEX_VERSION)
+
+    client.execute {
+      create.index("magda").mappings(
+        mapping("datasets").fields(
+          field("temporal").inner(
+            field("start").inner(
+              field("text").typed(StringType)
+            ),
+            field("end").inner(
+              field("text").typed(StringType)
+            )
+          ),
+          field("publisher").inner(
+            field("name").typed(StringType).fields(
+              field("untouched").typed(StringType).index("not_analyzed")
+            )
+          ),
+          field("distributions").nested(
+            field("format").typed(StringType).fields(
+              field("untokenized").typed(StringType).analyzer("untokenized")
+            )
+          ),
+          field("spatial").inner(
+            field("geoJson").typed(GeoShapeType)
+          )
+        ),
+        mapping(Format.id),
+        mapping(misc.Year.id),
+        mapping(Format.id)
+      ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+    } flatMap { _ =>
+      // Now we've created the index, record the version of it so we can look at it next time we boot up.
+      client.execute {
+        ElasticDsl.index into "magda" / "config" id "indexversion" source Map("version" -> INDEX_VERSION).toJson
+      }
+    } flatMap { _ =>
+      loadABSRegions(client)
+    } map { results =>
+      logger.info("Successfully indexed {} regions", results.map(_.successes.size).reduce(_ + _))
+    }
+  }
+
+  /**
+   * Reads the ABS regions in from a gigantic (165mb!!) GeoJSON file that we download as part of the build, and indexes them into ES
+   */
+  def loadABSRegions(client: ElasticClient): Future[Seq[BulkResult]] = {
+    // We use Jawn for this because it has a streaming parser, and holding all the parsed regions in memory tends to overflow the heap.
+    import jawn.ast
+    import jawn.AsyncParser
+    import jawn.ParseException
+
+    val parser = ast.JParser.async(mode = AsyncParser.UnwrapArray)
+
+    // This should be here as a result of a task in build.sbt - it's stored on S3 rather than in git because it's huge.
+    val url = getClass.getResource("/regions.geojson")
+    
+    // Here we use an akka stream to read the file chunk by chunk and pass it down the stream to the parser.
+    val fileSource = FileIO.fromPath(Paths.get(url.toURI))
+    val parseResult = fileSource
+      // If reading gets ahead of parsing, this batches the bytes read into 800kb chunks
+      .batch(100, x => x)(_ ++ _)
+      // Parse the incoming byte chunks, pass through any complete json objects that are returned
+      .map(st => parser.absorb(st.toByteBuffer) match {
+        case Right(js) =>
+          js
+        case Left(e) =>
+          throw e
+      })
+      // Sometimes a chunk of the file won't contain any complete objects and the result is an empty seq - filter those.
+      .filter { values => !values.isEmpty }
+      // This batch + throttle means that we'll only make one ES call per second - any regions that stack up
+      // during the preceding second will be bulk-indexed.
+      .batch(1000, x => x)(_ ++ _)
+      .throttle(1, 1 seconds, 10, ThrottleMode.Shaping)
+      .map({ values =>
+        client.execute(bulk(values.map({ j =>
+          ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11") source j.render()
+        })))
+      })
+      // Finally the end result of all this streaming is a seq of futures representing all our ES calls
+      .runWith(Sink.seq)
+
+    // Create a future that will resolve when every index operation has resolved.
+    parseResult.flatMap { x => Future.sequence(x) }
   }
 
   def getYears(from: Option[Instant], to: Option[Instant]): List[String] = {
@@ -224,6 +271,16 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         getYearsInner(newFrom, newTo)
       }
     }
+  }
+
+  override def needsReindexing() = {
+    setupFuture.flatMap(client =>
+      client.execute {
+        ElasticDsl.search in "magda" / "datasets" limit 0
+      } map { result =>
+        result.getHits.getTotalHits == 0
+      }
+    )
   }
 
   override def index(source: String, dataSets: List[DataSet]) = {

@@ -32,7 +32,7 @@ class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, interfaceDef: Interfa
   throttler ! SetTarget(Some(context.self))
 
   def receive: Receive = {
-    case ScrapeRepo() =>
+    case ScrapeRepo =>
       log.info("Starting scrape of {}", interfaceDef.baseUrl)
 
       interface.getTotalDataSetCount() onComplete {

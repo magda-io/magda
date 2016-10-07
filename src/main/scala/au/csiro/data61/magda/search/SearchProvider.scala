@@ -13,6 +13,7 @@ trait SearchProvider {
   def index(source: String, dataSets: List[DataSet]): Future[Any]
   def search(query: Query, limit: Int = 50): Future[SearchResult]
   def searchFacets(facetType: FacetType, query: String, limit: Int = 50): Future[FacetSearchResult]
+  def needsReindexing(): Future[Boolean]
 }
 object SearchProvider {
   // TODO: There's undoubtably a cleverer way to do this in scala 
