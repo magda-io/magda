@@ -10,6 +10,7 @@ import debounce from 'lodash.debounce';
 import './Search.css';
 import getJSON from'./getJSON';
 import defined from './defined';
+import mergeQuery from './mergeQuery';
 
 
 class Search extends Component {
@@ -91,22 +92,12 @@ class Search extends Component {
   }
 
   parseQuery(query){
-    if(defined(query.dateFrom)){
-      this.updateQuery({'dateFrom': new Date(query.dateFrom).getFullYear()});
+    if(defined(query)){
+      if(defined(query.publishers)){this.updateQuery({'publishers': mergeQuery(query.publishers, this.props.location.query.publishers)});}
+      if(defined(query.formats)){this.updateQuery({'formats': mergeQuery(query.formats, this.props.location.query.formats)});}
+      if(defined(query.dateFrom)){this.updateQuery({'dateFrom': mergeQuery(new Date(query.dateFrom).getFullYear(), this.props.location.query.dateFrom)});}
+      if(defined(query.dateTo)){this.updateQuery({'dateTo': mergeQuery(new Date(query.dateTo).getFullYear(), this.props.location.query.dateTo)});}
     }
-
-    if(defined(query.dateTo)){
-      this.updateQuery({'dateTo': new Date(query.dateTo).getFullYear()-1});
-    }
-
-    if(defined(query.publishers)){
-      this.updateQuery({'publishers': query.publishers});
-    }
-
-    if(defined(query.formats)){
-      this.updateQuery({'formats': query.formats});
-    }
-
   }
 
 

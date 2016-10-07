@@ -6,6 +6,7 @@ import getJSON from'../getJSON';
 import React, { Component } from 'react';
 import maxBy from 'lodash.maxby';
 import defined from '../defined';
+import toggleQuery from '../toggleQuery';
 const DEFAULTSIZE = 5;
 
 class Filter extends Component {
@@ -45,36 +46,9 @@ class Filter extends Component {
   }
 
   toggleFilter(option, allowMultiple){
-    let currrentFilters;
-    if (allowMultiple === true){
-      // force filters into array
-      if (!this.props.location.query[this.props.id]){
-        currrentFilters = [];
-      }
-      // if already array
-      else if(Array.isArray(this.props.location.query[this.props.id])){
-        currrentFilters = this.props.location.query[this.props.id];
-      }
-      // if only one item, create array
-      else{
-        currrentFilters = [this.props.location.query[this.props.id]];
-      }
-      // add or remove from array
-      if(currrentFilters.indexOf(option.value) > -1){
-        currrentFilters.splice(currrentFilters.indexOf(option.value), 1);
-      } else{
-        currrentFilters.push(option.value)
-      }
-
-      this.props.updateQuery({
-        [this.props.id]: currrentFilters
-      });
-
-    } else{
-      this.props.updateQuery({
-        [this.props.id]: option.value
-      });
-    }
+    let query = toggleQuery(option, this.props.location.query[this.props.id], allowMultiple);
+    this.props.updateQuery({[this.props.id]: query});
+    this.clearSearch();
   }
 
   resetFilter(){
