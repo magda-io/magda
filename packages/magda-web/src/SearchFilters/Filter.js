@@ -6,6 +6,8 @@ import getJSON from'../getJSON';
 import React, { Component } from 'react';
 import maxBy from 'lodash.maxby';
 import checkActiveOption from '../checkActiveOption';
+import toggleQuery from '../toggleQuery';
+import defined from '../defined';
 const DEFAULTSIZE = 5;
 
 class Filter extends Component {
@@ -45,36 +47,9 @@ class Filter extends Component {
   }
 
   toggleFilter(option, allowMultiple){
-    let currrentFilters;
-    if (allowMultiple === true){
-      // force filters into array
-      if (!this.props.location.query[this.props.id]){
-        currrentFilters = [];
-      }
-      // if already array
-      else if(Array.isArray(this.props.location.query[this.props.id])){
-        currrentFilters = this.props.location.query[this.props.id];
-      }
-      // if only one item, create array
-      else{
-        currrentFilters = [this.props.location.query[this.props.id]];
-      }
-      // add or remove from array
-      if(currrentFilters.indexOf(option.value) > -1){
-        currrentFilters.splice(currrentFilters.indexOf(option.value), 1);
-      } else{
-        currrentFilters.push(option.value)
-      }
-
-      this.props.updateQuery({
-        [this.props.id]: currrentFilters
-      });
-
-    } else{
-      this.props.updateQuery({
-        [this.props.id]: option.value
-      });
-    }
+    let query = toggleQuery(option, this.props.location.query[this.props.id], allowMultiple);
+    this.props.updateQuery({[this.props.id]: query});
+    this.clearSearch();
   }
 
   resetFilter(){
@@ -117,15 +92,14 @@ class Filter extends Component {
     }
   }
 
-  renderCondition(option){
+  renderCondition(option, optionMax){
     let allowMultiple = true;
 
     if(!option){
       return null;
     }
-    let divStyle = {
-      width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 200 + 'px'
-    }
+    let maxWidth = defined(optionMax) ? +option.hitCount/optionMax.hitCount * 200 : 0;
+    let divStyle = {width: maxWidth + 'px'}
 
     return(
     <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`} onClick={this.toggleFilter.bind(this, option, allowMultiple)}>
@@ -157,22 +131,25 @@ class Filter extends Component {
   }
 
   getActiveOption(){
-    let query = this.props.location.query;
-    let filter = query[this.props.id];
-    if(!filter){
+    let query = this.props.location.query[this.props.id];
+    if(!query){
       return null;
     }
-    if(Array.isArray(this.props.location.query[this.props.id])){
-      return filter.map(p=>{
-        return <div key={p}>{this.renderCondition(find(this.props.options, o=>o.value === p))}</div>;
-      });
-    }else{
-      return this.renderCondition(find(this.props.options, o=>o.value === filter))
-    }
+    if(!Array.isArray(query)){
+     query = [query];
+   }
+   return query.map(item=>{
+     let correspondingOptionInDefaultList = find(this.props.options, o=>o.value === item);
+
+     let hitCount = defined(correspondingOptionInDefaultList) ? correspondingOptionInDefaultList.hitCount : 0;
+     let option = {'value': item, 'hitCount': hitCount}
+     return <li key={item}>{this.renderCondition(option)}</li>;
+   });
   }
 
   render() {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
+    let maxOptionFromDefaultOptionList = maxBy(this.props.options, o=> +o.hitCount);
     let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
     let size = this.state.isOpen ? inactiveOptions.length : tempSize;
     let overflow = inactiveOptions.length - tempSize;
@@ -193,13 +170,15 @@ class Filter extends Component {
 
         />
 
-        {this.getActiveOption()}
+        <ul className='list-unstyled'>
+          {this.getActiveOption()}
+        </ul>
 
-        <div className='other-options'>
-          {inactiveOptions.slice(0, size).map((option, i)=>
-                <div key={i}>{this.renderCondition(option)}</div>
-          )}
-        </div>
+        <ul className='other-options list-unstyled'>
+        {inactiveOptions.slice(0, size).map((option, i)=>
+              <li key={i}>{this.renderCondition(option,maxOptionFromDefaultOptionList)}</li>
+        )}
+        </ul>
         {overflow > 0 && <button onClick={this.toggleOpen}
                                  className='btn btn-toggle'>
                                     {this.state.isOpen ? `Show less ${this.props.title}s` : `Show ${overflow} more`}
