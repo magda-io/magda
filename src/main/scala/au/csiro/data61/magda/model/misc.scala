@@ -82,18 +82,33 @@ package misc {
 
   case class Location(
     text: String,
-    geoJson: Option[Polygon] = None)
+    geoJson: Option[Geometry] = None)
 
   object Location {
-    val polygonPattern = ".*\\{\"type\": \"Polygon\",.*\\}.*".r
+    val geoJsonPattern = "\\{\"type\": \".+\",.*\\}".r
+    val emptyPolygonPattern = "POLYGON \\(\\(0 0, 0 0, 0 0, 0 0\\)\\)".r
+    val polygonPattern = "POLYGON \\(\\(((-?\\d+ -?\\d+\\,?\\s?)+)\\)\\)".r
 
     def apply(string: String): Location = {
-      string match {
-        case polygonPattern() => {
-          Location(string, Some(string.parseJson.convertTo[Polygon]))
+      Location(string, string match {
+        case geoJsonPattern() => {
+          Some(Protocols.GeometryFormat.read(string.parseJson))
         }
-        case _ => Location(text = string)
-      }
+        case emptyPolygonPattern() => None
+        case polygonPattern(polygonCoords, _) =>
+          val coords = polygonCoords.split(",")
+            .map { stringCoords =>
+              try {
+                val Array(x, y) = stringCoords.trim.split("\\s").map(_.toDouble)
+                Coordinate(x, y)
+              } catch {
+                case e => println(stringCoords); throw e
+              }
+            }.toSeq
+
+          Some(Polygon(Seq(coords)))
+        case _ => None
+      })
     }
   }
 
@@ -178,6 +193,28 @@ package misc {
     implicit object MediaTypeFormat extends JsonFormat[MediaType] {
       override def write(mediaType: MediaType): JsString = JsString.apply(mediaType.value)
       override def read(json: JsValue): MediaType = MediaType.parse(json.convertTo[String]).right.get
+    }
+    implicit object GeometryFormat extends JsonFormat[Geometry] {
+      override def write(geometry: Geometry): JsValue = geometry match {
+        case point: Point           => PointFormat.write(point)
+        case point: MultiPoint      => MultiPointFormat.write(point)
+        case point: LineString      => LineStringFormat.write(point)
+        case point: MultiLineString => MultiLineStringFormat.write(point)
+        case point: Polygon         => PolygonFormat.write(point)
+        case point: MultiPolygon    => MultiPolygonFormat.write(point)
+      }
+      override def read(json: JsValue): Geometry = json match {
+        case JsObject(jsObj) => jsObj.get("type") match {
+          case Some(JsString("Point"))           => PointFormat.read(json)
+          case Some(JsString("MultiPoint"))      => MultiPointFormat.read(json)
+          case Some(JsString("LineString"))      => LineStringFormat.read(json)
+          case Some(JsString("MultiLineString")) => MultiLineStringFormat.read(json)
+          case Some(JsString("Polygon"))         => PolygonFormat.read(json)
+          case Some(JsString("MultiPolygon"))    => MultiPolygonFormat.read(json)
+          case _                                 => deserializationError(s"'$json' is not a valid geojson shape")
+        }
+        case _ => deserializationError(s"'$json' is not a valid geojson shape")
+      }
     }
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)

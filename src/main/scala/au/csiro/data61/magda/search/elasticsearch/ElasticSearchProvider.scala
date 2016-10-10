@@ -64,7 +64,7 @@ import java.nio.file.Paths
 import org.elasticsearch.common.geo.ShapeRelation
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
-  val INDEX_VERSION = 5
+  val INDEX_VERSION = 7
   val logger = Logging(system, getClass)
 
   case class FacetDefinition(
