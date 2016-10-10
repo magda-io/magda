@@ -185,7 +185,7 @@ package misc {
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
-    implicit val queryFormat = jsonFormat7(Query.apply)
+    implicit val queryFormat = jsonFormat8(Query.apply)
     implicit val searchResultFormat = jsonFormat4(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }

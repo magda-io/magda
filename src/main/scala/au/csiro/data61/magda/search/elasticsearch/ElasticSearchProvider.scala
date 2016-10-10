@@ -7,6 +7,11 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.collection.mutable.Buffer
 import scala.util.control.Exception._
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
+import scala.concurrent.duration._
+import scala.concurrent.Await
 
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -21,6 +26,12 @@ import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInter
 import org.elasticsearch.search.aggregations.bucket.terms._
 import org.elasticsearch.search.aggregations.Aggregation
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
+import org.elasticsearch.action.ActionRequestValidationException
+import org.elasticsearch.index.IndexNotFoundException
+import org.elasticsearch.client.transport.NoNodeAvailableException
+import org.elasticsearch.transport.RemoteTransportException
+import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
+import org.elasticsearch.search.aggregations.InvalidAggregationPathException
 
 import au.csiro.data61.magda.search.SearchProvider
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
@@ -29,38 +40,31 @@ import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.util.FutureRetry.retry
+import au.csiro.data61.magda.api.Query
+import au.csiro.data61.magda.search.elasticsearch.IndexedGeoShapeQueryDefinition._
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-
-import java.time._
-import scala.concurrent.duration._
-import org.elasticsearch.action.ActionRequestValidationException
-import org.elasticsearch.index.IndexNotFoundException
-import org.elasticsearch.client.transport.NoNodeAvailableException
-import org.elasticsearch.transport.RemoteTransportException
-import au.csiro.data61.magda.api.Query
-import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
-import org.elasticsearch.search.aggregations.InvalidAggregationPathException
-import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
-import akka.stream.scaladsl.FileIO
-import java.io.File
-import java.nio.file.Paths
 import akka.http.scaladsl.common.EntityStreamingSupport
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.stream.Materializer
-import akka.util.ByteString
-import scala.util.Try
-import scala.util.Success
-import scala.util.Failure
-import jawn.ast.JValue
+import akka.stream.scaladsl.FileIO
 import akka.stream.ThrottleMode
-import scala.concurrent.Await
+import akka.util.ByteString
+
+import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
+
+import jawn.ast.JValue
+
+import java.time._
+import java.io.File
+import java.nio.file.Paths
+import org.elasticsearch.common.geo.ShapeRelation
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
-  val INDEX_VERSION = 2
+  val INDEX_VERSION = 5
   val logger = Logging(system, getClass)
 
   case class FacetDefinition(
@@ -254,17 +258,15 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       })
       // Sometimes a chunk of the file won't contain any complete objects and the result is an empty seq - filter those.
       .filter { values => !values.isEmpty }
-      // This batch + throttle means that we'll only make one ES call per second - any regions that stack up
-      // during the preceding second will be bulk-indexed.
-      .batch(1000, x => x)(_ ++ _)
-      //      .throttle(1, 1 seconds, 10, ThrottleMode.Shaping)
-      .map({ values =>
-        Await.result(
-          client.execute(bulk(values.map({ j =>
-            ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11").asString source j.render()
-          }))), 10 seconds
-        )
-      })
+      // Only do give one operation to elasticsearch at a time, otherwise we risk overflowing its op queue. Operations that build up
+      // while a previous one in progress will be batched together and bulk-executed when the previous one completes, up to 10... anything
+      // more than that will keep backpressuring right up to the file reader.
+      .batch(10, x => x)(_ ++ _)
+      .mapAsync(1)(values =>
+        client.execute(bulk(values.map({ j =>
+          ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11").asString source j.render()
+        })))
+      )
       // Finally the end result of all this streaming is a seq of futures representing all our ES calls
       .runWith(Sink.seq)
 
@@ -420,6 +422,10 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   private def formatQuery(format: String) = nestedQuery("distributions").query(
     matchQuery("distributions.format", format)
   )
+  private def regionIdQuery(regionId: String) = indexedGeoShapeQuery("spatial.geoJson", regionId, "regions")
+    .relation(ShapeRelation.INTERSECTS)
+    .shapeIndex("magda")
+    .shapePath("geometry")
   private def dateFromQuery(dateFrom: Instant) = filter(should(
     rangeQuery("temporal.end.date").gte(dateFrom.toString),
     rangeQuery("temporal.start.date").gte(dateFrom.toString)
@@ -443,11 +449,12 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     }
 
     val shouldClauses: Seq[Option[QueryDefinition]] = Seq(
-      Some(new QueryStringQueryDefinition(stringQuery.getOrElse("*")).boost(2)),
+      stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).boost(2)),
       seqToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
       seqToOption(query.formats)(seq => should(seq.map(formatQuery))),
       query.dateFrom.map(dateFromQuery),
-      query.dateTo.map(dateToQuery)
+      query.dateTo.map(dateToQuery),
+      seqToOption(query.regions)(seq => should(seq.map(regionIdQuery)))
     )
 
     should(shouldClauses.filter(_.isDefined).map(_.get))

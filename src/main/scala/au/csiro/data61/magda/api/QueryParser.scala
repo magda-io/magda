@@ -21,7 +21,7 @@ private object QueryLexer extends RegexParsers {
   override def skipWhitespace = true
   override val whiteSpace = "[\t\r\f\n]+".r
 
-  val filterWords = Seq("From", "To", "By", "As")
+  val filterWords = Seq("From", "To", "By", "As", "InRegion")
 
   def quote: Parser[Tokens.Quote] = {
     """"[^"]*"""".r ^^ { str => Tokens.Quote(str.substring(1, str.length - 1)) }
@@ -57,12 +57,14 @@ object AST {
   case class DateTo(value: Instant) extends Filter
   case class Publisher(value: String) extends Filter
   case class Format(value: String) extends Filter
+  case class RegionId(value: String) extends Filter
 
   sealed trait FilterType extends QueryAST
   case object FromType extends FilterType
   case object ToType extends FilterType
   case object PublisherType extends FilterType
   case object FormatType extends FilterType
+  case object RegionIdType extends FilterType
 
   case class FilterStatement(filterType: FilterType, value: FilterValue) extends QueryAST
   case class FilterValue(value: String) extends QueryAST
@@ -79,7 +81,7 @@ private object QueryParser extends Parsers {
   }
 
   def query = phrase(queryMakeup)
-  def queryMakeup = queryAndFilters | queryText | filters 
+  def queryMakeup = queryAndFilters | queryText | filters
   def queryAndFilters = (queryText ~ filters) ^^ { case a ~ b => AST.And(a, b) }
   def queryText = rep1(freeTextWord | quote) ^^ { case list => list reduceRight AST.And }
   def filters = rep1(filterStatement) ^^ { case list => list reduceRight AST.And }
@@ -88,15 +90,17 @@ private object QueryParser extends Parsers {
     case AST.ToType ~ AST.FilterValue(filterValue)        => parseDateFromRaw(filterValue, true, AST.DateTo.apply, AST.And(AST.FreeTextWord("to"), AST.FreeTextWord(filterValue)))
     case AST.PublisherType ~ AST.FilterValue(filterValue) => AST.Publisher(filterValue)
     case AST.FormatType ~ AST.FilterValue(filterValue)    => AST.Format(filterValue)
+    case AST.RegionIdType ~ AST.FilterValue(filterValue)  => AST.RegionId(filterValue)
   }
 
   def filterType =
     accept("filter type", {
       case Tokens.Filter(name) => name.toLowerCase() match {
-        case "from" => AST.FromType
-        case "to"   => AST.ToType
-        case "by"   => AST.PublisherType
-        case "as"   => AST.FormatType
+        case "from"     => AST.FromType
+        case "to"       => AST.ToType
+        case "by"       => AST.PublisherType
+        case "as"       => AST.FormatType
+        case "inregion" => AST.RegionIdType
       }
     })
 
@@ -147,7 +151,7 @@ object QueryCompiler {
     } yield ast
 
     result match {
-      case Right(ast)  => flattenAST(ast)
+      case Right(ast)                         => flattenAST(ast)
       case Left(QueryCompilationError(error)) => Query(freeText = Some(code), error = Some(error))
     }
   }
@@ -155,16 +159,17 @@ object QueryCompiler {
   def flattenAST(ast: AST.ReturnedAST): Query = {
     def merge(left: Query, right: Query): Query = left.copy(
       freeText = (left.freeText, right.freeText) match {
-        case (None, None) => None
-        case (some, None) => some
-        case (None, some) => some
+        case (None, None)              => None
+        case (some, None)              => some
+        case (None, some)              => some
         case (Some(left), Some(right)) => Some(left + " " + right)
       },
       publishers = left.publishers ++ right.publishers,
       dateFrom = right.dateFrom.orElse(left.dateFrom),
       dateTo = right.dateTo.orElse(left.dateTo),
       formats = left.formats ++ right.formats,
-      quotes = left.quotes ++ right.quotes
+      quotes = left.quotes ++ right.quotes,
+      regions = left.regions ++ right.regions
     )
 
     ast match {
@@ -173,6 +178,7 @@ object QueryCompiler {
       case AST.DateTo(instant)    => Query(dateTo = Some(instant))
       case AST.Publisher(name)    => Query(publishers = Seq(name))
       case AST.Format(format)     => Query(formats = Seq(format))
+      case AST.RegionId(regionId) => Query(regions = Seq(regionId))
       case AST.FreeTextWord(word) => Query(freeText = Some(word))
       case AST.Quote(quote)       => Query(quotes = Seq(quote))
     }
@@ -185,5 +191,6 @@ case class Query(
   publishers: Seq[String] = Nil,
   dateFrom: Option[Instant] = None,
   dateTo: Option[Instant] = None,
+  regions: Seq[String] = Nil,
   formats: Seq[String] = Nil,
   error: Option[String] = None)
