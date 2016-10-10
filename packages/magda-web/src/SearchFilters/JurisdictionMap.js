@@ -17,7 +17,7 @@ class JurisdictionMap extends Filter {
     }
 
     componentDidMount(){
-        this.map = L.map(this._c);
+        this.map = L.map(this._c, { zoomControl: this.props.interaction});
         this.map.setView([-27, 133], 3);
 
         if(this.props.interaction === false){
