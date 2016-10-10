@@ -1,13 +1,15 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
+import DropDown from '../DropDown';
 import Filter from './Filter';
 import FilterHeader from './FilterHeader';
-import LocationSearchBox from './LocationSearchBox';
-import JurisdictionMap from './JurisdictionMap';
-import React from 'react'
-import getJsonp from '../getJsonp';
 import getJSON from '../getJSON';
+import getJsonp from '../getJsonp';
+import JurisdictionMap from './JurisdictionMap';
+import LocationSearchBox from './LocationSearchBox';
+import React from 'react'
 
 
+let regionTypeOptions =['SA1', 'SA2', 'SA3', 'SA4'];
 
 class FilterJurisdiction extends Filter {
     constructor(props) {
@@ -18,12 +20,14 @@ class FilterJurisdiction extends Filter {
         this.openPopup = this.openPopup.bind(this);
         this.onFeatureClick = this.onFeatureClick.bind(this);
         this.getLocationInfo = this.getLocationInfo.bind(this);
+        this.selectRegionType = this.selectRegionType.bind(this);
         this.state={
             popUpIsOpen: false,
             searchText: '',
             locationSearchResults: [],
             mapData: {},
             locationInfo: undefined,
+            activeRegionType: regionTypeOptions[0]
         }
     }
 
@@ -118,8 +122,16 @@ class FilterJurisdiction extends Filter {
         }
     }
 
+    selectRegionType(regionType){
+      this.setState({
+        activeRegionType: regionType
+      })
+    }
+
 
     render(){
+
+
         return (
             <div className='filter jurisdiction'>
               <FilterHeader query={this.props.location.query[this.props.id]}
@@ -145,9 +157,29 @@ class FilterJurisdiction extends Filter {
 
               {this.state.popUpIsOpen && <div className='popup'>
                                             <div className='popup-inner'>
-                                                <button className='btn' onClick={this.closePopUp}>
-                                                    Close
-                                                </button>
+                                                <div className='popup-header row'>
+                                                  <div className='col-xs-11'>
+                                                    <h4 className='filter-title'>Location</h4>
+                                                  </div>
+                                                  <div className='col-xs-1'>
+                                                    <button className='btn' onClick={this.closePopUp}><i className='fa fa-times' aria-hidden='true'></i></button>
+                                                  </div>
+                                                </div>
+                                                <div className='popup-tools row'>
+                                                  <div className='col-sm-6'>
+                                                      <LocationSearchBox options={this.state.locationSearchResults}
+                                                                         toggleFilter={this.toggleFilter}
+                                                                         searchText={this.state.searchText}
+                                                                         clearSearch={this.clearSearch}
+                                                                         handleChange={this.handleChange}
+                                                      />
+                                                  </div>
+                                                  <div className='col-sm-6'>
+                                                      <DropDown options={regionTypeOptions}
+                                                                activeOption={this.state.activeRegionType}
+                                                                select={this.selectRegionType}/>
+                                                  </div>
+                                                </div>
                                                 <JurisdictionMap title='jurisdiction'
                                                                  id='jurisdiction'
                                                                  location={this.props.location}
