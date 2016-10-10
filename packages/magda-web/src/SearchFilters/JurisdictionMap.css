@@ -8,11 +8,11 @@
     background: rgba(0, 0, 0, 0.3);
 }
 .popup .popup-inner{
-    position: absolute;
-    top: 10vh;
-    left: 10vw;
+    position: relative;
+    margin: 10vh auto;
     height: 80vh;
     width: 80vw;
+    max-width: 780px;
     background: #fff;
     padding: 20px;
     border: 1px solid #ddd;
