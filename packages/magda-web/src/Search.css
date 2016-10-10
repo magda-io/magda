@@ -1,5 +1,4 @@
 .search__search-header{
-  height: 86px;
 	background-color: #ecf0f1;
   padding: 23px 0;
   margin-bottom: 20px;
@@ -13,4 +12,31 @@
 .summary{
     background: #ecf0f1;
     padding: 10px;
+}
+
+.search-suggestions{
+  padding: 20px 15px 0 15px;
+}
+
+.btn-suggested-option{
+	background: transparent;
+	font-weight: bold;
+	font-style: italic;
+	padding: 0 10px 0 0;
+}
+
+.btn-suggested-option:hover{
+	text-decoration: underline;
+}
+
+.btn-suggested-option.is-active{
+	color: #3498db;
+}
+
+.btn-suggested-option.is-active:after{
+	content: '\f00d';
+	font-family: 'FontAwesome';
+	display: inline-block;
+	width: 10px;
+	height: 10px;
 }

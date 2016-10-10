@@ -131,7 +131,7 @@ class FilterDateRange extends Filter {
     return (
     <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn-facet-date-option btn`}           onClick={this.toggleFilter.bind(this, option, i)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
-      <span className='btn-facet-option__name'>{option.value}</span>
+      <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
     </button>)
 

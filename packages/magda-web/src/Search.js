@@ -11,7 +11,8 @@ import './Search.css';
 import getJSON from'./getJSON';
 import defined from './defined';
 import mergeQuery from './mergeQuery';
-
+import toggleQuery from './toggleQuery';
+import checkActiveOption from './checkActiveOption';
 
 class Search extends Component {
   constructor(props) {
@@ -23,7 +24,7 @@ class Search extends Component {
     this.transferFailed = this.transferFailed.bind(this);
     this.transferCanceled = this.transferCanceled.bind(this);
 
-    this.debouncedSearch = debounce(this.doSearch, 150);
+    this.debouncedSearch = debounce(this.doSearch, 1000);
     this.debouncedGetFacets = debounce(this.getFacets, 150);
 
     this.state = {
@@ -32,7 +33,8 @@ class Search extends Component {
       filterTemporal: [],
       filterFormat: [],
       loadingProgress: null,
-      allPublishers: []
+      allPublishers: [],
+      userEnteredQuery: {}
     };
   }
 
@@ -85,20 +87,21 @@ class Search extends Component {
         }
         this.setState({
             searchResults: results,
+            userEnteredQuery: data.query
           });
-        this.parseQuery(data.query);
+          // this.parseQuery(data.query);
 
         }, (err)=>{console.warn(err)});
   }
 
-  parseQuery(query){
-    if(defined(query)){
-      if(defined(query.publishers)){this.updateQuery({'publishers': mergeQuery(query.publishers, this.props.location.query.publishers)});}
-      if(defined(query.formats)){this.updateQuery({'formats': mergeQuery(query.formats, this.props.location.query.formats)});}
-      if(defined(query.dateFrom)){this.updateQuery({'dateFrom': mergeQuery(new Date(query.dateFrom).getFullYear(), this.props.location.query.dateFrom)});}
-      if(defined(query.dateTo)){this.updateQuery({'dateTo': mergeQuery(new Date(query.dateTo).getFullYear(), this.props.location.query.dateTo)});}
-    }
-  }
+  // parseQuery(query){
+  //   if(defined(query)){
+  //     if(defined(query.publishers)){this.updateQuery({'publishers': mergeQuery(query.publishers, this.props.location.query.publishers)});}
+  //     if(defined(query.formats)){this.updateQuery({'formats': mergeQuery(query.formats, this.props.location.query.formats)});}
+  //     if(defined(query.dateFrom)){this.updateQuery({'dateFrom': mergeQuery(new Date(query.dateFrom).getFullYear(), this.props.location.query.dateFrom)});}
+  //     if(defined(query.dateTo)){this.updateQuery({'dateTo': mergeQuery(new Date(query.dateTo).getFullYear(), this.props.location.query.dateTo)});}
+  //   }
+  // }
 
 
   updateQuery(query){
@@ -148,6 +151,27 @@ class Search extends Component {
     })
   }
 
+  toggleFilter(option, allowMultiple, facetId){
+    let query = toggleQuery(option, this.props.location.query[facetId], allowMultiple);
+    this.updateQuery({[facetId]: query});
+  }
+
+  suggestionText(){
+    let q = this.state.userEnteredQuery;
+    let matchedPublishers = this.state.filterPublisher.filter(p=>p.matched === true);
+
+    let publisherAllowMultiple = true;
+
+    if(matchedPublishers.length > 0 && defined(q.freeText)){
+      return <span>Are you searching for <strong>{q.freeText}</strong> published by {matchedPublishers.map((p, i)=>
+        <button onClick={this.toggleFilter.bind(this, p, publisherAllowMultiple, 'publishers')} className={`${checkActiveOption(p, this.props.location.query.publishers) ? 'is-active' : ''} btn btn-suggested-option`} key={i}>{p.value} </button>)} ? </span>;
+    }
+    if(defined(q.publishers) && q.publishers.length > 0){
+      return <span>Oh no, we cannot recgonise <strong>{q.publishers.map(p=>p)}</strong></span>;
+    }
+    return null
+  }
+
   render() {
     return (
       <div>
@@ -158,6 +182,9 @@ class Search extends Component {
               <SearchBox searchValue={this.props.location.query.q}
                          updateSearchText={this.updateSearchText}
                          />
+              <div className="col-sm-8 col-sm-offset-4 search-suggestions">
+                {this.suggestionText()}
+              </div>
             </div>
           </div>
           <div className='container search__search-body'>
