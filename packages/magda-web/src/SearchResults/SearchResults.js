@@ -17,6 +17,7 @@ class SearchResults extends Component {
   }
 
   render() {
+    console.log(this.props.searchResults);
     return (
       <div className='search-results'>
         {this.getSummaryText()}
@@ -25,11 +26,12 @@ class SearchResults extends Component {
           this.props.searchResults.map((result, i)=>
             <li key={i} className='search-result'>
             <h3 className='result-title'><a href={result.landingPage}>{result.title}</a></h3>
+            <label className='search-result--publisher'><i className='fa fa-book' aria-hidden='true'></i>{result.publisher.name}</label>
             <p>{this.truncate(result.description)}</p>
             <ul className='list-unstyled tags'>
               {
                 result.keyword.map((tag)=>
-                  <li key={tag} className='badge'>{tag}</li>
+                  <li key={tag} className='search-result--tag'><a href='#'>#{tag}</a></li>
                 )
               }
             </ul>

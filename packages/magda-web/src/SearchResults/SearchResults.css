@@ -18,3 +18,17 @@
   margin: 15px 0;
   text-transform: uppercase;
 }
+
+.search-result--publisher{
+  color: #3498db;
+  font-weight: normal;
+}
+
+.search-result--publisher .fa{
+  padding-right: 5px;
+}
+
+.search-result--tag{
+  display: inline-block;
+  margin-right: 8px;
+}
