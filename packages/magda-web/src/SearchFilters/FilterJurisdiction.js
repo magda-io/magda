@@ -4,25 +4,18 @@ import Filter from './Filter';
 import FilterHeader from './FilterHeader';
 import getJSON from '../getJSON';
 import getJsonp from '../getJsonp';
+import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
+import JurisdictionPopup from './JurisdictionPopup';
 import LocationSearchBox from './LocationSearchBox';
 import React from 'react'
 
 
-let regionTypeOptions =['States',
-                        'Post codes',
-                        'LGAs (Local Goverment Areas)', 
-                        'SA1s (Statistical Areas Level 1)',
-                        'SA2s (Statistical Areas Level 2)',
-                        'SA3s (Statistical Areas Level 3)',
-                        'SA4s (Statistical Areas Level 4)'
-                      ];
+const regionTypeOptions = getRegionTypes();
 
 class FilterJurisdiction extends Filter {
     constructor(props) {
         super(props);
-        this.map = undefined;
-        this.layer = undefined;
         this.closePopUp = this.closePopUp.bind(this);
         this.openPopup = this.openPopup.bind(this);
         this.onFeatureClick = this.onFeatureClick.bind(this);
@@ -32,7 +25,6 @@ class FilterJurisdiction extends Filter {
             popUpIsOpen: false,
             searchText: '',
             locationSearchResults: [],
-            mapData: {},
             locationInfo: undefined,
             activeRegionType: regionTypeOptions[0]
         }
@@ -184,7 +176,8 @@ class FilterJurisdiction extends Filter {
                                                   <div className='col-sm-6'>
                                                       <DropDown options={regionTypeOptions}
                                                                 activeOption={this.state.activeRegionType}
-                                                                select={this.selectRegionType}/>
+                                                                select={this.selectRegionType}
+                                                      />
                                                   </div>
                                                 </div>
                                                 <JurisdictionMap title='jurisdiction'

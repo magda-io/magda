@@ -17,7 +17,6 @@ class SearchResults extends Component {
   }
 
   render() {
-    console.log(this.props.searchResults);
     return (
       <div className='search-results'>
         {this.getSummaryText()}
