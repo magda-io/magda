@@ -9,7 +9,14 @@ import LocationSearchBox from './LocationSearchBox';
 import React from 'react'
 
 
-let regionTypeOptions =['SA1', 'SA2', 'SA3', 'SA4'];
+let regionTypeOptions =['States',
+                        'Post codes',
+                        'LGAs (Local Goverment Areas)', 
+                        'SA1s (Statistical Areas Level 1)',
+                        'SA2s (Statistical Areas Level 2)',
+                        'SA3s (Statistical Areas Level 3)',
+                        'SA4s (Statistical Areas Level 4)'
+                      ];
 
 class FilterJurisdiction extends Filter {
     constructor(props) {

@@ -15,7 +15,7 @@ class SearchFilters extends Component {
                                location={this.props.location}
                                updateQuery={this.props.updateQuery}/>
 
-              <FilterJurisdiction title='jurisdiction'
+              <FilterJurisdiction title='location'
                                   id='jurisdiction'
                                   location={this.props.location}
                                   updateQuery={this.props.updateQuery}/>
