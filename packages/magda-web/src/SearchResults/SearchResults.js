@@ -31,7 +31,7 @@ class SearchResults extends Component {
             <ul className='list-unstyled tags'>
               {
                 result.keyword.map((tag)=>
-                  <li key={tag} className='search-result--tag'><a href='#'>#{tag}</a></li>
+                  <li key={tag} className='search-result--tag'><a href={`/?q=${tag}`}>#{tag}</a></li>
                 )
               }
             </ul>
