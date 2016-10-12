@@ -6,6 +6,7 @@ import L from 'leaflet';
 // eslint-disable-next-line
 import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.js';
 import regions from '../dummyData/regions';
+import defined from '../defined';
 import React from 'react';
 
 class JurisdictionMap extends Filter {
@@ -71,19 +72,21 @@ class JurisdictionMap extends Filter {
         let region = regions()[regionType];
         this.getID = function(feature) { return feature.properties[region.id];};
 
-        this.layer = new L.TileLayer.MVTSource({
-            url: region.url,
-            style: this.generateStyle(this.props.location.query.jurisdiction),
-            hoverInteraction: this.props.interaction,
-            /*onEachFeature: onEachFeature, */
-            clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
-            mutexToggle: true,
-            onClick: function(evt) { if (evt.type === 'click' && evt.feature){
-                that.props.onClick(evt.feature.properties[region.id], regionType);
-            }},
-            getIDForLayerFeature: this.getID
-        });
-        this.layer.addTo(this.map);
+        if(defined(region)){
+          this.layer = new L.TileLayer.MVTSource({
+              url: region.url,
+              style: this.generateStyle(this.props.location.query.jurisdiction),
+              hoverInteraction: this.props.interaction,
+              /*onEachFeature: onEachFeature, */
+              clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
+              mutexToggle: true,
+              onClick: function(evt) { if (evt.type === 'click' && evt.feature){
+                  that.props.onClick(evt.feature.properties[region.id], regionType);
+              }},
+              getIDForLayerFeature: this.getID
+          });
+          this.layer.addTo(this.map);
+        }
     }
 
     componentWillUnmount(){

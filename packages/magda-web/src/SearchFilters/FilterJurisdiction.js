@@ -4,6 +4,7 @@ import Filter from './Filter';
 import FilterHeader from './FilterHeader';
 import getJSON from '../getJSON';
 import getJsonp from '../getJsonp';
+import defined from '../defined';
 import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
 import JurisdictionPopup from './JurisdictionPopup';
@@ -63,7 +64,7 @@ class FilterJurisdiction extends Filter {
         });
     }
 
-    toggleFilter(option){
+    toggleFilter(option, callback){
         this.props.updateQuery({
             jurisdiction: option.suggestion.code,
             jurisdictionType: option.suggestion.type
@@ -72,6 +73,10 @@ class FilterJurisdiction extends Filter {
         this.setState({
             locationInfo: option.suggestion,
         });
+
+        if(defined(callback) && typeof callback ==='function'){
+          callback();
+        }
     }
 
     onFeatureClick(evt, regionType){
@@ -108,13 +113,13 @@ class FilterJurisdiction extends Filter {
         };
 
         if(jurisdiction && jurisdictionType){
-          getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
-            if(data.results && data.results.length > 0 ){
-              this.setState({
-                  locationInfo: data.results[0]
-              });
-            }
-          }, error =>{console.log(error)});
+          // getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
+          //   if(data.results && data.results.length > 0 ){
+          //     this.setState({
+          //         locationInfo: data.results[0]
+          //     });
+          //   }
+          // }, error =>{console.log(error)});
         }
     }
 
@@ -153,6 +158,7 @@ class FilterJurisdiction extends Filter {
                                                             locationInfo={this.state.locationInfo}
                                                             location={this.props.location}
                                                             closePopUp={this.closePopUp}
+                                                            toggleFilter={this.toggleFilter}
                                                             searchLocation ={this.searchLocation}
                                                             />}
               <div className='jurisdiction-summray'>

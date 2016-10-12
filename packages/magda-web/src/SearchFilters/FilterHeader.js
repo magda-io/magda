@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 class FilterHeader extends Component {
 
   hasQuery(query){
+    // Note: need to be able to handle multiple query
     if (query == null){
       return false;
     }

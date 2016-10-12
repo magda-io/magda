@@ -33,10 +33,6 @@ class JurisdictionPopup extends Filter {
     }
 
 
-    toggleFilter(option){
-
-    }
-
     clearSearch(){
       this.setState({
           searchText: ''
@@ -47,6 +43,10 @@ class JurisdictionPopup extends Filter {
       this.setState({
         activeRegionType: regionType
       })
+
+      this.props.updateQuery({
+          jurisdictionType: regionType
+      });
     }
     render(){
         return (
@@ -63,7 +63,7 @@ class JurisdictionPopup extends Filter {
                   <div className='popup-tools row'>
                     <div className='col-sm-6'>
                         <LocationSearchBox options={this.props.locationSearchResults}
-                                           toggleFilter={this.toggleFilter}
+                                           toggleFilter={this.props.toggleFilter}
                                            searchText={this.state.searchText}
                                            clearSearch={this.clearSearch}
                                            searchLocation={this.props.searchLocation}
@@ -71,7 +71,7 @@ class JurisdictionPopup extends Filter {
                     </div>
                     <div className='col-sm-6'>
                         <DropDown options={regionTypeOptions}
-                                  activeOption={this.state.activeRegionType}
+                                  activeOption={this.props.location.query.jurisdictionType || regionTypeOptions[0] }
                                   select={this.selectRegionType}
                         />
                     </div>

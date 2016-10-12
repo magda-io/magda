@@ -7,8 +7,6 @@ class LocationSearchBox extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
     this.renderCondition = this.renderCondition.bind(this);
-    this.toggleFilter= this.toggleFilter.bind(this);
-
     this.state ={
       searchText: ''
     }
@@ -29,22 +27,19 @@ class LocationSearchBox extends Component {
 
   renderCondition(option){
     let result = option.suggestion;
+    let callback = this.clearSearch;
+
     if(!result){
       return null;
     }
     return (
           <button type='button'
                   className='btn location-search-btn'
-                  onClick={this.toggleFilter.bind(this, option, true)}
+                  onClick={this.props.toggleFilter.bind(this, option, callback)}
                   title={option.name}>
             <span>{result.geographyLabel} , {result.stateLabel}</span>
             <span>{result.typeLabel} {result.type}</span>
           </button>);
-  }
-
-  toggleFilter(option){
-    this.props.clearSearch();
-    this.props.toggleFilter(option);
   }
 
   render(){
@@ -65,7 +60,7 @@ class LocationSearchBox extends Component {
           {this.state.searchText.length > 0 &&
             <div className='filtered-options'>
               {this.state.searchText.length > 0 && this.props.options.map((option, i)=>
-                  <div key={i}>{this.renderCondition(option, true)}</div>
+                  <div key={i}>{this.renderCondition(option)}</div>
               )}
             </div>
           }

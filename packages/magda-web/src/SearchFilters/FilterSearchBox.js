@@ -51,7 +51,7 @@ class FilterSearchBox extends Component {
           {this.state.searchText.length > 0 &&
             <ul className='filtered-options list-unstyled'>
               {this.props.options.map((option, i)=>
-                  <li key={i}>{this.props.renderCondition(option, true, this.callback)}</li>
+                  <li key={i}>{this.props.renderCondition(option, null, this.callback)}</li>
               )}
             </ul>
           }
