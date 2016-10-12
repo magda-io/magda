@@ -16,17 +16,19 @@ const regionTypeOptions = getRegionTypes();
 class FilterJurisdiction extends Filter {
     constructor(props) {
         super(props);
-        this.closePopUp = this.closePopUp.bind(this);
         this.openPopup = this.openPopup.bind(this);
+        this.closePopUp = this.closePopUp.bind(this);
         this.onFeatureClick = this.onFeatureClick.bind(this);
         this.getLocationInfo = this.getLocationInfo.bind(this);
-        this.selectRegionType = this.selectRegionType.bind(this);
+        this.searchLocation = this.searchLocation.bind(this);
+
         this.state={
             popUpIsOpen: false,
             searchText: '',
             locationSearchResults: [],
             locationInfo: undefined,
-            activeRegionType: regionTypeOptions[0]
+            activeRegionType: regionTypeOptions[0],
+            popupSearchText: ''
         }
     }
 
@@ -34,18 +36,13 @@ class FilterJurisdiction extends Filter {
         this.getLocationInfo();
     }
 
-    handleChange(e){
-        this.setState({
-            searchText: e.target.value
-        });
-
-        getJsonp(`http://www.censusdata.abs.gov.au/census_services/search?query=${e.target.value || ' '}&cycle=2011&results=15&type=jsonp&cb=`).then(data=>{
+    searchLocation(text){
+        getJsonp(`http://www.censusdata.abs.gov.au/census_services/search?query=${text || ' '}&cycle=2011&results=15&type=jsonp&cb=`).then(data=>{
             this.setState({
                 locationSearchResults: data
             });
         }, error =>{console.log(error)});
     }
-
 
     openPopup(){
         this.setState({
@@ -129,8 +126,6 @@ class FilterJurisdiction extends Filter {
 
 
     render(){
-
-
         return (
             <div className='filter jurisdiction'>
               <FilterHeader query={this.props.location.query[this.props.id]}
@@ -139,9 +134,7 @@ class FilterJurisdiction extends Filter {
 
               <LocationSearchBox options={this.state.locationSearchResults}
                                  toggleFilter={this.toggleFilter}
-                                 searchText={this.state.searchText}
-                                 clearSearch={this.clearSearch}
-                                 handleChange={this.handleChange}
+                                 searchLocation={this.searchLocation}
               />
               <div className='preview'>
                     <JurisdictionMap title='jurisdiction'
@@ -154,42 +147,14 @@ class FilterJurisdiction extends Filter {
                     />
               </div>
 
-              {this.state.popUpIsOpen && <div className='popup'>
-                                            <div className='popup-inner'>
-                                                <div className='popup-header row'>
-                                                  <div className='col-xs-11'>
-                                                    <h4 className='filter-title'>Location</h4>
-                                                  </div>
-                                                  <div className='col-xs-1'>
-                                                    <button className='btn' onClick={this.closePopUp}><i className='fa fa-times' aria-hidden='true'></i></button>
-                                                  </div>
-                                                </div>
-                                                <div className='popup-tools row'>
-                                                  <div className='col-sm-6'>
-                                                      <LocationSearchBox options={this.state.locationSearchResults}
-                                                                         toggleFilter={this.toggleFilter}
-                                                                         searchText={this.state.searchText}
-                                                                         clearSearch={this.clearSearch}
-                                                                         handleChange={this.handleChange}
-                                                      />
-                                                  </div>
-                                                  <div className='col-sm-6'>
-                                                      <DropDown options={regionTypeOptions}
-                                                                activeOption={this.state.activeRegionType}
-                                                                select={this.selectRegionType}
-                                                      />
-                                                  </div>
-                                                </div>
-                                                <JurisdictionMap title='jurisdiction'
-                                                                 id='jurisdiction'
-                                                                 location={this.props.location}
-                                                                 updateQuery={this.props.updateQuery}
-                                                                 onClick={this.onFeatureClick}
-                                                                 interaction={true}
-                                                                 locationInfo={this.state.locationInfo}
-                                                />
-                                            </div>
-                                            </div>}
+              {this.state.popUpIsOpen && <JurisdictionPopup locationSearchResults={this.state.locationSearchResults}
+                                                            updateQuery={this.props.updateQuery}
+                                                            onFeatureClick= {this.props.onFeatureClick}
+                                                            locationInfo={this.state.locationInfo}
+                                                            location={this.props.location}
+                                                            closePopUp={this.closePopUp}
+                                                            searchLocation ={this.searchLocation}
+                                                            />}
               <div className='jurisdiction-summray'>
                 {this.getLocationInfoInPlainText()}
               </div>

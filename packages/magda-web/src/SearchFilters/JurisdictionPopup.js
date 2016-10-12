@@ -18,27 +18,29 @@ class JurisdictionPopup extends Filter {
             searchText: '',
             locationInfo: undefined,
         }
+        this.selectRegionType = this.selectRegionType.bind(this);
+        this.clearSearch = this.clearSearch.bind(this);
     }
 
     componentWillMount(){
-        this.getLocationInfo();
+
     }
 
     handleChange(e){
         this.setState({
             searchText: e.target.value
         });
-
-
     }
 
-
-    closePopUp(){
-
-    }
 
     toggleFilter(option){
 
+    }
+
+    clearSearch(){
+      this.setState({
+          searchText: ''
+      });
     }
 
     selectRegionType(regionType){
@@ -46,8 +48,6 @@ class JurisdictionPopup extends Filter {
         activeRegionType: regionType
       })
     }
-
-
     render(){
         return (
             <div className='popup'>
@@ -57,7 +57,7 @@ class JurisdictionPopup extends Filter {
                       <h4 className='filter-title'>Location</h4>
                     </div>
                     <div className='col-xs-1'>
-                      <button className='btn' onClick={this.closePopUp}><i className='fa fa-times' aria-hidden='true'></i></button>
+                      <button className='btn' onClick={()=>this.props.closePopUp()}><i className='fa fa-times' aria-hidden='true'></i></button>
                     </div>
                   </div>
                   <div className='popup-tools row'>
@@ -65,8 +65,8 @@ class JurisdictionPopup extends Filter {
                         <LocationSearchBox options={this.props.locationSearchResults}
                                            toggleFilter={this.toggleFilter}
                                            searchText={this.state.searchText}
-                                           clearSearch={this.props.clearSearch}
-                                           handleChange={this.handleChange}
+                                           clearSearch={this.clearSearch}
+                                           searchLocation={this.props.searchLocation}
                         />
                     </div>
                     <div className='col-sm-6'>

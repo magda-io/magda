@@ -16,16 +16,16 @@ class Filter extends Component {
     this.state={
       searchText: '',
       isOpen: false,
-      allOptions: [],
+      options: [],
       loadingProgress: 0
     }
-    this.handleChange = this.handleChange.bind(this);
+    this.searchFilter = this.searchFilter.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
     this.renderCondition = this.renderCondition.bind(this);
     this.resetFilter = this.resetFilter.bind(this);
     this.toggleFilter= this.toggleFilter.bind(this);
     this.toggleOpen = this.toggleOpen.bind(this);
-    this.getAllOptions = this.getAllOptions.bind(this);
+    this.searchFromAllOptions = this.searchFromAllOptions.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
 
   }
@@ -38,18 +38,19 @@ class Filter extends Component {
     })
   }
 
-  handleChange(e){
+  searchFilter(searchText){
     this.setState({
-      searchText: e.target.value,
       loadingProgress: 0
     });
-    this.getAllOptions();
+    this.searchFromAllOptions(searchText);
   }
 
-  toggleFilter(option, allowMultiple){
+  toggleFilter(option, allowMultiple, callback){
     let query = toggleQuery(option, this.props.location.query[this.props.id], allowMultiple);
     this.props.updateQuery({[this.props.id]: query});
-    this.clearSearch();
+    if(defined(callback) && typeof callback ==='function'){
+      callback();
+    }
   }
 
   resetFilter(){
@@ -68,16 +69,24 @@ class Filter extends Component {
     })
   }
 
-  getAllOptions(){
+  searchFromAllOptions(searchText){
     let keyword = this.props.location.query.q.split(' ').join('+');
     let facet = this.props.id.replace(/s+$/, "");
     // needs to use [this.props.id] when format facet is ready
     getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/facets/${facet}/options/search?query=${keyword}`,
        this.updateProgress
      ).then((data)=>{
+       let filteredOptions = this.state.options;
+      data.options.forEach((c)=>{
+        if(c.value.toLowerCase().indexOf(searchText.toLowerCase())!==-1){
+          filteredOptions.push(c);
+        }
+      });
+
       this.setState({
-        allOptions: data.options,
+        options: filteredOptions
       })
+
     }, (err)=>{console.warn(err)});
   }
 
@@ -92,7 +101,7 @@ class Filter extends Component {
     }
   }
 
-  renderCondition(option, optionMax){
+  renderCondition(option, optionMax, callback){
     let allowMultiple = true;
 
     if(!option){
@@ -102,7 +111,7 @@ class Filter extends Component {
     let divStyle = {width: maxWidth + 'px'}
 
     return(
-    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`} onClick={this.toggleFilter.bind(this, option, allowMultiple)}>
+    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`} onClick={this.toggleFilter.bind(this, option, allowMultiple, callback)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-${this.checkActiveOption(option) ? 'times' : 'plus'}`}/></span>
@@ -161,12 +170,12 @@ class Filter extends Component {
 
         <FilterSearchBox allowMultiple={true}
                          clearSearch={this.clearSearch}
-                         handleChange={this.handleChange}
+                         searchFilter={this.searchFilter}
                          loadingProgress={this.state.loadingProgress}
                          renderCondition={this.renderCondition}
                          searchText={this.state.searchText}
                          toggleFilter={this.toggleFilter}
-                         options={this.state.allOptions}
+                         options={this.state.options}
 
         />
 

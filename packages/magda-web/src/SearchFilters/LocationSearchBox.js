@@ -8,14 +8,23 @@ class LocationSearchBox extends Component {
     this.clearSearch = this.clearSearch.bind(this);
     this.renderCondition = this.renderCondition.bind(this);
     this.toggleFilter= this.toggleFilter.bind(this);
+
+    this.state ={
+      searchText: ''
+    }
   }
 
   handleChange(e){
-    this.props.handleChange(e);
+    this.setState({
+      searchText: e.target.value
+    })
+    this.props.searchLocation(e.target.value);
   }
 
   clearSearch(){
-    this.props.clearSearch();
+    this.setState({
+      searchText: ''
+    })
   }
 
   renderCondition(option){
@@ -45,17 +54,17 @@ class LocationSearchBox extends Component {
             <i className="fa fa-search search-icon" aria-hidden="true"></i>
             <input className='form-control'
                    type="text"
-                   value={this.props.searchText}
+                   value={this.state.searchText}
                    onChange={this.handleChange}
                    />
-            {this.props.searchText.length > 0 &&
+            {this.state.searchText.length > 0 &&
               <button type='button' className='btn btn-clear-search' onClick={this.clearSearch}>
                 <i className="fa fa-times" aria-hidden="true"></i>
               </button>}
           </form>
-          {this.props.searchText.length > 0 &&
+          {this.state.searchText.length > 0 &&
             <div className='filtered-options'>
-              {this.props.searchText.length > 0 && this.props.options.map((option, i)=>
+              {this.state.searchText.length > 0 && this.props.options.map((option, i)=>
                   <div key={i}>{this.renderCondition(option, true)}</div>
               )}
             </div>
@@ -68,7 +77,7 @@ LocationSearchBox.propTypes = {options: React.PropTypes.array,
                                toggleFilter: React.PropTypes.func,
                                searchText:React.PropTypes.string,
                                clearSearch: React.PropTypes.func,
-                               handleChange: React.PropTypes.func,
+                               searchLocation: React.PropTypes.func,
                                allowMultiple: React.PropTypes.bool};
 LocationSearchBox.defaultProps = {options: [], allowMultiple: false};
 
