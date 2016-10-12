@@ -1,33 +1,26 @@
 package au.csiro.data61.magda.crawler
 
-import java.net.URL
-
-import scala.util.Failure
-import scala.util.Success
-
-import akka.actor.Actor
-import akka.actor.ActorRef
-import au.csiro.data61.magda.model.temporal._
-import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.misc.Protocols._
-import au.csiro.data61.magda.search.SearchProvider
+import akka.actor.{ Actor, ActorLogging, ActorRef }
 import akka.stream.ActorMaterializer
-import akka.actor.ActorLogging
+import au.csiro.data61.magda.search.SearchProvider
+import au.csiro.data61.magda.spatial.RegionSource
+
+import scala.util.{ Failure, Success }
 
 /**
  * @author Foat Akhmadeev
  *         17/01/16
  */
-class Indexer(supervisor: ActorRef) extends Actor with ActorLogging {
+class Indexer(supervisor: ActorRef, regionSources: Seq[RegionSource]) extends Actor with ActorLogging {
   implicit val ec = context.dispatcher
   implicit val system = context.system
   implicit val materializer = ActorMaterializer.create(context)
-  val searchProvider: SearchProvider = SearchProvider()
+  val searchProvider: SearchProvider = SearchProvider(regionSources)
 
   // On startup, check that the index isn't empty (as it would be on first boot or after an index schema upgrade)
   searchProvider.needsReindexing().onComplete {
     case Success(needsReindexing) => needsReindexing match {
-      case true  => supervisor ! NeedsReIndexing
+      case true => supervisor ! NeedsReIndexing
       case false => // Index isn't empty so it's all good :) 
     }
     case Failure(e) => {
@@ -38,7 +31,7 @@ class Indexer(supervisor: ActorRef) extends Actor with ActorLogging {
   def receive: Receive = {
     case Index(source, dataSets) =>
       searchProvider.index(source, dataSets) onComplete {
-        case Success(_)      => supervisor ! IndexFinished(dataSets, source)
+        case Success(_) => supervisor ! IndexFinished(dataSets, source)
         case Failure(reason) => supervisor ! IndexFailed(source, reason)
       }
   }

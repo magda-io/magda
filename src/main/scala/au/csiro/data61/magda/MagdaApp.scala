@@ -1,27 +1,16 @@
 
 package au.csiro.data61.magda
 
-import scala.concurrent.ExecutionContextExecutor
-
-import collection.JavaConversions._
-import akka.actor.Actor
-import akka.actor.ActorLogging
-import akka.actor.ActorSystem
-import akka.actor.DeadLetter
-import akka.actor.Props
+import akka.actor.{ Actor, ActorLogging, ActorSystem, DeadLetter, Props }
 import akka.event.Logging
-import akka.event.LoggingAdapter
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import akka.stream.Materializer
 import au.csiro.data61.magda.api.Api
-import au.csiro.data61.magda.crawler.ScrapeAll
 import au.csiro.data61.magda.crawler.Supervisor
 import au.csiro.data61.magda.external.InterfaceConfig
-import com.typesafe.config.ConfigValue
-import com.typesafe.config.ConfigObject
+import au.csiro.data61.magda.spatial.RegionSource
+import com.typesafe.config.{ ConfigObject, ConfigValue }
+
+import scala.collection.JavaConversions._
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
@@ -40,12 +29,14 @@ object MagdaApp extends App {
     case (name: String, serviceConfig: ConfigValue) =>
       InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)
   }.toSeq
-  val supervisor = system.actorOf(Props(new Supervisor(system, config, interfaceConfigs)))
+  val regionSources = RegionSource.loadFromConfig(config.atKey("regionSources"))
+
+  val supervisor = system.actorOf(Props(new Supervisor(system, config, interfaceConfigs, regionSources)))
 
   // Index erryday 
   //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
 
-  val api = new Api()
+  val api = new Api(regionSources)
 }
 
 class Listener extends Actor with ActorLogging {

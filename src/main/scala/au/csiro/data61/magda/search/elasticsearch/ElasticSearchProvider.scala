@@ -12,7 +12,6 @@ import scala.util.Success
 import scala.util.Failure
 import scala.concurrent.duration._
 import scala.concurrent.Await
-
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
@@ -21,7 +20,6 @@ import com.sksamuel.elastic4s.AbstractAggregationDefinition
 import com.sksamuel.elastic4s.IndexAndTypes.apply
 import com.sksamuel.elastic4s.IndexesAndTypes.apply
 import com.sksamuel.elastic4s.analyzers._
-
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval
 import org.elasticsearch.search.aggregations.bucket.terms._
 import org.elasticsearch.search.aggregations.Aggregation
@@ -32,7 +30,6 @@ import org.elasticsearch.client.transport.NoNodeAvailableException
 import org.elasticsearch.transport.RemoteTransportException
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
 import org.elasticsearch.search.aggregations.InvalidAggregationPathException
-
 import au.csiro.data61.magda.search.SearchProvider
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.model.temporal._
@@ -42,7 +39,6 @@ import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.util.FutureRetry.retry
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.search.elasticsearch.IndexedGeoShapeQueryDefinition._
-
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.EntityStreamingSupport
@@ -53,17 +49,16 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.FileIO
 import akka.stream.ThrottleMode
 import akka.util.ByteString
-
 import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
-
 import jawn.ast.JValue
-
 import java.time._
 import java.io.File
 import java.nio.file.Paths
+
+import au.csiro.data61.magda.spatial.RegionSource
 import org.elasticsearch.common.geo.ShapeRelation
 
-class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
+class ElasticSearchProvider(regionSources: Seq[RegionSource], implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val INDEX_VERSION = 7
   val logger = Logging(system, getClass)
 
@@ -82,9 +77,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       needsFilterAgg = query => !query.publishers.isEmpty,
       filterAggDef = (limit, query) =>
         should(
-          query.publishers.map(publisherQuery(_))
-        ).minimumShouldMatch(1)
-    ),
+          query.publishers.map(publisherQuery(_))).minimumShouldMatch(1)),
 
     misc.Year -> FacetDefinition(
       aggDef = (limit) => aggregation.terms(misc.Year.id).field("years").order(Order.term(false)).size(limit),
@@ -94,8 +87,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         val toQuery = query.dateTo.map(dateToQuery(_))
 
         Seq(fromQuery, toQuery).filter(_.isDefined).map(_.get)
-      }
-    ),
+      }),
 
     Format -> FacetDefinition(
       aggDef = (limit) => aggregation nested Format.id path "distributions" aggregations {
@@ -105,16 +97,12 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       needsFilterAgg = query => !query.formats.isEmpty,
       filterAggDef = (limit, query) =>
         should(
-          query.formats.map(formatQuery(_))
-        ).minimumShouldMatch(1),
+          query.formats.map(formatQuery(_))).minimumShouldMatch(1),
       filterAggFilter = query => filterOption => query.formats.exists(
         format => WeightedLevenshteinMetric(10, 0.1, 1).compare(format.toLowerCase, filterOption.value.toLowerCase) match {
           case Some(distance) => distance < 1.5
-          case None           => false
-        }
-      )
-    )
-  )
+          case None => false
+        })))
 
   /**
    * Returns an initialised {@link ElasticClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
@@ -181,38 +169,27 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         mapping("datasets").fields(
           field("temporal").inner(
             field("start").inner(
-              field("text").typed(StringType)
-            ),
+              field("text").typed(StringType)),
             field("end").inner(
-              field("text").typed(StringType)
-            )
-          ),
+              field("text").typed(StringType))),
           field("publisher").inner(
             field("name").typed(StringType).fields(
-              field("untouched").typed(StringType).index("not_analyzed")
-            )
-          ),
+              field("untouched").typed(StringType).index("not_analyzed"))),
           field("distributions").nested(
             field("format").typed(StringType).fields(
-              field("untokenized").typed(StringType).analyzer("untokenized")
-            )
-          ),
+              field("untokenized").typed(StringType).analyzer("untokenized"))),
           field("spatial").inner(
-            field("geoJson").typed(GeoShapeType)
-          )
-        ),
+            field("geoJson").typed(GeoShapeType))),
         mapping(Format.id),
         mapping(misc.Year.id),
-        mapping(Format.id),
+        mapping(Publisher.id),
         mapping("regions").fields(
-          field("geometry").typed(GeoShapeType)
-        )
-      ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+          field("geometry").typed(GeoShapeType))).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
     } flatMap { _ =>
       logger.info("Index created")
 
       // Create ABS regions 
-      loadABSRegions(client).map { results =>
+      RegionLoader.loadABSRegions(client).map { results =>
         val failures = results.filter(_.hasFailures)
 
         if (failures.size > 0) {
@@ -230,49 +207,15 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     }
   }
 
-  /**
-   * Reads the ABS regions in from a gigantic (165mb!!) GeoJSON file that we download as part of the build, and indexes them into ES
-   */
-  def loadABSRegions(client: ElasticClient): Future[Seq[BulkResult]] = {
-    // We use Jawn for this because it has a streaming parser, and holding all the parsed regions in memory tends to overflow the heap.
-    import jawn.ast
-    import jawn.AsyncParser
-    import jawn.ParseException
-
-    val parser = ast.JParser.async(mode = AsyncParser.UnwrapArray)
-
-    // This should be here as a result of a task in build.sbt - it's stored on S3 rather than in git because it's huge.
-    val url = getClass.getResource("/regions.geojson")
-
-    // Here we use an akka stream to read the file chunk by chunk and pass it down the stream to the parser.
-    val fileSource = FileIO.fromPath(Paths.get(url.toURI))
-    val parseResult = fileSource
-      // If reading gets ahead of parsing, this batches the bytes read into 800kb chunks
-      .batch(100, x => x)(_ ++ _)
-      // Parse the incoming byte chunks, pass through any complete json objects that are returned
-      .map(st => parser.absorb(st.toByteBuffer) match {
-        case Right(js) =>
-          js
-        case Left(e) =>
-          throw e
-      })
-      // Sometimes a chunk of the file won't contain any complete objects and the result is an empty seq - filter those.
-      .filter { values => !values.isEmpty }
-      // Only do give one operation to elasticsearch at a time, otherwise we risk overflowing its op queue. Operations that build up
-      // while a previous one in progress will be batched together and bulk-executed when the previous one completes, up to 10... anything
-      // more than that will keep backpressuring right up to the file reader.
-      .batch(10, x => x)(_ ++ _)
-      .mapAsync(1)(values =>
-        client.execute(bulk(values.map({ j =>
-          ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11").asString source j.render()
-        })))
-      )
-      // Finally the end result of all this streaming is a seq of futures representing all our ES calls
-      .runWith(Sink.seq)
-
-    // Create a future that will resolve when every index operation has resolved.
-    parseResult
-  }
+  // Only do give one operation to elasticsearch at a time, otherwise we risk overflowing its op queue. Operations that build up
+  // while a previous one in progress will be batched together and bulk-executed when the previous one completes, up to 10... anything
+  // more than that will keep backpressuring right up to the file reader.
+  //      .batch(10, x => x)(_ ++ _)
+  //      .mapAsync(1)(values =>
+  //        client.execute(bulk(values.map({ j =>
+  //          ElasticDsl.index into ("magda" / "regions") id j.get("properties").get("SLA_CODE11").asString source j.render()
+  //        })))
+  //      )
 
   def getYears(from: Option[Instant], to: Option[Instant]): List[String] = {
     def getYearsInner(from: LocalDate, to: LocalDate): List[String] =
@@ -300,8 +243,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       } map { result =>
         logger.debug("Reindex check hit count: {}", result.getHits.getTotalHits)
         result.getHits.getTotalHits == 0
-      }
-    )
+      })
   }
 
   override def index(source: String, dataSets: List[DataSet]) = {
@@ -312,22 +254,18 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
             val indexDataSet = ElasticDsl.index into "magda" / "datasets" id dataSet.uniqueId source (
               dataSet.copy(
                 years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
-                  case Nil  => None
+                  case Nil => None
                   case list => Some(list)
-                }
-              ).toJson
-            )
+                }).toJson)
 
             val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
               ElasticDsl.index into "magda" / Publisher.id
                 id publisherName.toLowerCase
-                source Map("value" -> publisherName).toJson
-            ))
+                source Map("value" -> publisherName).toJson))
 
             val indexYears = getYears(
               dataSet.temporal.flatMap(_.start.flatMap(_.date)),
-              dataSet.temporal.flatMap(_.end.flatMap(_.date))
-            ).map(year => ElasticDsl.index into "magda" / misc.Year.id id year source Map("value" -> year).toJson)
+              dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "magda" / misc.Year.id id year source Map("value" -> year).toJson)
 
             val indexFormats = dataSet.distributions.map(_.filter(_.format.isDefined).map { distribution =>
               val format = distribution.format.get
@@ -336,10 +274,8 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
             }).getOrElse(Nil)
 
             indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
-          }.flatten
-        )
-      }
-    )
+          }.flatten)
+      })
   }
 
   override def search(query: Query, limit: Int) = {
@@ -359,7 +295,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
               options = {
                 val filteredOptions = (aggsMap.get(facetType.id + "-filter") match {
                   case Some(filterAgg) => definition.getFacetDetails(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-                  case None            => Nil
+                  case None => Nil
                 })
                   .filter(definition.filterAggFilter(query))
                   .map(_.copy(matched = Some(true)))
@@ -373,12 +309,9 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
                   .distinct
                   .map(lookup.get(_).get.head)
                   .take(10)
-              }
-            )
-          }.toSeq)
-        )
-      }
-    )
+              })
+          }.toSeq))
+      })
   }
 
   def addAggregations(searchDef: SearchDefinition, query: Query) = {
@@ -386,65 +319,58 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       facetAggregations.flatMap {
         case (facetType, facetAgg) => {
           val aggregations = List(
-            aggregation.filter(facetType.id).filter(getFilterQueryDef(facetType, query)).aggs(facetAgg.aggDef(10))
-          )
+            aggregation.filter(facetType.id).filter(getFilterQueryDef(facetType, query)).aggs(facetAgg.aggDef(10)))
 
           if (facetAgg.needsFilterAgg(query)) {
             val filterAggregation = aggregation.filter(facetType.id + "-filter")
               .filter(
-                facetAgg.filterAggDef(10, query)
-              ).aggs(facetAgg.aggDef(10))
+                facetAgg.filterAggDef(10, query)).aggs(facetAgg.aggDef(10))
 
             filterAggregation :: aggregations
           } else aggregations
         }
-      }
-    )
+      })
   }
 
   def getFilterQueryDef(facetType: FacetType, query: Query): BoolQueryDefinition = queryToQueryDef(
     facetType match {
       case misc.Year => query.copy(dateFrom = None, dateTo = None)
-      case Format    => query.copy(formats = Nil)
+      case Format => query.copy(formats = Nil)
       case Publisher => query.copy(publishers = Nil)
-    }
-  )
+    })
 
   /**
    * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.
    */
   def seqToOption[X, Y](seq: Seq[X])(fn: Seq[X] => Y): Option[Y] = seq match {
     case Nil => None
-    case x   => Some(fn(x))
+    case x => Some(fn(x))
   }
 
   private def publisherQuery(publisher: String) = matchPhraseQuery("publisher.name", publisher)
   private def formatQuery(format: String) = nestedQuery("distributions").query(
-    matchQuery("distributions.format", format)
-  )
+    matchQuery("distributions.format", format))
   private def regionIdQuery(regionId: String) = indexedGeoShapeQuery("spatial.geoJson", regionId, "regions")
     .relation(ShapeRelation.INTERSECTS)
     .shapeIndex("magda")
     .shapePath("geometry")
   private def dateFromQuery(dateFrom: Instant) = filter(should(
     rangeQuery("temporal.end.date").gte(dateFrom.toString),
-    rangeQuery("temporal.start.date").gte(dateFrom.toString)
-  ).minimumShouldMatch(1))
+    rangeQuery("temporal.start.date").gte(dateFrom.toString)).minimumShouldMatch(1))
   private def dateToQuery(dateTo: Instant) = filter(should(
     rangeQuery("temporal.end.date").lte(dateTo.toString),
-    rangeQuery("temporal.start.date").lte(dateTo.toString)
-  ).minimumShouldMatch(1))
+    rangeQuery("temporal.start.date").lte(dateTo.toString)).minimumShouldMatch(1))
 
   def queryToQueryDef(query: Query): BoolQueryDefinition = {
     val processedQuote = query.quotes.map(quote => s"""${quote}""") match {
       case Nil => None
-      case xs  => Some(xs.reduce(_ + " " + _))
+      case xs => Some(xs.reduce(_ + " " + _))
     }
 
     val stringQuery: Option[String] = (query.freeText, processedQuote) match {
-      case (None, None)       => None
-      case (None, some)       => some
-      case (some, None)       => some
+      case (None, None) => None
+      case (None, some) => some
+      case (some, None) => some
       case (freeText, quotes) => Some(freeText + " " + quotes)
     }
 
@@ -454,8 +380,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       seqToOption(query.formats)(seq => should(seq.map(formatQuery))),
       query.dateFrom.map(dateFromQuery),
       query.dateTo.map(dateToQuery),
-      seqToOption(query.regions)(seq => should(seq.map(regionIdQuery)))
-    )
+      seqToOption(query.regions)(seq => should(seq.map(regionIdQuery))))
 
     should(shouldClauses.filter(_.isDefined).map(_.get))
   }
@@ -473,10 +398,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
           hitCount = response.getHits.totalHits.toInt,
           // TODO: Maybe return more meaningful data?
           options = response.hits.toList.map(hit => new FacetOption(
-            value = hit.getSource.get("value").toString
-          ))
-        )
-      }
-    )
+            value = hit.getSource.get("value").toString)))
+      })
   }
 }

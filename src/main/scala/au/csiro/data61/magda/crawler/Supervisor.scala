@@ -1,21 +1,16 @@
 package au.csiro.data61.magda.crawler
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import java.net.URL
-import akka.actor.{ Actor, ActorSystem, Props, _ }
-import scala.language.postfixOps
-import au.csiro.data61.magda.crawler._
-import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType.ExternalInterfaceType
-import akka.event.Logging
-import au.csiro.data61.magda.api.Api
-import com.typesafe.config.Config
-import akka.stream.ActorMaterializer
-import au.csiro.data61.magda.external.InterfaceConfig
 
-class Supervisor(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig]) extends Actor with ActorLogging {
-  val indexer = context actorOf Props(new Indexer(self))
+import akka.actor.{ Actor, ActorSystem, Props, _ }
+import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.spatial.RegionSource
+import com.typesafe.config.Config
+
+import scala.language.postfixOps
+
+class Supervisor(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig], regionSources: Seq[RegionSource]) extends Actor with ActorLogging {
+  val indexer = context actorOf Props(new Indexer(self, regionSources))
   val host2Actor: Map[URL, ActorRef] = externalInterfaces
     .groupBy(_.baseUrl)
     .mapValues(interfaceConfig => system.actorOf(Props(new RepoCrawler(self, indexer, interfaceConfig.head))))

@@ -36,11 +36,12 @@ import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 
-class Api(implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends misc.Protocols with CorsDirectives {
+class Api(searchProvider: SearchProvider, implicit val config: Config, implicit val system: ActorSystem,
+          implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends misc.Protocols with CorsDirectives {
   val logger = Logging(system, getClass)
 
   implicit def rejectionHandler = RejectionHandler.newBuilder()
-    .handleAll[MethodRejection] { rejections =>
+    .handleAll[MethodRejection] { rejections ⇒
       val methods = rejections map (_.supported)
       lazy val names = methods map (_.name) mkString ", "
 
@@ -48,14 +49,16 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
         options {
           complete(s"Supported methods : $names.")
         } ~
-          complete(MethodNotAllowed,
-            s"HTTP method not allowed, supported methods: $names!")
+          complete(
+            MethodNotAllowed,
+            s"HTTP method not allowed, supported methods: $names!"
+          )
       }
     }
     .result()
 
   val myExceptionHandler = ExceptionHandler {
-    case e: Exception => {
+    case e: Exception ⇒ {
       logger.error(e, "Exception encountered")
 
       cors() {
@@ -68,19 +71,19 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
       pathPrefix("facets") {
-        path(Segment / "options" / "search") { facetId =>
-          (get & parameters("query" ? "", "limit" ? 50)) { (query, limit) =>
+        path(Segment / "options" / "search") { facetId ⇒
+          (get & parameters("query" ? "", "limit" ? 50)) { (query, limit) ⇒
             FacetType.fromId(facetId) match {
-              case Some(facetType) => complete(SearchProvider().searchFacets(facetType, query, limit))
-              case None            => complete(NotFound)
+              case Some(facetType) ⇒ complete(searchProvider.searchFacets(facetType, query, limit))
+              case None            ⇒ complete(NotFound)
             }
           }
         }
       } ~
         pathPrefix("datasets") {
           pathPrefix("search") {
-            (get & parameters("query" ? "*", "limit" ? 50)) { (query, limit) =>
-              val result = SearchProvider().search(QueryCompiler(query), limit)
+            (get & parameters("query" ? "*", "limit" ? 50)) { (query, limit) ⇒
+              val result = searchProvider.search(QueryCompiler(query), limit)
 
               pathPrefix("datasets") {
                 complete {
