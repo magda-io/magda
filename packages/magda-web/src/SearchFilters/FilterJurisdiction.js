@@ -62,6 +62,11 @@ class FilterJurisdiction extends Filter {
             jurisdiction: [],
             jurisdictionType: []
         });
+
+        this.setState({
+            locationInfo: null,
+        });
+
     }
 
     toggleFilter(option, callback){
@@ -93,11 +98,11 @@ class FilterJurisdiction extends Filter {
           return null;
         }
         if(result.geographyLabel){
-          return (`${result.geographyLabel}, ${result.stateLabel}, ${result.typeLabel}, ${result.type}`);
+          return (<span>{result.geographyLabel}, {result.stateLabel}, {result.typeLabel}, {result.type}</span>);
         }
         if(result.displayFieldName){
           let propName = result.displayFieldName;
-          return result.attributes[propName];
+          return <span>{result.attributes[propName]}</span>;
         }
         return null;
     }
@@ -141,6 +146,11 @@ class FilterJurisdiction extends Filter {
                                  toggleFilter={this.toggleFilter}
                                  searchLocation={this.searchLocation}
               />
+
+              <div className='filter-jurisdiction--summray'>
+                {this.getLocationInfoInPlainText()}
+              </div>
+
               <div className='preview'>
                     <JurisdictionMap title='jurisdiction'
                                      id='jurisdiction'
@@ -161,9 +171,7 @@ class FilterJurisdiction extends Filter {
                                                             toggleFilter={this.toggleFilter}
                                                             searchLocation ={this.searchLocation}
                                                             />}
-              <div className='jurisdiction-summray'>
-                {this.getLocationInfoInPlainText()}
-              </div>
+
             </div>
       );
     }
