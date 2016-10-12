@@ -1,7 +1,5 @@
 /*global define*/
 define(function() {
-    'use strict';
-
     /**
      * @exports defined
      *

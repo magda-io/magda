@@ -8,7 +8,6 @@ import findIndex from 'lodash.findindex';
 import defined from './../defined';
 
 const itemHeight = 35;
-const r = 15;
 
 class FilterDateRange extends Filter {
   constructor(props) {
@@ -67,7 +66,6 @@ class FilterDateRange extends Filter {
     let currentdateFrom = +this.props.location.query.dateFrom;
     let currentdateTo = +this.props.location.query.dateTo;
     let optionDate = + option.value;
-    let data = this.state.dragBarData;
     let sortedOptions = this.props.options;
     // if neither current Start date and end date, then set selection to both
     if(!currentdateFrom && !currentdateTo){

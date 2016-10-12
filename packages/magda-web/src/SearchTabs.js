@@ -1,6 +1,5 @@
 import './SearchTabs.css';
 import React, { Component } from 'react';
-import { Link } from 'react-router'
 
 class SearchTabs extends Component {
   render(){

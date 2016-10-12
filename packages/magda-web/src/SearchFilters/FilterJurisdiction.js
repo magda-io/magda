@@ -1,8 +1,6 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
-import DropDown from '../DropDown';
 import Filter from './Filter';
 import FilterHeader from './FilterHeader';
-import getJSON from '../getJSON';
 import getJsonp from '../getJsonp';
 import defined from '../defined';
 import getRegionTypes from '../dummyData/getRegionTypes';
@@ -110,12 +108,12 @@ class FilterJurisdiction extends Filter {
     getLocationInfo(){
         let jurisdiction = this.props.location.query.jurisdiction;
         let jurisdictionType = this.props.location.query.jurisdictionType;
-        let idRegionTypeMap = {
-          SA1: [26, 'MAIN'],
-          SA2: [27, 'MAIN'],
-          SA3: [28, 'CODE'],
-          SA4: [29, 'CODE']
-        };
+        // let idRegionTypeMap = {
+        //   SA1: [26, 'MAIN'],
+        //   SA2: [27, 'MAIN'],
+        //   SA3: [28, 'CODE'],
+        //   SA4: [29, 'CODE']
+        // };
 
         if(jurisdiction && jurisdictionType){
           // getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
@@ -164,12 +162,12 @@ class FilterJurisdiction extends Filter {
 
               {this.state.popUpIsOpen && <JurisdictionPopup locationSearchResults={this.state.locationSearchResults}
                                                             updateQuery={this.props.updateQuery}
-                                                            onFeatureClick= {this.props.onFeatureClick}
+                                                            onFeatureClick={this.props.onFeatureClick}
                                                             locationInfo={this.state.locationInfo}
                                                             location={this.props.location}
                                                             closePopUp={this.closePopUp}
                                                             toggleFilter={this.toggleFilter}
-                                                            searchLocation ={this.searchLocation}
+                                                            searchLocation={this.searchLocation}
                                                             />}
 
             </div>

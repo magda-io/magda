@@ -10,7 +10,6 @@ import debounce from 'lodash.debounce';
 import './Search.css';
 import getJSON from'./getJSON';
 import defined from './defined';
-import mergeQuery from './mergeQuery';
 import toggleQuery from './toggleQuery';
 import checkActiveOption from './checkActiveOption';
 

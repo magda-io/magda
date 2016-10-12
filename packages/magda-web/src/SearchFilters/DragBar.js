@@ -10,10 +10,6 @@ const colorHighlight = '#8ac4ea';
 
 
 class DragBar extends Component {
-    constructor(props){
-      super(props);
-    }
-
     componentDidMount(){
       let that = this;
       let g = this.refs['g'];
