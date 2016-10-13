@@ -89,7 +89,6 @@ class Search extends Component {
             userEnteredQuery: data.query
           });
           // this.parseQuery(data.query);
-
         }, (err)=>{console.warn(err)});
   }
 

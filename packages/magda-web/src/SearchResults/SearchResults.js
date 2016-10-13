@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './SearchResults.css';
+import defined from '../defined';
 
 class SearchResults extends Component {
   truncate(s) {
@@ -25,7 +26,7 @@ class SearchResults extends Component {
           this.props.searchResults.map((result, i)=>
             <li key={i} className='search-result'>
             <h3 className='result-title'><a href={result.landingPage}>{result.title}</a></h3>
-            <label className='search-result--publisher'><i className='fa fa-book' aria-hidden='true'></i>{result.publisher.name}</label>
+            {defined(result.publisher) && <label className='search-result--publisher'><i className='fa fa-book' aria-hidden='true'></i>{result.publisher.name}</label>}
             <p>{this.truncate(result.description)}</p>
             <ul className='list-unstyled tags'>
               {
