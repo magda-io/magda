@@ -54,7 +54,8 @@
   z-index: -1;
 }
 
-.btn-facet-option:hover {
+.btn-facet-option:hover,
+.btn-facet-option:focus {
   font-weight: 600;
 }
 
@@ -71,7 +72,8 @@
   background: #E74C3C;
 }
 
-.btn-facet-option:hover .btn-facet-option__action{
+.btn-facet-option:hover .btn-facet-option__action,
+.btn-facet-option:focus .btn-facet-option__action{
   display: block;
 }
 

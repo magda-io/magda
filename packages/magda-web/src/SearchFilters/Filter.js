@@ -35,7 +35,8 @@ class Filter extends Component {
       if(event.which === 27){
         this.clearSearch();
       }
-    })
+    });
+
   }
 
   searchFilter(searchText){
@@ -101,7 +102,7 @@ class Filter extends Component {
     }
   }
 
-  renderCondition(option, optionMax, callback){
+  renderCondition(option, optionMax, callback, onFocus){
     let allowMultiple = true;
 
     if(!option){
@@ -111,13 +112,15 @@ class Filter extends Component {
     let divStyle = {width: maxWidth + 'px'}
 
     return(
-    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`} onClick={this.toggleFilter.bind(this, option, allowMultiple, callback)}>
+    <button type='button'
+            ref={b=>{if(b != null && onFocus === true){b.focus()}}}
+            className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`}
+            onClick={this.toggleFilter.bind(this, option, allowMultiple, callback)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-${this.checkActiveOption(option) ? 'times' : 'plus'}`}/></span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
     </button>);
-
   }
 
   highlightSearchedText(text){
