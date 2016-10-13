@@ -36,7 +36,7 @@ import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 
-class Api(searchProvider: SearchProvider, implicit val config: Config, implicit val system: ActorSystem,
+class Api(implicit val config: Config, implicit val system: ActorSystem,
           implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends misc.Protocols with CorsDirectives {
   val logger = Logging(system, getClass)
 
@@ -74,7 +74,7 @@ class Api(searchProvider: SearchProvider, implicit val config: Config, implicit 
         path(Segment / "options" / "search") { facetId ⇒
           (get & parameters("query" ? "", "limit" ? 50)) { (query, limit) ⇒
             FacetType.fromId(facetId) match {
-              case Some(facetType) ⇒ complete(searchProvider.searchFacets(facetType, query, limit))
+              case Some(facetType) ⇒ complete(SearchProvider().searchFacets(facetType, query, limit))
               case None            ⇒ complete(NotFound)
             }
           }
@@ -83,7 +83,7 @@ class Api(searchProvider: SearchProvider, implicit val config: Config, implicit 
         pathPrefix("datasets") {
           pathPrefix("search") {
             (get & parameters("query" ? "*", "limit" ? 50)) { (query, limit) ⇒
-              val result = searchProvider.search(QueryCompiler(query), limit)
+              val result = SearchProvider().search(QueryCompiler(query), limit)
 
               pathPrefix("datasets") {
                 complete {

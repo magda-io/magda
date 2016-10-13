@@ -29,18 +29,17 @@ object MagdaApp extends App {
     case (name: String, serviceConfig: ConfigValue) =>
       InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)
   }.toSeq
-  val regionSources = RegionSource.loadFromConfig(config.atKey("regionSources"))
 
-  val supervisor = system.actorOf(Props(new Supervisor(system, config, interfaceConfigs, regionSources)))
+  val supervisor = system.actorOf(Props(new Supervisor(system, config, interfaceConfigs)))
 
   // Index erryday 
   //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
 
-  val api = new Api(regionSources)
+  val api = new Api()
 }
 
 class Listener extends Actor with ActorLogging {
   def receive = {
-    case d: DeadLetter => //log.info(d.message)
+    case d: DeadLetter => log.debug(d.message.toString())
   }
 }

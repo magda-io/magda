@@ -11,16 +11,16 @@ import scala.util.{ Failure, Success }
  * @author Foat Akhmadeev
  *         17/01/16
  */
-class Indexer(supervisor: ActorRef, regionSources: Seq[RegionSource]) extends Actor with ActorLogging {
+class Indexer(supervisor: ActorRef) extends Actor with ActorLogging {
   implicit val ec = context.dispatcher
   implicit val system = context.system
   implicit val materializer = ActorMaterializer.create(context)
-  val searchProvider: SearchProvider = SearchProvider(regionSources)
+  val searchProvider: SearchProvider = SearchProvider()
 
   // On startup, check that the index isn't empty (as it would be on first boot or after an index schema upgrade)
   searchProvider.needsReindexing().onComplete {
     case Success(needsReindexing) => needsReindexing match {
-      case true => supervisor ! NeedsReIndexing
+      case true  => supervisor ! NeedsReIndexing
       case false => // Index isn't empty so it's all good :) 
     }
     case Failure(e) => {
@@ -31,7 +31,7 @@ class Indexer(supervisor: ActorRef, regionSources: Seq[RegionSource]) extends Ac
   def receive: Receive = {
     case Index(source, dataSets) =>
       searchProvider.index(source, dataSets) onComplete {
-        case Success(_) => supervisor ! IndexFinished(dataSets, source)
+        case Success(_)      => supervisor ! IndexFinished(dataSets, source)
         case Failure(reason) => supervisor ! IndexFailed(source, reason)
       }
   }

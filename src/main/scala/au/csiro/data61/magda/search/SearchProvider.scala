@@ -19,10 +19,10 @@ object SearchProvider {
   // TODO: There's undoubtably a cleverer way to do this in scala 
   var singletonProvider: Option[SearchProvider] = None
 
-  def apply(regionSources: Seq[RegionSource])(implicit system: ActorSystem, ec: ExecutionContext, materializer: Materializer): SearchProvider = {
+  def apply()(implicit system: ActorSystem, ec: ExecutionContext, materializer: Materializer): SearchProvider = {
     singletonProvider = singletonProvider match {
       case Some(provider) => Some(provider)
-      case None => Some(new ElasticSearchProvider(regionSources))
+      case None => Some(new ElasticSearchProvider())
     }
 
     singletonProvider.get

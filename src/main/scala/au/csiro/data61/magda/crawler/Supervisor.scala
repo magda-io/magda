@@ -9,8 +9,8 @@ import com.typesafe.config.Config
 
 import scala.language.postfixOps
 
-class Supervisor(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig], regionSources: Seq[RegionSource]) extends Actor with ActorLogging {
-  val indexer = context actorOf Props(new Indexer(self, regionSources))
+class Supervisor(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig]) extends Actor with ActorLogging {
+  val indexer = context actorOf Props(new Indexer(self))
   val host2Actor: Map[URL, ActorRef] = externalInterfaces
     .groupBy(_.baseUrl)
     .mapValues(interfaceConfig => system.actorOf(Props(new RepoCrawler(self, indexer, interfaceConfig.head))))
