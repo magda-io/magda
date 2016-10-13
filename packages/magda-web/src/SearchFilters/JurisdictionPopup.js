@@ -2,7 +2,7 @@ import DropDown from '../DropDown';
 import Filter from './Filter';
 import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
-import LocationSearchBox from './LocationSearchBox';
+import FilterSearchBox from './FilterSearchBox';
 import React from 'react'
 
 
@@ -59,12 +59,13 @@ class JurisdictionPopup extends Filter {
                   </div>
                   <div className='popup-tools row'>
                     <div className='col-sm-6'>
-                        <LocationSearchBox options={this.props.locationSearchResults}
-                                           toggleFilter={this.props.toggleFilter}
-                                           searchText={this.state.searchText}
-                                           clearSearch={this.clearSearch}
-                                           searchLocation={this.props.searchLocation}
-                        />
+                      <FilterSearchBox allowMultiple={false}
+                                       searchFilter={this.props.searchLocation}
+                                       loadingProgress={this.props.loadingProgress}
+                                       renderCondition={this.props.renderCondition}
+                                       toggleFilter={this.props.toggleFilter}
+                                       options={this.state.locationSearchResults}
+                      />
                     </div>
                     <div className='col-sm-6'>
                         <DropDown options={regionTypeOptions}

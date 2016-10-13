@@ -14,13 +14,11 @@ class Filter extends Component {
   constructor(props) {
     super(props);
     this.state={
-      searchText: '',
       isOpen: false,
       options: [],
       loadingProgress: 0
     }
     this.searchFilter = this.searchFilter.bind(this);
-    this.clearSearch = this.clearSearch.bind(this);
     this.renderCondition = this.renderCondition.bind(this);
     this.resetFilter = this.resetFilter.bind(this);
     this.toggleFilter= this.toggleFilter.bind(this);
@@ -56,12 +54,6 @@ class Filter extends Component {
 
   resetFilter(){
     this.props.updateQuery({[this.props.id]: []});
-  }
-
-  clearSearch(){
-    this.setState({
-      searchText: ''
-    })
   }
 
   toggleOpen(){
@@ -123,19 +115,7 @@ class Filter extends Component {
     </button>);
   }
 
-  highlightSearchedText(text){
-    if(this.state.searchText.length>0){
-      // need to escape special chars
-      let highlighted = new RegExp('(' + RegExp.escape(this.state.searchText) + ')', 'gi');
-      let modifiedText = text.replace(highlighted, '<strong>$1</strong>');
-      return {
-        __html: modifiedText
-      }
-    }
-    return {
-      __html: ''
-    }
-  }
+
 
   checkActiveOption(option){
     let query = this.props.location.query[this.props.id];
@@ -176,7 +156,6 @@ class Filter extends Component {
                          searchFilter={this.searchFilter}
                          loadingProgress={this.state.loadingProgress}
                          renderCondition={this.renderCondition}
-                         searchText={this.state.searchText}
                          toggleFilter={this.toggleFilter}
                          options={this.state.options}
 

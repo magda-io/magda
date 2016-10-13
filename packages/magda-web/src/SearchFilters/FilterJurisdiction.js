@@ -6,7 +6,7 @@ import defined from '../defined';
 import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
 import JurisdictionPopup from './JurisdictionPopup';
-import LocationSearchBox from './LocationSearchBox';
+import FilterSearchBox from './FilterSearchBox';
 import React from 'react'
 
 
@@ -20,6 +20,7 @@ class FilterJurisdiction extends Filter {
         this.onFeatureClick = this.onFeatureClick.bind(this);
         this.getLocationInfo = this.getLocationInfo.bind(this);
         this.searchLocation = this.searchLocation.bind(this);
+        this.renderCondition = this.renderCondition.bind(this);
 
         this.state={
             popUpIsOpen: false,
@@ -132,6 +133,21 @@ class FilterJurisdiction extends Filter {
       })
     }
 
+    renderCondition(option, optionMax, callback, onFocus){
+      let result = option.suggestion;
+      if(!result){
+        return null;
+      }
+      return (
+            <button type='button'
+                    className='btn location-search-btn'
+                    onClick={this.toggleFilter.bind(this, option, callback)}
+                    title={option.name}>
+              <span>{result.geographyLabel} , {result.stateLabel}</span>
+              <span>{result.typeLabel} {result.type}</span>
+            </button>);
+    }
+
 
     render(){
         return (
@@ -140,10 +156,12 @@ class FilterJurisdiction extends Filter {
                             resetFilter={this.resetFilter}
                             title={this.props.title}/>
 
-              <LocationSearchBox options={this.state.locationSearchResults}
-                                 toggleFilter={this.toggleFilter}
-                                 searchLocation={this.searchLocation}
-              />
+              <FilterSearchBox allowMultiple={false}
+                               searchFilter={this.searchLocation}
+                               loadingProgress={this.state.loadingProgress}
+                               renderCondition={this.renderCondition}
+                               toggleFilter={this.toggleFilter}
+                               options={this.state.locationSearchResults}/>
 
               <div className='filter-jurisdiction--summray'>
                 {this.getLocationInfoInPlainText()}
@@ -168,6 +186,7 @@ class FilterJurisdiction extends Filter {
                                                             closePopUp={this.closePopUp}
                                                             toggleFilter={this.toggleFilter}
                                                             searchLocation={this.searchLocation}
+                                                            loadingProgress={this.state.loadingProgress}
                                                             />}
 
             </div>
