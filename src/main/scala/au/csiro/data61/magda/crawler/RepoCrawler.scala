@@ -16,7 +16,7 @@ import akka.pattern.pipe
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.external.ExternalInterface
 import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType._
-import au.csiro.data61.magda.Config
+import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.external.InterfaceConfig
 
 /**
@@ -37,7 +37,7 @@ class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, interfaceDef: Interfa
 
       interface.getTotalDataSetCount() onComplete {
         case Success(count) => {
-          val maxFromConfig = if (Config.conf.hasPath("crawler.maxResults")) Config.conf.getLong("crawler.maxResults") else Long.MaxValue
+          val maxFromConfig = if (AppConfig.conf.hasPath("crawler.maxResults")) AppConfig.conf.getLong("crawler.maxResults") else Long.MaxValue
           createBatches(0, Math.min(maxFromConfig, count)).map(batch => throttler ! ScrapeDataSets(batch._1, batch._2.toInt))
         }
         case Failure(reason) => supervisor ! ScrapeRepoFailed(interfaceDef.baseUrl, reason)

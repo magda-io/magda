@@ -2,7 +2,7 @@ package au.csiro.data61.magda
 
 import com.typesafe.config._
 
-object Config {
+object AppConfig {
   val env: String = if (System.getenv("SCALA_ENV") == null) "local" else System.getenv("SCALA_ENV")
   
   private val defaultConf = ConfigFactory.load()

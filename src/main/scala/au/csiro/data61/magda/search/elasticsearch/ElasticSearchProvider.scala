@@ -56,8 +56,12 @@ import java.nio.file.Paths
 
 import au.csiro.data61.magda.spatial.RegionSource
 import org.elasticsearch.common.geo.ShapeRelation
-import au.csiro.data61.magda.Config
+import au.csiro.data61.magda.AppConfig
 import akka.stream.scaladsl.Merge
+import au.csiro.data61.magda.api.Region
+import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper
+import org.elasticsearch.search.SearchParseException
+import org.elasticsearch.action.search.SearchPhaseExecutionException
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = Logging(system, getClass)
@@ -180,13 +184,15 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       }
   }
 
+  def generateRegionId(regionType: String, id: String) = s"${regionType}/$id"
+
   def setupRegions(client: ElasticClient) = // Create ABS regions but don't wait for it to finish.
-    RegionSource.loadFromConfig(Config.conf.getConfig("regionSources")).map(regionSource =>
-      RegionLoader.loadABSRegions(regionSource).map(j =>
+    RegionSource.sources.map(regionSource =>
+      RegionLoader.loadABSRegions(regionSource).map(jsonRegion =>
         ElasticDsl.index
           .into("regions" / "regions")
-          .id(s"${regionSource.name}/${j.getFields("properties").head.asJsObject.getFields(regionSource.id).head.asInstanceOf[JsString].value}")
-          .source(j.toJson)
+          .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.getFields(regionSource.id).head.asInstanceOf[JsString].value))
+          .source(jsonRegion.toJson)
       ))
       .reduce((x, y) => Source.combine(x, y)(Merge(_)))
       // This creates a buffer of 50mb (roughly) of indexed regions that will be bulk-indexed in the next ES request 
@@ -216,15 +222,19 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       case (indexVersion, definition) =>
         logger.info("{} index version is {}", definition.name, indexVersion)
 
-        val deleteIndex = if (indexVersion != 0)
-          client.execute {
-            delete index definition.name
-          }
-        else
-          Future.successful(Unit)
-
         // If the index version on ES is lower than the code's version, wipe it all and start again.
         if (indexVersion != definition.version) {
+          val deleteIndex =
+            client.execute {
+              delete index definition.name
+            } recover {
+              case outer: RemoteTransportException => outer.getCause match {
+                case (inner: IndexNotFoundException) => {
+                  // Meh, we were trying to delete it anyway.
+                }
+              }
+            }
+
           deleteIndex flatMap { _ =>
             client.execute(definition.definition)
           } recover {
@@ -313,39 +323,57 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
 
   override def search(query: Query, limit: Int) = {
     setupFuture.flatMap(client =>
-      client.execute {
+      client.execute(
         addAggregations(addQuery(ElasticDsl.search in "datasets" / "datasets" limit limit, query), query)
-      } map { response =>
-        val aggsMap = response.aggregations.asMap().asScala
+      )
+    ).map { response =>
+      val aggsMap = response.aggregations.asMap().asScala
 
-        new SearchResult(
-          query = query,
-          hitCount = response.getHits.totalHits().toInt,
-          dataSets = response.as[DataSet].toList,
-          facets = Some(facetAggregations.map {
-            case (facetType, definition) => new Facet(
-              id = facetType,
-              options = {
-                val filteredOptions = (aggsMap.get(facetType.id + "-filter") match {
-                  case Some(filterAgg) => definition.getFacetDetails(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-                  case None            => Nil
-                })
-                  .filter(definition.filterAggFilter(query))
-                  .map(_.copy(matched = Some(true)))
-
-                val generalOptions = definition.getFacetDetails(aggsMap.get(facetType.id).get.getProperty(facetType.id).asInstanceOf[Aggregation])
-
-                val combined = (filteredOptions ++ generalOptions)
-                val lookup = combined.groupBy(_.value)
-
-                combined.map(_.value)
-                  .distinct
-                  .map(lookup.get(_).get.head)
-                  .take(10)
+      new SearchResult(
+        query = query,
+        hitCount = response.getHits.totalHits().toInt,
+        dataSets = response.as[DataSet].toList,
+        facets = Some(facetAggregations.map {
+          case (facetType, definition) => new Facet(
+            id = facetType,
+            options = {
+              val filteredOptions = (aggsMap.get(facetType.id + "-filter") match {
+                case Some(filterAgg) => definition.getFacetDetails(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
+                case None            => Nil
               })
-          }.toSeq))
-      })
+                .filter(definition.filterAggFilter(query))
+                .map(_.copy(matched = Some(true)))
+
+              val generalOptions = definition.getFacetDetails(aggsMap.get(facetType.id).get.getProperty(facetType.id).asInstanceOf[Aggregation])
+
+              val combined = (filteredOptions ++ generalOptions)
+              val lookup = combined.groupBy(_.value)
+
+              combined.map(_.value)
+                .distinct
+                .map(lookup.get(_).get.head)
+                .take(10)
+            })
+        }.toSeq))
+    }.recover {
+      case remoteTransport: RemoteTransportException => remoteTransport.getCause match {
+        case searchPhase: SearchPhaseExecutionException => searchPhase.getCause match {
+          case notSerializable: NotSerializableExceptionWrapper => notSerializable.getCause match {
+            case illegalArgument: IllegalArgumentException => failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
+          }
+        }
+      }
+    }.recover {
+      case _ => failureSearchResult(query, "Unknown error")
+    }
   }
+
+  def failureSearchResult(query: Query, message: String) = new SearchResult(
+    query = query,
+    hitCount = 0,
+    dataSets = Nil,
+    errorMessage = Some(message)
+  )
 
   def addAggregations(searchDef: SearchDefinition, query: Query) = {
     searchDef aggregations (
@@ -383,7 +411,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   private def publisherQuery(publisher: String) = matchPhraseQuery("publisher.name", publisher)
   private def formatQuery(format: String) = nestedQuery("distributions").query(
     matchQuery("distributions.format", format))
-  private def regionIdQuery(regionId: String) = indexedGeoShapeQuery("spatial.geoJson", regionId, "regions")
+  private def regionIdQuery(region: Region) = indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), "regions")
     .relation(ShapeRelation.INTERSECTS)
     .shapeIndex("regions")
     .shapePath("geometry")
@@ -425,7 +453,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[FacetSearchResult] = {
     setupFuture.flatMap(client =>
       client.execute {
-        ElasticDsl.search in "magda" / facetType.id query queryText limit limit
+        ElasticDsl.search in "datasets" / facetType.id query queryText limit limit
       } map { response =>
         new FacetSearchResult(
           hitCount = response.getHits.totalHits.toInt,

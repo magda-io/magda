@@ -7,6 +7,7 @@ import scala.util.parsing.input.Position
 import scala.util.parsing.input.NoPosition
 import au.csiro.data61.magda.util.DateParser._
 import java.time.Instant
+import au.csiro.data61.magda.spatial.RegionSource
 
 private object Tokens {
   sealed trait QueryToken
@@ -21,7 +22,7 @@ private object QueryLexer extends RegexParsers {
   override def skipWhitespace = true
   override val whiteSpace = "[\t\r\f\n]+".r
 
-  val filterWords = Seq("From", "To", "By", "As", "InRegion")
+  val filterWords = Seq("From", "To", "By", "As", "In")
 
   def quote: Parser[Tokens.Quote] = {
     """"[^"]*"""".r ^^ { str => Tokens.Quote(str.substring(1, str.length - 1)) }
@@ -96,11 +97,11 @@ private object QueryParser extends Parsers {
   def filterType =
     accept("filter type", {
       case Tokens.Filter(name) => name.toLowerCase() match {
-        case "from"     => AST.FromType
-        case "to"       => AST.ToType
-        case "by"       => AST.PublisherType
-        case "as"       => AST.FormatType
-        case "inregion" => AST.RegionIdType
+        case "from" => AST.FromType
+        case "to"   => AST.ToType
+        case "by"   => AST.PublisherType
+        case "as"   => AST.FormatType
+        case "in"   => AST.RegionIdType
       }
     })
 
@@ -173,17 +174,33 @@ object QueryCompiler {
     )
 
     ast match {
-      case AST.And(left, right)   => merge(flattenAST(left), flattenAST(right))
-      case AST.DateFrom(instant)  => Query(dateFrom = Some(instant))
-      case AST.DateTo(instant)    => Query(dateTo = Some(instant))
-      case AST.Publisher(name)    => Query(publishers = Seq(name))
-      case AST.Format(format)     => Query(formats = Seq(format))
-      case AST.RegionId(regionId) => Query(regions = Seq(regionId))
+      case AST.And(left, right)  => merge(flattenAST(left), flattenAST(right))
+      case AST.DateFrom(instant) => Query(dateFrom = Some(instant))
+      case AST.DateTo(instant)   => Query(dateTo = Some(instant))
+      case AST.Publisher(name)   => Query(publishers = Seq(name))
+      case AST.Format(format)    => Query(formats = Seq(format))
+      case AST.RegionId(region) =>
+        val option = region.split(":") match {
+          case Array(regionType, regionId) => RegionSource.forName(regionType) match {
+            case Some(regionSource) => Some(Query(regions = Seq(new Region(regionSource.name, regionId))))
+            case _                  => None
+          }
+          case _ => None
+        }
+
+        option match {
+          case Some(query) => query
+          case None        => Query(freeText = Some("in " + region))
+        }
       case AST.FreeTextWord(word) => Query(freeText = Some(word))
       case AST.Quote(quote)       => Query(quotes = Seq(quote))
     }
   }
 }
+
+case class Region(
+  regionType: String,
+  regionId: String)
 
 case class Query(
   freeText: Option[String] = None,
@@ -191,6 +208,6 @@ case class Query(
   publishers: Seq[String] = Nil,
   dateFrom: Option[Instant] = None,
   dateTo: Option[Instant] = None,
-  regions: Seq[String] = Nil,
+  regions: Seq[Region] = Nil,
   formats: Seq[String] = Nil,
   error: Option[String] = None)

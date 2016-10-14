@@ -10,13 +10,15 @@ import au.csiro.data61.magda.api.Query
 import com.monsanto.labs.mwundo.GeoJson._
 import com.monsanto.labs.mwundo.GeoJsonFormats._
 import java.util.regex.Pattern
+import au.csiro.data61.magda.api.Region
 
 package misc {
   case class SearchResult(
     query: Query,
     hitCount: Int,
     facets: Option[Seq[Facet]] = None,
-    dataSets: List[DataSet])
+    dataSets: List[DataSet],
+    errorMessage: Option[String] = None)
 
   sealed trait FacetType {
     def id: String
@@ -222,8 +224,9 @@ package misc {
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
+    implicit val regionFormat = jsonFormat2(Region.apply)
     implicit val queryFormat = jsonFormat8(Query.apply)
-    implicit val searchResultFormat = jsonFormat4(SearchResult.apply)
+    implicit val searchResultFormat = jsonFormat5(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }
 

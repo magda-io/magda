@@ -16,11 +16,11 @@ object MagdaApp extends App {
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  implicit val config = Config.conf
+  implicit val config = AppConfig.conf
 
   val logger = Logging(system, getClass)
 
-  logger.info("Starting MAGDA Metadata with env {}", Config.env)
+  logger.info("Starting MAGDA Metadata with env {}", AppConfig.env)
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])

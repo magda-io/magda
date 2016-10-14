@@ -6,6 +6,7 @@ import com.typesafe.config.Config
 
 import scala.collection.JavaConversions._
 import com.typesafe.config.ConfigObject
+import au.csiro.data61.magda.AppConfig
 
 /**
  * Created by gil308 on 12/10/2016.
@@ -13,14 +14,21 @@ import com.typesafe.config.ConfigObject
 case class RegionSource(name: String, url: URL, id: String, shapePath: String)
 
 object RegionSource {
-  def loadFromConfig(config: Config): Seq[RegionSource] = {
+  val sources = loadFromConfig(AppConfig.conf.getConfig("regionSources"))
+
+  private lazy val lookup = sources.groupBy(_.name.toLowerCase).mapValues(_.head)
+
+  def forName(name: String): Option[RegionSource] = lookup.get(name.toLowerCase)
+
+  private def loadFromConfig(config: Config): Seq[RegionSource] = {
     config.root().map {
       case (name: String, config: ConfigObject) =>
         val regionSourceConfig = config.toConfig()
         RegionSource(
-          name,
+          name.toLowerCase(),
           new URL(regionSourceConfig.getString("url")),
           regionSourceConfig.getString("idField"),
           regionSourceConfig.getString("shapePath"))
-    }.toSeq}
+    }.toSeq
+  }
 }
