@@ -89,10 +89,11 @@ class FilterSearchBox extends Component {
               <button type='button' className='btn btn-clear-search' onClick={this.clearSearch}>
                 <i className="fa fa-times" aria-hidden="true"></i>
               </button>}
+            {this.state.searchText.length > 0 &&
+              <ProgressBar progress={this.props.loadingProgress}/>
+            }
           </form>
-          {this.state.searchText.length > 0 &&
-            <ProgressBar progress={this.props.loadingProgress}/>
-          }
+
           {this.state.searchText.length > 0 &&
             <ul className='filtered-options list-unstyled' onKeyDown={this.handleKeyDown}>
               {this.props.options.map((option, i)=>

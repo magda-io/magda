@@ -161,7 +161,7 @@ class Filter extends Component {
 
         />
 
-        <ul className='list-unstyled'>
+        <ul className='list-unstyled active-options'>
           {this.getActiveOption()}
         </ul>
 
