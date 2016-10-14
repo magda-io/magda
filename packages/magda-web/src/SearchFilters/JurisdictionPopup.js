@@ -64,7 +64,7 @@ class JurisdictionPopup extends Filter {
                                        loadingProgress={this.props.loadingProgress}
                                        renderCondition={this.props.renderCondition}
                                        toggleFilter={this.props.toggleFilter}
-                                       options={this.state.locationSearchResults}
+                                       options={this.props.locationSearchResults}
                       />
                     </div>
                     <div className='col-sm-6'>

@@ -188,6 +188,7 @@ class FilterJurisdiction extends Filter {
                                                             toggleFilter={this.toggleFilter}
                                                             searchLocation={this.searchLocation}
                                                             loadingProgress={this.state.loadingProgress}
+                                                            renderCondition={this.renderCondition}
                                                             />}
 
             </div>
