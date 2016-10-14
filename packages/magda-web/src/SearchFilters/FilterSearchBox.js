@@ -98,7 +98,7 @@ class FilterSearchBox extends Component {
             <ul className='filtered-options list-unstyled' onKeyDown={this.handleKeyDown}>
               {this.props.options.map((option, i)=>
                   <li key={i}>
-                      {this.props.renderCondition(option, null, this.callback, (this.state.indexOfOptionOnFocus === i))}
+                      {this.props.renderOption(option, null, this.callback, (this.state.indexOfOptionOnFocus === i))}
                   </li>
               )}
             </ul>

@@ -118,7 +118,7 @@ class FilterDateRange extends Filter {
     return false;
   }
 
-  renderCondition(option, i){
+  renderOption(option, i){
     if(!option){
       return null;
     }
@@ -177,7 +177,7 @@ class FilterDateRange extends Filter {
                 <div className='options'>
                 <div> <button className='btn btn-facet-option btn-facet-date-option' onClick={this.resetdateTo}>Any end date </button></div>
                   {this.props.options.map((option, i)=>
-                        <div key={i}>{this.renderCondition(option, i)}</div>
+                        <div key={i}>{this.renderOption(option, i)}</div>
                   )}
                 <div> <button className='btn btn-facet-option btn-facet-date-option' onClick={this.resetdateFrom}>Any start date </button></div>
                 </div>

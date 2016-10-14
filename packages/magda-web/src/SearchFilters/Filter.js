@@ -1,75 +1,75 @@
+const DEFAULTSIZE = 5;
 import './Filter.css';
+import checkActiveOption from '../checkActiveOption';
+import defined from '../defined';
 import FilterHeader from './FilterHeader';
 import FilterSearchBox from './FilterSearchBox';
 import find from 'lodash.find';
 import getJSON from'../getJSON';
-import React, { Component } from 'react';
 import maxBy from 'lodash.maxby';
-import checkActiveOption from '../checkActiveOption';
+import React, { Component } from 'react';
 import toggleQuery from '../toggleQuery';
-import defined from '../defined';
-const DEFAULTSIZE = 5;
+
+/**
+  * Facet Filter component, for example, publisher filter, location filter, format filter, temporal filter
+  */
 
 class Filter extends Component {
   constructor(props) {
     super(props);
+
+    /**
+     * @type {object}
+     * @property {boolean} isOpen when searching inside this facet, the result list is open or not
+     * @property {array} options when searching inside this facet, the result list of this facet
+     * @property {number} loadingProgress the percentage of the search progress
+     */
     this.state={
       isOpen: false,
       options: [],
       loadingProgress: 0
     }
+
     this.searchFilter = this.searchFilter.bind(this);
-    this.renderCondition = this.renderCondition.bind(this);
+    this.renderOption = this.renderOption.bind(this);
     this.resetFilter = this.resetFilter.bind(this);
     this.toggleFilter= this.toggleFilter.bind(this);
     this.toggleOpen = this.toggleOpen.bind(this);
-    this.searchFromAllOptions = this.searchFromAllOptions.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
-
   }
 
+
   componentDidMount(){
+    // when esc key is pressed at anytime, clear search box and close the search result list
     window.addEventListener('keydown', (event)=>{
       if(event.which === 27){
         this.clearSearch();
       }
     });
-
   }
 
+
+  /**
+   * search for a spefic facet option
+   * @param {string} searchText, the text user type in the input box inside the facet filter
+   */
   searchFilter(searchText){
+
     this.setState({
       loadingProgress: 0
     });
-    this.searchFromAllOptions(searchText);
-  }
 
-  toggleFilter(option, allowMultiple, callback){
-    let query = toggleQuery(option, this.props.location.query[this.props.id], allowMultiple);
-    this.props.updateQuery({[this.props.id]: query});
-    if(defined(callback) && typeof callback ==='function'){
-      callback();
-    }
-  }
-
-  resetFilter(){
-    this.props.updateQuery({[this.props.id]: []});
-  }
-
-  toggleOpen(){
-    this.setState({
-      isOpen: !this.state.isOpen
-    })
-  }
-
-  searchFromAllOptions(searchText){
     let keyword = this.props.location.query.q.split(' ').join('+');
+
+    // when searching facets, we need to change "publishers" and "formats" into "publisher" and "format"
     let facet = this.props.id.replace(/s+$/, "");
-    // needs to use [this.props.id] when format facet is ready
+
     getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/facets/${facet}/options/search?query=${keyword}`,
        this.updateProgress
      ).then((data)=>{
-       let filteredOptions = this.state.options;
+       let filteredOptions = [];
+
+      // if the searchText is part of the option value string, consider we found a match
       data.options.forEach((c)=>{
         if(c.value.toLowerCase().indexOf(searchText.toLowerCase())!==-1){
           filteredOptions.push(c);
@@ -83,6 +83,33 @@ class Filter extends Component {
     }, (err)=>{console.warn(err)});
   }
 
+
+  toggleFilter(option, allowMultiple, callback){
+    let query = toggleQuery(option, this.props.location.query[this.props.id], allowMultiple);
+
+    // update url
+    this.props.updateQuery({[this.props.id]: query});
+
+    if(defined(callback) && typeof callback ==='function'){
+      callback();
+    }
+  }
+
+
+  resetFilter(){
+    // remove query in the url
+    this.props.updateQuery({[this.props.id]: []});
+  }
+
+
+  toggleOpen(){
+    // open the result list when user starts typing in the search box
+    this.setState({
+      isOpen: !this.state.isOpen
+    })
+  }
+
+
   updateProgress (oEvent) {
     if (oEvent.lengthComputable) {
       this.setState({
@@ -94,7 +121,7 @@ class Filter extends Component {
     }
   }
 
-  renderCondition(option, optionMax, callback, onFocus){
+  renderOption(option, optionMax, callback, onFocus){
     let allowMultiple = true;
 
     if(!option){
@@ -115,13 +142,19 @@ class Filter extends Component {
     </button>);
   }
 
-
-
+  /**
+   * check if this option is already active
+   * @param {string} option, an option from this facet filter
+   */
   checkActiveOption(option){
     let query = this.props.location.query[this.props.id];
     return checkActiveOption(option, query);
   }
 
+
+  /**
+   * get a list of all active options from the url
+   */
   getActiveOption(){
     let query = this.props.location.query[this.props.id];
     if(!query){
@@ -135,16 +168,20 @@ class Filter extends Component {
 
      let hitCount = defined(correspondingOptionInDefaultList) ? correspondingOptionInDefaultList.hitCount : 0;
      let option = {'value': item, 'hitCount': hitCount}
-     return <li key={item}>{this.renderCondition(option)}</li>;
+     return <li key={item}>{this.renderOption(option)}</li>;
    });
   }
+
 
   render() {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
     let maxOptionFromDefaultOptionList = maxBy(this.props.options, o=> +o.hitCount);
     let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
     let size = this.state.isOpen ? inactiveOptions.length : tempSize;
+
+    // is the number of facet options to display more than the default size? if so, we should hide the overflow and provide a "show more" button
     let overflow = inactiveOptions.length - tempSize;
+
     return (
       <div className='filter'>
         <FilterHeader query={this.props.location.query[this.props.id]}
@@ -155,7 +192,7 @@ class Filter extends Component {
                          clearSearch={this.clearSearch}
                          searchFilter={this.searchFilter}
                          loadingProgress={this.state.loadingProgress}
-                         renderCondition={this.renderCondition}
+                         renderOption={this.renderOption}
                          toggleFilter={this.toggleFilter}
                          options={this.state.options}
 
@@ -167,7 +204,7 @@ class Filter extends Component {
 
         <ul className='other-options list-unstyled'>
         {inactiveOptions.slice(0, size).map((option, i)=>
-              <li key={i}>{this.renderCondition(option,maxOptionFromDefaultOptionList)}</li>
+              <li key={i}>{this.renderOption(option,maxOptionFromDefaultOptionList)}</li>
         )}
         </ul>
         {overflow > 0 && <button onClick={this.toggleOpen}
@@ -179,11 +216,14 @@ class Filter extends Component {
     );
   }
 }
+
 Filter.propTypes = {options: React.PropTypes.array,
                     title: React.PropTypes.string,
-                    toggleFilter: React.PropTypes.func,
                     id: React.PropTypes.string,
+                    toggleFilter: React.PropTypes.func,
+                    location: React.PropTypes.object,
                     updateQuery: React.PropTypes.func};
+
 Filter.defaultProps = {options: []};
 
 RegExp.escape = function(str)

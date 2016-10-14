@@ -20,7 +20,7 @@ class FilterJurisdiction extends Filter {
         this.onFeatureClick = this.onFeatureClick.bind(this);
         this.getLocationInfo = this.getLocationInfo.bind(this);
         this.searchLocation = this.searchLocation.bind(this);
-        this.renderCondition = this.renderCondition.bind(this);
+        this.renderOption = this.renderOption.bind(this);
 
         this.state={
             popUpIsOpen: false,
@@ -133,7 +133,7 @@ class FilterJurisdiction extends Filter {
       })
     }
 
-    renderCondition(option, optionMax, callback, onFocus){
+    renderOption(option, optionMax, callback, onFocus){
       let result = option.suggestion;
       if(!result){
         return null;
@@ -160,7 +160,7 @@ class FilterJurisdiction extends Filter {
               <FilterSearchBox allowMultiple={false}
                                searchFilter={this.searchLocation}
                                loadingProgress={this.state.loadingProgress}
-                               renderCondition={this.renderCondition}
+                               renderOption={this.renderOption}
                                toggleFilter={this.toggleFilter}
                                options={this.state.locationSearchResults}/>
 
@@ -188,7 +188,7 @@ class FilterJurisdiction extends Filter {
                                                             toggleFilter={this.toggleFilter}
                                                             searchLocation={this.searchLocation}
                                                             loadingProgress={this.state.loadingProgress}
-                                                            renderCondition={this.renderCondition}
+                                                            renderOption={this.renderOption}
                                                             />}
 
             </div>

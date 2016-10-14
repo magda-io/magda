@@ -63,7 +63,7 @@ class JurisdictionPopup extends Filter {
                       <FilterSearchBox allowMultiple={false}
                                        searchFilter={this.props.searchLocation}
                                        loadingProgress={this.props.loadingProgress}
-                                       renderCondition={this.props.renderCondition}
+                                       renderOption={this.props.renderOption}
                                        toggleFilter={this.props.toggleFilter}
                                        options={this.props.locationSearchResults}
                       />
