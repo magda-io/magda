@@ -140,11 +140,12 @@ class FilterJurisdiction extends Filter {
       }
       return (
             <button type='button'
-                    className='btn location-search-btn'
+                    ref={b=>{if(b != null && onFocus === true){b.focus()}}}
+                    className='btn-facet-option btn btn-facet-option__location'
                     onClick={this.toggleFilter.bind(this, option, callback)}
                     title={option.name}>
-              <span>{result.geographyLabel} , {result.stateLabel}</span>
-              <span>{result.typeLabel} {result.type}</span>
+              <span className='btn-facet-option__name'>{result.geographyLabel} , {result.stateLabel}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
+              <span className='btn-facet-option__count'>100</span>
             </button>);
     }
 

@@ -1,7 +1,3 @@
-.filter-search-box .btn-facet-option:hover{
-  background: rgba(0, 0, 0, 0.1);
-}
-
 .filter-search-box form{
     position: relative;
     margin-bottom: 10px;

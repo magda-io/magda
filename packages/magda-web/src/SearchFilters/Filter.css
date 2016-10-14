@@ -59,6 +59,10 @@
   font-weight: 600;
 }
 
+.btn-facet-option:hover{
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .btn-facet-option__action{
   display: none;
   width: 30px;
@@ -102,6 +106,11 @@
     padding: 0 5px 0 10px;
 }
 
+.btn-facet-option__location .btn-facet-option__name{
+  width: calc(100% - 50px);
+}
+
+
 .btn-facet-option__count{
     display: block;
     width: 40px;
@@ -123,8 +132,6 @@
   display: inline;
   padding-left: 3px;
 }
-
-
 
 .map{
     height: 200px;
