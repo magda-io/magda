@@ -60,7 +60,6 @@ import au.csiro.data61.magda.Config
 import akka.stream.scaladsl.Merge
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
-  val INDEX_VERSION = 18
   val logger = Logging(system, getClass)
 
   case class FacetDefinition(
@@ -105,68 +104,12 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
           case None           => false
         })))
 
-  /**
-   * Returns an initialised {@link ElasticClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
-   *  ensures that all queries will only complete after the client is initialised.
-   */
-  private val setupFuture = setup()
-
-  /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the index */
-  private def setup(): Future[ElasticClient] = {
-    implicit val scheduler = system.scheduler
-
-    // Connect to the ES client - quite often the API will actually start before ES starts accepting connections, so keep retrying until it lets us in.
-    def onRetry = (retriesLeft: Int) => logger.warning("Failed to make initial contact with ES server, {} retries left", retriesLeft)
-    retry(Future {
-      val uri = ElasticsearchClientUri("elasticsearch://search:9300")
-      val client = ElasticClient.transport(uri)
-      client.execute(get cluster health).map(_ => client)
-    }.flatMap(a => a), 10 seconds, 10, onRetry)
-      .flatMap { client =>
-        logger.debug("Successfully connected to ES client")
-
-        // Now get the version of the index on the ES server, which we've stored as a document in ES unless this ES server is brand new.
-        client.execute {
-          get id "indexversion" from "magda" / "config"
-        } flatMap { a =>
-          // If there was no stored index version at all, default to 0
-          val indexVersion = if (a.isSourceEmpty || !a.isExists) 0 else a.source.get("version").asInstanceOf[Int]
-          logger.info("Magda index version is {}", indexVersion)
-
-          // If the index version on ES is lower than the code's version, wipe it all and start again.
-          if (indexVersion != INDEX_VERSION) {
-            client.execute {
-              delete index "magda"
-            } flatMap { x =>
-              createIndex(client)
-            }
-          } else Future.successful(Right(Unit))
-        } recover {
-          // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
-          case outer: RemoteTransportException => outer.getCause match {
-            case (inner: IndexNotFoundException) => {
-              logger.warning("Magda index was not present, if this is the first boot with a new index version this is fine: {}", outer.getMessage)
-              createIndex(client)
-            }
-            case e =>
-              logger.error(e, "Failed to set up the index")
-              throw e
-          }
-          case e =>
-            logger.error(e, "Failed to set up the index")
-            throw e
-        } map { x =>
-          // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
-          client
-        }
-      }
-  }
-
-  private def createIndex(client: ElasticClient): Future[IndexResult] = {
-    logger.info("Creating index with version {}", INDEX_VERSION)
-
-    client.execute {
-      create.index("magda").mappings(
+  case class IndexDefinition(val name: String, val version: Int, val definition: CreateIndexDefinition, val create: ElasticClient => Unit = client => Unit)
+  val indexes = Seq(new IndexDefinition(
+    name = "datasets",
+    version = 4,
+    definition =
+      create.index("datasets").mappings(
         mapping("datasets").fields(
           field("temporal").inner(
             field("start").inner(
@@ -183,45 +126,125 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
             field("geoJson").typed(GeoShapeType))),
         mapping(Format.id),
         mapping(misc.Year.id),
-        mapping(Publisher.id),
-        mapping("regions").fields(
-          field("geometry").typed(GeoShapeType))).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
-    } flatMap { _ =>
-      logger.info("Index created")
+        mapping(Publisher.id))
+        .analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
+    new IndexDefinition(
+      name = "regions",
+      version = 5,
+      definition =
+        create.index("regions").mappings(mapping("regions").fields(
+          field("geometry").typed(GeoShapeType))),
+      create = setupRegions))
+  /**
+   * Returns an initialised {@link ElasticClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
+   *  ensures that all queries will only complete after the client is initialised.
+   */
+  private val setupFuture = setup()
 
-      // Create ABS regions but don't wait for it to finish.
-      RegionSource.loadFromConfig(Config.conf.getConfig("regionSources")).map(regionSource =>
-        RegionLoader.loadABSRegions(regionSource).map(j =>
-          ElasticDsl.index
-            .into("magda" / "regions")
-            .id(s"${regionSource.name}/${j.getFields("properties").head.asJsObject.getFields(regionSource.id).head.asInstanceOf[JsString].value}")
-            .source(j.toJson)
-        ))
-        .reduce((x, y) => Source.combine(x, y)(Merge(_)))
-        .batch(5, Seq(_))(_ :+ _)
-        .mapAsync(1)(values =>
-          client.execute(bulk(values))
-        )
-        .runWith(Sink.seq)
-        .onComplete {
-          case Success(results) =>
-            val failures = results.filter(_.hasFailures)
+  /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the index */
+  private def setup(): Future[ElasticClient] = {
+    implicit val scheduler = system.scheduler
 
-            if (failures.size > 0) {
-              logger.error("Failures when indexing regions, this means spatial search won't work:\n{}" + failures.foldLeft("")(_ + "\n" + _.failureMessage))
-            } else {
-              logger.info("Successfully indexed {} regions", results.foldLeft(0)((a, b: BulkResult) => a + b.successes.length))
+    // Connect to the ES client - quite often the API will actually start before ES starts accepting connections, so keep retrying until it lets us in.
+    def onRetry = (retriesLeft: Int) => logger.warning("Failed to make initial contact with ES server, {} retries left", retriesLeft)
+    retry(Future {
+      val uri = ElasticsearchClientUri("elasticsearch://search:9300")
+      ElasticClient.transport(uri)
+    }.flatMap { client =>
+      val getIndexesQueries = indexes.map(indexDef =>
+        client.execute(get id "indexversion" from indexDef.name / "config")
+          .map(x => if (x.isSourceEmpty || !x.isExists) 0 else x.source.get("version").asInstanceOf[Int])
+          .recover {
+            // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
+            case outer: RemoteTransportException => outer.getCause match {
+              case (inner: IndexNotFoundException) => {
+                logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, outer.getMessage)
+                0
+              }
             }
-          case Failure(e) => logger.error(e, "Oops")
-        }
+          })
 
-      // Now we've created the index, record the version of it so we can look at it next time we boot up.
-      logger.info("Recording index version")
-      client.execute {
-        ElasticDsl.index into "magda" / "config" id "indexversion" source Map("version" -> INDEX_VERSION).toJson
+      val combinedIndicesFuture = Future.sequence(getIndexesQueries)
+
+      combinedIndicesFuture.map(versions => versions.zip(indexes))
+        .map(versionPairs => (client, versionPairs))
+    }, 10 seconds, 10, onRetry)
+      .flatMap {
+        case (client, versionPairs) =>
+          logger.debug("Successfully connected to ES client")
+
+          Future.sequence(createIndices(client, versionPairs)).map { x =>
+            // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
+            client
+          }
       }
-    }
   }
+
+  def setupRegions(client: ElasticClient) = // Create ABS regions but don't wait for it to finish.
+    RegionSource.loadFromConfig(Config.conf.getConfig("regionSources")).map(regionSource =>
+      RegionLoader.loadABSRegions(regionSource).map(j =>
+        ElasticDsl.index
+          .into("regions" / "regions")
+          .id(s"${regionSource.name}/${j.getFields("properties").head.asJsObject.getFields(regionSource.id).head.asInstanceOf[JsString].value}")
+          .source(j.toJson)
+      ))
+      .reduce((x, y) => Source.combine(x, y)(Merge(_)))
+      // This creates a buffer of 50mb (roughly) of indexed regions that will be bulk-indexed in the next ES request 
+      .batchWeighted(50000000L, defin => defin.build.source().length(), Seq(_))(_ :+ _)
+      // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
+      // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
+      // available to index them right away
+      .mapAsync(1) { values =>
+        logger.debug("Indexing {} regions", values.length)
+        client.execute(bulk(values))
+      }
+      .runWith(Sink.seq)
+      .onComplete {
+        case Success(results) =>
+          val failures = results.filter(_.hasFailures)
+
+          if (failures.size > 0) {
+            logger.error("Failures when indexing regions, this means spatial search won't work:\n{}" + failures.foldLeft("")(_ + "\n" + _.failureMessage))
+          } else {
+            logger.info("Successfully indexed {} regions", results.foldLeft(0)((a, b: BulkResult) => a + b.successes.length))
+          }
+        case Failure(e) => logger.error(e, "Oops")
+      }
+
+  private def createIndices(client: ElasticClient, versionPairs: Seq[(Int, IndexDefinition)]) =
+    versionPairs.map {
+      case (indexVersion, definition) =>
+        logger.info("{} index version is {}", definition.name, indexVersion)
+
+        val deleteIndex = if (indexVersion != 0)
+          client.execute {
+            delete index definition.name
+          }
+        else
+          Future.successful(Unit)
+
+        // If the index version on ES is lower than the code's version, wipe it all and start again.
+        if (indexVersion != definition.version) {
+          deleteIndex flatMap { _ =>
+            client.execute(definition.definition)
+          } recover {
+            case e: Throwable =>
+              logger.error(e, "Failed to set up the index")
+              throw e
+          } flatMap { _ =>
+            logger.info("Index {} version {} created", definition.name, definition.version)
+
+            definition.create(client)
+
+            // Now we've created the index, record the version of it so we can look at it next time we boot up.
+            logger.info("Recording index version")
+
+            client.execute {
+              ElasticDsl.index into definition.name / "config" id "indexversion" source Map("version" -> definition.version).toJson
+            }
+          }
+        } else Future.successful(Right(Unit))
+    }
 
   // Only do give one operation to elasticsearch at a time, otherwise we risk overflowing its op queue. Operations that build up
   // while a previous one in progress will be batched together and bulk-executed when the previous one completes, up to 10... anything
@@ -249,7 +272,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   override def needsReindexing() = {
     setupFuture.flatMap(client =>
       client.execute {
-        ElasticDsl.search in "magda" / "datasets" limit 0
+        ElasticDsl.search in "datasets" / "datasets" limit 0
       } map { result =>
         logger.debug("Reindex check hit count: {}", result.getHits.getTotalHits)
         result.getHits.getTotalHits == 0
@@ -261,7 +284,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       client.execute {
         bulk(
           dataSets.map { dataSet =>
-            val indexDataSet = ElasticDsl.index into "magda" / "datasets" id dataSet.uniqueId source (
+            val indexDataSet = ElasticDsl.index into "datasets" / "datasets" id dataSet.uniqueId source (
               dataSet.copy(
                 years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
                   case Nil  => None
@@ -269,18 +292,18 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
                 }).toJson)
 
             val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-              ElasticDsl.index into "magda" / Publisher.id
+              ElasticDsl.index into "datasets" / Publisher.id
                 id publisherName.toLowerCase
                 source Map("value" -> publisherName).toJson))
 
             val indexYears = getYears(
               dataSet.temporal.flatMap(_.start.flatMap(_.date)),
-              dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "magda" / misc.Year.id id year source Map("value" -> year).toJson)
+              dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "datasets" / misc.Year.id id year source Map("value" -> year).toJson)
 
             val indexFormats = dataSet.distributions.map(_.filter(_.format.isDefined).map { distribution =>
               val format = distribution.format.get
 
-              ElasticDsl.index into "magda" / Format.id id format.toLowerCase source Map("value" -> format).toJson
+              ElasticDsl.index into "datasets" / Format.id id format.toLowerCase source Map("value" -> format).toJson
             }).getOrElse(Nil)
 
             indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
@@ -291,7 +314,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   override def search(query: Query, limit: Int) = {
     setupFuture.flatMap(client =>
       client.execute {
-        addAggregations(addQuery(ElasticDsl.search in "magda" / "datasets" limit limit, query), query)
+        addAggregations(addQuery(ElasticDsl.search in "datasets" / "datasets" limit limit, query), query)
       } map { response =>
         val aggsMap = response.aggregations.asMap().asScala
 
@@ -362,7 +385,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     matchQuery("distributions.format", format))
   private def regionIdQuery(regionId: String) = indexedGeoShapeQuery("spatial.geoJson", regionId, "regions")
     .relation(ShapeRelation.INTERSECTS)
-    .shapeIndex("magda")
+    .shapeIndex("regions")
     .shapePath("geometry")
   private def dateFromQuery(dateFrom: Instant) = filter(should(
     rangeQuery("temporal.end.date").gte(dateFrom.toString),

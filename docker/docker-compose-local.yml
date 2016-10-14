@@ -15,6 +15,9 @@ services:
       - "8000:8000"
     volumes:
       - ../:/usr/src/app/
+      - /usr/src/app/target/
+      - /usr/src/app/project/target/
+      - /usr/src/app/project/project/target/
       - ~/.ivy2/:/root/.ivy2/
   search:
     extends:

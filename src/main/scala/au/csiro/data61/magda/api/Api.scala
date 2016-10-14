@@ -37,7 +37,7 @@ import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 
 class Api(implicit val config: Config, implicit val system: ActorSystem,
-          implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends misc.Protocols with CorsDirectives {
+  implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends misc.Protocols with CorsDirectives {
   val logger = Logging(system, getClass)
 
   implicit def rejectionHandler = RejectionHandler.newBuilder()
@@ -86,9 +86,9 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
               val result = SearchProvider().search(QueryCompiler(query), limit)
 
               pathPrefix("datasets") {
-                complete {
+                complete(
                   result.map(_.copy(facets = None))
-                }
+                )
               } ~ pathPrefix("facets") {
                 complete {
                   result.map(_.facets)
