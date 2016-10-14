@@ -4,6 +4,7 @@ import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
 import FilterSearchBox from './FilterSearchBox';
 import React from 'react'
+import find from 'lodash.find';
 
 
 const regionTypeOptions = getRegionTypes();
@@ -42,7 +43,7 @@ class JurisdictionPopup extends Filter {
       })
 
       this.props.updateQuery({
-          jurisdictionType: regionType
+          jurisdictionType: regionType.id
       });
     }
     render(){
@@ -69,7 +70,7 @@ class JurisdictionPopup extends Filter {
                     </div>
                     <div className='col-sm-6'>
                         <DropDown options={regionTypeOptions}
-                                  activeOption={this.props.location.query.jurisdictionType || regionTypeOptions[0] }
+                                  activeOption={find(regionTypeOptions, o=>o.id === this.props.location.query.jurisdictionType) || regionTypeOptions[0] }
                                   select={this.selectRegionType}
                         />
                     </div>

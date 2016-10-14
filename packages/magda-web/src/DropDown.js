@@ -29,10 +29,10 @@ class DropDown extends Component {
   render(){
     return (
       <div className={`dropdown ${this.state.isOpen ? 'is-open': ''}`}>
-        <button className='btn-dropdown btn' onClick={this.toggle}>{this.props.activeOption}<i className='fa fa-caret-down' aria-hidden='true'></i></button>
+        <button className='btn-dropdown btn' onClick={this.toggle}>{this.props.activeOption.value}<i className='fa fa-caret-down' aria-hidden='true'></i></button>
         <ul className='list-unstyled dropdown-options'>
           {this.props.options.map(o=>
-          <li key={o}><button className='btn btn-dropdown--option'  onClick={this.select.bind(this, o)}>{o}</button></li>)}
+          <li key={o.id}><button className='btn btn-dropdown--option'  onClick={this.select.bind(this, o)}>{o.value}</button></li>)}
         </ul>
 
       </div>
@@ -41,8 +41,8 @@ class DropDown extends Component {
 }
 
 DropDown.propTypes = {options: React.PropTypes.array,
-                      activeOption: React.PropTypes.string,
+                      activeOption: React.PropTypes.object,
                       select: React.PropTypes.func};
-DropDown.defaultProps = {activeOption: ''};
+DropDown.defaultProps = {activeOption: {}};
 
 export default DropDown;
