@@ -83,33 +83,47 @@ class Filter extends Component {
     }, (err)=>{console.warn(err)});
   }
 
+  /**
+   * enable and disable this filter option
+   * @param {object}  option, the current filter option
+   * @param {boolean} allowMultiple wether if multiple options can be activited at the same time. For example, we can have multiple publishers turned on but we can only have one jurisdiction at one time
+   * @param {function} callback defines what happens when the toggle action is done, for example, when searching the filter, the input box should be cleared once user clicks on a option from the filter search result list
+   */
 
   toggleFilter(option, allowMultiple, callback){
+    // get the updated query, firstly chck if multiple values of the same facet are allowed, if so, merge the current value with existing value, otherwise, replace the facet value with the current one
     let query = toggleQuery(option, this.props.location.query[this.props.id], allowMultiple);
 
-    // update url
+    // update url using the new values of this facet
     this.props.updateQuery({[this.props.id]: query});
 
+    // if callback function is defined, do the callback
     if(defined(callback) && typeof callback ==='function'){
       callback();
     }
   }
 
-
+  /**
+   * reset the filter === remove any filters of this facet
+   */
   resetFilter(){
     // remove query in the url
     this.props.updateQuery({[this.props.id]: []});
   }
 
-
+  /**
+   * open the result list when user starts typing in the search box
+   */
   toggleOpen(){
-    // open the result list when user starts typing in the search box
     this.setState({
       isOpen: !this.state.isOpen
     })
   }
 
-
+  /**
+   * monitor loading progress of the current request
+   * @param {object} oEvent loading event
+   */
   updateProgress (oEvent) {
     if (oEvent.lengthComputable) {
       this.setState({
@@ -121,6 +135,13 @@ class Filter extends Component {
     }
   }
 
+  /**
+   * generate the html for a option of this filter
+   * @param {object} option the current option to render
+   * @param {object} optionMax the option with the max value of object.value, this is uased to calculate the width of the volumne indicator
+   * @param {function} callback a function that get called after user clicks on this option
+   * @param (boolean) onFocus whether this option should be in focus or not
+   */
   renderOption(option, optionMax, callback, onFocus){
     let allowMultiple = true;
 
@@ -174,11 +195,14 @@ class Filter extends Component {
 
 
   render() {
+    // default list of options to display for the facet filter except those already active, which will be displayed in a seperate list
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
+    // the option that has the max object.value value, use to calculate volumne indicator
     let maxOptionFromDefaultOptionList = maxBy(this.props.options, o=> +o.hitCount);
+    // the size of the list visible by default, it should either be DEFAULTSIZE or the size of the list if there's no overflow
     let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
+    // the size of list to display, depends on whether the list is expanded or not
     let size = this.state.isOpen ? inactiveOptions.length : tempSize;
-
     // is the number of facet options to display more than the default size? if so, we should hide the overflow and provide a "show more" button
     let overflow = inactiveOptions.length - tempSize;
 
