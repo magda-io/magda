@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import FilterPublisher from './FilterPublisher';
 import FilterDataFormat from './FilterDataFormat';
 import FilterDateRange from './FilterDateRange';
 import FilterJurisdiction from './FilterJurisdiction';
+import FilterPublisher from './FilterPublisher';
+import React, { Component } from 'react';
 
 
 class SearchFilters extends Component {
@@ -36,9 +36,10 @@ class SearchFilters extends Component {
   }
 
   render() {
+    // only displays the facet filters if there is a search keyword
     return (
       <div>
-      {this.props.location.query.q && this.renderFilters()}
+        {this.props.location.query.q && this.renderFilters()}
       </div>
     );
   }

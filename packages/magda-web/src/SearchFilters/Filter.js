@@ -244,7 +244,6 @@ class Filter extends Component {
 Filter.propTypes = {options: React.PropTypes.array,
                     title: React.PropTypes.string,
                     id: React.PropTypes.string,
-                    toggleFilter: React.PropTypes.func,
                     location: React.PropTypes.object,
                     updateQuery: React.PropTypes.func};
 
