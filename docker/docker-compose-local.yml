@@ -4,8 +4,12 @@ services:
     extends:
       file: docker-compose-base.yml
       service: api
-#    links:
- #     - search
+    expose:
+     - "9000"
+    ports:
+      - "9000:9000"
+    links:
+      - search
     environment:
       - SCALA_ENV=local
     build:

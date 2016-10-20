@@ -1,13 +1,11 @@
 version: '2'
 services:
   api:
-    expose:
-     - "9000"
-    ports:
-      - "9000:9000"
     volumes:
       - ../regions:/usr/regions
   search:
+    environment:
+      - ES_HEAP_SIZE=2g
     image: "elasticsearch"
     expose:
      - "9200"

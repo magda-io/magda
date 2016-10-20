@@ -62,6 +62,7 @@ import au.csiro.data61.magda.api.Region
 import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper
 import org.elasticsearch.search.SearchParseException
 import org.elasticsearch.action.search.SearchPhaseExecutionException
+import akka.stream.OverflowStrategy
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = Logging(system, getClass)
@@ -111,7 +112,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   case class IndexDefinition(val name: String, val version: Int, val definition: CreateIndexDefinition, val create: ElasticClient => Unit = client => Unit)
   val indexes = Seq(new IndexDefinition(
     name = "datasets",
-    version = 4,
+    version = 8,
     definition =
       create.index("datasets").mappings(
         mapping("datasets").fields(
@@ -139,11 +140,52 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         create.index("regions").mappings(mapping("regions").fields(
           field("geometry").typed(GeoShapeType))),
       create = setupRegions))
+
   /**
    * Returns an initialised {@link ElasticClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
    *  ensures that all queries will only complete after the client is initialised.
    */
   private val setupFuture = setup()
+
+  private lazy val indexQueue = Source.queue[(String, List[DataSet])](Integer.MAX_VALUE, OverflowStrategy.backpressure)
+    .mapAsync(1) {
+      case (_, dataSets) =>
+        setupFuture.flatMap(client =>
+          client.execute {
+            bulk(
+              dataSets.map { dataSet =>
+                val indexDataSet = ElasticDsl.index into "datasets" / "datasets" id dataSet.uniqueId source (
+                  dataSet.copy(
+                    years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
+                      case Nil  => None
+                      case list => Some(list)
+                    }).toJson)
+
+                val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
+                  ElasticDsl.index into "datasets" / Publisher.id
+                    id publisherName.toLowerCase
+                    source Map("value" -> publisherName).toJson))
+
+                val indexYears = getYears(
+                  dataSet.temporal.flatMap(_.start.flatMap(_.date)),
+                  dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "datasets" / misc.Year.id id year source Map("value" -> year).toJson)
+
+                val indexFormats = dataSet.distributions.map(_.filter(_.format.isDefined).map { distribution =>
+                  val format = distribution.format.get
+
+                  ElasticDsl.index into "datasets" / Format.id id format.toLowerCase source Map("value" -> format).toJson
+                }).getOrElse(Nil)
+
+                indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
+              }.flatten)
+          }.recover {
+            case t: Throwable =>
+              logger.error(t, "Error when indexing records")
+              throw t
+          })
+    }
+    .to(Sink.ignore)
+    .run()
 
   /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the index */
   private def setup(): Future[ElasticClient] = {
@@ -196,7 +238,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       ))
       .reduce((x, y) => Source.combine(x, y)(Merge(_)))
       // This creates a buffer of 50mb (roughly) of indexed regions that will be bulk-indexed in the next ES request 
-      .batchWeighted(50000000L, defin => defin.build.source().length(), Seq(_))(_ :+ _)
+      .batchWeighted(AppConfig.conf.getLong("regionBufferMb") * 1000000, defin => defin.build.source().length(), Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
       // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
       // available to index them right away
@@ -204,13 +246,20 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         logger.debug("Indexing {} regions", values.length)
         client.execute(bulk(values))
       }
+      .map { result =>
+        if (result.hasFailures) {
+          logger.error("Failure: {}", result.failureMessage)
+        }
+
+        result
+      }
       .runWith(Sink.seq)
       .onComplete {
         case Success(results) =>
           val failures = results.filter(_.hasFailures)
 
           if (failures.size > 0) {
-            logger.error("Failures when indexing regions, this means spatial search won't work:\n{}" + failures.foldLeft("")(_ + "\n" + _.failureMessage))
+            logger.error("Failures when indexing regions, this means spatial search won't work")
           } else {
             logger.info("Successfully indexed {} regions", results.foldLeft(0)((a, b: BulkResult) => a + b.successes.length))
           }
@@ -290,35 +339,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   }
 
   override def index(source: String, dataSets: List[DataSet]) = {
-    setupFuture.flatMap(client =>
-      client.execute {
-        bulk(
-          dataSets.map { dataSet =>
-            val indexDataSet = ElasticDsl.index into "datasets" / "datasets" id dataSet.uniqueId source (
-              dataSet.copy(
-                years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
-                  case Nil  => None
-                  case list => Some(list)
-                }).toJson)
-
-            val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-              ElasticDsl.index into "datasets" / Publisher.id
-                id publisherName.toLowerCase
-                source Map("value" -> publisherName).toJson))
-
-            val indexYears = getYears(
-              dataSet.temporal.flatMap(_.start.flatMap(_.date)),
-              dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "datasets" / misc.Year.id id year source Map("value" -> year).toJson)
-
-            val indexFormats = dataSet.distributions.map(_.filter(_.format.isDefined).map { distribution =>
-              val format = distribution.format.get
-
-              ElasticDsl.index into "datasets" / Format.id id format.toLowerCase source Map("value" -> format).toJson
-            }).getOrElse(Nil)
-
-            indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
-          }.flatten)
-      })
+    indexQueue.offer((source, dataSets))
   }
 
   override def search(query: Query, limit: Int) = {
