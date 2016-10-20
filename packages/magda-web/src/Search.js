@@ -58,7 +58,7 @@ class Search extends Component {
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
 
-    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/datasets/search?query=${keyword}`).then((data)=>{
+    getJSON(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`).then((data)=>{
       this.setState({
         filterPublisher: data.facets[0].options,
         filterTemporal: data.facets[1].options,
@@ -75,7 +75,7 @@ class Search extends Component {
       })
 
       // This query will have facets as well
-      getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/datasets/search?query=${keyword}`,
+      getJSON(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`,
         this.updateProgress,
         this.transferComplete,
         this.transferFailed,

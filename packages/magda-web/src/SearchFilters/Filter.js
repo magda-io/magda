@@ -64,11 +64,10 @@ class Filter extends Component {
     // when searching facets, we need to change "publishers" and "formats" into "publisher" and "format"
     let facet = this.props.id.replace(/s+$/, "");
 
-    getJSON(`http://ec2-52-65-238-161.ap-southeast-2.compute.amazonaws.com:9000/facets/${facet}/options/search?query=${keyword}`,
+    getJSON(`http://magda-search-api.terria.io/facets/${facet}/options/search?query=${keyword}`,
        this.updateProgress
      ).then((data)=>{
        let filteredOptions = [];
-
       // if the searchText is part of the option value string, consider we found a match
       data.options.forEach((c)=>{
         if(c.value.toLowerCase().indexOf(searchText.toLowerCase())!==-1){
