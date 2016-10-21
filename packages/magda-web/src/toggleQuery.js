@@ -1,5 +1,5 @@
 export default function (option, currrentQuery, allowMultiple) {
-
+  // add or remove query from the current query list
   let newQuery = [];
 
   if (allowMultiple === true){

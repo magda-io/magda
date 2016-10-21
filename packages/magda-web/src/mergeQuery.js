@@ -1,8 +1,13 @@
 import defined from './defined';
+
+// create a array
+// if current query is undefined, return an array with the new item
+// if current query is defined but not array, return an array with both new and old items
+// if current is defined and is array, append new item
 export default function (query, currrentQuery) {
   let newQuery = [];
-    // force filters into array
-    if (!currrentQuery){
+    // force query into array
+    if (!defined(currrentQuery)){
       newQuery = [];
     }
     // if already array

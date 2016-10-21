@@ -26,25 +26,29 @@ class Search extends Component {
     this.debouncedSearch = debounce(this.doSearch, 1000);
     this.debouncedGetFacets = debounce(this.getFacets, 150);
 
+    /**
+     * @type {Object}
+     * @property {Array} searchResults results from search
+     * @property {Array} filterPublisher default list of publsihers to display in the publishers facet filter
+     * @property {Array} filterTemporal default list of dates to display in the publishers facet filter
+     * @property {Array} filterFormat default list of formats to display in the publishers facet filterss
+     * @property {Number} loadingProgress the percentage of the search progress
+     * @property {Object} userEnteredQuery query returned from natual language processing
+     */
     this.state = {
       searchResults: [],
       filterPublisher: [],
       filterTemporal: [],
       filterFormat: [],
       loadingProgress: null,
-      allPublishers: [],
       userEnteredQuery: {}
     };
   }
 
   updateSearchText(newText) {
-    this.context.router.push({
-      pathname: this.props.location.pathname,
-      query: { q: newText },
-    });
+    this.updateQuery({ q: newText });
     this.debouncedGetFacets();
     this.debouncedSearch();
-
   }
 
   componentWillMount(){

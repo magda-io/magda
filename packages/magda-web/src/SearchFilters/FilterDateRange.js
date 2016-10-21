@@ -75,8 +75,6 @@ class FilterDateRange extends Filter {
     let currentdateTo = this.props.location.query.dateTo;
     let optionDate =  option.value;
     let sortedOptions = this.props.options;
-    console.log(currentdateTo);
-    console.log(currentdateFrom);
 
     // if neither current start date and end date exists, set selection to both
     if(!currentdateFrom && !currentdateTo){

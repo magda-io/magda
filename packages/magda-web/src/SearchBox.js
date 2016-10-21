@@ -8,10 +8,12 @@ class SearchBox extends Component {
   }
 
   handleChange(event){
+    // search happening!
     this.props.updateSearchText(event.target.value);
   }
 
   handleKeyPress(event) {
+    // when user hit enter, no need to submit the form
     if(event.charCode===13){
         event.preventDefault();
     }
@@ -35,10 +37,9 @@ class SearchBox extends Component {
     );
   }
 }
-SearchBox.propTypes =
-  {searchValue: React.PropTypes.string,
-   updateSearchText: React.PropTypes.func
-  };
+SearchBox.propTypes = {searchValue: React.PropTypes.string,
+                       updateSearchText: React.PropTypes.func};
+
 SearchBox.defaultProps = { searchValue: '' };
 
 export default SearchBox;

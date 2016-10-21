@@ -1,4 +1,11 @@
 export default function (option, query) {
+  /**
+   * @exports checkActiveOption
+   *
+   * @param {Object} option The option to check
+   * @returns {Array} query the query paramater in which we need to find out if the option exist. query might be a string or a list of strings
+   *
+   */
   if(!query){
     return false;
   }
