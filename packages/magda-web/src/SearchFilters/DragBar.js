@@ -8,14 +8,18 @@ const color = '#3498db';
 const colorLight = '#a0cfee';
 const colorHighlight = '#8ac4ea';
 
-
+/**
+* Drag bar component, provides a dragging interface for user to select a date range
+*/
 class DragBar extends Component {
     componentDidMount(){
       let that = this;
+      // create a 'g' tag inside the svg to contain all our svg components
       let g = this.refs['g'];
       let data = this.props.dragBarData;
       let debouncedUpdate = debounce(this.props.updateDragBar, 150);
 
+      // create a bar to indicate range
       this._bar = d3Select(g).append('rect')
       .attr('width', r*2)
       .attr('height', Math.abs(this.props.dragBarData[0] - this.props.dragBarData[1]))
@@ -23,6 +27,7 @@ class DragBar extends Component {
       .attr('y', this.props.dragBarData[0] - this.props.dragBarData[1] < 0 ? this.props.dragBarData[0] : this.props.dragBarData[1])
       .style('fill', colorLight);
 
+      // create two handles to listen to drag events
       this._handles = d3Select(g).selectAll('rect.handle')
         .data(data).enter().append('rect')
         .attr('class', 'handle')
@@ -36,6 +41,7 @@ class DragBar extends Component {
       this._handles.call(dragInteraction);
 
       function start(d){
+        // highlight on drag starts
         d3Select(this).style('fill', colorHighlight);
       }
 
@@ -61,7 +67,9 @@ class DragBar extends Component {
         }
 
         data[i] = y;
-        that.update(data);
+        // update UI first to give user the illusion that it's REALLY responsive
+        that.updateUI(data);
+        // then debounce update url
         debouncedUpdate(i, y);
       }
 
@@ -70,8 +78,10 @@ class DragBar extends Component {
       }
     }
 
-    update(data){
+    updateUI(data){
+      // update handle position
       this._handles.data(data).attr('y', d=> d);
+      // update bar position
       this._bar.attr('height', Math.abs(data[0] - data[1]))
                .attr('y', data[0] - data[1] < 0 ? data[0] : data[1]);
     }
@@ -79,7 +89,7 @@ class DragBar extends Component {
     componentWillReceiveProps(nextProps){
       if(nextProps.dragBarData[0] !== this.props.dragBarData[0] ||
          nextProps.dragBarData[1] !== this.props.dragBarData[1] ){
-        this.update(nextProps.dragBarData);
+        this.updateUI(nextProps.dragBarData);
       }
     }
 

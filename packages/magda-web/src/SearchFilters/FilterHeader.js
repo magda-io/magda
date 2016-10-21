@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-
+import defined from '../defined';
+/**
+  * Filter header component, contains a title of the filter and a reset button when there is a active filter
+  */
 class FilterHeader extends Component {
-
   hasQuery(query){
     // Note: need to be able to handle multiple query
-    if (query == null){
+    if (!defined(query)){
       return false;
     }
     else if(query.length === 0){
@@ -12,8 +14,6 @@ class FilterHeader extends Component {
     }
     return true;
   }
-
-
 
   render(){
     return (
