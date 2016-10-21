@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import './FilterSearchBox.css';
 import ProgressBar from '../ProgressBar';
-import defined from '../defined';
 
+/**
+  * Searchbox for facet filter
+  */
 class FilterSearchBox extends Component {
   constructor(props) {
     super(props);
@@ -11,6 +13,11 @@ class FilterSearchBox extends Component {
     this.callback = this.callback.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
 
+    /**
+     * @type {object}
+     * @property {string} searchText the user input when doing search
+     * @property {number} indexOfOptionOnFocus the index of option on focus when using keyboard up and down keys to navigate
+     */
     this.state ={
       searchText: '',
       indexOfOptionOnFocus: -1

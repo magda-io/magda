@@ -12,29 +12,14 @@ const regionTypeOptions = getRegionTypes();
 class JurisdictionPopup extends Filter {
     constructor(props) {
         super(props);
-        this.state={
-            searchText: '',
-            locationInfo: undefined,
-        }
-        this.selectRegionType = this.selectRegionType.bind(this);
-        this.clearSearch = this.clearSearch.bind(this);
-    }
-
-    componentWillMount(){
-
-    }
-
-    handleChange(e){
-        this.setState({
-            searchText: e.target.value
-        });
-    }
-
-
-    clearSearch(){
-      this.setState({
-          searchText: ''
-      });
+        /**
+         * @type {object}
+         * @property {object} activeRegionType current region type, contains an id and a vlaue, fro example, {id: 'LGA', value:'LGAs (Local Goverment Areas)'}
+         */
+         this.state={
+             activeRegionType: regionTypeOptions[0],
+         }
+         this.selectRegionType = this.selectRegionType.bind(this);
     }
 
     selectRegionType(regionType){
@@ -64,7 +49,7 @@ class JurisdictionPopup extends Filter {
                                        searchFilter={this.props.searchLocation}
                                        loadingProgress={this.props.loadingProgress}
                                        renderOption={this.props.renderOption}
-                                       toggleFilter={this.props.toggleFilter}
+                                       toggleOption={this.props.toggleOption}
                                        options={this.props.locationSearchResults}
                       />
                     </div>

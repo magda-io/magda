@@ -5,11 +5,16 @@ import defined from '../defined';
   */
 class FilterHeader extends Component {
   hasQuery(query){
-    // Note: need to be able to handle multiple query
+    // if query is undefined, or if query is[], or [undefined, undefined], then no need to render reset button
+    // if query is defined, then render reset button
     if (!defined(query)){
       return false;
     }
     else if(query.length === 0){
+      return false;
+    }
+
+    else if(!defined(query[0]) && !defined(query[1])){
       return false;
     }
     return true;
@@ -21,7 +26,7 @@ class FilterHeader extends Component {
         <h4 className='filter-title'>{this.props.title}</h4>
         {this.hasQuery(this.props.query) && <button type='button'
                                                     className='btn btn-reset'
-                                                    onClick={()=>{this.props.resetFilter()}}>Reset</button>}
+                                                    onClick={()=>{this.props.removeFilter()}}>Reset</button>}
 
       </div>
       );
@@ -29,7 +34,7 @@ class FilterHeader extends Component {
 }
 
 FilterHeader.propTypes = {title: React.PropTypes.string,
-                          resetFilter: React.PropTypes.func};
-FilterHeader.defaultProps = {searchText: ''};
+                          removeFilter: React.PropTypes.func};
+FilterHeader.defaultProps = {title: ''};
 
 export default FilterHeader;

@@ -12,6 +12,9 @@ import React from 'react'
 
 const regionTypeOptions = getRegionTypes();
 
+/*
+* the jurisdiction (location) facet filter, extends Filter class
+*/
 class FilterJurisdiction extends Filter {
     constructor(props) {
         super(props);
@@ -22,20 +25,32 @@ class FilterJurisdiction extends Filter {
         this.searchLocation = this.searchLocation.bind(this);
         this.renderOption = this.renderOption.bind(this);
 
+        /**
+         * @type {object}
+         * @property {boolean} popUpIsOpen whether the popup window that shows the bigger map is open or not
+         * @property {string} searchText the search text when searching for a location
+         * @property {array} locationSearchResults when searching for a location, the list of search results
+         * @property {array} locationInfo the infomation for the location selected either by search or by clicking a region on the map
+         * @property {array} activeRegionType activeRegionType == region type active jurisdiction || active region selected in popup map drop down, determines what vector tiles layer to display on map
+         */
         this.state={
             popUpIsOpen: false,
             searchText: '',
             locationSearchResults: [],
             locationInfo: undefined,
             activeRegionType: regionTypeOptions[0],
-            popupSearchText: ''
         }
     }
 
     componentWillMount(){
+        // url the url params to get teh full information about the active jurisdiction
         this.getLocationInfo();
     }
 
+    /**
+     * search for a jurisdiction
+     * @param {string} searchText, the text user type in the input box inside the facet filter
+     */
     searchLocation(text){
         getJsonp(`http://www.censusdata.abs.gov.au/census_services/search?query=${text || ' '}&cycle=2011&results=15&type=jsonp&cb=`).then(data=>{
             this.setState({
@@ -56,7 +71,7 @@ class FilterJurisdiction extends Filter {
         });
     }
 
-    resetFilter(){
+    removeFilter(){
         this.props.updateQuery({
             jurisdiction: [],
             jurisdictionType: []
@@ -65,10 +80,9 @@ class FilterJurisdiction extends Filter {
         this.setState({
             locationInfo: null,
         });
-
     }
 
-    toggleFilter(option, callback){
+    toggleOption(option, callback){
         this.props.updateQuery({
             jurisdiction: option.suggestion.code,
             jurisdictionType: option.suggestion.type
@@ -83,13 +97,19 @@ class FilterJurisdiction extends Filter {
         }
     }
 
-    onFeatureClick(evt, regionType){
+    /**
+     * activate a jurisdiction option by clicking a region on the map
+     * @param {string} regionCode, region code
+     * @param {string} regionType, region type
+     */
+    onFeatureClick(regionCode, regionType){
         this.props.updateQuery({
-            jurisdiction: evt,
+            jurisdiction: regionCode,
             jurisdictionType: regionType
         });
         this.getLocationInfo();
     }
+
 
     getLocationInfoInPlainText(){
         let result = this.state.locationInfo;
@@ -109,15 +129,10 @@ class FilterJurisdiction extends Filter {
     getLocationInfo(){
         let jurisdiction = this.props.location.query.jurisdiction;
         let jurisdictionType = this.props.location.query.jurisdictionType;
-        // let idRegionTypeMap = {
-        //   SA1: [26, 'MAIN'],
-        //   SA2: [27, 'MAIN'],
-        //   SA3: [28, 'CODE'],
-        //   SA4: [29, 'CODE']
-        // };
-
         if(jurisdiction && jurisdictionType){
-          // getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
+          // given jurisdiction and jurisdictionType we should be able to get a location object
+
+          //  getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
           //   if(data.results && data.results.length > 0 ){
           //     this.setState({
           //         locationInfo: data.results[0]
@@ -133,6 +148,8 @@ class FilterJurisdiction extends Filter {
       })
     }
 
+    // see Filter.renderOption(option, optionMax, callback, onFocus)
+    // Here is only for mark up change
     renderOption(option, optionMax, callback, onFocus){
       let result = option.suggestion;
       if(!result){
@@ -142,7 +159,7 @@ class FilterJurisdiction extends Filter {
             <button type='button'
                     ref={b=>{if(b != null && onFocus === true){b.focus()}}}
                     className='btn-facet-option btn btn-facet-option__location'
-                    onClick={this.toggleFilter.bind(this, option, callback)}
+                    onClick={this.toggleOption.bind(this, option, callback)}
                     title={option.name}>
               <span className='btn-facet-option__name'>{result.geographyLabel} , {result.stateLabel}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
               <span className='btn-facet-option__count'>100</span>
@@ -154,14 +171,14 @@ class FilterJurisdiction extends Filter {
         return (
             <div className='filter jurisdiction'>
               <FilterHeader query={this.props.location.query[this.props.id]}
-                            resetFilter={this.resetFilter}
+                            removeFilter={this.removeFilter}
                             title={this.props.title}/>
 
               <FilterSearchBox allowMultiple={false}
                                searchFilter={this.searchLocation}
                                loadingProgress={this.state.loadingProgress}
                                renderOption={this.renderOption}
-                               toggleFilter={this.toggleFilter}
+                               toggleOption={this.toggleOption}
                                options={this.state.locationSearchResults}/>
 
               <div className='filter-jurisdiction--summray'>
@@ -185,7 +202,7 @@ class FilterJurisdiction extends Filter {
                                                             locationInfo={this.state.locationInfo}
                                                             location={this.props.location}
                                                             closePopUp={this.closePopUp}
-                                                            toggleFilter={this.toggleFilter}
+                                                            toggleOption={this.toggleOption}
                                                             searchLocation={this.searchLocation}
                                                             loadingProgress={this.state.loadingProgress}
                                                             renderOption={this.renderOption}

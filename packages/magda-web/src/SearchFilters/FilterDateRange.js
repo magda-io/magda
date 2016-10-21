@@ -10,7 +10,7 @@ import defined from './../defined';
 // each filter option has a certain hight in order to calculate drag bar location
 const itemHeight = 35;
 
-// extends filter component
+// the date range facet filter, extends filter component
 class FilterDateRange extends Filter {
   constructor(props) {
     super(props);
@@ -70,7 +70,7 @@ class FilterDateRange extends Filter {
     });
   }
 
-  toggleFilter(option, i){
+  toggleOption(option, i){
     let currentdateFrom = +this.props.location.query.dateFrom;
     let currentdateTo = +this.props.location.query.dateTo;
     let optionDate = + option.value;
@@ -103,7 +103,7 @@ class FilterDateRange extends Filter {
     this.props.updateQuery({ 'dateTo': 'undefined' });
   }
 
-  resetFilter(){
+  removeFilter(){
     this.props.updateQuery({'dateFrom': []});
     this.props.updateQuery({'dateTo': []});
   }
@@ -141,7 +141,7 @@ class FilterDateRange extends Filter {
     }
 
     return (
-    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn-facet-date-option btn`}           onClick={this.toggleFilter.bind(this, option, i)}>
+    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn-facet-date-option btn`}           onClick={this.toggleOption.bind(this, option, i)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
@@ -185,8 +185,8 @@ class FilterDateRange extends Filter {
   render(){
     return (
       <div className='filter'>
-        <FilterHeader query={this.props.location.query.dateFrom}
-                      resetFilter={this.resetFilter}
+        <FilterHeader query={[this.props.location.query.dateFrom, this.props.location.query.dateTo]}
+                      removeFilter={this.removeFilter}
                       title={this.props.title}/>
             <div className='clearfix' id='drag-bar'>
               <div className='slider'>

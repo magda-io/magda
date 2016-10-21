@@ -13,7 +13,6 @@ import toggleQuery from '../toggleQuery';
 /**
   * Facet Filter component, for example, publisher filter, location filter, format filter, temporal filter
   */
-
 class Filter extends Component {
   constructor(props) {
     super(props);
@@ -32,8 +31,8 @@ class Filter extends Component {
 
     this.searchFilter = this.searchFilter.bind(this);
     this.renderOption = this.renderOption.bind(this);
-    this.resetFilter = this.resetFilter.bind(this);
-    this.toggleFilter= this.toggleFilter.bind(this);
+    this.removeFilter = this.removeFilter.bind(this);
+    this.toggleOption= this.toggleOption.bind(this);
     this.toggleOpen = this.toggleOpen.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
   }
@@ -50,7 +49,7 @@ class Filter extends Component {
 
 
   /**
-   * search for a spefic facet option
+   * search for a specific facet option
    * @param {string} searchText, the text user type in the input box inside the facet filter
    */
   searchFilter(searchText){
@@ -89,7 +88,7 @@ class Filter extends Component {
    * @param {function} callback defines what happens when the toggle action is done, for example, when searching the filter, the input box should be cleared once user clicks on a option from the filter search result list
    */
 
-  toggleFilter(option, allowMultiple, callback){
+  toggleOption(option, allowMultiple, callback){
     // get the updated query, firstly chck if multiple values of the same facet are allowed, if so, merge the current value with existing value, otherwise, replace the facet value with the current one
     let query = toggleQuery(option, this.props.location.query[this.props.id], allowMultiple);
 
@@ -105,7 +104,7 @@ class Filter extends Component {
   /**
    * reset the filter === remove any filters of this facet
    */
-  resetFilter(){
+  removeFilter(){
     // remove query in the url
     this.props.updateQuery({[this.props.id]: []});
   }
@@ -139,7 +138,7 @@ class Filter extends Component {
    * @param {object} option the current option to render
    * @param {object} optionMax the option with the max value of object.value, this is uased to calculate the width of the volumne indicator
    * @param {function} callback a function that get called after user clicks on this option
-   * @param (boolean) onFocus whether this option should be in focus or not
+   * @param {boolean} onFocus whether this option should be in focus or not
    */
   renderOption(option, optionMax, callback, onFocus){
     let allowMultiple = true;
@@ -154,7 +153,7 @@ class Filter extends Component {
     <button type='button'
             ref={b=>{if(b != null && onFocus === true){b.focus()}}}
             className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`}
-            onClick={this.toggleFilter.bind(this, option, allowMultiple, callback)}>
+            onClick={this.toggleOption.bind(this, option, allowMultiple, callback)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-${this.checkActiveOption(option) ? 'times' : 'plus'}`}/></span>
@@ -208,7 +207,7 @@ class Filter extends Component {
     return (
       <div className='filter'>
         <FilterHeader query={this.props.location.query[this.props.id]}
-                      resetFilter={this.resetFilter}
+                      removeFilter={this.removeFilter}
                       title={this.props.title}/>
 
         <FilterSearchBox allowMultiple={true}
@@ -216,7 +215,7 @@ class Filter extends Component {
                          searchFilter={this.searchFilter}
                          loadingProgress={this.state.loadingProgress}
                          renderOption={this.renderOption}
-                         toggleFilter={this.toggleFilter}
+                         toggleOption={this.toggleOption}
                          options={this.state.options}
 
         />

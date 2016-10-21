@@ -46,7 +46,7 @@ class SearchFilters extends Component {
 }
 
 SearchFilters.propTypes={filters: React.PropTypes.object,
-                         toggleFilter: React.PropTypes.func,
+                         toggleOption: React.PropTypes.func,
                          location: React.PropTypes.object,
                          updateQuery: React.PropTypes.func};
 SearchFilters.defaultProps={filters: {}};
