@@ -25,9 +25,12 @@ class DragBar extends Component {
       .attr('height', Math.abs(this.props.dragBarData[0] - this.props.dragBarData[1]))
       .attr('x', 0)
       .attr('y', this.props.dragBarData[0] - this.props.dragBarData[1] < 0 ? this.props.dragBarData[0] : this.props.dragBarData[1])
-      .style('fill', colorLight);
+      .style('fill', color);
 
       // create two handles to listen to drag events
+      // TO DO: use fill:url(#arrow) to add icon
+      // why use fill? because you can't append svg element inside a rect, and creating extra .svg element means extra element to update position etc.
+      // using icon directly as handles gives us a handle that is too small and very difficult to use 
       this._handles = d3Select(g).selectAll('rect.handle')
         .data(data).enter().append('rect')
         .attr('class', 'handle')
