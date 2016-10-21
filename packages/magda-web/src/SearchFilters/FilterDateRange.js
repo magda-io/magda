@@ -71,18 +71,27 @@ class FilterDateRange extends Filter {
   }
 
   toggleOption(option, i){
-    let currentdateFrom = +this.props.location.query.dateFrom;
-    let currentdateTo = +this.props.location.query.dateTo;
-    let optionDate = + option.value;
+    let currentdateFrom = this.props.location.query.dateFrom;
+    let currentdateTo = this.props.location.query.dateTo;
+    let optionDate =  option.value;
     let sortedOptions = this.props.options;
-    // if neither current Start date and end date, then set selection to both
+    console.log(currentdateTo);
+    console.log(currentdateFrom);
+
+    // if neither current start date and end date exists, set selection to both
     if(!currentdateFrom && !currentdateTo){
         this.props.updateQuery({ 'dateFrom': optionDate});
         this.props.updateQuery({ 'dateTo': optionDate});
         this.setdateFromIndex(sortedOptions, optionDate);
         this.setdateToIndex(sortedOptions, optionDate);
 
-    } else {
+    } else if (currentdateFrom === 'undefined') {
+        this.props.updateQuery({ 'dateTo': optionDate});
+        this.setdateToIndex(sortedOptions, optionDate);
+    } else if(currentdateTo === 'undefined'){
+        this.props.updateQuery({ 'dateFrom': optionDate});
+        this.setdateFromIndex(sortedOptions, optionDate);
+    }else {
         if(optionDate < currentdateFrom){
             this.props.updateQuery({ 'dateFrom': optionDate});
             this.setdateFromIndex(sortedOptions, optionDate);
