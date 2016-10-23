@@ -166,7 +166,7 @@ class Search extends Component {
 
     if(matchedPublishers.length > 0 && defined(q.freeText)){
       return <span>Are you searching for <strong>{q.freeText}</strong> published by {matchedPublishers.map((p, i)=>
-        <button onClick={this.toggleOption.bind(this, p, publisherAllowMultiple, 'publishers')} className={`${checkActiveOption(p, this.props.location.query.publishers) ? 'is-active' : ''} btn btn-suggested-option`} key={i}>{p.value} </button>)} ? </span>;
+        <button onClick={this.toggleOption.bind(this, p, publisherAllowMultiple, 'publishers')} className={`${checkActiveOption(p, this.props.location.query.publishers) ? 'is-active' : ''} btn btn-suggested-option`} key={p.value}>{p.value} </button>)} ? </span>;
     }
     if(defined(q.publishers) && q.publishers.length > 0){
       return <span>Oh no, we cannot recgonise <strong>{q.publishers.map(p=>p)}</strong></span>;

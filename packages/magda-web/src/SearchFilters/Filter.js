@@ -226,7 +226,7 @@ class Filter extends Component {
 
         <ul className='other-options list-unstyled'>
         {inactiveOptions.slice(0, size).map((option, i)=>
-              <li key={i}>{this.renderOption(option,maxOptionFromDefaultOptionList)}</li>
+              <li key={option.value}>{this.renderOption(option,maxOptionFromDefaultOptionList)}</li>
         )}
         </ul>
         {overflow > 0 && <button onClick={this.toggleOpen}

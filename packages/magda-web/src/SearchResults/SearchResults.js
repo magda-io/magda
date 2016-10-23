@@ -24,7 +24,7 @@ class SearchResults extends Component {
         <ul className='list-unstyled'>
         {
           this.props.searchResults.map((result, i)=>
-            <li key={i} className='search-result'>
+            <li key={result.title} className='search-result'>
             <h3 className='result-title'><a href={result.landingPage}>{result.title}</a></h3>
             {defined(result.publisher) && <label className='search-result--publisher'><i className='fa fa-book' aria-hidden='true'></i>{result.publisher.name}</label>}
             <p>{this.truncate(result.description)}</p>
