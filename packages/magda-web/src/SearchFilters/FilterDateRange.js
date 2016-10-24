@@ -183,7 +183,8 @@ class FilterDateRange extends Filter {
 
   renderDragBar(){
     // the height of the dragbar should be the same with the height of all the options + any start date + any end date
-    let height = (this.props.options.length + 2) * itemHeight;
+    // remove last two paddings
+    let height = (this.props.options.length + 2) * itemHeight - 4;
     // [endPos, startPos]
     let dragBarData=[(this.state.dateToIndex * itemHeight), (this.state.dateFromIndex * itemHeight)];
     return <DragBar dragBarData={dragBarData} updateDragBar={this.updateDragBar} height={height}/>
