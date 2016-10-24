@@ -200,6 +200,7 @@ class FilterJurisdiction extends Filter {
                                                             updateQuery={this.props.updateQuery}
                                                             onFeatureClick={this.props.onFeatureClick}
                                                             locationInfo={this.state.locationInfo}
+                                                            locationInfoSummray={this.getLocationInfoInPlainText()}
                                                             location={this.props.location}
                                                             closePopUp={this.closePopUp}
                                                             toggleOption={this.toggleOption}

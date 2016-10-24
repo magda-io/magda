@@ -104,7 +104,7 @@ class FilterSearchBox extends Component {
           {this.state.searchText.length > 0 &&
             <ul className='filtered-options list-unstyled' onKeyDown={this.handleKeyDown}>
               {this.props.options.map((option, i)=>
-                  <li key={option.value}>
+                  <li key={`${option.value}-${i}`}>
                       {this.props.renderOption(option, null, this.callback, (this.state.indexOfOptionOnFocus === i))}
                   </li>
               )}
