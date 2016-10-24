@@ -8,6 +8,13 @@ const color = '#3498db';
 const colorLight = '#a0cfee';
 const colorHighlight = '#8ac4ea';
 
+const iconPath = [
+  {id: 'arrow0',
+   path: 'M30.054 23.768l-2.964 2.946q-0.339 0.339-0.804 0.339t-0.804-0.339l-9.482-9.482-9.482 9.482q-0.339 0.339-0.804 0.339t-0.804-0.339l-2.964-2.946q-0.339-0.339-0.339-0.813t0.339-0.813l13.25-13.232q0.339-0.339 0.804-0.339t0.804 0.339l13.25 13.232q0.339 0.339 0.339 0.813t-0.339 0.813z'},
+  {id: 'arrow1',
+   path: 'M30.054 14.429l-13.25 13.232q-0.339 0.339-0.804 0.339t-0.804-0.339l-13.25-13.232q-0.339-0.339-0.339-0.813t0.339-0.813l2.964-2.946q0.339-0.339 0.804-0.339t0.804 0.339l9.482 9.482 9.482-9.482q0.339-0.339 0.804-0.339t0.804 0.339l2.964 2.946q0.339 0.339 0.339 0.813t-0.339 0.813z'}
+]
+
 /**
 * Drag bar component, provides a dragging interface for user to select a date range
 */
@@ -19,6 +26,22 @@ class DragBar extends Component {
       let data = this.props.dragBarData;
       let debouncedUpdate = debounce(this.props.updateDragBar, 150);
 
+      // use svg fill to add icon
+      // this saves us having to manage and animate for svg elements
+      // we shouldn't directly use icon as handle because they are not as easy to grab as rects
+      let defs = d3Select(g).append('defs');
+      defs.selectAll('pattern')
+          .data(iconPath)
+          .enter()
+          .append('pattern')
+          .attr('id', d=>d.id)
+          .attr('width', 1)
+          .attr('height', 1)
+          .append('path')
+          .attr('transform', 'translate(4,2)scale(0.7)')
+          .attr('d', d=> d.path)
+          .attr('fill', '#fff');
+
       // create a bar to indicate range
       this._bar = d3Select(g).append('rect')
       .attr('width', r*2)
@@ -29,8 +52,7 @@ class DragBar extends Component {
 
       // create two handles to listen to drag events
       // TO DO: use fill:url(#arrow) to add icon
-      // why use fill? because you can't append svg element inside a rect, and creating extra .svg element means extra element to update position etc.
-      // using icon directly as handles gives us a handle that is too small and very difficult to use 
+
       this._handles = d3Select(g).selectAll('rect.handle')
         .data(data).enter().append('rect')
         .attr('class', 'handle')
@@ -38,14 +60,13 @@ class DragBar extends Component {
         .attr('y', d=>d)
         .attr('width', r*2)
         .attr('height', r*2)
-        .style('fill',color);
+        .style('fill',(d, i)=>`url(#arrow${i})`);
 
       let dragInteraction = d3Drag().on('start', start).on('drag', drag).on('end', end);
       this._handles.call(dragInteraction);
 
       function start(d){
-        // highlight on drag starts
-        d3Select(this).style('fill', colorHighlight);
+
       }
 
       function drag(d, i){
@@ -77,7 +98,6 @@ class DragBar extends Component {
       }
 
       function end(d){
-        d3Select(this).style('fill', color);
       }
     }
 
@@ -85,7 +105,7 @@ class DragBar extends Component {
       // update handle position
       this._handles.data(data).attr('y', d=> d);
       // update bar position
-      this._bar.attr('height', Math.abs(data[0] - data[1]))
+      this._bar.attr('height', Math.abs(data[0] - data[1])+r*2)
                .attr('y', data[0] - data[1] < 0 ? data[0] : data[1]);
     }
 
