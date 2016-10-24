@@ -1,3 +1,7 @@
+.filter-search-box{
+  position: relative;
+}
+
 .filter-search-box form{
     position: relative;
     margin-bottom: 8px;
@@ -26,8 +30,8 @@
   position: absolute;
   background: #ecf0f1;
   z-index: 999;
-  right: 15px;
-  left: 15px;
+  right: 0;
+  left: 0;
   border-radius: 1px;
   min-height: 220px;
 }

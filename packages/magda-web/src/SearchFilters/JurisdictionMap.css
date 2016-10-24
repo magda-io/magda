@@ -1,31 +1,3 @@
-.popup{
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 9999;
-    background: rgba(0, 0, 0, 0.3);
-}
-
-.popup .popup-inner{
-    position: relative;
-    margin: 10vh auto;
-    height: 80vh;
-    width: 80vw;
-    max-width: 780px;
-    background: #fff;
-    padding: 20px;
-    border: 1px solid #ddd;
-    box-shadow: 0px 0px 20px #000;
-    background: #fff;
-}
-
-.popup .map{
-    width: 100%;
-    height: calc(100% - 150px);
-}
-
 .jurisdiction-map{
     width: 100%;
     height: 100%;
@@ -41,4 +13,7 @@
 
 .preview .map{
     height: 100%;
+}
+.leaflet-left .leaflet-control {
+    margin-top: 50px;
 }

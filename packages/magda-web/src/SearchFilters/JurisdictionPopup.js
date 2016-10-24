@@ -1,3 +1,4 @@
+import './JurisdictionPopup.css';
 import DropDown from '../DropDown';
 import Filter from './Filter';
 import getRegionTypes from '../dummyData/getRegionTypes';
@@ -35,14 +36,15 @@ class JurisdictionPopup extends Filter {
         return (
             <div className='popup'>
               <div className='popup-inner'>
-                  <div className='popup-header row'>
-                    <div className='col-xs-11'>
-                      <h4 className='filter-title'>Location</h4>
-                    </div>
-                    <div className='col-xs-1'>
-                      <button className='btn' onClick={()=>this.props.closePopUp()}><i className='fa fa-times' aria-hidden='true'></i></button>
-                    </div>
-                  </div>
+              <div className='popup-header clearfix'>
+                <div className='col-xs-11'>
+                  <h4 className='filter-title'>Location</h4>
+                </div>
+                <div className='col-xs-1'>
+                  <button className='btn popup-close-btn' onClick={()=>this.props.closePopUp()}><i className='fa fa-times' aria-hidden='true'></i></button>
+                </div>
+              </div>
+              <div className='popup-body clearfix'>
                   <div className='popup-tools row'>
                     <div className='col-sm-6'>
                       <FilterSearchBox allowMultiple={false}
@@ -60,15 +62,23 @@ class JurisdictionPopup extends Filter {
                         />
                     </div>
                   </div>
-                  <div className='filter-jurisdiction--summray'>{this.props.locationInfoSummray}</div>
-                  <JurisdictionMap title='jurisdiction'
-                                   id='jurisdiction'
-                                   location={this.props.location}
-                                   updateQuery={this.props.updateQuery}
-                                   onClick={this.props.onFeatureClick}
-                                   interaction={true}
-                                   locationInfo={this.props.locationInfo}
-                  />
+                  {this.props.locationInfoSummray}
+                  <div className='popup-map'>
+                    <JurisdictionMap title='jurisdiction'
+                                     id='jurisdiction'
+                                     location={this.props.location}
+                                     updateQuery={this.props.updateQuery}
+                                     onClick={this.props.onFeatureClick}
+                                     interaction={true}
+                                     locationInfo={this.props.locationInfo}
+
+                    />
+                  </div>
+                  </div>
+                  <div className='popup-footer clearfix'>
+                    <button className='btn popup-cancel-btn' onClick={()=>this.props.closePopUp()} >Cancel</button>
+                    <button className='btn popup-done-btn' onClick={()=>this.props.closePopUp()} >Done</button>
+                  </div>
               </div>
             </div>
       );

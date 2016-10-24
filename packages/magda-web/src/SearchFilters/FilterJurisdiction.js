@@ -113,15 +113,16 @@ class FilterJurisdiction extends Filter {
 
     getLocationInfoInPlainText(){
         let result = this.state.locationInfo;
+        let button = <button className='btn btn-reset' onClick={this.removeFilter}><i className='fa fa-times'/></button>;
         if(!result){
           return null;
         }
         if(result.geographyLabel){
-          return (<span>{result.geographyLabel}, {result.stateLabel}, {result.typeLabel}, {result.type}</span>);
+          return (<div className='filter-jurisdiction--summray'><span>{result.geographyLabel}, {result.stateLabel}, {result.typeLabel}, {result.type}</span>{button}</div>);
         }
         if(result.displayFieldName){
           let propName = result.displayFieldName;
-          return <span>{result.attributes[propName]}</span>;
+          return <div className='filter-jurisdiction--summray'><span>{result.attributes[propName]}</span>{button}</div>;
         }
         return null;
     }
@@ -180,10 +181,8 @@ class FilterJurisdiction extends Filter {
                                renderOption={this.renderOption}
                                toggleOption={this.toggleOption}
                                options={this.state.locationSearchResults}/>
-
-              <div className='filter-jurisdiction--summray'>
+              
                 {this.getLocationInfoInPlainText()}
-              </div>
 
               <div className='preview'>
                     <JurisdictionMap title='jurisdiction'
