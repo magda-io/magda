@@ -38,7 +38,7 @@ class DragBar extends Component {
           .attr('width', 1)
           .attr('height', 1)
           .append('path')
-          .attr('transform', 'translate(4,2)scale(0.7)')
+          .attr('transform', (d, i)=>`translate(8,${i*10})scale(0.5)`)
           .attr('d', d=> d.path)
           .attr('fill', '#fff');
 
