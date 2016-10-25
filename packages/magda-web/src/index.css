@@ -10,3 +10,7 @@ body {
   border-radius: 2px;
   box-shadow: none;
 }
+
+.btn-unstyled{
+  background: transparent;
+}

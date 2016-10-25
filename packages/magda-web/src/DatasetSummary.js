@@ -1,21 +1,33 @@
 import React, { Component } from 'react';
+import defined from './defined';
+import DatasetInfo from './DatasetInfo';
 import './DatasetSummary.css';
 
-class DatasetSummary extends Component {
-  let dataset = this.props.dataset;
+export default class DatasetSummary extends Component {
+  truncate(s) {
+    return s.substring(0,200) + '...';
+  }
 
-  return <li key={dataset.title} className='dataset-summray'>
-            <h3 className='result-title'><a href={dataset.landingPage}>{dataset.title}</a></h3>
-            {defined(dataset.publisher) && <label className='search-result--publisher'><i className='fa fa-book' aria-hidden='true'></i>{dataset.publisher.name}</label>}
-            <p>{this.truncate(dataset.description)}</p>
-            <ul className='list-unstyled tags'>
-              {
-                dataset.keyword.map((tag)=>
-                  <li key={tag} className='search-result--tag'><a href={`/?q=${tag}`}>#{tag}</a></li>
-                )
-              }
-            </ul>
-        </li>
+  render(){
+    let dataset = this.props.dataset;
+    return <div className='dataset-summray'>
+              <div className='dataset-summray-main'>
+                <h3 className='result-title'>{dataset.title}</h3>
+                {defined(dataset.publisher) && <label className='search-result--publisher'><i className='fa fa-book' aria-hidden='true'></i>{dataset.publisher.name}</label>}
+                <p>{this.truncate(dataset.description)}</p>
+                <ul className='list-unstyled tags'>
+                  {
+                    dataset.keyword.map((tag)=>
+                      <li key={tag} className='search-result--tag'><a href={`/?q=${tag}`}>#{tag}</a></li>
+                    )
+                  }
+                </ul>
+              </div>
+              <div className='dataset-summray-info'>
+                <DatasetInfo dataset={dataset}/>
+              </div>
+          </div>
+  }
 }
 
 DatasetSummary.propTypes = {dataset: React.PropTypes.object};
