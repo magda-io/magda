@@ -72,9 +72,9 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
     handleExceptions(myExceptionHandler) {
       pathPrefix("facets") {
         path(Segment / "options" / "search") { facetId ⇒
-          (get & parameters("query" ? "", "limit" ? 50)) { (query, limit) ⇒
+          (get & parameters("facetQuery" ? "", "limit" ? 50, "generalQuery" ? "*")) { (facetQuery, limit, generalQuery) ⇒
             FacetType.fromId(facetId) match {
-              case Some(facetType) ⇒ complete(SearchProvider().searchFacets(facetType, query, limit))
+              case Some(facetType) ⇒ complete(SearchProvider().searchFacets(facetType, facetQuery, QueryCompiler(generalQuery), limit))
               case None            ⇒ complete(NotFound)
             }
           }

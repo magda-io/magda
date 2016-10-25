@@ -16,7 +16,7 @@ import au.csiro.data61.magda.search.SearchStrategy
 package misc {
   case class SearchResult(
     query: Query,
-    hitCount: Int,
+    hitCount: Long,
     facets: Option[Seq[Facet]] = None,
     dataSets: List[DataSet],
     errorMessage: Option[String] = None,
@@ -43,7 +43,7 @@ package misc {
   }
 
   case class FacetSearchResult(
-    hitCount: Int,
+    hitCount: Long,
     options: Seq[FacetOption])
 
   case class Facet(
@@ -52,7 +52,7 @@ package misc {
 
   case class FacetOption(
     value: String,
-    hitCount: Option[Int] = None,
+    hitCount: Option[Long] = None,
     matched: Option[Boolean] = None)
 
   case class DataSet(

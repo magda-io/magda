@@ -67,6 +67,7 @@ import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.search.MatchPart
 import au.csiro.data61.magda.search.MatchAll
+import au.csiro.data61.magda.util.DateParser._
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = Logging(system, getClass)
@@ -78,6 +79,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     filterAggFilter: Query => FacetOption => Boolean = _ => _ => true,
     getFacetDetails: Aggregation => Seq[FacetOption] = aggregation => aggregation,
     removeFromQuery: Query => Query,
+    buildQuery: String => Query,
     exactMatchQueries: Query => Seq[(String, QueryDefinition)] = _ => Nil)
 
   val facetAggregations: Map[FacetType, FacetDefinition] = Map(
@@ -90,6 +92,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         should(
           query.publishers.map(publisherQuery(_))).minimumShouldMatch(1),
       removeFromQuery = query => query.copy(publishers = Nil),
+      buildQuery = query => Query(publishers = Seq(query)),
       exactMatchQueries = query => query.publishers.map(publisher => (publisher, exactPublisherQuery(publisher)))),
 
     misc.Year -> FacetDefinition(
@@ -101,7 +104,13 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
 
         Seq(fromQuery, toQuery).filter(_.isDefined).map(_.get)
       },
-      removeFromQuery = query => query.copy(dateFrom = None, dateTo = None)),
+      removeFromQuery = query => query.copy(dateFrom = None, dateTo = None),
+      buildQuery = query => (parseDate(query, false), parseDate(query, true)) match {
+        case (InstantResult(from), InstantResult(to)) => Query(dateFrom = Some(from), dateTo = Some(to))
+        // The idea is that this will come from our own index so it shouldn't even be some weird wildcard thing
+        case _                                        => throw new RuntimeException("Date " + query + " not recognised")
+      }
+    ),
 
     Format -> FacetDefinition(
       aggDef = (limit) => aggregation nested Format.id path "distributions" aggregations {
@@ -118,6 +127,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
           case None           => false
         }),
       removeFromQuery = query => query.copy(formats = Nil),
+      buildQuery = query => Query(formats = Seq(query)),
       exactMatchQueries = query => query.formats.map(format => (format, formatQuery(format)))))
 
   case class IndexDefinition(val name: String, val version: Int, val definition: CreateIndexDefinition, val create: ElasticClient => Unit = client => Unit)
@@ -359,17 +369,17 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     case MatchPart => should
   }
 
-  def buildQuery(query: Query, limit: Int, strategy: SearchStrategy) =
-    addAggregations(ElasticDsl.search in "datasets" / "datasets" limit limit query queryToQueryDef(query, strategy), query, strategy)
+  def buildQuery(query: Query, limit: Int, strategy: SearchStrategy) = ElasticDsl.search in "datasets" / "datasets" limit limit query queryToQueryDef(query, strategy)
+  def buildQueryWithAggregations(query: Query, limit: Int, strategy: SearchStrategy) = addAggregations(buildQuery(query, limit, strategy), query, strategy)
 
   override def search(query: Query, limit: Int) = {
     setupFuture.flatMap(client =>
-      client.execute(buildQuery(query, limit, MatchAll))
+      client.execute(buildQueryWithAggregations(query, limit, MatchAll))
         .flatMap { response =>
           if (response.totalHits > 0)
             Future.successful((response, MatchAll))
           else
-            client.execute(buildQuery(query, limit, MatchPart)).map((_, MatchPart))
+            client.execute(buildQueryWithAggregations(query, limit, MatchPart)).map((_, MatchPart))
         }
     ).map {
       case (response, strategy) =>
@@ -526,16 +536,39 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     strategy(shouldClauses.flatten)
   }
 
-  override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[FacetSearchResult] = {
-    setupFuture.flatMap(client =>
-      client.execute {
-        ElasticDsl.search in "datasets" / facetType.id query queryText limit limit
-      } map { response =>
-        new FacetSearchResult(
-          hitCount = response.getHits.totalHits.toInt,
-          // TODO: Maybe return more meaningful data?
-          options = response.hits.toList.map(hit => new FacetOption(
-            value = hit.getSource.get("value").toString)))
-      })
+  override def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, limit: Int): Future[FacetSearchResult] = {
+    val facetAgg = facetAggregations.get(facetType).get
+
+    setupFuture.flatMap { client =>
+      client.execute(ElasticDsl.search in "datasets" / facetType.id query facetQuery limit limit)
+        .flatMap { response =>
+          response.totalHits match {
+            case 0 => Future((response, None))
+            case _ =>
+              val filters = response.getHits.asScala.map { hit =>
+                val name = hit.getSource.get("value").toString
+                aggregation.filter(name).filter(facetAgg.filterAggDef(0, facetAgg.buildQuery(name)))
+              }
+
+              client.execute(
+                buildQuery(generalQuery, 0, MatchAll).aggs(filters)
+              ).map(x => (response, Some(x)))
+          }
+        }.map {
+          case (_, None) => FacetSearchResult(0, Nil)
+          case (firstQueryResult, Some(aggQueryResult)) =>
+            FacetSearchResult(
+              hitCount = firstQueryResult.totalHits,
+              options = aggQueryResult.aggregations.asScala.map { agg =>
+                val bucket = agg.asInstanceOf[InternalFilter]
+
+                new FacetOption(
+                  value = bucket.getName,
+                  hitCount = Some(bucket.getDocCount)
+                )
+              }.toSeq
+            )
+        }
+    }
   }
 }
