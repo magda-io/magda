@@ -178,10 +178,7 @@ trait CKANConverters {
       description = resource.description,
       issued = resource.created.map(ckanDateTimeFormat.parse(_).toInstant),
       modified = resource.last_modified.map(ckanDateTimeFormat.parse(_).toInstant),
-      license = (dataset.license_id, dataset.license_title) match {
-        case (None, None)           => None
-        case (idOption, nameOption) => Some(new License(idOption.getOrElse(""), nameOption.getOrElse("")))
-      },
+      license = dataset.license_title.map(name => new License(Some(name))),
       rights = None,
       accessURL = resource.webstore_url,
       downloadURL = resource.url,

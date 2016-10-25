@@ -183,7 +183,7 @@ package misc {
 
   }
 
-  case class License(name: String, url: String)
+  case class License(name: Option[String] = None, url: Option[String] = None)
 
   trait Protocols extends DefaultJsonProtocol with temporal.Protocols {
 

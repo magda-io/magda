@@ -63,6 +63,7 @@ import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper
 import org.elasticsearch.search.SearchParseException
 import org.elasticsearch.action.search.SearchPhaseExecutionException
 import akka.stream.OverflowStrategy
+import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = Logging(system, getClass)
@@ -72,7 +73,9 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     needsFilterAgg: Query => Boolean,
     filterAggDef: (Int, Query) => QueryDefinition,
     filterAggFilter: Query => FacetOption => Boolean = _ => _ => true,
-    getFacetDetails: Aggregation => Seq[FacetOption] = aggregation => aggregation)
+    getFacetDetails: Aggregation => Seq[FacetOption] = aggregation => aggregation,
+    removeFromQuery: Query => Query,
+    exactMatchQueries: Query => Seq[(String, QueryDefinition)] = _ => Nil)
 
   val facetAggregations: Map[FacetType, FacetDefinition] = Map(
     Publisher -> FacetDefinition(
@@ -82,7 +85,9 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       needsFilterAgg = query => !query.publishers.isEmpty,
       filterAggDef = (limit, query) =>
         should(
-          query.publishers.map(publisherQuery(_))).minimumShouldMatch(1)),
+          query.publishers.map(publisherQuery(_))).minimumShouldMatch(1),
+      removeFromQuery = query => query.copy(publishers = Nil),
+      exactMatchQueries = query => query.publishers.map(publisher => (publisher, exactPublisherQuery(publisher)))),
 
     misc.Year -> FacetDefinition(
       aggDef = (limit) => aggregation.terms(misc.Year.id).field("years").order(Order.term(false)).size(limit),
@@ -92,7 +97,8 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         val toQuery = query.dateTo.map(dateToQuery(_))
 
         Seq(fromQuery, toQuery).filter(_.isDefined).map(_.get)
-      }),
+      },
+      removeFromQuery = query => query.copy(dateFrom = None, dateTo = None)),
 
     Format -> FacetDefinition(
       aggDef = (limit) => aggregation nested Format.id path "distributions" aggregations {
@@ -107,12 +113,14 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         format => WeightedLevenshteinMetric(10, 0.1, 1).compare(format.toLowerCase, filterOption.value.toLowerCase) match {
           case Some(distance) => distance < 1.5
           case None           => false
-        })))
+        }),
+      removeFromQuery = query => query.copy(formats = Nil),
+      exactMatchQueries = query => query.formats.map(format => (format, formatQuery(format)))))
 
   case class IndexDefinition(val name: String, val version: Int, val definition: CreateIndexDefinition, val create: ElasticClient => Unit = client => Unit)
   val indexes = Seq(new IndexDefinition(
     name = "datasets",
-    version = 8,
+    version = 10,
     definition =
       create.index("datasets").mappings(
         mapping("datasets").fields(
@@ -147,6 +155,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
    */
   private val setupFuture = setup()
 
+  // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
   private lazy val indexQueue = Source.queue[(String, List[DataSet])](Integer.MAX_VALUE, OverflowStrategy.backpressure)
     .mapAsync(1) {
       case (_, dataSets) =>
@@ -358,16 +367,32 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
           case (facetType, definition) => new Facet(
             id = facetType,
             options = {
-              val filteredOptions = (aggsMap.get(facetType.id + "-filter") match {
-                case Some(filterAgg) => definition.getFacetDetails(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-                case None            => Nil
-              })
+              val filteredOptions = (aggsMap
+                .get(facetType.id + "-filter") match {
+                  case Some(filterAgg) => definition.getFacetDetails(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
+                  case None            => Nil
+                })
                 .filter(definition.filterAggFilter(query))
                 .map(_.copy(matched = Some(true)))
 
-              val generalOptions = definition.getFacetDetails(aggsMap.get(facetType.id).get.getProperty(facetType.id).asInstanceOf[Aggregation])
+              val exactOptions =
+                definition.exactMatchQueries(query)
+                  .map { case (name, query) => (name, aggsMap.get(facetType.id + "-global").get.getProperty(facetType.id + "-exact-" + name)) }
+                  .map {
+                    case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, Some(0))) else None
+                  }
+                  .flatten
+                  .toSeq
 
-              val combined = (filteredOptions ++ generalOptions)
+              val generalOptions = definition.getFacetDetails(
+                aggsMap
+                  .get(facetType.id + "-global")
+                  .get
+                  .getProperty("filter").asInstanceOf[Aggregation]
+                  .getProperty(facetType.id).asInstanceOf[Aggregation]
+              )
+
+              val combined = (exactOptions ++ filteredOptions ++ generalOptions)
               val lookup = combined.groupBy(_.value)
 
               combined.map(_.value)
@@ -385,7 +410,9 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
         }
       }
     }.recover {
-      case _ => failureSearchResult(query, "Unknown error")
+      case e: Throwable =>
+        logger.error(e, "Exception when searching")
+        failureSearchResult(query, "Unknown error")
     }
   }
 
@@ -397,30 +424,42 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   )
 
   def addAggregations(searchDef: SearchDefinition, query: Query) = {
-    searchDef aggregations (
-      facetAggregations.flatMap {
-        case (facetType, facetAgg) => {
-          val aggregations = List(
-            aggregation.filter(facetType.id).filter(getFilterQueryDef(facetType, query)).aggs(facetAgg.aggDef(10)))
+    val defs = facetAggregations.flatMap {
+      case (facetType, facetAgg) =>
+        List(
+          List(
+            aggregation
+              .global(facetType.id + "-global")
+              .aggs(
+                aggregation.filter("filter")
+                  .filter(queryToQueryDef(facetAgg.removeFromQuery(query)))
+                  .aggs(facetAgg.aggDef(10))
 
-          if (facetAgg.needsFilterAgg(query)) {
-            val filterAggregation = aggregation.filter(facetType.id + "-filter")
-              .filter(
-                facetAgg.filterAggDef(10, query)).aggs(facetAgg.aggDef(10))
+                  ::
 
-            filterAggregation :: aggregations
-          } else aggregations
-        }
-      })
+                  facetAgg.exactMatchQueries(query).map {
+                    case (name, query) =>
+                      aggregation.filter(facetType.id + "-exact-" + name).filter(query)
+                  }.toList
+              )
+              .asInstanceOf[AbstractAggregationDefinition]
+          ),
+
+          // If there's details in the query that relate to this facet, create a filter aggregation for it
+          if (facetAgg.needsFilterAgg(query))
+            List(
+            aggregation
+              .filter(facetType.id + "-filter")
+              .filter(facetAgg.filterAggDef(10, query)).aggs(facetAgg.aggDef(10))
+              .asInstanceOf[AbstractAggregationDefinition]
+          )
+          else Nil
+
+        ).flatten
+    }.toList
+
+    searchDef aggregations (defs)
   }
-
-  def getFilterQueryDef(facetType: FacetType, query: Query): BoolQueryDefinition = queryToQueryDef(
-    facetType match {
-      case misc.Year => query.copy(dateFrom = None, dateTo = None)
-      case Format    => query.copy(formats = Nil)
-      case Publisher => query.copy(publishers = Nil)
-    })
-
   /**
    * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.
    */
@@ -430,8 +469,11 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
   }
 
   private def publisherQuery(publisher: String) = matchPhraseQuery("publisher.name", publisher)
-  private def formatQuery(format: String) = nestedQuery("distributions").query(
-    matchQuery("distributions.format", format))
+  private def exactPublisherQuery(publisher: String) = termQuery("publisher.name.untouched", publisher)
+  private def formatQuery(format: String) = nestedQuery("distributions")
+    .query(matchQuery("distributions.format", format))
+  private def exactFormatQuery(format: String) = nestedQuery("distributions")
+    .query(termQuery("distributions.format", format))
   private def regionIdQuery(region: Region) = indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), "regions")
     .relation(ShapeRelation.INTERSECTS)
     .shapeIndex("regions")
@@ -464,7 +506,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       query.dateTo.map(dateToQuery),
       seqToOption(query.regions)(seq => should(seq.map(regionIdQuery))))
 
-    should(shouldClauses.filter(_.isDefined).map(_.get))
+    must(shouldClauses.flatten)
   }
 
   def addQuery(searchDef: SearchDefinition, query: Query): SearchDefinition = {

@@ -8,6 +8,7 @@ services:
      - "9000"
     ports:
       - "9000:9000"
+      - "8000:8000"
     links:
       - search
     environment:
@@ -15,8 +16,6 @@ services:
     build:
       context: .
       dockerfile: api.local.dockerfile
-    ports: 
-      - "8000:8000"
     volumes:
       - ../:/usr/src/app/
       - /usr/src/app/target/
