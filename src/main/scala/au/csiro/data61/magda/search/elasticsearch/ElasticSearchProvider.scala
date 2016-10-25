@@ -64,6 +64,9 @@ import org.elasticsearch.search.SearchParseException
 import org.elasticsearch.action.search.SearchPhaseExecutionException
 import akka.stream.OverflowStrategy
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
+import au.csiro.data61.magda.search.SearchStrategy
+import au.csiro.data61.magda.search.MatchPart
+import au.csiro.data61.magda.search.MatchAll
 
 class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = Logging(system, getClass)
@@ -351,56 +354,70 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     indexQueue.offer((source, dataSets))
   }
 
+  implicit def strategyToCombiner(strat: SearchStrategy): Iterable[QueryDefinition] => QueryDefinition = strat match {
+    case MatchAll  => must
+    case MatchPart => should
+  }
+
+  def buildQuery(query: Query, limit: Int, strategy: SearchStrategy) =
+    addAggregations(ElasticDsl.search in "datasets" / "datasets" limit limit query queryToQueryDef(query, strategy), query, strategy)
+
   override def search(query: Query, limit: Int) = {
     setupFuture.flatMap(client =>
-      client.execute(
-        addAggregations(addQuery(ElasticDsl.search in "datasets" / "datasets" limit limit, query), query)
-      )
-    ).map { response =>
-      val aggsMap = response.aggregations.asMap().asScala
+      client.execute(buildQuery(query, limit, MatchAll))
+        .flatMap { response =>
+          if (response.totalHits > 0)
+            Future.successful((response, MatchAll))
+          else
+            client.execute(buildQuery(query, limit, MatchPart)).map((_, MatchPart))
+        }
+    ).map {
+      case (response, strategy) =>
+        val aggsMap = response.aggregations.asMap().asScala
 
-      new SearchResult(
-        query = query,
-        hitCount = response.getHits.totalHits().toInt,
-        dataSets = response.as[DataSet].toList,
-        facets = Some(facetAggregations.map {
-          case (facetType, definition) => new Facet(
-            id = facetType,
-            options = {
-              val filteredOptions = (aggsMap
-                .get(facetType.id + "-filter") match {
-                  case Some(filterAgg) => definition.getFacetDetails(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-                  case None            => Nil
-                })
-                .filter(definition.filterAggFilter(query))
-                .map(_.copy(matched = Some(true)))
+        new SearchResult(
+          strategy = Some(strategy),
+          query = query,
+          hitCount = response.getHits.totalHits().toInt,
+          dataSets = response.as[DataSet].toList,
+          facets = Some(facetAggregations.map {
+            case (facetType, definition) => new Facet(
+              id = facetType,
+              options = {
+                val filteredOptions = (aggsMap
+                  .get(facetType.id + "-filter") match {
+                    case Some(filterAgg) => definition.getFacetDetails(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
+                    case None            => Nil
+                  })
+                  .filter(definition.filterAggFilter(query))
+                  .map(_.copy(matched = Some(true)))
 
-              val exactOptions =
-                definition.exactMatchQueries(query)
-                  .map { case (name, query) => (name, aggsMap.get(facetType.id + "-global").get.getProperty(facetType.id + "-exact-" + name)) }
-                  .map {
-                    case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, Some(0))) else None
-                  }
-                  .flatten
-                  .toSeq
+                val exactOptions =
+                  definition.exactMatchQueries(query)
+                    .map { case (name, query) => (name, aggsMap.get(facetType.id + "-global").get.getProperty(facetType.id + "-exact-" + name)) }
+                    .map {
+                      case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, Some(0))) else None
+                    }
+                    .flatten
+                    .toSeq
 
-              val generalOptions = definition.getFacetDetails(
-                aggsMap
-                  .get(facetType.id + "-global")
-                  .get
-                  .getProperty("filter").asInstanceOf[Aggregation]
-                  .getProperty(facetType.id).asInstanceOf[Aggregation]
-              )
+                val generalOptions = definition.getFacetDetails(
+                  aggsMap
+                    .get(facetType.id + "-global")
+                    .get
+                    .getProperty("filter").asInstanceOf[Aggregation]
+                    .getProperty(facetType.id).asInstanceOf[Aggregation]
+                )
 
-              val combined = (exactOptions ++ filteredOptions ++ generalOptions)
-              val lookup = combined.groupBy(_.value)
+                val combined = (exactOptions ++ filteredOptions ++ generalOptions)
+                val lookup = combined.groupBy(_.value)
 
-              combined.map(_.value)
-                .distinct
-                .map(lookup.get(_).get.head)
-                .take(10)
-            })
-        }.toSeq))
+                combined.map(_.value)
+                  .distinct
+                  .map(lookup.get(_).get.head)
+                  .take(10)
+              })
+          }.toSeq))
     }.recover {
       case remoteTransport: RemoteTransportException => remoteTransport.getCause match {
         case searchPhase: SearchPhaseExecutionException => searchPhase.getCause match {
@@ -423,7 +440,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     errorMessage = Some(message)
   )
 
-  def addAggregations(searchDef: SearchDefinition, query: Query) = {
+  def addAggregations(searchDef: SearchDefinition, query: Query, strategy: SearchStrategy) = {
     val defs = facetAggregations.flatMap {
       case (facetType, facetAgg) =>
         List(
@@ -432,7 +449,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
               .global(facetType.id + "-global")
               .aggs(
                 aggregation.filter("filter")
-                  .filter(queryToQueryDef(facetAgg.removeFromQuery(query)))
+                  .filter(must(queryToQueryDef(facetAgg.removeFromQuery(query), strategy)))
                   .aggs(facetAgg.aggDef(10))
 
                   ::
@@ -485,7 +502,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
     rangeQuery("temporal.end.date").lte(dateTo.toString),
     rangeQuery("temporal.start.date").lte(dateTo.toString)).minimumShouldMatch(1))
 
-  def queryToQueryDef(query: Query): BoolQueryDefinition = {
+  def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
     val processedQuote = query.quotes.map(quote => s"""${quote}""") match {
       case Nil => None
       case xs  => Some(xs.reduce(_ + " " + _))
@@ -506,11 +523,7 @@ class ElasticSearchProvider(implicit val system: ActorSystem, implicit val ec: E
       query.dateTo.map(dateToQuery),
       seqToOption(query.regions)(seq => should(seq.map(regionIdQuery))))
 
-    must(shouldClauses.flatten)
-  }
-
-  def addQuery(searchDef: SearchDefinition, query: Query): SearchDefinition = {
-    searchDef.query(queryToQueryDef(query))
+    strategy(shouldClauses.flatten)
   }
 
   override def searchFacets(facetType: FacetType, queryText: String, limit: Int): Future[FacetSearchResult] = {

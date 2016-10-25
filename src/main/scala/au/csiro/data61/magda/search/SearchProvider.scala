@@ -7,7 +7,7 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchProvider
 import au.csiro.data61.magda.spatial.RegionSource
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait SearchProvider {
   def index(source: String, dataSets: List[DataSet]): Future[Any]
@@ -22,9 +22,25 @@ object SearchProvider {
   def apply()(implicit system: ActorSystem, ec: ExecutionContext, materializer: Materializer): SearchProvider = {
     singletonProvider = singletonProvider match {
       case Some(provider) => Some(provider)
-      case None => Some(new ElasticSearchProvider())
+      case None           => Some(new ElasticSearchProvider())
     }
 
     singletonProvider.get
   }
+}
+
+sealed trait SearchStrategy {
+  val name: String
+}
+object SearchStrategy {
+  def parse(name: String): SearchStrategy = name match {
+    case MatchPart.name => MatchPart
+    case MatchAll.name  => MatchAll
+  }
+}
+case object MatchPart extends SearchStrategy {
+  override val name = "match-part"
+}
+case object MatchAll extends SearchStrategy {
+  override val name = "match-all"
 }

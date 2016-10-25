@@ -11,6 +11,7 @@ import com.monsanto.labs.mwundo.GeoJson._
 import com.monsanto.labs.mwundo.GeoJsonFormats._
 import java.util.regex.Pattern
 import au.csiro.data61.magda.api.Region
+import au.csiro.data61.magda.search.SearchStrategy
 
 package misc {
   case class SearchResult(
@@ -18,7 +19,8 @@ package misc {
     hitCount: Int,
     facets: Option[Seq[Facet]] = None,
     dataSets: List[DataSet],
-    errorMessage: Option[String] = None)
+    errorMessage: Option[String] = None,
+    strategy: Option[SearchStrategy] = None)
 
   sealed trait FacetType {
     def id: String
@@ -196,6 +198,10 @@ package misc {
       override def write(mediaType: MediaType): JsString = JsString.apply(mediaType.value)
       override def read(json: JsValue): MediaType = MediaType.parse(json.convertTo[String]).right.get
     }
+    implicit object SearchStrategyFormat extends JsonFormat[SearchStrategy] {
+      override def write(strat: SearchStrategy): JsString = JsString.apply(strat.name)
+      override def read(json: JsValue): SearchStrategy = SearchStrategy.parse(json.convertTo[String])
+    }
     implicit object GeometryFormat extends JsonFormat[Geometry] {
       override def write(geometry: Geometry): JsValue = geometry match {
         case point: Point           => PointFormat.write(point)
@@ -226,7 +232,7 @@ package misc {
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val regionFormat = jsonFormat2(Region.apply)
     implicit val queryFormat = jsonFormat8(Query.apply)
-    implicit val searchResultFormat = jsonFormat5(SearchResult.apply)
+    implicit val searchResultFormat = jsonFormat6(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }
 
