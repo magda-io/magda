@@ -57,8 +57,6 @@ class Filter extends Component {
       loadingProgress: 0
     });
 
-    console.log(`${this.props.facetSearchQueryBase}${searchText}`);
-
     getJSON(`${this.props.facetSearchQueryBase}${searchText}`,
        this.updateProgress
      ).then((data)=>{
@@ -171,6 +169,14 @@ class Filter extends Component {
    }
    return query.map(item=>{
      let correspondingOptionInDefaultList = find(this.props.options, o=>o.value === item);
+
+     // if not in default list, then need to search for this one:
+     // Note: result not unique?
+     if (!defined(correspondingOptionInDefaultList)){
+       getJSON(`${this.props.facetSearchQueryBase}${item}`).then((data)=>{
+           console.log(data);
+       }, (err)=>{console.warn(err)});
+     }
 
      let hitCount = defined(correspondingOptionInDefaultList) ? correspondingOptionInDefaultList.hitCount : 0;
      let option = {'value': item, 'hitCount': hitCount}

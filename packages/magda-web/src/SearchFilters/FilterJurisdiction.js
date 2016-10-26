@@ -8,6 +8,7 @@ import JurisdictionMap from './JurisdictionMap';
 import JurisdictionPopup from './JurisdictionPopup';
 import FilterSearchBox from './FilterSearchBox';
 import React from 'react'
+import getJSON from '../getJSON';
 
 
 const regionTypeOptions = getRegionTypes();
@@ -132,14 +133,14 @@ class FilterJurisdiction extends Filter {
         let jurisdictionType = this.props.location.query.jurisdictionType;
         if(jurisdictionId && jurisdictionType){
           // given jurisdictionId and jurisdictionType we should be able to get a location object
-
-          //  getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
-          //   if(data.results && data.results.length > 0 ){
-          //     this.setState({
-          //         locationInfo: data.results[0]
-          //     });
-          //   }
-          // }, error =>{console.log(error)});
+           getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdictionId}&contains=false&returnGeometry=false&layers=${jurisdictionType}`).then(data=>{
+             // results undefined
+            if(data.results && data.results.length > 0 ){
+              this.setState({
+                  locationInfo: data.results[0]
+              });
+            }
+          }, error =>{console.log(error)});
         }
     }
 
@@ -171,7 +172,7 @@ class FilterJurisdiction extends Filter {
     render(){
         return (
             <div className='filter jurisdiction'>
-              <FilterHeader query={this.props.location.query[this.props.id]}
+              <FilterHeader query={[this.props.location.query.jurisdictionId, this.props.location.query.jurisdictionType]}
                             removeFilter={this.removeFilter}
                             title={this.props.title}/>
 
