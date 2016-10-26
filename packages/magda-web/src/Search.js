@@ -96,7 +96,6 @@ class Search extends Component {
         this.transferComplete,
         this.transferFailed,
         this.transferCanceled).then((data)=>{
-        console.log(data);
 
         let results= [];
         if(keyword.length > 0){
