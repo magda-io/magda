@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import DatasetSummary from '../DatasetSummary';
+import DatasetInfo from '../DatasetInfo';
 import './SearchResults.css';
-import defined from '../defined';
 
 class SearchResults extends Component {
+  clickDataset(){
+
+  }
   getSummaryText(){
     if(this.props.searchResults.length){
       return (
@@ -21,8 +24,10 @@ class SearchResults extends Component {
         <ul className='list-unstyled'>
         {
           this.props.searchResults.map((result, i)=>
-            <li key = {result.title}>
-              <DatasetSummary dataset={result}/>
+            <li key={result.title + i}>
+              <DatasetSummary dataset={result} >
+                <DatasetInfo dataset={result} />
+              </DatasetSummary>
             </li>
           )
         }

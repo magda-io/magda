@@ -73,7 +73,7 @@ class FilterJurisdiction extends Filter {
 
     removeFilter(){
         this.props.updateQuery({
-            jurisdiction: [],
+            jurisdictionId: [],
             jurisdictionType: []
         });
 
@@ -84,7 +84,7 @@ class FilterJurisdiction extends Filter {
 
     toggleOption(option, callback){
         this.props.updateQuery({
-            jurisdiction: option.suggestion.code,
+            jurisdictionId: option.suggestion.code,
             jurisdictionType: option.suggestion.type
         });
 
@@ -102,9 +102,9 @@ class FilterJurisdiction extends Filter {
      * @param {string} regionCode, region code
      * @param {string} regionType, region type
      */
-    onFeatureClick(regionCode, regionType){
+    onFeatureClick(regionId, regionType){
         this.props.updateQuery({
-            jurisdiction: regionCode,
+            jurisdictionId: regionId,
             jurisdictionType: regionType
         });
         this.getLocationInfo();
@@ -128,10 +128,10 @@ class FilterJurisdiction extends Filter {
     }
 
     getLocationInfo(){
-        let jurisdiction = this.props.location.query.jurisdiction;
+        let jurisdictionId = this.props.location.query.jurisdictionId;
         let jurisdictionType = this.props.location.query.jurisdictionType;
-        if(jurisdiction && jurisdictionType){
-          // given jurisdiction and jurisdictionType we should be able to get a location object
+        if(jurisdictionId && jurisdictionType){
+          // given jurisdictionId and jurisdictionType we should be able to get a location object
 
           //  getJSON(`https://nationalmap.gov.au/proxy/_0d/http://www.censusdata.abs.gov.au/arcgis/rest/services/FIND/MapServer/find?f=json&searchText=${jurisdiction}&contains=false&returnGeometry=false&layers=${idRegionTypeMap[jurisdictionType][0]}&searchFields=${jurisdictionType}_${idRegionTypeMap[jurisdictionType][1]}&sr=3857`).then(data=>{
           //   if(data.results && data.results.length > 0 ){
@@ -181,7 +181,7 @@ class FilterJurisdiction extends Filter {
                                renderOption={this.renderOption}
                                toggleOption={this.toggleOption}
                                options={this.state.locationSearchResults}/>
-              
+
                 {this.getLocationInfoInPlainText()}
 
               <div className='preview'>

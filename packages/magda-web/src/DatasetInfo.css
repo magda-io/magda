@@ -1,6 +1,19 @@
 .dataset-info{
   background: #ecf0f1;
   margin: 20px 0 30px 0;
+  position: relative;
+}
+
+.dataset-info .traingle{
+  border-bottom: 10px solid #ecf0f1;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  height: 0;
+  position: absolute;
+  top: -10px;
+  width: 0;
+  bottom: auto;
+  left: 10px;
 }
 
 .dataset-info-inner{
@@ -45,6 +58,7 @@
 .dataset-info-footer--left button{
   color: #7f8c8d;
   font-size: 18px;
+  line-height: 1;
 }
 
 .dataset-info-footer--left a:hover,
@@ -62,7 +76,6 @@
 .dataset-info-footer--right a{
   background: #3498db;
   border-radius: 2px;
-  box-shadow: 0 1px 1px 0 #2980b9;
   color: #fff;
 }
 

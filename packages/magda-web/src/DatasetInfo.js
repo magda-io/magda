@@ -3,10 +3,9 @@ import './DatasetInfo.css';
 
 export default class DatasetInfo extends Component {
   render(){
-
     let dataset = this.props.dataset;
-    console.log(dataset);
     return <div className='dataset-info'>
+              <div className='traingle'></div>
               <div className='dataset-info-inner'>
                 <div className='dataset-info--content clearfix'>
                 <h5>Contents</h5>

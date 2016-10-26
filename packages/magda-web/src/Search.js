@@ -13,12 +13,16 @@ import defined from './defined';
 import toggleQuery from './toggleQuery';
 import checkActiveOption from './checkActiveOption';
 
+const facets = ['publishers', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'formats'];
+
 class Search extends Component {
   constructor(props) {
     super(props);
     this.updateSearchText=this.updateSearchText.bind(this);
     this.updateQuery = this.updateQuery.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
+    this.removeAllFacets = this.removeAllFacets.bind(this);
+
     this.transferComplete = this.transferComplete.bind(this);
     this.transferFailed = this.transferFailed.bind(this);
     this.transferCanceled = this.transferCanceled.bind(this);
@@ -29,7 +33,7 @@ class Search extends Component {
     /**
      * @type {Object}
      * @property {Array} searchResults results from search
-     * @property {Array} filterPublisher default list of publsihers to display in the publishers facet filter
+     * @property {Array} filterPublisher default list of publishers to display in the publishers facet filter
      * @property {Array} filterTemporal default list of dates to display in the publishers facet filter
      * @property {Array} filterFormat default list of formats to display in the publishers facet filterss
      * @property {Number} loadingProgress the percentage of the search progress
@@ -47,6 +51,7 @@ class Search extends Component {
 
   updateSearchText(newText) {
     this.updateQuery({ q: newText });
+    this.removeAllFacets();
     this.debouncedGetFacets();
     this.debouncedSearch();
   }
@@ -74,12 +79,20 @@ class Search extends Component {
   doSearch(){
       let query = this.props.location.query;
       let keyword = query.q.split(' ').join('+');
+      let dateFrom = defined(query.dateFrom) ? 'from ' + query.dateFrom : '';
+      let dateTo=defined(query.dateTo) ? 'to ' + query.dateTo : '';
+      let publishers = queryToString('by', query.publishers);
+      let format = queryToString('as', query.format);
+      let location = queryToLocation(query.jurisdiction, query.jurisdictionType);
+
+      let searchTerm =
+      `${keyword} ${publishers} ${format} ${dateFrom} ${dateTo} ${location}`;
       this.setState({
         loadingProgress: 0
       })
 
       // This query will have facets as well
-      getJSON(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`,
+      getJSON(`http://magda-search-api.terria.io/datasets/search?query=${searchTerm}`,
         this.updateProgress,
         this.transferComplete,
         this.transferFailed,
@@ -105,6 +118,12 @@ class Search extends Component {
   //   }
   // }
 
+  removeAllFacets(){
+    facets.forEach(f=>{
+      this.updateQuery({[f]: []});
+    });
+  }
+
 
   updateQuery(query){
     this.context.router.push({
@@ -112,7 +131,7 @@ class Search extends Component {
       query: Object.assign(this.props.location.query, query)
     });
     // uncomment this when facet search is activated
-    // this.debouncedSearch();
+    this.debouncedSearch();
   }
 
   // progress on transfers from the server to the client (downloads)
@@ -161,15 +180,15 @@ class Search extends Component {
   suggestionText(){
     let q = this.state.userEnteredQuery;
     let matchedPublishers = this.state.filterPublisher.filter(p=>p.matched === true);
+    let activePublishers = this.state.filterPublisher.filter(p=>checkActiveOption(this.state.filterPublisher,p) === true);
+
+    console.log(activePublishers);
 
     let publisherAllowMultiple = true;
 
     if(matchedPublishers.length > 0 && defined(q.freeText)){
       return <span>Are you searching for <strong>{q.freeText}</strong> published by {matchedPublishers.map((p, i)=>
         <button onClick={this.toggleOption.bind(this, p, publisherAllowMultiple, 'publishers')} className={`${checkActiveOption(p, this.props.location.query.publishers) ? 'is-active' : ''} btn btn-suggested-option`} key={p.value}>{p.value} </button>)} ? </span>;
-    }
-    if(defined(q.publishers) && q.publishers.length > 0){
-      return <span>Oh no, we cannot recgonise <strong>{q.publishers.map(p=>p)}</strong></span>;
     }
     return null
   }
@@ -215,6 +234,21 @@ class Search extends Component {
       </div>
     );
   }
+}
+
+function queryToString(preposition, query){
+  if(!defined(query)) return '';
+  if(Array.isArray(query)){
+    return query.map(q=>
+    `${preposition} ${q}`).join(' ')
+  } else {
+    return `${preposition} ${query}`
+  }
+}
+
+function queryToLocation(regionid, regiontype){
+  if(!defined(regionid) || !defined(regiontype)) return '';
+  return `in ${regiontype}:${regionid}`;
 }
 
 Search.contextTypes ={

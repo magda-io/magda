@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import defined from './defined';
-import DatasetInfo from './DatasetInfo';
 import './DatasetSummary.css';
 
 export default class DatasetSummary extends Component {
@@ -23,9 +22,7 @@ export default class DatasetSummary extends Component {
                   }
                 </ul>
               </div>
-              <div className='dataset-summray-info'>
-                <DatasetInfo dataset={dataset}/>
-              </div>
+              {this.props.children}
           </div>
   }
 }

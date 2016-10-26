@@ -5,8 +5,6 @@ import {drag as d3Drag} from 'd3-drag';
 
 const r = 15;
 const color = '#3498db';
-const colorLight = '#a0cfee';
-const colorHighlight = '#8ac4ea';
 
 const iconPath = [
   {id: 'arrow0',

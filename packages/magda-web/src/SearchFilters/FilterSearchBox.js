@@ -26,12 +26,12 @@ class FilterSearchBox extends Component {
 
   handleKeyDown(e){
     if(e.keyCode === 38){
-      e.preventDefault;
+      e.preventDefault();
       this.move('up')
     }
 
     if(e.keyCode === 40){
-      e.preventDefault;
+      e.preventDefault();
       this.move('down')
     }
   }
