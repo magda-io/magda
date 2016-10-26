@@ -53,17 +53,13 @@ class Filter extends Component {
    * @param {string} searchText, the text user type in the input box inside the facet filter
    */
   searchFilter(searchText){
-
     this.setState({
       loadingProgress: 0
     });
 
-    let keyword = this.props.location.query.q.split(' ').join('+');
+    console.log(`${this.props.facetSearchQueryBase}${searchText}`);
 
-    // when searching facets, we need to change "publishers" and "formats" into "publisher" and "format"
-    let facet = this.props.id.replace(/s+$/, "");
-
-    getJSON(`http://magda-search-api.terria.io/facets/${facet}/options/search?generalQuery=${keyword}&facetQuery=${searchText}`,
+    getJSON(`${this.props.facetSearchQueryBase}${searchText}`,
        this.updateProgress
      ).then((data)=>{
         this.setState({

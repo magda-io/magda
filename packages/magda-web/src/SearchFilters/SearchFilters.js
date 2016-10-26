@@ -7,30 +7,35 @@ import React, { Component } from 'react';
 
 class SearchFilters extends Component {
   renderFilters(){
+    let mainSearchWord = encodeURI(this.props.location.query.q);
       return(
             <div>
               <FilterPublisher options={this.props.filterPublisher}
                                title='publisher'
                                id='publishers'
                                location={this.props.location}
-                               updateQuery={this.props.updateQuery}/>
+                               updateQuery={this.props.updateQuery}
+                               facetSearchQueryBase={`http://magda-search-api.terria.io/facets/publisher/options/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
 
               <FilterJurisdiction title='location'
                                   id='jurisdiction'
                                   location={this.props.location}
-                                  updateQuery={this.props.updateQuery}/>
+                                  updateQuery={this.props.updateQuery}
+                                  facetSearchQueryBase={null}/>
 
               <FilterDateRange options={this.props.filterTemporal}
                                        title='date range'
                                        id='temporal'
                                        location={this.props.location}
-                                       updateQuery={this.props.updateQuery}/>
+                                       updateQuery={this.props.updateQuery}
+                                       facetSearchQueryBase={null}/>
 
               <FilterDataFormat options={this.props.filterFormat}
                                        title='data format'
                                        id='formats'
                                        location={this.props.location}
-                                       updateQuery={this.props.updateQuery}/>
+                                       updateQuery={this.props.updateQuery}
+                                       facetSearchQueryBase={`http://magda-search-api.terria.io/facets/formatoptions/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
 
             </div>);
   }
