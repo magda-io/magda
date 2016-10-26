@@ -170,12 +170,16 @@ class Filter extends Component {
    return query.map(item=>{
      let correspondingOptionInDefaultList = find(this.props.options, o=>o.value === item);
 
+     console.log(item);
+     console.log(this.props.options);
+
      // if not in default list, then need to search for this one:
      // Note: result not unique?
      if (!defined(correspondingOptionInDefaultList)){
-       getJSON(`${this.props.facetSearchQueryBase}${item}`).then((data)=>{
-           console.log(data);
-       }, (err)=>{console.warn(err)});
+       console.log(correspondingOptionInDefaultList);
+      //  getJSON(`${this.props.facetSearchQueryBase}${item}`).then((data)=>{
+      //      console.log(data);
+      //  }, (err)=>{console.warn(err)});
      }
 
      let hitCount = defined(correspondingOptionInDefaultList) ? correspondingOptionInDefaultList.hitCount : 0;
