@@ -91,19 +91,23 @@ class Search extends Component {
         loadingProgress: 0
       })
 
-      // This query will have facets as well
       getJSON(`http://magda-search-api.terria.io/datasets/search?query=${searchTerm}`,
         this.updateProgress,
         this.transferComplete,
         this.transferFailed,
         this.transferCanceled).then((data)=>{
+        console.log(data);
+
         let results= [];
         if(keyword.length > 0){
           results = data.dataSets;
         }
         this.setState({
             searchResults: results,
-            userEnteredQuery: data.query
+            userEnteredQuery: data.query,
+            // update year and format facets
+            filterTemporal: data.facets[1].options,
+            filterFormat: data.facets[2].options
           });
           // this.parseQuery(data.query);
         }, (err)=>{console.warn(err)});
@@ -180,9 +184,6 @@ class Search extends Component {
   suggestionText(){
     let q = this.state.userEnteredQuery;
     let matchedPublishers = this.state.filterPublisher.filter(p=>p.matched === true);
-    let activePublishers = this.state.filterPublisher.filter(p=>checkActiveOption(this.state.filterPublisher,p) === true);
-
-    console.log(activePublishers);
 
     let publisherAllowMultiple = true;
 
