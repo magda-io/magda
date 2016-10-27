@@ -278,34 +278,36 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
       client.execute(ElasticDsl.search in "datasets" / facetType.id query facetQuery limit limit)
         .flatMap { response =>
           response.totalHits match {
-            case 0 => Future((response, None)) // If there's no hits, no need to do anything more
+            case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
             case _ =>
+              val hitNames: Seq[String] = response.getHits.asScala.map(hit => hit.getSource.get("value").toString).toSeq
+
               // Create a dataset filter aggregation for each hit in the initial query
-              val filters = response.getHits.asScala.map { hit =>
-                val name = hit.getSource.get("value").toString
+              val filters = hitNames.map(name =>
                 aggregation.filter(name).filter(facetAgg.filterAggregationQuery(0, facetAgg.facetSearchQuery(name)))
-              }
+              )
 
               // Do a query on the "datasets" type with an aggregation for each of the hits we got back on our keyword
               // - this allows us to get an accurate count of dataset hits for each result
-              client.execute(
+              client.execute {
                 buildQuery(generalQuery, 0, MatchAll).aggs(filters)
-              ).map(x => (response, Some(x)))
-          }
-        } map {
-          case (_, None) => FacetSearchResult(0, Nil)
-          case (firstQueryResult, Some(aggQueryResult)) =>
-            FacetSearchResult(
-              hitCount = firstQueryResult.totalHits,
-              options = aggQueryResult.aggregations.asScala.map { agg =>
-                val bucket = agg.asInstanceOf[InternalFilter]
+              } map { aggQueryResult =>
+                val aggregations = aggQueryResult.aggregations.asScala
+                  .map {
+                    case bucket: InternalFilter => new FacetOption(
+                      value = bucket.getName,
+                      hitCount = Some(bucket.getDocCount)
+                    )
+                  }
+                  .groupBy(_.value)
+                  .mapValues(_.head)
 
-                new FacetOption(
-                  value = bucket.getName,
-                  hitCount = Some(bucket.getDocCount)
+                FacetSearchResult(
+                  hitCount = response.totalHits,
+                  options = hitNames.map { hitName => aggregations.get(hitName).get }
                 )
-              }.toSeq
-            )
+              }
+          }
         }
     }
   }
