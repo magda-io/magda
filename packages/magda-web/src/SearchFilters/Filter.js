@@ -26,7 +26,8 @@ class Filter extends Component {
     this.state={
       isOpen: false,
       options: [],
-      loadingProgress: 0
+      loadingProgress: 0,
+      activeOptions: []
     }
 
     this.searchFilter = this.searchFilter.bind(this);
@@ -35,6 +36,62 @@ class Filter extends Component {
     this.toggleOption= this.toggleOption.bind(this);
     this.toggleOpen = this.toggleOpen.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
+  }
+
+
+  componentWillMount(){
+    this.getActiveOptions();
+  }
+
+  getActiveOptions(){
+    let query = this.props.location.query[this.props.id];
+    if(!defined(query)){
+      return false;
+    } else {
+      if(!Array.isArray(query)){
+       query = [query];
+      }
+      let tempList = [];
+      query.forEach(item=>{
+          // search locally first
+          if(defined(this.props.options) && this.props.options.length > 0){
+            let option = find(this.props.options, o=>o.value === item);
+            if(defined(option)){
+              tempList.push(option);
+              this.setState({
+                activeOptions : tempList
+              });
+            } else{
+              // search remotely
+              this.remotelySearchOption(item, tempList);
+            }
+          } else{
+            // search remotely
+            this.remotelySearchOption(item, tempList);
+          }
+      });
+    }
+  }
+
+  remotelySearchOption(item, tempList){
+      // take each of the item and search on server to get the accurate hticount for each one
+       getJSON(`${this.props.facetSearchQueryBase}${encodeURI(item)}`).then((data)=>{
+           let option = data.options.find(o=>o.value === item);
+           // if we cannot find the publisher
+           if(!defined(option)){
+             option ={
+               value: item,
+               hitCount: 'unknown'
+             }
+           }
+
+           tempList.push(option);
+
+           this.setState({
+             activeOptions : tempList
+           });
+
+       }, (err)=>{console.warn(err)});
   }
 
 
@@ -84,6 +141,9 @@ class Filter extends Component {
     if(defined(callback) && typeof callback ==='function'){
       callback();
     }
+
+    // update list of all options
+    this.getActiveOptions();
   }
 
   /**
@@ -92,6 +152,9 @@ class Filter extends Component {
   removeFilter(){
     // remove query in the url
     this.props.updateQuery({[this.props.id]: []});
+    this.setState({
+      activeOptions: []
+    })
   }
 
   /**
@@ -156,36 +219,12 @@ class Filter extends Component {
   }
 
 
-  /**
-   * get a list of all active options from the url
-   */
-  getActiveOption(){
-    let query = this.props.location.query[this.props.id];
-    if(!query){
-      return null;
+  renderActiveOptions(){
+    if(defined(this.state.activeOptions) && this.state.activeOptions.length > 0){
+      return this.state.activeOptions.map((o, i)=>{
+        return <li key={o.value + i}>{this.renderOption(o)}</li>;
+      })
     }
-    if(!Array.isArray(query)){
-     query = [query];
-   }
-   return query.map(item=>{
-     let correspondingOptionInDefaultList = find(this.props.options, o=>o.value === item);
-
-     console.log(item);
-     console.log(this.props.options);
-
-     // if not in default list, then need to search for this one:
-     // Note: result not unique?
-     if (!defined(correspondingOptionInDefaultList)){
-       console.log(correspondingOptionInDefaultList);
-      //  getJSON(`${this.props.facetSearchQueryBase}${item}`).then((data)=>{
-      //      console.log(data);
-      //  }, (err)=>{console.warn(err)});
-     }
-
-     let hitCount = defined(correspondingOptionInDefaultList) ? correspondingOptionInDefaultList.hitCount : 0;
-     let option = {'value': item, 'hitCount': hitCount}
-     return <li key={item}>{this.renderOption(option)}</li>;
-   });
   }
 
 
@@ -218,7 +257,7 @@ class Filter extends Component {
         />
 
         <ul className='list-unstyled active-options'>
-          {this.getActiveOption()}
+          {this.renderActiveOptions()}
         </ul>
 
         <ul className='other-options list-unstyled'>
