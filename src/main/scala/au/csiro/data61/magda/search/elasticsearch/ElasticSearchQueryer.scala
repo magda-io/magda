@@ -271,7 +271,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   }
 
   override def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, limit: Int): Future[FacetSearchResult] = {
-    val facetAgg = facetDefForType(facetType)
+    val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
@@ -284,13 +284,13 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
               // Create a dataset filter aggregation for each hit in the initial query
               val filters = hitNames.map(name =>
-                aggregation.filter(name).filter(facetAgg.filterAggregationQuery(0, facetAgg.facetSearchQuery(name)))
+                aggregation.filter(name).filter(facetDef.filterAggregationQuery(0, facetDef.facetSearchQuery(name)))
               )
 
-              // Do a query on the "datasets" type with an aggregation for each of the hits we got back on our keyword
-              // - this allows us to get an accurate count of dataset hits for each result
+              // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
+              // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
               client.execute {
-                buildQuery(generalQuery, 0, MatchAll).aggs(filters)
+                buildQuery(facetDef.removeFromQuery(generalQuery), 0, MatchAll).aggs(filters)
               } map { aggQueryResult =>
                 val aggregations = aggQueryResult.aggregations.asScala
                   .map {
