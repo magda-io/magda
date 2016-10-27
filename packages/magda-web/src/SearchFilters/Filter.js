@@ -79,6 +79,7 @@ class Filter extends Component {
    * @param {Array} tempList current list of active options
    */
   remotelySearchOption(item, tempList){
+    console.log(`${this.props.facetSearchQueryBase}${encodeURI(item)}`);
       // take each of the item and search on server to get the accurate hticount for each one
        getJSON(`${this.props.facetSearchQueryBase}${encodeURI(item)}`).then((data)=>{
            let option = data.options.find(o=>o.value === item);
@@ -86,7 +87,7 @@ class Filter extends Component {
            if(!defined(option)){
              option ={
                value: item,
-               hitCount: 'unknown'
+               hitCount: 0
              }
            }
            tempList.push(option);
@@ -194,7 +195,6 @@ class Filter extends Component {
    */
   renderOption(option, optionMax, callback, onFocus, _isActive){
     let allowMultiple = true;
-
     if(!option){
       return null;
     }

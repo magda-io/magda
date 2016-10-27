@@ -35,7 +35,7 @@ class SearchFilters extends Component {
                                        id='formats'
                                        location={this.props.location}
                                        updateQuery={this.props.updateQuery}
-                                       facetSearchQueryBase={`http://magda-search-api.terria.io/facets/formatoptions/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
+                                       facetSearchQueryBase={`http://magda-search-api.terria.io/facets/format/options/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
 
             </div>);
   }
