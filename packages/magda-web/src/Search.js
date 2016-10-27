@@ -76,9 +76,6 @@ class Search extends Component {
   getPublisherFacets(){
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
-
-    console.log(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`);
-
     getJSON(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`).then((data)=>{
       this.setState({
         filterPublisherOptions: data.facets[0].options
@@ -165,11 +162,14 @@ class Search extends Component {
       let location = queryToLocation(query.jurisdiction, query.jurisdictionType);
 
       let searchTerm =
-      `${keyword} ${publisher} ${format} ${dateFrom} ${dateTo} ${location}`;
+      encodeURI(`${keyword} ${publisher} ${format} ${dateFrom} ${dateTo} ${location}`);
+
       this.setState({
         loadingProgress: 0
       })
 
+      console.log(`http://magda-search-api.terria.io/datasets/search?query=${searchTerm}`);
+      
       getJSON(`http://magda-search-api.terria.io/datasets/search?query=${searchTerm}`,
         this.updateProgress,
         this.transferComplete,
