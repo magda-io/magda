@@ -70,63 +70,16 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   lazy val clientFuture: Future[ElasticClient] = getClient(system.scheduler, logger, ec)
 
   override def search(query: Query, limit: Int) = {
-    clientFuture.flatMap(client =>
+    clientFuture.flatMap { client =>
       client.execute(buildQueryWithAggregations(query, limit, MatchAll)).flatMap(response =>
         if (response.totalHits > 0)
           Future.successful((response, MatchAll))
         else
           client.execute(buildQueryWithAggregations(query, limit, MatchPart)).map((_, MatchPart))
       )
-    ).map {
-      case (response, strategy) =>
-        val aggsMap = response.aggregations.asMap().asScala
-
-        new SearchResult(
-          strategy = Some(strategy),
-          query = query,
-          hitCount = response.getHits.totalHits().toInt,
-          dataSets = response.as[DataSet].toList,
-          facets = Some(FacetType.all.map { facetType =>
-            val definition = facetDefForType(facetType)
-
-            new Facet(
-              id = facetType,
-              options = {
-                val filteredOptions = (
-                  aggsMap.get(facetType.id + "-filter") match {
-                    case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-                    case None            => Nil
-                  })
-                  .filter(definition.isFilterOptionRelevant(query))
-                  .map(_.copy(matched = Some(true)))
-
-                val exactOptions =
-                  definition.exactMatchQueries(query)
-                    .map { case (name, query) => (name, aggsMap.get(facetType.id + "-global").get.getProperty(facetType.id + "-exact-" + name)) }
-                    .map {
-                      case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, Some(0))) else None
-                    }
-                    .flatten
-                    .toSeq
-
-                val generalOptions = definition.extractFacetOptions(
-                  aggsMap
-                    .get(facetType.id + "-global")
-                    .get
-                    .getProperty("filter").asInstanceOf[Aggregation]
-                    .getProperty(facetType.id).asInstanceOf[Aggregation]
-                )
-
-                val combined = (exactOptions ++ filteredOptions ++ generalOptions)
-                val lookup = combined.groupBy(_.value)
-
-                combined.map(_.value)
-                  .distinct
-                  .map(lookup.get(_).get.head)
-                  .take(10)
-              })
-          }.toSeq))
-    }.recover {
+    } map {
+      case (response, strategy) => buildSearchResult(query, response, strategy)
+    } recover {
       case remoteTransport: RemoteTransportException => remoteTransport.getCause match {
         case searchPhase: SearchPhaseExecutionException => searchPhase.getCause match {
           case notSerializable: NotSerializableExceptionWrapper => notSerializable.getCause match {
@@ -134,11 +87,76 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
           }
         }
       }
-    }.recover {
+    } recover {
       case e: Throwable =>
         logger.error(e, "Exception when searching")
         failureSearchResult(query, "Unknown error")
     }
+  }
+
+  /**
+   * Turns an ES response into a magda SearchResult.
+   */
+  def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy): SearchResult = {
+    val aggsMap = response.aggregations.asMap().asScala
+    new SearchResult(
+      strategy = Some(strategy),
+      query = query,
+      hitCount = response.getHits.totalHits().toInt,
+      dataSets = response.as[DataSet].toList,
+      facets = Some(FacetType.all.map { facetType =>
+        val definition = facetDefForType(facetType)
+
+        new Facet(
+          id = facetType,
+          options = {
+            // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
+            val filteredOptions = (
+              aggsMap.get(facetType.id + "-filter") match {
+                case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
+                case None            => Nil
+              })
+              .filter(definition.isFilterOptionRelevant(query))
+              .map(_.copy(matched = Some(true)))
+
+            // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
+            // display it to them to show them that it does *exist* but not for this query
+            val exactOptions =
+              definition.exactMatchQueries(query)
+                .map {
+                  case (name, query) => (
+                    name,
+                    aggsMap
+                    .get(facetType.id + "-global")
+                    .get
+                    .getProperty(facetType.id + "-exact-" + name)
+                  )
+                }
+                .map {
+                  case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, Some(0))) else None
+                }
+                .flatten
+                .toSeq
+
+            // Alternative options show what *other* options the user could filter by and get results apart from what they've already done.
+            val alternativeOptions = definition.extractFacetOptions(
+              aggsMap
+                .get(facetType.id + "-global")
+                .get
+                .getProperty("filter").asInstanceOf[Aggregation]
+                .getProperty(facetType.id).asInstanceOf[Aggregation]
+            )
+
+            val combined = (exactOptions ++ filteredOptions ++ alternativeOptions)
+            val lookup = combined.groupBy(_.value)
+
+            // It's possible that some of the options will overlap, so make sure we're only showing the first occurence of each.
+            combined.map(_.value)
+              .distinct
+              .map(lookup.get(_).get.head)
+              .take(10)
+          })
+      }.toSeq))
   }
 
   /** Converts from a general search strategy to the actual elastic4s method that will combine a number of queries using that strategy.*/
