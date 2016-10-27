@@ -192,7 +192,7 @@ class Filter extends Component {
    * @param {function} callback a function that get called after user clicks on this option
    * @param {boolean} onFocus whether this option should be in focus or not
    */
-  renderOption(option, optionMax, callback, onFocus){
+  renderOption(option, optionMax, callback, onFocus, _isActive){
     let allowMultiple = true;
 
     if(!option){
@@ -200,15 +200,16 @@ class Filter extends Component {
     }
     let maxWidth = defined(optionMax) ? +option.hitCount/optionMax.hitCount * 200 : 0;
     let divStyle = {width: maxWidth + 'px'}
+    let isActive = defined(_isActive) ? _isActive : this.checkActiveOption(option);
 
     return(
     <button type='button'
             ref={b=>{if(b != null && onFocus === true){b.focus()}}}
-            className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn`}
+            className={`${isActive ? 'is-active' : ''} btn-facet-option btn`}
             onClick={this.toggleOption.bind(this, option, allowMultiple, callback)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
-      <span className='btn-facet-option__action'><i className={`fa fa-${this.checkActiveOption(option) ? 'times' : 'plus'}`}/></span>
+      <span className='btn-facet-option__action'><i className={`fa fa-${isActive ? 'times' : 'plus'}`}/></span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
     </button>);
   }
@@ -226,7 +227,7 @@ class Filter extends Component {
   renderActiveOptions(){
     if(defined(this.state.activeOptions) && this.state.activeOptions.length > 0){
       return this.state.activeOptions.map((o, i)=>{
-        return <li key={o.value + i}>{this.renderOption(o)}</li>;
+        return <li key={o.value + i}>{this.renderOption(o, null, null, null, true)}</li>;
       })
     }
   }
