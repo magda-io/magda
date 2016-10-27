@@ -13,7 +13,7 @@ import defined from './defined';
 import toggleQuery from './toggleQuery';
 import checkActiveOption from './checkActiveOption';
 
-const facets = ['publishers', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'formats'];
+const facets = ['publisher', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'format'];
 
 
 
@@ -22,6 +22,7 @@ class Search extends Component {
     super(props);
 
     this.updateSearchText=this.updateSearchText.bind(this);
+    this.getSearchQuery=this.getSearchQuery.bind(this);
 
     this.updateQuery = this.updateQuery.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
@@ -38,9 +39,9 @@ class Search extends Component {
     /**
      * @type {Object}
      * @property {Array} searchResults results from search
-     * @property {Array} filterPublisherOptions default list of publishers to display in the publishers facet filter
-     * @property {Array} filterTemporalOptions default list of dates to display in the publishers facet filter
-     * @property {Array} filterFormatOptions default list of formats to display in the publishers facet filterss
+     * @property {Array} filterPublisherOptions default list of publisher to display in the publisher facet filter
+     * @property {Array} filterTemporalOptions default list of dates to display in the publisher facet filter
+     * @property {Array} filterFormatOptions default list of format to display in the publisher facet filterss
      * @property {Number} loadingProgress the percentage of the search progress
      * @property {Object} userEnteredQuery query returned from natual language processing
      */
@@ -50,9 +51,7 @@ class Search extends Component {
       filterTemporalOptions: [],
       filterFormatOptions: [],
       activePublisherOptions: [],
-      activeTemporalOptions: [undefined, undefined],
       activeFormatOptions: [],
-      activeJurisdictionOptions: [],
       loadingProgress: null,
       userEnteredQuery: {}
     };
@@ -77,6 +76,8 @@ class Search extends Component {
   getPublisherFacets(){
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
+
+    console.log(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`);
 
     getJSON(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`).then((data)=>{
       this.setState({
@@ -127,9 +128,11 @@ class Search extends Component {
    */
   remotelySearchOption(item, tempList, key, url){
       // take each of the item and search on server to get the accurate hticount for each one
+      console.log(url);
        getJSON(url).then((data)=>{
-           let option = data.options.find(o=>o.value.toLowerCase() === item.toLowerCase());
-           // if we cannot find the publisher
+            // Note: format has lowercase, upper case, and different spelling etc
+           let option = data.options.find(o=>o.value === item);
+           // if we cannot find the option
            if(!defined(option)){
              option ={
                value: item,
@@ -145,8 +148,10 @@ class Search extends Component {
        }, (err)=>{console.warn(err)});
   }
 
-  getSearchQuery(facetId, facetSearchWord){
-    let keyword = this.props.location.query.q;
+  getSearchQuery(facetId, _facetSearchWord){
+      // bypass natual language process filtering by using freetext as general query
+      let keyword = encodeURI(this.state.userEnteredQuery.freeText);
+      let facetSearchWord = encodeURI(_facetSearchWord);
       return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${keyword}&facetQuery=${facetSearchWord}`;
   }
 
@@ -155,12 +160,12 @@ class Search extends Component {
       let keyword = query.q.split(' ').join('+');
       let dateFrom = defined(query.dateFrom) ? 'from ' + query.dateFrom : '';
       let dateTo=defined(query.dateTo) ? 'to ' + query.dateTo : '';
-      let publishers = queryToString('by', query.publishers);
+      let publisher = queryToString('by', query.publisher);
       let format = queryToString('as', query.format);
       let location = queryToLocation(query.jurisdiction, query.jurisdictionType);
 
       let searchTerm =
-      `${keyword} ${publishers} ${format} ${dateFrom} ${dateTo} ${location}`;
+      `${keyword} ${publisher} ${format} ${dateFrom} ${dateTo} ${location}`;
       this.setState({
         loadingProgress: 0
       })
@@ -188,8 +193,8 @@ class Search extends Component {
 
   // parseQuery(query){
   //   if(defined(query)){
-  //     if(defined(query.publishers)){this.updateQuery({'publishers': mergeQuery(query.publishers, this.props.location.query.publishers)});}
-  //     if(defined(query.formats)){this.updateQuery({'formats': mergeQuery(query.formats, this.props.location.query.formats)});}
+  //     if(defined(query.publisher)){this.updateQuery({'publisher': mergeQuery(query.publisher, this.props.location.query.publisher)});}
+  //     if(defined(query.format)){this.updateQuery({'format': mergeQuery(query.format, this.props.location.query.format)});}
   //     if(defined(query.dateFrom)){this.updateQuery({'dateFrom': mergeQuery(new Date(query.dateFrom).getFullYear(), this.props.location.query.dateFrom)});}
   //     if(defined(query.dateTo)){this.updateQuery({'dateTo': mergeQuery(new Date(query.dateTo).getFullYear(), this.props.location.query.dateTo)});}
   //   }
@@ -264,7 +269,7 @@ class Search extends Component {
 
     if(matchedPublishers.length > 0 && defined(q.freeText)){
       return <span>Are you searching for <strong>{q.freeText}</strong> published by {matchedPublishers.map((p, i)=>
-        <button onClick={this.toggleOption.bind(this, p, publisherAllowMultiple, 'publishers')} className={`${checkActiveOption(p, this.props.location.query.publishers) ? 'is-active' : ''} btn btn-suggested-option`} key={p.value}>{p.value} </button>)} ? </span>;
+        <button onClick={this.toggleOption.bind(this, p, publisherAllowMultiple, 'publisher')} className={`${checkActiveOption(p, this.props.location.query.publisher) ? 'is-active' : ''} btn btn-suggested-option`} key={p.value}>{p.value} </button>)} ? </span>;
     }
     return null
   }
@@ -294,6 +299,7 @@ class Search extends Component {
                     filterPublisherOptions={this.state.filterPublisherOptions}
                     filterTemporalOptions={this.state.filterTemporalOptions}
                     filterFormatOptions={this.state.filterFormatOptions}
+                    getSearchQuery={this.getSearchQuery}
                     activePublisherOptions={this.state.activePublisherOptions}
                     activeFormatOptions={this.state.activeFormatOptions}
                     location={this.props.location}

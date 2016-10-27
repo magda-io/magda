@@ -7,7 +7,6 @@ import React, { Component } from 'react';
 
 class SearchFilters extends Component {
   renderFilters(){
-    let mainSearchWord = encodeURI(this.props.location.query.q);
       return(
             <div>
               <FilterPublisher options={this.props.filterPublisherOptions}
@@ -16,7 +15,7 @@ class SearchFilters extends Component {
                                id='publisher'
                                location={this.props.location}
                                updateQuery={this.props.updateQuery}
-                               facetSearchQueryBase={`http://magda-search-api.terria.io/facets/publisher/options/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
+                               getSearchQuery={this.props.getSearchQuery}/>
 
               <FilterJurisdiction title='location'
                                   id='jurisdiction'
@@ -37,7 +36,7 @@ class SearchFilters extends Component {
                                 id='format'
                                 location={this.props.location}
                                 updateQuery={this.props.updateQuery}
-                                facetSearchQueryBase={`http://magda-search-api.terria.io/facets/format/options/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
+                                getSearchQuery={this.props.getSearchQuery}/>
 
             </div>);
   }

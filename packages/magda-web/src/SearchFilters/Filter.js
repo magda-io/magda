@@ -56,7 +56,7 @@ class Filter extends Component {
       loadingProgress: 0
     });
 
-    getJSON(`${this.props.facetSearchQueryBase}${searchText}`,
+    getJSON(this.props.getSearchQuery(this.props.id,searchText),
        this.updateProgress
      ).then((data)=>{
         this.setState({
@@ -68,7 +68,7 @@ class Filter extends Component {
   /**
    * enable and disable this filter option
    * @param {object}  option, the current filter option
-   * @param {boolean} allowMultiple wether if multiple options can be activited at the same time. For example, we can have multiple publishers turned on but we can only have one jurisdiction at one time
+   * @param {boolean} allowMultiple wether if multiple options can be activited at the same time. For example, we can have multiple publisher turned on but we can only have one jurisdiction at one time
    * @param {function} callback defines what happens when the toggle action is done, for example, when searching the filter, the input box should be cleared once user clicks on a option from the filter search result list
    */
 
@@ -91,9 +91,6 @@ class Filter extends Component {
   removeFilter(){
     // remove query in the url
     this.props.updateQuery({[this.props.id]: []});
-    this.setState({
-      activeOptions: []
-    })
   }
 
   /**
@@ -158,7 +155,7 @@ class Filter extends Component {
   }
 
 
-  renderActiveOptions(){    
+  renderActiveOptions(){
     if(defined(this.props.activeOptions) && this.props.activeOptions.length > 0){
       return this.props.activeOptions.map((o, i)=>{
         return <li key={o.value + i}>{this.renderOption(o, null, null, null, true)}</li>;
