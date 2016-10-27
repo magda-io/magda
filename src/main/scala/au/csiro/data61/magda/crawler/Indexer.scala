@@ -6,16 +6,15 @@ import au.csiro.data61.magda.search.SearchProvider
 import au.csiro.data61.magda.spatial.RegionSource
 
 import scala.util.{ Failure, Success }
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
+import au.csiro.data61.magda.search.SearchIndexer
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
 
-/**
- * @author Foat Akhmadeev
- *         17/01/16
- */
 class Indexer(supervisor: ActorRef) extends Actor with ActorLogging {
   implicit val ec = context.dispatcher
   implicit val system = context.system
   implicit val materializer = ActorMaterializer.create(context)
-  val searchProvider: SearchProvider = SearchProvider()
+  val searchProvider: SearchIndexer = new ElasticSearchIndexer()
 
   // On startup, check that the index isn't empty (as it would be on first boot or after an index schema upgrade)
   searchProvider.needsReindexing().onComplete {
@@ -39,7 +38,5 @@ class Indexer(supervisor: ActorRef) extends Actor with ActorLogging {
   @throws[Exception](classOf[Exception])
   override def postStop(): Unit = {
     super.postStop()
-    //    store.foreach(println)
-    //    println(store.size)
   }
 }

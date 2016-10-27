@@ -35,10 +35,13 @@ import ch.megard.akka.http.cors.CorsSettings
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.search.SearchProvider
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 
 class Api(implicit val config: Config, implicit val system: ActorSystem,
           implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends misc.Protocols with CorsDirectives {
   val logger = Logging(system, getClass)
+  val searchQueryer = new ElasticSearchQueryer()
 
   implicit def rejectionHandler = RejectionHandler.newBuilder()
     .handleAll[MethodRejection] { rejections ⇒
@@ -74,7 +77,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
         path(Segment / "options" / "search") { facetId ⇒
           (get & parameters("facetQuery" ? "", "limit" ? 50, "generalQuery" ? "*")) { (facetQuery, limit, generalQuery) ⇒
             FacetType.fromId(facetId) match {
-              case Some(facetType) ⇒ complete(SearchProvider().searchFacets(facetType, facetQuery, QueryCompiler(generalQuery), limit))
+              case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, QueryCompiler(generalQuery), limit))
               case None            ⇒ complete(NotFound)
             }
           }
@@ -83,7 +86,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
         pathPrefix("datasets") {
           pathPrefix("search") {
             (get & parameters("query" ? "*", "limit" ? 50)) { (query, limit) ⇒
-              onSuccess(SearchProvider().search(QueryCompiler(query), limit)) { result =>
+              onSuccess(searchQueryer.search(QueryCompiler(query), limit)) { result =>
                 val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
 
                 pathPrefix("datasets") {
