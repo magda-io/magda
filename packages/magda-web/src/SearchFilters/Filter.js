@@ -73,6 +73,11 @@ class Filter extends Component {
     }
   }
 
+  /**
+   * if a option from the url does not exist in the default list of filters, we need to remotely search for it to get the hitcount
+   * @param {string} item, the option we get from the url, corresponding the [value] of a filter option
+   * @param {Array} tempList current list of active options
+   */
   remotelySearchOption(item, tempList){
       // take each of the item and search on server to get the accurate hticount for each one
        getJSON(`${this.props.facetSearchQueryBase}${encodeURI(item)}`).then((data)=>{
@@ -84,7 +89,6 @@ class Filter extends Component {
                hitCount: 'unknown'
              }
            }
-
            tempList.push(option);
 
            this.setState({
