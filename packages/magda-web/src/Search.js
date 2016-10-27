@@ -65,11 +65,9 @@ class Search extends Component {
   }
 
   componentWillMount(){
-    if(this.props.location.query.q && this.props.location.query.q.length > 0){
-      this.doSearch();
-      this.debouncedGetPublisherFacets();
-      this.getActiveOptions('publisher');
-      this.getActiveOptions('format');
+      if(this.props.location.query.q && this.props.location.query.q.length > 0){
+        this.doSearch();
+        this.debouncedGetPublisherFacets();
     }
   }
 
@@ -84,7 +82,7 @@ class Search extends Component {
     }, (err)=>{console.warn(err)});
   }
 
-  getActiveOptions(id){
+  getActiveOptions(id, searchFreeText){
     let query = this.props.location.query[id];
     let key = `active${id[0].toUpperCase() + id.slice(1)}Options`;
     if(!defined(query) || query.length === 0){
@@ -97,7 +95,7 @@ class Search extends Component {
       }
       let tempList = [];
       query.forEach(item=>{
-        let url = this.getSearchQuery(id, item);
+        let url = this.getSearchQuery(id, item, searchFreeText);
           // search locally first
           if(defined(this.props.options) && this.props.options.length > 0){
             let option = find(this.props.options, o=>o.value === item);
@@ -145,11 +143,10 @@ class Search extends Component {
        }, (err)=>{console.warn(err)});
   }
 
-  getSearchQuery(facetId, _facetSearchWord){
+  getSearchQuery(facetId, _facetSearchWord, searchFreeText){
       // bypass natual language process filtering by using freetext as general query
-      let keyword = encodeURI(this.state.userEnteredQuery.freeText);
       let facetSearchWord = encodeURI(_facetSearchWord);
-      return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${keyword}&facetQuery=${facetSearchWord}`;
+      return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${searchFreeText}&facetQuery=${facetSearchWord}`;
   }
 
   doSearch(){
@@ -168,8 +165,6 @@ class Search extends Component {
         loadingProgress: 0
       })
 
-      console.log(`http://magda-search-api.terria.io/datasets/search?query=${searchTerm}`);
-      
       getJSON(`http://magda-search-api.terria.io/datasets/search?query=${searchTerm}`,
         this.updateProgress,
         this.transferComplete,
@@ -187,8 +182,14 @@ class Search extends Component {
             filterTemporalOptions: data.facets[1].options,
             filterFormatOptions: data.facets[2].options
           });
+
+          this.getActiveOptions('publisher', data.query.freeText);
+          this.getActiveOptions('format', data.query.freeText);
+
           // this.parseQuery(data.query);
         }, (err)=>{console.warn(err)});
+
+
   }
 
   // parseQuery(query){
@@ -212,8 +213,6 @@ class Search extends Component {
       pathname: this.props.location.pathname,
       query: Object.assign(this.props.location.query, query)
     });
-    this.getActiveOptions('publisher');
-    this.getActiveOptions('format');
     // uncomment this when facet search is activated
     this.debouncedSearch();
   }
