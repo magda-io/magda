@@ -45,8 +45,10 @@ class Filter extends Component {
 
   getActiveOptions(){
     let query = this.props.location.query[this.props.id];
-    if(!defined(query)){
-      return false;
+    if(!defined(query) || query.length === 0){
+      this.setState({
+        activeOptions : []
+      });
     } else {
       if(!Array.isArray(query)){
        query = [query];
