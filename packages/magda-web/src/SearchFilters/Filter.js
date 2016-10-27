@@ -27,7 +27,6 @@ class Filter extends Component {
       isOpen: false,
       options: [],
       loadingProgress: 0,
-      activeOptions: []
     }
 
     this.searchFilter = this.searchFilter.bind(this);
@@ -37,69 +36,6 @@ class Filter extends Component {
     this.toggleOpen = this.toggleOpen.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
   }
-
-
-  componentWillMount(){
-    this.getActiveOptions();
-  }
-
-  getActiveOptions(){
-    let query = this.props.location.query[this.props.id];
-    if(!defined(query) || query.length === 0){
-      this.setState({
-        activeOptions : []
-      });
-    } else {
-      if(!Array.isArray(query)){
-       query = [query];
-      }
-      let tempList = [];
-      query.forEach(item=>{
-          // search locally first
-          if(defined(this.props.options) && this.props.options.length > 0){
-            let option = find(this.props.options, o=>o.value === item);
-            if(defined(option)){
-              tempList.push(option);
-              this.setState({
-                activeOptions : tempList
-              });
-            } else{
-              // search remotely
-              this.remotelySearchOption(item, tempList);
-            }
-          } else{
-            // search remotely
-            this.remotelySearchOption(item, tempList);
-          }
-      });
-    }
-  }
-
-  /**
-   * if a option from the url does not exist in the default list of filters, we need to remotely search for it to get the hitcount
-   * @param {string} item, the option we get from the url, corresponding the [value] of a filter option
-   * @param {Array} tempList current list of active options
-   */
-  remotelySearchOption(item, tempList){
-      // take each of the item and search on server to get the accurate hticount for each one
-       getJSON(`${this.props.facetSearchQueryBase}${encodeURI(item)}`).then((data)=>{
-           let option = data.options.find(o=>o.value === item);
-           // if we cannot find the publisher
-           if(!defined(option)){
-             option ={
-               value: item,
-               hitCount: 0
-             }
-           }
-           tempList.push(option);
-
-           this.setState({
-             activeOptions : tempList
-           });
-
-       }, (err)=>{console.warn(err)});
-  }
-
 
   componentDidMount(){
     // when esc key is pressed at anytime, clear search box and close the search result list
@@ -147,9 +83,6 @@ class Filter extends Component {
     if(defined(callback) && typeof callback ==='function'){
       callback();
     }
-
-    // update list of all options
-    this.getActiveOptions();
   }
 
   /**
@@ -225,9 +158,9 @@ class Filter extends Component {
   }
 
 
-  renderActiveOptions(){
-    if(defined(this.state.activeOptions) && this.state.activeOptions.length > 0){
-      return this.state.activeOptions.map((o, i)=>{
+  renderActiveOptions(){    
+    if(defined(this.props.activeOptions) && this.props.activeOptions.length > 0){
+      return this.props.activeOptions.map((o, i)=>{
         return <li key={o.value + i}>{this.renderOption(o, null, null, null, true)}</li>;
       })
     }

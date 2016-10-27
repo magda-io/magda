@@ -15,12 +15,17 @@ import checkActiveOption from './checkActiveOption';
 
 const facets = ['publishers', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'formats'];
 
+
+
 class Search extends Component {
   constructor(props) {
     super(props);
+
     this.updateSearchText=this.updateSearchText.bind(this);
+
     this.updateQuery = this.updateQuery.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
+
     this.removeAllFacets = this.removeAllFacets.bind(this);
 
     this.transferComplete = this.transferComplete.bind(this);
@@ -28,22 +33,26 @@ class Search extends Component {
     this.transferCanceled = this.transferCanceled.bind(this);
 
     this.debouncedSearch = debounce(this.doSearch, 1000);
-    this.debouncedGetFacets = debounce(this.getFacets, 150);
+    this.debouncedGetPublisherFacets = debounce(this.getPublisherFacets, 150);
 
     /**
      * @type {Object}
      * @property {Array} searchResults results from search
-     * @property {Array} filterPublisher default list of publishers to display in the publishers facet filter
-     * @property {Array} filterTemporal default list of dates to display in the publishers facet filter
-     * @property {Array} filterFormat default list of formats to display in the publishers facet filterss
+     * @property {Array} filterPublisherOptions default list of publishers to display in the publishers facet filter
+     * @property {Array} filterTemporalOptions default list of dates to display in the publishers facet filter
+     * @property {Array} filterFormatOptions default list of formats to display in the publishers facet filterss
      * @property {Number} loadingProgress the percentage of the search progress
      * @property {Object} userEnteredQuery query returned from natual language processing
      */
     this.state = {
       searchResults: [],
-      filterPublisher: [],
-      filterTemporal: [],
-      filterFormat: [],
+      filterPublisherOptions: [],
+      filterTemporalOptions: [],
+      filterFormatOptions: [],
+      activePublisherOptions: [],
+      activeTemporalOptions: [undefined, undefined],
+      activeFormatOptions: [],
+      activeJurisdictionOptions: [],
       loadingProgress: null,
       userEnteredQuery: {}
     };
@@ -52,28 +61,93 @@ class Search extends Component {
   updateSearchText(newText) {
     this.updateQuery({ q: newText });
     this.removeAllFacets();
-    this.debouncedGetFacets();
+    this.debouncedGetPublisherFacets();
     this.debouncedSearch();
   }
 
   componentWillMount(){
     if(this.props.location.query.q && this.props.location.query.q.length > 0){
       this.doSearch();
-      this.debouncedGetFacets();
+      this.debouncedGetPublisherFacets();
+      this.getActiveOptions('publisher');
+      this.getActiveOptions('format');
     }
   }
 
-  getFacets(){
+  getPublisherFacets(){
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
 
     getJSON(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`).then((data)=>{
       this.setState({
-        filterPublisher: data.facets[0].options,
-        filterTemporal: data.facets[1].options,
-        filterFormat: data.facets[2].options
+        filterPublisherOptions: data.facets[0].options
       })
+      // here get all active options?
     }, (err)=>{console.warn(err)});
+  }
+
+  getActiveOptions(id){
+    let query = this.props.location.query[id];
+    let key = `active${id[0].toUpperCase() + id.slice(1)}Options`;
+    if(!defined(query) || query.length === 0){
+      this.setState({
+        [key] : []
+      });
+    } else {
+      if(!Array.isArray(query)){
+       query = [query];
+      }
+      let tempList = [];
+      query.forEach(item=>{
+        let url = this.getSearchQuery(id, item);
+          // search locally first
+          if(defined(this.props.options) && this.props.options.length > 0){
+            let option = find(this.props.options, o=>o.value === item);
+            if(defined(option)){
+              tempList.push(option);
+              this.setState({
+                [key] : tempList
+              });
+            } else{
+              // search remotely
+              this.remotelySearchOption(item, tempList, key, url);
+            }
+          } else{
+            // search remotely
+            this.remotelySearchOption(item, tempList, key, url);
+          }
+      });
+    }
+  }
+
+  /**
+   * if a option from the url does not exist in the default list of filters, we need to remotely search for it to get the hitcount
+   * @param {string} item, the option we get from the url, corresponding the [value] of a filter option
+   * @param {Array} tempList current list of active options
+   */
+  remotelySearchOption(item, tempList, key, url){
+      // take each of the item and search on server to get the accurate hticount for each one
+       getJSON(url).then((data)=>{
+           let option = data.options.find(o=>o.value.toLowerCase() === item.toLowerCase());
+           // if we cannot find the publisher
+           if(!defined(option)){
+             option ={
+               value: item,
+               hitCount: 0
+             }
+           }
+           tempList.push(option);
+
+           this.setState({
+             [key] : tempList
+           });
+
+       }, (err)=>{console.warn(err)});
+  }
+
+  getSearchQuery(facetId, facetSearchWord){
+    let keyword = this.props.location.query.q;
+      return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${keyword}&facetQuery=${facetSearchWord}`;
   }
 
   doSearch(){
@@ -105,8 +179,8 @@ class Search extends Component {
             searchResults: results,
             userEnteredQuery: data.query,
             // update year and format facets
-            filterTemporal: data.facets[1].options,
-            filterFormat: data.facets[2].options
+            filterTemporalOptions: data.facets[1].options,
+            filterFormatOptions: data.facets[2].options
           });
           // this.parseQuery(data.query);
         }, (err)=>{console.warn(err)});
@@ -133,6 +207,8 @@ class Search extends Component {
       pathname: this.props.location.pathname,
       query: Object.assign(this.props.location.query, query)
     });
+    this.getActiveOptions('publisher');
+    this.getActiveOptions('format');
     // uncomment this when facet search is activated
     this.debouncedSearch();
   }
@@ -182,7 +258,7 @@ class Search extends Component {
 
   suggestionText(){
     let q = this.state.userEnteredQuery;
-    let matchedPublishers = this.state.filterPublisher.filter(p=>p.matched === true);
+    let matchedPublishers = this.state.filterPublisherOptions.filter(p=>p.matched === true);
 
     let publisherAllowMultiple = true;
 
@@ -215,9 +291,11 @@ class Search extends Component {
             <div className='row search__search-body__body'>
               {this.props.location.query.q && this.props.location.query.q.length > 0 && <div className='col-sm-4'>
                   <SearchFilters
-                    filterPublisher={this.state.filterPublisher}
-                    filterTemporal={this.state.filterTemporal}
-                    filterFormat={this.state.filterFormat}
+                    filterPublisherOptions={this.state.filterPublisherOptions}
+                    filterTemporalOptions={this.state.filterTemporalOptions}
+                    filterFormatOptions={this.state.filterFormatOptions}
+                    activePublisherOptions={this.state.activePublisherOptions}
+                    activeFormatOptions={this.state.activeFormatOptions}
                     location={this.props.location}
                     updateQuery={this.updateQuery}
                   />

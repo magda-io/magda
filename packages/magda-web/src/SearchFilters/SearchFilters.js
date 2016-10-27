@@ -10,9 +10,10 @@ class SearchFilters extends Component {
     let mainSearchWord = encodeURI(this.props.location.query.q);
       return(
             <div>
-              <FilterPublisher options={this.props.filterPublisher}
+              <FilterPublisher options={this.props.filterPublisherOptions}
+                               activeOptions={this.props.activePublisherOptions}
                                title='publisher'
-                               id='publishers'
+                               id='publisher'
                                location={this.props.location}
                                updateQuery={this.props.updateQuery}
                                facetSearchQueryBase={`http://magda-search-api.terria.io/facets/publisher/options/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
@@ -23,19 +24,20 @@ class SearchFilters extends Component {
                                   updateQuery={this.props.updateQuery}
                                   facetSearchQueryBase={null}/>
 
-              <FilterDateRange options={this.props.filterTemporal}
+              <FilterDateRange options={this.props.filterTemporalOptions}
                                        title='date range'
                                        id='temporal'
                                        location={this.props.location}
                                        updateQuery={this.props.updateQuery}
                                        facetSearchQueryBase={null}/>
 
-              <FilterDataFormat options={this.props.filterFormat}
-                                       title='data format'
-                                       id='formats'
-                                       location={this.props.location}
-                                       updateQuery={this.props.updateQuery}
-                                       facetSearchQueryBase={`http://magda-search-api.terria.io/facets/format/options/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
+              <FilterDataFormat options={this.props.filterFormatOptions}
+                                activeOptions={this.props.activeFormatOptions}
+                                title='data format'
+                                id='format'
+                                location={this.props.location}
+                                updateQuery={this.props.updateQuery}
+                                facetSearchQueryBase={`http://magda-search-api.terria.io/facets/format/options/search?generalQuery=${mainSearchWord}&facetQuery=`}/>
 
             </div>);
   }
