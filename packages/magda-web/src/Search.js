@@ -65,9 +65,11 @@ class Search extends Component {
   }
 
   componentWillMount(){
-      if(this.props.location.query.q && this.props.location.query.q.length > 0){
-        this.doSearch();
-        this.debouncedGetPublisherFacets();
+    if(this.props.location.query.q && this.props.location.query.q.length > 0){
+      this.doSearch();
+      this.debouncedGetPublisherFacets();
+      this.getActiveOptions('publisher');
+      this.getActiveOptions('format');
     }
   }
 
@@ -82,7 +84,7 @@ class Search extends Component {
     }, (err)=>{console.warn(err)});
   }
 
-  getActiveOptions(id, searchFreeText){
+  getActiveOptions(id){
     let query = this.props.location.query[id];
     let key = `active${id[0].toUpperCase() + id.slice(1)}Options`;
     if(!defined(query) || query.length === 0){
@@ -95,7 +97,7 @@ class Search extends Component {
       }
       let tempList = [];
       query.forEach(item=>{
-        let url = this.getSearchQuery(id, item, searchFreeText);
+        let url = this.getSearchQuery(id, item);
           // search locally first
           if(defined(this.props.options) && this.props.options.length > 0){
             let option = find(this.props.options, o=>o.value === item);
@@ -143,10 +145,11 @@ class Search extends Component {
        }, (err)=>{console.warn(err)});
   }
 
-  getSearchQuery(facetId, _facetSearchWord, searchFreeText){
+  getSearchQuery(facetId, _facetSearchWord){
       // bypass natual language process filtering by using freetext as general query
+      let keyword = encodeURI(this.props.location.query.q);
       let facetSearchWord = encodeURI(_facetSearchWord);
-      return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${searchFreeText}&facetQuery=${facetSearchWord}`;
+      return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${keyword}&facetQuery=${facetSearchWord}`;
   }
 
   doSearch(){
@@ -182,14 +185,8 @@ class Search extends Component {
             filterTemporalOptions: data.facets[1].options,
             filterFormatOptions: data.facets[2].options
           });
-
-          this.getActiveOptions('publisher', data.query.freeText);
-          this.getActiveOptions('format', data.query.freeText);
-
           // this.parseQuery(data.query);
         }, (err)=>{console.warn(err)});
-
-
   }
 
   // parseQuery(query){
@@ -213,6 +210,8 @@ class Search extends Component {
       pathname: this.props.location.pathname,
       query: Object.assign(this.props.location.query, query)
     });
+    this.getActiveOptions('publisher');
+    this.getActiveOptions('format');
     // uncomment this when facet search is activated
     this.debouncedSearch();
   }
