@@ -51,8 +51,8 @@ object IndexDefinition {
             field("geoJson").typed(GeoShapeType))),
         mapping(Format.id),
         mapping(Year.id),
-        mapping(Publisher.id))
-        .analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
+        mapping(Publisher.id)
+      ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
       version = 5,

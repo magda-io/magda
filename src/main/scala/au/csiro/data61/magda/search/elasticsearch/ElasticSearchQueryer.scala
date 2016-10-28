@@ -284,7 +284,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
               // Create a dataset filter aggregation for each hit in the initial query
               val filters = hitNames.map(name =>
-                aggregation.filter(name).filter(facetDef.exactMatchQueries(facetDef.facetSearchQuery(name)).head._2)
+                aggregation.filter(name).filter(facetDef.exactMatchQuery(name))
               )
 
               // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we

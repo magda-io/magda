@@ -12,6 +12,7 @@ import au.csiro.data61.magda.util.DateParser._
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
 import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
 import au.csiro.data61.magda.search.elasticsearch.Queries._
+import au.csiro.data61.magda.util.DateParser
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -64,13 +65,18 @@ trait FacetDefinition {
   def facetSearchQuery(textQuery: String): Query
 
   /**
+   * Creates an ES query that will match datasets where the value for this facet matches the exact string passed.
+   */
+  def exactMatchQuery(query: String): QueryDefinition
+
+  /**
    * Creates zero or more es queries that will match datasets with the exact match of this facet. E.g. if a Query has
    * publishers "Ballarat Council" and "City of ySdney" (sic), then it will return two Tuples with "Ballarat Council" and
    * "City of ySdney" and their corresponding query definitions. When run against elastic search, the first query will
    * return datasets that have the *exact* publisher value "Ballarat Council" but won't return anything for "City of ySdney"
    * because it's spelled wrong.
    */
-  def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = Nil
+  def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)]
 }
 
 object FacetDefinition {
@@ -97,7 +103,9 @@ object PublisherFacetDefinition extends FacetDefinition {
 
   override def facetSearchQuery(textQuery: String): Query = Query(publishers = Seq(textQuery))
 
-  override def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = query.publishers.map(publisher => (publisher, exactPublisherQuery(publisher)))
+  override def exactMatchQuery(query: String): QueryDefinition = exactPublisherQuery(query)
+
+  override def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
 }
 
 object YearFacetDefinition extends FacetDefinition {
@@ -111,7 +119,7 @@ object YearFacetDefinition extends FacetDefinition {
       val fromQuery = query.dateFrom.map(dateFromQuery(_))
       val toQuery = query.dateTo.map(dateToQuery(_))
 
-      Seq(fromQuery, toQuery).filter(_.isDefined).map(_.get)
+      Seq(fromQuery, toQuery).flatten
     }
 
   override def removeFromQuery(query: Query): Query = query.copy(dateFrom = None, dateTo = None)
@@ -121,6 +129,17 @@ object YearFacetDefinition extends FacetDefinition {
     // The idea is that this will come from our own index so it shouldn't even be some weird wildcard thing
     case _                                        => throw new RuntimeException("Date " + query + " not recognised")
   }
+
+  override def exactMatchQuery(query: String): QueryDefinition = {
+    val from = DateParser.parseDate(query, false)
+    val to = DateParser.parseDate(query, true)
+
+    (from, to) match {
+      case (InstantResult(fromInstant), InstantResult(toInstant)) => exactDateQuery(fromInstant, toInstant)
+    }
+  }
+
+  override def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = Nil
 }
 
 object FormatFacetDefinition extends FacetDefinition {
@@ -145,5 +164,8 @@ object FormatFacetDefinition extends FacetDefinition {
 
   override def removeFromQuery(query: Query): Query = query.copy(formats = Nil)
   override def facetSearchQuery(textQuery: String) = Query(formats = Seq(textQuery))
-  override def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = query.formats.map(format => (format, formatQuery(format)))
+
+  override def exactMatchQuery(query: String): QueryDefinition = exactFormatQuery(query)
+
+  override def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
 }

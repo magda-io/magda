@@ -74,7 +74,7 @@ object DateParser {
 
   val formats = formatsWithoutTimes ++ formatsWithTimes
 
-  def formatToFormat(format: String, dateSeparator: String, originalFormat: Format) = {
+  private def formatToFormat(format: String, dateSeparator: String, originalFormat: Format) = {
     val replacedDateFormat = format.replace("{sep}", dateSeparator)
     val regex = replacedDateFormat
       .replaceAll("[E|M]{5}", "[A-Za-z]+")
