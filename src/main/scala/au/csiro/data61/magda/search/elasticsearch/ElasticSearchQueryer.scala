@@ -234,7 +234,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   def alternativesAggregation(query: Query, facetDef: FacetDefinition, strategy: SearchStrategy) =
     aggregation
       .filter("filter")
-      .filter(must(queryToQueryDef(facetDef.removeFromQuery(query), strategy)))
+      .filter(queryToQueryDef(facetDef.removeFromQuery(query), strategy))
       .aggs(facetDef.aggregationDefinition(10))
 
   /**

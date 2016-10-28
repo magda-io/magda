@@ -1,5 +1,6 @@
 package au.csiro.data61.magda.search.elasticsearch
 
+import scala.collection.JavaConverters._
 import com.sksamuel.elastic4s.QueryDefinition
 import com.sksamuel.elastic4s.AbstractAggregationDefinition
 import au.csiro.data61.magda.model.misc._
@@ -13,6 +14,9 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
 import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.util.DateParser
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation.InternalBucket
+import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -124,6 +128,15 @@ object YearFacetDefinition extends FacetDefinition {
 
   override def removeFromQuery(query: Query): Query = query.copy(dateFrom = None, dateTo = None)
 
+  override def isFilterOptionRelevant(query: Query)(filterOption: FacetOption): Boolean = {
+    //FIXME: This is nah-stee
+    (parseDate(filterOption.value, false), parseDate(filterOption.value, true)) match {
+      case (InstantResult(from), InstantResult(to)) =>
+        query.dateFrom.map(x => x.isBefore(to) || x.equals(to)).getOrElse(true) &&
+          query.dateTo.map(x => x.isAfter(from) || x.equals(from)).getOrElse(true)
+    }
+  }
+
   override def facetSearchQuery(textQuery: String) = (parseDate(textQuery, false), parseDate(textQuery, true)) match {
     case (InstantResult(from), InstantResult(to)) => Query(dateFrom = Some(from), dateTo = Some(to))
     // The idea is that this will come from our own index so it shouldn't even be some weird wildcard thing
@@ -145,10 +158,23 @@ object YearFacetDefinition extends FacetDefinition {
 object FormatFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
     aggregation nested Format.id path "distributions" aggregations {
-      aggregation terms "abc" field "distributions.format.untokenized" size limit
+      aggregation terms "nested" field "distributions.format.untokenized" size limit aggs {
+        aggregation reverseNested "reverse"
+      }
     }
 
-  override def extractFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation.getProperty("abc").asInstanceOf[Aggregation]
+  override def extractFacetOptions(aggregation: Aggregation): Seq[FacetOption] = {
+    val nested = aggregation.getProperty("nested").asInstanceOf[MultiBucketsAggregation]
+
+    nested.getBuckets.asScala.map { bucket =>
+      val innerBucket = bucket.getAggregations.asScala.head.asInstanceOf[InternalReverseNested]
+
+      new FacetOption(
+        value = bucket.getKeyAsString,
+        hitCount = Some(innerBucket.getDocCount)
+      )
+    }
+  }
 
   override def relatedToQuery(query: Query): Boolean = !query.formats.isEmpty
 
