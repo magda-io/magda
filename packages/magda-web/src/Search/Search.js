@@ -12,6 +12,7 @@ import getJSON from'../helpers/getJSON';
 import defined from '../helpers/defined';
 import toggleQuery from '../helpers/toggleQuery';
 import checkActiveOption from '../helpers/checkActiveOption';
+import Pagination from '../UI/Pagination';
 
 const facets = ['publisher', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'format'];
 
@@ -23,6 +24,7 @@ class Search extends Component {
 
     this.updateSearchText=this.updateSearchText.bind(this);
     this.getSearchQuery=this.getSearchQuery.bind(this);
+    this.goToPage=this.goToPage.bind(this);
 
     this.updateQuery = this.updateQuery.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
@@ -204,6 +206,11 @@ class Search extends Component {
     });
   }
 
+  goToPage(index){
+    this.updateQuery({
+      page: index
+    })
+  }
 
   updateQuery(query){
     this.context.router.push({
@@ -308,7 +315,12 @@ class Search extends Component {
                   <SearchResults
                     searchResults={this.state.searchResults}
                     location={this.props.location}
-                    />
+                  />
+
+                  <Pagination
+                    currentIndex={0}
+                    maxIndex={10}
+                    goToPage={this.goToPage}/>
               </div>
             </div>
           </div>
