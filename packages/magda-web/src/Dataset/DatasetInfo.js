@@ -10,8 +10,8 @@ export default class DatasetInfo extends Component {
                 <div className='dataset-info--content clearfix'>
                 <h5>Contents</h5>
                   <ul className='list-unstyled'>
-                    {dataset.distributions.map(d=>
-                      <li key={d.downloadURL} className={`dataset-info--download-link clearfix ${d.format}`}>
+                    {dataset.distributions.map((d, i)=>
+                      <li key={d.downloadURL + i} className={`dataset-info--download-link clearfix ${d.format}`}>
                         <i className='fa fa-file-pdf-o' aria-hidden="true"></i>
                         <a href={d.downloadURL}>{d.description}({d.format})</a>
                       </li>

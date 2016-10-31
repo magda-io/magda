@@ -318,7 +318,7 @@ class Search extends Component {
                   />
 
                   <Pagination
-                    currentIndex={0}
+                    currentIndex={+this.props.location.query.page || 0}
                     maxIndex={10}
                     goToPage={this.goToPage}/>
               </div>

@@ -1,0 +1,14 @@
+.pagination-item.is-active{
+  background: #3498db;
+  color: #fff;
+}
+
+.pagination-item{
+  background: transparent;
+  border-radius: 0;
+}
+
+.pagination-item:hover,
+.pagination-item:focus{
+  border: 1px solid #444;
+}
