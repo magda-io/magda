@@ -11,7 +11,7 @@ export default class DatasetSummary extends Component {
     let dataset = this.props.dataset;
     return <div className='dataset-summray'>
               <div className='dataset-summray-main'>
-                <h3 className='result-title'>{dataset.title}</h3>
+                <h3 className='result-title'><button className='btn dataset-summray-title' onClick={this.props.clickDataset} type='button'>{dataset.title}</button></h3>
                 {defined(dataset.publisher) && <label className='search-result--publisher'><i className='fa fa-book' aria-hidden='true'></i>{dataset.publisher.name}</label>}
                 <p>{this.truncate(dataset.description)}</p>
                 <ul className='list-unstyled tags'>

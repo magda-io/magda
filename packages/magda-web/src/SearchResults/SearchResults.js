@@ -4,8 +4,20 @@ import DatasetInfo from '../Dataset/DatasetInfo';
 import './SearchResults.css';
 
 class SearchResults extends Component {
-  clickDataset(){
+  constructor(props) {
+    super(props);
 
+    this.clickDataset=this.clickDataset.bind(this);
+
+    this.state={
+      expandedItemIndex : null
+    }
+  }
+
+  clickDataset(i){
+    this.setState({
+      expandedItemIndex: (this.state.expandedItemIndex === i) ? null : i
+    });
   }
   getSummaryText(){
     if(this.props.searchResults.length){
@@ -25,8 +37,8 @@ class SearchResults extends Component {
         {
           this.props.searchResults.map((result, i)=>
             <li key={result.title + i}>
-              <DatasetSummary dataset={result} >
-                <DatasetInfo dataset={result} />
+              <DatasetSummary dataset={result} clickDataset={this.clickDataset.bind(this, i)}>
+                {this.state.expandedItemIndex === i && <DatasetInfo dataset={result} />}
               </DatasetSummary>
             </li>
           )
