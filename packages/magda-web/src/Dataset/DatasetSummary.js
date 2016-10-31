@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import defined from './defined';
+import defined from '../helpers/defined';
 import './DatasetSummary.css';
 
 export default class DatasetSummary extends Component {

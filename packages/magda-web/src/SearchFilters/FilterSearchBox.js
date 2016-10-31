@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './FilterSearchBox.css';
-import ProgressBar from '../ProgressBar';
+import ProgressBar from '../UI/ProgressBar';
 
 /**
   * Searchbox for facet filter

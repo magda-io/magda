@@ -2,7 +2,7 @@ import './index.css';
 import { Router, Route, browserHistory, indexRoute } from 'react-router'
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Search from './Search';
+import Search from './Search/Search';
 
 //<Route path="/magda-web/build/" component={Search}>
 

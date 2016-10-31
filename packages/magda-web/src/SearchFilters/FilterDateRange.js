@@ -5,7 +5,7 @@ import maxBy from 'lodash.maxby';
 import FilterHeader from './FilterHeader';
 import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
-import defined from './../defined';
+import defined from '../helpers/defined';
 
 // each filter option has a certain hight in order to calculate drag bar location
 const itemHeight = 35;

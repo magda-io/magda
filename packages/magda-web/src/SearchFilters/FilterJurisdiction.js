@@ -1,14 +1,14 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
 import Filter from './Filter';
 import FilterHeader from './FilterHeader';
-import getJsonp from '../getJsonp';
-import defined from '../defined';
+import getJsonp from '../helpers/getJsonp';
+import defined from '../helpers/defined';
 import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
 import JurisdictionPopup from './JurisdictionPopup';
 import FilterSearchBox from './FilterSearchBox';
 import React from 'react'
-import getJSON from '../getJSON';
+import getJSON from '../helpers/getJSON';
 
 
 const regionTypeOptions = getRegionTypes();

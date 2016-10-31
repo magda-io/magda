@@ -1,14 +1,13 @@
 const DEFAULTSIZE = 5;
 import './Filter.css';
-import checkActiveOption from '../checkActiveOption';
-import defined from '../defined';
+import checkActiveOption from '../helpers/checkActiveOption';
+import defined from '../helpers/defined';
 import FilterHeader from './FilterHeader';
 import FilterSearchBox from './FilterSearchBox';
-import find from 'lodash.find';
-import getJSON from'../getJSON';
+import getJSON from'../helpers/getJSON';
 import maxBy from 'lodash.maxby';
 import React, { Component } from 'react';
-import toggleQuery from '../toggleQuery';
+import toggleQuery from '../helpers/toggleQuery';
 
 /**
   * Facet Filter component, for example, publisher filter, location filter, format filter, temporal filter

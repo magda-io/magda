@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import defined from '../defined';
+import defined from '../helpers/defined';
 /**
   * Filter header component, contains a title of the filter and a reset button when there is a active filter
   */

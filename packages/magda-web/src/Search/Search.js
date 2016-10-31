@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
-import SearchResults from './SearchResults/SearchResults';
-import SearchFilters from './SearchFilters/SearchFilters';
+import SearchResults from '../SearchResults/SearchResults';
+import SearchFilters from '../SearchFilters/SearchFilters';
 import SearchTabs from './SearchTabs';
 import SearchBox from './SearchBox';
-import ProgressBar from './ProgressBar';
+import ProgressBar from '../UI/ProgressBar';
 import debounce from 'lodash.debounce';
 import './Search.css';
-import getJSON from'./getJSON';
-import defined from './defined';
-import toggleQuery from './toggleQuery';
-import checkActiveOption from './checkActiveOption';
+import getJSON from'../helpers/getJSON';
+import defined from '../helpers/defined';
+import toggleQuery from '../helpers/toggleQuery';
+import checkActiveOption from '../helpers/checkActiveOption';
 
 const facets = ['publisher', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'format'];
 

@@ -1,5 +1,5 @@
 import './JurisdictionPopup.css';
-import DropDown from '../DropDown';
+import DropDown from '../UI/DropDown';
 import Filter from './Filter';
 import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';

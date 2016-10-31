@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import DatasetSummary from '../DatasetSummary';
-import DatasetInfo from '../DatasetInfo';
+import DatasetSummary from '../Dataset/DatasetSummary';
+import DatasetInfo from '../Dataset/DatasetInfo';
 import './SearchResults.css';
 
 class SearchResults extends Component {
