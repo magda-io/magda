@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import './Pagination.css';
+
+const MAXPAGINATION = 5;
+
 class Pagination extends Component {
     constructor(props) {
       super(props);
@@ -8,26 +11,48 @@ class Pagination extends Component {
     }
 
     onClick(i){
-      this.props.goToPage(i)
+      if((i !== '...') && !isNaN(i)){
+        this.props.goToPage(i);
+      }
+    }
+
+    rendePagninationItem(x){
+      if(x === 'truncate'){
+        return <span className='pagination-truncate'>...</span>
+      }
+      return <button onClick={this.onClick.bind(this, x)} className={`btn pagination-item ${x === this.props.currentPage ? 'is-active' : ''}`}>{x}</button>
     }
 
 
     render(){
+      let data = [];
+      if(this.props.maxPage <= MAXPAGINATION){
+        data = [1, 2, 3, 4, 5];
+      } else {
+        let temp = [1, 2, 3, 4, 'truncate', this.props.maxPage];
+        if(temp.indexOf(this.props.currentPage) > -1){
+          data = temp;
+        } else{
+          data = [1, 2, 3, 'truncate', this.props.currentPage, 'truncate',this.props.maxPage]
+        }
+      }
       return <ul className='pagination'>
-                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, 0)}><i className="fa fa-angle-double-left" aria-hidden="true"></i></button></li>
+                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, 1)}><i className="fa fa-angle-double-left" aria-hidden="true"></i></button></li>
+                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, this.props.currentPage-1)}><i className="fa fa-angle-left" aria-hidden="true"></i></button></li>
                 {
-                  [...Array(this.props.maxIndex)].map((x,i)=>
-                    <li key={i} onClick={this.onClick.bind(this, i)}>
-                      <button className={`btn pagination-item ${i === this.props.currentIndex ? 'is-active' : ''}`}>{i+1}</button>
+                  data.map((x, i)=>
+                    <li key={i}>
+                      {this.rendePagninationItem(x)}
                     </li>
                   )
                 }
-                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, this.props.maxIndex-1)}><i className="fa fa-angle-double-right" aria-hidden="true"></i></button></li>
+                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, this.props.currentPage+1)}><i className="fa fa-angle-right" aria-hidden="true"></i></button></li>
+                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, this.props.maxPage-1)}><i className="fa fa-angle-double-right" aria-hidden="true"></i></button></li>
              </ul>
     }
 }
 
-Pagination.propTypes = {currentIndex: React.PropTypes.number, maxIndex: React.PropTypes.number, goToPage: React.PropTypes.func};
-Pagination.defaultProps = { currentIndex: 0, maxIndex: 10};
+Pagination.propTypes = {currentPage: React.PropTypes.number, maxPage: React.PropTypes.number, goToPage: React.PropTypes.func};
+Pagination.defaultProps = { currentPage: 1, maxPage: 10};
 
 export default Pagination;

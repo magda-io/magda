@@ -12,3 +12,9 @@
 .pagination-item:focus{
   border: 1px solid #444;
 }
+
+.pagination .pagination-truncate{
+  float: none;
+  background: transparent;
+  border: 0;
+}

@@ -163,7 +163,7 @@ class Search extends Component {
       let publisher = queryToString('by', query.publisher);
       let format = queryToString('as', query.format);
       let location = queryToLocation(query.jurisdiction, query.jurisdictionType);
-      let startIndex = defined(query.page) ? query.page*NUMBERRESULTSPERPAGE + 1 : 0;
+      let startIndex = defined(query.page) ? (query.page - 1)*NUMBERRESULTSPERPAGE + 1 : 0;
 
       let searchTerm =
       encodeURI(`${keyword} ${publisher} ${format} ${dateFrom} ${dateTo} ${location}&start=${startIndex}&limit=${NUMBERRESULTSPERPAGE}`);
@@ -328,8 +328,8 @@ class Search extends Component {
                     // only show pagination if result count is bigger than default number of results to show per page
                     (this.state.totalNumberOfResults > NUMBERRESULTSPERPAGE) &&
                     <Pagination
-                      currentIndex={+this.props.location.query.page || 0}
-                      maxIndex={Math.ceil(this.state.totalNumberOfResults/NUMBERRESULTSPERPAGE)}
+                      currentPage={+this.props.location.query.page || 1}
+                      maxPage={Math.ceil(this.state.totalNumberOfResults/NUMBERRESULTSPERPAGE)}
                       goToPage={this.goToPage}/>
                   }
               </div>
