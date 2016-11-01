@@ -10,13 +10,13 @@ class SearchResults extends Component {
     this.clickDataset=this.clickDataset.bind(this);
 
     this.state={
-      expandedItemIndex : null
+      expandedItem : null
     }
   }
 
-  clickDataset(i){
+  clickDataset(result){
     this.setState({
-      expandedItemIndex: (this.state.expandedItemIndex === i) ? null : i
+      expandedItem: (this.state.expandedItem === result) ? null : result
     });
   }
   getSummaryText(){
@@ -37,8 +37,8 @@ class SearchResults extends Component {
         {
           this.props.searchResults.map((result, i)=>
             <li key={result.title + i}>
-              <DatasetSummary dataset={result} clickDataset={this.clickDataset.bind(this, i)}>
-                {this.state.expandedItemIndex === i && <DatasetInfo dataset={result} />}
+              <DatasetSummary dataset={result} clickDataset={this.clickDataset.bind(this, result)}>
+                {this.state.expandedItem === result && <DatasetInfo dataset={result} />}
               </DatasetSummary>
             </li>
           )
