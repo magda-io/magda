@@ -38,7 +38,7 @@ class Pagination extends Component {
       }
       return <ul className='pagination'>
                 <li><button className='btn pagination-item' onClick={this.onClick.bind(this, 1)}><i className="fa fa-angle-double-left" aria-hidden="true"></i></button></li>
-                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, this.props.currentPage-1)}><i className="fa fa-angle-left" aria-hidden="true"></i></button></li>
+                <li><button className='btn pagination-item' disabled={this.props.currentPage <= 1} onClick={this.onClick.bind(this, this.props.currentPage-1)}><i className="fa fa-angle-left" aria-hidden="true"></i></button></li>
                 {
                   data.map((x, i)=>
                     <li key={i}>
@@ -46,7 +46,7 @@ class Pagination extends Component {
                     </li>
                   )
                 }
-                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, this.props.currentPage+1)}><i className="fa fa-angle-right" aria-hidden="true"></i></button></li>
+                <li><button className='btn pagination-item' disabled={this.props.currentPage >=this.props.maxPage} onClick={this.onClick.bind(this, this.props.currentPage+1)}><i className="fa fa-angle-right" aria-hidden="true"></i></button></li>
                 <li><button className='btn pagination-item' onClick={this.onClick.bind(this, this.props.maxPage-1)}><i className="fa fa-angle-double-right" aria-hidden="true"></i></button></li>
              </ul>
     }
