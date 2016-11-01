@@ -28,6 +28,11 @@
   position: relative;
 }
 
+
+.popup .popup-summary{
+  position: relative;
+}
+
 .popup .popup-map{
   height: calc(100% - 40px);
 }

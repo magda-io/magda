@@ -11,9 +11,7 @@ class Pagination extends Component {
     }
 
     onClick(i){
-      if((i !== '...') && !isNaN(i)){
-        this.props.goToPage(i);
-      }
+      this.props.goToPage(i);
     }
 
     rendePagninationItem(x){

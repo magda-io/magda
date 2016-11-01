@@ -196,6 +196,8 @@ svg{
 .filter-jurisdiction--summray{
   position: absolute;
   z-index: 99;
+  left: 0;
+  right: 0;
 }
 
 .filter-jurisdiction--summray span{

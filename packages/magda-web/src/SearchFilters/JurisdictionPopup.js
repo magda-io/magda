@@ -62,7 +62,7 @@ class JurisdictionPopup extends Filter {
                         />
                     </div>
                   </div>
-                  {this.props.locationInfoSummray}
+                  <div className='popup-summary'>{this.props.locationInfoSummray}</div>
                   <div className='popup-map'>
                     <JurisdictionMap title='jurisdiction'
                                      id='jurisdiction'
