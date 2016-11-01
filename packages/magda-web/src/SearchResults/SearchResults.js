@@ -23,7 +23,7 @@ class SearchResults extends Component {
     if(this.props.searchResults.length){
       return (
           <div className='search-results-count'>
-            <h4><strong>{this.props.searchResults.length} results found</strong></h4>
+            <h4><strong>{this.props.totalNumberOfResults} results found</strong></h4>
           </div>);
     }
     return null;

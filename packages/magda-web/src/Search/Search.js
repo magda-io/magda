@@ -14,7 +14,8 @@ import toggleQuery from '../helpers/toggleQuery';
 import checkActiveOption from '../helpers/checkActiveOption';
 import Pagination from '../UI/Pagination';
 
-const facets = ['publisher', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'format'];
+const FACETS = ['publisher', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'format'];
+const NUMBERRESULTSPERPAGE = 20;
 
 
 
@@ -29,14 +30,14 @@ class Search extends Component {
     this.updateQuery = this.updateQuery.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
 
-    this.removeAllFacets = this.removeAllFacets.bind(this);
+    this.removeAllfacets = this.removeAllfacets.bind(this);
 
     this.transferComplete = this.transferComplete.bind(this);
     this.transferFailed = this.transferFailed.bind(this);
     this.transferCanceled = this.transferCanceled.bind(this);
 
     this.debouncedSearch = debounce(this.doSearch, 1000);
-    this.debouncedGetPublisherFacets = debounce(this.getPublisherFacets, 150);
+    this.debouncedGetPublisherfacets = debounce(this.getPublisherfacets, 150);
 
     /**
      * @type {Object}
@@ -55,27 +56,28 @@ class Search extends Component {
       activePublisherOptions: [],
       activeFormatOptions: [],
       loadingProgress: null,
-      userEnteredQuery: {}
+      userEnteredQuery: {},
+      totalNumberOfResults : 0
     };
   }
 
   updateSearchText(newText) {
     this.updateQuery({ q: newText });
-    this.removeAllFacets();
-    this.debouncedGetPublisherFacets();
+    this.removeAllfacets();
+    this.debouncedGetPublisherfacets();
     this.debouncedSearch();
   }
 
   componentWillMount(){
     if(this.props.location.query.q && this.props.location.query.q.length > 0){
       this.doSearch();
-      this.debouncedGetPublisherFacets();
+      this.debouncedGetPublisherfacets();
       this.getActiveOptions('publisher');
       this.getActiveOptions('format');
     }
   }
 
-  getPublisherFacets(){
+  getPublisherfacets(){
     let query = this.props.location.query;
     let keyword = query.q.split(' ').join('+');
     getJSON(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`).then((data)=>{
@@ -127,7 +129,6 @@ class Search extends Component {
    */
   remotelySearchOption(item, tempList, key, url){
       // take each of the item and search on server to get the accurate hticount for each one
-      console.log(url);
        getJSON(url).then((data)=>{
             // Note: format has lowercase, upper case, and different spelling etc
            let option = data.options.find(o=>o.value === item);
@@ -147,11 +148,11 @@ class Search extends Component {
        }, (err)=>{console.warn(err)});
   }
 
-  getSearchQuery(facetId, _facetSearchWord){
+  getSearchQuery(facetId, _facetsearchWord){
       // bypass natual language process filtering by using freetext as general query
       let keyword = encodeURI(this.props.location.query.q);
-      let facetSearchWord = encodeURI(_facetSearchWord);
-      return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${keyword}&facetQuery=${facetSearchWord}`;
+      let facetsearchWord = encodeURI(_facetsearchWord);
+      return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${keyword}&facetQuery=${facetsearchWord}`;
   }
 
   doSearch(){
@@ -162,9 +163,12 @@ class Search extends Component {
       let publisher = queryToString('by', query.publisher);
       let format = queryToString('as', query.format);
       let location = queryToLocation(query.jurisdiction, query.jurisdictionType);
+      let startIndex = defined(query.page) ? query.page*NUMBERRESULTSPERPAGE + 1 : 0;
 
       let searchTerm =
-      encodeURI(`${keyword} ${publisher} ${format} ${dateFrom} ${dateTo} ${location}`);
+      encodeURI(`${keyword} ${publisher} ${format} ${dateFrom} ${dateTo} ${location}&start=${startIndex}&limit=${NUMBERRESULTSPERPAGE}`);
+
+      console.log(searchTerm);
 
       this.setState({
         loadingProgress: 0
@@ -180,9 +184,11 @@ class Search extends Component {
         if(keyword.length > 0){
           results = data.dataSets;
         }
+
         this.setState({
             searchResults: results,
             userEnteredQuery: data.query,
+            totalNumberOfResults: +data.hitCount,
             // update year and format facets
             filterTemporalOptions: data.facets[1].options,
             filterFormatOptions: data.facets[2].options
@@ -200,8 +206,8 @@ class Search extends Component {
   //   }
   // }
 
-  removeAllFacets(){
-    facets.forEach(f=>{
+  removeAllfacets(){
+    FACETS.forEach(f=>{
       this.updateQuery({[f]: []});
     });
   }
@@ -315,12 +321,17 @@ class Search extends Component {
                   <SearchResults
                     searchResults={this.state.searchResults}
                     location={this.props.location}
+                    totalNumberOfResults={this.state.totalNumberOfResults}
                   />
 
-                  <Pagination
-                    currentIndex={+this.props.location.query.page || 0}
-                    maxIndex={10}
-                    goToPage={this.goToPage}/>
+                  {
+                    // only show pagination if result count is bigger than default number of results to show per page
+                    (this.state.totalNumberOfResults > NUMBERRESULTSPERPAGE) &&
+                    <Pagination
+                      currentIndex={+this.props.location.query.page || 0}
+                      maxIndex={Math.ceil(this.state.totalNumberOfResults/NUMBERRESULTSPERPAGE)}
+                      goToPage={this.goToPage}/>
+                  }
               </div>
             </div>
           </div>

@@ -18,7 +18,7 @@ class Pagination extends Component {
                 {
                   [...Array(this.props.maxIndex)].map((x,i)=>
                     <li key={i} onClick={this.onClick.bind(this, i)}>
-                      <button className={`btn pagination-item ${i === this.props.currentIndex ? 'is-active' : ''}`}>{i}</button>
+                      <button className={`btn pagination-item ${i === this.props.currentIndex ? 'is-active' : ''}`}>{i+1}</button>
                     </li>
                   )
                 }

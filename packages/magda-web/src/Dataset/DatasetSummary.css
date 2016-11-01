@@ -2,4 +2,6 @@
   background: transparent;
   padding: 0;
   font-size: inherit;
+  white-space: normal;
+  text-align: left;
 }
