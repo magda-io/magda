@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  creationTimestamp: null
+  labels:
+    service: api
+  name: api
+spec:
+  replicas: 1
+  selector:
+    service: api
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: api
+    spec:
+      containers:
+      - env:
+        - name: SCALA_ENV
+          value: local
+        image: "alexgilleran/magda-metadata:v0.0.1"
+        imagePullPolicy: ""
+        name: api
+        ports:
+        - containerPort: 9000
+        - containerPort: 8000
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/regions
+          name: regions
+        - mountPath: /usr/src/app/
+          name: src
+        - mountPath: /root/.ivy2/
+          name: ivy-cache
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: regions
+        hostPath:
+          path: /Users/gil308/projects/magda/magda-metadata/regions
+      - hostPath:
+          path: /Users/gil308/projects/magda/magda-metadata
+        name: src
+      - hostPath:
+          path: /Users/gil308/.ivy2/
+        name: ivy-cache
+status:
+  replicas: 0

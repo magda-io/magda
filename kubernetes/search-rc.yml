@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  creationTimestamp: null
+  labels:
+    service: search
+  name: search
+spec:
+  replicas: 1
+  selector:
+    service: search
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: search
+    spec:
+      containers:
+      - env:
+        - name: ES_HEAP_SIZE
+          value: 2g
+        image: elasticsearch:2.4
+        imagePullPolicy: ""
+        name: search
+        ports:
+        - containerPort: 9200
+        - containerPort: 9300
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+status:
+  replicas: 0
