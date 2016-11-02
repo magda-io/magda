@@ -51,7 +51,7 @@ dockerfile in docker := {
 }
 
 sources in EditSource <++= baseDirectory.map(d => (d / "kubernetes" ** "*.yml").get)
-targetDirectory in EditSource <<= baseDirectory(_ / "kubernetes" / "output")
+targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
 val baseDirPath = new File("./").getAbsolutePath
 val baseDir = baseDirPath.substring(0, baseDirPath.length - 2)
 val homeDir = System.getProperty("user.home")
