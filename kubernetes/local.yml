@@ -6,8 +6,6 @@ metadata:
   name: api
 spec:
   replicas: 1
-  selector:
-    service: api
   template:
     metadata:
       labels:
@@ -18,6 +16,8 @@ spec:
         env:
         - name: SCALA_ENV
           value: local
+        - name: MAGDA_SEARCH_ROLE
+          value: both
         image: "alexgilleran/magda-metadata:v0.0.1"
         ports:
         - containerPort: 9000
@@ -46,15 +46,17 @@ metadata:
   name: api
 spec:
   ports:
-  - port: 80
+  - name: http
+    port: 80
     targetPort: 9000
     nodePort: 30009
-  - port: 8000
+  - name: debug
+    port: 8000
     targetPort: 8000
     nodePort: 30008
   selector:
     service: api
-  type: "LoadBalancer"
+  type: "NodePort"
 ---
 
 # ELASTIC SEARCH
@@ -64,8 +66,6 @@ metadata:
   name: search
 spec:
   replicas: 1
-  selector:
-    service: search
   template:
     metadata:
       labels:
@@ -85,8 +85,7 @@ spec:
           mountPath: /usr/share/elasticsearch/data
       volumes:
         - name: data
-          hostPath:
-            path: ${projectDir}/.esdata
+          emptyDir: {}
     
 ---
 apiVersion: v1
@@ -95,14 +94,17 @@ metadata:
   name: search
 spec:
   ports:
-  - port: 9200
+  - name: http
+    port: 9200
     targetPort: 9200
     nodePort: 30092
-  - port: 9300
+  - name: java
+    port: 9300
     targetPort: 9300
     nodePort: 30093
   selector:
     service: search
+  type: "NodePort"
 ---
     
 # KIBANA
@@ -112,8 +114,6 @@ metadata:
   name: kibana
 spec:
   replicas: 1
-  selector:
-    service: kibana
   template:
     metadata:
       labels:
@@ -134,9 +134,11 @@ metadata:
   name: kibana
 spec:
   ports:
-  - port: 5601
+  - name: main
+    port: 5601
     targetPort: 5601
     nodePort: 30056
   selector:
     service: kibana
+  type: "NodePort"
 
