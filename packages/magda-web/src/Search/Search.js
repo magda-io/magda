@@ -157,7 +157,7 @@ class Search extends Component {
 
   doSearch(){
       let query = this.props.location.query;
-      let keyword = query.q.split(' ').join('+');
+      let keyword = query.q;
       let dateFrom = defined(query.dateFrom) ? 'from ' + query.dateFrom : '';
       let dateTo=defined(query.dateTo) ? 'to ' + query.dateTo : '';
       let publisher = queryToString('by', query.publisher);
@@ -167,8 +167,6 @@ class Search extends Component {
 
       let searchTerm =
       encodeURI(`${keyword} ${publisher} ${format} ${dateFrom} ${dateTo} ${location}&start=${startIndex}&limit=${NUMBERRESULTSPERPAGE}`);
-
-      console.log(searchTerm);
 
       this.setState({
         loadingProgress: 0

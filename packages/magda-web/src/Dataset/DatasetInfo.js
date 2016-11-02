@@ -26,7 +26,6 @@ export default class DatasetInfo extends Component {
 
               <div className='dataset-info-footer clearfix'>
                   <div className='dataset-info-footer--left'>
-                    <button className='btn btn-unstyled'><i className="fa fa-star" aria-hidden="true"></i></button>
                     <a className='btn' href={`https://twitter.com/intent/tweet?url=${dataset.landingPage}`} target='_blank'>
                       <i className="fa fa-share-alt" aria-hidden="true"></i>
                     </a>
