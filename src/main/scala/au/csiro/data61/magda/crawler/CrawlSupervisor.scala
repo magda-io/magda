@@ -9,7 +9,7 @@ import com.typesafe.config.Config
 
 import scala.language.postfixOps
 
-class Supervisor(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig]) extends Actor with ActorLogging {
+class CrawlSupervisor(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig]) extends Actor with ActorLogging {
   val indexer = context actorOf Props(new Indexer(self))
   val host2Actor: Map[URL, ActorRef] = externalInterfaces
     .groupBy(_.baseUrl)

@@ -17,7 +17,7 @@ object ClientProvider {
     clientFuture match {
       case Some(future) => future
       case None =>
-        val future = retry(Future {
+        val future = retry(() => Future {
           val uri = ElasticsearchClientUri(AppConfig.conf.getString("elasticSearch.serverUrl"))
           ElasticClient.transport(uri)
         }, 10 seconds, 10, onRetry(logger)(_))

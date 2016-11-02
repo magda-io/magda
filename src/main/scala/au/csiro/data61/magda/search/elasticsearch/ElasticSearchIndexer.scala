@@ -23,6 +23,8 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import spray.json._
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import com.sksamuel.elastic4s.BulkResult
+import au.csiro.data61.magda.util.FutureRetry.retry
+import scala.concurrent.duration._
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -33,6 +35,8 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
    */
   private lazy val setupFuture = setup()
 
+  implicit val scheduler = system.scheduler
+
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
   private lazy val indexQueue = Source.queue[(String, List[DataSet])](Integer.MAX_VALUE, OverflowStrategy.backpressure)
     .mapAsync(1) { case (_, dataSets) => indexDataSets(dataSets) }
@@ -42,14 +46,15 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the indices */
   private def setup(): Future[ElasticClient] = {
     getClient(system.scheduler, logger, ec).flatMap(client =>
-      getIndexVersions(client).flatMap { versionPairs =>
-        logger.debug("Successfully connected to ES client")
+      retry(() => getIndexVersions(client), 10 seconds, 10, logger.warning("Failed to get index versions, {} retries left", _))
+        .flatMap { versionPairs =>
+          logger.debug("Successfully connected to ES client")
 
-        updateIndices(client, versionPairs).map { _ =>
-          // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
-          client
+          updateIndices(client, versionPairs).map { _ =>
+            // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
+            client
+          }
         }
-      }
     )
   }
 
@@ -136,12 +141,16 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
 
   override def needsReindexing(): Future[Boolean] = {
     setupFuture.flatMap(client =>
-      client.execute {
-        ElasticDsl.search in "datasets" / "datasets" limit 0
-      } map { result =>
-        logger.debug("Reindex check hit count: {}", result.getHits.getTotalHits)
-        result.getHits.getTotalHits == 0
-      })
+      retry(() =>
+        client.execute {
+          ElasticDsl.search in "datasets" / "datasets" limit 0
+        }
+      , 10 seconds, 10, logger.warning("Failed to get dataset count, {} retries left", _))
+        .map { result =>
+          logger.debug("Reindex check hit count: {}", result.getHits.getTotalHits)
+          result.getHits.getTotalHits == 0
+        }
+    )
   }
 
   /**

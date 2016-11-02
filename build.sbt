@@ -46,5 +46,6 @@ dockerfile in docker := {
     from("java")
     entryPoint(s"$targetDir/bin/${executableScriptName.value}")
     copy(appDir, targetDir)
+    expose(80)
   }
 }

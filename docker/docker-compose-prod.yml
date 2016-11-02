@@ -1,0 +1,37 @@
+version: '2'
+services:
+  api:
+    extends:
+      file: docker-compose-base.yml
+      service: api
+    expose:
+     - "80"
+    ports:
+      - "80:80"
+    links:
+      - search
+    environment:
+      - SCALA_ENV=prod
+      - MAGDA_SEARCH_ROLE=api
+    build:
+      context: .
+      dockerfile: Dockerfile
+  indexer:
+    extends:
+      file: docker-compose-base.yml
+      service: api
+    links:
+      - search
+    environment:
+      - SCALA_ENV=prod
+      - MAGDA_SEARCH_ROLE=indexer
+    build:
+      context: .
+      dockerfile: Dockerfile
+  search:
+    extends:
+      file: docker-compose-base.yml
+      service: search
+    ports:
+      - "9200:9200"
+      - "9300"
