@@ -1,17 +1,17 @@
-import './FilterDateRange.css';
+import './FacetDateRange.css';
 import React from 'react'
-import Filter from './Filter';
+import Facet from './FacetWrapper';
 import maxBy from 'lodash.maxby';
-import FilterHeader from './FilterHeader';
+import FacetHeader from './FacetHeader';
 import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
 
-// each filter option has a certain hight in order to calculate drag bar location
+// each facet option has a certain hight in order to calculate drag bar location
 const itemHeight = 35;
 
-// the date range facet filter, extends filter component
-class FilterDateRange extends Filter {
+// the date range facet facet, extends facet component
+class FacetDateRange extends Facet {
   constructor(props) {
     super(props);
     this.resetdateFrom = this.resetdateFrom.bind(this);
@@ -110,14 +110,14 @@ class FilterDateRange extends Filter {
     this.props.updateQuery({ 'dateTo': 'undefined' });
   }
 
-  removeFilter(){
+  removeFacet(){
     this.props.updateQuery({'dateFrom': []});
     this.props.updateQuery({'dateTo': []});
   }
 
   /**
-   * Check if current filter option is active(exists in the url)
-   * @param {object} option the current filter option
+   * Check if current facet option is active(exists in the url)
+   * @param {object} option the current facet option
    */
   checkActiveOption(option){
     if(!defined(this.props.location.query.dateFrom) && !defined(this.props.location.query.dateFrom)){
@@ -192,9 +192,9 @@ class FilterDateRange extends Filter {
 
   render(){
     return (
-      <div className='filter'>
-        <FilterHeader query={[this.props.location.query.dateFrom, this.props.location.query.dateTo]}
-                      removeFilter={this.removeFilter}
+      <div className='facet'>
+        <FacetHeader query={[this.props.location.query.dateFrom, this.props.location.query.dateTo]}
+                      removeFacet={this.removeFacet}
                       title={this.props.title}/>
             <div className='clearfix' id='drag-bar'>
               <div className='slider'>
@@ -215,4 +215,4 @@ class FilterDateRange extends Filter {
   }
 }
 
-export default FilterDateRange;
+export default FacetDateRange;

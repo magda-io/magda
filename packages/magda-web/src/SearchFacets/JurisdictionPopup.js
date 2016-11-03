@@ -1,16 +1,16 @@
 import './JurisdictionPopup.css';
 import DropDown from '../UI/DropDown';
-import Filter from './Filter';
+import Facet from './FacetWrapper';
 import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
-import FilterSearchBox from './FilterSearchBox';
+import FacetSearchBox from './FacetSearchBox';
 import React from 'react'
 import find from 'lodash.find';
 
 
 const regionTypeOptions = getRegionTypes();
 
-class JurisdictionPopup extends Filter {
+class JurisdictionPopup extends Facet {
     constructor(props) {
         super(props);
         /**
@@ -38,7 +38,7 @@ class JurisdictionPopup extends Filter {
               <div className='popup-inner'>
               <div className='popup-header clearfix'>
                 <div className='col-xs-11'>
-                  <h4 className='filter-title'>Location</h4>
+                  <h4 className='facet-title'>Location</h4>
                 </div>
                 <div className='col-xs-1'>
                   <button className='btn popup-close-btn' onClick={()=>this.props.closePopUp()}><i className='fa fa-times' aria-hidden='true'></i></button>
@@ -47,8 +47,8 @@ class JurisdictionPopup extends Filter {
               <div className='popup-body clearfix'>
                   <div className='popup-tools row'>
                     <div className='col-sm-6'>
-                      <FilterSearchBox allowMultiple={false}
-                                       searchFilter={this.props.searchLocation}
+                      <FacetSearchBox allowMultiple={false}
+                                       searchFacet={this.props.searchLocation}
                                        loadingProgress={this.props.loadingProgress}
                                        renderOption={this.props.renderOption}
                                        toggleOption={this.props.toggleOption}

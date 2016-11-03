@@ -3,7 +3,7 @@ export default function (option, currrentQuery, allowMultiple) {
   let newQuery = [];
 
   if (allowMultiple === true){
-    // force filters into array
+    // force facets into array
     if (!currrentQuery){
       newQuery = [];
     }

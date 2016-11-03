@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
 import SearchResults from '../SearchResults/SearchResults';
-import SearchFilters from '../SearchFilters/SearchFilters';
+import SearchFacets from '../SearchFacets/SearchFacets';
 import SearchTabs from './SearchTabs';
 import SearchBox from './SearchBox';
 import ProgressBar from '../UI/ProgressBar';
@@ -13,10 +13,25 @@ import defined from '../helpers/defined';
 import toggleQuery from '../helpers/toggleQuery';
 import checkActiveOption from '../helpers/checkActiveOption';
 import Pagination from '../UI/Pagination';
+import findindex from 'lodash.findindex';
+import find from 'lodash.find';
 
 const FACETS = ['publisher', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'format'];
 const NUMBERRESULTSPERPAGE = 20;
 
+
+
+const SETTINGS ={
+  resultsPerPage: 20,
+  optionsVisible: 5,
+  facets: ['publisher', 'regionId', 'regionType', 'dateTo', 'dateFrom', 'format'],
+  publisherAllowMultiple: true,
+  formatAllowMultiple: true,
+  regionTypeAllowMultiple: false,
+  regionIdAllowMultiple: false,
+  dateToAllowMultiple: false,
+  dateFromAllowMultiple: false
+}
 
 
 class Search extends Component {
@@ -24,37 +39,40 @@ class Search extends Component {
     super(props);
 
     this.updateSearchText=this.updateSearchText.bind(this);
-    this.getSearchQuery=this.getSearchQuery.bind(this);
     this.goToPage=this.goToPage.bind(this);
-
     this.updateQuery = this.updateQuery.bind(this);
     this.updateProgress = this.updateProgress.bind(this);
-
     this.removeAllfacets = this.removeAllfacets.bind(this);
-
     this.transferComplete = this.transferComplete.bind(this);
-    this.transferFailed = this.transferFailed.bind(this);
-    this.transferCanceled = this.transferCanceled.bind(this);
-
     this.debouncedSearch = debounce(this.doSearch, 1000);
-    this.debouncedGetPublisherfacets = debounce(this.getPublisherfacets, 150);
+    this.togglePublisherOption= this.togglePublisherOption.bind(this);
+    this.resetPublisherFacet = this.resetPublisherFacet.bind(this);
 
     /**
      * @type {Object}
      * @property {Array} searchResults results from search
-     * @property {Array} filterPublisherOptions default list of publisher to display in the publisher facet filter
-     * @property {Array} filterTemporalOptions default list of dates to display in the publisher facet filter
-     * @property {Array} filterFormatOptions default list of format to display in the publisher facet filterss
+     * @property {Array} facetPublisherOptions default list of publisher to display in the publisher facet facet
+     * @property {Array} facetTemporalOptions default list of dates to display in the publisher facet facet
+     * @property {Array} facetFormatOptions default list of format to display in the publisher facet facetss
      * @property {Number} loadingProgress the percentage of the search progress
      * @property {Object} userEnteredQuery query returned from natual language processing
      */
     this.state = {
-      searchResults: [],
-      filterPublisherOptions: [],
-      filterTemporalOptions: [],
-      filterFormatOptions: [],
+      datasetsSearchResults: [],
+
+      facetPublisherOptions: [],
+      facetTemporalOptions: [],
+      facetFormatOptions: [],
+
+      facetPublisherSearchResults: [],
+      facetRegionSearchResults: [],
+      facetFormatSearchResults: [],
+
       activePublisherOptions: [],
       activeFormatOptions: [],
+      activeRegionOptions: [],
+      activeTemporalOptions: [],
+
       loadingProgress: null,
       userEnteredQuery: {},
       totalNumberOfResults : 0
@@ -63,98 +81,18 @@ class Search extends Component {
 
   updateSearchText(newText) {
     this.updateQuery({ q: newText });
+    // remove all previous facets
     this.removeAllfacets();
-    this.debouncedGetPublisherfacets();
     this.debouncedSearch();
   }
 
   componentWillMount(){
     if(this.props.location.query.q && this.props.location.query.q.length > 0){
       this.doSearch();
-      this.debouncedGetPublisherfacets();
-      this.getActiveOptions('publisher');
-      this.getActiveOptions('format');
     }
   }
 
-  getPublisherfacets(){
-    let query = this.props.location.query;
-    let keyword = query.q.split(' ').join('+');
-    getJSON(`http://magda-search-api.terria.io/datasets/search?query=${keyword}`).then((data)=>{
-      this.setState({
-        filterPublisherOptions: data.facets[0].options
-      })
-      // here get all active options?
-    }, (err)=>{console.warn(err)});
-  }
-
-  getActiveOptions(id){
-    let query = this.props.location.query[id];
-    let key = `active${id[0].toUpperCase() + id.slice(1)}Options`;
-    if(!defined(query) || query.length === 0){
-      this.setState({
-        [key] : []
-      });
-    } else {
-      if(!Array.isArray(query)){
-       query = [query];
-      }
-      let tempList = [];
-      query.forEach(item=>{
-        let url = this.getSearchQuery(id, item);
-          // search locally first
-          if(defined(this.props.options) && this.props.options.length > 0){
-            let option = find(this.props.options, o=>o.value === item);
-            if(defined(option)){
-              tempList.push(option);
-              this.setState({
-                [key] : tempList
-              });
-            } else{
-              // search remotely
-              this.remotelySearchOption(item, tempList, key, url);
-            }
-          } else{
-            // search remotely
-            this.remotelySearchOption(item, tempList, key, url);
-          }
-      });
-    }
-  }
-
-  /**
-   * if a option from the url does not exist in the default list of filters, we need to remotely search for it to get the hitcount
-   * @param {string} item, the option we get from the url, corresponding the [value] of a filter option
-   * @param {Array} tempList current list of active options
-   */
-  remotelySearchOption(item, tempList, key, url){
-      // take each of the item and search on server to get the accurate hticount for each one
-       getJSON(url).then((data)=>{
-            // Note: format has lowercase, upper case, and different spelling etc
-           let option = data.options.find(o=>o.value === item);
-           // if we cannot find the option
-           if(!defined(option)){
-             option ={
-               value: item,
-               hitCount: 0
-             }
-           }
-           tempList.push(option);
-
-           this.setState({
-             [key] : tempList
-           });
-
-       }, (err)=>{console.warn(err)});
-  }
-
-  getSearchQuery(facetId, _facetsearchWord){
-      // bypass natual language process filtering by using freetext as general query
-      let keyword = encodeURI(this.props.location.query.q);
-      let facetsearchWord = encodeURI(_facetsearchWord);
-      return `http://magda-search-api.terria.io/facets/${facetId}/options/search?generalQuery=${keyword}&facetQuery=${facetsearchWord}`;
-  }
-
+  // one seaarch to update them all
   doSearch(){
       let query = this.props.location.query;
       let keyword = query.q;
@@ -162,7 +100,7 @@ class Search extends Component {
       let dateTo=defined(query.dateTo) ? 'to ' + query.dateTo : '';
       let publisher = queryToString('by', query.publisher);
       let format = queryToString('as', query.format);
-      let location = queryToLocation(query.jurisdiction, query.jurisdictionType);
+      let location = queryToRegion(query.jurisdiction, query.jurisdictionType);
       let startIndex = defined(query.page) ? (query.page - 1)*NUMBERRESULTSPERPAGE + 1 : 0;
 
       let searchTerm =
@@ -174,38 +112,70 @@ class Search extends Component {
 
       getJSON(`http://magda-search-api.terria.io/datasets/search?query=${searchTerm}`,
         this.updateProgress,
-        this.transferComplete,
-        this.transferFailed,
-        this.transferCanceled).then((data)=>{
+        this.transferComplete).then((data)=>{
 
         let results= [];
         if(keyword.length > 0){
           results = data.dataSets;
         }
 
+        let _activePublisherOptions = data.query.publishers;
+
         this.setState({
             searchResults: results,
             userEnteredQuery: data.query,
             totalNumberOfResults: +data.hitCount,
             // update year and format facets
-            filterTemporalOptions: data.facets[1].options,
-            filterFormatOptions: data.facets[2].options
+            // use of index here is questionable
+            facetPublisherOptions: data.facets[0].options,
+            facetTemporalOptions: data.facets[1].options,
+            facetFormatOptions: data.facets[2].options,
+
+            activePublisherOptions: this.getOptionFromString(data.query.publishers, data.facets[0].options) || [],
+            activeFormatOptions: this.getOptionFromString(data.query.formats, data.facets[0].options) || [],
+
           });
           // this.parseQuery(data.query);
         }, (err)=>{console.warn(err)});
   }
 
-  // parseQuery(query){
-  //   if(defined(query)){
-  //     if(defined(query.publisher)){this.updateQuery({'publisher': mergeQuery(query.publisher, this.props.location.query.publisher)});}
-  //     if(defined(query.format)){this.updateQuery({'format': mergeQuery(query.format, this.props.location.query.format)});}
-  //     if(defined(query.dateFrom)){this.updateQuery({'dateFrom': mergeQuery(new Date(query.dateFrom).getFullYear(), this.props.location.query.dateFrom)});}
-  //     if(defined(query.dateTo)){this.updateQuery({'dateTo': mergeQuery(new Date(query.dateTo).getFullYear(), this.props.location.query.dateTo)});}
-  //   }
-  // }
+  getOptionFromString(listOfString, options){
+    return listOfString.map(s=>find(options, o=>o.value === s));
+  }
+
+
+  searchPublisherFacet(facetId, facetSearchWord){
+    this.setState({
+      facetPublisherSearchResults: []
+    })
+
+  }
+
+  searchFormatFacet(facetId, facetSearchWord){
+    this.setState({
+      facetFormatSearchResults: []
+    })
+
+  }
+
+  searchRegionFacet(facetId, facetSearchWord){
+    this.setState({
+      facetRegionSearchResults: []
+    })
+
+  }
+
+
+  resetPublisherFacet(){
+    this.setState({
+      activePublisherOptions: []
+    });
+
+    this.updateQuery({'publisher': []});
+  }
 
   removeAllfacets(){
-    FACETS.forEach(f=>{
+    SETTINGS.facets.forEach(f=>{
       this.updateQuery({[f]: []});
     });
   }
@@ -221,10 +191,6 @@ class Search extends Component {
       pathname: this.props.location.pathname,
       query: Object.assign(this.props.location.query, query)
     });
-    this.getActiveOptions('publisher');
-    this.getActiveOptions('format');
-    // uncomment this when facet search is activated
-    this.debouncedSearch();
   }
 
   // progress on transfers from the server to the client (downloads)
@@ -243,44 +209,24 @@ class Search extends Component {
     this.setState({
       loadingProgress: 1
     });
-
-    // window.setTimeout(()=>{
-    //   this.setState({
-    //     loadingProgress: null
-    //   });
-    // }, 2000)
   }
 
-  transferFailed(evt) {
-    console.warn("An error occurred while transferring the file.");
-    this.setState({
-      loadingProgress: null
-    })
-  }
 
-  transferCanceled(evt) {
-    console.warn("The transfer has been canceled by the user.");
-    this.setState({
-      loadingProgress: null
-    })
-  }
+  togglePublisherOption(option, callback){
+    let existingQuery = this.state.activePublisherOptions.slice();
+    let index = findindex(existingQuery, q=>q.value === option.value);
+    if(index === -1){
+      existingQuery.push(option);
 
-  toggleOption(option, allowMultiple, facetId){
-    let query = toggleQuery(option, this.props.location.query[facetId], allowMultiple);
-    this.updateQuery({[facetId]: query});
-  }
-
-  suggestionText(){
-    let q = this.state.userEnteredQuery;
-    let matchedPublishers = this.state.filterPublisherOptions.filter(p=>p.matched === true);
-
-    let publisherAllowMultiple = true;
-
-    if(matchedPublishers.length > 0 && defined(q.freeText)){
-      return <span>Are you searching for <strong>{q.freeText}</strong> published by {matchedPublishers.map((p, i)=>
-        <button onClick={this.toggleOption.bind(this, p, publisherAllowMultiple, 'publisher')} className={`${checkActiveOption(p, this.props.location.query.publisher) ? 'is-active' : ''} btn btn-suggested-option`} key={p.value}>{p.value} </button>)} ? </span>;
+    }else{
+      existingQuery.splice(index, 1)
     }
-    return null
+
+    this.setState({
+      activePublisherOptions: existingQuery
+    });
+
+    this.updateQuery({'publisher': existingQuery.map(q=>q.value)})
   }
 
   render() {
@@ -292,33 +238,37 @@ class Search extends Component {
             <div className='container'>
               <SearchBox searchValue={this.props.location.query.q}
                          updateSearchText={this.updateSearchText}
-                         />
-              <div className="col-sm-8 col-sm-offset-4 search-suggestions">
-                {this.suggestionText()}
-              </div>
+              />
             </div>
           </div>
           <div className='container search__search-body'>
-            <div className='search__search-body__header clearfix'>
-              <SearchTabs />
-            </div>
-            <div className='row search__search-body__body'>
-              {this.props.location.query.q && this.props.location.query.q.length > 0 && <div className='col-sm-4'>
-                  <SearchFilters
-                    filterPublisherOptions={this.state.filterPublisherOptions}
-                    filterTemporalOptions={this.state.filterTemporalOptions}
-                    filterFormatOptions={this.state.filterFormatOptions}
-                    getSearchQuery={this.getSearchQuery}
+            <div className='col-sm-4'>
+                  <SearchFacets
+
+                    facetPublisherOptions={this.state.facetPublisherOptions}
+                    facetTemporalOptions={this.state.facetTemporalOptions}
+                    facetFormatOptions={this.state.facetFormatOptions}
+
+                    activeRegionOptions={this.state.activeRegionOptions}
+                    activeTemporalOptions={this.state.activeTemporalOptions}
                     activePublisherOptions={this.state.activePublisherOptions}
                     activeFormatOptions={this.state.activeFormatOptions}
-                    location={this.props.location}
+
+                    searchPublisherFacet={this.searchPublisherFacet}
+                    searchRegionFacet={this.searchRegionFacet}
+                    searchFormatFacet={this.searchFormatFacet}
+
+                    resetPublisherFacet={this.resetPublisherFacet}
+
+                    togglePublisherOption={this.togglePublisherOption}
+
                     updateQuery={this.updateQuery}
+                    SETTINGS={SETTINGS}
                   />
-              </div>}
+              </div>
               <div className='col-sm-8'>
                   <SearchResults
                     searchResults={this.state.searchResults}
-                    location={this.props.location}
                     totalNumberOfResults={this.state.totalNumberOfResults}
                   />
 
@@ -330,7 +280,6 @@ class Search extends Component {
                       maxPage={Math.ceil(this.state.totalNumberOfResults/NUMBERRESULTSPERPAGE)}
                       goToPage={this.goToPage}/>
                   }
-              </div>
             </div>
           </div>
         </div>
@@ -349,7 +298,7 @@ function queryToString(preposition, query){
   }
 }
 
-function queryToLocation(regionid, regiontype){
+function queryToRegion(regionid, regiontype){
   if(!defined(regionid) || !defined(regiontype)) return '';
   return `in ${regiontype}:${regionid}`;
 }

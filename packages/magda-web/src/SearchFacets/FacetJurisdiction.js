@@ -1,12 +1,12 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
-import Filter from './Filter';
-import FilterHeader from './FilterHeader';
+import Facet from './FacetWrapper';
+import FacetHeader from './FacetHeader';
 import getJsonp from '../helpers/getJsonp';
 import defined from '../helpers/defined';
 import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
 import JurisdictionPopup from './JurisdictionPopup';
-import FilterSearchBox from './FilterSearchBox';
+import FacetSearchBox from './FacetSearchBox';
 import React from 'react'
 import getJSON from '../helpers/getJSON';
 
@@ -14,9 +14,9 @@ import getJSON from '../helpers/getJSON';
 const regionTypeOptions = getRegionTypes();
 
 /*
-* the jurisdiction (location) facet filter, extends Filter class
+* the jurisdiction (location) facet facet, extends Facet class
 */
-class FilterJurisdiction extends Filter {
+class FacetJurisdiction extends Facet {
     constructor(props) {
         super(props);
         this.openPopup = this.openPopup.bind(this);
@@ -50,7 +50,7 @@ class FilterJurisdiction extends Filter {
 
     /**
      * search for a jurisdiction
-     * @param {string} searchText, the text user type in the input box inside the facet filter
+     * @param {string} searchText, the text user type in the input box inside the facet facet
      */
     searchLocation(text){
         getJsonp(`http://www.censusdata.abs.gov.au/census_services/search?query=${text || ' '}&cycle=2011&results=15&type=jsonp&cb=`).then(data=>{
@@ -72,7 +72,7 @@ class FilterJurisdiction extends Filter {
         });
     }
 
-    removeFilter(){
+    removeFacet(){
         this.props.updateQuery({
             jurisdictionId: [],
             jurisdictionType: []
@@ -114,16 +114,16 @@ class FilterJurisdiction extends Filter {
 
     getLocationInfoInPlainText(){
         let result = this.state.locationInfo;
-        let button = <button className='btn btn-reset' onClick={this.removeFilter}><i className='fa fa-times'/></button>;
+        let button = <button className='btn btn-reset' onClick={this.removeFacet}><i className='fa fa-times'/></button>;
         if(!result){
           return null;
         }
         if(result.geographyLabel){
-          return (<div className='filter-jurisdiction--summray'><span>{result.geographyLabel}, {result.stateLabel}, {result.typeLabel}, {result.type}</span>{button}</div>);
+          return (<div className='facet-jurisdiction--summray'><span>{result.geographyLabel}, {result.stateLabel}, {result.typeLabel}, {result.type}</span>{button}</div>);
         }
         if(result.displayFieldName){
           let propName = result.displayFieldName;
-          return <div className='filter-jurisdiction--summray'><span>{result.attributes[propName]}</span>{button}</div>;
+          return <div className='facet-jurisdiction--summray'><span>{result.attributes[propName]}</span>{button}</div>;
         }
         return null;
     }
@@ -150,7 +150,7 @@ class FilterJurisdiction extends Filter {
       })
     }
 
-    // see Filter.renderOption(option, optionMax, callback, onFocus)
+    // see Facet.renderOption(option, optionMax, callback, onFocus)
     // Here is only for mark up change
     renderOption(option, optionMax, callback, onFocus){
       let result = option.suggestion;
@@ -171,13 +171,13 @@ class FilterJurisdiction extends Filter {
 
     render(){
         return (
-            <div className='filter jurisdiction'>
-              <FilterHeader query={[this.props.location.query.jurisdictionId, this.props.location.query.jurisdictionType]}
-                            removeFilter={this.removeFilter}
+            <div className='facet jurisdiction'>
+              <FacetHeader query={[this.props.location.query.jurisdictionId, this.props.location.query.jurisdictionType]}
+                            removeFacet={this.removeFacet}
                             title={this.props.title}/>
 
-              <FilterSearchBox allowMultiple={false}
-                               searchFilter={this.searchLocation}
+              <FacetSearchBox allowMultiple={false}
+                               searchFacet={this.searchLocation}
                                loadingProgress={this.state.loadingProgress}
                                renderOption={this.renderOption}
                                toggleOption={this.toggleOption}
@@ -214,4 +214,4 @@ class FilterJurisdiction extends Filter {
     }
 }
 
-export default FilterJurisdiction;
+export default FacetJurisdiction;

@@ -1,13 +1,13 @@
-.filter-search-box{
+.facet-search-box{
   position: relative;
 }
 
-.filter-search-box form{
+.facet-search-box form{
     position: relative;
     margin-bottom: 8px;
 }
 
-.filter-search-box .btn-clear-search{
+.facet-search-box .btn-clear-search{
     position: absolute;;
     right: 1px;
     top: 1px;
@@ -15,18 +15,18 @@
     bottom: 1px;
 }
 
-.filter-search-box .search-icon{
+.facet-search-box .search-icon{
     position: absolute;
     left: 10px;
     top: 10px;
 }
 
-.filter-search-box .form-control{
+.facet-search-box .form-control{
     padding-left: 25px;
 }
 
 
-.filter-search-box .filtered-options{
+.facet-search-box .faceted-options{
   position: absolute;
   background: #ecf0f1;
   z-index: 999;

@@ -1,0 +1,9 @@
+.facet-title{
+    font-weight: bold;
+    text-transform: uppercase;
+    flex-grow: 2;
+}
+
+.facet-header{
+    display: flex;
+}

@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import './FilterSearchBox.css';
+import './FacetSearchBox.css';
 import ProgressBar from '../UI/ProgressBar';
 
 /**
-  * Searchbox for facet filter
+  * Searchbox for facet facet
   */
-class FilterSearchBox extends Component {
+class FacetSearchBox extends Component {
   constructor(props) {
     super(props);
     this.handleChange = this.handleChange.bind(this);
@@ -22,6 +22,15 @@ class FilterSearchBox extends Component {
       searchText: '',
       indexOfOptionOnFocus: -1
     }
+  }
+
+  componentDidMount(){
+    // when esc key is pressed at anytime, clear search box and close the search result list
+    window.addEventListener('keydown', (event)=>{
+      if(event.which === 27){
+        this.clearSearch();
+      }
+    });
   }
 
   handleKeyDown(e){
@@ -69,7 +78,7 @@ class FilterSearchBox extends Component {
     this.setState({
       searchText: e.target.value
     });
-    this.props.searchFilter(e.target.value);
+    this.props.searchFacet(e.target.value);
   }
 
   clearSearch(){
@@ -84,7 +93,7 @@ class FilterSearchBox extends Component {
 
   render(){
     return (
-      <div className='filter-search-box'>
+      <div className='facet-search-box'>
         <form onKeyDown={this.handleKeyDown}>
             <i className="fa fa-search search-icon" aria-hidden="true"></i>
             <input className='form-control'
@@ -102,7 +111,7 @@ class FilterSearchBox extends Component {
           </form>
 
           {this.state.searchText.length > 0 &&
-            <ul className='filtered-options list-unstyled' onKeyDown={this.handleKeyDown}>
+            <ul className='faceted-options list-unstyled' onKeyDown={this.handleKeyDown}>
               {this.props.options.map((option, i)=>
                   <li key={`${option.value}-${i}`}>
                       {this.props.renderOption(option, null, this.callback, (this.state.indexOfOptionOnFocus === i))}
@@ -114,10 +123,10 @@ class FilterSearchBox extends Component {
   }
 }
 
-FilterSearchBox.propTypes = {options: React.PropTypes.array,
-                             searchFilter: React.PropTypes.func,
+FacetSearchBox.propTypes = {options: React.PropTypes.array,
+                             searchFacet: React.PropTypes.func,
                              allowMultiple: React.PropTypes.bool,
                              loadingProgress: React.PropTypes.number};
-FilterSearchBox.defaultProps = {options: [], allowMultiple: false};
+FacetSearchBox.defaultProps = {options: [], allowMultiple: false};
 
-export default FilterSearchBox;
+export default FacetSearchBox;

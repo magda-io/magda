@@ -1,35 +1,26 @@
-.filter{
+.facet-wrapper{
     margin-bottom: 30px;
     position: relative;
 }
 
-.filter-header{
-    display: flex;
-}
 
-.filter-title{
-    font-weight: bold;
-    text-transform: uppercase;
-    flex-grow: 2;
-}
-
-.filter .btn{
+.facet-wrapper .btn{
    background: transparent;
    border: 0;
    box-shadow: 0;
 }
 
-.filter .btn-reset{
+.facet-wrapper .btn-reset{
   padding-right: 0px;
 }
 
-.filter .btn-reset, .filter .btn-toggle{
+.facet-wrapper .btn-reset, .facet-wrapper .btn-toggle{
     color: rgb(102, 181, 252);
     line-height: 2;
     font-weight: 600;
 }
 
-.filter .btn-toggle{
+.facet-wrapper .btn-toggle{
   padding-left: 0;
 }
 
@@ -193,14 +184,14 @@ svg{
   background: #f5f5f5;
 }
 
-.filter-jurisdiction--summray{
+.facet-wrapper-jurisdiction--summray{
   position: absolute;
   z-index: 99;
   left: 0;
   right: 0;
 }
 
-.filter-jurisdiction--summray span{
+.facet-wrapper-jurisdiction--summray span{
   padding: 5px 10px;
   display: block;
   background-color: #3498db;
@@ -209,7 +200,7 @@ svg{
   border-radius: 2px;
 }
 
-.filter-jurisdiction--summray .btn{
+.facet-wrapper-jurisdiction--summray .btn{
   position: absolute;
   right: 0;
   top: 0;
