@@ -45,7 +45,12 @@ class Search extends Component {
     this.removeAllfacets = this.removeAllfacets.bind(this);
     this.transferComplete = this.transferComplete.bind(this);
     this.debouncedSearch = debounce(this.doSearch, 1000);
+
     this.togglePublisherOption= this.togglePublisherOption.bind(this);
+    this.toggleFormatOption=this.toggleFormatOption.bind(this);
+    this.toggleRegionOption=this.toggleRegionOption.bind(this);
+    this.toggleTemporalOption=this.toggleTemporalOption.bind(this);
+
     this.resetPublisherFacet = this.resetPublisherFacet.bind(this);
 
     /**
@@ -125,8 +130,7 @@ class Search extends Component {
             searchResults: results,
             userEnteredQuery: data.query,
             totalNumberOfResults: +data.hitCount,
-            // update year and format facets
-            // use of index here is questionable
+            // specify which facets shouldn't update
             facetPublisherOptions: data.facets[0].options,
             facetTemporalOptions: data.facets[1].options,
             facetFormatOptions: data.facets[2].options,
@@ -139,16 +143,15 @@ class Search extends Component {
         }, (err)=>{console.warn(err)});
   }
 
+
   getOptionFromString(listOfString, options){
     return listOfString.map(s=>find(options, o=>o.value === s));
   }
-
 
   searchPublisherFacet(facetId, facetSearchWord){
     this.setState({
       facetPublisherSearchResults: []
     })
-
   }
 
   searchFormatFacet(facetId, facetSearchWord){
@@ -162,17 +165,39 @@ class Search extends Component {
     this.setState({
       facetRegionSearchResults: []
     })
-
   }
-
 
   resetPublisherFacet(){
     this.setState({
       activePublisherOptions: []
     });
-
     this.updateQuery({'publisher': []});
   }
+
+  resetFormatFacet(){
+    this.setState({
+      activeFormatOptions: []
+    });
+    this.updateQuery({'format': []});
+  }
+
+  resetRegionFacet(){
+    this.setState({
+      activeRegionOptions: []
+    });
+    this.updateQuery({'regionId': []});
+    this.updateQuery({'regionType': []});
+  }
+
+  resetTemporalFacet(){
+    this.setState({
+      activeTemporalOptions: []
+    });
+    this.updateQuery({'dateFrom': []});
+    this.updateQuery({'dateTo': []});
+  }
+
+
 
   removeAllfacets(){
     SETTINGS.facets.forEach(f=>{
@@ -229,6 +254,31 @@ class Search extends Component {
     this.updateQuery({'publisher': existingQuery.map(q=>q.value)})
   }
 
+  toggleFormatOption(option, callback){
+    let existingQuery = this.state.activeFormatOptions.slice();
+    let index = findindex(existingQuery, q=>q.value === option.value);
+    if(index === -1){
+      existingQuery.push(option);
+
+    }else{
+      existingQuery.splice(index, 1)
+    }
+
+    this.setState({
+      activeFormatOptions: existingQuery
+    });
+
+    this.updateQuery({'format': existingQuery.map(q=>q.value)})
+  }
+
+  toggleTemporalOption(option, callback){
+
+  }
+
+  toggleRegionOption(regionId, regionType, callback){
+
+  }
+
   render() {
     return (
       <div>
@@ -261,6 +311,9 @@ class Search extends Component {
                     resetPublisherFacet={this.resetPublisherFacet}
 
                     togglePublisherOption={this.togglePublisherOption}
+                    toggleTemporalOption={this.toggleTemporalOption}
+                    toggleFormatOption={this.toggleFormatOption}
+                    toggleRegionOption={this.toggleRegionOption}
 
                     updateQuery={this.updateQuery}
                     SETTINGS={SETTINGS}
