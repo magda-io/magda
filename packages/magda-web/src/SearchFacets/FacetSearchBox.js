@@ -8,7 +8,7 @@ import ProgressBar from '../UI/ProgressBar';
 class FacetSearchBox extends Component {
   constructor(props) {
     super(props);
-    this.handleChange = this.handleChange.bind(this);
+    this.onSearchTextChange = this.onSearchTextChange.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
     this.callback = this.callback.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -74,7 +74,7 @@ class FacetSearchBox extends Component {
     }
   }
 
-  handleChange(e){
+  onSearchTextChange(e){
     this.setState({
       searchText: e.target.value
     });
@@ -99,15 +99,12 @@ class FacetSearchBox extends Component {
             <input className='form-control'
                    type="text"
                    value={this.state.searchText}
-                   onChange={this.handleChange}
+                   onChange={this.onSearchTextChange}
                    />
             {this.state.searchText.length > 0 &&
               <button type='button' className='btn btn-clear-search' onClick={this.clearSearch}>
                 <i className="fa fa-times" aria-hidden="true"></i>
               </button>}
-            {this.state.searchText.length > 0 &&
-              <ProgressBar progress={this.props.loadingProgress}/>
-            }
           </form>
 
           {this.state.searchText.length > 0 &&
@@ -124,9 +121,8 @@ class FacetSearchBox extends Component {
 }
 
 FacetSearchBox.propTypes = {options: React.PropTypes.array,
-                             searchFacet: React.PropTypes.func,
-                             allowMultiple: React.PropTypes.bool,
-                             loadingProgress: React.PropTypes.number};
-FacetSearchBox.defaultProps = {options: [], allowMultiple: false};
+                            searchFacet: React.PropTypes.func,
+                            renderOption: React.PropTypes.func};
+FacetSearchBox.defaultProps = {options: []};
 
 export default FacetSearchBox;

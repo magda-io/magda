@@ -12,7 +12,7 @@ class FacetWrapper extends Component {
   render() {
     return (
       <div className='facet-wrapper'>
-        <FacetHeader resetFacet={this.props.resetFacet}
+        <FacetHeader onResetFacet={this.props.onResetFacet}
                      title={this.props.title}
                      activeOptions={this.props.activeOptions}/>
         {this.props.children}
@@ -22,6 +22,6 @@ class FacetWrapper extends Component {
 }
 
 FacetWrapper.propTypes = {title: React.PropTypes.string,
-                          resetFacet: React.PropTypes.func};
+                          onResetFacet: React.PropTypes.func};
 
 export default FacetWrapper;

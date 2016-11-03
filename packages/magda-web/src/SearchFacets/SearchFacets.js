@@ -15,7 +15,8 @@ class SearchFacets extends Component {
                     title='publisher'
                     id='publisher'
                     toggleOption={this.props.togglePublisherOption}
-                    resetFacet ={this.props.resetPublisherFacet}
+                    onResetFacet ={this.props.resetPublisherFacet}
+                    searchFacet={this.props.searchPublisherFacet}
         />
 
       </div>

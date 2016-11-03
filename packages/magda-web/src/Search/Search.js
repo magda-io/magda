@@ -53,6 +53,8 @@ class Search extends Component {
 
     this.resetPublisherFacet = this.resetPublisherFacet.bind(this);
 
+    this.searchPublisherFacet = this.searchPublisherFacet.bind(this);
+
     /**
      * @type {Object}
      * @property {Array} searchResults results from search
@@ -148,9 +150,12 @@ class Search extends Component {
     return listOfString.map(s=>find(options, o=>o.value === s));
   }
 
-  searchPublisherFacet(facetId, facetSearchWord){
-    this.setState({
-      facetPublisherSearchResults: []
+  searchPublisherFacet(facetSearchWord){
+    let url =  `http://magda-search-api.terria.io/facets/publisher/options/search?generalQuery=${encodeURI(this.props.location.query.q)}&facetQuery=${encodeURI(facetSearchWord)}`;
+    getJSON(url).then(data=>{
+      this.setState({
+        facetPublisherSearchResults: data.options
+      })
     })
   }
 
@@ -252,6 +257,9 @@ class Search extends Component {
     });
 
     this.updateQuery({'publisher': existingQuery.map(q=>q.value)})
+    if(defined(callback) && typeof callback === 'function'){
+      callback();
+    }
   }
 
   toggleFormatOption(option, callback){
@@ -269,6 +277,9 @@ class Search extends Component {
     });
 
     this.updateQuery({'format': existingQuery.map(q=>q.value)})
+    if(defined(callback) && typeof callback === 'function'){
+      callback();
+    }
   }
 
   toggleTemporalOption(option, callback){
@@ -298,6 +309,10 @@ class Search extends Component {
                     facetPublisherOptions={this.state.facetPublisherOptions}
                     facetTemporalOptions={this.state.facetTemporalOptions}
                     facetFormatOptions={this.state.facetFormatOptions}
+
+                    facetPublisherSearchResults={this.state.facetPublisherSearchResults}
+                    facetRegionSearchResults={this.state.facetRegionSearchResults}
+                    facetFormatSearchResults={this.state.facetFormatSearchResults}
 
                     activeRegionOptions={this.state.activeRegionOptions}
                     activeTemporalOptions={this.state.activeTemporalOptions}

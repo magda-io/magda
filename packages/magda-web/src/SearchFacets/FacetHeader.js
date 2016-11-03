@@ -18,7 +18,7 @@ class FacetHeader extends Component {
         <h4 className='facet-title'>{this.props.title}</h4>
         {this.hasQuery() && <button type='button'
                                     className='btn btn-reset'
-                                    onClick={()=>{this.props.resetFacet()}}>Reset</button>}
+                                    onClick={()=>{this.props.onResetFacet()}}>Reset</button>}
 
       </div>
       );
@@ -26,7 +26,7 @@ class FacetHeader extends Component {
 }
 
 FacetHeader.propTypes = {title: React.PropTypes.string,
-                          resetFacet: React.PropTypes.func,
+                          onResetFacet: React.PropTypes.func,
                         activeOptions: React.PropTypes.array};
 FacetHeader.defaultProps = {title: ''};
 
