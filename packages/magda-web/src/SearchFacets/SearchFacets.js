@@ -29,6 +29,16 @@ class SearchFacets extends Component {
                     searchFacet={this.props.searchFormatFacet}
         />
 
+        <FacetJurisdiction activeRegionId={this.props.activeRegionId}
+                           activeRegionType={this.props.activeRegionType}
+                           facetSearchResults={this.props.facetRegionSearchResults}
+                           title='Location'
+                           id='region'
+                           toggleOption={this.props.toggleRegionOption}
+                           onResetFacet={this.props.resetRegionFacet}
+                           searchFacet={this.props.searchRegionFacet}
+        />
+
       </div>
     );
   }

@@ -1,20 +1,21 @@
 import React, { Component } from 'react';
 // eslint-disable-next-line
-import {RouterContext } from 'react-router';
-import SearchResults from '../SearchResults/SearchResults';
-import SearchFacets from '../SearchFacets/SearchFacets';
-import SearchTabs from './SearchTabs';
-import SearchBox from './SearchBox';
-import ProgressBar from '../UI/ProgressBar';
-import debounce from 'lodash.debounce';
 import './Search.css';
-import getJSON from'../helpers/getJSON';
-import defined from '../helpers/defined';
-import toggleQuery from '../helpers/toggleQuery';
+import {RouterContext } from 'react-router';
 import checkActiveOption from '../helpers/checkActiveOption';
-import Pagination from '../UI/Pagination';
-import findindex from 'lodash.findindex';
+import debounce from 'lodash.debounce';
+import defined from '../helpers/defined';
 import find from 'lodash.find';
+import findindex from 'lodash.findindex';
+import getJSON from'../helpers/getJSON';
+import getJsonp from '../helpers/getJsonp';
+import Pagination from '../UI/Pagination';
+import ProgressBar from '../UI/ProgressBar';
+import SearchBox from './SearchBox';
+import SearchFacets from '../SearchFacets/SearchFacets';
+import SearchResults from '../SearchResults/SearchResults';
+import SearchTabs from './SearchTabs';
+import toggleQuery from '../helpers/toggleQuery';
 
 const FACETS = ['publisher', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'format'];
 const NUMBERRESULTSPERPAGE = 20;
@@ -52,8 +53,11 @@ class Search extends Component {
     this.toggleTemporalOption=this.toggleTemporalOption.bind(this);
 
     this.resetPublisherFacet = this.resetPublisherFacet.bind(this);
+    this.resetFormatFacet = this.resetFormatFacet.bind(this);
 
     this.searchPublisherFacet = this.searchPublisherFacet.bind(this);
+    this.searchFormatFacet = this.searchFormatFacet.bind(this);
+    this.searchRegionFacet = this.searchRegionFacet.bind(this);
 
     /**
      * @type {Object}
@@ -77,7 +81,8 @@ class Search extends Component {
 
       activePublisherOptions: [],
       activeFormatOptions: [],
-      activeRegionOptions: [],
+      activeRegionId: undefined,
+      activeRegionType: undefined,
       activeTemporalOptions: [],
 
       loadingProgress: null,
@@ -107,7 +112,7 @@ class Search extends Component {
       let dateTo=defined(query.dateTo) ? 'to ' + query.dateTo : '';
       let publisher = queryToString('by', query.publisher);
       let format = queryToString('as', query.format);
-      let location = queryToRegion(query.jurisdiction, query.jurisdictionType);
+      let location = queryToRegion(query.regionId, query.regionType);
       let startIndex = defined(query.page) ? (query.page - 1)*NUMBERRESULTSPERPAGE + 1 : 0;
 
       let searchTerm =
@@ -126,8 +131,6 @@ class Search extends Component {
           results = data.dataSets;
         }
 
-        let _activePublisherOptions = data.query.publishers;
-
         this.setState({
             searchResults: results,
             userEnteredQuery: data.query,
@@ -139,7 +142,8 @@ class Search extends Component {
 
             activePublisherOptions: this.getOptionFromString(data.query.publishers, data.facets[0].options) || [],
             activeFormatOptions: this.getOptionFromString(data.query.formats, data.facets[2].options) || [],
-
+            activeRegionType: query.regionType,
+            activeRegionId: query.regionId
           });
           // this.parseQuery(data.query);
         }, (err)=>{console.warn(err)});
@@ -160,17 +164,22 @@ class Search extends Component {
     });
   }
 
-  searchFormatFacet(facetId, facetSearchWord){
-    this.setState({
-      facetFormatSearchResults: []
-    })
-
+  searchFormatFacet(facetSearchWord){
+    let url =  `http://magda-search-api.terria.io/facets/format/options/search?generalQuery=${encodeURI(this.props.location.query.q)}&facetQuery=${encodeURI(facetSearchWord)}`;
+    getJSON(url).then(data=>{
+      this.setState({
+      facetFormatSearchResults: data.options
+      });
+    });
   }
 
-  searchRegionFacet(facetId, facetSearchWord){
-    this.setState({
-      facetRegionSearchResults: []
-    })
+  searchRegionFacet(facetSearchWord){
+    let url = `http://www.censusdata.abs.gov.au/census_services/search?query=${encodeURI(facetSearchWord) || ' '}&cycle=2011&results=15&type=jsonp&cb=`;
+    getJsonp(url).then(data=>{
+        this.setState({
+            facetRegionSearchResults: data
+        });
+    }, error =>{console.log(error)});
   }
 
   resetPublisherFacet(){
@@ -202,8 +211,6 @@ class Search extends Component {
     this.updateQuery({'dateFrom': []});
     this.updateQuery({'dateTo': []});
   }
-
-
 
   removeAllfacets(){
     SETTINGS.facets.forEach(f=>{
@@ -287,8 +294,17 @@ class Search extends Component {
 
   }
 
-  toggleRegionOption(regionId, regionType, callback){
+  toggleRegionOption(option, callback){
+    this.setState({
+      activeRegionId: option.suggestion.code,
+      activeRegionType: option.suggestion.type
+    });
+    this.updateQuery({'regionId': option.suggestion.code})
+    this.updateQuery({'regionType': option.suggestion.type})
 
+    if(defined(callback) && typeof callback === 'function'){
+      callback();
+    }
   }
 
   render() {
@@ -315,7 +331,8 @@ class Search extends Component {
                     facetRegionSearchResults={this.state.facetRegionSearchResults}
                     facetFormatSearchResults={this.state.facetFormatSearchResults}
 
-                    activeRegionOptions={this.state.activeRegionOptions}
+                    activeRegionId={this.state.activeRegionId}
+                    activeRegionType={this.state.activeRegionType}
                     activeTemporalOptions={this.state.activeTemporalOptions}
                     activePublisherOptions={this.state.activePublisherOptions}
                     activeFormatOptions={this.state.activeFormatOptions}
@@ -368,9 +385,9 @@ function queryToString(preposition, query){
   }
 }
 
-function queryToRegion(regionid, regiontype){
-  if(!defined(regionid) || !defined(regiontype)) return '';
-  return `in ${regiontype}:${regionid}`;
+function queryToRegion(regionId, regionType){
+  if(!defined(regionId) || !defined(regionType)) return '';
+  return `in ${regionType}:${regionId}`;
 }
 
 Search.contextTypes ={
