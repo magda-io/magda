@@ -49,12 +49,10 @@ class FacetJurisdiction extends Component {
      * @param {string} regionCode, region code
      * @param {string} regionType, region type
      */
-    onFeatureClick(regionId, regionType){
-        this.props.updateQuery({
-            jurisdictionId: regionId,
-            jurisdictionType: regionType
-        });
-        this.getLocationInfo();
+    onFeatureClick(feature){
+        // vector tiles and ABS API has different format for the region object,
+        // need to find a way to unify this
+        this.props.toggleOption(feature);
     }
 
     // see Facet.renderOption(option, optionMax, callback, onFocus)
@@ -80,7 +78,7 @@ class FacetJurisdiction extends Component {
         return (
             <FacetWrapper onResetFacet={this.props.onResetFacet}
                           title={this.props.title}
-                          activeOptions={this.props.activeOptions}>
+                          activeOptions={[this.props.activeRegionId, this.props.activeRegionType]}>
                <FacetSearchBox renderOption={this.renderOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
@@ -95,7 +93,12 @@ class FacetJurisdiction extends Component {
                                       activeRegionType={this.props.activeRegionType}
                      />
                </div>
-             </FacetWrapper>
+               {this.state.popUpIsOpen && <JurisdictionPopup onFeatureClick={this.props.onFeatureClick}
+                                                             closePopUp={this.closePopUp}
+                                                             renderOption={this.renderOption}
+                                                             searchFacet={this.props.searchFacet}
+                                          />}
+          </FacetWrapper>
 
       );
     }

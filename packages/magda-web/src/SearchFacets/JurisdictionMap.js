@@ -78,7 +78,7 @@ class JurisdictionMap extends Facet {
               clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
               mutexToggle: true,
               onClick: function(evt) { if (evt.type === 'click' && evt.feature){
-                  that.props.onClick(evt.feature.properties[region.id], regionType);
+                  that.props.onClick(evt.feature);
               }},
               getIDForLayerFeature: this.getID
           });

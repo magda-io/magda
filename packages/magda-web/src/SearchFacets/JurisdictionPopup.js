@@ -18,20 +18,18 @@ class JurisdictionPopup extends Facet {
          * @property {object} activeRegionType current region type, contains an id and a vlaue, fro example, {id: 'LGA', value:'LGAs (Local Goverment Areas)'}
          */
          this.state={
-             activeRegionType: regionTypeOptions[0],
+             regionType: regionTypeOptions[0],
+
          }
          this.selectRegionType = this.selectRegionType.bind(this);
     }
 
     selectRegionType(regionType){
       this.setState({
-        activeRegionType: regionType
+        regionType: regionType
       })
-
-      this.props.updateQuery({
-          jurisdictionType: regionType.id
-      });
     }
+
     render(){
         return (
             <div className='popup'>
@@ -47,17 +45,14 @@ class JurisdictionPopup extends Facet {
               <div className='popup-body clearfix'>
                   <div className='popup-tools row'>
                     <div className='col-sm-6'>
-                      <FacetSearchBox allowMultiple={false}
-                                       searchFacet={this.props.searchLocation}
-                                       loadingProgress={this.props.loadingProgress}
-                                       renderOption={this.props.renderOption}
-                                       toggleOption={this.props.toggleOption}
-                                       options={this.props.locationSearchResults}
-                      />
+                      <FacetSearchBox renderOption={this.props.renderOption}
+                                      options={this.props.facetSearchResults}
+                                      searchFacet={this.props.searchFacet}/>
+
                     </div>
                     <div className='col-sm-6'>
                         <DropDown options={regionTypeOptions}
-                                  activeOption={find(regionTypeOptions, o=>o.id === this.props.location.query.jurisdictionType) || regionTypeOptions[0] }
+                                  activeOption={this.props.activeRegionType}
                                   select={this.selectRegionType}
                         />
                     </div>
@@ -66,13 +61,11 @@ class JurisdictionPopup extends Facet {
                   <div className='popup-map'>
                     <JurisdictionMap title='jurisdiction'
                                      id='jurisdiction'
-                                     location={this.props.location}
-                                     updateQuery={this.props.updateQuery}
-                                     onClick={this.props.onFeatureClick}
                                      interaction={true}
-                                     locationInfo={this.props.locationInfo}
-
+                                     activeRegionId={this.props.activeRegionId}
+                                     activeRegionType={this.props.activeRegionType}
                     />
+
                   </div>
                   </div>
                   <div className='popup-footer clearfix'>
