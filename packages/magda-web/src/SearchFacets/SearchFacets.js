@@ -19,6 +19,16 @@ class SearchFacets extends Component {
                     searchFacet={this.props.searchPublisherFacet}
         />
 
+        <FacetBasic options={this.props.facetFormatOptions}
+                    activeOptions={this.props.activeFormatOptions}
+                    facetSearchResults={this.props.facetFormatSearchResults}
+                    title='format'
+                    id='format'
+                    toggleOption={this.props.toggleFormatOption}
+                    onResetFacet ={this.props.resetFormatFacet}
+                    searchFacet={this.props.searchFormatFacet}
+        />
+
       </div>
     );
   }

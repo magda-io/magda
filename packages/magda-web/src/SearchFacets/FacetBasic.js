@@ -52,6 +52,7 @@ class FacetBasic extends Component {
 
 
   render(){
+    let that = this;
     let maxOptionOptionList = maxBy(this.props.options, o=> +o.hitCount);
     return <FacetWrapper onResetFacet={this.props.onResetFacet}
                          title={this.props.title}
@@ -60,10 +61,10 @@ class FacetBasic extends Component {
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
                <ul className='list-unstyled'>
-                 {this.props.activeOptions.map(o=><li key={o.value}>{this.renderOption(o, maxOptionOptionList)}</li>)}
+                 {that.props.activeOptions.map(o=><li key={o.value}>{that.renderOption(o, maxOptionOptionList)}</li>)}
                </ul>
                <ul className='list-unstyled'>
-                 {this.props.options.filter(o=>!this.checkActiveOption(o)).map(o=><li key={o.value}>{this.renderOption(o, maxOptionOptionList)}</li>)}
+                 {that.props.options.filter(o=>!that.checkActiveOption(o)).map(o=><li key={o.value}>{that.renderOption(o, maxOptionOptionList)}</li>)}
                </ul>
            </FacetWrapper>
   }

@@ -138,7 +138,7 @@ class Search extends Component {
             facetFormatOptions: data.facets[2].options,
 
             activePublisherOptions: this.getOptionFromString(data.query.publishers, data.facets[0].options) || [],
-            activeFormatOptions: this.getOptionFromString(data.query.formats, data.facets[0].options) || [],
+            activeFormatOptions: this.getOptionFromString(data.query.formats, data.facets[2].options) || [],
 
           });
           // this.parseQuery(data.query);
@@ -150,13 +150,14 @@ class Search extends Component {
     return listOfString.map(s=>find(options, o=>o.value === s));
   }
 
+
   searchPublisherFacet(facetSearchWord){
     let url =  `http://magda-search-api.terria.io/facets/publisher/options/search?generalQuery=${encodeURI(this.props.location.query.q)}&facetQuery=${encodeURI(facetSearchWord)}`;
     getJSON(url).then(data=>{
       this.setState({
         facetPublisherSearchResults: data.options
-      })
-    })
+      });
+    });
   }
 
   searchFormatFacet(facetId, facetSearchWord){
@@ -255,7 +256,6 @@ class Search extends Component {
     this.setState({
       activePublisherOptions: existingQuery
     });
-
     this.updateQuery({'publisher': existingQuery.map(q=>q.value)})
     if(defined(callback) && typeof callback === 'function'){
       callback();
@@ -275,6 +275,7 @@ class Search extends Component {
     this.setState({
       activeFormatOptions: existingQuery
     });
+
 
     this.updateQuery({'format': existingQuery.map(q=>q.value)})
     if(defined(callback) && typeof callback === 'function'){
@@ -324,6 +325,7 @@ class Search extends Component {
                     searchFormatFacet={this.searchFormatFacet}
 
                     resetPublisherFacet={this.resetPublisherFacet}
+                    resetFormatFacet={this.resetFormatFacet}
 
                     togglePublisherOption={this.togglePublisherOption}
                     toggleTemporalOption={this.toggleTemporalOption}
