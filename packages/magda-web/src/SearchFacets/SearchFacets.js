@@ -37,9 +37,6 @@ class SearchFacets extends Component {
   render() {
     let {store} = this.context;
     let data = store.getState().results.data;
-    console.log(store.getState().results);
-
-
     return (
       <div>
         <FacetBasic title='publisher'

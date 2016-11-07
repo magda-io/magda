@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {fetchSearchResults} from '../actions/actions';
+import {connect} from 'react-redux';
 
 import './Search.css';
 // eslint-disable-next-line
@@ -38,27 +39,22 @@ class Search extends Component {
   }
 
   componentWillMount(){
-    if(defined(this.props.location.query.q) && this.props.location.query.q.length > 0){
-      let {store} = this.context;
-      store.dispatch(fetchSearchResults(this.props.location.query.q))
-    }
+
   }
 
 
   componentDidMount(){
-    let { store } = this.context;
-    this.unsubscribe = store.subscribe(()=> this.forceUpdate);
+    const { dispatch } = this.props
+    this.props.dispatch(fetchSearchResults(this.props.location.query.q))
   }
 
-  componentWillUnmount(){
-    this.unsubscribe();
+  componentWillReceiveProps(){
+    // should any updates happen here?
   }
 
   onSearchTextChange(text){
     this.updateQuery({q: text});
-    // do search in redux
-    let {store} = this.context;
-    store.dispatch(fetchSearchResults(text))
+    this.props.dispatch(fetchSearchResults(text))
   }
 
   goToPage(index){
@@ -77,25 +73,23 @@ class Search extends Component {
 
 
   render() {
-    let { store } = this.context;
-    console.log(store.getState());
-
+    let {data} = this.props;
     return (
       <div>
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
-              <SearchBox value = {this.props.location.query.q} updateQuery={this.updateQuery} onSearchTextChange={this.onSearchTextChange}/>
+              <SearchBox value = {this.props.location.query.q || ''} updateQuery={this.updateQuery} onSearchTextChange={this.onSearchTextChange}/>
             </div>
           </div>
           <div className='search__search-body'>
             <div className='col-sm-4'>
-              {defined(store.getState().results.data.facets) && <SearchFacets />}
+              {defined(data.facets) && <SearchFacets/>}
             </div>
             <div className='col-sm-8'>
                 <SearchResults
-                    searchResults={store.getState().results.data.dataSets}
-                    totalNumberOfResults={store.getState().results.data.hitCount}
+                    searchResults={data.dataSets}
+                    totalNumberOfResults={data.hitCount}
                 />
             </div>
           </div>
@@ -110,5 +104,22 @@ Search.contextTypes ={
   store: React.PropTypes.object
 }
 
+Search.propTypes = {
+  data: React.PropTypes.object.isRequired,
+  isFetching: React.PropTypes.bool.isRequired,
+  dispatch: React.PropTypes.func.isRequired
+}
 
-export default Search;
+
+function mapStateToProps(state) {
+  let { results } = state;
+  return {
+    data: results.data,
+    isFetching: results.isFetching,
+    query: results.query
+  }
+}
+
+
+
+export default connect(mapStateToProps)(Search);
