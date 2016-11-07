@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import debounce from 'lodash.debounce';
 
 import './SearchBox.css';
 
@@ -6,15 +7,27 @@ class SearchBox extends Component {
   constructor(props) {
     super(props);
     this.handleKeyPress = this.handleKeyPress.bind(this);
-  }
+    this.onChange = this.onChange.bind(this);
+    this.debounceSearch = debounce(this.props.onSearchTextChange, 10000);
 
+    this.state = {
+      searchText : this.props.value
+    }
+  }
 
   handleKeyPress(event) {
     // when user hit enter, no need to submit the form
     if(event.charCode===13){
         event.preventDefault();
-        this.props.onSearchTextChange(this.props.value)
+        this.props.onSearchTextChange(this.state.searchText)
     }
+  }
+
+  onChange(event){
+    this.setState({
+      searchText: event.target.value
+    })
+    this.debounceSearch(event.target.value);
   }
 
 
@@ -26,8 +39,8 @@ class SearchBox extends Component {
           type="text"
           name="search"
           className='form-control'
-          value={this.props.value}
-          onChange={(e)=>this.props.onSearchTextChange(e.target.value)}
+          value={this.state.searchText}
+          onChange={this.onChange}
           onKeyPress={this.handleKeyPress}
         />
         <span className="input-group-addon"><i className="fa fa-search" aria-hidden="true"></i> </span>
@@ -37,8 +50,6 @@ class SearchBox extends Component {
   }
 }
 SearchBox.propTypes = {updateQuery: React.PropTypes.func};
-
-SearchBox.defaultProps = { searchValue: '' };
 
 SearchBox.contextTypes ={
   store: React.PropTypes.object
