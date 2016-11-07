@@ -121,5 +121,5 @@ spec:
     kind: Deployment
     name: es-data-ssd
   minReplicas: 2
-  maxReplicas: 4
+  maxReplicas: 2
   targetCPUUtilizationPercentage: 80
