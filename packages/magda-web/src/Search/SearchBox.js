@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
+
 import './SearchBox.css';
 
 class SearchBox extends Component {
   constructor(props) {
     super(props);
-    this.handleChange = this.handleChange.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
-  handleChange(event){
-    // search happening!
-    this.props.updateSearchText(event.target.value);
-  }
 
   handleKeyPress(event) {
     // when user hit enter, no need to submit the form
     if(event.charCode===13){
         event.preventDefault();
+        this.props.onSearchTextChange(this.props.value)
     }
   }
+
 
   render() {
     return (
@@ -27,8 +26,8 @@ class SearchBox extends Component {
           type="text"
           name="search"
           className='form-control'
-          value={this.props.searchValue}
-          onChange={this.handleChange}
+          value={this.props.value}
+          onChange={(e)=>this.props.onSearchTextChange(e.target.value)}
           onKeyPress={this.handleKeyPress}
         />
         <span className="input-group-addon"><i className="fa fa-search" aria-hidden="true"></i> </span>
@@ -37,9 +36,13 @@ class SearchBox extends Component {
     );
   }
 }
-SearchBox.propTypes = {searchValue: React.PropTypes.string,
-                       updateSearchText: React.PropTypes.func};
+SearchBox.propTypes = {updateQuery: React.PropTypes.func};
 
 SearchBox.defaultProps = { searchValue: '' };
+
+SearchBox.contextTypes ={
+  store: React.PropTypes.object
+}
+
 
 export default SearchBox;
