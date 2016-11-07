@@ -1,0 +1,125 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: es-data-pd
+  labels:
+    component: elasticsearch
+    role: data-pd
+spec:
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: data-pd
+    spec:
+      containers:
+      - name: es-data-pd
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: quay.io/pires/docker-elasticsearch-kubernetes:2.4.1
+        resources:
+          requests:
+            memory: 6000Mi
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_MASTER
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "false"
+        - name: NUMBER_OF_SHARDS
+          value: "3"
+        - name: NUMBER_OF_REPLICAS
+          value: "4"
+        - name: ES_HEAP_SIZE
+          value: "3250m"
+        ports:
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+      volumes:
+      - name: "storage"
+        gcePersistentDisk:
+          pdName: elasticsearch-data
+          fsType: ext4
+      nodeSelector:
+        cloud.google.com/gke-nodepool: elasticsearch-persistent-disk
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: es-data-ssd
+  labels:
+    component: elasticsearch
+    role: data-ssd
+spec:
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: data-ssd
+    spec:
+      containers:
+      - name: es-data-ssd
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: quay.io/pires/docker-elasticsearch-kubernetes:2.4.1
+        resources:
+          requests:
+            memory: 6000Mi
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_MASTER
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "false"
+        - name: NUMBER_OF_SHARDS
+          value: "3"
+        - name: NUMBER_OF_REPLICAS
+          value: "4"
+        - name: ES_HEAP_SIZE
+          value: "3250m"
+        ports:
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+      volumes:
+      - name: "storage"
+        hostPath:
+          path: "/mnt/disks/ssd0"
+      nodeSelector:
+        cloud.google.com/gke-nodepool: elasticsearch--ephemeral-ssd
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: es-data-ssd
+spec:
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: es-data-ssd
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80

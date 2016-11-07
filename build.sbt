@@ -2,7 +2,7 @@ enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 name := "magda-metadata"
 organization := "au.com.csiro.data61"
-version := "0.0.1"
+version := "0.0.2"
 scalaVersion := "2.11.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
@@ -24,8 +24,6 @@ libraryDependencies ++= {
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
     "com.monsanto.labs" %% "mwundo" % "0.1.0",
-    "org.spire-math" %% "jawn-parser" % "0.10.1",
-    "org.spire-math" %% "jawn-ast" % "0.10.1",
     
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
@@ -49,6 +47,17 @@ dockerfile in docker := {
     expose(80)
   }
 }
+
+imageNames in docker := Seq(
+  // Sets a name with a tag that contains the project version
+  ImageName(
+//    registry = Some("localhost:5000"),
+    namespace = Some("alexgilleran"),
+    repository = name.value,
+    tag = Some("latest")
+  )
+)
+
 
 sources in EditSource <++= baseDirectory.map(d => (d / "kubernetes" ** "*.yml").get)
 targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")

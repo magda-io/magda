@@ -43,7 +43,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.FileIO
 import akka.stream.ThrottleMode
 import akka.util.ByteString
-import jawn.ast.JValue
 import java.time._
 import java.io.File
 import java.nio.file.Paths
@@ -87,7 +86,6 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
           }
         }
       }
-    } recover {
       case e: Throwable =>
         logger.error(e, "Exception when searching")
         failureSearchResult(query, "Unknown error")
