@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-// eslint-disable-next-line
+
 import './Search.css';
+// eslint-disable-next-line
 import {RouterContext } from 'react-router';
-import checkActiveOption from '../helpers/checkActiveOption';
 import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
 import find from 'lodash.find';
@@ -14,10 +14,7 @@ import ProgressBar from '../UI/ProgressBar';
 import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
 import SearchResults from '../SearchResults/SearchResults';
-import SearchTabs from './SearchTabs';
-import toggleQuery from '../helpers/toggleQuery';
 
-const FACETS = ['publisher', 'jurisdictionId', 'jurisdictionType', 'dateTo', 'dateFrom', 'format'];
 const NUMBERRESULTSPERPAGE = 20;
 
 

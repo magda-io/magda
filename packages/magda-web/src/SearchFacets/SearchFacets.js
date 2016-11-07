@@ -1,4 +1,3 @@
-import FacetDateRange from './FacetDateRange';
 import FacetJurisdiction from './FacetJurisdiction';
 import FacetBasic from './FacetBasic';
 import React, { Component } from 'react';
@@ -15,7 +14,7 @@ class SearchFacets extends Component {
                     title='publisher'
                     id='publisher'
                     toggleOption={this.props.togglePublisherOption}
-                    onResetFacet ={this.props.resetPublisherFacet}
+                    onResetFacet={this.props.resetPublisherFacet}
                     searchFacet={this.props.searchPublisherFacet}
         />
 
@@ -25,7 +24,7 @@ class SearchFacets extends Component {
                     title='format'
                     id='format'
                     toggleOption={this.props.toggleFormatOption}
-                    onResetFacet ={this.props.resetFormatFacet}
+                    onResetFacet={this.props.resetFormatFacet}
                     searchFacet={this.props.searchFormatFacet}
         />
 

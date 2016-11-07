@@ -6,9 +6,6 @@ import FacetHeader from './FacetHeader';
   * Facet Facet component, for example, publisher facet, location facet, format facet, temporal facet
   */
 class FacetWrapper extends Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     return (
       <div className='facet-wrapper'>

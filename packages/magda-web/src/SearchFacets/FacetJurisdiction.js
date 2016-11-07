@@ -1,16 +1,9 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
 import React, { Component } from 'react';
 import FacetWrapper from './FacetWrapper';
-import FacetHeader from './FacetHeader';
-import defined from '../helpers/defined';
-import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
 import JurisdictionPopup from './JurisdictionPopup';
 import FacetSearchBox from './FacetSearchBox';
-import getJSON from '../helpers/getJSON';
-
-
-const regionTypeOptions = getRegionTypes();
 
 /*
 * the jurisdiction (location) facet facet, extends Facet class

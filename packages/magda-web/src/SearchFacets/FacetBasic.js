@@ -1,8 +1,6 @@
-import Facet from './FacetWrapper';
 import React, { Component } from 'react';
 import FacetWrapper from './FacetWrapper';
 import find from 'lodash.find';
-import findindex from 'lodash.findindex';
 import maxBy from 'lodash.maxby';
 import defined from '../helpers/defined';
 import FacetSearchBox from './FacetSearchBox';
@@ -30,7 +28,6 @@ class FacetBasic extends Component {
  * @param {boolean} onFocus whether this option should be in focus or not
  */
   renderOption(option, optionMax, callback, onFocus, _isActive){
-    let allowMultiple = true;
     if(!option){
       return null;
     }

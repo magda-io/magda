@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './FacetSearchBox.css';
-import ProgressBar from '../UI/ProgressBar';
 
 /**
   * Searchbox for facet facet

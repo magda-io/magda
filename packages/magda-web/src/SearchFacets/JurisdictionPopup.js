@@ -5,7 +5,6 @@ import getRegionTypes from '../dummyData/getRegionTypes';
 import JurisdictionMap from './JurisdictionMap';
 import FacetSearchBox from './FacetSearchBox';
 import React from 'react'
-import find from 'lodash.find';
 
 
 const regionTypeOptions = getRegionTypes();
