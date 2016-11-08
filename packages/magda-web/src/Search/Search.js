@@ -5,10 +5,7 @@ import {connect} from 'react-redux';
 import './Search.css';
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
-import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
-import find from 'lodash.find';
-import findindex from 'lodash.findindex';
 import Pagination from '../UI/Pagination';
 import ProgressBar from '../UI/ProgressBar';
 import SearchBox from './SearchBox';
@@ -44,7 +41,6 @@ class Search extends Component {
 
 
   componentDidMount(){
-    const { dispatch } = this.props
     this.props.dispatch(fetchSearchResults(this.props.location.query.q))
   }
 
@@ -79,12 +75,12 @@ class Search extends Component {
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
-              <SearchBox value = {this.props.location.query.q || ''} updateQuery={this.updateQuery} onSearchTextChange={this.onSearchTextChange}/>
+              <SearchBox preloadedSearchText = {this.props.location.query.q || ''} updateQuery={this.updateQuery} onSearchTextChange={this.onSearchTextChange}/>
             </div>
           </div>
           <div className='search__search-body'>
             <div className='col-sm-4'>
-              {defined(data.facets) && <SearchFacets/>}
+              {defined(data.facets) && <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>}
             </div>
             <div className='col-sm-8'>
                 <SearchResults
@@ -101,7 +97,6 @@ class Search extends Component {
 
 Search.contextTypes ={
   router: React.PropTypes.object.isRequired,
-  store: React.PropTypes.object
 }
 
 Search.propTypes = {
@@ -119,7 +114,5 @@ function mapStateToProps(state) {
     query: results.query
   }
 }
-
-
 
 export default connect(mapStateToProps)(Search);

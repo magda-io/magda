@@ -11,7 +11,7 @@ class SearchBox extends Component {
     this.debounceSearch = debounce(this.props.onSearchTextChange, 10000);
 
     this.state = {
-      searchText : this.props.value
+      searchText : this.props.preloadedSearchText
     }
   }
 

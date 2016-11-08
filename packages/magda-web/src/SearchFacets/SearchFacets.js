@@ -1,49 +1,64 @@
 import FacetJurisdiction from './FacetJurisdiction';
 import FacetBasic from './FacetBasic';
 import React, { Component } from 'react';
-
+import {connect} from 'react-redux';
+import {addPublisher, removePublisher, resetPublisher} from '../actions/actions';
+import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
 
 class SearchFacets extends Component {
-
-  componentDidMount(){
-    let { store } = this.context;
-    this.unsubscribe = store.subscribe(()=>
-      {this.forceUpdate()}
-    )
+  constructor(props) {
+    super(props);
+    this.togglePublisherOption = this.togglePublisherOption.bind(this);
+    this.resetPublisherFacet = this.resetPublisherFacet.bind(this);
+    this.searchPublisherFacet = this.searchPublisherFacet.bind(this);
   }
 
-  componentWillUnmount(){
-    this.unsubscribe();
-  }
+  togglePublisherOption(publisher){
+    let existingPublishers = this.props.activePublishers.map(o=>o.value);
+    let index = existingPublishers.indexOf(publisher.value);
+    if(index > - 1){
+      // dispath an event
+      // this.props.dispatch
+      this.props.updateQuery({
+        publisher: [...existingPublishers.slice(0, index), ...existingPublishers.slice(index+1)]
+      })
+      // dispatch event to add an active publisher
+      this.props.dispatch(removePublisher(publisher));
 
-  togglePublisherOption(){
-    // update url
-    // update redux
-
+    } else{
+      this.props.updateQuery({
+        publisher: [...existingPublishers, publisher.value]
+      })
+      // dispatch an event to remove an active publisher
+      this.props.dispatch(addPublisher(publisher));
+    }
   }
 
 
   resetPublisherFacet(){
     // update url
+    this.props.updateQuery({
+      publisher: []
+    })
+
     // update redux
+    this.props.dispatch(resetPublisher());
 
   }
 
-  searchPublisherFacet(){
-
+  searchPublisherFacet(facetKeyword){
+    this.props.dispatch(fetchPublisherSearchResults(this.props.keyword, facetKeyword))
   }
 
 
   render() {
-    let {store} = this.context;
-    let data = store.getState().results.data;
     return (
       <div>
         <FacetBasic title='publisher'
                     id='publisher'
-                    options ={data.facets[0].options}
-                    activeOptions={data.query.publishers}
-                    facetSearchResults={data.facetPublisherSearchResults}
+                    options={this.props.publisherOptions}
+                    activeOptions={this.props.activePublishers}
+                    facetSearchResults={this.props.publisherSearchResults}
                     toggleOption={this.togglePublisherOption}
                     onResetFacet={this.resetPublisherFacet}
                     searchFacet={this.searchPublisherFacet}
@@ -53,9 +68,22 @@ class SearchFacets extends Component {
   }
 }
 
-SearchFacets.propTypes={updateQuery: React.PropTypes.func};
-export default SearchFacets;
+SearchFacets.propTypes={
+    updateQuery: React.PropTypes.func,
+    publisherOptions: React.PropTypes.array,
+    activePublishers: React.PropTypes.array,
+    publisherSearchResults: React.PropTypes.array
+  };
 
-SearchFacets.contextTypes ={
-  store: React.PropTypes.object
+
+function mapStateToProps(state) {
+  let { results , facetPublisherSearch } = state;
+  return {
+    publisherOptions: results.data.facets[0].options,
+    activePublishers: results.activePublishers,
+    activeFormats: results.activeFormats,
+    publisherSearchResults: facetPublisherSearch.data.options
+  }
 }
+
+export default connect(mapStateToProps)(SearchFacets);
