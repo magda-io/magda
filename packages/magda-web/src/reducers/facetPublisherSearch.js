@@ -1,10 +1,7 @@
 const initialData = {
   isFetching: true,
   query: {generalQuery: '', facetQuery: ''},
-  data: {
-    hitCount: 0,
-    options: []
-  }
+  data: []
 }
 
 const facets = (state=initialData, action) => {
@@ -16,7 +13,7 @@ const facets = (state=initialData, action) => {
     case 'RECEIVE_PUBLISHERS':
       return Object.assign({}, state, {
         isFetching: false,
-        data: action.json,
+        data: action.json.options,
         generalQuery: action.generalQuery,
         facetQuery: action.facetQuery
       })

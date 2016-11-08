@@ -1,5 +1,5 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
-import './JurisdictionMap.css';
+import './RegionMap.css';
 import Facet from './FacetWrapper';
 // eslint-disable-next-line
 import L from 'leaflet';
@@ -9,7 +9,7 @@ import regions from '../dummyData/regions';
 import defined from '../helpers/defined';
 import React from 'react';
 
-class JurisdictionMap extends Facet {
+class RegionMap extends Facet {
     constructor(props) {
         super(props);
         this.map = undefined;
@@ -47,15 +47,15 @@ class JurisdictionMap extends Facet {
         }
     }
 
-    generateStyle(jurisdiction) {
+    generateStyle(region) {
         return (feature) => ({
-            color: (jurisdiction === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
+            color: (region === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
                 outline: {
                     color: '#ddd',
                     size: 1
                 },
                 selected: {
-                    color: (jurisdiction === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
+                    color: (region === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
                     outline: {
                         color: '#00B5FF'
                     }
@@ -93,11 +93,11 @@ class JurisdictionMap extends Facet {
     render(){
 
         return (
-            <div className='jurisdiction-map'>
+            <div className='region-map'>
               <div className='map' ref={(c) => {this._c = c}}/>
             </div>
       );
     }
 }
 
-export default JurisdictionMap;
+export default RegionMap;

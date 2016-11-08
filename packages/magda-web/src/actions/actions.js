@@ -1,8 +1,11 @@
+import fetch from 'isomorphic-fetch'
 export const REQUEST_RESULTS = 'REQUEST_RESULTS'
 export const RECEIVE_RESULTS = 'RECEIVE_RESULTS'
 export const ADD_PUBLISHER = 'ADD_PUBLISHER'
 export const REMOVE_PUBLISHER = 'REMOVE_PUBLISHER'
 export const RESET_PUBLISHER = 'RESET_PUBLISHER'
+export const ADD_REGION = 'ADD_REGION'
+export const RESET_REGION = 'RESET_REGION'
 
 export function requestResults(query){
   return {
@@ -44,9 +47,22 @@ export function removePublisher(publisher){
   }
 }
 
-export function resetPublisher(publisher){
+export function resetPublisher(){
   return {
     type: RESET_PUBLISHER,
-    item: publisher
+  }
+}
+
+
+export function addRegion(region){
+  return {
+    type: ADD_REGION,
+    item: region
+  }
+}
+
+export function resetRegion(){
+  return {
+    type: RESET_REGION,
   }
 }

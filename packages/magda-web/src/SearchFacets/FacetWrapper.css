@@ -184,14 +184,14 @@ svg{
   background: #f5f5f5;
 }
 
-.facet-wrapper-jurisdiction--summray{
+.facet-wrapper-region--summray{
   position: absolute;
   z-index: 99;
   left: 0;
   right: 0;
 }
 
-.facet-wrapper-jurisdiction--summray span{
+.facet-wrapper-region--summray span{
   padding: 5px 10px;
   display: block;
   background-color: #3498db;
@@ -200,7 +200,7 @@ svg{
   border-radius: 2px;
 }
 
-.facet-wrapper-jurisdiction--summray .btn{
+.facet-wrapper-region--summray .btn{
   position: absolute;
   right: 0;
   top: 0;

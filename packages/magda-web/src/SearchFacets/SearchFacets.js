@@ -1,19 +1,26 @@
-import FacetJurisdiction from './FacetJurisdiction';
+import FacetRegion from './FacetRegion';
 import FacetBasic from './FacetBasic';
 import React, { Component } from 'react';
+import defined from '../helpers/defined';
 import {connect} from 'react-redux';
-import {addPublisher, removePublisher, resetPublisher} from '../actions/actions';
+import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion} from '../actions/actions';
 import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
+import {fetchRegionSearchResults} from '../actions/facetRegionSearch';
 
 class SearchFacets extends Component {
   constructor(props) {
     super(props);
-    this.togglePublisherOption = this.togglePublisherOption.bind(this);
-    this.resetPublisherFacet = this.resetPublisherFacet.bind(this);
-    this.searchPublisherFacet = this.searchPublisherFacet.bind(this);
+    this.onTogglePublisherOption = this.onTogglePublisherOption.bind(this);
+    this.onResetPublisherFacet = this.onResetPublisherFacet.bind(this);
+    this.onSearchPublisherFacet = this.onSearchPublisherFacet.bind(this);
+
+    this.onToggleRegionOption = this.onToggleRegionOption.bind(this);
+    this.onResetRegionFacet = this.onResetRegionFacet.bind(this);
+    this.onSearchRegionFacet = this.onSearchRegionFacet.bind(this);
   }
 
-  togglePublisherOption(publisher){
+
+  onTogglePublisherOption(publisher, callback){
     let existingPublishers = this.props.activePublishers.map(o=>o.value);
     let index = existingPublishers.indexOf(publisher.value);
     if(index > - 1){
@@ -32,22 +39,51 @@ class SearchFacets extends Component {
       // dispatch an event to remove an active publisher
       this.props.dispatch(addPublisher(publisher));
     }
+    if(defined(callback) && typeof(callback) === 'function'){
+      callback();
+    }
   }
 
 
-  resetPublisherFacet(){
+
+  onResetPublisherFacet(){
     // update url
     this.props.updateQuery({
       publisher: []
     })
-
     // update redux
     this.props.dispatch(resetPublisher());
-
   }
 
-  searchPublisherFacet(facetKeyword){
+  onSearchPublisherFacet(facetKeyword){
     this.props.dispatch(fetchPublisherSearchResults(this.props.keyword, facetKeyword))
+  }
+
+
+  onToggleRegionOption(region, callback){
+    let {regionId, regionType} = region;
+    this.props.updateQuery({
+      regionId,
+      regionType
+    });
+
+    this.props.dispatch(addRegion(region));
+
+    if(defined(callback) && typeof(callback) === 'function'){
+      callback();
+    }
+  }
+
+  onResetRegionFacet(){
+    this.props.updateQuery({
+      regionId: [],
+      regionType: []
+    });
+    this.props.dispatch(resetRegion(region));
+  }
+
+  onSearchRegionFacet(facetKeyword){
+    this.props.dispatch(fetchRegionSearchResults(facetKeyword));
   }
 
 
@@ -59,9 +95,17 @@ class SearchFacets extends Component {
                     options={this.props.publisherOptions}
                     activeOptions={this.props.activePublishers}
                     facetSearchResults={this.props.publisherSearchResults}
-                    toggleOption={this.togglePublisherOption}
-                    onResetFacet={this.resetPublisherFacet}
-                    searchFacet={this.searchPublisherFacet}
+                    toggleOption={this.onTogglePublisherOption}
+                    onResetFacet={this.onResetPublisherFacet}
+                    searchFacet={this.onSearchPublisherFacet}
+        />
+        <FacetRegion title='location'
+                      id='region'
+                      activeOptions={this.props.activeRegions}
+                      facetSearchResults={this.props.regionSearchResults}
+                      toggleOption={this.onToggleRegionOption}
+                      onResetFacet={this.onResetRegionFacet}
+                      searchFacet={this.onSearchRegionFacet}
         />
       </div>
     );
@@ -72,17 +116,19 @@ SearchFacets.propTypes={
     updateQuery: React.PropTypes.func,
     publisherOptions: React.PropTypes.array,
     activePublishers: React.PropTypes.array,
-    publisherSearchResults: React.PropTypes.array
+    publisherSearchResults: React.PropTypes.array,
+    regionSearchResults: React.PropTypes.array
   };
 
 
 function mapStateToProps(state) {
-  let { results , facetPublisherSearch } = state;
+  let { results , facetPublisherSearch, facetRegionSearch } = state;
   return {
     publisherOptions: results.data.facets[0].options,
     activePublishers: results.activePublishers,
-    activeFormats: results.activeFormats,
-    publisherSearchResults: facetPublisherSearch.data.options
+    activeRegions: results.activeRegions,
+    publisherSearchResults: facetPublisherSearch.data,
+    regionSearchResults: facetRegionSearch.data
   }
 }
 

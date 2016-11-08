@@ -7,10 +7,7 @@ const initialData = {
   activePublishers: [],
   activeFormats: [],
   activeTemporals: [],
-  activeRegions: [],
-  publisherSearchResults: [],
-  formatSearchResults: [],
-  regionSearchResults: []
+  activeRegions: []
 }
 
 const results = (state=initialData, action) => {
@@ -24,11 +21,14 @@ const results = (state=initialData, action) => {
       let query = data.query;
 
       let activePublishers = query.publishers.map(item=> find(data.facets[0].options));
+      // temp
+      let activeRegions = query.regions.map(item=>({regionId: '', regionType: ''}));
       return Object.assign({}, state, {
         isFetching: false,
         data,
         query,
-        activePublishers
+        activePublishers,
+        activeRegions
       })
 
     case 'ADD_PUBLISHER':
@@ -45,6 +45,16 @@ const results = (state=initialData, action) => {
     case 'RESET_PUBLISHER':
       return Object.assign({}, state, {
         activePublishers: []
+      })
+
+    case 'ADD_REGION':
+      return Object.assign({}, state, {
+        activeRegions: [action.item]
+      })
+
+    case 'RESET_REGION':
+      return Object.assign({}, state, {
+        activeRegions: []
       })
 
     default:

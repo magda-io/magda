@@ -1,15 +1,15 @@
-import './JurisdictionPopup.css';
+import './RegionPopup.css';
 import DropDown from '../UI/DropDown';
 import Facet from './FacetWrapper';
 import getRegionTypes from '../dummyData/getRegionTypes';
-import JurisdictionMap from './JurisdictionMap';
+import RegionMap from './RegionMap';
 import FacetSearchBox from './FacetSearchBox';
 import React from 'react'
 
 
 const regionTypeOptions = getRegionTypes();
 
-class JurisdictionPopup extends Facet {
+class RegionPopup extends Facet {
     constructor(props) {
         super(props);
         /**
@@ -58,8 +58,8 @@ class JurisdictionPopup extends Facet {
                   </div>
                   <div className='popup-summary'>{this.props.locationInfoSummray}</div>
                   <div className='popup-map'>
-                    <JurisdictionMap title='jurisdiction'
-                                     id='jurisdiction'
+                    <RegionMap title='region'
+                                     id='region'
                                      interaction={true}
                                      activeRegionId={this.props.activeRegionId}
                                      activeRegionType={this.props.activeRegionType}
@@ -77,4 +77,4 @@ class JurisdictionPopup extends Facet {
     }
 }
 
-export default JurisdictionPopup;
+export default RegionPopup;

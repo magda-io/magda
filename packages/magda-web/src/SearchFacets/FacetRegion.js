@@ -1,14 +1,14 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
 import React, { Component } from 'react';
 import FacetWrapper from './FacetWrapper';
-import JurisdictionMap from './JurisdictionMap';
-import JurisdictionPopup from './JurisdictionPopup';
+import RegionMap from './RegionMap';
+import RegionPopup from './RegionPopup';
 import FacetSearchBox from './FacetSearchBox';
 
 /*
-* the jurisdiction (location) facet facet, extends Facet class
+* the region (location) facet facet, extends Facet class
 */
-class FacetJurisdiction extends Component {
+class FacetRegion extends Component {
     constructor(props) {
         super(props);
         this.openPopup = this.openPopup.bind(this);
@@ -38,7 +38,7 @@ class FacetJurisdiction extends Component {
     }
 
     /**
-     * activate a jurisdiction option by clicking a region on the map
+     * activate a region option by clicking a region on the map
      * @param {string} regionCode, region code
      * @param {string} regionType, region type
      */
@@ -51,18 +51,13 @@ class FacetJurisdiction extends Component {
     // see Facet.renderOption(option, optionMax, callback, onFocus)
     // Here is only for mark up change
     renderOption(option, optionMax, callback, onFocus){
-      let result = option.suggestion;
-      if(!result){
-        return null;
-      }
       return (
             <button type='button'
                     ref={b=>{if(b != null && onFocus === true){b.focus()}}}
                     className='btn-facet-option btn btn-facet-option__location'
                     onClick={this.props.toggleOption.bind(this, option, callback)}
-                    title={option.name}>
-              <span className='btn-facet-option__name'>{result.geographyLabel} , {result.stateLabel}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
-              <span className='btn-facet-option__count'>100</span>
+                    title={option.geographyLabel}>
+              <span className='btn-facet-option__name'>{option.geographyLabel} , {option.state}</span>
             </button>);
     }
 
@@ -75,18 +70,17 @@ class FacetJurisdiction extends Component {
                <FacetSearchBox renderOption={this.renderOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
-               {this.props.activeRegionType}
-               {this.props.activeRegionId}
+               {this.props.activeOptions.map(r=><div>{r.geographyLabel} {r.state}</div>)}
                <div className='preview'>
-                     <JurisdictionMap title='jurisdiction'
-                                      id='jurisdiction'
-                                      onClick={this.openPopup}
-                                      interaction={false}
-                                      activeRegionId={this.props.activeRegionId}
-                                      activeRegionType={this.props.activeRegionType}
+                     <RegionMap title='region'
+                                id='region'
+                                onClick={this.openPopup}
+                                interaction={false}
+                                activeRegionId={this.props.activeRegionId}
+                                activeRegionType={this.props.activeRegionType}
                      />
                </div>
-               {this.state.popUpIsOpen && <JurisdictionPopup onFeatureClick={this.props.onFeatureClick}
+               {this.state.popUpIsOpen && <RegionPopup onFeatureClick={this.props.onFeatureClick}
                                                              closePopUp={this.closePopUp}
                                                              renderOption={this.renderOption}
                                                              searchFacet={this.props.searchFacet}
@@ -97,4 +91,4 @@ class FacetJurisdiction extends Component {
     }
 }
 
-export default FacetJurisdiction;
+export default FacetRegion;
