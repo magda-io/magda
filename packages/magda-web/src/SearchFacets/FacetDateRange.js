@@ -16,7 +16,7 @@ class FacetDateRange extends Facet {
     super(props);
     this.resetdateFrom = this.resetdateFrom.bind(this);
     this.resetdateTo = this.resetdateTo.bind(this);
-    this.updateDragBar = this.updateDragBar.bind(this);
+    this.onDrag = this.onDrag.bind(this);
     this.setdateFromIndex= this.setdateFromIndex.bind(this);
     this.setdateToIndex = this.setdateToIndex.bind(this);
     this.renderDragBar = this.renderDragBar.bind(this);
@@ -148,7 +148,9 @@ class FacetDateRange extends Facet {
     }
 
     return (
-    <button type='button' className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn-facet-date-option btn`}           onClick={this.toggleOption.bind(this, option, i)}>
+    <button type='button'
+            className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn-facet-date-option btn`}
+            onClick={this.toggleOption.bind(this, option, i)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
@@ -161,7 +163,7 @@ class FacetDateRange extends Facet {
    * @param {number} id id here indicates bar is dragged therefore which property needs updates. if id === 0, then it the top bar being dragged therefore 'dateTo' should be updated
    * @param {number} value the position relative to the wrapper that the drag bar has been dragged to
    */
-  updateDragBar(id, value){
+  onDrag(id, value){
     // the index of the option that the dragged bar position corresponds to
     let index = Math.floor(value / itemHeight);
 
@@ -187,31 +189,22 @@ class FacetDateRange extends Facet {
     let height = (this.props.options.length + 2) * itemHeight - 2;
     // [endPos, startPos]
     let dragBarData=[(this.state.dateToIndex * itemHeight), (this.state.dateFromIndex * itemHeight)];
-    return <DragBar dragBarData={dragBarData} updateDragBar={this.updateDragBar} height={height}/>
+    return <DragBar dragBarData={dragBarData} onDrag={this.onDrag} height={height}/>
   }
 
   render(){
-    return (
-      <div className='facet'>
-        <FacetHeader query={[this.props.location.query.dateFrom, this.props.location.query.dateTo]}
-                      removeFacet={this.removeFacet}
-                      title={this.props.title}/>
-            <div className='clearfix' id='drag-bar'>
-              <div className='slider'>
-                {this.renderDragBar()}
-              </div>
-              <div className='list'>
-                <div className='options'>
-                <div> <button className='btn btn-facet-option btn-facet-date-option' onClick={this.resetdateTo}>Any end date </button></div>
-                  {this.props.options.map((option, i)=>
-                        <div key={option.value}>{this.renderOption(option, i)}</div>
-                  )}
-                <div> <button className='btn btn-facet-option btn-facet-date-option' onClick={this.resetdateFrom}>Any start date </button></div>
-                </div>
-            </div>
-        </div>
-      </div>
-    );
+    let that = this;
+    return <FacetWrapper onResetFacet={this.props.onResetFacet}
+                         title={this.props.title}
+                         activeOptions={this.props.activeOptions}>
+               <FacetSearchBox renderOption={this.renderOption}
+                               options={this.props.facetSearchResults}
+                               searchFacet={this.props.searchFacet}/>
+              {}
+               <ul className='list-unstyled'>
+                 {that.props.options.map(o=><li key={o.value}>{that.renderOption(o)}</li>)}
+               </ul>
+           </FacetWrapper>
   }
 }
 

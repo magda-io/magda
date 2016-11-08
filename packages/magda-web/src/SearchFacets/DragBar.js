@@ -22,7 +22,7 @@ class DragBar extends Component {
       // create a 'g' tag inside the svg to contain all our svg components
       let g = this.refs['g'];
       let data = this.props.dragBarData;
-      let debouncedUpdate = debounce(this.props.updateDragBar, 150);
+      let debouncedUpdate = debounce(this.props.onDrag, 150);
 
       // use svg fill to add icon
       // this saves us having to manage and animate for svg elements
