@@ -124,11 +124,18 @@ SearchFacets.propTypes={
 function mapStateToProps(state) {
   let { results , facetPublisherSearch, facetRegionSearch } = state;
   return {
-    publisherOptions: results.data.facets[0].options,
+    publisherOptions: results.publisherOptions,
+    formatOptions: results.formatOptions,
+    temporalOptions: results.temporalOptions,
+
     activePublishers: results.activePublishers,
     activeRegions: results.activeRegions,
+    activeDateFrom: results.activeDateFrom,
+    activeDateTo: results.activeDateTo,
+
     publisherSearchResults: facetPublisherSearch.data,
-    regionSearchResults: facetRegionSearch.data
+    regionSearchResults: facetRegionSearch.data,
+    
   }
 }
 

@@ -69,7 +69,6 @@ class Search extends Component {
 
 
   render() {
-    let {data} = this.props;
     return (
       <div>
         <div className='search'>
@@ -80,12 +79,12 @@ class Search extends Component {
           </div>
           <div className='search__search-body'>
             <div className='col-sm-4'>
-              {defined(data.facets) && <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>}
+                <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>
             </div>
             <div className='col-sm-8'>
                 <SearchResults
-                    searchResults={data.dataSets}
-                    totalNumberOfResults={data.hitCount}
+                    searchResults={this.props.datasets}
+                    totalNumberOfResults={this.props.hitCount}
                 />
             </div>
           </div>
@@ -100,7 +99,8 @@ Search.contextTypes ={
 }
 
 Search.propTypes = {
-  data: React.PropTypes.object.isRequired,
+  datasets: React.PropTypes.array.isRequired,
+  hitCount: React.PropTypes.number.isRequired,
   isFetching: React.PropTypes.bool.isRequired,
   dispatch: React.PropTypes.func.isRequired
 }
@@ -109,7 +109,8 @@ Search.propTypes = {
 function mapStateToProps(state) {
   let { results } = state;
   return {
-    data: results.data,
+    datasets: results.datasets,
+    hitCount: results.hitCount,
     isFetching: results.isFetching,
     query: results.query
   }
