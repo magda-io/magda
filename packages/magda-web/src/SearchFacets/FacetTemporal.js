@@ -95,7 +95,7 @@ class FacetTemporal extends Component {
    */
   onDrag(id, value){
     // the index of the option that the dragged bar position corresponds to
-    let index = Math.floor(value / itemHeight);
+    let index = Math.floor(value / itemHeight) - 1;
     let date = this.props.options[index];
     let datesArray = this.props.activeOptions.slice();
 

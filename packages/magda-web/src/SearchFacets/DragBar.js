@@ -75,8 +75,8 @@ class DragBar extends Component {
             y = d3Event.y;
           } else if(d3Event.y >= data[1]){
             y = data[1] - 1;
-          } else{
-            y = r;
+          } else {
+            y = 0;
           }
         } else{
           if (d3Event.y >data[0] && d3Event.y <= that.props.height - 2*r){
@@ -100,6 +100,7 @@ class DragBar extends Component {
     }
 
     updateUI(data){
+      console.log(data);
       // update handle position
       this._handles.data(data).attr('y', d=> d);
       // update bar position
