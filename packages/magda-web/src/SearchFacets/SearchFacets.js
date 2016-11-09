@@ -91,26 +91,26 @@ class SearchFacets extends Component {
   }
 
   onToggleTemporalOption(option){
-    let date1 = this.props.activeDateFrom;
-    let date2 = this.props.activeDateTo;
-    if(!defined(date1) && !defined(date2)){
-      date1 = option;
-      date1 = option;
+    let tempDateFrom = this.props.activeDateFrom;
+    let tempDateTo = this.props.activeDateTo;
+    if(!defined(tempDateFrom) && !defined(tempDateTo)){
+      tempDateFrom = option;
+      tempDateFrom = option;
     }
-    if(!defined(date1)){
-      date1 = option
-    } else if(!defined(date2)){
-      date2 = option
+    if(!defined(tempDateFrom)){
+      tempDateFrom = option
+    } else if(!defined(tempDateTo)){
+      tempDateTo = option
     } else{
-      if(!defined(date1) || (option.value < date1.value) || (option.value === date2.value)){
-        date1 = option
+      if(!defined(tempDateFrom) || (option.value < tempDateFrom.value) || (option.value === tempDateTo.value)){
+        tempDateFrom = option
       }else {
-        date2 = option
+        tempDateTo = option
       }
     }
-    let compare = date1 - date2;
-    let dateFrom = compare >= 0 ? date2 : date1;
-    let dateTo = compare >= 0 ? date1 : date2;
+    let compare = tempDateFrom - tempDateTo;
+    let dateFrom = compare >= 0 ? tempDateTo : tempDateFrom;
+    let dateTo = compare >= 0 ? tempDateFrom : tempDateTo;
 
     this.props.updateQuery({
       dateFrom: dateFrom.value,

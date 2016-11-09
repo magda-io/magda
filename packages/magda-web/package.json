@@ -17,6 +17,7 @@
     "lodash.findindex": "^4.6.0",
     "lodash.isequal": "^4.4.0",
     "lodash.maxby": "^4.6.0",
+    "lodash.minby": "^4.6.0",
     "react": "^15.3.1",
     "react-dom": "^15.3.1",
     "react-redux": "^4.4.5",

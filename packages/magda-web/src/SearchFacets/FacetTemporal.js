@@ -2,6 +2,7 @@ import './FacetTemporal.css';
 import React, { Component } from 'react';
 import FacetWrapper from './FacetWrapper';
 import maxBy from 'lodash.maxby';
+import minBy from 'lodash.minby';
 import FacetHeader from './FacetHeader';
 import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
@@ -21,7 +22,15 @@ class FacetTemporal extends Component {
    * @param {object} option the current facet option
    */
   checkActiveOption(option){
-    return false;
+    let activeOptions = this.props.activeOptions.map(o=>defined(o) ? o : {value : 0});
+
+    let max = +maxBy(activeOptions, o=>+o.value).value;
+    let min = +minBy(activeOptions, o=>+o.value).value;
+    console.log(max, min);
+    if((+option.value <= max) && (+option.value >= min)){
+      return true
+    }
+    return false
   }
 
   renderOption(option, i){
