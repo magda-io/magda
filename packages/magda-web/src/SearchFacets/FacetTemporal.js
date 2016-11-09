@@ -124,6 +124,7 @@ class FacetTemporal extends Component {
     let fromIndex = defined(this.props.activeOptions[0]) ? findIndex(this.props.options, o=>o.value === this.props.activeOptions[0].value) + 1 : this.props.options.length + 1;
     let toIndex = defined(this.props.activeOptions[1]) ? findIndex(this.props.options, o=>o.value === this.props.activeOptions[1].value) + 1 : 0;
     let dragBarData=[(toIndex * itemHeight), (fromIndex * itemHeight)];
+    console.log(fromIndex, toIndex);
     return <DragBar dragBarData={dragBarData} onDrag={this.onDrag} height={height}/>
   }
 

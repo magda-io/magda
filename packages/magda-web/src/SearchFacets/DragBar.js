@@ -43,7 +43,7 @@ class DragBar extends Component {
       // create a bar to indicate range
       this._bar = d3Select(g).append('rect')
       .attr('width', r*2)
-      .attr('height', Math.abs(this.props.dragBarData[1] - this.props.dragBarData[0]))
+      .attr('height', Math.abs(this.props.dragBarData[1] - this.props.dragBarData[0]) + 2*r)
       .attr('x', 0)
       .attr('y', this.props.dragBarData[0])
       .style('fill', color);
