@@ -1,4 +1,5 @@
 import findIndex from 'lodash.findindex';
+import defined from '../helpers/defined';
 
 const initialData = {
   isFetching: true,
@@ -8,8 +9,8 @@ const initialData = {
   activePublishers: [],
   activeFormats: [],
   activeRegions: [],
-  activeDateFrom: '',
-  activeDateTo:'',
+  activeDateFrom: undefined,
+  activeDateTo:undefined,
   publisherOptions: [],
   temporalOptions: [],
   formatOptions: []
@@ -78,6 +79,16 @@ const results = (state=initialData, action) => {
     case 'RESET_REGION':
       return Object.assign({}, state, {
         activeRegions: []
+      })
+
+    case 'SET_DATE_FROM':
+      return Object.assign({}, state, {
+        activeDateFrom: action.item
+      })
+
+    case 'SET_DATE_TO':
+      return Object.assign({}, state, {
+        activeDateTo: action.item
       })
 
     default:

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {fetchSearchResults} from '../actions/actions';
+import {fetchSearchResults} from '../actions/results';
 import {connect} from 'react-redux';
 
 import './Search.css';

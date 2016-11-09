@@ -5,29 +5,31 @@ import './FacetHeader.css';
   * Facet header component, contains a title of the facet and a reset button when there is a active facet
   */
 class FacetHeader extends Component {
-  hasQuery(){
-    if(defined(this.props.activeOptions) && this.props.activeOptions.length > 0){
-      return true;
+
+  renderResetButton(){
+    if(this.props.hasQuery){
+      return <button type='button'
+                     className='btn btn-reset'
+                     onClick={()=>{this.props.onResetFacet()}}>
+                     Reset
+              </button>
     }
-    return false;
+    return null;
   }
 
   render(){
+
     return (
       <div className='clearfix facet-header'>
         <h4 className='facet-title'>{this.props.title}</h4>
-        {this.hasQuery() && <button type='button'
-                                    className='btn btn-reset'
-                                    onClick={()=>{this.props.onResetFacet()}}>Reset</button>}
-
+        {this.renderResetButton()}
       </div>
       );
   }
 }
 
 FacetHeader.propTypes = {title: React.PropTypes.string,
-                          onResetFacet: React.PropTypes.func,
-                        activeOptions: React.PropTypes.array};
+                        onResetFacet: React.PropTypes.func};
 FacetHeader.defaultProps = {title: ''};
 
 export default FacetHeader;

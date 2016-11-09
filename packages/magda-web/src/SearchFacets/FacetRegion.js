@@ -66,11 +66,12 @@ class FacetRegion extends Component {
         return (
             <FacetWrapper onResetFacet={this.props.onResetFacet}
                           title={this.props.title}
-                          activeOptions={[this.props.activeRegionId, this.props.activeRegionType]}>
+                          activeOptions={[this.props.activeRegionId, this.props.activeRegionType]}
+                          hasQuery={this.props.hasQuery}>
                <FacetSearchBox renderOption={this.renderOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
-               {this.props.activeOptions.map(r=><div>{r.geographyLabel} {r.state}</div>)}
+               {this.props.activeOptions.map(r=><div key={r.geographyLabel + r.state}>{r.geographyLabel} {r.state}</div>)}
                <div className='preview'>
                      <RegionMap title='region'
                                 id='region'

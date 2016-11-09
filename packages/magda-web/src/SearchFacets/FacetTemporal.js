@@ -1,6 +1,6 @@
-import './FacetDateRange.css';
-import React from 'react'
-import Facet from './FacetWrapper';
+import './FacetTemporal.css';
+import React, { Component } from 'react';
+import FacetWrapper from './FacetWrapper';
 import maxBy from 'lodash.maxby';
 import FacetHeader from './FacetHeader';
 import DragBar from './DragBar';
@@ -11,7 +11,7 @@ import defined from '../helpers/defined';
 const itemHeight = 35;
 
 // the date range facet facet, extends facet component
-class FacetDateRange extends Facet {
+class FacetTemporal extends Component {
   constructor(props) {
     super(props);
   }
@@ -64,7 +64,8 @@ class FacetDateRange extends Facet {
     let that = this;
     return <FacetWrapper onResetFacet={this.props.onResetFacet}
                          title={this.props.title}
-                         activeOptions={this.props.activeOptions}>
+                         activeOptions={this.props.activeOptions}
+                         hasQuery={this.props.hasQuery}>
                <ul className='list-unstyled'>
                  {that.props.options.map(o=><li key={o.value}>{that.renderOption(o)}</li>)}
                </ul>
@@ -72,4 +73,4 @@ class FacetDateRange extends Facet {
   }
 }
 
-export default FacetDateRange;
+export default FacetTemporal;

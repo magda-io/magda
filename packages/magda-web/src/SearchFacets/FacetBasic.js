@@ -53,7 +53,8 @@ class FacetBasic extends Component {
     let maxOptionOptionList = maxBy(this.props.options, o=> +o.hitCount);
     return <FacetWrapper onResetFacet={this.props.onResetFacet}
                          title={this.props.title}
-                         activeOptions={this.props.activeOptions}>
+                         activeOptions={this.props.activeOptions}
+                         hasQuery={this.props.hasQuery}>
                <FacetSearchBox renderOption={this.renderOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>

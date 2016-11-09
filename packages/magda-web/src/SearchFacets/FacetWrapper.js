@@ -11,7 +11,8 @@ class FacetWrapper extends Component {
       <div className='facet-wrapper'>
         <FacetHeader onResetFacet={this.props.onResetFacet}
                      title={this.props.title}
-                     activeOptions={this.props.activeOptions}/>
+                     activeOptions={this.props.activeOptions}
+                     hasQuery={this.props.hasQuery}/>
         {this.props.children}
       </div>
     );

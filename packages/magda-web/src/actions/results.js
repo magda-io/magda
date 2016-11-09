@@ -8,7 +8,8 @@ export const REMOVE_PUBLISHER = 'REMOVE_PUBLISHER'
 export const RESET_PUBLISHER = 'RESET_PUBLISHER'
 export const ADD_REGION = 'ADD_REGION'
 export const RESET_REGION = 'RESET_REGION'
-// export const UPDATE_
+export const SET_DATE_FROM = 'SET_DATE_FROM'
+export const SET_DATE_TO = 'SET_DATE_TO'
 
 export function requestResults(query){
   return {
@@ -69,5 +70,20 @@ export function addRegion(region){
 export function resetRegion(){
   return {
     type: RESET_REGION,
+  }
+}
+
+
+export function setDateFrom(date){
+  return {
+    type: SET_DATE_FROM,
+    item: date
+  }
+}
+
+export function setDateTo(date){
+  return {
+    type: SET_DATE_TO,
+    item: date
   }
 }

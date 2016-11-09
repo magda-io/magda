@@ -1,9 +1,10 @@
 import FacetRegion from './FacetRegion';
 import FacetBasic from './FacetBasic';
+import FacetTemporal from './FacetTemporal';
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import {connect} from 'react-redux';
-import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion} from '../actions/actions';
+import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion, setDateFrom, setDateTo} from '../actions/results';
 import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
 import {fetchRegionSearchResults} from '../actions/facetRegionSearch';
 
@@ -17,6 +18,9 @@ class SearchFacets extends Component {
     this.onToggleRegionOption = this.onToggleRegionOption.bind(this);
     this.onResetRegionFacet = this.onResetRegionFacet.bind(this);
     this.onSearchRegionFacet = this.onSearchRegionFacet.bind(this);
+
+    this.onToggleTemporalOption = this.onToggleTemporalOption.bind(this);
+    this.onResetTemporalFacet = this.onResetTemporalFacet.bind(this);
   }
 
 
@@ -79,11 +83,52 @@ class SearchFacets extends Component {
       regionId: [],
       regionType: []
     });
-    this.props.dispatch(resetRegion(region));
+    this.props.dispatch(resetRegion());
   }
 
   onSearchRegionFacet(facetKeyword){
     this.props.dispatch(fetchRegionSearchResults(facetKeyword));
+  }
+
+  onToggleTemporalOption(option){
+    let date1 = this.props.activeDateFrom;
+    let date2 = this.props.activeDateTo;
+    if(!defined(date1) && !defined(date2)){
+      date1 = option;
+      date1 = option;
+    }
+    if(!defined(date1)){
+      date1 = option
+    } else if(!defined(date2)){
+      date2 = option
+    } else{
+      if(!defined(date1) || (option.value < date1.value) || (option.value === date2.value)){
+        date1 = option
+      }else {
+        date2 = option
+      }
+    }
+    let compare = date1 - date2;
+    let dateFrom = compare >= 0 ? date2 : date1;
+    let dateTo = compare >= 0 ? date1 : date2;
+
+    this.props.updateQuery({
+      dateFrom: dateFrom.value,
+      dateTo: dateTo.value
+    });
+
+    this.props.dispatch(setDateFrom(dateFrom))
+    this.props.dispatch(setDateTo(dateTo))
+  }
+
+  onResetTemporalFacet(){
+    this.props.updateQuery({
+      dateFrom: undefined,
+      dateTo: undefined
+    });
+    // dispatch event
+    this.props.dispatch(setDateFrom(undefined))
+    this.props.dispatch(setDateTo(undefined))
   }
 
 
@@ -92,6 +137,7 @@ class SearchFacets extends Component {
       <div>
         <FacetBasic title='publisher'
                     id='publisher'
+                    hasQuery={Boolean(this.props.activePublishers.length)}
                     options={this.props.publisherOptions}
                     activeOptions={this.props.activePublishers}
                     facetSearchResults={this.props.publisherSearchResults}
@@ -101,11 +147,20 @@ class SearchFacets extends Component {
         />
         <FacetRegion title='location'
                       id='region'
+                      hasQuery={Boolean(this.props.activeRegions.length)}
                       activeOptions={this.props.activeRegions}
                       facetSearchResults={this.props.regionSearchResults}
                       toggleOption={this.onToggleRegionOption}
                       onResetFacet={this.onResetRegionFacet}
                       searchFacet={this.onSearchRegionFacet}
+        />
+        <FacetTemporal title='date range'
+                      id='temporal'
+                      hasQuery={(defined(this.props.activeDateFrom) || defined(this.props.activeDateTo))}
+                      options={this.props.temporalOptions}
+                      activeOptions={[this.props.activeDateFrom, this.props.activeDateTo]}
+                      toggleOption={this.onToggleTemporalOption}
+                      onResetFacet={this.onResetTemporalFacet}
         />
       </div>
     );
@@ -113,11 +168,12 @@ class SearchFacets extends Component {
 }
 
 SearchFacets.propTypes={
-    updateQuery: React.PropTypes.func,
-    publisherOptions: React.PropTypes.array,
-    activePublishers: React.PropTypes.array,
-    publisherSearchResults: React.PropTypes.array,
-    regionSearchResults: React.PropTypes.array
+    updateQuery: React.PropTypes.func.isRequired,
+    publisherOptions: React.PropTypes.array.isRequired,
+    publisherSearchResults: React.PropTypes.array.isRequired,
+    regionSearchResults: React.PropTypes.array.isRequired,
+    activePublishers: React.PropTypes.array.isRequired,
+    activeRegions: React.PropTypes.array.isRequired,
   };
 
 
@@ -135,7 +191,7 @@ function mapStateToProps(state) {
 
     publisherSearchResults: facetPublisherSearch.data,
     regionSearchResults: facetRegionSearch.data,
-    
+
   }
 }
 
