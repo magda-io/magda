@@ -6,10 +6,17 @@ export const RECEIVE_RESULTS = 'RECEIVE_RESULTS'
 export const ADD_PUBLISHER = 'ADD_PUBLISHER'
 export const REMOVE_PUBLISHER = 'REMOVE_PUBLISHER'
 export const RESET_PUBLISHER = 'RESET_PUBLISHER'
+
 export const ADD_REGION = 'ADD_REGION'
 export const RESET_REGION = 'RESET_REGION'
+
 export const SET_DATE_FROM = 'SET_DATE_FROM'
 export const SET_DATE_TO = 'SET_DATE_TO'
+
+export const ADD_FORMAT = 'ADD_FORMAT'
+export const REMOVE_FORMAT = 'REMOVE_FORMAT'
+export const RESET_FORMAT = 'RESET_FORMAT'
+
 
 export function requestResults(query){
   return {
@@ -56,6 +63,26 @@ export function removePublisher(publisher){
 export function resetPublisher(){
   return {
     type: RESET_PUBLISHER,
+  }
+}
+
+export function addFormat(format){
+  return {
+    type: ADD_FORMAT,
+    item: format
+  }
+}
+
+export function removeFormat(format){
+  return {
+    type: REMOVE_FORMAT,
+    item: format
+  }
+}
+
+export function resetFormat(){
+  return {
+    type: RESET_FORMAT,
   }
 }
 

@@ -61,7 +61,7 @@ const results = (state=initialData, action) => {
       })
 
     case 'REMOVE_PUBLISHER':
-     let index = findIndex(state.activePublishers, item=> item.value === action.item.value);
+     let publisherIndex = findIndex(state.activePublishers, item=> item.value === action.item.value);
       return Object.assign({}, state, {
         activePublishers: [...state.activePublishers.slice(0, index), ...state.activePublishers.slice(index+1)]
       })
@@ -70,6 +70,7 @@ const results = (state=initialData, action) => {
       return Object.assign({}, state, {
         activePublishers: []
       })
+
 
     case 'ADD_REGION':
       return Object.assign({}, state, {
@@ -89,6 +90,22 @@ const results = (state=initialData, action) => {
     case 'SET_DATE_TO':
       return Object.assign({}, state, {
         activeDateTo: action.item
+      })
+
+    case 'ADD_FORMAT':
+      return Object.assign({}, state, {
+        activeFormats: [...state.activeFormats, action.item]
+      })
+
+    case 'REMOVE_FORMAT':
+      let formatIndex = findIndex(state.activeFormats, item=> item.value === action.item.value);
+      return Object.assign({}, state, {
+        activeFormats: [...state.activeFormats.slice(0, formatIndex), ...state.activeFormats.slice(formatIndex+1)]
+      })
+
+    case 'RESET_FORMAT':
+      return Object.assign({}, state, {
+        activeFormats: []
       })
 
     default:
