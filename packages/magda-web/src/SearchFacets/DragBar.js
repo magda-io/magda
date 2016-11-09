@@ -43,9 +43,9 @@ class DragBar extends Component {
       // create a bar to indicate range
       this._bar = d3Select(g).append('rect')
       .attr('width', r*2)
-      .attr('height', Math.abs(this.props.dragBarData[0] - this.props.dragBarData[1]))
+      .attr('height', Math.abs(this.props.dragBarData[1] - this.props.dragBarData[0]))
       .attr('x', 0)
-      .attr('y', this.props.dragBarData[0] - this.props.dragBarData[1] < 0 ? this.props.dragBarData[0] : this.props.dragBarData[1])
+      .attr('y', this.props.dragBarData[0])
       .style('fill', color);
 
       // create two handles to listen to drag events
@@ -103,8 +103,8 @@ class DragBar extends Component {
       // update handle position
       this._handles.data(data).attr('y', d=> d);
       // update bar position
-      this._bar.attr('height', Math.abs(data[0] - data[1])+r*2)
-               .attr('y', data[0] - data[1] < 0 ? data[0] : data[1]);
+      this._bar.attr('height', data[1] - data[0] + 2*r)
+               .attr('y', data[0]);
     }
 
     componentWillReceiveProps(nextProps){

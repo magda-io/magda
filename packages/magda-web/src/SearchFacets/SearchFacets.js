@@ -90,35 +90,13 @@ class SearchFacets extends Component {
     this.props.dispatch(fetchRegionSearchResults(facetKeyword));
   }
 
-  onToggleTemporalOption(option){
-    let tempDateFrom = this.props.activeDateFrom;
-    let tempDateTo = this.props.activeDateTo;
-    if(!defined(tempDateFrom) && !defined(tempDateTo)){
-      tempDateFrom = option;
-      tempDateFrom = option;
-    }
-    if(!defined(tempDateFrom)){
-      tempDateFrom = option
-    } else if(!defined(tempDateTo)){
-      tempDateTo = option
-    } else{
-      if(!defined(tempDateFrom) || (option.value < tempDateFrom.value) || (option.value === tempDateTo.value)){
-        tempDateFrom = option
-      }else {
-        tempDateTo = option
-      }
-    }
-    let compare = tempDateFrom - tempDateTo;
-    let dateFrom = compare >= 0 ? tempDateTo : tempDateFrom;
-    let dateTo = compare >= 0 ? tempDateFrom : tempDateTo;
-
+  onToggleTemporalOption(datesArray){
     this.props.updateQuery({
-      dateFrom: dateFrom.value,
-      dateTo: dateTo.value
+      dateFrom: defined(datesArray[0]) ? datesArray[0].value: undefined,
+      dateTo: defined(datesArray[1]) ? datesArray[1].value: undefined
     });
-
-    this.props.dispatch(setDateFrom(dateFrom))
-    this.props.dispatch(setDateTo(dateTo))
+    this.props.dispatch(setDateTo(datesArray[1]));
+    this.props.dispatch(setDateFrom(datesArray[0]));
   }
 
   onResetTemporalFacet(){
