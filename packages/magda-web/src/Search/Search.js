@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import {fetchSearchResults} from '../actions/results';
+import {fetchSearchResults, setUrlQuery} from '../actions/results';
 import {connect} from 'react-redux';
+import parseQuery from '../helpers/parseQuery';
 
 import './Search.css';
 // eslint-disable-next-line
@@ -12,18 +13,11 @@ import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
 import SearchResults from '../SearchResults/SearchResults';
 
-const NUMBERRESULTSPERPAGE = 20;
+
 
 const SETTINGS ={
   resultsPerPage: 20,
-  optionsVisible: 5,
-  facets: ['publisher', 'regionId', 'regionType', 'dateTo', 'dateFrom', 'format'],
-  publisherAllowMultiple: true,
-  formatAllowMultiple: true,
-  regionTypeAllowMultiple: false,
-  regionIdAllowMultiple: false,
-  dateToAllowMultiple: false,
-  dateFromAllowMultiple: false
+  optionsVisible: 5
 }
 
 
@@ -36,19 +30,25 @@ class Search extends Component {
   }
 
   componentWillMount(){
-
+    let urlQuery = parseQuery(this.props.location.query);
+    // copy url into states
+    this.props.dispatch(setUrlQuery(urlQuery, this.props.dispatch));
   }
 
 
   componentDidMount(){
-    this.props.dispatch(fetchSearchResults(this.props.location.query.q))
+    // this.props.dispatch(fetchSearchResults(this.props.location.query.q))
   }
 
   componentWillReceiveProps(nextProps){
     // should any updates happen here?
-    console.log(nextProps)
     // dispatch search event with nr
+    let nextQuery = parseQuery(nextProps.location.query);
+    let preQuery = nextProps.urlQuery;
 
+    if(nextQuery !== preQuery){
+      this.props.dispatch(setUrlQuery(nextQuery, this.props.dispatch));
+    }
   }
 
   onSearchTextChange(text){
@@ -105,7 +105,8 @@ Search.propTypes = {
   datasets: React.PropTypes.array.isRequired,
   hitCount: React.PropTypes.number.isRequired,
   isFetching: React.PropTypes.bool.isRequired,
-  dispatch: React.PropTypes.func.isRequired
+  dispatch: React.PropTypes.func.isRequired,
+  urlQuery: React.PropTypes.string
 }
 
 
@@ -115,7 +116,8 @@ function mapStateToProps(state) {
     datasets: results.datasets,
     hitCount: results.hitCount,
     isFetching: results.isFetching,
-    query: results.query
+    query: results.query,
+    urlQuery: results.urlQuery
   }
 }
 

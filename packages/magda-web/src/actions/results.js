@@ -1,6 +1,7 @@
 import fetch from 'isomorphic-fetch'
 import defined from '../helpers/defined'
 
+export const SET_URL_QUERY = 'SET_URL_QUERY'
 export const REQUEST_RESULTS = 'REQUEST_RESULTS'
 export const RECEIVE_RESULTS = 'RECEIVE_RESULTS'
 export const ADD_PUBLISHER = 'ADD_PUBLISHER'
@@ -17,6 +18,13 @@ export const ADD_FORMAT = 'ADD_FORMAT'
 export const REMOVE_FORMAT = 'REMOVE_FORMAT'
 export const RESET_FORMAT = 'RESET_FORMAT'
 
+export function setUrlQuery(urlQuery, dispatch){
+  dispatch(fetchSearchResults(urlQuery));
+  return {
+    type: SET_URL_QUERY,
+    urlQuery
+  }
+}
 
 export function requestResults(query){
   return {
@@ -33,15 +41,13 @@ export function receiveResults(query, json){
   }
 }
 
-export function fetchSearchResults(query) {
-  if(!defined(query)) query = '';
-  console.log(`http://magda-search-api.terria.io/datasets/search?query=${query}`);
+export function fetchSearchResults(urlQuery) {
   return (dispatch)=>{
-    dispatch(requestResults(query))
-    return fetch(`http://magda-search-api.terria.io/datasets/search?query=${query}`)
+    dispatch(requestResults(urlQuery))
+    return fetch(`http://magda-search-api.terria.io/datasets/search?query=${urlQuery}`)
     .then(response => response.json())
     .then(json =>
-      dispatch(receiveResults(query, json))
+      dispatch(receiveResults(urlQuery, json))
     )
   }
 }

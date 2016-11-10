@@ -11,7 +11,7 @@ const search = combineReducers({
   results,
   facetPublisherSearch,
   facetRegionSearch,
-  facetFormatSearch
+  facetFormatSearch,
 });
 
 export default search;

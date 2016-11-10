@@ -1,11 +1,12 @@
 import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
+import find from 'lodash.find';
+
 
 const initialData = {
   isFetching: true,
   datasets: [],
   hitCount: 0,
-  query: '',
   activePublishers: [],
   activeFormats: [],
   activeRegions: [],
@@ -13,7 +14,8 @@ const initialData = {
   activeDateTo:undefined,
   publisherOptions: [],
   temporalOptions: [],
-  formatOptions: []
+  formatOptions: [],
+  urlQuery: ''
 }
 
 const results = (state=initialData, action) => {
@@ -32,10 +34,11 @@ const results = (state=initialData, action) => {
       let temporalOptions = data.facets[1].options;
       let formatOptions = data.facets[2].options;
 
-      let activePublishers = query.publishers.map(item=> find(data.facets[0].options, o=>o.value === item.value));
+
+      let activePublishers = query.publishers.map(item=> find(data.facets[0].options, o=>o.value === item));
       let activeDateFrom = query.dateFrom;
       let activeDateto = query.dateTo;
-      let activeFormats = query.formats.map(item=>find(data.facets[2].options, o=>o.value === item.value));
+      let activeFormats = query.formats.map(item=>find(data.facets[2].options, o=>o.value === item));
       // temp
       let activeRegions = query.regions.map(item=>({regionId: '', regionType: ''}));
 
@@ -43,7 +46,6 @@ const results = (state=initialData, action) => {
         isFetching: false,
         datasets,
         hitCount,
-        query,
         publisherOptions,
         temporalOptions,
         formatOptions,
@@ -53,6 +55,11 @@ const results = (state=initialData, action) => {
         activeDateFrom,
         activeDateto,
         activeFormats
+      })
+
+    case'SET_URL_QUERY':
+      return Object.assign({}, state, {
+        urlQuery: action.urlQuery
       })
 
     case 'ADD_PUBLISHER':
