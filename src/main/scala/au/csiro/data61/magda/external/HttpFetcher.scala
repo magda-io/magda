@@ -20,19 +20,25 @@ class HttpFetcher(interfaceConfig: InterfaceConfig, implicit val system: ActorSy
     interfaceConfig.fakeConfig match {
       case Some(fakeConfig) => Future {
         val file = io.Source.fromInputStream(getClass.getResourceAsStream(fakeConfig.datasetPath))
+        val contentType = fakeConfig.mimeType match {
+          case "application/json" => ContentTypes.`application/json`
+          case "text/xml" => ContentTypes.`text/xml(UTF-8)`
+        }
 
         val response = new HttpResponse(
           status = StatusCodes.OK,
           headers = scala.collection.immutable.Seq(),
           protocol = HttpProtocols.`HTTP/1.1`,
-          entity = HttpEntity(ContentTypes.`application/json`, file.mkString))
+          entity = HttpEntity(contentType, file.mkString))
 
         file.close()
 
         response
       }
       case None => {
-        val request = RequestBuilding.Get(s"${interfaceConfig.baseUrl.getPath}${path}")
+        val url = s"${interfaceConfig.baseUrl.getPath}${path}"
+        system.log.debug("Making request to {}{}", interfaceConfig.baseUrl.getHost, url)
+        val request = RequestBuilding.Get(url)
         Source.single(request).via(connectionFlow).runWith(Sink.head)
       }
     }

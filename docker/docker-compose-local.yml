@@ -13,6 +13,7 @@ services:
       - search
     environment:
       - SCALA_ENV=local
+      - MAGDA_SEARCH_ROLE=both
     build:
       context: .
       dockerfile: api.local.dockerfile

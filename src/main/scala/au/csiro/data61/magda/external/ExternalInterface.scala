@@ -19,7 +19,7 @@ object ExternalInterface {
 
   def apply(interfaceConfig: InterfaceConfig)(implicit system: ActorSystem, executor: ExecutionContext, materializer: Materializer): ExternalInterface = interfaceConfig.interfaceType match {
     case CKAN => new CKANExternalInterface(interfaceConfig, system, executor, materializer)
-    //    case CSW  => new CSWExternalInterface()
+    case CSW  => new CSWExternalInterface(interfaceConfig, system, executor, materializer)
   }
 }
 

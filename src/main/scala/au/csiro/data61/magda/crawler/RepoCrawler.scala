@@ -37,6 +37,7 @@ class RepoCrawler(supervisor: ActorRef, indexer: ActorRef, interfaceDef: Interfa
 
       interface.getTotalDataSetCount() onComplete {
         case Success(count) => {
+          log.info("{} has {} datasets", interfaceDef.baseUrl, count)
           val maxFromConfig = if (AppConfig.conf.hasPath("crawler.maxResults")) AppConfig.conf.getLong("crawler.maxResults") else Long.MaxValue
           createBatches(0, Math.min(maxFromConfig, count)).map(batch => throttler ! ScrapeDataSets(batch._1, batch._2.toInt))
         }

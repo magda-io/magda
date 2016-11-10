@@ -22,6 +22,7 @@ object CKANState extends Enumeration {
   val active, deleted = Value
 }
 import CKANState._
+import au.csiro.data61.magda.external.InterfaceConfig
 
 case class CKANDataSet(
   id: String,
@@ -136,11 +137,11 @@ trait CKANConverters {
   )
   implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
 
-  implicit def ckanDataSetConv(hit: CKANDataSet): DataSet = {
+  implicit def ckanDataSetConv(interface: InterfaceConfig)(hit: CKANDataSet): DataSet = {
     val modified = ckanDateTimeWithMsFormat.parse(hit.metadata_modified).toInstant
     DataSet(
       identifier = hit.name,
-      catalog = "DGA",
+      catalog = interface.name,
       title = hit.title,
       description = hit.notes,
       issued = Some(ckanDateTimeWithMsFormat.parse(hit.metadata_created).toInstant),
@@ -162,11 +163,10 @@ trait CKANConverters {
         val email = if (hit.contact_point.isDefined) hit.contact_point else hit.author_email
         email.map(email => new Agent(email = Some(email), name = hit.author))
       },
-      landingPage = Some("https://data.gov.au/dataset/" + hit.name), // FIXME!!!
+      landingPage = Some(interface.baseUrl + "datasets/" + hit.name), // FIXME!!!
       distributions = hit.resources.map(_.map(ckanDistributionConv(_, hit)))
     )
   }
-  implicit def ckanDataSetListConv(l: List[CKANDataSet]): List[DataSet] = l map ckanDataSetConv
 
   def ckanDistributionConv(resource: CKANResource, dataset: CKANDataSet): Distribution = {
     // Get the mediatype first because we'll need it to determine the format if none is provided.

@@ -23,9 +23,7 @@ libraryDependencies ++= {
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.3.0",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
-    "com.monsanto.labs" %% "mwundo" % "0.1.0",
-    "org.spire-math" %% "jawn-parser" % "0.10.1",
-    "org.spire-math" %% "jawn-ast" % "0.10.1",
+    "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
     
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"

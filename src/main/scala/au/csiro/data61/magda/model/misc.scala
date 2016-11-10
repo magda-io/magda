@@ -93,8 +93,22 @@ package misc {
     val emptyPolygonPattern = "POLYGON \\(\\(0 0, 0 0, 0 0, 0 0\\)\\)".r
     val polygonPattern = "POLYGON \\(\\(((-?\\d+ -?\\d+\\,?\\s?)+)\\)\\)".r
 
+    def applySanitised(text: String, geoJson: Option[Geometry] = None) = {
+      val processedGeoJson: Option[Geometry] = geoJson match {
+        case Some(Polygon(Seq(coords: Seq[Coordinate]))) =>
+          coords.distinct match {
+            case Seq(coord) => Some(Point(coords.head))
+            case Seq(coord1, coord2) => Some(MultiPoint(Seq(coord1, coord2)))
+            case _ => Some(Polygon(Seq(coords)))
+          }
+        case x => x
+      }
+
+      new Location(text, processedGeoJson)
+    }
+
     def apply(string: String): Location = {
-      Location(string, string match {
+      Location.applySanitised(string, string match {
         case geoJsonPattern() => {
           Some(Protocols.GeometryFormat.read(string.parseJson))
         }

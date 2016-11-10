@@ -36,9 +36,9 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val syste
   implicit val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
 
-  override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = fetcher.request(s"action/package_search?start=$start&rows=$number").flatMap { response =>
+  override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = fetcher.request(s"api/3/action/package_search?start=$start&rows=$number").flatMap { response =>
     response.status match {
-      case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.results)
+      case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.results.map(ckanDataSetConv(interfaceConfig)))
       case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
         val error = s"CKAN request failed with status code ${response.status} and entity $entity"
         Future.failed(new IOException(error))
@@ -46,7 +46,7 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val syste
     }
   }
 
-  override def getTotalDataSetCount(): scala.concurrent.Future[Long] = fetcher.request(s"action/package_search?rows=0").flatMap { response =>
+  override def getTotalDataSetCount(): scala.concurrent.Future[Long] = fetcher.request(s"api/3/action/package_search?rows=0").flatMap { response =>
     response.status match {
       case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.count)
       case _ => Unmarshal(response.entity).to[String].flatMap { entity =>

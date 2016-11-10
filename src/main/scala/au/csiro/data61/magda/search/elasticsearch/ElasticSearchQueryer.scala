@@ -43,7 +43,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.FileIO
 import akka.stream.ThrottleMode
 import akka.util.ByteString
-import jawn.ast.JValue
 import java.time._
 import java.io.File
 import java.nio.file.Paths

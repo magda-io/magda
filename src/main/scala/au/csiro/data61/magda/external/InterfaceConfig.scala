@@ -5,8 +5,16 @@ import java.net.URL
 import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType
 import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType._
 
-case class InterfaceConfig(name: String, interfaceType: ExternalInterfaceType, baseUrl: URL, pageSize: Long, fakeConfig: Option[FakeConfig])
-case class FakeConfig(datasetCount: Long, datasetPath: String)
+case class InterfaceConfig(
+  name: String,
+  interfaceType: ExternalInterfaceType,
+  baseUrl: URL,
+  pageSize: Long,
+  fakeConfig: Option[FakeConfig])
+case class FakeConfig(
+    datasetCount: Long, 
+    datasetPath: String,
+    mimeType: String)
 
 object InterfaceConfig {
   def apply(config: Config): InterfaceConfig = {
@@ -19,7 +27,10 @@ object InterfaceConfig {
       pageSize = config.getLong("pageSize"),
       fakeConfig = {
         if (isFaked && config.hasPath("fake"))
-          Some(new FakeConfig(config.getLong("fake.datasetTotal"), config.getString("fake.dataFilePath")))
+          Some(new FakeConfig(
+              config.getLong("fake.datasetTotal"), 
+              config.getString("fake.dataFilePath"),
+              config.getString("fake.mimeType")))
         else None
       }
     )

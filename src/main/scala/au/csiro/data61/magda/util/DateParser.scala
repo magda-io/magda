@@ -41,19 +41,19 @@ object DateParser {
 
   // TODO: push the strings into config.
   private val timeFormats = List(
-    ZonedDateTimeFormat("HH:mm:ss.SSSXXX", ChronoUnit.SECONDS),
     DateTimeFormat("HH:mm:ss", ChronoUnit.SECONDS),
+    ZonedDateTimeFormat("HH:mm:ss.SSSXXX", ChronoUnit.SECONDS),
     DateTimeFormat("HH:mm", ChronoUnit.MINUTES))
   private val dateFormats = List(
-    DateFormat("dd{sep}MM{sep}yyyy", ChronoUnit.DAYS),
     DateFormat("yyyy{sep}MM{sep}dd", ChronoUnit.DAYS),
+    DateFormat("dd{sep}MM{sep}yyyy", ChronoUnit.DAYS),
     DateFormat("MM{sep}dd{sep}yyyy", ChronoUnit.DAYS),
     DateFormat("MMMMM{sep}yyyy", ChronoUnit.MONTHS),
     DateFormat("MMMMM{sep}yy", ChronoUnit.MONTHS),
     DateFormat("yyyy", ChronoUnit.YEARS),
     DateFormat("yy", ChronoUnit.YEARS))
   private val dateTimeSeparators = List("'T'", " ", "")
-  private val dateSeparators = List("/", "-", " ")
+  private val dateSeparators = List("-", "/", " ")
 
   private val formatsWithoutTimes = for {
     dateSeparator <- dateSeparators
@@ -62,7 +62,7 @@ object DateParser {
     formatToFormat(dateFormat.format, dateSeparator, dateFormat)
   }
 
-  private val formatsWithTimes = for {
+  val formatsWithTimes = for {
     timeFormat <- timeFormats
     dateTimeSeparator <- dateTimeSeparators
     dateSeparator <- dateSeparators
@@ -77,6 +77,7 @@ object DateParser {
   private def formatToFormat(format: String, dateSeparator: String, originalFormat: Format) = {
     val replacedDateFormat = format.replace("{sep}", dateSeparator)
     val regex = replacedDateFormat
+      .replaceAll("'", "")
       .replaceAll("[E|M]{5}", "[A-Za-z]+")
       .replaceAll("[E|M]{3}", "[A-Za-z]{3}")
       .replaceAll("[H|m|s|S|X|d|M|y]", "\\\\d")
