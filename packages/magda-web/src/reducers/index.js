@@ -1,4 +1,6 @@
+// eslint-disable-next-line
 import expect from 'expect';
+// eslint-disable-next-line
 import deepFreeze from 'deep-freeze';
 import results from './results';
 import facetPublisherSearch from './facetPublisherSearch';

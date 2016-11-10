@@ -49,7 +49,7 @@ class SearchFacets extends Component {
     let index = existingOptions.indexOf(option.value);
     if(index > -1){
       this.props.updateQuery({
-        [key]: [...existingOptions.slice(0, index), ... existingOptions.slice(index+1)]
+        [key]: [...existingOptions.slice(0, index), ...existingOptions.slice(index+1)]
       })
       this.props.dispatch(removeOption(option))
     } else{

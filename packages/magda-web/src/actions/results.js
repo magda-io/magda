@@ -1,5 +1,4 @@
 import fetch from 'isomorphic-fetch'
-import defined from '../helpers/defined'
 
 export const SET_URL_QUERY = 'SET_URL_QUERY'
 export const REQUEST_RESULTS = 'REQUEST_RESULTS'
@@ -26,22 +25,23 @@ export function setUrlQuery(urlQuery, dispatch){
   }
 }
 
-export function requestResults(query){
+export function requestResults(urlQuery){
   return {
     type: REQUEST_RESULTS,
-    query
+    urlQuery
   }
 }
 
-export function receiveResults(query, json){
+export function receiveResults(urlQuery, json){
   return {
     type: RECEIVE_RESULTS,
-    query,
+    urlQuery,
     json: json,
   }
 }
 
 export function fetchSearchResults(urlQuery) {
+  console.log(`http://magda-search-api.terria.io/datasets/search?query=${urlQuery}`);
   return (dispatch)=>{
     dispatch(requestResults(urlQuery))
     return fetch(`http://magda-search-api.terria.io/datasets/search?query=${urlQuery}`)

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import defined from '../helpers/defined';
 import './FacetHeader.css';
 /**
   * Facet header component, contains a title of the facet and a reset button when there is a active facet

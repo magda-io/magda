@@ -6,20 +6,13 @@ import parseQuery from '../helpers/parseQuery';
 import './Search.css';
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
-import defined from '../helpers/defined';
+// eslint-disable-next-line
 import Pagination from '../UI/Pagination';
+// eslint-disable-next-line
 import ProgressBar from '../UI/ProgressBar';
 import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
 import SearchResults from '../SearchResults/SearchResults';
-
-
-
-const SETTINGS ={
-  resultsPerPage: 20,
-  optionsVisible: 5
-}
-
 
 class Search extends Component {
 
@@ -44,9 +37,9 @@ class Search extends Component {
     // should any updates happen here?
     // dispatch search event with nr
     let nextQuery = parseQuery(nextProps.location.query);
-    let preQuery = nextProps.urlQuery;
+    let currentQuery = nextProps.urlQuery;
 
-    if(nextQuery !== preQuery){
+    if(nextQuery !== currentQuery){
       this.props.dispatch(setUrlQuery(nextQuery, this.props.dispatch));
     }
   }
@@ -77,7 +70,7 @@ class Search extends Component {
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
-              <SearchBox preloadedSearchText = {this.props.location.query.q || ''} updateQuery={this.updateQuery} onSearchTextChange={this.onSearchTextChange}/>
+              <SearchBox preloadedSearchText={this.props.location.query.q || ''} updateQuery={this.updateQuery} onSearchTextChange={this.onSearchTextChange}/>
             </div>
           </div>
           <div className='search__search-body'>

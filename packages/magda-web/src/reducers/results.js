@@ -1,6 +1,6 @@
 import findIndex from 'lodash.findindex';
-import defined from '../helpers/defined';
 import find from 'lodash.find';
+import defined from '../helpers/defined';
 
 
 const initialData = {
@@ -31,13 +31,14 @@ const results = (state=initialData, action) => {
       let hitCount = data.hitCount;
 
       let publisherOptions = data.facets[0].options;
-      let temporalOptions = data.facets[1].options;
+      let temporalOptions = data.facets[1].options.sort((a, b)=>(b.value - a.value));
       let formatOptions = data.facets[2].options;
 
 
       let activePublishers = query.publishers.map(item=> find(data.facets[0].options, o=>o.value === item));
-      let activeDateFrom = query.dateFrom;
-      let activeDateto = query.dateTo;
+      let activeDateFrom = defined(query.dateFrom) ? {value: query.dateFrom.slice(0, 4), hitCount: null} : undefined;
+      let activeDateTo = defined(query.dateTo) ? {value: query.dateTo.slice(0, 4), hitCount: null} : undefined;
+
       let activeFormats = query.formats.map(item=>find(data.facets[2].options, o=>o.value === item));
       // temp
       let activeRegions = query.regions.map(item=>({regionId: '', regionType: ''}));
@@ -53,7 +54,7 @@ const results = (state=initialData, action) => {
         activePublishers,
         activeRegions,
         activeDateFrom,
-        activeDateto,
+        activeDateTo,
         activeFormats
       })
 
@@ -70,7 +71,7 @@ const results = (state=initialData, action) => {
     case 'REMOVE_PUBLISHER':
      let publisherIndex = findIndex(state.activePublishers, item=> item.value === action.item.value);
       return Object.assign({}, state, {
-        activePublishers: [...state.activePublishers.slice(0, index), ...state.activePublishers.slice(index+1)]
+        activePublishers: [...state.activePublishers.slice(0, publisherIndex), ...state.activePublishers.slice(publisherIndex+1)]
       })
 
     case 'RESET_PUBLISHER':
