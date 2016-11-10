@@ -127,7 +127,6 @@ class FacetTemporal extends Component {
 
   render(){
     let that = this;
-    console.log(that.props.activeOptions)
     return <FacetWrapper onResetFacet={this.props.onResetFacet}
                          title={this.props.title}
                          activeOptions={this.props.activeOptions}
