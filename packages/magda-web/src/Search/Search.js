@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
-import {fetchSearchResults, setUrlQuery} from '../actions/results';
+import {fetchSearchResultsIfNeeded} from '../actions/results';
 import {connect} from 'react-redux';
-import parseQuery from '../helpers/parseQuery';
-
 import './Search.css';
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
 // eslint-disable-next-line
 import Pagination from '../UI/Pagination';
-// eslint-disable-next-line
 import ProgressBar from '../UI/ProgressBar';
 import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
@@ -24,29 +21,28 @@ class Search extends Component {
   }
 
   componentWillMount(){
-    let urlQuery = parseQuery(this.props.location.query);
-    // copy url into states
-    this.props.dispatch(setUrlQuery(urlQuery, this.props.dispatch));
+    this.props.dispatch(fetchSearchResultsIfNeeded(this.props.location.query));
   }
 
 
   componentDidMount(){
-    // this.props.dispatch(fetchSearchResults(this.props.location.query.q))
+    //
   }
 
   componentWillReceiveProps(nextProps){
-    let nextQuery = parseQuery(nextProps.location.query);
-    let currentQuery = nextProps.urlQuery;
-
-    // need to move this logic into reducer
-    if(nextQuery !== currentQuery){
-      this.props.dispatch(setUrlQuery(nextQuery, this.props.dispatch));
-    }
+    this.props.dispatch(fetchSearchResultsIfNeeded(this.props.location.query));
   }
 
   onSearchTextChange(text){
-    this.updateQuery({q: text});
-    this.props.dispatch(fetchSearchResults(text))
+    this.updateQuery({
+      q: text,
+      publisher: [],
+      regionId: [],
+      regionCode: [],
+      dateFrom: undefined,
+      dateTo: undefined,
+      format: []
+    });
   }
 
   goToPage(index){
@@ -83,7 +79,6 @@ class Search extends Component {
                     totalNumberOfResults={this.props.hitCount}
                 />
                 {
-                    // this is broken
                     (this.props.hitCount > 20) &&
                     <Pagination
                       currentPage={+this.props.location.query.page || 1}
@@ -107,7 +102,6 @@ Search.propTypes = {
   hitCount: React.PropTypes.number.isRequired,
   isFetching: React.PropTypes.bool.isRequired,
   dispatch: React.PropTypes.func.isRequired,
-  urlQuery: React.PropTypes.string
 }
 
 
@@ -117,7 +111,6 @@ function mapStateToProps(state) {
     datasets: results.datasets,
     hitCount: results.hitCount,
     isFetching: results.isFetching,
-    urlQuery: results.urlQuery
   }
 }
 

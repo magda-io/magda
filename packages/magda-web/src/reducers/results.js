@@ -4,7 +4,7 @@ import defined from '../helpers/defined';
 
 
 const initialData = {
-  isFetching: true,
+  isFetching: false,
   datasets: [],
   hitCount: 0,
   activePublishers: [],
@@ -15,14 +15,15 @@ const initialData = {
   publisherOptions: [],
   temporalOptions: [],
   formatOptions: [],
-  urlQuery: ''
+  apiQuery: ''
 }
 
 const results = (state=initialData, action) => {
   switch (action.type) {
     case 'REQUEST_RESULTS':
       return Object.assign({}, state, {
-        isFetching: true
+        isFetching: true,
+        apiQuery: action.apiQuery
       })
     case 'RECEIVE_RESULTS':
       let data = action.json;
@@ -45,6 +46,7 @@ const results = (state=initialData, action) => {
 
       return Object.assign({}, state, {
         isFetching: false,
+        apiQuery: action.apiQuery,
         datasets,
         hitCount,
         publisherOptions,
@@ -58,10 +60,6 @@ const results = (state=initialData, action) => {
         activeFormats
       })
 
-    case'SET_URL_QUERY':
-      return Object.assign({}, state, {
-        urlQuery: action.urlQuery
-      })
 
     case 'ADD_PUBLISHER':
       return Object.assign({}, state, {

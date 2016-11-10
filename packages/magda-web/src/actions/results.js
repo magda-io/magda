@@ -1,4 +1,5 @@
 import fetch from 'isomorphic-fetch'
+import parseQuery from '../helpers/parseQuery'
 
 export const SET_URL_QUERY = 'SET_URL_QUERY'
 export const REQUEST_RESULTS = 'REQUEST_RESULTS'
@@ -17,38 +18,51 @@ export const ADD_FORMAT = 'ADD_FORMAT'
 export const REMOVE_FORMAT = 'REMOVE_FORMAT'
 export const RESET_FORMAT = 'RESET_FORMAT'
 
-export function setUrlQuery(urlQuery, dispatch){
-  dispatch(fetchSearchResults(urlQuery));
-  return {
-    type: SET_URL_QUERY,
-    urlQuery
-  }
-}
-
-export function requestResults(urlQuery){
+export function requestResults(apiQuery){
   return {
     type: REQUEST_RESULTS,
-    urlQuery
+    apiQuery
   }
 }
 
-export function receiveResults(urlQuery, json){
+export function receiveResults(apiQuery, json){
   return {
     type: RECEIVE_RESULTS,
-    urlQuery,
-    json: json,
+    apiQuery,
+    json,
   }
 }
 
-export function fetchSearchResults(urlQuery) {
-  console.log(`http://magda-search-api.terria.io/datasets/search?query=${urlQuery}`);
+export function fetchSearchResults(query) {
   return (dispatch)=>{
-    dispatch(requestResults(urlQuery))
-    return fetch(`http://magda-search-api.terria.io/datasets/search?query=${urlQuery}`)
+    dispatch(requestResults(query))
+    return fetch(`http://magda-search-api.terria.io/datasets/search?query=${query}`)
     .then(response => response.json())
     .then(json =>
-      dispatch(receiveResults(urlQuery, json))
+      dispatch(receiveResults(query, json))
     )
+  }
+}
+
+export function shouldFetchSearchResults(state, query){
+  const results = state.results;
+  if(!results){
+    return false
+  } else if(results.isFetching){
+    return false
+  } else if(query !== results.apiQuery){
+    return true
+  } else{
+    return false
+  }
+}
+
+export function fetchSearchResultsIfNeeded(urlQueryObject){
+  let apiQuery = parseQuery(urlQueryObject);
+  return (dispatch, getState)=>{
+    if(shouldFetchSearchResults(getState(), apiQuery)){
+      return dispatch(fetchSearchResults(apiQuery))
+    }
   }
 }
 
