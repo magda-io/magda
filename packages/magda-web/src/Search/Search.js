@@ -35,8 +35,6 @@ class Search extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-    // should any updates happen here?
-    // dispatch search event with nr
     let nextQuery = parseQuery(nextProps.location.query);
     let currentQuery = nextProps.urlQuery;
 
@@ -119,7 +117,6 @@ function mapStateToProps(state) {
     datasets: results.datasets,
     hitCount: results.hitCount,
     isFetching: results.isFetching,
-    query: results.query,
     urlQuery: results.urlQuery
   }
 }
