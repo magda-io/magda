@@ -70,7 +70,7 @@ package misc {
       theme: Seq[String] = List(),
       keyword: Seq[String] = List(),
       contactPoint: Option[Agent] = None,
-      distributions: Option[Seq[Distribution]] = None,
+      distributions: Seq[Distribution] = Seq(),
       landingPage: Option[String] = None,
       // TODO: Investigate making this only exist in ElasticSearch
       years: Option[List[String]] = None) {
@@ -97,9 +97,9 @@ package misc {
       val processedGeoJson: Option[Geometry] = geoJson match {
         case Some(Polygon(Seq(coords: Seq[Coordinate]))) =>
           coords.distinct match {
-            case Seq(coord) => Some(Point(coords.head))
+            case Seq(coord)          => Some(Point(coords.head))
             case Seq(coord1, coord2) => Some(MultiPoint(Seq(coord1, coord2)))
-            case _ => Some(Polygon(Seq(coords)))
+            case _                   => Some(Polygon(Seq(coords)))
           }
         case x => x
       }
@@ -164,10 +164,17 @@ package misc {
     }.reduce(_ ++ _)
 
     private val urlToFormat = Map(
-      ".*.geojson^" -> "GeoJSON",
-      ".*?.*service=wms.*" -> "WMS",
-      ".*?.*service=wfs.*" -> "WFS",
-      ".*.(shp|shz|dbf)^" -> "SHP"
+      ".*\\.geojson$".r -> "GeoJSON",
+      ".*?.*service=wms.*".r -> "WMS",
+      ".*?.*service=wfs.*".r -> "WFS",
+      ".*\\.(shp|shz|dbf)$".r -> "SHP",
+      ".*\\.pdf$".r -> "PDF",
+      ".*\\.(zip)$".r -> "ZIP",
+      ".*\\.(xls|xlsx)$".r -> "Excel",
+      ".*\\.(json)$".r -> "JSON",
+      ".*\\.(xml)$".r -> "XML",
+      ".*\\.(tif)$".r -> "TIFF",
+      ".*\\.(shp)$".r -> "SHP"
     )
 
     private def mediaTypeFromMimeType(mimeType: String): Option[MediaType] = MediaType.parse(mimeType) match {
@@ -187,16 +194,22 @@ package misc {
       .orElse(rawFormat flatMap (mediaTypeFromFormat(_)))
       .orElse(url flatMap (mediaTypeFromExtension(_)))
 
-    def formatFromUrl(url: String) = urlToFormat
-      .view
-      .filter { case (regex, _) => regex.matches(url) }
-      .map { case (_, format) => format }
-      .headOption
+    def formatFromUrl(url: String) = {
+      urlToFormat
+        .view
+        .filter {
+          case (regex, _) =>
+            regex.findFirstIn(url).isDefined
+        }
+        .map { case (_, format) => format }
+        .headOption
+    }
 
-    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType]): Option[String] = rawFormat
-      .orElse(url.flatMap(Distribution.formatFromUrl(_)))
-      .orElse(parsedMediaType.map(_.subType))
-
+    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType]): Option[String] = {
+      rawFormat
+        .orElse(url.flatMap(Distribution.formatFromUrl(_)))
+        .orElse(parsedMediaType.map(_.subType))
+    }
   }
 
   case class License(name: Option[String] = None, url: Option[String] = None)

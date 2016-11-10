@@ -177,11 +177,11 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
               dataSet.temporal.flatMap(_.start.flatMap(_.date)),
               dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "datasets" / Year.id id year source Map("value" -> year).toJson)
 
-            val indexFormats = dataSet.distributions.map(_.filter(_.format.isDefined).map { distribution =>
+            val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
               val format = distribution.format.get
 
               ElasticDsl.index into "datasets" / Format.id id format.toLowerCase source Map("value" -> format).toJson
-            }).getOrElse(Nil)
+            }
 
             indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
           }.flatten)

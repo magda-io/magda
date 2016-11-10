@@ -78,27 +78,87 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system
 
   implicit def nodeToStringOption(node: NodeSeq): Option[String] = nodeToOption(node, x => x.text)
 
-  implicit def dataSetConv(res: NodeSeq): List[DataSet] =
+  implicit def dataSetConv(res: NodeSeq) =
     res map { summaryRecord =>
+      val modified = nodeToStringOption(summaryRecord \ "date").flatMap(parseDate(_, false) match {
+        case InstantResult(instant) => Some(instant)
+        case ConstantResult(constant) => constant match {
+          case Now => Some(Instant.now())
+        }
+        case ParseFailure =>
+          logger.debug("Parse failure for {}", summaryRecord \ "date" text)
+          None
+      })
+
       DataSet(
         identifier = summaryRecord \ "identifier" text,
         catalog = "CSW",
         title = summaryRecord \ "title",
         description = nodeToStringOption(summaryRecord \ "description").orElse(summaryRecord \ "abstract"),
-        modified = nodeToStringOption(summaryRecord \ "date").flatMap(parseDate(_, false) match {
-          case InstantResult(instant) => Some(instant)
-          case ConstantResult(constant) => constant match {
-            case Now => Some(Instant.now())
-          }
-          case ParseFailure =>
-            logger.debug("Parse failure for {}", summaryRecord \ "date" text)
-            None
-        }),
+        modified = modified,
         language = summaryRecord \ "language",
-        publisher = nodeToStringOption(summaryRecord \ "publisher").map(name => Agent(name = Some(name))),
-        spatial = nodeToOption(summaryRecord \ "BoundingBox", identity).flatMap(locationFromBoundingBox)
+        publisher = nodeToStringOption(summaryRecord \ "publisher")
+          .orElse(nodeToStringOption(summaryRecord \ "custodian"))
+          .map(name => Agent(name = Some(name))),
+        spatial = nodeToOption(summaryRecord \ "BoundingBox", identity).flatMap(locationFromBoundingBox),
+        temporal = nodeToOption(summaryRecord \ "coverage", identity).flatMap(temporalFromString(modified)),
+        theme = (summaryRecord \ "subject").map(_.text.trim),
+        distributions = buildDistributions(nodesWithAttribute(summaryRecord \ "URI", "name", "File download"), summaryRecord \ "rights"),
+        landingPage = nodesWithAttribute(summaryRecord \ "URI", "protocol", "WWW:LINK-1.0-http--metadata-URL")
+          .headOption.map(_.text)
       )
     } toList
+//
+  def nodesWithAttribute(sourceNodes: NodeSeq, name: String, value: String): NodeSeq = {
+    sourceNodes.filter(node => node.attribute(name).map(_.text.trim == value).getOrElse(false))
+  }
+
+  def buildDistributions(uriNodes: NodeSeq, rightsNodes: NodeSeq): Seq[Distribution] = {
+    val rights = rightsNodes.map(_.text.trim).distinct match {
+      case Seq(x) => Some(x)
+      case _      => None
+    }
+
+    uriNodes.map { node =>
+      val url = node.text.trim
+      val format = Distribution.parseFormat(None, Some(url), None)
+
+      Distribution(
+        title = format match {
+          case Some(formatString) => s"Download as $formatString"
+          case None               => "Download"
+        },
+        description = Some(node \@ "description"),
+        format = format,
+        rights = rights.map(right => License(name = Some(right))),
+        downloadURL = Some(url)
+      )
+    }
+  }
+
+  val temporalCoveragePattern = """.*start="(.*)"; end="(.*)"""".r
+  def temporalFromString(modified: Option[Instant])(nodes: NodeSeq): Option[PeriodOfTime] = {
+    val dates = nodes.map { node =>
+      val text = node.text.trim
+      text match {
+        case temporalCoveragePattern(startTime, endTime) => PeriodOfTime.parse(Some(startTime), Some(endTime), modified)
+        case "" => None
+        case _ => Some(PeriodOfTime(start = Some(ApiInstant(text = text))))
+      }
+    }.flatMap {
+      case Some(periodOfTime) => Seq(periodOfTime.start, periodOfTime.end)
+      case None               => Seq()
+    }.flatten
+      .filter(_.date.isDefined)
+      .sortBy(_.date.get.getEpochSecond)
+
+    dates match {
+      case Seq()             => None
+      case Seq(date)         => Some(PeriodOfTime(start = Some(date)))
+      case Seq(date1, date2) => Some(PeriodOfTime(start = Some(date1), end = Some(date2)))
+      case seq               => Some(PeriodOfTime(start = Some(seq.head), end = Some(seq.last)))
+    }
+  }
 
   def locationFromBoundingBox(node: NodeSeq): Option[Location] = {
     def toCoord(array: Array[String]) = Coordinate(BigDecimal(array(0)), BigDecimal(array(1)))
@@ -142,20 +202,20 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system
           if (!polygons.isEmpty) MultiPolygon(polygons)
           else {
             coords.distinct match {
-              case Seq(singleCoord) => Point(singleCoord)
-              case Seq(coord1, coord2) =>  Polygon(toPolygonCoords(coord1, coord2))
+              case Seq(singleCoord)                => Point(singleCoord)
+              case Seq(coord1, coord2)             => Polygon(toPolygonCoords(coord1, coord2))
               case distinctCoords: Seq[Coordinate] => MultiPoint(distinctCoords)
             }
           }
         }
 
       Some(Location.applySanitised(
-        text = node.text,
+        text = node.text.trim,
         geoJson = Some(geometry)
       ))
     } catch {
       case e: Throwable =>
-        logger.error(e, "Could not parse bounding box {}", node.text)
+        logger.warning("Could not parse bounding box '{}'", node.text.trim)
         Some(Location(
           text = node.text,
           geoJson = None

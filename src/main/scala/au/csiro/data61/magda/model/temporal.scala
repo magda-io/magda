@@ -22,7 +22,7 @@ package temporal {
   object PeriodOfTime {
     val splitters = List("\\s*to\\s*", "\\s*-\\s*")
 
-    def trySplit(raw: String, modified: Instant): Option[PeriodOfTime] =
+    def trySplit(raw: String, modified: Option[Instant]): Option[PeriodOfTime] =
       splitters
         .view
         .map(raw.split(_))
@@ -44,7 +44,7 @@ package temporal {
           }
         }.headOption
 
-    def parse(start: Option[String], end: Option[String], modified: Instant): Option[PeriodOfTime] = {
+    def parse(start: Option[String], end: Option[String], modified: Option[Instant]): Option[PeriodOfTime] = {
       val startInstant = start.flatMap(ApiInstant.parse(_, modified, false))
       val endInstant = end.flatMap(ApiInstant.parse(_, modified, true))
       lazy val defaultPeriod = Some(new PeriodOfTime(startInstant, endInstant))
@@ -71,10 +71,13 @@ package temporal {
     text: String)
 
   object ApiInstant {
-    def parse(raw: String, modified: Instant, atEnd: Boolean): Option[ApiInstant] = parseDate(raw, atEnd) match {
+    def parse(raw: String, modifiedOption: Option[Instant], atEnd: Boolean): Option[ApiInstant] = parseDate(raw, atEnd) match {
       case InstantResult(instant) => Some(ApiInstant(Some(instant), raw))
       case ConstantResult(constant) => constant match {
-        case Now => Some(ApiInstant(Some(modified), raw))
+        case Now => modifiedOption match {
+          case Some(modified) => Some(ApiInstant(Some(modified), raw))
+          case None => Some(ApiInstant(None, raw))
+        }
       }
       case ParseFailure => None
     }

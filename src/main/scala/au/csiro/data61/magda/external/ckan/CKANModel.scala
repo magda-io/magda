@@ -152,7 +152,7 @@ trait CKANConverters {
       spatial = hit.spatial_coverage.map(Location(_)),
       temporal = {
         if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
-        else PeriodOfTime.parse(hit.temporal_coverage_from, hit.temporal_coverage_to, modified)
+        else PeriodOfTime.parse(hit.temporal_coverage_from, hit.temporal_coverage_to, Some(modified))
       },
       theme = List(), // ???
       keyword = hit.tags match {
@@ -164,7 +164,7 @@ trait CKANConverters {
         email.map(email => new Agent(email = Some(email), name = hit.author))
       },
       landingPage = Some(interface.baseUrl + "datasets/" + hit.name), // FIXME!!!
-      distributions = hit.resources.map(_.map(ckanDistributionConv(_, hit)))
+      distributions = hit.resources.map(_.map(ckanDistributionConv(_, hit))).getOrElse(Seq())
     )
   }
 
