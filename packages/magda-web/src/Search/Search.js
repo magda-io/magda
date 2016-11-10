@@ -20,6 +20,7 @@ class Search extends Component {
     super(props);
     this.updateQuery = this.updateQuery.bind(this);
     this.onSearchTextChange = this.onSearchTextChange.bind(this);
+    this.goToPage=this.goToPage.bind(this);
   }
 
   componentWillMount(){
@@ -39,6 +40,7 @@ class Search extends Component {
     let nextQuery = parseQuery(nextProps.location.query);
     let currentQuery = nextProps.urlQuery;
 
+    // need to move this logic into reducer
     if(nextQuery !== currentQuery){
       this.props.dispatch(setUrlQuery(nextQuery, this.props.dispatch));
     }
@@ -82,6 +84,14 @@ class Search extends Component {
                     searchResults={this.props.datasets}
                     totalNumberOfResults={this.props.hitCount}
                 />
+                {
+                    // this is broken
+                    (this.props.hitCount > 20) &&
+                    <Pagination
+                      currentPage={+this.props.location.query.page || 1}
+                      maxPage={Math.ceil(this.props.hitCount/20)}
+                      goToPage={this.goToPage}/>
+                 }
             </div>
           </div>
         </div>
