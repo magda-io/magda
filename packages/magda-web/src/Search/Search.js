@@ -44,8 +44,11 @@ class Search extends Component {
     this.props.dispatch(fetchSearchResults(this.props.location.query.q))
   }
 
-  componentWillReceiveProps(){
+  componentWillReceiveProps(nextProps){
     // should any updates happen here?
+    console.log(nextProps)
+    // dispatch search event with nr
+
   }
 
   onSearchTextChange(text){

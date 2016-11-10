@@ -4,7 +4,7 @@ const initialData = {
   data: []
 }
 
-const facets = (state=initialData, action) => {
+const facetRegionSearch = (state=initialData, action) => {
   switch (action.type) {
     case 'REQUEST_REGIONS':
       return Object.assign({}, state, {
@@ -25,4 +25,4 @@ const facets = (state=initialData, action) => {
       return state
   }
 };
-export default facets;
+export default facetRegionSearch;

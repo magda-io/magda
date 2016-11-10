@@ -4,13 +4,13 @@ const initialData = {
   data: []
 }
 
-const facetPublisher = (state=initialData, action) => {
+const facetFormatSearch = (state=initialData, action) => {
   switch (action.type) {
-    case 'REQUEST_PUBLISHERS':
+    case 'REQUEST_FORMATS':
       return Object.assign({}, state, {
         isFetching: true
       })
-    case 'RECEIVE_PUBLISHERS':
+    case 'RECEIVE_FORMATS':
       return Object.assign({}, state, {
         isFetching: false,
         data: action.json.options,
@@ -21,4 +21,4 @@ const facetPublisher = (state=initialData, action) => {
       return state
   }
 };
-export default facetPublisher;
+export default facetFormatSearch;

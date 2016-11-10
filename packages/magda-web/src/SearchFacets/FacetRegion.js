@@ -1,4 +1,5 @@
 import '../../node_modules/leaflet/dist/leaflet.css';
+import './FacetRegion.css';
 import React, { Component } from 'react';
 import FacetWrapper from './FacetWrapper';
 import RegionMap from './RegionMap';
@@ -71,7 +72,7 @@ class FacetRegion extends Component {
                <FacetSearchBox renderOption={this.renderOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
-               {this.props.activeOptions.map(r=><div key={r.geographyLabel + r.state}>{r.geographyLabel} {r.state}</div>)}
+               {this.props.activeOptions.map(r=><div className='active-location' key={r.geographyLabel + r.state}>{r.geographyLabel} {r.state}</div>)}
                <div className='preview'>
                      <RegionMap title='region'
                                 id='region'

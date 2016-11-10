@@ -4,13 +4,15 @@ import FacetTemporal from './FacetTemporal';
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import {connect} from 'react-redux';
-import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion, setDateFrom, setDateTo} from '../actions/results';
+import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion, setDateFrom, setDateTo, addFormat, removeFormat, resetFormat} from '../actions/results';
 import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
 import {fetchRegionSearchResults} from '../actions/facetRegionSearch';
+import {fetchFormatSearchResults} from '../actions/facetFormatSearch';
 
 class SearchFacets extends Component {
   constructor(props) {
     super(props);
+    // this.toggleBasicOption = this.toggleBasicOption.bind(this);
     this.onTogglePublisherOption = this.onTogglePublisherOption.bind(this);
     this.onResetPublisherFacet = this.onResetPublisherFacet.bind(this);
     this.onSearchPublisherFacet = this.onSearchPublisherFacet.bind(this);
@@ -21,33 +23,42 @@ class SearchFacets extends Component {
 
     this.onToggleTemporalOption = this.onToggleTemporalOption.bind(this);
     this.onResetTemporalFacet = this.onResetTemporalFacet.bind(this);
+
+    this.onToggleFormatOption = this.onToggleFormatOption.bind(this);
+    this.onSearchFormatFacet = this.onSearchFormatFacet.bind(this);
+    this.onResetFormatFacet = this.onResetFormatFacet.bind(this);
   }
 
 
   onTogglePublisherOption(publisher, callback){
-    let existingPublishers = this.props.activePublishers.map(o=>o.value);
-    let index = existingPublishers.indexOf(publisher.value);
-    if(index > - 1){
-      // dispath an event
-      // this.props.dispatch
-      this.props.updateQuery({
-        publisher: [...existingPublishers.slice(0, index), ...existingPublishers.slice(index+1)]
-      })
-      // dispatch event to add an active publisher
-      this.props.dispatch(removePublisher(publisher));
-
-    } else{
-      this.props.updateQuery({
-        publisher: [...existingPublishers, publisher.value]
-      })
-      // dispatch an event to remove an active publisher
-      this.props.dispatch(addPublisher(publisher));
-    }
+    this.toggleBasicOption(publisher, this.props.activePublishers, 'publisher', removePublisher, addPublisher );
     if(defined(callback) && typeof(callback) === 'function'){
       callback();
     }
   }
 
+  onToggleFormatOption(format, callback){
+    this.toggleBasicOption(format, this.props.activeFormats, 'format', removeFormat, addFormat);
+    if(defined(callback) && typeof(callback) === 'function'){
+      callback();
+    }
+  }
+
+  toggleBasicOption(option, activeOptions, key,  removeOption, addOption, updateQuery){
+    let existingOptions = activeOptions.map(o=>o.value);
+    let index = existingOptions.indexOf(option.value);
+    if(index > -1){
+      this.props.updateQuery({
+        [key]: [...existingOptions.slice(0, index), ... existingOptions.slice(index+1)]
+      })
+      this.props.dispatch(removeOption(option))
+    } else{
+      this.props.updateQuery({
+        [key]: [...existingOptions, option.value]
+      })
+      this.props.dispatch(addOption(option))
+    }
+  }
 
 
   onResetPublisherFacet(){
@@ -61,6 +72,18 @@ class SearchFacets extends Component {
 
   onSearchPublisherFacet(facetKeyword){
     this.props.dispatch(fetchPublisherSearchResults(this.props.keyword, facetKeyword))
+  }
+
+
+  onResetFormatFacet(){
+    this.props.updateQuery({
+      format: []
+    })
+    this.props.dispatch(resetFormat());
+  }
+
+  onSearchFormatFacet(facetKeyword){
+    this.props.dispatch(fetchFormatSearchResults(this.props.keyword, facetKeyword))
   }
 
 
@@ -140,6 +163,16 @@ class SearchFacets extends Component {
                       toggleOption={this.onToggleTemporalOption}
                       onResetFacet={this.onResetTemporalFacet}
         />
+        <FacetBasic title='format'
+                    id='format'
+                    hasQuery={Boolean(this.props.activeFormats.length)}
+                    options={this.props.formatOptions}
+                    activeOptions={this.props.activeFormats}
+                    facetSearchResults={this.props.formatSearchResults}
+                    toggleOption={this.onToggleFormatOption}
+                    onResetFacet={this.onResetFormatFacet}
+                    searchFacet={this.onSearchFormatFacet}
+        />
       </div>
     );
   }
@@ -156,7 +189,7 @@ SearchFacets.propTypes={
 
 
 function mapStateToProps(state) {
-  let { results , facetPublisherSearch, facetRegionSearch } = state;
+  let { results , facetPublisherSearch, facetRegionSearch, facetFormatSearch } = state;
   return {
     publisherOptions: results.publisherOptions,
     formatOptions: results.formatOptions,
@@ -166,10 +199,11 @@ function mapStateToProps(state) {
     activeRegions: results.activeRegions,
     activeDateFrom: results.activeDateFrom,
     activeDateTo: results.activeDateTo,
+    activeFormats: results.activeFormats,
 
     publisherSearchResults: facetPublisherSearch.data,
     regionSearchResults: facetRegionSearch.data,
-
+    formatSearchResults: facetFormatSearch.data
   }
 }
 

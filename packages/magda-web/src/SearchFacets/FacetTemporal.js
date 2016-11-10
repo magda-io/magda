@@ -2,8 +2,6 @@ import './FacetTemporal.css';
 import React, { Component } from 'react';
 import FacetWrapper from './FacetWrapper';
 import maxBy from 'lodash.maxby';
-import minBy from 'lodash.minby';
-import FacetHeader from './FacetHeader';
 import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
@@ -120,11 +118,10 @@ class FacetTemporal extends Component {
   renderDragBar(){
     // the height of the dragbar should be the same with the height of all the options + any start date + any end date
     // remove last padding
-    let height = (this.props.options.length + 2) * itemHeight - 2;
+    let height = (this.props.options.length + 2) * itemHeight - 4;
     let fromIndex = defined(this.props.activeOptions[0]) ? findIndex(this.props.options, o=>o.value === this.props.activeOptions[0].value) + 1 : this.props.options.length + 1;
     let toIndex = defined(this.props.activeOptions[1]) ? findIndex(this.props.options, o=>o.value === this.props.activeOptions[1].value) + 1 : 0;
     let dragBarData=[(toIndex * itemHeight), (fromIndex * itemHeight)];
-    console.log(fromIndex, toIndex);
     return <DragBar dragBarData={dragBarData} onDrag={this.onDrag} height={height}/>
   }
 

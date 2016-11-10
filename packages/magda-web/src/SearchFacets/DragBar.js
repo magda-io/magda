@@ -100,7 +100,6 @@ class DragBar extends Component {
     }
 
     updateUI(data){
-      console.log(data);
       // update handle position
       this._handles.data(data).attr('y', d=> d);
       // update bar position

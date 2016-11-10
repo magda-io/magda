@@ -86,7 +86,6 @@ export function resetFormat(){
   }
 }
 
-
 export function addRegion(region){
   return {
     type: ADD_REGION,
