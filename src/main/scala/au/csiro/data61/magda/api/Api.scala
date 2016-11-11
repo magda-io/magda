@@ -75,9 +75,9 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
     handleExceptions(myExceptionHandler) {
       pathPrefix("facets") {
         path(Segment / "options" / "search") { facetId ⇒
-          (get & parameters("facetQuery" ? "", "limit" ? 50, "generalQuery" ? "*")) { (facetQuery, limit, generalQuery) ⇒
+          (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
             FacetType.fromId(facetId) match {
-              case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, QueryCompiler(generalQuery), limit))
+              case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, QueryCompiler(generalQuery), start, limit))
               case None            ⇒ complete(NotFound)
             }
           }
@@ -85,8 +85,8 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
       } ~
         pathPrefix("datasets") {
           pathPrefix("search") {
-            (get & parameters("query" ? "*", "limit" ? 50)) { (query, limit) ⇒
-              onSuccess(searchQueryer.search(QueryCompiler(query), limit)) { result =>
+            (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+              onSuccess(searchQueryer.search(QueryCompiler(query), start, limit)) { result =>
                 val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
 
                 pathPrefix("datasets") {

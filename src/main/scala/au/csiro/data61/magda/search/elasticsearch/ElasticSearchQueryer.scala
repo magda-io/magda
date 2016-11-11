@@ -68,13 +68,13 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   lazy val clientFuture: Future[ElasticClient] = getClient(system.scheduler, logger, ec)
 
-  override def search(query: Query, limit: Int) = {
+  override def search(query: Query, start: Long, limit: Int) = {
     clientFuture.flatMap { client =>
-      client.execute(buildQueryWithAggregations(query, limit, MatchAll)).flatMap(response =>
+      client.execute(buildQueryWithAggregations(query, start, limit, MatchAll)).flatMap(response =>
         if (response.totalHits > 0)
           Future.successful((response, MatchAll))
         else
-          client.execute(buildQueryWithAggregations(query, limit, MatchPart)).map((_, MatchPart))
+          client.execute(buildQueryWithAggregations(query, start, limit, MatchPart)).map((_, MatchPart))
       )
     } map {
       case (response, strategy) => buildSearchResult(query, response, strategy)
@@ -165,9 +165,9 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   }
 
   /** Builds an elastic search query out of the passed general magda Query */
-  def buildQuery(query: Query, limit: Int, strategy: SearchStrategy) = ElasticDsl.search in "datasets" / "datasets" limit limit query queryToQueryDef(query, strategy)
+  def buildQuery(query: Query, start: Long, limit: Int, strategy: SearchStrategy) = ElasticDsl.search.in("datasets" / "datasets").limit(limit).start(start.toInt).query(queryToQueryDef(query, strategy))
   /** Same as {@link #buildQuery} but also adds aggregations */
-  def buildQueryWithAggregations(query: Query, limit: Int, strategy: SearchStrategy) = addAggregations(buildQuery(query, limit, strategy), query, strategy)
+  def buildQueryWithAggregations(query: Query, start: Long, limit: Int, strategy: SearchStrategy) = addAggregations(buildQuery(query, start, limit, strategy), query, strategy)
 
   /** Builds an empty dummy searchresult that conveys some kind of error message to the user. */
   def failureSearchResult(query: Query, message: String) = new SearchResult(
@@ -269,12 +269,12 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
     strategy(shouldClauses.flatten)
   }
 
-  override def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, limit: Int): Future[FacetSearchResult] = {
+  override def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
-      client.execute(ElasticDsl.search in "datasets" / facetType.id query facetQuery limit limit)
+      client.execute(ElasticDsl.search in "datasets" / facetType.id query facetQuery start start.toInt limit limit)
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
@@ -289,7 +289,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
               // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
               // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
               client.execute {
-                buildQuery(facetDef.removeFromQuery(generalQuery), 0, MatchAll).aggs(filters)
+                buildQuery(facetDef.removeFromQuery(generalQuery), 0, 0, MatchAll).aggs(filters)
               } map { aggQueryResult =>
                 val aggregations = aggQueryResult.aggregations.asScala
                   .map {

@@ -10,9 +10,8 @@ import au.csiro.data61.magda.spatial.RegionSource
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait SearchProvider {
-  def search(query: Query, limit: Int = 50): Future[SearchResult]
-  def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, limit: Int = 50): Future[FacetSearchResult]
-
+  def search(query: Query, start: Long, limit: Int): Future[SearchResult]
+  def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult]
 }
 
 sealed trait SearchStrategy {
