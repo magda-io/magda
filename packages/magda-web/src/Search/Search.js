@@ -74,17 +74,20 @@ class Search extends Component {
                 <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>
             </div>
             <div className='col-sm-8'>
-                {!this.props.isFetching && <SearchResults
-                    searchResults={this.props.datasets}
-                    totalNumberOfResults={this.props.hitCount}
-                />}
-                {
-                    (!this.props.isFetching && this.props.hitCount > 20) &&
-                    <Pagination
-                      currentPage={+this.props.location.query.page || 1}
-                      maxPage={Math.ceil(this.props.hitCount/20)}
-                      goToPage={this.goToPage}/>
-                 }
+                {!this.props.isFetching && <div>
+                  <SearchResults
+                      searchResults={this.props.datasets}
+                      totalNumberOfResults={this.props.hitCount}
+                  />
+                  {(!this.props.isFetching && this.props.hitCount > 20) &&
+                      <Pagination
+                        currentPage={+this.props.location.query.page || 1}
+                        maxPage={Math.ceil(this.props.hitCount/20)}
+                        goToPage={this.goToPage}
+                      />
+                   }
+                 </div>
+               }
             </div>
           </div>
         </div>
