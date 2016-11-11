@@ -86,7 +86,6 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
           }
         }
       }
-    } recover {
       case e: Throwable =>
         logger.error(e, "Exception when searching")
         failureSearchResult(query, "Unknown error")

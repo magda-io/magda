@@ -7,3 +7,5 @@ addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "4.0.0")
 addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.4.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
+
+addSbtPlugin("org.clapper" % "sbt-editsource" % "0.7.0")

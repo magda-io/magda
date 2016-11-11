@@ -1,0 +1,73 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: es-client
+  labels:
+    component: elasticsearch
+    role: client
+spec:
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: client
+    spec:
+      containers:
+      - name: es-client
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: quay.io/pires/docker-elasticsearch-kubernetes:2.4.1
+        resources:
+          requests:
+            memory: 1500Mi
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_MASTER
+          value: "false"
+        - name: NODE_DATA
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "true"
+        - name: NUMBER_OF_SHARDS
+          value: "3"
+        - name: NUMBER_OF_REPLICAS
+          value: "4"
+        - name: ES_HEAP_SIZE
+          value: "900m"
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+      volumes:
+      - emptyDir:
+          medium: ""
+        name: "storage"
+      nodeSelector:
+        beta.kubernetes.io/instance-type: "n1-standard-1"
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: es-client
+spec:
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: es-client
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80

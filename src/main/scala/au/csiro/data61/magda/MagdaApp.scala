@@ -19,7 +19,7 @@ object MagdaApp extends App {
   implicit val config = AppConfig.conf
 
   val logger = Logging(system, getClass)
-  
+
   val role = Option(sys.env("MAGDA_SEARCH_ROLE")).getOrElse("both")
 
   logger.info("Starting MAGDA Metadata with role {} in env {}", role, AppConfig.env)
@@ -43,8 +43,14 @@ object MagdaApp extends App {
   // Index erryday 
   //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
 
-  def startApi() = new Api()
-  def startCrawl() = system.actorOf(Props(new CrawlSupervisor(system, config, interfaceConfigs)))
+  def startApi() = {
+    logger.debug("Starting API")
+    new Api()
+  }
+  def startCrawl() = {
+    logger.debug("Starting Crawler")
+    system.actorOf(Props(new CrawlSupervisor(system, config, interfaceConfigs)))
+  }
 }
 
 class Listener extends Actor with ActorLogging {

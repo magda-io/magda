@@ -9,6 +9,7 @@ import scala.concurrent.Future
 import au.csiro.data61.magda.util.FutureRetry.retry
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
+import org.elasticsearch.common.settings.Settings
 
 object ClientProvider {
   private var clientFuture: Option[Future[ElasticClient]] = None
@@ -19,7 +20,8 @@ object ClientProvider {
       case None =>
         val future = retry(() => Future {
           val uri = ElasticsearchClientUri(AppConfig.conf.getString("elasticSearch.serverUrl"))
-          ElasticClient.transport(uri)
+          val settings = Settings.settingsBuilder().put("cluster.name", "myesdb").build()
+          ElasticClient.transport(settings, uri)
         }, 10 seconds, 10, onRetry(logger)(_))
 
         clientFuture = Some(future)

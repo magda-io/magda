@@ -24,7 +24,8 @@ class Indexer(supervisor: ActorRef) extends Actor with ActorLogging {
     searchProvider.needsReindexing().onComplete {
       case Success(needsReindexing) => needsReindexing match {
         case true  => supervisor ! NeedsReIndexing
-        case false => // Index isn't empty so it's all good :) 
+      case false => // Index isn't empty so it's all good :) 
+        log.info("Index wasn't empty, no need to crawl")
       }
       case Failure(e) => {
         log.error(e, "Failed to determine whether the index needs reindexing - this might mean that there's out-of-date or no data to search on")

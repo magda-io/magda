@@ -93,7 +93,18 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
                 case (inner: IndexNotFoundException) => {
                   // Meh, we were trying to delete it anyway.
                 }
+                case inner: RemoteTransportException => inner.getCause match {
+                  case (inner: IndexNotFoundException) => {
+                    // Meh, we were trying to delete it anyway.
+                  }
+                }
+                case e =>
+                  logger.debug("Inner exception class {}", e.getClass.toString)
+                  throw e
               }
+              case e =>
+                logger.debug("Exception class {}", e.getClass.toString)
+                throw e
             }
 
           deleteIndex flatMap { _ =>
@@ -144,8 +155,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       retry(() =>
         client.execute {
           ElasticDsl.search in "datasets" / "datasets" limit 0
-        }
-      , 10 seconds, 10, logger.warning("Failed to get dataset count, {} retries left", _))
+        }, 10 seconds, 10, logger.warning("Failed to get dataset count, {} retries left", _))
         .map { result =>
           logger.debug("Reindex check hit count: {}", result.getHits.getTotalHits)
           result.getHits.getTotalHits == 0
