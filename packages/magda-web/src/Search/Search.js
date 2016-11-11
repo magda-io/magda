@@ -71,7 +71,7 @@ class Search extends Component {
           </div>
           <div className='search__search-body'>
             <div className='col-sm-4'>
-                {!this.props.isFetching && <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>}
+                <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>
             </div>
             <div className='col-sm-8'>
                 {!this.props.isFetching && <SearchResults
@@ -79,7 +79,7 @@ class Search extends Component {
                     totalNumberOfResults={this.props.hitCount}
                 />}
                 {
-                    (this.props.hitCount > 20) &&
+                    (!this.props.isFetching && this.props.hitCount > 20) &&
                     <Pagination
                       currentPage={+this.props.location.query.page || 1}
                       maxPage={Math.ceil(this.props.hitCount/20)}
