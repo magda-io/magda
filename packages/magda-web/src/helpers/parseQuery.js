@@ -2,7 +2,7 @@ import defined from './defined'
 const NUMBERRESULTSPERPAGE = 20;
 
 export default function(query){
-  let keyword = query.q;
+  let keyword = defined(query.q) ? query.q : '';
   let dateFrom = defined(query.dateFrom) ? '+from+' + query.dateFrom : '';
   let dateTo=defined(query.dateTo) ? '+to+' + query.dateTo : '';
   let publisher = queryToString('+by', query.publisher);
