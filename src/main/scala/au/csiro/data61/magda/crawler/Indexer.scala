@@ -9,6 +9,7 @@ import scala.util.{ Failure, Success }
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
+import au.csiro.data61.magda.AppConfig
 
 class Indexer(supervisor: ActorRef) extends Actor with ActorLogging {
   implicit val ec = context.dispatcher
@@ -16,22 +17,32 @@ class Indexer(supervisor: ActorRef) extends Actor with ActorLogging {
   implicit val materializer = ActorMaterializer.create(context)
   val searchProvider: SearchIndexer = new ElasticSearchIndexer()
 
-  supervisor ! NeedsReIndexing
   // On startup, check that the index isn't empty (as it would be on first boot or after an index schema upgrade)
-//  searchProvider.needsReindexing().onComplete {
-//    case Success(needsReindexing) => needsReindexing match {
-//      case true  => supervisor ! NeedsReIndexing
-//      case false => // Index isn't empty so it's all good :) 
-//    }
-//    case Failure(e) => {
-//      log.error(e, "Failed to determine whether the index needs reindexing - this might mean that there's out-of-date or no data to search on")
-//    }
-//  }
+  if (AppConfig.conf.getBoolean("indexer.alwaysReindex")) {
+    supervisor ! NeedsReIndexing
+  } else {
+    searchProvider.needsReindexing().onComplete {
+      case Success(needsReindexing) => needsReindexing match {
+        case true  => supervisor ! NeedsReIndexing
+        case false => // Index isn't empty so it's all good :) 
+      }
+      case Failure(e) => {
+        log.error(e, "Failed to determine whether the index needs reindexing - this might mean that there's out-of-date or no data to search on")
+      }
+    }
+  }
 
   def receive: Receive = {
     case Index(source, dataSets) =>
-      searchProvider.index(source, dataSets) onComplete {
-        case Success(_)      => supervisor ! IndexFinished(dataSets, source)
+      val filteredDataSets = dataSets.filterNot(_.distributions.isEmpty)
+
+      val ineligibleDataSetCount = dataSets.size - filteredDataSets.size
+      if (ineligibleDataSetCount > 0) {
+        log.info("Filtering out {} datasets from {} because they have no distributions", ineligibleDataSetCount, source)
+      }
+
+      searchProvider.index(source, filteredDataSets) onComplete {
+        case Success(_)      => supervisor ! IndexFinished(filteredDataSets, source)
         case Failure(reason) => supervisor ! IndexFailed(source, reason)
       }
   }

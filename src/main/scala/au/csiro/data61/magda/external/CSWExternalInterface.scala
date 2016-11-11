@@ -34,6 +34,7 @@ import com.monsanto.labs.mwundo.GeoJson.Polygon
 import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
 import com.monsanto.labs.mwundo.GeoJson.Point
 import com.monsanto.labs.mwundo.GeoJson.MultiPoint
+import scala.xml.Node
 
 class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends ExternalInterface with ScalaXmlSupport {
   val logger = Logging(system, getClass)
@@ -90,8 +91,10 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system
           None
       })
 
+      val identifier = summaryRecord \ "identifier" text
+
       DataSet(
-        identifier = summaryRecord \ "identifier" text,
+        identifier = identifier,
         catalog = "CSW",
         title = summaryRecord \ "title",
         description = nodeToStringOption(summaryRecord \ "description").orElse(summaryRecord \ "abstract"),
@@ -103,37 +106,78 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system
         spatial = nodeToOption(summaryRecord \ "BoundingBox", identity).flatMap(locationFromBoundingBox),
         temporal = nodeToOption(summaryRecord \ "coverage", identity).flatMap(temporalFromString(modified)),
         theme = (summaryRecord \ "subject").map(_.text.trim),
-        distributions = buildDistributions(nodesWithAttribute(summaryRecord \ "URI", "name", "File download"), summaryRecord \ "rights"),
-        landingPage = nodesWithAttribute(summaryRecord \ "URI", "protocol", "WWW:LINK-1.0-http--metadata-URL")
-          .headOption.map(_.text)
+        distributions = buildDistributions(summaryRecord \ "URI", summaryRecord \ "rights"),
+        landingPage = Some(interfaceConfig.landingPageUrl(identifier))
       )
     } toList
-//
+  //
   def nodesWithAttribute(sourceNodes: NodeSeq, name: String, value: String): NodeSeq = {
-    sourceNodes.filter(node => node.attribute(name).map(_.text.trim == value).getOrElse(false))
+    sourceNodes
+      .filter(node =>
+        node.attribute(name)
+          .map(
+            _.exists { x =>
+              x.text.trim.equals(value)
+            }
+          )
+          .getOrElse(false))
   }
 
+  val descriptionFormatRegex = "Download the file \\((.*)\\)".r
   def buildDistributions(uriNodes: NodeSeq, rightsNodes: NodeSeq): Seq[Distribution] = {
     val rights = rightsNodes.map(_.text.trim).distinct match {
       case Seq(x) => Some(x)
       case _      => None
     }
 
-    uriNodes.map { node =>
+    def buildBasicDist(node: Node): (Node, String, Distribution) = {
       val url = node.text.trim
-      val format = Distribution.parseFormat(None, Some(url), None)
+      val desc = node \@ "description"
+      val formatFromDesc = desc match {
+        case descriptionFormatRegex(format) => Some(format)
+        case _                              => None
+      }
+      val format = Distribution.parseFormat(formatFromDesc, Some(url), None)
 
-      Distribution(
-        title = format match {
-          case Some(formatString) => s"Download as $formatString"
-          case None               => "Download"
-        },
-        description = Some(node \@ "description"),
+      (node, url, Distribution(
+        title = "",
+        description = if (desc.isEmpty()) None else Some(desc),
         format = format,
-        rights = rights.map(right => License(name = Some(right))),
-        downloadURL = Some(url)
-      )
+        rights = rights.map(right => License(name = Some(right)))
+      ))
     }
+
+    val metadataLinks = nodesWithAttribute(uriNodes, "protocol", "WWW:LINK-1.0-http--metadata-URL")
+      .map(buildBasicDist)
+      .map {
+        case (_, url, dist) =>
+          dist.copy(
+            title = "Metadata Link",
+            accessURL = Some(url)
+          )
+      }
+    val links = nodesWithAttribute(uriNodes, "protocol", "WWW:LINK-1.0-http--link")
+      .map(buildBasicDist)
+      .map {
+        case (node, url, dist) =>
+          dist.copy(
+            title = node \@ "name",
+            accessURL = Some(url)
+          )
+      }
+    val files = nodesWithAttribute(uriNodes, "name", "File download")
+      .map(buildBasicDist)
+      .map {
+        case (_, url, dist) => dist.copy(
+          title = dist.format match {
+            case Some(formatString) => s"Download as $formatString"
+            case None               => "Download"
+          },
+          downloadURL = Some(url)
+        )
+      }
+
+    metadataLinks ++ links ++ files
   }
 
   val temporalCoveragePattern = """.*start="(.*)"; end="(.*)"""".r

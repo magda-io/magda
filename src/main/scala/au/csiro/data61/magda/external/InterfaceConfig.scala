@@ -10,11 +10,13 @@ case class InterfaceConfig(
   interfaceType: ExternalInterfaceType,
   baseUrl: URL,
   pageSize: Long,
+  landingPageUrl: (String*) => String,
   fakeConfig: Option[FakeConfig])
+
 case class FakeConfig(
-    datasetCount: Long, 
-    datasetPath: String,
-    mimeType: String)
+  datasetCount: Long,
+  datasetPath: String,
+  mimeType: String)
 
 object InterfaceConfig {
   def apply(config: Config): InterfaceConfig = {
@@ -25,12 +27,13 @@ object InterfaceConfig {
       interfaceType = ExternalInterfaceType.withName(config.getString("type")),
       baseUrl = new URL(config.getString("baseUrl")),
       pageSize = config.getLong("pageSize"),
+      landingPageUrl = strings => config.getString("landingPageTemplate").format(strings:_*),
       fakeConfig = {
         if (isFaked && config.hasPath("fake"))
           Some(new FakeConfig(
-              config.getLong("fake.datasetTotal"), 
-              config.getString("fake.dataFilePath"),
-              config.getString("fake.mimeType")))
+            config.getLong("fake.datasetTotal"),
+            config.getString("fake.dataFilePath"),
+            config.getString("fake.mimeType")))
         else None
       }
     )

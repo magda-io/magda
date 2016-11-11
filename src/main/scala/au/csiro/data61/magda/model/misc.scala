@@ -167,14 +167,14 @@ package misc {
       ".*\\.geojson$".r -> "GeoJSON",
       ".*?.*service=wms.*".r -> "WMS",
       ".*?.*service=wfs.*".r -> "WFS",
-      ".*\\.(shp|shz|dbf)$".r -> "SHP",
-      ".*\\.pdf$".r -> "PDF",
+      ".*\\.(shp|shz|dbf)(\\.zip)?$".r -> "SHP",
+      ".*\\.(pdf)(\\.zip)?$".r -> "PDF",
+      ".*\\.(xls|xlsx)(\\.zip)?$".r -> "Excel",
+      ".*\\.(json)(\\.zip)?$".r -> "JSON",
+      ".*\\.(xml)(\\.zip)?$".r -> "XML",
+      ".*\\.(tif)(\\.zip)?$".r -> "TIFF",
       ".*\\.(zip)$".r -> "ZIP",
-      ".*\\.(xls|xlsx)$".r -> "Excel",
-      ".*\\.(json)$".r -> "JSON",
-      ".*\\.(xml)$".r -> "XML",
-      ".*\\.(tif)$".r -> "TIFF",
-      ".*\\.(shp)$".r -> "SHP"
+      ".*\\.(html|xhtml|php|asp|aspx|jsp)(\\?.*)?".r -> "HTML"
     )
 
     private def mediaTypeFromMimeType(mimeType: String): Option[MediaType] = MediaType.parse(mimeType) match {
