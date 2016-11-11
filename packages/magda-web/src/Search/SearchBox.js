@@ -8,7 +8,7 @@ class SearchBox extends Component {
     super(props);
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.onChange = this.onChange.bind(this);
-    this.debounceSearch = debounce(this.props.onSearchTextChange, 500);
+    this.debounceSearch = debounce(this.props.onSearchTextChange, 3000);
 
     this.state = {
       searchText : this.props.preloadedSearchText

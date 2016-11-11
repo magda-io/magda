@@ -36,7 +36,7 @@ class SearchResults extends Component {
         <ul className='list-unstyled'>
         {
           this.props.searchResults.map((result, i)=>
-            <li key={result.title + i}>
+            <li key={result.title + i}  className='search-result'>
               <DatasetSummary dataset={result} clickDataset={this.clickDataset.bind(this, result)}>
                 {this.state.expandedItem === result && <DatasetInfo dataset={result} />}
               </DatasetSummary>

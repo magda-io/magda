@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
+import MarkdownViewer from '../UI/MarkdownViewer';
 import './DatasetSummary.css';
 
 export default class DatasetSummary extends Component {
@@ -12,8 +13,10 @@ export default class DatasetSummary extends Component {
     return <div className='dataset-summray'>
               <div className='dataset-summray-main'>
                 <h3 className='result-title'><button className='btn dataset-summray-title' onClick={this.props.clickDataset} type='button'>{dataset.title}</button></h3>
-                {defined(dataset.publisher) && <label className='search-result--publisher'><i className='fa fa-book' aria-hidden='true'></i>{dataset.publisher.name}</label>}
-                <p>{this.truncate(dataset.description)}</p>
+                {defined(dataset.publisher) && <label className='search-result--publisher'>{dataset.publisher.name}</label>}
+                <div className='dataset-description'>
+                  <MarkdownViewer markdown={dataset.description}/>
+                </div>
                 <ul className='list-unstyled tags'>
                   {
                     dataset.keyword.map((tag)=>
