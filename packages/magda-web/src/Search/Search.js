@@ -63,6 +63,7 @@ class Search extends Component {
   render() {
     return (
       <div>
+        {this.props.isFetching && <ProgressBar/>}
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
@@ -79,7 +80,7 @@ class Search extends Component {
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
                   />
-                  {(!this.props.isFetching && this.props.hitCount > 20) &&
+                  {this.props.hitCount > 20 &&
                       <Pagination
                         currentPage={+this.props.location.query.page || 1}
                         maxPage={Math.ceil(this.props.hitCount/20)}

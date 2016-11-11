@@ -14,6 +14,6 @@ class ProgressBar extends Component {
 }
 
 ProgressBar.propTypes = {progess: React.PropTypes.number};
-ProgressBar.defaultProps = { progess: 0};
+ProgressBar.defaultProps = {progess: 0};
 
 export default ProgressBar;
