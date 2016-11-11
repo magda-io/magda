@@ -71,13 +71,13 @@ class Search extends Component {
           </div>
           <div className='search__search-body'>
             <div className='col-sm-4'>
-                <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>
+                {!this.props.isFetching && <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>}
             </div>
             <div className='col-sm-8'>
-                <SearchResults
+                {!this.props.isFetching && <SearchResults
                     searchResults={this.props.datasets}
                     totalNumberOfResults={this.props.hitCount}
-                />
+                />}
                 {
                     (this.props.hitCount > 20) &&
                     <Pagination
