@@ -6,6 +6,7 @@ import java.net.URL
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
+import scala.collection.JavaConversions._
 
 import com.typesafe.config.Config
 
@@ -35,10 +36,21 @@ import scala.concurrent.duration._
 class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
   implicit val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
+  val excludedHarvesterTitles = interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = fetcher.request(s"api/3/action/package_search?start=$start&rows=$number").flatMap { response =>
     response.status match {
-      case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.results.map(ckanDataSetConv(interfaceConfig)))
+      case OK => Unmarshal(response.entity).to[CKANSearchResponse].map { ckanDataSet =>
+        val allResults = ckanDataSet.result.results
+        val validResults = allResults.filterNot(dataSet => dataSet.harvest_source_title.map(harvestSource => excludedHarvesterTitles.contains(harvestSource)).getOrElse(false))
+        val excludedCount = allResults.size - validResults.size
+
+        if (excludedCount > 0) {
+          logger.info("Excluded {} datasets that were originally from excluded harvesters", excludedCount)
+        }
+
+        validResults.map(ckanDataSetConv(interfaceConfig))
+      }
       case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
         val error = s"CKAN request failed with status code ${response.status} and entity $entity"
         Future.failed(new IOException(error))

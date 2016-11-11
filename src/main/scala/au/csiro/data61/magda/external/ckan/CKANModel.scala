@@ -76,7 +76,8 @@ case class CKANDataSet(
   temporal_coverage_from: Option[String],
   temporal_coverage_to: Option[String],
   update_freq: Option[String],
-  language: Option[String])
+  language: Option[String],
+  harvest_source_title: Option[String])
 
 case class CKANGroup(
   name: Option[String],
@@ -240,7 +241,8 @@ trait CKANProtocols extends DefaultJsonProtocol {
         update_freq = convertOption[String]("update_freq"),
         spatial = convertOption[String]("spatial"),
         spatial_coverage = convertOption[String]("spatial_coverage"),
-        language = convertOption[String]("language")
+        language = convertOption[String]("language"),
+        harvest_source_title = convertOption[String]("harvest_source_title")
       )
     }
   }

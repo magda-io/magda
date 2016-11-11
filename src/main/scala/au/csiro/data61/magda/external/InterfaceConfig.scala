@@ -11,7 +11,8 @@ case class InterfaceConfig(
   baseUrl: URL,
   pageSize: Long,
   landingPageUrl: (String*) => String,
-  fakeConfig: Option[FakeConfig])
+  fakeConfig: Option[FakeConfig],
+  raw: Config)
 
 case class FakeConfig(
   datasetCount: Long,
@@ -27,7 +28,7 @@ object InterfaceConfig {
       interfaceType = ExternalInterfaceType.withName(config.getString("type")),
       baseUrl = new URL(config.getString("baseUrl")),
       pageSize = config.getLong("pageSize"),
-      landingPageUrl = strings => config.getString("landingPageTemplate").format(strings:_*),
+      landingPageUrl = strings => config.getString("landingPageTemplate").format(strings: _*),
       fakeConfig = {
         if (isFaked && config.hasPath("fake"))
           Some(new FakeConfig(
@@ -35,7 +36,8 @@ object InterfaceConfig {
             config.getString("fake.dataFilePath"),
             config.getString("fake.mimeType")))
         else None
-      }
+      },
+      raw = config
     )
   }
 }
