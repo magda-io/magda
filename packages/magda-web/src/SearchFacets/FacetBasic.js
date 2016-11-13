@@ -41,7 +41,7 @@ class FacetBasic extends Component {
             className={`${isActive ? 'is-active' : ''} btn-facet-option btn`}
             onClick={this.props.toggleOption.bind(this, option, callback)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
-      <span className='btn-facet-option__name'>{option.value}{option.matched && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
+      <span className='btn-facet-option__name'>{option.value}{(option.matched && !isActive) && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-${isActive ? 'times' : 'plus'}`}/></span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
     </button>);

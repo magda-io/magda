@@ -70,7 +70,7 @@ class Search extends Component {
               <SearchBox preloadedSearchText={this.props.location.query.q || ''} updateQuery={this.updateQuery} onSearchTextChange={this.onSearchTextChange}/>
             </div>
           </div>
-          <div className='search__search-body'>
+          <div className='search__search-body container'>
             <div className='col-sm-4'>
                 <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>
             </div>
