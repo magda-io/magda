@@ -49,12 +49,10 @@ dockerfile in docker := {
 }
 
 imageNames in docker := Seq(
-  // Sets a name with a tag that contains the project version
   ImageName(
-//    registry = Some("localhost:5000"),
-    namespace = Some("alexgilleran"),
+    namespace = Some("data61"),
     repository = name.value,
-    tag = Some("latest")
+    tag = Some("v" + version.value)
   )
 )
 
