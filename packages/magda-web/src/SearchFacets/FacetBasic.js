@@ -5,12 +5,18 @@ import maxBy from 'lodash.maxby';
 import defined from '../helpers/defined';
 import FacetSearchBox from './FacetSearchBox';
 
+const DEFAULTSIZE= 5;
+
 
 // extends Facet class
 class FacetBasic extends Component {
   constructor(props) {
     super(props);
     this.renderOption=this.renderOption.bind(this);
+    this.toggleExpand= this.toggleExpand.bind(this);
+    this.state = {
+      isExpanded: false
+    }
   }
 /**
  * check is this option can be found in the list of activeOptions
@@ -19,6 +25,14 @@ class FacetBasic extends Component {
   checkActiveOption(option){
     return find(this.props.activeOptions, o=> o.value === option.value);
   }
+  /**
+    * expand the list (reacting to show more less button )
+    */
+   toggleExpand(){
+     this.setState({
+       isExpanded: !this.state.isExpanded
+     })
+   }
 
 /**
  * generate the html for a option of this filter
@@ -50,7 +64,15 @@ class FacetBasic extends Component {
 
   render(){
     let that = this;
+    // default list of options to display for the facet filter except those already active, which will be displayed in a seperate list
+    let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
+    // the option that has the max object.value value, use to calculate volumne indicator
     let maxOptionOptionList = maxBy(this.props.options, o=> +o.hitCount);
+    // the size of the list visible by default, it should either be DEFAULTSIZE or the size of the list if there's no overflow
+    let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
+    // the size of list to display, depends on whether the list is expanded or not
+    let size = this.state.isExpanded ? inactiveOptions.length : tempSize;
+
     return <FacetWrapper onResetFacet={this.props.onResetFacet}
                          title={this.props.title}
                          activeOptions={this.props.activeOptions}
@@ -62,8 +84,14 @@ class FacetBasic extends Component {
                  {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
                </ul>
                <ul className='list-unstyled'>
-                 {that.props.options.filter(o=>!that.checkActiveOption(o)).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
+                 {inactiveOptions.slice(0, size).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
+                 {inactiveOptions.length - tempSize > 0 &&
+                   <li><button onClick={this.toggleExpand}
+                           className='btn btn-toggle-expand'>
+                            {this.state.isExpanded ? `Show less` : `Show ${inactiveOptions.length - tempSize} more`}
+                  </button></li>}
                </ul>
+
            </FacetWrapper>
   }
 }
