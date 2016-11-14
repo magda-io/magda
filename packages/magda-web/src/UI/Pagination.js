@@ -23,30 +23,23 @@ class Pagination extends Component {
 
 
     render(){
-      let data = [];
-      if(this.props.maxPage <= MAXPAGINATION){
-        data = [1, 2, 3, 4, 5];
-      } else {
-        let temp = [1, 2, 3, 4, 'truncate', this.props.maxPage];
-        if(temp.indexOf(this.props.currentPage) > -1){
-          data = temp;
-        } else{
-          data = [1, 2, 3, 'truncate', this.props.currentPage, 'truncate',this.props.maxPage]
-        }
+      let currentPage = this.props.currentPage;
+      let prevPage;
+      let nextPage;
+
+      if(currentPage > 1){
+        prevPage = currentPage - 1;
+      } else if(currentPage < this.props.maxPage){
+        nextPage = currentPage + 1;
       }
-      return <ul className='pagination'>
-                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, 1)}><i className="fa fa-angle-double-left" aria-hidden="true"></i></button></li>
-                <li><button className='btn pagination-item' disabled={this.props.currentPage <= 1} onClick={this.onClick.bind(this, this.props.currentPage-1)}><i className="fa fa-angle-left" aria-hidden="true"></i></button></li>
-                {
-                  data.map((x, i)=>
-                    <li key={i}>
-                      {this.rendePagninationItem(x)}
-                    </li>
-                  )
-                }
-                <li><button className='btn pagination-item' disabled={this.props.currentPage >=this.props.maxPage} onClick={this.onClick.bind(this, this.props.currentPage+1)}><i className="fa fa-angle-right" aria-hidden="true"></i></button></li>
-                <li><button className='btn pagination-item' onClick={this.onClick.bind(this, this.props.maxPage-1)}><i className="fa fa-angle-double-right" aria-hidden="true"></i></button></li>
-             </ul>
+
+      return (
+        <ul className='pagination list-unstyled'>
+          {this.props.currentPage !== 1 && <li className='pagination-start'><button className='pagination-btn btn' onClick={this.onClick.bind(this, 1)}> Start</button></li>}
+          {this.props.currentPage > 1 && <li className='pagination-previous'><button className='pagination-btn btn' onClick={this.onClick.bind(this, currentPage - 1)}> Previous</button></li>}
+          {this.props.currentPage < this.props.maxPage && <li className='pagination-next'><button className='pagination-btn btn' onClick={this.onClick.bind(this, currentPage + 1)}> Next</button></li>}
+        </ul>
+      );
     }
 }
 

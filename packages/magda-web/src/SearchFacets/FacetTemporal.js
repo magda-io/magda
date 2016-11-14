@@ -7,7 +7,7 @@ import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
 
 // each facet option has a certain hight in order to calculate drag bar location
-const itemHeight = 35;
+const itemHeight = 37;
 
 // the date range facet facet, extends facet component
 class FacetTemporal extends Component {

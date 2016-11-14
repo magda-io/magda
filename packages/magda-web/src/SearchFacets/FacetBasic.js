@@ -4,9 +4,7 @@ import find from 'lodash.find';
 import maxBy from 'lodash.maxby';
 import defined from '../helpers/defined';
 import FacetSearchBox from './FacetSearchBox';
-
-const DEFAULTSIZE= 5;
-
+import config from '../config.js'
 
 // extends Facet class
 class FacetBasic extends Component {
@@ -64,12 +62,13 @@ class FacetBasic extends Component {
 
   render(){
     let that = this;
+    let defaultSize = config().facetListSize;
     // default list of options to display for the facet filter except those already active, which will be displayed in a seperate list
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
     // the option that has the max object.value value, use to calculate volumne indicator
     let maxOptionOptionList = maxBy(this.props.options, o=> +o.hitCount);
     // the size of the list visible by default, it should either be DEFAULTSIZE or the size of the list if there's no overflow
-    let tempSize =  DEFAULTSIZE > inactiveOptions.length ? inactiveOptions.length : DEFAULTSIZE;
+    let tempSize = defaultSize > inactiveOptions.length ? inactiveOptions.length : defaultSize;
     // the size of list to display, depends on whether the list is expanded or not
     let size = this.state.isExpanded ? inactiveOptions.length : tempSize;
 

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {fetchSearchResultsIfNeeded} from '../actions/results';
 import {connect} from 'react-redux';
+import config from '../config.js'
 import './Search.css';
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
@@ -83,7 +84,7 @@ class Search extends Component {
                   {this.props.hitCount > 20 &&
                       <Pagination
                         currentPage={+this.props.location.query.page || 1}
-                        maxPage={Math.ceil(this.props.hitCount/20)}
+                        maxPage={Math.ceil(this.props.hitCount/config().resultsPerPage)}
                         goToPage={this.goToPage}
                       />
                    }
