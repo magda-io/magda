@@ -35,6 +35,7 @@ export function receiveResults(apiQuery, json){
 
 export function fetchSearchResults(query) {
   return (dispatch)=>{
+    console.log(`http://magda-search-api.terria.io/datasets/search?query=${query}`);
     dispatch(requestResults(query))
     return fetch(`http://magda-search-api.terria.io/datasets/search?query=${query}`)
     .then(response => response.json())

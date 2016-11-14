@@ -1,5 +1,5 @@
 const initialData = {
-  isFetching: true,
+  isFetching: false,
   query: {generalQuery: '', facetQuery: ''},
   data: []
 }

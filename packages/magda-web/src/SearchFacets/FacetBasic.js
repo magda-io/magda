@@ -59,7 +59,7 @@ class FacetBasic extends Component {
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
                <ul className='list-unstyled'>
-                 {that.props.activeOptions.map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
+                 {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
                </ul>
                <ul className='list-unstyled'>
                  {that.props.options.filter(o=>!that.checkActiveOption(o)).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
