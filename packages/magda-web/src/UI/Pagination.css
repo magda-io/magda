@@ -1,0 +1,26 @@
+.pagination-group{
+  display: table;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.pagination-group li{
+  display: table-cell;
+}
+
+.pagination-next{
+  width: 60%;
+  text-align: right;
+}
+
+.pagination-secondary-info{
+  font-size: 13px;
+  color: #aaa;
+}
+
+.pagination-btn{
+  background: transparent;
+  color: #2980b9;
+  font-size: 1.2em;
+  font-weight: bold;
+}
