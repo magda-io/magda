@@ -1,0 +1,10 @@
+.star-btn {
+  color: #bbb;
+  background: transparent;
+  font-size: 18px;
+}
+
+.star-btn:hover,
+.star-btn.is-active{
+  color: #e67e22;
+}

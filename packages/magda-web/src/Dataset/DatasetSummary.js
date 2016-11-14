@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
+import Star from '../UI/Star';
 import './DatasetSummary.css';
 
 export default class DatasetSummary extends Component {
@@ -12,7 +13,10 @@ export default class DatasetSummary extends Component {
     let dataset = this.props.dataset;
     return <div className='dataset-summray'>
               <div className='dataset-summray-main'>
-                <h3 className='result-title'><button className='btn dataset-summray-title' onClick={this.props.clickDataset} type='button'>{dataset.title}</button></h3>
+                <h3 className='result-title'>
+                  <button className='btn dataset-summray-title' onClick={this.props.clickDataset} type='button'>{dataset.title}</button>
+                  <Star/>
+                </h3>
                 {defined(dataset.publisher) && <label className='search-result--publisher'>{dataset.publisher.name}</label>}
                 <div className='dataset-description'>
                   <MarkdownViewer markdown={dataset.description}/>
