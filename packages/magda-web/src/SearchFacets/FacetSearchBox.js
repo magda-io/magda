@@ -42,6 +42,11 @@ class FacetSearchBox extends Component {
       e.preventDefault();
       this.move('down')
     }
+
+    if(e.keyCode === 13){
+      e.preventDefault();
+      return false;
+    }
   }
 
   move(direction){
