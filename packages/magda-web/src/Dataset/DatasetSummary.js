@@ -14,7 +14,7 @@ export default class DatasetSummary extends Component {
     return <div className='dataset-summray'>
               <div className='dataset-summray-main'>
                 <h3 className='result-title'>
-                  <button className='btn dataset-summray-title' onClick={this.props.clickDataset} type='button'>{dataset.title}</button>
+                  <a className='dataset-summray-title' onClick={this.props.clickDataset} type='button'>{dataset.title}</a>
                   <Star/>
                 </h3>
                 {defined(dataset.publisher) && <label className='search-result--publisher'>{dataset.publisher.name}</label>}

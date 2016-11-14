@@ -4,6 +4,10 @@
   font-size: 18px;
 }
 
+.star-btn .fa{
+  vertical-align: text-top;
+}
+
 .star-btn:hover,
 .star-btn.is-active{
   color: #e67e22;
