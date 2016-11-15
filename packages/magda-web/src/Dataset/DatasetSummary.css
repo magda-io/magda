@@ -56,6 +56,10 @@
   background:linear-gradient(transparent 150px, white);
 }
 
+.dataset-summray:hover .dataset-description > .markdown:before{
+  background:linear-gradient(transparent 150px, #f8f8f8);
+}
+
 .dataset-summray-toggle-info-btn{
   border: 0;
   background: transparent;
