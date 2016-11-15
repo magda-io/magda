@@ -4,6 +4,7 @@ class Star extends Component {
     constructor(props){
       super(props);
       this.onClick = this.onClick.bind(this);
+      this.hideInfo = this.hideInfo.bind(this);
       this.state = {
         isActive: false,
         showInfo: false
@@ -11,11 +12,7 @@ class Star extends Component {
     }
 
     componentDidMount(){
-      window.addEventListener('click', ()=>{
-        this.setState({
-          showInfo: false
-        })
-      })
+      window.addEventListener('click', this.hideInfo);
     }
 
     onClick(event){
@@ -24,6 +21,16 @@ class Star extends Component {
         isActive: !this.state.isActive,
         showInfo: !this.state.isActive
       })
+    }
+
+    hideInfo(){
+      this.setState({
+        showInfo: false
+      })
+    }
+
+    componentWillUnmount(){
+      window.removeEventListener('click', this.hideInfo);
     }
 
     render(){

@@ -11,6 +11,7 @@ class FacetSearchBox extends Component {
     this.clearSearch = this.clearSearch.bind(this);
     this.callback = this.callback.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.onExcKeyDown = this.onExcKeyDown.bind(this);
 
     /**
      * @type {object}
@@ -25,11 +26,17 @@ class FacetSearchBox extends Component {
 
   componentDidMount(){
     // when esc key is pressed at anytime, clear search box and close the search result list
-    window.addEventListener('keydown', (event)=>{
-      if(event.which === 27){
-        this.clearSearch();
-      }
-    });
+    window.addEventListener('keydown', this.onExcKeyDown);
+  }
+
+  componentWillUnmount(){
+    window.removeEventListener('keydown', this.onExcKeyDown);
+  }
+
+  onExcKeyDown(event){
+    if(event.which === 27){
+      this.clearSearch();
+    }
   }
 
   handleKeyDown(e){
