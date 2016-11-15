@@ -23,6 +23,10 @@ object ClientProvider {
           val settings = Settings.settingsBuilder().put("cluster.name", "myesdb").build()
           ElasticClient.transport(settings, uri)
         }, 10 seconds, 10, onRetry(logger)(_))
+          .map { client =>
+            logger.info("Successfully connected to elasticsearch client")
+            client
+          }
 
         clientFuture = Some(future)
 

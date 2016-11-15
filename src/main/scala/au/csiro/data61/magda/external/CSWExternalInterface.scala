@@ -105,7 +105,7 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system
           .map(name => Agent(name = Some(name))),
         spatial = nodeToOption(summaryRecord \ "BoundingBox", identity).flatMap(locationFromBoundingBox),
         temporal = nodeToOption(summaryRecord \ "coverage", identity).flatMap(temporalFromString(modified)),
-        theme = (summaryRecord \ "subject").map(_.text.trim),
+        keyword = (summaryRecord \ "subject").map(_.text.trim),
         distributions = buildDistributions(summaryRecord \ "URI", summaryRecord \ "rights"),
         landingPage = Some(interfaceConfig.landingPageUrl(identifier))
       )

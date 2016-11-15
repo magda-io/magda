@@ -1,16 +1,80 @@
+#API
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: api
+    spec:
+      containers:
+      - name: api
+        env:
+        - name: SCALA_ENV
+          value: dev
+        - name: MAGDA_SEARCH_ROLE
+          value: api
+        image: "data61/magda-metadata:v${version}"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: api
+  type: "NodePort"
+---
+#INDEXER
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: indexer
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: indexer
+    spec:
+      containers:
+      - name: indexer
+        env:
+        - name: SCALA_ENV
+          value: dev
+        - name: MAGDA_SEARCH_ROLE
+          value: indexer
+        image: "data61/magda-metadata:v${version}"
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /usr/regions
+          name: regions
+      volumes:
+      - name: regions
+        emptyDir: {}
+---
+# ElasticSearch
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: es
   labels:
     component: elasticsearch
-    role: es
 spec:
   template:
     metadata:
       labels:
         component: elasticsearch
-        role: es
     spec:
       containers:
       - name: es
@@ -20,9 +84,6 @@ spec:
             add:
               - IPC_LOCK
         image: quay.io/pires/docker-elasticsearch-kubernetes:2.4.1
-        resources:
-          requests:
-            memory: 2000Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -37,7 +98,7 @@ spec:
         - name: HTTP_ENABLE
           value: "true"
         - name: ES_HEAP_SIZE
-          value: "1000m"
+          value: "2g"
         ports:
         - containerPort: 9200
           name: http
@@ -50,4 +111,35 @@ spec:
           mountPath: /data
       volumes:
       - name: "storage"
-        blankVolume: {}
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  labels:
+    component: elasticsearch
+spec:
+  ports:
+  - name: http
+    port: 9200
+    targetPort: 9200
+  - name: java
+    port: 9300
+    targetPort: 9300
+  selector:
+    component: elasticsearch
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-discovery
+  labels:
+    component: elasticsearch
+spec:
+  selector:
+    component: elasticsearch
+  ports:
+  - name: transport
+    port: 9300
+    protocol: TCP

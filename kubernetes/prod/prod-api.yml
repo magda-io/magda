@@ -11,8 +11,6 @@ spec:
       labels:
         service: api
     spec:
-      nodeSelector:
-        cloud.google.com/gke-nodepool: fast
       containers:
       - name: api
         env:
@@ -20,7 +18,7 @@ spec:
           value: prod
         - name: MAGDA_SEARCH_ROLE
           value: api
-        image: "alexgilleran/magda-metadata:latest"
+        image: "data61/magda-metadata:v${version}"
         ports:
         - containerPort: 80
       nodeSelector:
@@ -73,7 +71,7 @@ spec:
           value: prod
         - name: MAGDA_SEARCH_ROLE
           value: indexer
-        image: "alexgilleran/magda-metadata:latest"
+        image: "data61/magda-metadata:v${version}"
         volumeMounts:
         - mountPath: /usr/regions
           name: regions

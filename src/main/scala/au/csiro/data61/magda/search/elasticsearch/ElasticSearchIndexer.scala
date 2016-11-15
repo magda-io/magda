@@ -25,6 +25,9 @@ import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import com.sksamuel.elastic4s.BulkResult
 import au.csiro.data61.magda.util.FutureRetry.retry
 import scala.concurrent.duration._
+import com.sksamuel.elastic4s.BulkDefinition
+import akka.stream.scaladsl.SourceQueueWithComplete
+import akka.stream.scaladsl.SourceQueue
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -38,18 +41,33 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   implicit val scheduler = system.scheduler
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
-  private lazy val indexQueue = Source.queue[(String, List[DataSet])](Integer.MAX_VALUE, OverflowStrategy.backpressure)
-    .mapAsync(1) { case (_, dataSets) => indexDataSets(dataSets) }
-    .to(Sink.ignore)
-    .run()
+  private lazy val indexQueue: SourceQueue[BulkDefinition] =
+    Source.queue[BulkDefinition](0, OverflowStrategy.backpressure)
+      .mapAsync(1) { indexRequest =>
+        bulkIndex(indexRequest)
+      }
+      .recover {
+        case e: Throwable =>
+          logger.error(e, "Error when indexing")
+          throw e
+      }
+      .map { result =>
+        if (result.hasFailures) {
+          logger.warning("Failure when indexing: {}", result.failureMessage)
+        } else {
+          logger.info("Indexed {} entries", result.successes.length)
+        }
+
+        result
+      }
+      .to(Sink.ignore)
+      .run()
 
   /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the indices */
   private def setup(): Future[ElasticClient] = {
     getClient(system.scheduler, logger, ec).flatMap(client =>
       retry(() => getIndexVersions(client), 10 seconds, 10, logger.warning("Failed to get index versions, {} retries left", _))
         .flatMap { versionPairs =>
-          logger.debug("Successfully connected to ES client")
-
           updateIndices(client, versionPairs).map { _ =>
             // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
             client
@@ -116,7 +134,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
           } flatMap { _ =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
-            definition.create(client, materializer, system)
+            definition.create(indexQueue, materializer, system)
 
             // Now we've created the index, record the version of it so we can look at it next time we boot up.
             logger.info("Recording index version")
@@ -148,7 +166,11 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     }
   }
 
-  override def index(source: String, dataSets: List[DataSet]) = indexQueue.offer((source, dataSets))
+  override def index(source: String, dataSets: List[DataSet]) = if (dataSets.length > 0) {
+    indexQueue.offer(buildDatasetIndexDefinition(dataSets))
+  } else {
+    Future(None)
+  }
 
   override def needsReindexing(): Future[Boolean] = {
     setupFuture.flatMap(client =>
@@ -163,42 +185,44 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     )
   }
 
+  private def bulkIndex(definition: BulkDefinition): Future[BulkResult] =
+    setupFuture.flatMap(client =>
+      client.execute(definition)
+        .recover {
+          case t: Throwable =>
+            logger.error(t, "Error when indexing records")
+            throw t
+        })
+
   /**
    * Indexes a number of datasets into ES using a bulk insert.
    */
-  private def indexDataSets(dataSets: Seq[DataSet]): Future[BulkResult] =
-    setupFuture.flatMap(client =>
-      client.execute {
-        bulk(
-          dataSets.map { dataSet =>
-            val indexDataSet = ElasticDsl.index into "datasets" / "datasets" id dataSet.uniqueId source (
-              dataSet.copy(
-                years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
-                  case Nil  => None
-                  case list => Some(list)
-                }).toJson)
+  private def buildDatasetIndexDefinition(dataSets: Seq[DataSet]): BulkDefinition =
+    bulk(
+      dataSets.map { dataSet =>
+        val indexDataSet = ElasticDsl.index into "datasets" / "datasets" id dataSet.uniqueId source (
+          dataSet.copy(
+            years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
+              case Nil  => None
+              case list => Some(list)
+            }).toJson)
 
-            val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-              ElasticDsl.index into "datasets" / Publisher.id
-                id publisherName.toLowerCase
-                source Map("value" -> publisherName).toJson))
+        val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
+          ElasticDsl.index into "datasets" / Publisher.id
+            id publisherName.toLowerCase
+            source Map("value" -> publisherName).toJson))
 
-            val indexYears = getYears(
-              dataSet.temporal.flatMap(_.start.flatMap(_.date)),
-              dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "datasets" / Year.id id year source Map("value" -> year).toJson)
+        val indexYears = getYears(
+          dataSet.temporal.flatMap(_.start.flatMap(_.date)),
+          dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "datasets" / Year.id id year source Map("value" -> year).toJson)
 
-            val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
-              val format = distribution.format.get
+        val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
+          val format = distribution.format.get
 
-              ElasticDsl.index into "datasets" / Format.id id format.toLowerCase source Map("value" -> format).toJson
-            }
+          ElasticDsl.index into "datasets" / Format.id id format.toLowerCase source Map("value" -> format).toJson
+        }
 
-            indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
-          }.flatten)
-      }.recover {
-        case t: Throwable =>
-          logger.error(t, "Error when indexing records")
-          throw t
-      }
-    )
+        indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
+      }.flatten)
+
 }
