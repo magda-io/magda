@@ -42,7 +42,7 @@ const results = (state=initialData, action) => {
 
       let activeFormats = query.formats.map(item=>find(data.facets[2].options, o=>o.value === item));
       // temp
-      let activeRegions = query.regions.map(item=>({regionId: '', regionType: ''}));
+      let activeRegions = [{regionId: '302', regionType: 'SA4'}];
 
       return Object.assign({}, state, {
         isFetching: false,

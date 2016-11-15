@@ -13,7 +13,7 @@ export default class DatasetInfo extends Component {
                     {dataset.distributions.map((d, i)=>
                       <li key={d.downloadURL + i} className={`dataset-info--download-link clearfix ${d.format}`}>
                         <i className='fa fa-file-pdf-o' aria-hidden="true"></i>
-                        <a href={d.downloadURL}>{d.description}({d.format})</a>
+                        <a href={d.downloadURL} target='_blank'>{d.description}({d.format})</a>
                       </li>
                     )}
                   </ul>

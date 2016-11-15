@@ -1,9 +1,19 @@
+.dataset-summray{
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+.dataset-summray:hover{
+  cursor: pointer;
+  background: #f8f8f8;
+}
+
 .dataset-summray-title{
   background: transparent;
   padding: 0;
   font-size: 1.2em;
   white-space: normal;
   text-align: left;
+  padding-right: 5px;
 }
 
 .dataset-summray h1{
@@ -16,6 +26,8 @@
 
 .dataset-summray h3{
   font-size: 1em;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .dataset-summray h4{
@@ -42,4 +54,44 @@
   left:0;
   top:0;
   background:linear-gradient(transparent 150px, white);
+}
+
+.dataset-summray-toggle-info-btn{
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  float: right;
+  color: #bbb;
+  padding: 0;
+}
+
+.dataset-summray-toggle-info-btn:hover,
+.dataset-summray-toggle-info-btn:focus{
+  color: #337ab7;
+}
+
+
+.result-header{
+  display: table;
+  width: 100%;
+}
+
+.result-header-left{
+  float: left;
+  max-width: calc(100% - 55px);
+  display: table-cell;
+}
+
+.result-header-middle{
+  float: left;
+  display: table-cell;
+}
+
+.result-header-right{
+  float: right;
+  display: table-cell;
+}
+
+.result-header .star-btn{
+  padding: 0;
 }

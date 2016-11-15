@@ -14,7 +14,8 @@ class SearchResults extends Component {
     }
   }
 
-  clickDataset(result){
+  clickDataset(result, event){
+    event.stopPropagation();
     this.setState({
       expandedItem: (this.state.expandedItem === result) ? null : result
     });

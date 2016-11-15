@@ -64,6 +64,7 @@ class FacetRegion extends Component {
 
 
     render(){
+      console.log(this.props);
         return (
             <FacetWrapper onResetFacet={this.props.onResetFacet}
                           title={this.props.title}
@@ -74,12 +75,12 @@ class FacetRegion extends Component {
                                searchFacet={this.props.searchFacet}/>
                {this.props.activeOptions.map(r=><div className='active-region' key={r.geographyLabel + r.state}>{r.geographyLabel} {r.state}</div>)}
                <div className='preview'>
-                     <RegionMap title='region'
-                                id='region'
+                     <RegionMap title='location'
+                                id='location'
                                 onClick={this.openPopup}
                                 interaction={false}
-                                activeRegionId={this.props.activeRegionId}
-                                activeRegionType={this.props.activeRegionType}
+                                activeRegionId={this.props.activeOptions['regionId']}
+                                activeRegionType={this.props.activeOptions['regionType']}
                      />
                </div>
                {this.state.popUpIsOpen && <RegionPopup onFeatureClick={this.props.onFeatureClick}

@@ -65,7 +65,8 @@ class RegionMap extends Facet {
 
     addRegion(){
         let that = this;
-        let regionType = this.props.activeRegionId || 'SA1';
+        let regionType = this.props.activeRegionId;
+        console.log(this.props);
         let region = regions()[regionType];
         this.getID = function(feature) { return feature.properties[region.id];};
 

@@ -9,7 +9,8 @@ class Star extends Component {
       };
     }
 
-    onClick(){
+    onClick(event){
+      event.stopPropagation();
       this.setState({
         isActive: !this.state.isActive
       })

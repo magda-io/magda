@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import './Pagination.css';
 
-const MAXPAGINATION = 5;
-
 class Pagination extends Component {
     constructor(props) {
       super(props);
@@ -13,14 +11,6 @@ class Pagination extends Component {
     onClick(i){
       this.props.goToPage(i);
     }
-
-    rendePagninationItem(x){
-      if(x === 'truncate'){
-        return <span className='pagination-truncate'>...</span>
-      }
-      return <button onClick={this.onClick.bind(this, x)} className={`btn pagination-item ${x === this.props.currentPage ? 'is-active' : ''}`}>{x}</button>
-    }
-
 
     render(){
       let currentPage = this.props.currentPage;
