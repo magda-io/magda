@@ -21,9 +21,11 @@ export default class DatasetSummary extends Component {
                     <Star/>
                   </div>
                   <div className='result-header-right'>
-                    <button className='dataset-summray-toggle-info-btn' onClick={this.props.clickDataset} type='button'>
+                    {!this.props.isExpanded && <button className='dataset-summray-toggle-info-btn'
+                                                       onClick={this.props.onClickDataset}
+                                                       type='button'>
                         <i className="fa fa-ellipsis-h" aria-hidden="true"></i>
-                    </button>
+                    </button>}
                   </div>
                 </h3>
                 {defined(dataset.publisher) && <label className='search-result--publisher'>{dataset.publisher.name}</label>}

@@ -7,19 +7,27 @@ class SearchResults extends Component {
   constructor(props) {
     super(props);
 
-    this.clickDataset=this.clickDataset.bind(this);
+    this.onExpandDataset=this.onExpandDataset.bind(this);
+    this.onCloseDataset = this.onCloseDataset.bind(this);
 
     this.state={
       expandedItem : null
     }
   }
 
-  clickDataset(result, event){
+  onExpandDataset(result, event){
     event.stopPropagation();
     this.setState({
-      expandedItem: (this.state.expandedItem === result) ? null : result
+      expandedItem: result
     });
   }
+
+  onCloseDataset(){
+    this.setState({
+      expandedItem: null
+    });
+  }
+
   getSummaryText(){
     if(this.props.searchResults.length){
       return (
@@ -38,9 +46,8 @@ class SearchResults extends Component {
         {
           this.props.searchResults.map((result, i)=>
             <li key={result.title + i}  className='search-result'>
-              <DatasetSummary dataset={result} clickDataset={this.clickDataset.bind(this, result)}>
-                {this.state.expandedItem === result && <DatasetInfo dataset={result} />}
-              </DatasetSummary>
+              <DatasetSummary dataset={result} onClickDataset={this.onExpandDataset.bind(this, result)} isExpanded={this.state.expandedItem === result}/>
+              {this.state.expandedItem === result && <DatasetInfo dataset={result} onClickClose={this.onCloseDataset}/>}
             </li>
           )
         }
