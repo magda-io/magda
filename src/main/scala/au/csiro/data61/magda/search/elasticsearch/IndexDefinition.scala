@@ -37,31 +37,36 @@ object IndexDefinition {
     name = "datasets",
     version = 10,
     definition =
-      create.index("datasets").mappings(
-        mapping("datasets").fields(
-          field("temporal").inner(
-            field("start").inner(
-              field("text").typed(StringType)),
-            field("end").inner(
-              field("text").typed(StringType))),
-          field("publisher").inner(
-            field("name").typed(StringType).fields(
-              field("untouched").typed(StringType).index("not_analyzed"))),
-          field("distributions").nested(
-            field("format").typed(StringType).fields(
-              field("untokenized").typed(StringType).analyzer("untokenized"))),
-          field("spatial").inner(
-            field("geoJson").typed(GeoShapeType))),
-        mapping(Format.id),
-        mapping(Year.id),
-        mapping(Publisher.id)
-      ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
+      create.index("datasets")
+        .indexSetting("recovery.initial_shards", 1)
+        .mappings(
+          mapping("datasets").fields(
+            field("temporal").inner(
+              field("start").inner(
+                field("text").typed(StringType)),
+              field("end").inner(
+                field("text").typed(StringType))),
+            field("publisher").inner(
+              field("name").typed(StringType).fields(
+                field("untouched").typed(StringType).index("not_analyzed"))),
+            field("distributions").nested(
+              field("format").typed(StringType).fields(
+                field("untokenized").typed(StringType).analyzer("untokenized"))),
+            field("spatial").inner(
+              field("geoJson").typed(GeoShapeType))),
+          mapping(Format.id),
+          mapping(Year.id),
+          mapping(Publisher.id)
+        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
       version = 5,
       definition =
-        create.index("regions").mappings(mapping("regions").fields(
-          field("geometry").typed(GeoShapeType))),
+        create.index("regions")
+          .indexSetting("recovery.initial_shards", 1)
+          .mappings(
+            mapping("regions").fields(
+              field("geometry").typed(GeoShapeType))),
       create = (indexQueue, materializer, actorSystem) => setupRegions(indexQueue)(materializer, actorSystem)))
 
   private def setupRegions(indexQueue: SourceQueue[BulkDefinition])(implicit materializer: Materializer, actorSystem: ActorSystem): Future[Any] = {

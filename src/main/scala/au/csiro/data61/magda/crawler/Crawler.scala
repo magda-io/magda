@@ -65,7 +65,6 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
   }
 
   def createBatches(interfaceDef: InterfaceConfig, start: Long, end: Long): List[(Long, Int)] = {
-    log.debug("Start {} End {}", start, end)
     val length = end - start
     if (length <= 0) {
       Nil

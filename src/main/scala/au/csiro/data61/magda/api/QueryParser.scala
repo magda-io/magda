@@ -14,6 +14,7 @@ private object Tokens {
   case class Quote(exactQuery: String) extends QueryToken
   case class Filter(filterName: String) extends QueryToken
   case class FreeTextWord(general: String) extends QueryToken
+  case class RegionFilter(str: String) extends QueryToken
 }
 
 case class QueryCompilationError(error: String)
@@ -22,7 +23,7 @@ private object QueryLexer extends RegexParsers {
   override def skipWhitespace = true
   override val whiteSpace = "[\t\r\f\n]+".r
 
-  val filterWords = Seq("From", "To", "By", "As", "In")
+  val filterWords = Seq("From", "To", "By", "As")
 
   def quote: Parser[Tokens.Quote] = {
     """"[^"]*"""".r ^^ { str => Tokens.Quote(str.substring(1, str.length - 1)) }
@@ -35,8 +36,12 @@ private object QueryLexer extends RegexParsers {
     val filterWordsJoined = filterWords.reduce { (left, right) => left + "|" + right }
     s"(^|\\s)(?i)($filterWordsJoined)(\\s|$$)".r ^^ { str => Tokens.Filter(str.trim) }
   }
+  def region: Parser[Tokens.RegionFilter] = {
+    val regionTypesJoined = RegionSource.sources.map(_.name).reduce { (left, right) => left + "|" + right }
+    s"(^|\\s)(?i)in ($regionTypesJoined):([A-Za-z0-9]+)(\\s|$$)".r ^^ { str => Tokens.RegionFilter(str) }
+  }
 
-  def tokens: Parser[List[Tokens.QueryToken]] = phrase(rep1(quote | filterWord | freeTextWord))
+  def tokens: Parser[List[Tokens.QueryToken]] = phrase(rep1(quote | region | filterWord | freeTextWord))
 
   def apply(code: String): Either[QueryCompilationError, List[Tokens.QueryToken]] = {
     parse(tokens, code) match {
@@ -58,14 +63,14 @@ object AST {
   case class DateTo(value: Instant) extends Filter
   case class Publisher(value: String) extends Filter
   case class Format(value: String) extends Filter
-  case class RegionId(value: String) extends Filter
+  case class ASTRegion(region: Region) extends Filter
 
   sealed trait FilterType extends QueryAST
   case object FromType extends FilterType
   case object ToType extends FilterType
   case object PublisherType extends FilterType
   case object FormatType extends FilterType
-  case object RegionIdType extends FilterType
+  case object RegionType extends FilterType
 
   case class FilterStatement(filterType: FilterType, value: FilterValue) extends QueryAST
   case class FilterValue(value: String) extends QueryAST
@@ -85,13 +90,12 @@ private object QueryParser extends Parsers {
   def queryMakeup = queryAndFilters | queryText | filters
   def queryAndFilters = (queryText ~ filters) ^^ { case a ~ b => AST.And(a, b) }
   def queryText = rep1(freeTextWord | quote) ^^ { case list => list reduceRight AST.And }
-  def filters = rep1(filterStatement) ^^ { case list => list reduceRight AST.And }
+  def filters = rep1(region | filterStatement) ^^ { case list => list reduceRight AST.And }
   def filterStatement = filterType ~ filterBody ^^ {
     case AST.FromType ~ AST.FilterValue(filterValue)      => parseDateFromRaw(filterValue, false, AST.DateFrom.apply, AST.And(AST.FreeTextWord("from"), AST.FreeTextWord(filterValue)))
     case AST.ToType ~ AST.FilterValue(filterValue)        => parseDateFromRaw(filterValue, true, AST.DateTo.apply, AST.And(AST.FreeTextWord("to"), AST.FreeTextWord(filterValue)))
     case AST.PublisherType ~ AST.FilterValue(filterValue) => AST.Publisher(filterValue)
     case AST.FormatType ~ AST.FilterValue(filterValue)    => AST.Format(filterValue)
-    case AST.RegionIdType ~ AST.FilterValue(filterValue)  => AST.RegionId(filterValue)
   }
 
   def filterType =
@@ -101,7 +105,6 @@ private object QueryParser extends Parsers {
         case "to"   => AST.ToType
         case "by"   => AST.PublisherType
         case "as"   => AST.FormatType
-        case "in"   => AST.RegionIdType
       }
     })
 
@@ -118,6 +121,18 @@ private object QueryParser extends Parsers {
 
   private def quote: Parser[AST.Quote] = {
     accept("quote", { case Tokens.Quote(name) => AST.Quote(name) })
+  }
+
+  private def region: Parser[AST.ASTRegion] = {
+    accept("region", {
+      case Tokens.RegionFilter(raw) =>
+        raw.split(":") match {
+          case Array(regionType, regionId) => RegionSource.forName(regionType) match {
+            case Some(regionSource) => AST.ASTRegion(Region(regionType, regionId))
+          }
+        }
+    }
+    )
   }
 
   private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: String, atEnd: Boolean, applyFn: Instant => A, recoveryFn: => AST.ReturnedAST): A = {
@@ -174,24 +189,12 @@ object QueryCompiler {
     )
 
     ast match {
-      case AST.And(left, right)  => merge(flattenAST(left), flattenAST(right))
-      case AST.DateFrom(instant) => Query(dateFrom = Some(instant))
-      case AST.DateTo(instant)   => Query(dateTo = Some(instant))
-      case AST.Publisher(name)   => Query(publishers = Seq(name))
-      case AST.Format(format)    => Query(formats = Seq(format))
-      case AST.RegionId(region) =>
-        val option = region.split(":") match {
-          case Array(regionType, regionId) => RegionSource.forName(regionType) match {
-            case Some(regionSource) => Some(Query(regions = Seq(new Region(regionSource.name, regionId))))
-            case _                  => None
-          }
-          case _ => None
-        }
-
-        option match {
-          case Some(query) => query
-          case None        => Query(freeText = Some("in " + region))
-        }
+      case AST.And(left, right)   => merge(flattenAST(left), flattenAST(right))
+      case AST.DateFrom(instant)  => Query(dateFrom = Some(instant))
+      case AST.DateTo(instant)    => Query(dateTo = Some(instant))
+      case AST.Publisher(name)    => Query(publishers = Seq(name))
+      case AST.Format(format)     => Query(formats = Seq(format))
+      case AST.ASTRegion(region)  => Query(regions = Seq(region))
       case AST.FreeTextWord(word) => Query(freeText = Some(word))
       case AST.Quote(quote)       => Query(quotes = Seq(quote))
     }
