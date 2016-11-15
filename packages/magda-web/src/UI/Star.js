@@ -22,7 +22,7 @@ class Star extends Component {
       event.stopPropagation();
       this.setState({
         isActive: !this.state.isActive,
-        showInfo: true
+        showInfo: !this.state.isActive
       })
     }
 
