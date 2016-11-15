@@ -33,7 +33,8 @@ spec:
     targetPort: 80
   selector:
     service: api
-  type: "NodePort"
+  type: "LoadBalancer"
+  loadBalancerIP: "104.199.177.83"
 ---
 #INDEXER
 apiVersion: extensions/v1beta1
