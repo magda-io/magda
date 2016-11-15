@@ -31,7 +31,7 @@ const results = (state=initialData, action) => {
       let datasets = data.dataSets;
       let hitCount = data.hitCount;
 
-      let publisherOptions = data.facets[0].options;
+      let publisherOptions = defined(data.facets[0]) ? data.facets[0].options : []
       let temporalOptions = data.facets[1].options.sort((a, b)=>(b.value - a.value));
       let formatOptions = data.facets[2].options;
 

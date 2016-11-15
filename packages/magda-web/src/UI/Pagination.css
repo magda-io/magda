@@ -23,4 +23,24 @@
   color: #2980b9;
   font-size: 1.2em;
   font-weight: bold;
+  padding: 5px 0;
+  line-height: 1.6;
+}
+
+.pagination-btn .fa{
+  font-size: 1.6em;
+  vertical-align: top;
+}
+
+.pagination-next .fa{
+  padding-left: 10px;
+}
+
+.pagination-previous .fa,
+.pagination-start .fa{
+  padding-right: 10px;
+}
+
+.pagination-item{
+  text-align: right;
 }
