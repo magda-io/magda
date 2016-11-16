@@ -25,12 +25,13 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import akka.stream.scaladsl.SourceQueueWithComplete
 import com.sksamuel.elastic4s.BulkDefinition
 import akka.stream.scaladsl.SourceQueue
+import akka.stream.QueueOfferResult._
 
 case class IndexDefinition(
   name: String,
   version: Int,
   definition: CreateIndexDefinition,
-  create: (SourceQueue[BulkDefinition], Materializer, ActorSystem) => Future[Any] = (_, _, _) => Future(Unit))
+  create: (ElasticClient, Materializer, ActorSystem) => Future[Any] = (_, _, _) => Future(Unit))
 
 object IndexDefinition {
   val indices = Seq(new IndexDefinition(
@@ -67,9 +68,9 @@ object IndexDefinition {
           .mappings(
             mapping("regions").fields(
               field("geometry").typed(GeoShapeType))),
-      create = (indexQueue, materializer, actorSystem) => setupRegions(indexQueue)(materializer, actorSystem)))
+      create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
 
-  private def setupRegions(indexQueue: SourceQueue[BulkDefinition])(implicit materializer: Materializer, actorSystem: ActorSystem): Future[Any] = {
+  private def setupRegions(client: ElasticClient)(implicit materializer: Materializer, actorSystem: ActorSystem): Future[Any] = {
     val logger = actorSystem.log
 
     RegionSource.sources.map(regionSource =>
@@ -87,33 +88,21 @@ object IndexDefinition {
       // available to index them right away
       .mapAsync(1) { values =>
         logger.debug("Indexing {} regions", values.length)
-        indexQueue.offer(bulk(values)).map(_ => values.length)
+        client.execute(bulk(values))
+      }
+      .map { result =>
+        if (result.hasFailures) {
+          logger.error("Failure: {}", result.failureMessage)
+        }
+
+        result.items.length
+      }
+      .recover {
+        case e: Throwable =>
+          logger.error(e, "Encountered error while indexing regions")
+          throw e
       }
       .runWith(Sink.reduce((oldLength: Int, latestValuesLength: Int) => oldLength + latestValuesLength))
-      .map { count => logger.info("Finished submitting {} regions for indexing - this does not mean they were successful", count) }
-
-    //      .map { result =>
-    //        //        case Enqueued(x) =>
-    //        //                  result
-    //        if (result.hasFailures) {
-    //          logger.error("Failure: {}", result.failureMessage)
-    //        }
-    //
-    //        result
-    //      }
-    //      .runWith(Sink.seq)
-    //      .map { results =>
-    //        val failures = results.filter(_.hasFailures)
-    //
-    //        if (failures.size > 0) {
-    //          logger.error("Failures when indexing regions, this means spatial search won't work")
-    //        } else {
-    //          logger.info("Successfully indexed {} regions", results.foldLeft(0)((a, b: BulkResult) => a + b.successes.length))
-    //        }
-    //      }.recover {
-    //        case e: Throwable =>
-    //          logger.error(e, "Oops")
-    //          throw e
-    //      }
+      .map { count => logger.info("Successfully indexed {} regions", count) }
   }
 }

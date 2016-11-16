@@ -95,7 +95,7 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system
 
       DataSet(
         identifier = identifier,
-        catalog = "CSW",
+        catalog = interfaceConfig.name,
         title = summaryRecord \ "title",
         description = nodeToStringOption(summaryRecord \ "description").orElse(summaryRecord \ "abstract"),
         modified = modified,

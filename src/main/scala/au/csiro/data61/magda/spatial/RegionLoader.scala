@@ -21,6 +21,9 @@ import scala.util.Failure
 import scala.concurrent.ExecutionContext
 import scala.util.Success
 import scala.concurrent.duration._
+import au.csiro.data61.magda.AppConfig
+import akka.http.scaladsl.settings.ClientConnectionSettings
+import com.typesafe.config.ConfigFactory
 
 class RegionLoader(val regionSource: RegionSource, implicit val materializer: Materializer, implicit val actorSystem: ActorSystem) {
   implicit val ec: ExecutionContext = actorSystem.dispatcher
@@ -45,15 +48,17 @@ class RegionLoader(val regionSource: RegionSource, implicit val materializer: Ma
       actorSystem.log.info("Could not find shapes for {} at {}, loading from {} and caching to {} instead", regionSource.name, file.getPath, regionSource.url, file.getPath)
       file.getParentFile.mkdirs()
       file.createNewFile()
+
+      val clientSettings = ClientConnectionSettings(AppConfig.conf).withIdleTimeout(30 minutes)
+
       val connectionFlow: Flow[HttpRequest, HttpResponse, Any] =
-        Http().outgoingConnection(regionSource.url.getHost, getPort(regionSource.url))
+        Http().outgoingConnection(regionSource.url.getHost, getPort(regionSource.url), settings = clientSettings)
       val request = RequestBuilding.Get(regionSource.url.toString)
 
       actorSystem.log.info("Indexing regions from {}", regionSource.url)
 
       // Here we use an akka stream to read the file chunk by chunk and pass it down the stream to the parser.
       Source.single(request)
-        .idleTimeout(30 minutes)
         .via(connectionFlow)
         .flatMapConcat(
           _.entity.withoutSizeLimit().dataBytes

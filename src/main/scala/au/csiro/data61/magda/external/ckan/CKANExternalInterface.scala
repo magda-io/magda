@@ -32,12 +32,12 @@ import au.csiro.data61.magda.model.misc.Protocols._
 import scala.util.{ Success, Failure }
 import scala.concurrent.Await
 import scala.concurrent.duration._
-
+import java.net.URLEncoder
 class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
   implicit val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
   val excludedHarvesterTitles = interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet
-  val exclusionQueryString = excludedHarvesterTitles.map(title => s"-harvest_source_title:$title").reduce(_ + " " + _)
+  val exclusionQueryString = excludedHarvesterTitles.map(title => s"-harvest_source_title:${URLEncoder.encode('"' + title + '"', "UTF-8")}").reduce(_ + " " + _)
   val baseUrl = s"api/3/action/package_search?fq=$exclusionQueryString"
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =

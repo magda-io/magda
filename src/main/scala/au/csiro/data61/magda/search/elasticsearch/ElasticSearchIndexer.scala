@@ -29,6 +29,7 @@ import scala.concurrent.duration._
 import com.sksamuel.elastic4s.BulkDefinition
 import akka.stream.scaladsl.SourceQueueWithComplete
 import akka.stream.scaladsl.SourceQueue
+import akka.stream.QueueOfferResult
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -42,26 +43,28 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   implicit val scheduler = system.scheduler
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
-  private lazy val indexQueue: SourceQueue[BulkDefinition] =
-    Source.queue[BulkDefinition](0, OverflowStrategy.backpressure)
-      .mapAsync(1) { indexRequest =>
-        bulkIndex(indexRequest)
+  private lazy val indexQueue: SourceQueue[(String, Seq[DataSet])] =
+    Source.queue[(String, Seq[DataSet])](0, OverflowStrategy.backpressure)
+      .mapAsync(1) {
+        case (source, dataSets) =>
+          bulkIndex(buildDatasetIndexDefinition(dataSets))
+            .map((source, _))
+      }
+      .map {
+        case (source, result) =>
+          if (result.hasFailures) {
+            logger.warning("Failure when indexing from {}: {}", source, result.failureMessage)
+          } else {
+            logger.info("Indexed {} entries from {}", result.items.length, source)
+          }
+
+          result
       }
       .recover {
         case e: Throwable =>
-          logger.error(e, "Error when indexing")
-          throw e
+          logger.error(e, "Error when indexing: {}", e.getMessage)
       }
-      .map { result =>
-        if (result.hasFailures) {
-          logger.warning("Failure when indexing: {}", result.failureMessage)
-        } else {
-          logger.info("Indexed {} entries", result.successes.length)
-        }
-
-        result
-      }
-      .to(Sink.ignore)
+      .to(Sink.last)
       .run()
 
   /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the indices */
@@ -135,7 +138,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
           } flatMap { _ =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
-            definition.create(indexQueue, materializer, system)
+            definition.create(client, materializer, system)
 
             // Now we've created the index, record the version of it so we can look at it next time we boot up.
             logger.info("Recording index version")
@@ -168,7 +171,13 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   }
 
   override def index(source: String, dataSets: List[DataSet]) = if (dataSets.length > 0) {
-    indexQueue.offer(buildDatasetIndexDefinition(dataSets))
+    indexQueue.offer((source, dataSets))
+      .map {
+        case QueueOfferResult.Enqueued    => QueueOfferResult.Enqueued
+        case QueueOfferResult.Dropped     => throw new Exception("Dropped")
+        case QueueOfferResult.QueueClosed => throw new Exception("Queue Closed")
+        case QueueOfferResult.Failure(e)  => throw e
+      }
   } else {
     Future(None)
   }
