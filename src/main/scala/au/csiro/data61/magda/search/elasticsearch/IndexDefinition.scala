@@ -22,46 +22,54 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import au.csiro.data61.magda.search.elasticsearch.Queries.generateRegionId
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
+import akka.stream.scaladsl.SourceQueueWithComplete
+import com.sksamuel.elastic4s.BulkDefinition
+import akka.stream.scaladsl.SourceQueue
 
 case class IndexDefinition(
   name: String,
   version: Int,
   definition: CreateIndexDefinition,
-  create: (ElasticClient, Materializer, ActorSystem) => Future[Unit] = (client, _, _) => Future(Unit))
+  create: (SourceQueue[BulkDefinition], Materializer, ActorSystem) => Future[Any] = (_, _, _) => Future(Unit))
 
 object IndexDefinition {
   val indices = Seq(new IndexDefinition(
     name = "datasets",
     version = 10,
     definition =
-      create.index("datasets").mappings(
-        mapping("datasets").fields(
-          field("temporal").inner(
-            field("start").inner(
-              field("text").typed(StringType)),
-            field("end").inner(
-              field("text").typed(StringType))),
-          field("publisher").inner(
-            field("name").typed(StringType).fields(
-              field("untouched").typed(StringType).index("not_analyzed"))),
-          field("distributions").nested(
-            field("format").typed(StringType).fields(
-              field("untokenized").typed(StringType).analyzer("untokenized"))),
-          field("spatial").inner(
-            field("geoJson").typed(GeoShapeType))),
-        mapping(Format.id),
-        mapping(Year.id),
-        mapping(Publisher.id)
-      ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
+      create.index("datasets")
+        .indexSetting("recovery.initial_shards", 1)
+        .mappings(
+          mapping("datasets").fields(
+            field("temporal").inner(
+              field("start").inner(
+                field("text").typed(StringType)),
+              field("end").inner(
+                field("text").typed(StringType))),
+            field("publisher").inner(
+              field("name").typed(StringType).fields(
+                field("untouched").typed(StringType).index("not_analyzed"))),
+            field("distributions").nested(
+              field("format").typed(StringType).fields(
+                field("untokenized").typed(StringType).analyzer("untokenized"))),
+            field("spatial").inner(
+              field("geoJson").typed(GeoShapeType))),
+          mapping(Format.id),
+          mapping(Year.id),
+          mapping(Publisher.id)
+        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
       version = 5,
       definition =
-        create.index("regions").mappings(mapping("regions").fields(
-          field("geometry").typed(GeoShapeType))),
-      create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
+        create.index("regions")
+          .indexSetting("recovery.initial_shards", 1)
+          .mappings(
+            mapping("regions").fields(
+              field("geometry").typed(GeoShapeType))),
+      create = (indexQueue, materializer, actorSystem) => setupRegions(indexQueue)(materializer, actorSystem)))
 
-  private def setupRegions(client: ElasticClient)(implicit materializer: Materializer, actorSystem: ActorSystem): Future[Unit] = {
+  private def setupRegions(indexQueue: SourceQueue[BulkDefinition])(implicit materializer: Materializer, actorSystem: ActorSystem): Future[Any] = {
     val logger = actorSystem.log
 
     RegionSource.sources.map(regionSource =>
@@ -72,35 +80,40 @@ object IndexDefinition {
           .source(jsonRegion.toJson)
       ))
       .reduce((x, y) => Source.combine(x, y)(Merge(_)))
-      // This creates a buffer of 50mb (roughly) of indexed regions that will be bulk-indexed in the next ES request 
+      // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request 
       .batchWeighted(AppConfig.conf.getLong("regionBufferMb") * 1000000, defin => defin.build.source().length(), Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
       // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
       // available to index them right away
       .mapAsync(1) { values =>
         logger.debug("Indexing {} regions", values.length)
-        client.execute(bulk(values))
+        indexQueue.offer(bulk(values)).map(_ => values.length)
       }
-      .map { result =>
-        if (result.hasFailures) {
-          logger.error("Failure: {}", result.failureMessage)
-        }
+      .runWith(Sink.reduce((oldLength: Int, latestValuesLength: Int) => oldLength + latestValuesLength))
+      .map { count => logger.info("Finished submitting {} regions for indexing - this does not mean they were successful", count) }
 
-        result
-      }
-      .runWith(Sink.seq)
-      .map { results =>
-        val failures = results.filter(_.hasFailures)
-
-        if (failures.size > 0) {
-          logger.error("Failures when indexing regions, this means spatial search won't work")
-        } else {
-          logger.info("Successfully indexed {} regions", results.foldLeft(0)((a, b: BulkResult) => a + b.successes.length))
-        }
-      }.recover {
-        case e: Throwable =>
-          logger.error(e, "Oops")
-          throw e
-      }
+    //      .map { result =>
+    //        //        case Enqueued(x) =>
+    //        //                  result
+    //        if (result.hasFailures) {
+    //          logger.error("Failure: {}", result.failureMessage)
+    //        }
+    //
+    //        result
+    //      }
+    //      .runWith(Sink.seq)
+    //      .map { results =>
+    //        val failures = results.filter(_.hasFailures)
+    //
+    //        if (failures.size > 0) {
+    //          logger.error("Failures when indexing regions, this means spatial search won't work")
+    //        } else {
+    //          logger.info("Successfully indexed {} regions", results.foldLeft(0)((a, b: BulkResult) => a + b.successes.length))
+    //        }
+    //      }.recover {
+    //        case e: Throwable =>
+    //          logger.error(e, "Oops")
+    //          throw e
+    //      }
   }
 }

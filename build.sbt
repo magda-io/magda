@@ -2,7 +2,7 @@ enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 name := "magda-metadata"
 organization := "au.com.csiro.data61"
-version := "0.0.2"
+version := "0.0.2-SNAPSHOT"
 scalaVersion := "2.11.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
@@ -64,3 +64,4 @@ val baseDir = baseDirPath.substring(0, baseDirPath.length - 2)
 val homeDir = System.getProperty("user.home")
 variables in EditSource += ("projectDir", baseDir)
 variables in EditSource += ("homeDir", homeDir)
+variables in EditSource += ("version", version.value)

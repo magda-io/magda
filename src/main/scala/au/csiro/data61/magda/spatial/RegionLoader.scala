@@ -20,6 +20,7 @@ import akka.stream.scaladsl.Sink
 import scala.util.Failure
 import scala.concurrent.ExecutionContext
 import scala.util.Success
+import scala.concurrent.duration._
 
 class RegionLoader(val regionSource: RegionSource, implicit val materializer: Materializer, implicit val actorSystem: ActorSystem) {
   implicit val ec: ExecutionContext = actorSystem.dispatcher
@@ -52,6 +53,7 @@ class RegionLoader(val regionSource: RegionSource, implicit val materializer: Ma
 
       // Here we use an akka stream to read the file chunk by chunk and pass it down the stream to the parser.
       Source.single(request)
+        .idleTimeout(30 minutes)
         .via(connectionFlow)
         .flatMapConcat(
           _.entity.withoutSizeLimit().dataBytes
