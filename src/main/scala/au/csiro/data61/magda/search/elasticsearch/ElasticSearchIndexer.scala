@@ -1,3 +1,4 @@
+
 package au.csiro.data61.magda.search.elasticsearch
 
 import akka.stream.Materializer
