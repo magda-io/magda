@@ -85,6 +85,9 @@ spec:
             add:
               - IPC_LOCK
         image: quay.io/pires/docker-elasticsearch-kubernetes:2.4.1
+        resources:
+          limits:
+            memory: 3000Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -99,7 +102,7 @@ spec:
         - name: HTTP_ENABLE
           value: "true"
         - name: ES_HEAP_SIZE
-          value: "2g"
+          value: "1500m"
         ports:
         - containerPort: 9200
           name: http

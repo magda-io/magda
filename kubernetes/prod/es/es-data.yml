@@ -23,6 +23,8 @@ spec:
         resources:
           requests:
             memory: 5000Mi
+          limits: 
+            memory: 7000Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -80,6 +82,8 @@ spec:
         resources:
           requests:
             memory: 5000Mi
+          limits: 
+            memory: 7000Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -137,6 +141,8 @@ spec:
         resources:
           requests:
             memory: 5000Mi
+          limits: 
+            memory: 7000Mi
         env:
         - name: NAMESPACE
           valueFrom:

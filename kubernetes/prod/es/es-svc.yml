@@ -7,6 +7,8 @@ metadata:
     role: client
 spec:
   type: LoadBalancer
+  loadBalancerSourceRanges:
+  - 10.0.0.0/8
   selector:
     component: elasticsearch
     role: client

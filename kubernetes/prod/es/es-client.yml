@@ -69,5 +69,5 @@ spec:
     kind: Deployment
     name: es-client
   minReplicas: 1
-  maxReplicas: 1
+  maxReplicas: 3
   targetCPUUtilizationPercentage: 80
