@@ -74,6 +74,9 @@ spec:
     spec:
       containers:
       - name: es
+        resources:
+          limits:
+            memory: 3000Mi
         securityContext:
           privileged: true
           capabilities:
@@ -94,7 +97,7 @@ spec:
         - name: HTTP_ENABLE
           value: "true"
         - name: ES_HEAP_SIZE
-          value: "2g"
+          value: "1500m"
         ports:
         - containerPort: 9200
           name: http
@@ -158,7 +161,7 @@ spec:
       containers:
       - env:
         - name: ELASTICSEARCH_URL
-          value: http://elasticsearch:30092
+          value: http://elasticsearch:9200
         image: seeruk/docker-kibana-sense
         name: kibana
         ports:

@@ -61,7 +61,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 5,
+      version = 6,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -72,9 +72,10 @@ object IndexDefinition {
 
   private def setupRegions(client: ElasticClient)(implicit materializer: Materializer, actorSystem: ActorSystem): Future[Any] = {
     val logger = actorSystem.log
+    val regionLoader = new RegionLoader()
 
     RegionSource.sources.map(regionSource =>
-      RegionLoader.loadABSRegions(regionSource).map(jsonRegion =>
+      regionLoader.loadABSRegions(regionSource).map(jsonRegion =>
         ElasticDsl.index
           .into("regions" / "regions")
           .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.getFields(regionSource.id).head.asInstanceOf[JsString].value))
