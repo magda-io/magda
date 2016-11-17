@@ -33,10 +33,6 @@ class RegionMap extends Facet {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(this.map);
 
-        if(defined(this.props.regionMapping)){
-          this.addRegion();
-        }
-      
         if(this.props.interaction === false){
             this.map.dragging.disable();
             this.map.touchZoom.disable();
@@ -47,7 +43,11 @@ class RegionMap extends Facet {
     componentWillReceiveProps(nextProps) {
         // Is this condition needed? Can props be updated before the layer is created?
         if (this.layer) {
-            this.layer.setStyle(this.generateStyle(nextProps.activeRegionId));
+            this.layer.setStyle(this.generateStyle(nextProps.regionId));
+        }
+
+        if(defined(this.props.regionMapping)){
+          this.addRegion();
         }
     }
 
@@ -69,14 +69,14 @@ class RegionMap extends Facet {
 
     addRegion(){
         let that = this;
-        let regionType = this.props.activeRegionId;
-        let region = this.props.regionMapping[this.props.activeRegionType];
+        let regionType = this.props.regionId;
+        let region = this.props.regionMapping[this.props.regionType];
         this.getID = function(feature) { return feature.properties[region.id];};
 
         if(defined(region)){
           this.layer = new L.TileLayer.MVTSource({
-              url: region.url,
-              style: this.generateStyle(this.props.activeRegionId),
+              url: region.server,
+              style: this.generateStyle(this.props.regionId),
               hoverInteraction: this.props.interaction,
               /*onEachFeature: onEachFeature, */
               clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction

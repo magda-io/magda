@@ -18,7 +18,7 @@ export function receiveRegionMapping(json){
 export function fetchRegionMapping() {
   return (dispatch)=>{
     dispatch(requestRegionMapping())
-    return fetch('https://raw.githubusercontent.com/TerriaJS/terriajs/master/wwwroot/data/regionMapping.json')
+    return fetch('https://raw.githubusercontent.com/TerriaJS/nationalmap/master/wwwroot/data/regionMapping.json')
     .then(response => response.json())
     .then(json =>
       dispatch(receiveRegionMapping(json))

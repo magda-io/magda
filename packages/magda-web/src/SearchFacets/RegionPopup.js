@@ -79,8 +79,8 @@ class RegionPopup extends Facet {
                     <RegionMap title='region'
                                      id='region'
                                      interaction={true}
-                                     activeRegionId={this.state._activeRegionId}
-                                     activeRegionType={this.state._activeRegionType}
+                                     regionId={this.state._activeRegionId}
+                                     regionType={this.state._activeRegionType}
                                      regionMapping={this.props.regionMapping}
                     />
 

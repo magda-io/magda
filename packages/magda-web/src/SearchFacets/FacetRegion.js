@@ -80,8 +80,8 @@ class FacetRegion extends Component {
                                 id='location'
                                 onClick={this.openPopup}
                                 interaction={false}
-                                activeRegionId={this.props.activeRegion['regionId']}
-                                activeRegionType={this.props.activeRegion['regionType']}
+                                RegionId={this.props.activeRegion['regionId']}
+                                RegionType={this.props.activeRegion['regionType']}
                                 regionMapping={this.props.regionMapping}
 
                      />
