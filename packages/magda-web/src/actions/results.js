@@ -134,3 +134,15 @@ export function setDateTo(date){
     item: date
   }
 }
+
+export function resetDateFrom(){
+  return {
+    type: RESET_DATE_FROM
+  }
+}
+
+export function resetDateTo(){
+  return {
+    type: RESET_DATE_TO
+  }
+}

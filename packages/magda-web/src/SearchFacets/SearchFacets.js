@@ -4,7 +4,7 @@ import FacetTemporal from './FacetTemporal';
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import {connect} from 'react-redux';
-import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion, setDateFrom, setDateTo, addFormat, removeFormat, resetFormat} from '../actions/results';
+import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion, setDateFrom, setDateTo, addFormat, removeFormat, resetFormat, resetDateFrom, resetDateTo} from '../actions/results';
 import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
 import {fetchRegionSearchResults} from '../actions/facetRegionSearch';
 import {fetchFormatSearchResults} from '../actions/facetFormatSearch';
@@ -118,8 +118,8 @@ class SearchFacets extends Component {
       dateTo: undefined
     });
     // dispatch event
-    this.props.dispatch(setDateFrom(undefined))
-    this.props.dispatch(setDateTo(undefined))
+    this.props.dispatch(resetDateFrom())
+    this.props.dispatch(resetDateTo())
   }
 
 

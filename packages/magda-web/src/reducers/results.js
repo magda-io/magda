@@ -105,6 +105,12 @@ const results = (state=initialData, action) => {
         activeDateTo: action.item
       })
 
+    case 'RESET_DATE_FROM':
+      return Object.assign({}, state, initialData.activeDateFrom)
+
+    case 'RESET_DATE_TO':
+      return Object.assign({}, state, initialData.activeDateTo)
+
     case 'ADD_FORMAT':
       return Object.assign({}, state, {
         activeFormats: [...state.activeFormats, action.item]
