@@ -65,7 +65,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 5,
+      version = 8,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
