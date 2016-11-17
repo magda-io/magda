@@ -99,7 +99,8 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
               }
             }
           }
-        }
+        } ~
+        path("region-types") { getFromResource("regionMapping.json") }
     }
   }
 
