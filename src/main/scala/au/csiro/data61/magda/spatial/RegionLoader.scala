@@ -32,65 +32,60 @@ import scala.util.Success
 import scala.concurrent.Promise
 import akka.stream.scaladsl.SourceQueue
 import scala.concurrent.Future
+import com.sksamuel.elastic4s.ElasticClient
+import com.sksamuel.elastic4s.ElasticDsl
+import spray.json.JsString
+import akka.stream.IOResult
 
 class RegionLoader(implicit val system: ActorSystem, implicit val materializer: Materializer) {
   implicit val ec = system.dispatcher
-  val clientSettings = ConnectionPoolSettings(AppConfig.conf).withIdleTimeout(30 minutes)
-  val pool = Http().superPool[Int](settings = clientSettings)
-  val queue = Source.queue[(RegionSource, Promise[File])](10, OverflowStrategy.backpressure)
-    .mapAsync(4) {
-      case (regionSource, promise) =>
-        val file = new File(s"/usr/regions/${regionSource.name}.json")
+  val pool = Http().superPool[Int]()
 
-        if (file.exists()) {
-          system.log.info("Found shapes for region {} at {}, loading from there", regionSource.name, file.getPath)
-          Future((file, promise))
-        } else {
-          system.log.info("Could not find shapes for {} at {}, loading from {} and caching to {} instead", regionSource.name, file.getPath, regionSource.url, file.getPath)
-          file.getParentFile.mkdirs()
-          file.createNewFile()
+  def loadABSRegions(regionSource: RegionSource): Future[File] = {
+    val file = new File(s"/usr/regions/${regionSource.name}.json")
 
-          val request = RequestBuilding.Get(regionSource.url.toString)
+    if (file.exists()) {
+      system.log.info("Found shapes for region {} at {}, loading from there", regionSource.name, file.getPath)
+      Future(file)
+    } else {
+      system.log.info("Could not find shapes for {} at {}, loading from {} and caching to {} instead", regionSource.name, file.getPath, regionSource.url, file.getPath)
+      file.getParentFile.mkdirs()
+      file.createNewFile()
 
-          system.log.info("Indexing regions from {}", regionSource.url)
+      val request = RequestBuilding.Get(regionSource.url.toString)
 
-          Source.single((request, 0))
-            .via(pool)
-            .flatMapConcat {
-              case (response, _) =>
-                response.get.entity.withoutSizeLimit().dataBytes
-            }
-            .runWith(FileIO.toPath(file.toPath()))
-            .recover {
-              case e: Throwable =>
-                system.log.info("Encountered error {} while downloading shapes for {}, deleting {}", e.getMessage, regionSource.name, file.getPath)
-                file.delete()
-                promise.failure(e)
-                throw e
-            }
-            .map(_ => (file, promise))
+      system.log.info("Indexing regions from {}", regionSource.url)
+
+      Source.single((request, 0))
+        .via(pool)
+        .flatMapConcat {
+          case (response, _) =>
+            response.get.entity.withoutSizeLimit().dataBytes
         }
+        .runWith(FileIO.toPath(file.toPath()))
+        .recover {
+          case e: Throwable =>
+            system.log.info("Encountered error {} while downloading shapes for {}, deleting {}", e.getMessage, regionSource.name, file.getPath)
+            file.delete()
+            throw e
+        }
+        .map(_ => file)
     }
-    .map {
-      case (file, promise) => promise.success(file)
-    }
-    .to(Sink.ignore)
-    .run()
+  }
 
-  /**
-   * Reads the ABS regions in from gigantic files and indexes them into ES
-   */
-  def loadABSRegions(regionSource: RegionSource)(implicit materializer: Materializer, actorSystem: ActorSystem): Source[JsObject, Any] = {
-    val splitFlow = JsonFraming.objectScanner(Int.MaxValue)
-    val promise = Promise[File]
-    queue.offer((regionSource, promise))
+  def setupRegions(): Source[(RegionSource, JsObject), _] = {
+    Source(RegionSource.sources.toList)
+      .mapAsync(4)(regionSource => loadABSRegions(regionSource).map((_, regionSource)))
+      .flatMapConcat {
+        case (file, regionSource) =>
+          val splitFlow = JsonFraming.objectScanner(Int.MaxValue)
 
-    Source.fromFuture(promise.future)
-      .flatMapConcat(file => FileIO.fromPath(file.toPath()))
-      .via(splitFlow)
-      .map(byteString => byteString.decodeString("UTF-8"))
-      .map(string => string.parseJson)
-      .map(jsValue => jsValue.asJsObject)
+          FileIO.fromPath(file.toPath())
+            .via(splitFlow)
+            .map(byteString => byteString.decodeString("UTF-8"))
+            .map(string => string.parseJson)
+            .map(jsValue => (regionSource, jsValue.asJsObject))
+      }
   }
 }
 
