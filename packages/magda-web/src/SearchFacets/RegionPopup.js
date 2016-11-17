@@ -8,8 +8,6 @@ import FacetSearchBox from './FacetSearchBox';
 import React from 'react'
 
 
-const regionTypeOptions = getRegionTypes();
-
 class RegionPopup extends Facet {
     constructor(props) {
         super(props);
@@ -21,10 +19,14 @@ class RegionPopup extends Facet {
          * @property {object} activeRegionType current region type, contains an id and a vlaue, fro example, {id: 'LGA', value:'LGAs (Local Goverment Areas)'}
          */
          this.state={
-             _activeRegionType: regionTypeOptions[0],
-             _activeRegion: undefined,
-             _activeRegionId: undefined
+             _activeRegionType: '',
+             _activeRegionId: '',
+             _activeRegion: undefined
          }
+    }
+
+    componentWillMount(){
+
     }
 
     onToggleOption(option){
@@ -66,7 +68,7 @@ class RegionPopup extends Facet {
 
                     </div>
                     <div className='col-sm-6'>
-                        <DropDown options={regionTypeOptions}
+                        <DropDown options={Object.keys(this.props.regionMapping)}
                                   activeOption={this.state._activeRegionType}
                                   select={this.selectRegionType}
                         />
@@ -79,6 +81,7 @@ class RegionPopup extends Facet {
                                      interaction={true}
                                      activeRegionId={this.state._activeRegionId}
                                      activeRegionType={this.state._activeRegionType}
+                                     regionMapping={this.props.regionMapping}
                     />
 
                   </div>

@@ -9,7 +9,7 @@ const initialData = {
   hitCount: 0,
   activePublishers: [],
   activeFormats: [],
-  activeRegion: {regionId: undefined, regionType: undefined},
+  activeRegion: {regionId: '', regionType: ''},
   activeDateFrom: undefined,
   activeDateTo:undefined,
   publisherOptions: [],

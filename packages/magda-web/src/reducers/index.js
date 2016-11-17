@@ -6,6 +6,7 @@ import results from './results';
 import facetPublisherSearch from './facetPublisherSearch';
 import facetRegionSearch from './facetRegionSearch';
 import facetFormatSearch from './facetFormatSearch';
+import regionMapping from './regionMapping';
 
 import { combineReducers } from 'redux';
 
@@ -14,6 +15,7 @@ const search = combineReducers({
   facetPublisherSearch,
   facetRegionSearch,
   facetFormatSearch,
+  regionMapping
 });
 
 export default search;

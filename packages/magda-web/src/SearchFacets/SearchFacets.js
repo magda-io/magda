@@ -144,6 +144,7 @@ class SearchFacets extends Component {
                       onToggleOption={this.onToggleRegionOption}
                       onResetFacet={this.onResetRegionFacet}
                       searchFacet={this.onSearchRegionFacet}
+                      regionMapping={this.props.regionMapping}
         />
         <FacetTemporal title='date range'
                       id='temporal'
@@ -174,6 +175,7 @@ SearchFacets.propTypes={
     publisherSearchResults: React.PropTypes.array.isRequired,
     regionSearchResults: React.PropTypes.array.isRequired,
     activePublishers: React.PropTypes.array.isRequired,
+    regionMapping: React.PropTypes.object,
     activeRegion: React.PropTypes.object,
     activeDateFrom: React.PropTypes.object,
     activeDateTo: React.PropTypes.object
@@ -181,8 +183,7 @@ SearchFacets.propTypes={
 
 
 function mapStateToProps(state) {
-  let { results , facetPublisherSearch, facetRegionSearch, facetFormatSearch } = state;
-  console.log(results);
+  let { results , facetPublisherSearch, facetRegionSearch, facetFormatSearch, regionMapping} = state;
   return {
     publisherOptions: results.publisherOptions,
     formatOptions: results.formatOptions,
@@ -196,7 +197,8 @@ function mapStateToProps(state) {
 
     publisherSearchResults: facetPublisherSearch.data,
     regionSearchResults: facetRegionSearch.data,
-    formatSearchResults: facetFormatSearch.data
+    formatSearchResults: facetFormatSearch.data,
+    regionMapping: regionMapping.data
   }
 }
 

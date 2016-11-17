@@ -8,6 +8,8 @@ import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.j
 import regions from '../dummyData/regions';
 import defined from '../helpers/defined';
 import React from 'react';
+import fetch from 'isomorphic-fetch'
+
 
 class RegionMap extends Facet {
     constructor(props) {
@@ -31,8 +33,10 @@ class RegionMap extends Facet {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(this.map);
 
-        this.addRegion();
-
+        if(defined(this.props.regionMapping)){
+          this.addRegion();
+        }
+      
         if(this.props.interaction === false){
             this.map.dragging.disable();
             this.map.touchZoom.disable();
@@ -66,8 +70,7 @@ class RegionMap extends Facet {
     addRegion(){
         let that = this;
         let regionType = this.props.activeRegionId;
-        console.log(this.props);
-        let region = regions()[regionType];
+        let region = this.props.regionMapping[this.props.activeRegionType];
         this.getID = function(feature) { return feature.properties[region.id];};
 
         if(defined(region)){

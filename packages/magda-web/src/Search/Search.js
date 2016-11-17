@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {fetchSearchResultsIfNeeded} from '../actions/results';
+import {fetchRegionMapping} from '../actions/regionMapping';
 import {connect} from 'react-redux';
 import config from '../config.js'
 import './Search.css';
@@ -22,12 +23,8 @@ class Search extends Component {
   }
 
   componentWillMount(){
+    this.props.dispatch(fetchRegionMapping());
     this.props.dispatch(fetchSearchResultsIfNeeded(this.props.location.query));
-  }
-
-
-  componentDidMount(){
-    //
   }
 
   componentWillReceiveProps(nextProps){

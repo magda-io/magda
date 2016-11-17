@@ -82,6 +82,8 @@ class FacetRegion extends Component {
                                 interaction={false}
                                 activeRegionId={this.props.activeRegion['regionId']}
                                 activeRegionType={this.props.activeRegion['regionType']}
+                                regionMapping={this.props.regionMapping}
+
                      />
                </div>
                {this.state.popUpIsOpen && <RegionPopup onFeatureClick={this.props.onFeatureClick}
@@ -90,6 +92,7 @@ class FacetRegion extends Component {
                                                        renderOption={this.renderOption}
                                                        onToggleOption={this.props.onToggleOption}
                                                        searchFacet={this.props.searchFacet}
+                                                       regionMapping={this.props.regionMapping}
                                           />}
           </FacetWrapper>
 
