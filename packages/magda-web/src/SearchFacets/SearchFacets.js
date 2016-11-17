@@ -93,8 +93,8 @@ class SearchFacets extends Component {
 
   onResetRegionFacet(){
     this.props.updateQuery({
-      regionId: [],
-      regionType: []
+      regionId: undefined,
+      regionType: undefined
     });
     this.props.dispatch(resetRegion());
   }

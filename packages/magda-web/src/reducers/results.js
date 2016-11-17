@@ -84,9 +84,7 @@ const results = (state=initialData, action) => {
       })
 
     case 'RESET_PUBLISHER':
-      return Object.assign({}, state, {
-        activePublishers: []
-      })
+      return Object.assign({}, state, initialData.activePublishers)
 
 
     case 'ADD_REGION':
@@ -95,9 +93,7 @@ const results = (state=initialData, action) => {
       })
 
     case 'RESET_REGION':
-      return Object.assign({}, state, {
-        activeRegion: undefined
-      })
+      return Object.assign({}, state, initialData.activeRegion)
 
     case 'SET_DATE_FROM':
       return Object.assign({}, state, {
@@ -121,9 +117,7 @@ const results = (state=initialData, action) => {
       })
 
     case 'RESET_FORMAT':
-      return Object.assign({}, state, {
-        activeFormats: []
-      })
+      return Object.assign({}, state, initialData.activeFormats)
 
     default:
       return state
