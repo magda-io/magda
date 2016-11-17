@@ -55,6 +55,12 @@ package misc {
     hitCount: Option[Long] = None,
     matched: Option[Boolean] = None)
 
+  case class RegionSearchResult(
+    query: String,
+    hitCount: Long,
+    regions: List[Region]
+  )
+
   case class DataSet(
       identifier: String,
       catalog: String,
@@ -261,6 +267,7 @@ package misc {
     implicit val queryFormat = jsonFormat8(Query.apply)
     implicit val searchResultFormat = jsonFormat6(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
+    implicit val regionSearchResultFormat = jsonFormat3(RegionSearchResult.apply)
   }
 
   object Protocols extends Protocols {

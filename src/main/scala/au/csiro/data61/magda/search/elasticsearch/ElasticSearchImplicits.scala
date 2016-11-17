@@ -1,5 +1,7 @@
 package au.csiro.data61.magda.search.elasticsearch
 
+import au.csiro.data61.magda.api.Region
+
 import scala.collection.JavaConverters._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.source.Indexable
@@ -19,7 +21,14 @@ object ElasticSearchImplicits {
       hit.sourceAsString.parseJson.convertTo[DataSet]
     }
   }
-  
+
+  implicit object RegionHitAs extends HitAs[Region] {
+    override def as(hit: RichSearchHit): Region = {
+      val parts = hit.id.split('/')
+      Region(parts(0), parts(1))
+    }
+  }
+
   implicit def aggregationsToFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation match {
     case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket =>
       new FacetOption(
