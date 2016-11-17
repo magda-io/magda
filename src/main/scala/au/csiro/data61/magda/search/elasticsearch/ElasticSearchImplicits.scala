@@ -22,10 +22,13 @@ object ElasticSearchImplicits {
 
   implicit object MatchingRegionHitAs extends HitAs[MatchingRegion] {
     override def as(hit: RichSearchHit): MatchingRegion = {
-      val parts = hit.id.split('/')
-      val json = hit.sourceAsString.parseJson.asJsObject
-      val properties = json.fields("properties").asJsObject
-      MatchingRegion(parts(0), properties.fields("CED_CODE16").convertTo[String], properties.fields("CED_NAME16").convertTo[String])
+      val source = hit.sourceAsMap
+      println(source)
+      MatchingRegion(
+        source("type").asInstanceOf[String],
+        source("id").asInstanceOf[String],
+        source("name").asInstanceOf[String]
+      )
     }
   }
 

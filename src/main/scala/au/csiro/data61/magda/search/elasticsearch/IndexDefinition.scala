@@ -61,16 +61,16 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 10,
+      version = 24,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
           .mappings(
             mapping("regions").fields(
-              field("properties").inner(
-                field("CED_NAME").typed(StringType)
-              ),
-              field("geometry").typed(GeoShapeType))),
+              field("type").typed(StringType),
+              field("id").typed(StringType),
+              field("name").typed(StringType) /*,
+              field("geometry").typed(GeoShapeType) */)),
       create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
 
   private def setupRegions(client: ElasticClient)(implicit materializer: Materializer, actorSystem: ActorSystem): Future[Any] = {
@@ -78,12 +78,18 @@ object IndexDefinition {
     val regionLoader = new RegionLoader()
 
     RegionSource.sources.map(regionSource =>
-      regionLoader.loadABSRegions(regionSource).map(jsonRegion =>
+      regionLoader.loadABSRegions(regionSource).map(jsonRegion => {
+        val properties = jsonRegion.fields("properties").asJsObject
         ElasticDsl.index
           .into("regions" / "regions")
           .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.getFields(regionSource.id).head.asInstanceOf[JsString].value))
-          .source(jsonRegion.toJson)
-      ))
+          .fields(
+            "type" -> regionSource.name,
+            "id" -> properties.fields("CED_CODE16").convertTo[String],
+            "name" -> properties.fields("CED_NAME16").convertTo[String],
+            "geometry" -> jsonRegion.fields("geometry").asJsObject
+          )
+      }))
       .reduce((x, y) => Source.combine(x, y)(Merge(_)))
       // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request 
       .batchWeighted(AppConfig.conf.getLong("regionBufferMb") * 1000000, defin => defin.build.source().length(), Seq(_))(_ :+ _)
