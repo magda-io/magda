@@ -1,7 +1,5 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import au.csiro.data61.magda.api.Region
-
 import scala.collection.JavaConverters._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.source.Indexable
@@ -22,10 +20,12 @@ object ElasticSearchImplicits {
     }
   }
 
-  implicit object RegionHitAs extends HitAs[Region] {
-    override def as(hit: RichSearchHit): Region = {
+  implicit object MatchingRegionHitAs extends HitAs[MatchingRegion] {
+    override def as(hit: RichSearchHit): MatchingRegion = {
       val parts = hit.id.split('/')
-      Region(parts(0), parts(1))
+      val json = hit.sourceAsString.parseJson.asJsObject
+      val properties = json.fields("properties").asJsObject
+      MatchingRegion(parts(0), properties.fields("CED_CODE16").convertTo[String], properties.fields("CED_NAME16").convertTo[String])
     }
   }
 

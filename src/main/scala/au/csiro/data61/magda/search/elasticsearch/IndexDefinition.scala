@@ -61,12 +61,15 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 6,
+      version = 10,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
           .mappings(
             mapping("regions").fields(
+              field("properties").inner(
+                field("CED_NAME").typed(StringType)
+              ),
               field("geometry").typed(GeoShapeType))),
       create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
 

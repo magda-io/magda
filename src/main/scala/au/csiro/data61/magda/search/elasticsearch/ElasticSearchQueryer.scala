@@ -316,7 +316,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
-            case _ => Future(RegionSearchResult(query, response.totalHits, response.as[Region].toList))
+            case _ => Future(RegionSearchResult(query, response.totalHits, response.as[MatchingRegion].toList))
           }
         }
     }
