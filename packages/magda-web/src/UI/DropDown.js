@@ -27,6 +27,7 @@ class DropDown extends Component {
   }
 
   render(){
+    console.log(this.props);
     return (
       <div className={`dropdown ${this.state.isOpen ? 'is-open': ''}`}>
         <button className='btn-dropdown btn' onClick={this.toggle}>{this.props.activeOption.value}<i className='fa fa-caret-down' aria-hidden='true'></i></button>

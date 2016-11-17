@@ -1,5 +1,6 @@
 import './RegionPopup.css';
 import DropDown from '../UI/DropDown';
+import defined from '../helpers/defined';
 import Facet from './FacetWrapper';
 import getRegionTypes from '../dummyData/getRegionTypes';
 import RegionMap from './RegionMap';
@@ -12,21 +13,35 @@ const regionTypeOptions = getRegionTypes();
 class RegionPopup extends Facet {
     constructor(props) {
         super(props);
+        this.onToggleOption = this.onToggleOption.bind(this);
+        this.onClickDone = this.onClickDone.bind(this);
+        this.selectRegionType = this.selectRegionType.bind(this);
         /**
          * @type {object}
          * @property {object} activeRegionType current region type, contains an id and a vlaue, fro example, {id: 'LGA', value:'LGAs (Local Goverment Areas)'}
          */
          this.state={
-             regionType: regionTypeOptions[0],
-
+             _activeRegionType: regionTypeOptions[0],
+             _activeRegion: undefined,
+             _activeRegionId: undefined
          }
-         this.selectRegionType = this.selectRegionType.bind(this);
+    }
+
+    onToggleOption(option){
+      this.setState({
+        _activeRegion: option,
+      })
     }
 
     selectRegionType(regionType){
       this.setState({
-        regionType: regionType
+        _activeRegionType: regionType
       })
+    }
+
+    onClickDone(){
+      this.props.onToggleOption(this.state._activeRegion);
+      this.props.closePopUp();
     }
 
     render(){
@@ -46,30 +61,31 @@ class RegionPopup extends Facet {
                     <div className='col-sm-6'>
                       <FacetSearchBox renderOption={this.props.renderOption}
                                       options={this.props.facetSearchResults}
-                                      searchFacet={this.props.searchFacet}/>
+                                      searchFacet={this.props.searchFacet}
+                                      onToggleOption={this.onToggleOption}/>
 
                     </div>
                     <div className='col-sm-6'>
                         <DropDown options={regionTypeOptions}
-                                  activeOption={this.props.activeRegionType}
+                                  activeOption={this.state._activeRegionType}
                                   select={this.selectRegionType}
                         />
                     </div>
                   </div>
-                  <div className='popup-summary'>{this.props.locationInfoSummray}</div>
+                  {defined(this.state._activeRegion) && <div className='active-region'>{this.state._activeRegion.geographyLabel} {this.state._activeRegion.state}</div>}
                   <div className='popup-map'>
                     <RegionMap title='region'
                                      id='region'
                                      interaction={true}
-                                     activeRegionId={this.props.activeRegionId}
-                                     activeRegionType={this.props.activeRegionType}
+                                     activeRegionId={this.state._activeRegionId}
+                                     activeRegionType={this.state._activeRegionType}
                     />
 
                   </div>
                   </div>
                   <div className='popup-footer clearfix'>
                     <button className='btn popup-cancel-btn' onClick={()=>this.props.closePopUp()} >Cancel</button>
-                    <button className='btn popup-done-btn' onClick={()=>this.props.closePopUp()} >Done</button>
+                    <button className='btn popup-done-btn' disabled={!defined(this.state._activeRegion)} onClick={this.onClickDone} >Done</button>
                   </div>
               </div>
             </div>

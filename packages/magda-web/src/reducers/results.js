@@ -9,13 +9,24 @@ const initialData = {
   hitCount: 0,
   activePublishers: [],
   activeFormats: [],
-  activeRegions: [],
+  activeRegion: {regionId: undefined, regionType: undefined},
   activeDateFrom: undefined,
   activeDateTo:undefined,
   publisherOptions: [],
   temporalOptions: [],
   formatOptions: [],
   apiQuery: ''
+}
+
+function findObjectFromArray(value, array){
+  let object = find(array, o=>o.value === value);
+  if(defined(object)){
+    return object
+  }
+  return {
+    value,
+    hitCount: 'nil'
+  }
 }
 
 const results = (state=initialData, action) => {
@@ -36,13 +47,13 @@ const results = (state=initialData, action) => {
       let formatOptions = data.facets[2].options;
 
 
-      let activePublishers = query.publishers.map(item=> find(data.facets[0].options, o=>o.value === item));
+      let activePublishers = query.publishers.map(item=> findObjectFromArray(item,data.facets[0].options));
       let activeDateFrom = defined(query.dateFrom) ? {value: query.dateFrom.slice(0, 4), hitCount: null} : undefined;
       let activeDateTo = defined(query.dateTo) ? {value: query.dateTo.slice(0, 4), hitCount: null} : undefined;
 
-      let activeFormats = query.formats.map(item=>find(data.facets[2].options, o=>o.value === item));
+      let activeFormats = query.formats.map(item=> findObjectFromArray(item,data.facets[2].options));
       // temp
-      let activeRegions = [{regionId: '302', regionType: 'SA4'}];
+      let activeRegion = {regionId: '302', regionType: 'SA4'};
 
       return Object.assign({}, state, {
         isFetching: false,
@@ -54,7 +65,7 @@ const results = (state=initialData, action) => {
         formatOptions,
 
         activePublishers,
-        activeRegions,
+        activeRegion,
         activeDateFrom,
         activeDateTo,
         activeFormats
@@ -80,12 +91,12 @@ const results = (state=initialData, action) => {
 
     case 'ADD_REGION':
       return Object.assign({}, state, {
-        activeRegions: [action.item]
+        activeRegion: action.item
       })
 
     case 'RESET_REGION':
       return Object.assign({}, state, {
-        activeRegions: []
+        activeRegion: undefined
       })
 
     case 'SET_DATE_FROM':

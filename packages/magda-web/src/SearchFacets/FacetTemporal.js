@@ -16,24 +16,24 @@ class FacetTemporal extends Component {
     this.renderDragBar = this.renderDragBar.bind(this);
     this.onResetDateTo = this.onResetDateTo.bind(this);
     this.onResetDateFrom = this.onResetDateFrom.bind(this);
-    this.toggleOption = this.toggleOption.bind(this);
+    this.onToggleOption = this.onToggleOption.bind(this);
     this.onDrag = this.onDrag.bind(this);
   }
 
   onResetDateTo(){
-    let datesArray = [this.props.activeOptions[0], undefined]
-    this.props.toggleOption(datesArray);
+    let datesArray = [this.props.activeDates[0], undefined]
+    this.props.onToggleOption(datesArray);
   }
 
   onResetDateFrom(){
-    let datesArray = [undefined, this.props.activeOptions[1]]
-    this.props.toggleOption(datesArray);
+    let datesArray = [undefined, this.props.activeDates[1]]
+    this.props.onToggleOption(datesArray);
   }
 
 
-  toggleOption(option){
-    let tempDateFrom = this.props.activeOptions[0];
-    let tempDateTo = this.props.activeOptions[1];
+  onToggleOption(option){
+    let tempDateFrom = this.props.activeDates[0];
+    let tempDateTo = this.props.activeDates[1];
     if(!defined(tempDateFrom) && !defined(tempDateTo)){
       tempDateFrom = option;
       tempDateTo = option;
@@ -52,7 +52,7 @@ class FacetTemporal extends Component {
     let compare = tempDateFrom.value - tempDateTo.value;
     let dateFrom = compare >= 0 ? tempDateTo : tempDateFrom;
     let dateTo = compare >= 0 ? tempDateFrom : tempDateTo;
-    this.props.toggleOption([dateFrom, dateTo])
+    this.props.onToggleOption([dateFrom, dateTo])
   }
 
   /**
@@ -60,15 +60,15 @@ class FacetTemporal extends Component {
    * @param {object} option the current facet option
    */
   checkActiveOption(option){
-    let max = defined(this.props.activeOptions[1]) ? + this.props.activeOptions[1].value : 4000;
-    let min = defined(this.props.activeOptions[0]) ? + this.props.activeOptions[0].value : 0;
+    let max = defined(this.props.activeDates[1]) ? + this.props.activeDates[1].value : 4000;
+    let min = defined(this.props.activeDates[0]) ? + this.props.activeDates[0].value : 0;
     if((+option.value <= max) && (+option.value >= min)){
       return true
     }
     return false
   }
 
-  renderOption(option, i){
+  renderOption(option, onClick){
     if(!option){
       return null;
     }
@@ -79,7 +79,7 @@ class FacetTemporal extends Component {
     return (
     <button type='button'
             className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn-facet-date-option btn`}
-            onClick={this.toggleOption.bind(this, option)}>
+            onClick={onClick.bind(this, option)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}</span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
@@ -96,7 +96,7 @@ class FacetTemporal extends Component {
     // offset by one, for the "any end date" option
     let index = Math.floor(value / itemHeight) - 1;
     let date = this.props.options[index];
-    let datesArray = this.props.activeOptions.slice();
+    let datesArray = this.props.activeDates.slice();
 
     // only updates if the dragged position is within the range
     if(index > 0 && index < this.props.options.length){
@@ -112,15 +112,15 @@ class FacetTemporal extends Component {
         datesArray[0] = date;
       }
     }
-    this.props.toggleOption(datesArray);
+    this.props.onToggleOption(datesArray);
   }
 
   renderDragBar(){
     // the height of the dragbar should be the same with the height of all the options + any start date + any end date
     // remove last padding
     let height = (this.props.options.length + 2) * itemHeight - 4;
-    let fromIndex = defined(this.props.activeOptions[0]) ? findIndex(this.props.options, o=>o.value === this.props.activeOptions[0].value) + 1 : this.props.options.length + 1;
-    let toIndex = defined(this.props.activeOptions[1]) ? findIndex(this.props.options, o=>o.value === this.props.activeOptions[1].value) + 1 : 0;
+    let fromIndex = defined(this.props.activeDates[0]) ? findIndex(this.props.options, o=>o.value === this.props.activeDates[0].value) + 1 : this.props.options.length + 1;
+    let toIndex = defined(this.props.activeDates[1]) ? findIndex(this.props.options, o=>o.value === this.props.activeDates[1].value) + 1 : 0;
     let dragBarData=[(toIndex * itemHeight), (fromIndex * itemHeight)];
     return <DragBar dragBarData={dragBarData} onDrag={this.onDrag} height={height}/>
   }
@@ -129,7 +129,7 @@ class FacetTemporal extends Component {
     let that = this;
     return <FacetWrapper onResetFacet={this.props.onResetFacet}
                          title={this.props.title}
-                         activeOptions={this.props.activeOptions}
+                         activeDates={this.props.activeDates}
                          hasQuery={this.props.hasQuery}>
              <div className='clearfix facet-temporal'>
                <div className='slider'>
@@ -137,7 +137,7 @@ class FacetTemporal extends Component {
                </div>
                <ul className='list-unstyled list'>
                 <li><button className='btn btn-facet-option btn-facet-date-option' onClick={this.onResetDateTo}>Any end date </button></li>
-                 {that.props.options.map(o=><li key={o.value}>{that.renderOption(o)}</li>)}
+                 {that.props.options.map(o=><li key={o.value}>{that.renderOption(o, this.onToggleOption)}</li>)}
                  <li><button className='btn btn-facet-option btn-facet-date-option' onClick={this.onResetDateFrom}>Any start date </button></li>
                </ul>
              </div>

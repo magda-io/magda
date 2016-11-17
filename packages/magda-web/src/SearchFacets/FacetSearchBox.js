@@ -9,9 +9,9 @@ class FacetSearchBox extends Component {
     super(props);
     this.onSearchTextChange = this.onSearchTextChange.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
-    this.callback = this.callback.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.onExcKeyDown = this.onExcKeyDown.bind(this);
+    this.onClick = this.onClick.bind(this);
 
     /**
      * @type {object}
@@ -31,6 +31,11 @@ class FacetSearchBox extends Component {
 
   componentWillUnmount(){
     window.removeEventListener('keydown', this.onExcKeyDown);
+  }
+
+  onClick(option){
+    this.props.onToggleOption(option);
+    this.clearSearch();
   }
 
   onExcKeyDown(event){
@@ -98,9 +103,6 @@ class FacetSearchBox extends Component {
     })
   }
 
-  callback(){
-    this.clearSearch();
-  }
 
   render(){
     return (
@@ -122,7 +124,7 @@ class FacetSearchBox extends Component {
             <ul className='faceted-options list-unstyled' onKeyDown={this.handleKeyDown}>
               {this.props.options.map((option, i)=>
                   <li key={`${option.value}-${i}`}>
-                      {this.props.renderOption(option, null, this.callback, (this.state.indexOfOptionOnFocus === i))}
+                      {this.props.renderOption(option, this.onClick,  null, (this.state.indexOfOptionOnFocus === i))}
                   </li>
               )}
             </ul>
@@ -133,7 +135,8 @@ class FacetSearchBox extends Component {
 
 FacetSearchBox.propTypes = {options: React.PropTypes.array,
                             searchFacet: React.PropTypes.func,
-                            renderOption: React.PropTypes.func};
+                            renderOption: React.PropTypes.func,
+                            onToggleOption: React.PropTypes.func};
 FacetSearchBox.defaultProps = {options: []};
 
 export default FacetSearchBox;

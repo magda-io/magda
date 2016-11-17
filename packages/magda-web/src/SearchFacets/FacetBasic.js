@@ -36,22 +36,22 @@ class FacetBasic extends Component {
  * generate the html for a option of this filter
  * @param {object} option the current option to render
  * @param {object} optionMax the option with the max value of object.value, this is uased to calculate the width of the volumne indicator
- * @param {function} callback a function that get called after user clicks on this option
+ * @param {function} onClick when clicked
  * @param {boolean} onFocus whether this option should be in focus or not
  */
-  renderOption(option, optionMax, callback, onFocus, _isActive){
+  renderOption(option, onClick, optionMax, onFocus){
     if(!option){
       return null;
     }
     let maxWidth = defined(optionMax) ? +option.hitCount/optionMax.hitCount * 200 : 0;
     let divStyle = {width: maxWidth + 'px'}
-    let isActive = defined(_isActive) ? _isActive : this.checkActiveOption(option);
+    let isActive = this.checkActiveOption(option);
 
     return(
     <button type='button'
             ref={b=>{if(b != null && onFocus === true){b.focus()}}}
             className={`${isActive ? 'is-active' : ''} btn-facet-option btn`}
-            onClick={this.props.toggleOption.bind(this, option, callback)}>
+            onClick={onClick.bind(this, option)}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}{(option.matched && !isActive) && <span className='btn-facet-option__recomended-badge'>(recomended)</span>}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-${isActive ? 'times' : 'plus'}`}/></span>
@@ -78,12 +78,14 @@ class FacetBasic extends Component {
                          hasQuery={this.props.hasQuery}>
                <FacetSearchBox renderOption={this.renderOption}
                                options={this.props.facetSearchResults}
-                               searchFacet={this.props.searchFacet}/>
+                               onToggleOption={this.props.onToggleOption}
+                               searchFacet={this.props.searchFacet}
+                               />
                <ul className='list-unstyled'>
-                 {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
+                 {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
                </ul>
                <ul className='list-unstyled'>
-                 {inactiveOptions.slice(0, size).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
+                 {inactiveOptions.slice(0, size).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
                  {inactiveOptions.length - tempSize > 0 &&
                    <li><button onClick={this.toggleExpand}
                            className='btn btn-toggle-expand'>

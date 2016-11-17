@@ -49,14 +49,14 @@ class FacetRegion extends Component {
         this.props.toggleOption(feature);
     }
 
-    // see Facet.renderOption(option, optionMax, callback, onFocus)
+    // see Facet.renderOption(option, optionMax, onFocus)
     // Here is only for mark up change
-    renderOption(option, optionMax, callback, onFocus){
+    renderOption(option, onClick, onFocus){
       return (
             <button type='button'
                     ref={b=>{if(b != null && onFocus === true){b.focus()}}}
                     className='btn-facet-option btn btn-facet-option__location'
-                    onClick={this.props.toggleOption.bind(this, option, callback)}
+                    onClick={onClick.bind(this, option)}
                     title={option.geographyLabel}>
               <span className='btn-facet-option__name'>{option.geographyLabel} , {option.state}</span>
             </button>);
@@ -64,29 +64,32 @@ class FacetRegion extends Component {
 
 
     render(){
-      console.log(this.props);
+      let activeRegion = this.props.activeRegion;
         return (
             <FacetWrapper onResetFacet={this.props.onResetFacet}
                           title={this.props.title}
-                          activeOptions={[this.props.activeRegionId, this.props.activeRegionType]}
+                          activeRegion={[this.props.activeRegionId, this.props.activeRegionType]}
                           hasQuery={this.props.hasQuery}>
                <FacetSearchBox renderOption={this.renderOption}
+                               onToggleOption={this.props.onToggleOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
-               {this.props.activeOptions.map(r=><div className='active-region' key={r.geographyLabel + r.state}>{r.geographyLabel} {r.state}</div>)}
+               {activeRegion && <div className='active-region' key={activeRegion.geographyLabel + activeRegion.state}>{activeRegion.geographyLabel} {activeRegion.state}</div>}
                <div className='preview'>
                      <RegionMap title='location'
                                 id='location'
                                 onClick={this.openPopup}
                                 interaction={false}
-                                activeRegionId={this.props.activeOptions['regionId']}
-                                activeRegionType={this.props.activeOptions['regionType']}
+                                activeRegionId={this.props.activeRegion['regionId']}
+                                activeRegionType={this.props.activeRegion['regionType']}
                      />
                </div>
                {this.state.popUpIsOpen && <RegionPopup onFeatureClick={this.props.onFeatureClick}
-                                                             closePopUp={this.closePopUp}
-                                                             renderOption={this.renderOption}
-                                                             searchFacet={this.props.searchFacet}
+                                                       facetSearchResults={this.props.facetSearchResults}
+                                                       closePopUp={this.closePopUp}
+                                                       renderOption={this.renderOption}
+                                                       onToggleOption={this.props.onToggleOption}
+                                                       searchFacet={this.props.searchFacet}
                                           />}
           </FacetWrapper>
 

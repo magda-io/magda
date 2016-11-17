@@ -30,18 +30,12 @@ class SearchFacets extends Component {
   }
 
 
-  onTogglePublisherOption(publisher, callback){
+  onTogglePublisherOption(publisher){
     this.toggleBasicOption(publisher, this.props.activePublishers, 'publisher', removePublisher, addPublisher );
-    if(defined(callback) && typeof(callback) === 'function'){
-      callback();
-    }
   }
 
-  onToggleFormatOption(format, callback){
+  onToggleFormatOption(format){
     this.toggleBasicOption(format, this.props.activeFormats, 'format', removeFormat, addFormat);
-    if(defined(callback) && typeof(callback) === 'function'){
-      callback();
-    }
   }
 
   toggleBasicOption(option, activeOptions, key,  removeOption, addOption, updateQuery){
@@ -87,7 +81,7 @@ class SearchFacets extends Component {
   }
 
 
-  onToggleRegionOption(region, callback){
+  onToggleRegionOption(region){
     let {regionId, regionType} = region;
     this.props.updateQuery({
       regionId,
@@ -95,10 +89,6 @@ class SearchFacets extends Component {
     });
 
     this.props.dispatch(addRegion(region));
-
-    if(defined(callback) && typeof(callback) === 'function'){
-      callback();
-    }
   }
 
   onResetRegionFacet(){
@@ -142,16 +132,16 @@ class SearchFacets extends Component {
                     options={this.props.publisherOptions}
                     activeOptions={this.props.activePublishers}
                     facetSearchResults={this.props.publisherSearchResults}
-                    toggleOption={this.onTogglePublisherOption}
+                    onToggleOption={this.onTogglePublisherOption}
                     onResetFacet={this.onResetPublisherFacet}
                     searchFacet={this.onSearchPublisherFacet}
         />
         <FacetRegion title='location'
                       id='region'
-                      hasQuery={Boolean(this.props.activeRegions.length)}
-                      activeOptions={this.props.activeRegions}
+                      hasQuery={defined(this.props.activeRegion.regionType) && defined(this.props.activeRegion.regionId)}
+                      activeRegion={this.props.activeRegion}
                       facetSearchResults={this.props.regionSearchResults}
-                      toggleOption={this.onToggleRegionOption}
+                      onToggleOption={this.onToggleRegionOption}
                       onResetFacet={this.onResetRegionFacet}
                       searchFacet={this.onSearchRegionFacet}
         />
@@ -159,8 +149,8 @@ class SearchFacets extends Component {
                       id='temporal'
                       hasQuery={(defined(this.props.activeDateFrom) || defined(this.props.activeDateTo))}
                       options={this.props.temporalOptions}
-                      activeOptions={[this.props.activeDateFrom, this.props.activeDateTo]}
-                      toggleOption={this.onToggleTemporalOption}
+                      activeDates={[this.props.activeDateFrom, this.props.activeDateTo]}
+                      onToggleOption={this.onToggleTemporalOption}
                       onResetFacet={this.onResetTemporalFacet}
         />
         <FacetBasic title='format'
@@ -169,7 +159,7 @@ class SearchFacets extends Component {
                     options={this.props.formatOptions}
                     activeOptions={this.props.activeFormats}
                     facetSearchResults={this.props.formatSearchResults}
-                    toggleOption={this.onToggleFormatOption}
+                    onToggleOption={this.onToggleFormatOption}
                     onResetFacet={this.onResetFormatFacet}
                     searchFacet={this.onSearchFormatFacet}
         />
@@ -184,19 +174,22 @@ SearchFacets.propTypes={
     publisherSearchResults: React.PropTypes.array.isRequired,
     regionSearchResults: React.PropTypes.array.isRequired,
     activePublishers: React.PropTypes.array.isRequired,
-    activeRegions: React.PropTypes.array.isRequired,
+    activeRegion: React.PropTypes.object,
+    activeDateFrom: React.PropTypes.object,
+    activeDateTo: React.PropTypes.object
   };
 
 
 function mapStateToProps(state) {
   let { results , facetPublisherSearch, facetRegionSearch, facetFormatSearch } = state;
+  console.log(results);
   return {
     publisherOptions: results.publisherOptions,
     formatOptions: results.formatOptions,
     temporalOptions: results.temporalOptions,
 
     activePublishers: results.activePublishers,
-    activeRegions: results.activeRegions,
+    activeRegion: results.activeRegion,
     activeDateFrom: results.activeDateFrom,
     activeDateTo: results.activeDateTo,
     activeFormats: results.activeFormats,
