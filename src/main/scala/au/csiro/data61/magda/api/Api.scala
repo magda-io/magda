@@ -42,7 +42,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
           implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends misc.Protocols with CorsDirectives {
   val logger = Logging(system, getClass)
   val searchQueryer = new ElasticSearchQueryer()
-k
+
   implicit def rejectionHandler = RejectionHandler.newBuilder()
     .handleAll[MethodRejection] { rejections ⇒
       val methods = rejections map (_.supported)
