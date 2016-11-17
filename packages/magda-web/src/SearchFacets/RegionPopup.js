@@ -14,14 +14,16 @@ class RegionPopup extends Facet {
         this.onToggleOption = this.onToggleOption.bind(this);
         this.onClickDone = this.onClickDone.bind(this);
         this.selectRegionType = this.selectRegionType.bind(this);
+        this.onFeatureClick = this.onFeatureClick.bind(this);
         /**
          * @type {object}
          * @property {object} activeRegionType current region type, contains an id and a vlaue, fro example, {id: 'LGA', value:'LGAs (Local Goverment Areas)'}
          */
          this.state={
-             _activeRegionType: '',
-             _activeRegionId: '',
-             _activeRegion: undefined
+             _activeRegion: {
+               regionId: '',
+               regionType: ''
+             }
          }
     }
 
@@ -37,13 +39,20 @@ class RegionPopup extends Facet {
 
     selectRegionType(regionType){
       this.setState({
-        _activeRegionType: regionType
+        _activeRegion: Object.assign({}, this.state._activeRegion, {regionType: regionType})
       })
     }
 
     onClickDone(){
       this.props.onToggleOption(this.state._activeRegion);
       this.props.closePopUp();
+    }
+
+    onFeatureClick(feature){
+      console.log(feature);
+      // this.setState({
+      //   _activeRegion: {}
+      // })
     }
 
     render(){
@@ -69,7 +78,7 @@ class RegionPopup extends Facet {
                     </div>
                     <div className='col-sm-6'>
                         <DropDown options={Object.keys(this.props.regionMapping)}
-                                  activeOption={this.state._activeRegionType}
+                                  activeOption={this.state._activeRegion.regionType}
                                   select={this.selectRegionType}
                         />
                     </div>
@@ -79,9 +88,10 @@ class RegionPopup extends Facet {
                     <RegionMap title='region'
                                      id='region'
                                      interaction={true}
-                                     regionId={this.state._activeRegionId}
+                                     regionId={this.state._activeRegion.regionId}
                                      regionType={this.state._activeRegionType}
                                      regionMapping={this.props.regionMapping}
+                                     onClick={this.onFeatureClick}
                     />
 
                   </div>

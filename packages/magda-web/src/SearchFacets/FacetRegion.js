@@ -14,7 +14,6 @@ class FacetRegion extends Component {
         super(props);
         this.openPopup = this.openPopup.bind(this);
         this.closePopUp = this.closePopUp.bind(this);
-        this.onFeatureClick = this.onFeatureClick.bind(this);
         this.renderOption = this.renderOption.bind(this);
 
         /**
@@ -38,16 +37,6 @@ class FacetRegion extends Component {
         });
     }
 
-    /**
-     * activate a region option by clicking a region on the map
-     * @param {string} regionCode, region code
-     * @param {string} regionType, region type
-     */
-    onFeatureClick(feature){
-        // vector tiles and ABS API has different format for the region object,
-        // need to find a way to unify this
-        this.props.toggleOption(feature);
-    }
 
     // see Facet.renderOption(option, optionMax, onFocus)
     // Here is only for mark up change
@@ -86,7 +75,7 @@ class FacetRegion extends Component {
 
                      />
                </div>
-               {this.state.popUpIsOpen && <RegionPopup onFeatureClick={this.props.onFeatureClick}
+               {this.state.popUpIsOpen && <RegionPopup onToggleOption={this.props.onToggleOption}
                                                        facetSearchResults={this.props.facetSearchResults}
                                                        closePopUp={this.closePopUp}
                                                        renderOption={this.renderOption}

@@ -21,7 +21,7 @@ class RegionMap extends Facet {
 
     componentDidMount(){
         this.map = L.map(this._c, { zoomControl: this.props.interaction});
-        this.map.setView([-27, 133], 3);
+        this.map.setView([-27, 133], 4);
 
         if(this.props.interaction === false){
             this._c.addEventListener('click', ()=>{
@@ -37,6 +37,10 @@ class RegionMap extends Facet {
             this.map.dragging.disable();
             this.map.touchZoom.disable();
             this.map.scrollWheelZoom.disable();
+        }
+
+        if(defined(this.props.regionMapping)){
+          this.addRegion();
         }
     }
 
@@ -69,10 +73,8 @@ class RegionMap extends Facet {
 
     addRegion(){
         let that = this;
-        let regionType = this.props.regionId;
         let region = this.props.regionMapping[this.props.regionType];
         this.getID = function(feature) { return feature.properties[region.id];};
-
         if(defined(region)){
           this.layer = new L.TileLayer.MVTSource({
               url: region.server,
@@ -95,7 +97,6 @@ class RegionMap extends Facet {
     }
 
     render(){
-
         return (
             <div className='region-map'>
               <div className='map' ref={(c) => {this._c = c}}/>
