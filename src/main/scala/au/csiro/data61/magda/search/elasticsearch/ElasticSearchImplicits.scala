@@ -19,7 +19,19 @@ object ElasticSearchImplicits {
       hit.sourceAsString.parseJson.convertTo[DataSet]
     }
   }
-  
+
+  implicit object MatchingRegionHitAs extends HitAs[MatchingRegion] {
+    override def as(hit: RichSearchHit): MatchingRegion = {
+      val source = hit.sourceAsMap
+      println(source)
+      MatchingRegion(
+        source("type").asInstanceOf[String],
+        source("id").asInstanceOf[String],
+        source("name").asInstanceOf[String]
+      )
+    }
+  }
+
   implicit def aggregationsToFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation match {
     case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket =>
       new FacetOption(
