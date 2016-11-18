@@ -11,7 +11,7 @@ import au.csiro.data61.magda.AppConfig
 /**
  * Created by gil308 on 12/10/2016.
  */
-case class RegionSource(name: String, url: URL, id: String, shapePath: String)
+case class RegionSource(name: String, url: URL, idProperty: String, nameProperty: String, shapePath: String)
 
 object RegionSource {
   val sources = loadFromConfig(AppConfig.conf.getConfig("regionSources"))
@@ -28,6 +28,7 @@ object RegionSource {
           name.toLowerCase(),
           new URL(regionSourceConfig.getString("url")),
           regionSourceConfig.getString("idField"),
+          regionSourceConfig.getString("nameField"),
           regionSourceConfig.getString("shapePath"))
     }.toSeq
   }
