@@ -50,9 +50,8 @@ class RegionPopup extends Facet {
 
     onFeatureClick(feature){
       console.log(feature);
-      // this.setState({
-      //   _activeRegion: {}
-      // })
+      let id = feature.properties[this.state._activeRegion];
+      debugger
     }
 
     render(){

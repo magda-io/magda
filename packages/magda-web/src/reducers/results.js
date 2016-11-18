@@ -1,7 +1,7 @@
 import findIndex from 'lodash.findindex';
 import find from 'lodash.find';
 import defined from '../helpers/defined';
-
+import findOptionFromList from '../helpers/findOptionFromList';
 
 const initialData = {
   isFetching: false,
@@ -16,17 +16,6 @@ const initialData = {
   temporalOptions: [],
   formatOptions: [],
   apiQuery: ''
-}
-
-function findObjectFromArray(value, array){
-  let object = find(array, o=>o.value === value);
-  if(defined(object)){
-    return object
-  }
-  return {
-    value,
-    hitCount: 'nil'
-  }
 }
 
 const results = (state=initialData, action) => {
@@ -47,13 +36,13 @@ const results = (state=initialData, action) => {
       let formatOptions = data.facets[2].options;
 
 
-      let activePublishers = query.publishers.map(item=> findObjectFromArray(item,data.facets[0].options));
+      let activePublishers = query.publishers.map(item=> findOptionFromList(item,data.facets[0].options));
       let activeDateFrom = defined(query.dateFrom) ? {value: query.dateFrom.slice(0, 4), hitCount: null} : undefined;
       let activeDateTo = defined(query.dateTo) ? {value: query.dateTo.slice(0, 4), hitCount: null} : undefined;
 
-      let activeFormats = query.formats.map(item=> findObjectFromArray(item,data.facets[2].options));
+      let activeFormats = query.formats.map(item=> findOptionFromList(item,data.facets[2].options));
       // temp
-      let activeRegion = {regionId: '', regionType: 'SA2'};
+      let activeRegion = {regionId: undefined, regionType: undefined};
 
       return Object.assign({}, state, {
         isFetching: false,

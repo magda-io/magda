@@ -46,7 +46,7 @@ class RegionMap extends Facet {
             this.layer.setStyle(this.generateStyle(nextProps.regionId));
         }
         // after we have received all the data we need,w e can then display the layer
-        if(defined(nextProps.region.regionType) && defined(nextProps.regionMapping)){
+        if(defined(nextProps.region.regionType) && defined(nextProps.regionMapping) && (nextProps.region !== this.props.region)){
           this.addRegion(nextProps);
         }
     }
