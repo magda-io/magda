@@ -38,10 +38,6 @@ class RegionMap extends Facet {
             this.map.touchZoom.disable();
             this.map.scrollWheelZoom.disable();
         }
-
-        if(defined(this.props.regionMapping)){
-          this.addRegion();
-        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -50,8 +46,9 @@ class RegionMap extends Facet {
             this.layer.setStyle(this.generateStyle(nextProps.regionId));
         }
 
-        if(defined(this.props.regionMapping)){
-          this.addRegion();
+        // after we have received all the data we need,w e can then display the layer
+        if(defined(nextProps.region.regionType) && defined(nextProps.regionMapping)){
+          this.addRegion(nextProps);
         }
     }
 
@@ -71,20 +68,20 @@ class RegionMap extends Facet {
         });
     }
 
-    addRegion(){
-        let that = this;
-        let region = this.props.regionMapping[this.props.regionType];
-        this.getID = function(feature) { return feature.properties[region.id];};
-        if(defined(region)){
+    addRegion(props){
+        let regionData = props.regionMapping[props.region.regionType];
+        this.getID = function(feature) { return feature.properties[regionData.regionProp]};
+        if(defined(regionData)){
+          debugger
           this.layer = new L.TileLayer.MVTSource({
-              url: region.server,
-              style: this.generateStyle(this.props.regionId),
-              hoverInteraction: this.props.interaction,
+              url: regionData.server,
+              style: this.generateStyle(props.region.regionId),
+              hoverInteraction: props.interaction,
               /*onEachFeature: onEachFeature, */
-              clickableLayers: (this.props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
+              clickableLayers: (props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
               mutexToggle: true,
               onClick: function(evt) { if (evt.type === 'click' && evt.feature){
-                  that.props.onClick(evt.feature);
+                  props.onClick(evt.feature);
               }},
               getIDForLayerFeature: this.getID
           });

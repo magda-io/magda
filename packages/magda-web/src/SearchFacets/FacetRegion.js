@@ -5,6 +5,7 @@ import FacetWrapper from './FacetWrapper';
 import RegionMap from './RegionMap';
 import RegionPopup from './RegionPopup';
 import FacetSearchBox from './FacetSearchBox';
+import defined from '../helpers/defined';
 
 /*
 * the region (location) facet facet, extends Facet class
@@ -63,16 +64,14 @@ class FacetRegion extends Component {
                                onToggleOption={this.props.onToggleOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
-               {activeRegion && <div className='active-region' key={activeRegion.geographyLabel + activeRegion.state}>{activeRegion.geographyLabel} {activeRegion.state}</div>}
+               {activeRegion && <div className='active-region' key={activeRegion.name}>{activeRegion.name}</div>}
                <div className='preview'>
-                     <RegionMap title='location'
-                                id='location'
-                                onClick={this.openPopup}
-                                interaction={false}
-                                RegionId={this.props.activeRegion['regionId']}
-                                RegionType={this.props.activeRegion['regionType']}
-                                regionMapping={this.props.regionMapping}
-
+                  <RegionMap title='location'
+                             id='location'
+                             onClick={this.openPopup}
+                             interaction={false}
+                             region={activeRegion}
+                             regionMapping={this.props.regionMapping}
                      />
                </div>
                {this.state.popUpIsOpen && <RegionPopup onToggleOption={this.props.onToggleOption}
@@ -82,6 +81,7 @@ class FacetRegion extends Component {
                                                        onToggleOption={this.props.onToggleOption}
                                                        searchFacet={this.props.searchFacet}
                                                        regionMapping={this.props.regionMapping}
+                                                       activeRegion={this.props.activeRegion}
                                           />}
           </FacetWrapper>
 

@@ -20,10 +20,7 @@ class RegionPopup extends Facet {
          * @property {object} activeRegionType current region type, contains an id and a vlaue, fro example, {id: 'LGA', value:'LGAs (Local Goverment Areas)'}
          */
          this.state={
-             _activeRegion: {
-               regionId: '',
-               regionType: ''
-             }
+             _activeRegion: this.props.activeRegion
          }
     }
 
@@ -83,15 +80,14 @@ class RegionPopup extends Facet {
                         />
                     </div>
                   </div>
-                  {defined(this.state._activeRegion) && <div className='active-region'>{this.state._activeRegion.geographyLabel} {this.state._activeRegion.state}</div>}
+                  {defined(this.state._activeRegion) && <div className='active-region'>{this.state._activeRegion.name}</div>}
                   <div className='popup-map'>
                     <RegionMap title='region'
-                                     id='region'
-                                     interaction={true}
-                                     regionId={this.state._activeRegion.regionId}
-                                     regionType={this.state._activeRegionType}
-                                     regionMapping={this.props.regionMapping}
-                                     onClick={this.onFeatureClick}
+                               id='region'
+                               interaction={true}
+                               region={this.state._activeRegion}
+                               regionMapping={this.props.regionMapping}
+                               onClick={this.onFeatureClick}
                     />
 
                   </div>
