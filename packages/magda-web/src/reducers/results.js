@@ -53,7 +53,7 @@ const results = (state=initialData, action) => {
 
       let activeFormats = query.formats.map(item=> findObjectFromArray(item,data.facets[2].options));
       // temp
-      let activeRegion = {regionId: '302', regionType: 'SA4'};
+      let activeRegion = {regionId: '', regionType: 'SA2'};
 
       return Object.assign({}, state, {
         isFetching: false,

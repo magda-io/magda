@@ -20,7 +20,10 @@ class RegionPopup extends Facet {
          * @property {object} activeRegionType current region type, contains an id and a vlaue, fro example, {id: 'LGA', value:'LGAs (Local Goverment Areas)'}
          */
          this.state={
-             _activeRegion: this.props.activeRegion
+             _activeRegion: {
+               regionId: undefined,
+               regionType: undefined
+             }
          }
     }
 
@@ -53,6 +56,18 @@ class RegionPopup extends Facet {
     }
 
     render(){
+        let region = {};
+        if(defined(this.state._activeRegion.regionType)){
+          region = this.state._activeRegion;
+        } else if(defined(this.props.activeRegion.regionType)){
+          region = this.props.activeRegion;
+        } else{
+          region = {
+            regionType: '',
+            regionId: ''
+          }
+        }
+
         return (
             <div className='popup'>
               <div className='popup-inner'>
@@ -74,10 +89,9 @@ class RegionPopup extends Facet {
 
                     </div>
                     <div className='col-sm-6'>
-                        <DropDown options={Object.keys(this.props.regionMapping)}
-                                  activeOption={this.state._activeRegion.regionType}
-                                  select={this.selectRegionType}
-                        />
+                      {defined(this.props.regionMapping) &&
+                                <DropDown activeOption={region.regionType}
+                                          options={Object.keys(this.props.regionMapping)} select={this.selectRegionType}/>}
                     </div>
                   </div>
                   {defined(this.state._activeRegion) && <div className='active-region'>{this.state._activeRegion.name}</div>}
@@ -85,7 +99,7 @@ class RegionPopup extends Facet {
                     <RegionMap title='region'
                                id='region'
                                interaction={true}
-                               region={this.state._activeRegion}
+                               region={region}
                                regionMapping={this.props.regionMapping}
                                onClick={this.onFeatureClick}
                     />

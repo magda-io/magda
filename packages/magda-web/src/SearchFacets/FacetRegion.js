@@ -74,15 +74,17 @@ class FacetRegion extends Component {
                              regionMapping={this.props.regionMapping}
                      />
                </div>
-               {this.state.popUpIsOpen && <RegionPopup onToggleOption={this.props.onToggleOption}
-                                                       facetSearchResults={this.props.facetSearchResults}
-                                                       closePopUp={this.closePopUp}
-                                                       renderOption={this.renderOption}
-                                                       onToggleOption={this.props.onToggleOption}
-                                                       searchFacet={this.props.searchFacet}
-                                                       regionMapping={this.props.regionMapping}
-                                                       activeRegion={this.props.activeRegion}
-                                          />}
+               <div className={this.state.popUpIsOpen ? '' : 'sr-only'}>
+                 <RegionPopup onToggleOption={this.props.onToggleOption}
+                              facetSearchResults={this.props.facetSearchResults}
+                              closePopUp={this.closePopUp}
+                              renderOption={this.renderOption}
+                              onToggleOption={this.props.onToggleOption}
+                              searchFacet={this.props.searchFacet}
+                              regionMapping={this.props.regionMapping}
+                              activeRegion={this.props.activeRegion}
+                  />
+                </div>
           </FacetWrapper>
 
       );

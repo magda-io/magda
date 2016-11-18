@@ -45,7 +45,6 @@ class RegionMap extends Facet {
         if (this.layer) {
             this.layer.setStyle(this.generateStyle(nextProps.regionId));
         }
-
         // after we have received all the data we need,w e can then display the layer
         if(defined(nextProps.region.regionType) && defined(nextProps.regionMapping)){
           this.addRegion(nextProps);
@@ -72,7 +71,6 @@ class RegionMap extends Facet {
         let regionData = props.regionMapping[props.region.regionType];
         this.getID = function(feature) { return feature.properties[regionData.regionProp]};
         if(defined(regionData)){
-          debugger
           this.layer = new L.TileLayer.MVTSource({
               url: regionData.server,
               style: this.generateStyle(props.region.regionId),
