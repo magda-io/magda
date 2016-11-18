@@ -6,6 +6,7 @@ import RegionMap from './RegionMap';
 import RegionPopup from './RegionPopup';
 import FacetSearchBox from './FacetSearchBox';
 import defined from '../helpers/defined';
+import RegionSummray from './RegionSummary';
 
 /*
 * the region (location) facet facet, extends Facet class
@@ -64,7 +65,7 @@ class FacetRegion extends Component {
                                onToggleOption={this.props.onToggleOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
-               {activeRegion && <div className='active-region' key={activeRegion.name}>{activeRegion.name}</div>}
+               <RegionSummray region={activeRegion}/>
                <div className='preview'>
                   <RegionMap title='location'
                              id='location'

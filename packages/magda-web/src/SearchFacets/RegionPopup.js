@@ -6,6 +6,7 @@ import getRegionTypes from '../dummyData/getRegionTypes';
 import RegionMap from './RegionMap';
 import FacetSearchBox from './FacetSearchBox';
 import React from 'react'
+import RegionSummray from './RegionSummary';
 
 
 class RegionPopup extends Facet {
@@ -49,9 +50,11 @@ class RegionPopup extends Facet {
     }
 
     onFeatureClick(feature){
-      console.log(feature);
-      let id = feature.properties[this.state._activeRegion];
-      debugger
+      console.log(feature)
+      let regionProp = this.props.regionMapping[this.state._activeRegion.regionType].regionProp;
+      this.setState({
+        _activeRegion: Object.assign({}, this.state._activeRegion, {regionId: feature.id})
+      })
     }
 
     render(){
@@ -93,7 +96,7 @@ class RegionPopup extends Facet {
                                           options={Object.keys(this.props.regionMapping)} select={this.selectRegionType}/>}
                     </div>
                   </div>
-                  {defined(this.state._activeRegion) && <div className='active-region'>{this.state._activeRegion.name}</div>}
+                  <RegionSummray region={this.state._activeRegion}/>
                   <div className='popup-map'>
                     <RegionMap title='region'
                                id='region'
