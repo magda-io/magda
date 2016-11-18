@@ -1,22 +1,25 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.{ CreateIndexDefinition, ElasticClient }
+import com.sksamuel.elastic4s.{CreateIndexDefinition, ElasticClient}
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.analyzers._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.AppConfig
-import spray.json.JsString
+import spray.json._
 import com.sksamuel.elastic4s.ElasticDsl
 import akka.stream.Materializer
+
 import scala.util.Failure
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
+
 import scala.util.Success
 import akka.stream.scaladsl.Merge
 import com.sksamuel.elastic4s.BulkResult
 import akka.actor.ActorSystem
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import au.csiro.data61.magda.search.elasticsearch.Queries.generateRegionId
@@ -61,7 +64,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 24,
+      version = 32,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -69,8 +72,8 @@ object IndexDefinition {
             mapping("regions").fields(
               field("type").typed(StringType),
               field("id").typed(StringType),
-              field("name").typed(StringType) /*,
-              field("geometry").typed(GeoShapeType) */)),
+              field("name").typed(StringType),
+              field("geometry").typed(GeoShapeType))),
       create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
 
   private def setupRegions(client: ElasticClient)(implicit materializer: Materializer, actorSystem: ActorSystem): Future[Any] = {
@@ -82,13 +85,13 @@ object IndexDefinition {
         val properties = jsonRegion.fields("properties").asJsObject
         ElasticDsl.index
           .into("regions" / "regions")
-          .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.getFields(regionSource.id).head.asInstanceOf[JsString].value))
-          .fields(
-            "type" -> regionSource.name,
-            "id" -> properties.fields("CED_CODE16").convertTo[String],
-            "name" -> properties.fields("CED_NAME16").convertTo[String],
-            "geometry" -> jsonRegion.fields("geometry").asJsObject
-          )
+          .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.fields(regionSource.id).convertTo[String]))
+          .source(JsObject(
+            "type" -> JsString(regionSource.name),
+            "id" -> properties.fields(regionSource.id),
+            "name" -> properties.fields("CED_NAME16"),
+            "geometry" -> jsonRegion.fields("geometry").toJson
+          ).toJson)
       }))
       .reduce((x, y) => Source.combine(x, y)(Merge(_)))
       // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request 
