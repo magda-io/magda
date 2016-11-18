@@ -1,10 +1,14 @@
-export default function (option, list) {
-  let object = find(array, o=>o.value === value);
+import defined from './defined';
+import find from 'lodash.find';
+
+export default function (value, list) {
+  let object = find(list, o=>o.value === value);
   if(defined(object)){
     return object
-  }
-  return {
-    value,
-    hitCount: 'nil'
+  } else{
+    return {
+      value,
+      hitCount: 'nil'
+    }
   }
 }

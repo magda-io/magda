@@ -36,7 +36,7 @@ const results = (state=initialData, action) => {
       let formatOptions = data.facets[2].options;
 
 
-      let activePublishers = query.publishers.map(item=> findOptionFromList(item,data.facets[0].options));
+      let activePublishers = query.publishers.map(p=> findOptionFromList(p,data.facets[0].options));
       let activeDateFrom = defined(query.dateFrom) ? {value: query.dateFrom.slice(0, 4), hitCount: null} : undefined;
       let activeDateTo = defined(query.dateTo) ? {value: query.dateTo.slice(0, 4), hitCount: null} : undefined;
 
@@ -73,7 +73,8 @@ const results = (state=initialData, action) => {
       })
 
     case 'RESET_PUBLISHER':
-      return Object.assign({}, state, initialData.activePublishers)
+      return Object.assign({}, state,
+        {activePublishers: initialData.activePublishers})
 
 
     case 'ADD_REGION':
@@ -82,7 +83,8 @@ const results = (state=initialData, action) => {
       })
 
     case 'RESET_REGION':
-      return Object.assign({}, state, initialData.activeRegion)
+      return Object.assign({}, state,
+        {activeRegion: initialData.activeRegion})
 
     case 'SET_DATE_FROM':
       return Object.assign({}, state, {
@@ -95,10 +97,12 @@ const results = (state=initialData, action) => {
       })
 
     case 'RESET_DATE_FROM':
-      return Object.assign({}, state, initialData.activeDateFrom)
+      return Object.assign({}, state,
+        {activeDateFrom: initialData.activeDateFrom})
 
     case 'RESET_DATE_TO':
-      return Object.assign({}, state, initialData.activeDateTo)
+      return Object.assign({}, state,
+        {activeDateTo: initialData.activeDateTo})
 
     case 'ADD_FORMAT':
       return Object.assign({}, state, {
@@ -112,7 +116,8 @@ const results = (state=initialData, action) => {
       })
 
     case 'RESET_FORMAT':
-      return Object.assign({}, state, initialData.activeFormats)
+      return Object.assign({}, state,
+        {activeFormats: initialData.activeFormats})
 
     default:
       return state
