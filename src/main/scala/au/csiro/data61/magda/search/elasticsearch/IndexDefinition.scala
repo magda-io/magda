@@ -64,7 +64,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 35,
+      version = 39,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -83,13 +83,18 @@ object IndexDefinition {
     RegionSource.sources.map(regionSource =>
       regionLoader.loadABSRegions(regionSource).map(jsonRegion => {
         val properties = jsonRegion.fields("properties").asJsObject
+        val name = if (regionSource.includeIdInName) {
+          JsString(properties.fields(regionSource.nameProperty).convertTo[String] + " - " + properties.fields(regionSource.idProperty).convertTo[String])
+        } else {
+          properties.fields(regionSource.nameProperty)
+        }
         ElasticDsl.index
           .into("regions" / "regions")
           .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.fields(regionSource.idProperty).convertTo[String]))
           .source(JsObject(
             "type" -> JsString(regionSource.name),
             "id" -> properties.fields(regionSource.idProperty),
-            "name" -> properties.fields(regionSource.nameProperty),
+            "name" -> name,
             "geometry" -> jsonRegion.fields("geometry")
           ).toJson)
       }))
