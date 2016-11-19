@@ -7,6 +7,6 @@
 
 .progress{
   background: #3498db;
-  transition: width 0.25s linear;
+  transition: width 0.5s linear;
   border-radius: 1px;
 }

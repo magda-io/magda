@@ -61,7 +61,7 @@ class Search extends Component {
   render() {
     return (
       <div>
-        {this.props.isFetching && <ProgressBar/>}
+        {this.props.isFetching && <ProgressBar progress={this.props.progress}/>}
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
@@ -104,6 +104,7 @@ Search.propTypes = {
   hitCount: React.PropTypes.number.isRequired,
   isFetching: React.PropTypes.bool.isRequired,
   dispatch: React.PropTypes.func.isRequired,
+  progress: React.PropTypes.number.isRequired,
 }
 
 
@@ -113,6 +114,7 @@ function mapStateToProps(state) {
     datasets: results.datasets,
     hitCount: results.hitCount,
     isFetching: results.isFetching,
+    progress: results.progress
   }
 }
 

@@ -6,6 +6,7 @@ const initialData = {
   isFetching: false,
   datasets: [],
   hitCount: 0,
+  progress: 0,
   activePublishers: [],
   activeFormats: [],
   activeRegion: {regionId: undefined, regionType: undefined},
@@ -24,6 +25,13 @@ const results = (state=initialData, action) => {
         isFetching: true,
         apiQuery: action.apiQuery
       })
+
+    case 'UPDATE_PROGRESS':
+      return Object.assign({}, state, {
+        isFetching: true,
+        progress: action.progress
+      })
+
     case 'RECEIVE_RESULTS':
       let data = action.json;
       let query = data.query;
