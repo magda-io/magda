@@ -49,7 +49,7 @@ class SearchResults extends Component {
               <DatasetSummary dataset={result}
                               onClickDataset={this.onExpandDataset.bind(this, result)}
                               isExpanded={this.state.expandedItem === result}
-                              onSearchTextChange={this.props.onSearchTextChange}
+                              onClickTag={this.props.onClickTag}
               />
               {this.state.expandedItem === result && <DatasetInfo dataset={result} onClickClose={this.onCloseDataset}/>}
             </li>

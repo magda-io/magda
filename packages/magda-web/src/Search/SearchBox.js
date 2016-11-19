@@ -1,28 +1,9 @@
 import React, { Component } from 'react';
-import debounce from 'lodash.debounce';
+
 
 import './SearchBox.css';
 
 class SearchBox extends Component {
-  constructor(props) {
-    super(props);
-    this.handleKeyPress = this.handleKeyPress.bind(this);
-    this.onChange = this.onChange.bind(this);
-    this.debounceSearch = debounce(this.props.onSearchTextChange, 3000);
-
-    this.state = {
-      searchText : this.props.preloadedSearchText
-    }
-  }
-
-  handleKeyPress(event) {
-    // when user hit enter, no need to submit the form
-    if(event.charCode===13){
-        event.preventDefault();
-        this.props.onSearchTextChange(this.state.searchText)
-    }
-  }
-
   onChange(event){
     this.setState({
       searchText: event.target.value
@@ -39,9 +20,9 @@ class SearchBox extends Component {
           type="text"
           name="search"
           className='form-control'
-          value={this.state.searchText}
-          onChange={this.onChange}
-          onKeyPress={this.handleKeyPress}
+          value={this.props.value}
+          onChange={(e)=>{this.props.onChange(e.target.value)}}
+          onKeyPress={this.props.onKeyPress}
         />
         <span className="input-group-addon"><i className="fa fa-search" aria-hidden="true"></i> </span>
         </div>
@@ -49,11 +30,8 @@ class SearchBox extends Component {
     );
   }
 }
-SearchBox.propTypes = {updateQuery: React.PropTypes.func};
+SearchBox.propTypes = {onChange: React.PropTypes.func, value: React.PropTypes.string, onKeyPress: React.PropTypes.func};
 
-SearchBox.contextTypes ={
-  store: React.PropTypes.object
-}
 
 
 export default SearchBox;

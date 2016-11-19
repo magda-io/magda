@@ -16,7 +16,7 @@ export default class DatasetSummary extends Component {
 
   onClick(tag, e){
     e.stopPropagation();
-    this.props.onSearchTextChange(tag);
+    this.props.onClickTag(tag);
   }
 
   render(){

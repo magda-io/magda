@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import {fetchSearchResultsIfNeeded} from '../actions/results';
 import {fetchRegionMapping} from '../actions/regionMapping';
 import {connect} from 'react-redux';
-import config from '../config.js'
+import config from '../config.js';
+import debounce from 'lodash.debounce';
+import defined from '../helpers/defined';
 import './Search.css';
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
@@ -20,6 +22,12 @@ class Search extends Component {
     this.updateQuery = this.updateQuery.bind(this);
     this.onSearchTextChange = this.onSearchTextChange.bind(this);
     this.goToPage=this.goToPage.bind(this);
+    this.onClickTag = this.onClickTag.bind(this);
+    this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
+    this.debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
+    this.state={
+      searchText: undefined
+    }
   }
 
   componentWillMount(){
@@ -32,6 +40,20 @@ class Search extends Component {
   }
 
   onSearchTextChange(text){
+    this.setState({
+      searchText: text
+    });
+    this.debounceUpdateSearchQuery(text);
+  }
+
+  onClickTag(tag){
+    this.setState({
+      searchText: tag
+    });
+    this.updateSearchQuery(tag);
+  }
+
+  updateSearchQuery(text){
     this.updateQuery({
       q: text,
       publisher: [],
@@ -42,6 +64,14 @@ class Search extends Component {
       format: [],
       page: undefined
     });
+  }
+
+  handleSearchFieldEnterKeyPress(event) {
+    // when user hit enter, no need to submit the form
+    if(event.charCode===13){
+        event.preventDefault();
+        this.updateSearchQuery(this.state.searchText)
+    }
   }
 
   goToPage(index){
@@ -66,7 +96,9 @@ class Search extends Component {
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
-              <SearchBox preloadedSearchText={this.props.location.query.q || ''} updateQuery={this.updateQuery} onSearchTextChange={this.onSearchTextChange}/>
+              <SearchBox value={defined(this.state.searchText) ? this.state.searchText : this.props.location.query.q}
+                         onChange={this.onSearchTextChange}
+                         onKeyPress={this.handleSearchFieldEnterKeyPress}/>
             </div>
           </div>
           <div className='search__search-body container'>
@@ -78,7 +110,7 @@ class Search extends Component {
                   <SearchResults
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
-                      onSearchTextChange={this.onSearchTextChange}
+                      onClickTag={this.onClickTag}
                   />
                   {this.props.hitCount > 20 &&
                       <Pagination
