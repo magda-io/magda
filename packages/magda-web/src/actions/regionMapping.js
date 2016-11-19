@@ -1,4 +1,3 @@
-import getJsonp from '../helpers/getJsonp';
 export const REQUEST_REGION_MAPPING = 'REQUEST_REGION_MAPPING'
 export const RECEIVE_REGION_MAPPING = 'RECEIVE_REGION_MAPPING'
 

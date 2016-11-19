@@ -5,11 +5,8 @@ import Facet from './FacetWrapper';
 import L from 'leaflet';
 // eslint-disable-next-line
 import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.js';
-import regions from '../dummyData/regions';
 import defined from '../helpers/defined';
 import React from 'react';
-import fetch from 'isomorphic-fetch'
-
 
 class RegionMap extends Facet {
     constructor(props) {

@@ -2,7 +2,6 @@ import './RegionPopup.css';
 import DropDown from '../UI/DropDown';
 import defined from '../helpers/defined';
 import Facet from './FacetWrapper';
-import getRegionTypes from '../dummyData/getRegionTypes';
 import RegionMap from './RegionMap';
 import FacetSearchBox from './FacetSearchBox';
 import React from 'react'
@@ -40,7 +39,7 @@ class RegionPopup extends Facet {
 
     selectRegionType(regionType){
       this.setState({
-        _activeRegion: Object.assign({}, this.state._activeRegion, {regionType: regionType})
+        _activeRegion: Object.assign({}, this.state._activeRegion, {regionType: regionType.id})
       })
     }
 
@@ -51,25 +50,34 @@ class RegionPopup extends Facet {
 
     onFeatureClick(feature){
       console.log(feature)
-      let regionProp = this.props.regionMapping[this.state._activeRegion.regionType].regionProp;
       this.setState({
         _activeRegion: Object.assign({}, this.state._activeRegion, {regionId: feature.id})
       })
     }
 
-    render(){
-        let region = {};
-        if(defined(this.state._activeRegion.regionType)){
-          region = this.state._activeRegion;
-        } else if(defined(this.props.activeRegion.regionType)){
-          region = this.props.activeRegion;
-        } else{
-          region = {
-            regionType: '',
-            regionId: ''
-          }
-        }
+    getDropDownOptions(){
+      let ids = Object.keys(this.props.regionMapping);
+      return ids.map(id=> ({
+        id,
+        value: this.props.regionMapping[id].description
+      }))
+    }
 
+    getRegion(){
+      if(defined(this.state._activeRegion.regionType)){
+        return this.state._activeRegion;
+      } else if(defined(this.props.activeRegion.regionType)){
+        return  this.props.activeRegion;
+      } else{
+        return {
+          regionType: '',
+          regionId: ''
+        }
+      }
+    }
+
+    render(){
+        let region = this.getRegion();
         return (
             <div className='popup'>
               <div className='popup-inner'>
@@ -92,8 +100,10 @@ class RegionPopup extends Facet {
                     </div>
                     <div className='col-sm-6'>
                       {defined(this.props.regionMapping) &&
-                                <DropDown activeOption={region.regionType}
-                                          options={Object.keys(this.props.regionMapping)} select={this.selectRegionType}/>}
+                                <DropDown activeOption={defined(this.props.regionMapping[region.regionType]) ? this.props.regionMapping[region.regionType].description : ''}
+                                          options={this.getDropDownOptions()}
+                                          select={this.selectRegionType}/>
+                      }
                     </div>
                   </div>
                   <RegionSummray region={this.state._activeRegion}/>

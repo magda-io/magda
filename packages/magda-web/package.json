@@ -4,6 +4,8 @@
   "private": true,
   "homepage": "http://terria.io/magda-web/build",
   "devDependencies": {
+    "deep-freeze": "0.0.1",
+    "expect": "^1.20.2",
     "react-scripts": "0.2.2"
   },
   "dependencies": {

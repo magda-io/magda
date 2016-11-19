@@ -14,6 +14,9 @@ export const RESET_REGION = 'RESET_REGION'
 export const SET_DATE_FROM = 'SET_DATE_FROM'
 export const SET_DATE_TO = 'SET_DATE_TO'
 
+export const RESET_DATE_FROM = 'RESET_DATE_FROM';
+export const RESET_DATE_TO = 'RESET_DATE_TO';
+
 export const ADD_FORMAT = 'ADD_FORMAT'
 export const REMOVE_FORMAT = 'REMOVE_FORMAT'
 export const RESET_FORMAT = 'RESET_FORMAT'

@@ -14,6 +14,7 @@
     height: 80vh;
     width: 80vw;
     max-width: 780px;
+    max-height: 780px;
     background: #fff;
 
     border: 1px solid #ddd;

@@ -1,5 +1,4 @@
 import findIndex from 'lodash.findindex';
-import find from 'lodash.find';
 import defined from '../helpers/defined';
 import findOptionFromList from '../helpers/findOptionFromList';
 

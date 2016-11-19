@@ -5,7 +5,6 @@ import FacetWrapper from './FacetWrapper';
 import RegionMap from './RegionMap';
 import RegionPopup from './RegionPopup';
 import FacetSearchBox from './FacetSearchBox';
-import defined from '../helpers/defined';
 import RegionSummray from './RegionSummary';
 
 /*
@@ -80,7 +79,6 @@ class FacetRegion extends Component {
                               facetSearchResults={this.props.facetSearchResults}
                               closePopUp={this.closePopUp}
                               renderOption={this.renderOption}
-                              onToggleOption={this.props.onToggleOption}
                               searchFacet={this.props.searchFacet}
                               regionMapping={this.props.regionMapping}
                               activeRegion={this.props.activeRegion}
