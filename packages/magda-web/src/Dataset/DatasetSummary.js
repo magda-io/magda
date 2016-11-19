@@ -5,8 +5,18 @@ import Star from '../UI/Star';
 import './DatasetSummary.css';
 
 export default class DatasetSummary extends Component {
+  constructor(props) {
+    super(props);
+    this.onClick = this.onClick.bind(this);
+  }
+
   truncate(s) {
     return s.substring(0,200) + '...';
+  }
+
+  onClick(tag, e){
+    e.stopPropagation();
+    this.props.onSearchTextChange(tag);
   }
 
   render(){
@@ -35,7 +45,7 @@ export default class DatasetSummary extends Component {
                 <ul className='list-unstyled tags'>
                   {
                     dataset.keyword.map((tag)=>
-                      <li key={tag} className='search-result--tag'><a href={`/?q=${tag}`} onClick={(e)=>{e.stopPropagation()}}>#{tag}</a></li>
+                      <li key={tag} className='search-result--tag'><a onClick={this.onClick.bind(this, tag)}>#{tag}</a></li>
                     )
                   }
                 </ul>

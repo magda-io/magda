@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import defined from '../helpers/defined';
 import './DatasetInfo.css';
 
 export default class DatasetInfo extends Component {

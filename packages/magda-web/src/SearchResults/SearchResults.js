@@ -46,7 +46,11 @@ class SearchResults extends Component {
         {
           this.props.searchResults.map((result, i)=>
             <li key={result.title + i}  className='search-result'>
-              <DatasetSummary dataset={result} onClickDataset={this.onExpandDataset.bind(this, result)} isExpanded={this.state.expandedItem === result}/>
+              <DatasetSummary dataset={result}
+                              onClickDataset={this.onExpandDataset.bind(this, result)}
+                              isExpanded={this.state.expandedItem === result}
+                              onSearchTextChange={this.props.onSearchTextChange}
+              />
               {this.state.expandedItem === result && <DatasetInfo dataset={result} onClickClose={this.onCloseDataset}/>}
             </li>
           )
@@ -57,7 +61,9 @@ class SearchResults extends Component {
     );
   }
 }
-SearchResults.propTypes={searchResults: React.PropTypes.array};
+SearchResults.propTypes={searchResults: React.PropTypes.array,
+                         onSearchTextChange: React.PropTypes.func
+                         };
 SearchResults.defaultProps={searchResults: []};
 
 export default SearchResults;

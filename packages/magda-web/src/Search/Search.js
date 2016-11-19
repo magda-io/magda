@@ -35,11 +35,12 @@ class Search extends Component {
     this.updateQuery({
       q: text,
       publisher: [],
-      regionId: [],
-      regionCode: [],
+      regionId: undefined,
+      regionType: undefined,
       dateFrom: undefined,
       dateTo: undefined,
-      format: []
+      format: [],
+      page: undefined
     });
   }
 
@@ -77,6 +78,7 @@ class Search extends Component {
                   <SearchResults
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
+                      onSearchTextChange={this.onSearchTextChange}
                   />
                   {this.props.hitCount > 20 &&
                       <Pagination
