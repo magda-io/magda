@@ -1,7 +1,16 @@
 import React, { Component } from 'react';
+import defined from '../helpers/defined';
 import './DatasetInfo.css';
 
 export default class DatasetInfo extends Component {
+  getIcon(format){
+    let fileTypes = ['Default', 'CSV', 'DOC', 'DOCX', 'HTML', 'JSON', 'KML', 'PDF', 'TXT', 'XLS','XLSX', 'ZIP'];
+    let type = 0;
+    if(fileTypes.indexOf(format) > 0){
+      type = fileTypes.indexOf(format)
+    }
+    return `../assets/file-icons/${fileTypes[type]}.svg`;
+  }
   render(){
     let dataset = this.props.dataset;
     return <div className='dataset-info'>
@@ -12,8 +21,8 @@ export default class DatasetInfo extends Component {
                 <h5>Contents</h5>
                   <ul className='list-unstyled'>
                     {dataset.distributions.map((d, i)=>
-                      <li key={d.downloadURL + i} className={`dataset-info--download-link clearfix ${d.format}`}>
-                        <i className='fa fa-file-pdf-o' aria-hidden="true"></i>
+                      <li key={i} className={`dataset-info--download-link clearfix ${d.format}`}>
+                        <img src={this.getIcon(d.format)} alt={d.format} className='dataset-file-icon'/>
                         <a href={d.downloadURL} target='_blank'>{d.description}({d.format})</a>
                       </li>
                     )}

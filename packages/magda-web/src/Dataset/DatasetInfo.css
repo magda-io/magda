@@ -31,9 +31,7 @@
   font-family: 'Montserrat', sans-serif;
 }
 
-.dataset-info--download-link .fa{
-  font-size: 30px;
-  margin-right: 15px;
+.dataset-info--download-link .dataset-file-icon{
   display: table-cell;
 }
 
