@@ -44,8 +44,8 @@ export default class DatasetSummary extends Component {
                 </div>
                 <ul className='list-unstyled tags'>
                   {
-                    dataset.keyword.map((tag)=>
-                      <li key={tag} className='search-result--tag'><a onClick={this.onClick.bind(this, tag)}>#{tag}</a></li>
+                    dataset.keyword.map((tag, i)=>
+                      <li key={`${tag}-${i}`} className='search-result--tag'><a onClick={this.onClick.bind(this, tag)}>#{tag}</a></li>
                     )
                   }
                 </ul>
