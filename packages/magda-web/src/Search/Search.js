@@ -25,6 +25,8 @@ class Search extends Component {
     this.onClickTag = this.onClickTag.bind(this);
     this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
     this.debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
+    // it needs to be undefined here, so the default value should be from the url
+    // once this value is set, the value should always be from the user input
     this.state={
       searchText: undefined
     }
@@ -88,6 +90,15 @@ class Search extends Component {
     });
   }
 
+  getSearchBoxValue(){
+    if(defined(this.state.searchText)){
+      return this.state.searchText;
+    } else if(defined(this.props.location.query.q)){
+      return this.props.location.query.q
+    }
+    return '';
+  }
+
 
   render() {
     return (
@@ -96,7 +107,7 @@ class Search extends Component {
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
-              <SearchBox value={defined(this.state.searchText) ? this.state.searchText : this.props.location.query.q}
+              <SearchBox value={this.getSearchBoxValue()}
                          onChange={this.onSearchTextChange}
                          onKeyPress={this.handleSearchFieldEnterKeyPress}/>
             </div>
