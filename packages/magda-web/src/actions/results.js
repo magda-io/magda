@@ -5,6 +5,7 @@ export const SET_URL_QUERY = 'SET_URL_QUERY'
 export const REQUEST_RESULTS = 'REQUEST_RESULTS'
 export const RECEIVE_RESULTS = 'RECEIVE_RESULTS'
 export const UPDATE_PROGRESS = 'UPDATE_PROGRESS'
+export const FETCH_ERROR = 'FETCH_ERROR'
 
 export const ADD_PUBLISHER = 'ADD_PUBLISHER'
 export const REMOVE_PUBLISHER = 'REMOVE_PUBLISHER'
@@ -45,14 +46,24 @@ export function updateProgress(progress){
   }
 }
 
+export function transferFailed(){
+  return {
+    type: FETCH_ERROR,
+  }
+}
+
 
 export function fetchSearchResults(query) {
   return (dispatch)=>{
-    console.log(`http://magda-search-api.terria.io/datasets/search?query=${query}`);
     dispatch(requestResults(query))
-    return futch(`http://magda-search-api.terria.io/datasets/search?query=${query}`, (progressEvent)=>{
+    return futch(`http://magda-search-api.terria.io/datasets/search?query=${query}`,
+      (progressEvent)=>{
       dispatch(updateProgress(progressEvent.loaded / progressEvent.total))
-    })
+      },
+      (errorEvent)=>{
+        dispatch(transferFailed())
+      }
+    )
     .then(json =>
       dispatch(receiveResults(query, json))
     )
@@ -61,6 +72,8 @@ export function fetchSearchResults(query) {
 
 export function shouldFetchSearchResults(state, query){
   const results = state.results;
+
+  debugger
   if(!results){
     return false
   } else if(results.isFetching){

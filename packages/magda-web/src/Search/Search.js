@@ -117,7 +117,7 @@ class Search extends Component {
                 <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>
             </div>
             <div className='col-sm-8'>
-                {!this.props.isFetching && <div>
+                {!this.props.isFetching && !this.props.hasError && <div>
                   <SearchResults
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
@@ -131,6 +131,9 @@ class Search extends Component {
                       />
                    }
                  </div>
+               }
+               {!this.props.isFetching && this.props.hasError &&
+                 <div className='error'> error in request </div>
                }
             </div>
           </div>
@@ -150,6 +153,7 @@ Search.propTypes = {
   isFetching: React.PropTypes.bool.isRequired,
   dispatch: React.PropTypes.func.isRequired,
   progress: React.PropTypes.number.isRequired,
+  hasError: React.PropTypes.bool.isRequired
 }
 
 
@@ -159,7 +163,8 @@ function mapStateToProps(state) {
     datasets: results.datasets,
     hitCount: results.hitCount,
     isFetching: results.isFetching,
-    progress: results.progress
+    progress: results.progress,
+    hasError: results.hasError
   }
 }
 

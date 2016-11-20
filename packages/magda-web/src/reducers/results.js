@@ -15,7 +15,8 @@ const initialData = {
   publisherOptions: [],
   temporalOptions: [],
   formatOptions: [],
-  apiQuery: ''
+  apiQuery: '',
+  hasError: false
 }
 
 const results = (state=initialData, action) => {
@@ -23,6 +24,7 @@ const results = (state=initialData, action) => {
     case 'REQUEST_RESULTS':
       return Object.assign({}, state, {
         isFetching: true,
+        hasError: false,
         apiQuery: action.apiQuery
       })
 
@@ -30,6 +32,12 @@ const results = (state=initialData, action) => {
       return Object.assign({}, state, {
         isFetching: true,
         progress: action.progress
+      })
+
+    case 'FETCH_ERROR':
+      return Object.assign({}, state, {
+        isFetching: false,
+        hasError: true
       })
 
     case 'RECEIVE_RESULTS':
@@ -59,7 +67,6 @@ const results = (state=initialData, action) => {
         publisherOptions,
         temporalOptions,
         formatOptions,
-
         activePublishers,
         activeRegion,
         activeDateFrom,
