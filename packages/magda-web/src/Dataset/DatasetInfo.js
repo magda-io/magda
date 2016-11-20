@@ -8,7 +8,7 @@ export default class DatasetInfo extends Component {
     if(fileTypes.indexOf(format) > 0){
       type = fileTypes.indexOf(format)
     }
-    return `../assets/file-icons/${fileTypes[type]}.svg`;
+    return `../assets/file-icons/${fileTypes[type]}.png`;
   }
   render(){
     let dataset = this.props.dataset;
