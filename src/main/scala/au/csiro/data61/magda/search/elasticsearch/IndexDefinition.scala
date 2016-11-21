@@ -68,7 +68,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 11,
+      version = 12,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -130,44 +130,46 @@ object IndexDefinition {
 
   def cleanGeoJson(geojson: JsValue): JsValue = {
     // Make sure all linear rings are closed (first coordinates are exactly the same as the last coordinates)
-    val feature = geojson.asJsObject
-    val fields = feature.fields
+    geojson match {
+      case JsObject(fields) => {
+        val cleanLinearRing = (linearRing: Vector[JsValue]) => {
+          val firstPosition = linearRing.head
+          val lastPosition = linearRing.last
 
-    val cleanLinearRing = (linearRing: Vector[JsValue]) => {
-      val firstPosition = linearRing.head
-      val lastPosition = linearRing.last
+          if (firstPosition == lastPosition) {
+            // Linear ring is already closed
+            linearRing
+          } else {
+            // Close the linear ring
+            linearRing :+ firstPosition
+          }
+        }
 
-      if (firstPosition == lastPosition) {
-        // Linear ring is already closed
-        linearRing
-      } else {
-        // Close the linear ring
-        linearRing :+ firstPosition
+        val cleanPolygon = (linearRings: Vector[JsValue]) => {
+          linearRings.map {
+            case JsArray(linearRing) => JsArray(cleanLinearRing(linearRing))
+            case anythingElse => anythingElse
+          }
+        }
+
+        if (fields("type").convertTo[String] == "Polygon") {
+          JsObject(fields.map {
+            case ("coordinates", JsArray(linearRings)) => ("coordinates", JsArray(cleanPolygon(linearRings)))
+            case (others, value) => (others, value)
+          })
+        } else if (fields("type").convertTo[String] == "MultiPolygon") {
+          JsObject(fields.map {
+            case ("coordinates", JsArray(polygons)) => ("coordinates", JsArray(polygons.map {
+              case JsArray(linearRings) => JsArray(cleanPolygon(linearRings))
+              case anythingElse => anythingElse
+            }))
+            case (others, value) => (others, value)
+          })
+        } else {
+          geojson
+        }
       }
-    }
-
-    val cleanPolygon = (linearRings: Vector[JsValue]) => {
-      linearRings.map {
-        case JsArray(linearRing) => JsArray(cleanLinearRing(linearRing))
-        case anythingElse => anythingElse
-      }
-    }
-
-    if (feature.fields("type").convertTo[String] == "Polygon") {
-      JsObject(fields.map {
-        case ("coordinates", JsArray(linearRings)) => ("coordinates", JsArray(cleanPolygon(linearRings)))
-        case (others, value) => (others, value)
-      })
-    } else if (feature.fields("type").convertTo[String] == "MultiPolygon") {
-      JsObject(fields.map {
-        case ("coordinates", JsArray(polygons)) => ("coordinates", JsArray(polygons.map {
-          case JsArray(linearRings) => JsArray(cleanPolygon(linearRings))
-          case anythingElse => anythingElse
-        }))
-        case (others, value) => (others, value)
-      })
-    } else {
-      geojson
+      case anythingElse => anythingElse
     }
   }
 }
