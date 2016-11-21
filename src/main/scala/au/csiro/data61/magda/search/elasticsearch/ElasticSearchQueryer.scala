@@ -65,6 +65,7 @@ import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 
 class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = system.log
+  val AGGREGATION_SIZE_LIMIT = 10
 
   lazy val clientFuture: Future[ElasticClient] = getClient(system.scheduler, logger, ec)
 
@@ -109,13 +110,13 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
           id = facetType,
           options = {
             // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-            val filteredOptions = (
-              aggsMap.get(facetType.id + "-filter") match {
+            val filteredOptions = definition.postProcessFacets(
+              (aggsMap.get(facetType.id + "-filter") match {
                 case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
                 case None            => Nil
-              })
-              .filter(definition.isFilterOptionRelevant(query))
-              .map(_.copy(matched = Some(true)))
+              }).filter(definition.isFilterOptionRelevant(query)),
+              AGGREGATION_SIZE_LIMIT
+            ).map(_.copy(matched = Some(true)))
 
             // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
             // display it to them to show them that it does *exist* but not for this query
@@ -131,19 +132,19 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
                   )
                 }
                 .map {
-                  case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, Some(0))) else None
+                  case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0)) else None
                 }
                 .flatten
                 .toSeq
 
             // Alternative options show what *other* options the user could filter by and get results apart from what they've already done.
-            val alternativeOptions = definition.extractFacetOptions(
+            val alternativeOptions = definition.postProcessFacets(definition.extractFacetOptions(
               aggsMap
                 .get(facetType.id + "-global")
                 .get
                 .getProperty("filter").asInstanceOf[Aggregation]
                 .getProperty(facetType.id).asInstanceOf[Aggregation]
-            )
+            ), AGGREGATION_SIZE_LIMIT - filteredOptions.size)
 
             val combined = (exactOptions ++ filteredOptions ++ alternativeOptions)
             val lookup = combined.groupBy(_.value)
@@ -152,7 +153,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
             combined.map(_.value)
               .distinct
               .map(lookup.get(_).get.head)
-              .take(10)
+              .take(AGGREGATION_SIZE_LIMIT)
           })
       }.toSeq))
   }
@@ -204,7 +205,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
         Some(
           aggregation
             .filter(facetType.id + "-filter")
-            .filter(facetDef.filterAggregationQuery(10, query)).aggs(facetDef.aggregationDefinition(10))
+            .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(AGGREGATION_SIZE_LIMIT))
             .asInstanceOf[AbstractAggregationDefinition]
         )
       else
@@ -233,7 +234,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
     aggregation
       .filter("filter")
       .filter(queryToQueryDef(facetDef.removeFromQuery(query), strategy))
-      .aggs(facetDef.aggregationDefinition(10))
+      .aggs(facetDef.aggregationDefinition(AGGREGATION_SIZE_LIMIT))
 
   /**
    * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.
@@ -294,7 +295,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
                   .map {
                     case bucket: InternalFilter => new FacetOption(
                       value = bucket.getName,
-                      hitCount = Some(bucket.getDocCount)
+                      hitCount = bucket.getDocCount
                     )
                   }
                   .groupBy(_.value)

@@ -52,7 +52,9 @@ package misc {
 
   case class FacetOption(
     value: String,
-    hitCount: Option[Long] = None,
+    hitCount: Long,
+    upperBound: Option[String] = None,
+    lowerBound: Option[String] = None,
     matched: Option[Boolean] = None)
 
   case class DataSet(
@@ -73,7 +75,7 @@ package misc {
       distributions: Seq[Distribution] = Seq(),
       landingPage: Option[String] = None,
       // TODO: Investigate making this only exist in ElasticSearch
-      years: Option[List[String]] = None) {
+      years: Option[List[Int]] = None) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
   }
@@ -255,7 +257,7 @@ package misc {
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
-    implicit val facetOptionFormat = jsonFormat3(FacetOption.apply)
+    implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val regionFormat = jsonFormat2(Region.apply)
     implicit val queryFormat = jsonFormat8(Query.apply)

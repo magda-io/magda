@@ -24,7 +24,7 @@ object ElasticSearchImplicits {
     case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket =>
       new FacetOption(
         value = bucket.getKeyAsString,
-        hitCount = Some(bucket.getDocCount)
+        hitCount = bucket.getDocCount
       )
     )
     case (_) => Seq()

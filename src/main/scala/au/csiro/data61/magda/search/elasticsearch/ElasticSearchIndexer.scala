@@ -48,14 +48,14 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .mapAsync(1) {
         case (source, dataSets) =>
           bulkIndex(buildDatasetIndexDefinition(dataSets))
-            .map((source, _))
+            .map((source, dataSets.length, _))
       }
       .map {
-        case (source, result) =>
+        case (source, dataSetCount, result) =>
           if (result.hasFailures) {
             logger.warning("Failure when indexing from {}: {}", source, result.failureMessage)
           } else {
-            logger.info("Indexed {} entries from {}", result.items.length, source)
+            logger.info("Indexed {} datasets from {}", dataSetCount, source)
           }
 
           result
@@ -151,12 +151,12 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     })
 
   /** Returns a list of all years between two Instants, inclusively, as strings */
-  def getYears(from: Option[Instant], to: Option[Instant]): List[String] = {
-    def getYearsInner(from: LocalDate, to: LocalDate): List[String] =
+  def getYears(from: Option[Instant], to: Option[Instant]): List[Int] = {
+    def getYearsInner(from: LocalDate, to: LocalDate): List[Int] =
       if (from.isAfter(to)) {
         Nil
       } else {
-        from.getYear.toString :: getYearsInner(from.plusYears(1), to)
+        from.getYear :: getYearsInner(from.plusYears(1), to)
       }
 
     (from, to) match {

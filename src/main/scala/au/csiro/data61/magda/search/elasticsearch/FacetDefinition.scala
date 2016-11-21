@@ -17,6 +17,7 @@ import au.csiro.data61.magda.util.DateParser
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation.InternalBucket
 import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -38,7 +39,7 @@ trait FacetDefinition {
    * Returns a QueryDefinition for only the part of the query that's relevant for this facet... e.g. for Year it creates
    * a query that looks for anything with a date within the Query's date parameters.
    */
-  def filterAggregationQuery(limit: Int, query: Query): QueryDefinition
+  def filterAggregationQuery(query: Query): QueryDefinition
 
   /**
    *  Optional filter for the buckets that are returned from aggregation. This is useful for facets that are based on
@@ -81,6 +82,12 @@ trait FacetDefinition {
    * because it's spelled wrong.
    */
   def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)]
+
+  /**
+   * Once the facets are extracted into FacetOptions, optionally perform some post-processing - e.g. reduce them into smaller
+   * groups or change the values so they reference the facet before and after.
+   */
+  def postProcessFacets(inputFacets: Seq[FacetOption], limit: Int): Seq[FacetOption] = inputFacets
 }
 
 object FacetDefinition {
@@ -98,7 +105,7 @@ object PublisherFacetDefinition extends FacetDefinition {
 
   def relatedToQuery(query: Query): Boolean = !query.publishers.isEmpty
 
-  override def filterAggregationQuery(limit: Int, query: Query): QueryDefinition =
+  override def filterAggregationQuery(query: Query): QueryDefinition =
     should(
       query.publishers.map(publisherQuery(_))
     ).minimumShouldMatch(1)
@@ -113,12 +120,44 @@ object PublisherFacetDefinition extends FacetDefinition {
 }
 
 object YearFacetDefinition extends FacetDefinition {
+  val yearBinSizes = List(1, 2, 5, 10, 25, 50)
+
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
-    aggregation.terms(Year.id).field("years").order(Order.term(false)).size(limit)
+    aggregation.histogram(Year.id).field("years").interval(1).order(Histogram.Order.KEY_DESC)
+
+  def roundUp(num: Int, divisor: Int): Int = Math.ceil((num.toDouble / divisor)).toInt * divisor
+  def roundDown(num: Int, divisor: Int): Int = Math.floor((num.toDouble / divisor)).toInt * divisor
+
+  override def postProcessFacets(inputFacets: Seq[FacetOption], limit: Int): Seq[FacetOption] = inputFacets match {
+    case Nil => Nil
+    case inputFacets =>
+      val lastYear = inputFacets.head.value.toInt
+      val firstYear = inputFacets.last.value.toInt
+
+      val yearDifference = lastYear - firstYear
+      val binSize = yearBinSizes.view.map(x => (x, yearDifference / x)).filter(_._2 <= limit).map(_._1).head
+
+      val bins = for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1)
+
+      val yearLookup = inputFacets.groupBy(_.value.toInt).mapValues(_.head.hitCount)
+
+      bins.reverse.map {
+        case (start, end) =>
+          val yearsAffected = for (i <- start to end) yield i
+          val hitCount = yearsAffected.foldRight(0l)((year, count) => count + yearLookup.get(year).getOrElse(0l))
+
+          FacetOption(
+            value = if (start != end) s"$start - $end" else start.toString,
+            hitCount,
+            lowerBound = Some(start.toString),
+            upperBound = Some(end.toString)
+          )
+      }.filter(_.hitCount > 0)
+  }
 
   override def relatedToQuery(query: Query): Boolean = query.dateFrom.isDefined || query.dateTo.isDefined
 
-  override def filterAggregationQuery(limit: Int, query: Query): QueryDefinition =
+  override def filterAggregationQuery(query: Query): QueryDefinition =
     must {
       val fromQuery = query.dateFrom.map(dateFromQuery(_))
       val toQuery = query.dateTo.map(dateToQuery(_))
@@ -171,14 +210,14 @@ object FormatFacetDefinition extends FacetDefinition {
 
       new FacetOption(
         value = bucket.getKeyAsString,
-        hitCount = Some(innerBucket.getDocCount)
+        hitCount = innerBucket.getDocCount
       )
     }
   }
 
   override def relatedToQuery(query: Query): Boolean = !query.formats.isEmpty
 
-  override def filterAggregationQuery(limit: Int, query: Query): QueryDefinition =
+  override def filterAggregationQuery(query: Query): QueryDefinition =
     should(query.formats.map(formatQuery(_)))
       .minimumShouldMatch(1)
 
