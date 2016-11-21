@@ -68,7 +68,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 8,
+      version = 11,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -100,7 +100,7 @@ object IndexDefinition {
               "type" -> JsString(regionSource.name),
               "id" -> properties.fields(regionSource.idProperty),
               "name" -> name,
-              "geometry" -> jsonRegion.fields("geometry")
+              "geometry" -> cleanGeoJson(jsonRegion.fields("geometry"))
             ).toJson)
       }
       // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request
@@ -126,5 +126,48 @@ object IndexDefinition {
       }
       .runWith(Sink.reduce((oldLength: Int, latestValuesLength: Int) => oldLength + latestValuesLength))
       .map { count => logger.info("Successfully indexed {} regions", count) }
+  }
+
+  def cleanGeoJson(geojson: JsValue): JsValue = {
+    // Make sure all linear rings are closed (first coordinates are exactly the same as the last coordinates)
+    val feature = geojson.asJsObject
+    val fields = feature.fields
+
+    val cleanLinearRing = (linearRing: Vector[JsValue]) => {
+      val firstPosition = linearRing.head
+      val lastPosition = linearRing.last
+
+      if (firstPosition == lastPosition) {
+        // Linear ring is already closed
+        linearRing
+      } else {
+        // Close the linear ring
+        linearRing :+ firstPosition
+      }
+    }
+
+    val cleanPolygon = (linearRings: Vector[JsValue]) => {
+      linearRings.map {
+        case JsArray(linearRing) => JsArray(cleanLinearRing(linearRing))
+        case anythingElse => anythingElse
+      }
+    }
+
+    if (feature.fields("type").convertTo[String] == "Polygon") {
+      JsObject(fields.map {
+        case ("coordinates", JsArray(linearRings)) => ("coordinates", JsArray(cleanPolygon(linearRings)))
+        case (others, value) => (others, value)
+      })
+    } else if (feature.fields("type").convertTo[String] == "MultiPolygon") {
+      JsObject(fields.map {
+        case ("coordinates", JsArray(polygons)) => ("coordinates", JsArray(polygons.map {
+          case JsArray(linearRings) => JsArray(cleanPolygon(linearRings))
+          case anythingElse => anythingElse
+        }))
+        case (others, value) => (others, value)
+      })
+    } else {
+      geojson
+    }
   }
 }
