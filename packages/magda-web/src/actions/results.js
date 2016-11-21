@@ -72,8 +72,6 @@ export function fetchSearchResults(query) {
 
 export function shouldFetchSearchResults(state, query){
   const results = state.results;
-
-  debugger
   if(!results){
     return false
   } else if(results.isFetching){
