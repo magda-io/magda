@@ -2,6 +2,8 @@ import './FacetTemporal.css';
 import React, { Component } from 'react';
 import FacetWrapper from './FacetWrapper';
 import maxBy from 'lodash.maxby';
+import max from 'lodash.max';
+import min from 'lodash.min';
 import DragBar from './DragBar';
 import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
@@ -62,7 +64,9 @@ class FacetTemporal extends Component {
   checkActiveOption(option){
     let max = defined(this.props.activeDates[1]) ? + this.props.activeDates[1] : 4000;
     let min = defined(this.props.activeDates[0]) ? + this.props.activeDates[0] : 0;
-    if((+option.upperBound <= max) && (+option.lowerBound >= min)){
+    console.log(max, min);
+    console.log(option);
+    if((option.upperBound <= max) && (option.lowerBound >= min)){
       return true
     }
     return false
@@ -116,13 +120,38 @@ class FacetTemporal extends Component {
     this.props.onToggleOption(datesArray);
   }
 
+  findLowerBound(){
+    // find all bound and pick the smallest index
+    let indice = [];
+    this.props.options.forEach((o, i)=>{
+      if((o.lowerBound <= this.props.activeDates[0]) && (o.upperBound >= this.props.activeDates[0])){
+        indice.push(i)
+      }
+    });
+    return max(indice);
+  }
+
+  findUpperBound(){
+    // find all bounds and pick the highest
+    let indice = [];
+    this.props.options.forEach((o, i)=>{
+      if((o.lowerBound <= this.props.activeDates[1]) && (o.upperBound >= this.props.activeDates[1])){
+        indice.push(i)
+      }
+    });
+    return min(indice);
+
+  }
+
   renderDragBar(){
     // the height of the dragbar should be the same with the height of all the options + any start date + any end date
     // remove last padding
     let height = (this.props.options.length + 2) * itemHeight - 4;
-    let fromIndex = defined(this.props.activeDates[0]) ? findIndex(this.props.options, o=>o.lowerBound === this.props.activeDates[0]) + 1 : this.props.options.length + 1;
-    let toIndex = defined(this.props.activeDates[1]) ? findIndex(this.props.options, o=>o.upperBound === this.props.activeDates[1]) + 1 : 0;
+    let fromIndex = defined(this.props.activeDates[0]) ? this.findLowerBound() + 1 : this.props.options.length + 1;
+    let toIndex = defined(this.props.activeDates[1]) ? this.findUpperBound() + 1 : 0;
+
     let dragBarData=[(toIndex * itemHeight), (fromIndex * itemHeight)];
+    console.log(fromIndex, toIndex)
     return <DragBar dragBarData={dragBarData} onDrag={this.onDrag} height={height}/>
   }
 
