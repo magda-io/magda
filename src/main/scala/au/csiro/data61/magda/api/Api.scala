@@ -100,7 +100,12 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
             }
           }
         } ~
-        path("region-types") { getFromResource("regionMapping.json") }
+        path("region-types") { get { getFromResource("regionMapping.json") } } ~
+        path("regions" / "search" ) {
+          (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+            complete(searchQueryer.searchRegions(query, start, limit))
+          }
+        }
     }
   }
 

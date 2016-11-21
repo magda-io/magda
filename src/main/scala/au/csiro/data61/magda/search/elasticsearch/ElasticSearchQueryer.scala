@@ -310,4 +310,16 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
         }
     }
   }
+
+  override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
+    clientFuture.flatMap { client =>
+      client.execute(ElasticDsl.search in "regions" / "regions" query { matchPhrasePrefixQuery("name", query) } start start.toInt limit limit sourceExclude("geometry"))
+        .flatMap { response =>
+          response.totalHits match {
+            case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
+            case _ => Future(RegionSearchResult(query, response.totalHits, response.as[MatchingRegion].toList))
+          }
+        }
+    }
+  }
 }

@@ -1,22 +1,25 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.{ CreateIndexDefinition, ElasticClient }
+import com.sksamuel.elastic4s.{CreateIndexDefinition, ElasticClient}
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.analyzers._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.AppConfig
-import spray.json.JsString
+import spray.json._
 import com.sksamuel.elastic4s.ElasticDsl
 import akka.stream.Materializer
+
 import scala.util.Failure
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
+
 import scala.util.Success
 import akka.stream.scaladsl.Merge
 import com.sksamuel.elastic4s.BulkResult
 import akka.actor.ActorSystem
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import au.csiro.data61.magda.search.elasticsearch.Queries.generateRegionId
@@ -71,6 +74,9 @@ object IndexDefinition {
           .indexSetting("recovery.initial_shards", 1)
           .mappings(
             mapping("regions").fields(
+              field("type").typed(StringType),
+              field("id").typed(StringType),
+              field("name").typed(StringType),
               field("geometry").typed(GeoShapeType))),
       create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
 
@@ -81,12 +87,23 @@ object IndexDefinition {
     loader.setupRegions
       .map {
         case (regionSource, jsonRegion) =>
+          val properties = jsonRegion.fields("properties").asJsObject
+          val name = if (regionSource.includeIdInName) {
+            JsString(properties.fields(regionSource.nameProperty).convertTo[String] + " - " + properties.fields(regionSource.idProperty).convertTo[String])
+          } else {
+            properties.fields(regionSource.nameProperty)
+          }
           ElasticDsl.index
             .into("regions" / "regions")
-            .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.getFields(regionSource.id).head.asInstanceOf[JsString].value))
-            .source(jsonRegion.toJson)
+            .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.fields(regionSource.idProperty).convertTo[String]))
+            .source(JsObject(
+              "type" -> JsString(regionSource.name),
+              "id" -> properties.fields(regionSource.idProperty),
+              "name" -> name,
+              "geometry" -> jsonRegion.fields("geometry")
+            ).toJson)
       }
-      // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request 
+      // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request
       .batchWeighted(AppConfig.conf.getLong("regionBufferMb") * 1000000, defin => defin.build.source().length(), Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
       // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
