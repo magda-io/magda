@@ -99,6 +99,16 @@ class Search extends Component {
     return '';
   }
 
+  noMatchText(){
+    if(defined(this.props.location.query.q) &&
+       this.props.location.query.q > 0 &&
+       this.props.strategy == 'match-part'){
+      return <div className='no-match'>
+              Sorry we can not find what you were looking for, you might find the following related datasets useful?
+            </div>
+    }
+  }
+
 
   render() {
     return (
@@ -118,6 +128,7 @@ class Search extends Component {
             </div>
             <div className='col-sm-8'>
                 {!this.props.isFetching && !this.props.hasError && <div>
+                  {this.noMatchText()}
                   <SearchResults
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
@@ -153,7 +164,8 @@ Search.propTypes = {
   isFetching: React.PropTypes.bool.isRequired,
   dispatch: React.PropTypes.func.isRequired,
   progress: React.PropTypes.number.isRequired,
-  hasError: React.PropTypes.bool.isRequired
+  hasError: React.PropTypes.bool.isRequired,
+  strategy: React.PropTypes.string.isRequired,
 }
 
 
@@ -164,7 +176,8 @@ function mapStateToProps(state) {
     hitCount: results.hitCount,
     isFetching: results.isFetching,
     progress: results.progress,
-    hasError: results.hasError
+    hasError: results.hasError,
+    strategy: results.strategy
   }
 }
 

@@ -16,7 +16,8 @@ const initialData = {
   temporalOptions: [],
   formatOptions: [],
   apiQuery: '',
-  hasError: false
+  hasError: false,
+  strategy: "match-all"
 }
 
 const results = (state=initialData, action) => {
@@ -62,6 +63,7 @@ const results = (state=initialData, action) => {
       return Object.assign({}, state, {
         isFetching: false,
         apiQuery: action.apiQuery,
+        strategy: data.strategy,
         datasets,
         hitCount,
         publisherOptions,

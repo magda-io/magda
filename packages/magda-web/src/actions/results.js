@@ -55,6 +55,7 @@ export function transferFailed(){
 
 export function fetchSearchResults(query) {
   return (dispatch)=>{
+    console.log(`http://magda-search-api.terria.io/datasets/search?query=${query}`);
     dispatch(requestResults(query))
     return futch(`http://magda-search-api.terria.io/datasets/search?query=${query}`,
       (progressEvent)=>{
