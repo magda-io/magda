@@ -113,8 +113,8 @@ class SearchFacets extends Component {
 
   onToggleTemporalOption(datesArray){
     this.props.updateQuery({
-      dateFrom: defined(datesArray[0]) ? datesArray[0].value: undefined,
-      dateTo: defined(datesArray[1]) ? datesArray[1].value: undefined,
+      dateFrom: defined(datesArray[0]) ? datesArray[0]: undefined,
+      dateTo: defined(datesArray[1]) ? datesArray[1]: undefined,
       page: undefined
     });
     this.props.dispatch(setDateTo(datesArray[1]));
@@ -186,8 +186,8 @@ SearchFacets.propTypes={
     activePublishers: React.PropTypes.array.isRequired,
     regionMapping: React.PropTypes.object,
     activeRegion: React.PropTypes.object,
-    activeDateFrom: React.PropTypes.object,
-    activeDateTo: React.PropTypes.object
+    activeDateFrom: React.PropTypes.string,
+    activeDateTo: React.PropTypes.string
   };
 
 

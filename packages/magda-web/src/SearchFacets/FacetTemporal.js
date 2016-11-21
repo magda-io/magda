@@ -35,21 +35,21 @@ class FacetTemporal extends Component {
     let tempDateFrom = this.props.activeDates[0];
     let tempDateTo = this.props.activeDates[1];
     if(!defined(tempDateFrom) && !defined(tempDateTo)){
-      tempDateFrom = option;
-      tempDateTo = option;
+      tempDateFrom = option.lowerBound;
+      tempDateTo = option.upperBound;
     }
     if(!defined(tempDateFrom)){
-      tempDateFrom = option
+      tempDateFrom = option.lowerBound
     } else if(!defined(tempDateTo)){
-      tempDateTo = option
+      tempDateTo = option.upperBound
     } else{
-      if(!defined(tempDateFrom) || (option.value < tempDateFrom.value) || (option.value === tempDateTo.value)){
-        tempDateFrom = option
+      if(!defined(tempDateFrom) || (option.lowerBound < tempDateFrom.value) || (option.upperBound === tempDateTo.value)){
+        tempDateFrom = lowerBound
       }else {
-        tempDateTo = option
+        tempDateTo = option.upperBound
       }
     }
-    let compare = tempDateFrom.value - tempDateTo.value;
+    let compare = tempDateFrom - tempDateTo;
     let dateFrom = compare >= 0 ? tempDateTo : tempDateFrom;
     let dateTo = compare >= 0 ? tempDateFrom : tempDateTo;
     this.props.onToggleOption([dateFrom, dateTo])
@@ -60,9 +60,9 @@ class FacetTemporal extends Component {
    * @param {object} option the current facet option
    */
   checkActiveOption(option){
-    let max = defined(this.props.activeDates[1]) ? + this.props.activeDates[1].value : 4000;
-    let min = defined(this.props.activeDates[0]) ? + this.props.activeDates[0].value : 0;
-    if((+option.value <= max) && (+option.value >= min)){
+    let max = defined(this.props.activeDates[1]) ? + this.props.activeDates[1] : 4000;
+    let min = defined(this.props.activeDates[0]) ? + this.props.activeDates[0] : 0;
+    if((+option.upperBound <= max) && (+option.lowerBound >= min)){
       return true
     }
     return false
@@ -100,16 +100,17 @@ class FacetTemporal extends Component {
 
     // only updates if the dragged position is within the range
     if(index > 0 && index < this.props.options.length){
+      // if it's upper bound
       if(id === 0){
-        datesArray[1] = date;
+        datesArray[1] = date.upperBound;
       } else{
-        datesArray[0] = date;
+        datesArray[0] = date.lowerBound;
       }
     } else{
       if(id=== 0){
-        datesArray[1] = date;;
+        datesArray[1] = date.upperBound;
       } else {
-        datesArray[0] = date;
+        datesArray[0] = date.lowerBound;
       }
     }
     this.props.onToggleOption(datesArray);
@@ -119,8 +120,8 @@ class FacetTemporal extends Component {
     // the height of the dragbar should be the same with the height of all the options + any start date + any end date
     // remove last padding
     let height = (this.props.options.length + 2) * itemHeight - 4;
-    let fromIndex = defined(this.props.activeDates[0]) ? findIndex(this.props.options, o=>o.value === this.props.activeDates[0].value) + 1 : this.props.options.length + 1;
-    let toIndex = defined(this.props.activeDates[1]) ? findIndex(this.props.options, o=>o.value === this.props.activeDates[1].value) + 1 : 0;
+    let fromIndex = defined(this.props.activeDates[0]) ? findIndex(this.props.options, o=>o.lowerBound === this.props.activeDates[0]) + 1 : this.props.options.length + 1;
+    let toIndex = defined(this.props.activeDates[1]) ? findIndex(this.props.options, o=>o.upperBound === this.props.activeDates[1]) + 1 : 0;
     let dragBarData=[(toIndex * itemHeight), (fromIndex * itemHeight)];
     return <DragBar dragBarData={dragBarData} onDrag={this.onDrag} height={height}/>
   }

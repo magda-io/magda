@@ -48,13 +48,13 @@ const results = (state=initialData, action) => {
       let hitCount = data.hitCount;
 
       let publisherOptions = defined(data.facets[0]) ? data.facets[0].options : []
-      let temporalOptions = data.facets[1].options.sort((a, b)=>(b.value - a.value));
+      let temporalOptions = data.facets[1].options.sort((a, b)=>(b.lowerBound - a.lowerBound));
       let formatOptions = data.facets[2].options;
 
 
       let activePublishers = query.publishers.map(p=> findOptionFromList(p,data.facets[0].options));
-      let activeDateFrom = defined(query.dateFrom) ? {value: query.dateFrom.slice(0, 4), hitCount: null} : undefined;
-      let activeDateTo = defined(query.dateTo) ? {value: query.dateTo.slice(0, 4), hitCount: null} : undefined;
+      let activeDateFrom = defined(query.dateFrom) ? query.dateFrom.slice(0, 4): undefined;
+      let activeDateTo = defined(query.dateTo) ? query.dateTo.slice(0, 4) : undefined;
 
       let activeFormats = query.formats.map(item=> findOptionFromList(item,data.facets[2].options));
       // temp
