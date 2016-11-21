@@ -74,10 +74,10 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system
     dataSetConv(res \ "SearchResults" \ "Record")
   }
 
-  implicit def nodeToOption[T](node: NodeSeq, toValue: NodeSeq => T): Option[T] =
-    if (node.size == 0) None else Some(toValue(node))
+  implicit def nodeToOption[T](node: NodeSeq, toValue: NodeSeq => Option[T]): Option[T] =
+    if (node.size == 0) None else toValue(node)
 
-  implicit def nodeToStringOption(node: NodeSeq): Option[String] = nodeToOption(node, x => x.text)
+  implicit def nodeToStringOption(node: NodeSeq): Option[String] = nodeToOption(node, x => if (x.text.isEmpty()) None else Some(x.text))
 
   implicit def dataSetConv(res: NodeSeq) =
     res map { summaryRecord =>
@@ -103,8 +103,8 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implicit val system
         publisher = nodeToStringOption(summaryRecord \ "publisher")
           .orElse(nodeToStringOption(summaryRecord \ "custodian"))
           .map(name => Agent(name = Some(name))),
-        spatial = nodeToOption(summaryRecord \ "BoundingBox", identity).flatMap(locationFromBoundingBox),
-        temporal = nodeToOption(summaryRecord \ "coverage", identity).flatMap(temporalFromString(modified)),
+        spatial = nodeToOption(summaryRecord \ "BoundingBox", Some.apply).flatMap(locationFromBoundingBox),
+        temporal = nodeToOption(summaryRecord \ "coverage", Some.apply).flatMap(temporalFromString(modified)),
         keyword = (summaryRecord \ "subject").map(_.text.trim),
         distributions = buildDistributions(summaryRecord \ "URI", summaryRecord \ "rights"),
         landingPage = Some(interfaceConfig.landingPageUrl(identifier))

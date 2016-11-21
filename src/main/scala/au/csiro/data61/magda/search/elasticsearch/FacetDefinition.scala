@@ -100,7 +100,7 @@ object FacetDefinition {
 
 object PublisherFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition = {
-    aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit)
+    aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit).exclude("")
   }
 
   def relatedToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -197,7 +197,7 @@ object YearFacetDefinition extends FacetDefinition {
 object FormatFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
     aggregation nested Format.id path "distributions" aggregations {
-      aggregation terms "nested" field "distributions.format.untokenized" size limit aggs {
+      aggregation terms "nested" field "distributions.format.untokenized" size limit exclude "" aggs {
         aggregation reverseNested "reverse"
       }
     }
