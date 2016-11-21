@@ -52,13 +52,18 @@ class SearchFacets extends Component {
       })
       this.props.dispatch(addOption(option))
     }
+
+    this.props.updateQuery({
+      page: undefined
+    });
   }
 
 
   onResetPublisherFacet(){
     // update url
     this.props.updateQuery({
-      publisher: []
+      publisher: [],
+      page: undefined
     })
     // update redux
     this.props.dispatch(resetPublisher());
@@ -71,7 +76,8 @@ class SearchFacets extends Component {
 
   onResetFormatFacet(){
     this.props.updateQuery({
-      format: []
+      format: [],
+      page: undefined
     })
     this.props.dispatch(resetFormat());
   }
@@ -85,7 +91,8 @@ class SearchFacets extends Component {
     let {regionId, regionType} = region;
     this.props.updateQuery({
       regionId,
-      regionType
+      regionType,
+      page: undefined
     });
 
     this.props.dispatch(addRegion(region));
@@ -94,7 +101,8 @@ class SearchFacets extends Component {
   onResetRegionFacet(){
     this.props.updateQuery({
       regionId: undefined,
-      regionType: undefined
+      regionType: undefined,
+      page: undefined
     });
     this.props.dispatch(resetRegion());
   }
@@ -106,7 +114,8 @@ class SearchFacets extends Component {
   onToggleTemporalOption(datesArray){
     this.props.updateQuery({
       dateFrom: defined(datesArray[0]) ? datesArray[0].value: undefined,
-      dateTo: defined(datesArray[1]) ? datesArray[1].value: undefined
+      dateTo: defined(datesArray[1]) ? datesArray[1].value: undefined,
+      page: undefined
     });
     this.props.dispatch(setDateTo(datesArray[1]));
     this.props.dispatch(setDateFrom(datesArray[0]));
@@ -115,13 +124,13 @@ class SearchFacets extends Component {
   onResetTemporalFacet(){
     this.props.updateQuery({
       dateFrom: undefined,
-      dateTo: undefined
+      dateTo: undefined,
+      page: undefined
     });
     // dispatch event
-    this.props.dispatch(resetDateFrom())
-    this.props.dispatch(resetDateTo())
+    this.props.dispatch(resetDateFrom());
+    this.props.dispatch(resetDateTo());
   }
-
 
   render() {
     return (
