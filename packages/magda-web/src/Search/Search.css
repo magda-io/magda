@@ -40,3 +40,7 @@
 	width: 10px;
 	height: 10px;
 }
+
+.search-error{
+	background: #e74c3c;
+}

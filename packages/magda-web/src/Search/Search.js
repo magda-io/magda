@@ -133,7 +133,7 @@ class Search extends Component {
                  </div>
                }
                {!this.props.isFetching && this.props.hasError &&
-                 <div className='error'> error in request </div>
+                 <div className='search-error'> error in request </div>
                }
             </div>
           </div>
