@@ -13,8 +13,15 @@ import scala.concurrent.{ ExecutionContext, Future }
 class HttpFetcher(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem,
                   implicit val materializer: Materializer, implicit val ec: ExecutionContext) {
 
-  lazy val connectionFlow =
-    Http().cachedHostConnectionPool[Int](interfaceConfig.baseUrl.getHost, getPort(interfaceConfig.baseUrl))
+  lazy val connectionFlow = {
+    val host = interfaceConfig.baseUrl.getHost
+    val port = getPort(interfaceConfig.baseUrl)
+    
+    interfaceConfig.baseUrl.getProtocol match {
+      case "http"  => Http().cachedHostConnectionPool[Int](host, port)
+      case "https" => Http().cachedHostConnectionPoolHttps[Int](host, port)
+    }
+  }
 
   def request(path: String): Future[HttpResponse] =
     interfaceConfig.fakeConfig match {

@@ -36,23 +36,19 @@ import java.net.URLEncoder
 class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
   implicit val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
-  val excludedHarvesterTitles = interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet
-  val exclusionQueryString = excludedHarvesterTitles.map(title => s"-harvest_source_title:${URLEncoder.encode('"' + title + '"', "UTF-8")}").reduce(_ + " " + _)
-  val baseUrl = s"api/3/action/package_search?fq=$exclusionQueryString"
+  val exclusionQueryString = {
+    val excludedHarvesterTitles = interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet
+    val solrQueries = excludedHarvesterTitles.map(title => s"-harvest_source_title:${URLEncoder.encode('"' + title + '"', "UTF-8")}")
+
+    if (solrQueries.isEmpty) None else Some(solrQueries.reduce(_ + " " + _))
+  }
+  val baseUrl = s"api/3/action/package_search?${exclusionQueryString.map(q => s"fq=${q}").getOrElse("")}"
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =
     fetcher.request(s"$baseUrl&start=$start&rows=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[CKANSearchResponse].map { ckanDataSet =>
-          val allResults = ckanDataSet.result.results
-          val validResults = allResults.filterNot(dataSet => dataSet.harvest_source_title.map(harvestSource => excludedHarvesterTitles.contains(harvestSource)).getOrElse(false))
-          val excludedCount = allResults.size - validResults.size
-
-          if (excludedCount > 0) {
-            logger.info("Excluded {} datasets that were originally from excluded harvesters", excludedCount)
-          }
-
-          validResults.map(ckanDataSetConv(interfaceConfig))
+          ckanDataSet.result.results.map(ckanDataSetConv(interfaceConfig))
         }
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
           val error = s"CKAN request failed with status code ${response.status} and entity $entity"

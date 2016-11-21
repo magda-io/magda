@@ -43,7 +43,7 @@ case class IndexDefinition(
 object IndexDefinition {
   val indices = Seq(new IndexDefinition(
     name = "datasets",
-    version = 10,
+    version = 11,
     definition =
       create.index("datasets")
         .indexSetting("recovery.initial_shards", 1)
