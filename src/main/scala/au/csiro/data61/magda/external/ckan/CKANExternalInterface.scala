@@ -40,7 +40,7 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val syste
     val excludedHarvesterTitles = interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet
     val solrQueries = excludedHarvesterTitles.map(title => s"-harvest_source_title:${URLEncoder.encode('"' + title + '"', "UTF-8")}")
 
-    if (solrQueries.isEmpty) None else Some(solrQueries.reduce(_ + " " + _))
+    if (solrQueries.isEmpty) None else Some(solrQueries.reduce(_ + "+" + _))
   }
   val baseUrl = s"api/3/action/package_search?${exclusionQueryString.map(q => s"fq=${q}").getOrElse("")}"
 
