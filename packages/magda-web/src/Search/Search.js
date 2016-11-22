@@ -59,7 +59,7 @@ class Search extends Component {
     this.updateQuery({
       q: text,
       publisher: [],
-      regionId: undefined,
+      regionID: undefined,
       regionType: undefined,
       dateFrom: undefined,
       dateTo: undefined,

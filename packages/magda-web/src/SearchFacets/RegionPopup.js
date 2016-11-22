@@ -21,7 +21,7 @@ class RegionPopup extends Facet {
          */
          this.state={
              _activeRegion: {
-               regionId: undefined,
+               regionID: undefined,
                regionType: undefined
              }
          }
@@ -51,7 +51,7 @@ class RegionPopup extends Facet {
     onFeatureClick(feature){
       console.log(feature)
       this.setState({
-        _activeRegion: Object.assign({}, this.state._activeRegion, {regionId: feature.id})
+        _activeRegion: Object.assign({}, this.state._activeRegion, {regionID: feature.id})
       })
     }
 
@@ -71,7 +71,7 @@ class RegionPopup extends Facet {
       } else{
         return {
           regionType: '',
-          regionId: ''
+          regionID: ''
         }
       }
     }

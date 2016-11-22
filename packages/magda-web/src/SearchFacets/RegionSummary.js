@@ -6,7 +6,7 @@ function RegionSummray(props){
     return <div className='active-region'>
               {props.region.name}
               {props.region.regionType}
-              {props.region.regionId}
+              {props.region.regionID}
             </div>
   } else{
     return null;

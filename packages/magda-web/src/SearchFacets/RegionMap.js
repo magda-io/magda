@@ -40,7 +40,7 @@ class RegionMap extends Facet {
     componentWillReceiveProps(nextProps) {
         // Is this condition needed? Can props be updated before the layer is created?
         if (this.layer) {
-            this.layer.setStyle(this.generateStyle(nextProps.regionId));
+            this.layer.setStyle(this.generateStyle(nextProps.regionID));
         }
         // after we have received all the data we need,w e can then display the layer
         if(defined(nextProps.region.regionType) && defined(nextProps.regionMapping) && (nextProps.region !== this.props.region)){
@@ -76,7 +76,7 @@ class RegionMap extends Facet {
           this.getID = function(feature) { return feature.properties[regionData.regionProp]};
           this.layer = new L.TileLayer.MVTSource({
               url: regionData.server,
-              style: this.generateStyle(props.region.regionId),
+              style: this.generateStyle(props.region.regionID),
               hoverInteraction: props.interaction,
               /*onEachFeature: onEachFeature, */
               clickableLayers: (props.interaction) ? undefined : [], // Enable clicks for all layers if interaction

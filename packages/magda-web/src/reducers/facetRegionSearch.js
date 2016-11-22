@@ -13,12 +13,7 @@ const facetRegionSearch = (state=initialData, action) => {
     case 'RECEIVE_REGIONS':
       return Object.assign({}, state, {
         isFetching: false,
-        data: action.json.map(item=>({
-          regionId: item.suggestion.code,
-          regionType: item.suggestion.type,
-          state: item.suggestion.stateLabel,
-          geographyLabel: item.suggestion.geographyLabel
-        })),
+        data: action.json.regions,
         query: action.query
       })
     default:

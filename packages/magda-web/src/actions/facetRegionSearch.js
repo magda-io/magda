@@ -20,7 +20,8 @@ export function receiveRegions(query, json){
 export function fetchRegionSearchResults(query) {
   return (dispatch)=>{
     dispatch(requestRegions(query))
-    return getJsonp(`http://www.censusdata.abs.gov.au/census_services/search?query=${query || ' '}&cycle=2011&results=15&type=jsonp&cb=`)
+    return fetch(`http://magda-search-api.terria.io/regions/search?query=${query}`)
+    .then(response => response.json())
     .then(json =>
       dispatch(receiveRegions(query, json))
     )

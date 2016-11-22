@@ -47,8 +47,8 @@ class FacetRegion extends Component {
                     ref={b=>{if(b != null && onFocus === true){b.focus()}}}
                     className='btn-facet-option btn btn-facet-option__location'
                     onClick={onClick.bind(this, option)}
-                    title={option.geographyLabel}>
-              <span className='btn-facet-option__name'>{option.geographyLabel} , {option.state}</span>
+                    title={option.regionName}>
+              <span className='btn-facet-option__name'>{option.regionName} , {option.regionName}</span>
             </button>);
     }
 
@@ -58,7 +58,7 @@ class FacetRegion extends Component {
         return (
             <FacetWrapper onResetFacet={this.props.onResetFacet}
                           title={this.props.title}
-                          activeRegion={[this.props.activeRegionId, this.props.activeRegionType]}
+                          activeRegion={[this.props.activeregionID, this.props.activeRegionType]}
                           hasQuery={this.props.hasQuery}>
                <FacetSearchBox renderOption={this.renderOption}
                                onToggleOption={this.props.onToggleOption}

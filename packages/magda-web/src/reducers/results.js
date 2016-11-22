@@ -9,7 +9,7 @@ const initialData = {
   progress: 0,
   activePublishers: [],
   activeFormats: [],
-  activeRegion: {regionId: undefined, regionType: undefined},
+  activeRegion: {regionID: undefined, regionType: undefined},
   activeDateFrom: undefined,
   activeDateTo:undefined,
   publisherOptions: [],
@@ -58,7 +58,7 @@ const results = (state=initialData, action) => {
 
       let activeFormats = query.formats.map(item=> findOptionFromList(item,data.facets[2].options));
       // temp
-      let activeRegion = {regionId: undefined, regionType: undefined};
+      let activeRegion = {regionID: undefined, regionType: undefined};
 
       return Object.assign({}, state, {
         isFetching: false,
