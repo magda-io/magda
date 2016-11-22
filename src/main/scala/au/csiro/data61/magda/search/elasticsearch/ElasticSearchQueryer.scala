@@ -69,6 +69,10 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   lazy val clientFuture: Future[ElasticClient] = getClient(system.scheduler, logger, ec)
 
+  object CausedBy {
+    def unapply(e: Throwable): Option[Throwable] = Option(e.getCause)
+  }
+
   override def search(query: Query, start: Long, limit: Int) = {
     clientFuture.flatMap { client =>
       client.execute(buildQueryWithAggregations(query, start, limit, MatchAll)).flatMap(response =>
@@ -80,13 +84,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
     } map {
       case (response, strategy) => buildSearchResult(query, response, strategy)
     } recover {
-      case remoteTransport: RemoteTransportException => remoteTransport.getCause match {
-        case searchPhase: SearchPhaseExecutionException => searchPhase.getCause match {
-          case notSerializable: NotSerializableExceptionWrapper => notSerializable.getCause match {
-            case illegalArgument: IllegalArgumentException => failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
-          }
-        }
-      }
+      case CausedBy(CausedBy(CausedBy(illegalArgument: IllegalArgumentException))) => failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
       case e: Throwable =>
         logger.error(e, "Exception when searching")
         failureSearchResult(query, "Unknown error")
