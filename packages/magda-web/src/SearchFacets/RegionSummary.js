@@ -4,9 +4,7 @@ import React from 'react';
 function RegionSummray(props){
   if(defined(props.region.regionType)){
     return <div className='active-region'>
-              {props.region.name}
-              {props.region.regionType}
-              {props.region.regionID}
+              {props.region.regionName}
             </div>
   } else{
     return null;
