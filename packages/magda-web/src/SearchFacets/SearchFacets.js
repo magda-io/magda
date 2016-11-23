@@ -3,6 +3,7 @@ import FacetBasic from './FacetBasic';
 import FacetTemporal from './FacetTemporal';
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
+import debounce from 'lodash.debounce';
 import {connect} from 'react-redux';
 import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion, setDateFrom, setDateTo, addFormat, removeFormat, resetFormat, resetDateFrom, resetDateTo} from '../actions/results';
 import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
@@ -88,11 +89,10 @@ class SearchFacets extends Component {
 
 
   onToggleRegionOption(region){
-    console.log(region);
     let {regionID, regionType} = region;
     this.props.updateQuery({
-      regionID,
-      regionType,
+      regionID: regionID,
+      regionType: regionType,
       page: undefined
     });
 
