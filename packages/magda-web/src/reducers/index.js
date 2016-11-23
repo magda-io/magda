@@ -11,11 +11,11 @@ import regionMapping from './regionMapping';
 import { combineReducers } from 'redux';
 
 const search = combineReducers({
+  regionMapping,
   results,
   facetPublisherSearch,
   facetRegionSearch,
-  facetFormatSearch,
-  regionMapping
+  facetFormatSearch
 });
 
 export default search;

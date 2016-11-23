@@ -38,10 +38,6 @@ class RegionMap extends Facet {
     }
 
     componentWillReceiveProps(nextProps) {
-        // Is this condition needed? Can props be updated before the layer is created?
-        if (this.layer) {
-            this.layer.setStyle(this.generateStyle(nextProps.regionID));
-        }
         // after we have received all the data we need,w e can then display the layer
         if(defined(nextProps.region.regionType) && defined(nextProps.regionMapping) && (nextProps.region !== this.props.region)){
           this.addRegion(nextProps);
@@ -71,7 +67,6 @@ class RegionMap extends Facet {
         }
 
         let regionData = props.regionMapping[props.region.regionType];
-        console.log(props.region);
 
         if(defined(regionData)){
           this.getID = function(feature) { return feature.properties[regionData.regionProp]};

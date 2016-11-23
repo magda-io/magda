@@ -54,23 +54,22 @@ class FacetRegion extends Component {
 
 
     render(){
-      let activeRegion = this.props.activeRegion;
         return (
             <FacetWrapper onResetFacet={this.props.onResetFacet}
                           title={this.props.title}
-                          activeRegion={[this.props.activeregionID, this.props.activeRegionType]}
+                          activeRegion={[this.props.activeRegion.regionID, this.props.activeRegion.regionType]}
                           hasQuery={this.props.hasQuery}>
                <FacetSearchBox renderOption={this.renderOption}
                                onToggleOption={this.props.onToggleOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
-               <RegionSummray region={activeRegion}/>
+               <RegionSummray region={this.props.activeRegion}/>
                <div className='preview'>
                   <RegionMap title='location'
                              id='location'
                              onClick={this.openPopup}
                              interaction={false}
-                             region={activeRegion}
+                             region={this.props.activeRegion}
                              regionMapping={this.props.regionMapping}
                      />
                </div>

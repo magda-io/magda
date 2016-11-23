@@ -43,4 +43,6 @@
 
 .search-error{
 	background: #e74c3c;
+	color: #fff;
+	padding: 10px;
 }

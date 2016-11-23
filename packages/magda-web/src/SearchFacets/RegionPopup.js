@@ -27,8 +27,10 @@ class RegionPopup extends Facet {
          }
     }
 
-    componentWillMount(){
-
+    componentWillReceiveProps(nextProps){
+        this.setState({
+          _activeRegion: nextProps.activeRegion
+        })
     }
 
     onToggleOption(option){
@@ -69,21 +71,8 @@ class RegionPopup extends Facet {
       }))
     }
 
-    getRegion(){
-      if(defined(this.state._activeRegion.regionType)){
-        return this.state._activeRegion;
-      } else if(defined(this.props.activeRegion.regionType)){
-        return  this.props.activeRegion;
-      } else{
-        return {
-          regionType: '',
-          regionID: ''
-        }
-      }
-    }
-
     render(){
-        let region = this.getRegion();
+        let region = this.state._activeRegion;
         return (
             <div className='popup'>
               <div className='popup-inner'>

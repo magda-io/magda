@@ -5,7 +5,6 @@ import maxBy from 'lodash.maxby';
 import max from 'lodash.max';
 import min from 'lodash.min';
 import DragBar from './DragBar';
-import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
 
 // each facet option has a certain hight in order to calculate drag bar location
@@ -46,7 +45,7 @@ class FacetTemporal extends Component {
       tempDateTo = option.upperBound
     } else{
       if(!defined(tempDateFrom) || (option.lowerBound < tempDateFrom.value) || (option.upperBound === tempDateTo.value)){
-        tempDateFrom = lowerBound
+        tempDateFrom = option.lowerBound
       }else {
         tempDateTo = option.upperBound
       }
