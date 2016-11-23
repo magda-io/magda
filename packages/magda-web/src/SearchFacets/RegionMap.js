@@ -38,13 +38,14 @@ class RegionMap extends Facet {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log('receive props');
-        // after we have received all the data we need,w e can then display the layer
-        if(defined(nextProps.region.regionType) && defined(nextProps.regionMapping) && (nextProps.region !== this.props.region)){
-          this.addRegion(nextProps);
-        } else{
-          this.removeRegion();
-        }
+        // after we have received all the data we need,we can then display the layer
+        if(defined(nextProps.regionMapping) &&
+           defined(nextProps.region.regionType) &&
+           (nextProps.region !== this.props.region)){
+              this.addRegion(nextProps);
+            } else {
+              this.removeRegion();
+            }
     }
 
     generateStyle(region) {

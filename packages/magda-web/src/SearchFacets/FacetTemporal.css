@@ -1,6 +1,7 @@
 .btn-facet-date-option.is-active{
   background: transparent;
   color: #333;
+  font-weight: bold;
 }
 
 .btn-facet-date-option.is-active .btn-facet-option__volume-indicator{

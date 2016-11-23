@@ -1,6 +1,6 @@
 import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
-import findOptionFromList from '../helpers/findOptionFromList';
+import findMatchingObjs from '../helpers/findMatchingObjs';
 
 const initialData = {
   isFetching: false,
@@ -52,11 +52,11 @@ const results = (state=initialData, action) => {
       let formatOptions = data.facets[2].options;
 
 
-      let activePublishers = query.publishers.map(p=> findOptionFromList(p,data.facets[0].options));
+      let activePublishers = findMatchingObjs(query.publishers, publisherOptions);
       let activeDateFrom = defined(query.dateFrom) ? query.dateFrom.slice(0, 4): undefined;
       let activeDateTo = defined(query.dateTo) ? query.dateTo.slice(0, 4) : undefined;
 
-      let activeFormats = query.formats.map(item=> findOptionFromList(item,data.facets[2].options));
+      let activeFormats = findMatchingObjs(query.formats, formatOptions);;
 
       let activeRegion = {regionID: defined(query.regions[0]) ? query.regions[0].regionId : undefined,
                           regionType: defined(query.regions[0]) ? query.regions[0].regionType : undefined};
