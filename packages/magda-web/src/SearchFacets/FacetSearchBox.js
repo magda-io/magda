@@ -45,6 +45,8 @@ class FacetSearchBox extends Component {
   }
 
   handleKeyDown(e){
+    console.log('keydown');
+    
     if(e.keyCode === 38){
       e.preventDefault();
       this.move('up')

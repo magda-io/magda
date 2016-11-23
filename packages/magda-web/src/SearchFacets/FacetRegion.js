@@ -41,7 +41,7 @@ class FacetRegion extends Component {
 
     // see Facet.renderOption(option, optionMax, onFocus)
     // Here is only for mark up change
-    renderOption(option, onClick, onFocus){
+    renderOption(option, onClick, optionMax, onFocus){
       return (
             <button type='button'
                     ref={b=>{if(b != null && onFocus === true){b.focus()}}}
