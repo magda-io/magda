@@ -80,7 +80,7 @@ class RegionLoader(implicit val system: ActorSystem, implicit val materializer: 
         case (file, regionSource) =>
           val splitFlow = JsonFraming.objectScanner(Int.MaxValue)
 
-          FileIO.fromPath(file.toPath())
+          FileIO.fromPath(file.toPath(), 262144)
             .via(splitFlow)
             .map(byteString => byteString.decodeString("UTF-8"))
             .map(string => string.parseJson)
