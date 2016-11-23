@@ -6,5 +6,7 @@ import java.net.URL
  * Created by gil308 on 12/10/2016.
  */
 object Http {
-  def getPort(url: URL) = if (url.getPort == -1) 80 else url.getPort
+  def getPort(url: URL) = portAsOption(url.getPort).orElse(portAsOption(url.getDefaultPort)).getOrElse(80)
+  
+  def portAsOption(port: Int): Option[Int] = if (port == -1) None else Some(port)
 }

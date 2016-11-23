@@ -138,13 +138,15 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
                 .toSeq
 
             // Alternative options show what *other* options the user could filter by and get results apart from what they've already done.
-            val alternativeOptions = definition.postProcessFacets(definition.extractFacetOptions(
+            val remainingFacetSlots = AGGREGATION_SIZE_LIMIT - filteredOptions.size
+
+            val alternativeOptions = if (remainingFacetSlots == 0) Nil else definition.postProcessFacets(definition.extractFacetOptions(
               aggsMap
                 .get(facetType.id + "-global")
                 .get
                 .getProperty("filter").asInstanceOf[Aggregation]
                 .getProperty(facetType.id).asInstanceOf[Aggregation]
-            ), AGGREGATION_SIZE_LIMIT - filteredOptions.size)
+            ), remainingFacetSlots)
 
             val combined = (exactOptions ++ filteredOptions ++ alternativeOptions)
             val lookup = combined.groupBy(_.value)
@@ -313,7 +315,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
-      client.execute(ElasticDsl.search in "regions" / "regions" query { matchPhrasePrefixQuery("name", query) } start start.toInt limit limit sourceExclude("geometry"))
+      client.execute(ElasticDsl.search in "regions" / "regions" query { matchPhrasePrefixQuery("name", query) } start start.toInt limit limit sourceExclude ("geometry"))
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more

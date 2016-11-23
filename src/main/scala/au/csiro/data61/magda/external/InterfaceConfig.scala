@@ -15,7 +15,6 @@ case class InterfaceConfig(
   raw: Config)
 
 case class FakeConfig(
-  datasetCount: Long,
   datasetPath: String,
   mimeType: String)
 
@@ -32,7 +31,6 @@ object InterfaceConfig {
       fakeConfig = {
         if (isFaked && config.hasPath("fake"))
           Some(new FakeConfig(
-            config.getLong("fake.datasetTotal"),
             config.getString("fake.dataFilePath"),
             config.getString("fake.mimeType")))
         else None

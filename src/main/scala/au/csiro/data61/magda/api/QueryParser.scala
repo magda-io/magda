@@ -8,13 +8,14 @@ import scala.util.parsing.input.NoPosition
 import au.csiro.data61.magda.util.DateParser._
 import java.time.Instant
 import au.csiro.data61.magda.spatial.RegionSource
+import scala.util.matching.Regex
 
 private object Tokens {
   sealed trait QueryToken
   case class Quote(exactQuery: String) extends QueryToken
   case class Filter(filterName: String) extends QueryToken
   case class FreeTextWord(general: String) extends QueryToken
-  case class RegionFilter(str: String) extends QueryToken
+  case class RegionFilter(regionType: String, regionId: String) extends QueryToken
 }
 
 case class QueryCompilationError(error: String)
@@ -24,6 +25,22 @@ private object QueryLexer extends RegexParsers {
   override val whiteSpace = "[\t\r\f\n]+".r
 
   val filterWords = Seq("From", "To", "By", "As")
+
+  /** A parser that matches a regex string and returns the Match */
+  def regexMatch(r: Regex): Parser[Regex.Match] = new Parser[Regex.Match] {
+    def apply(in: Input) = {
+      val source = in.source
+      val offset = in.offset
+      val start = handleWhiteSpace(source, offset)
+      (r findPrefixMatchOf (source.subSequence(start, source.length))) match {
+        case Some(matched) =>
+          Success(matched,
+            in.drop(start + matched.end - offset))
+        case None =>
+          Failure("string matching regex `" + r + "' expected but `" + in.first + "' found", in.drop(start - offset))
+      }
+    }
+  }
 
   def quote: Parser[Tokens.Quote] = {
     """"[^"]*"""".r ^^ { str => Tokens.Quote(str.substring(1, str.length - 1)) }
@@ -38,7 +55,7 @@ private object QueryLexer extends RegexParsers {
   }
   def region: Parser[Tokens.RegionFilter] = {
     val regionTypesJoined = RegionSource.sources.map(_.name).reduce { (left, right) => left + "|" + right }
-    s"(^|\\s)(?i)in ($regionTypesJoined):([A-Za-z0-9]+)(\\s|$$)".r ^^ { str => Tokens.RegionFilter(str) }
+    regexMatch(s"(^|\\s)(?i)in ($regionTypesJoined):([A-Za-z0-9]+)(\\s|$$)".r) ^^ { regexMatch => Tokens.RegionFilter(regexMatch.group(2), regexMatch.group(3)) }
   }
 
   def tokens: Parser[List[Tokens.QueryToken]] = phrase(rep1(quote | region | filterWord | freeTextWord))
@@ -125,14 +142,11 @@ private object QueryParser extends Parsers {
 
   private def region: Parser[AST.ASTRegion] = {
     accept("region", {
-      case Tokens.RegionFilter(raw) =>
-        raw.split(":") match {
-          case Array(regionType, regionId) => RegionSource.forName(regionType) match {
-            case Some(regionSource) => AST.ASTRegion(Region(regionType, regionId))
-          }
-        }
-    }
-    )
+      case Tokens.RegionFilter(regionType, regionId) => RegionSource.forName(regionType) match {
+        case Some(regionSource) => AST.ASTRegion(Region(regionType, regionId))
+        case None               => throw new RuntimeException("Could not find region for type " + regionType)
+      }
+    })
   }
 
   private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: String, atEnd: Boolean, applyFn: Instant => A, recoveryFn: => AST.ReturnedAST): A = {
