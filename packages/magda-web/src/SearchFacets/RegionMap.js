@@ -38,9 +38,12 @@ class RegionMap extends Facet {
     }
 
     componentWillReceiveProps(nextProps) {
+        console.log('receive props');
         // after we have received all the data we need,w e can then display the layer
         if(defined(nextProps.region.regionType) && defined(nextProps.regionMapping) && (nextProps.region !== this.props.region)){
           this.addRegion(nextProps);
+        } else{
+          this.removeRegion();
         }
     }
 
@@ -60,12 +63,15 @@ class RegionMap extends Facet {
         });
     }
 
-    addRegion(props){
-        // remove previous layer
-        if(defined(this.layer)){
-          this.map.removeLayer(this.layer);
-        }
+    removeRegion(){
+      // remove previous layer
+      if(defined(this.layer)){
+        this.map.removeLayer(this.layer);
+      }
+    }
 
+    addRegion(props){
+        this.removeRegion();
         let regionData = props.regionMapping[props.region.regionType];
         if(defined(regionData)){
           this.getID = function(feature) { return feature.properties[regionData.regionProp]};

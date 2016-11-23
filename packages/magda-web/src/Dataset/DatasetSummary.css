@@ -53,11 +53,11 @@
   position:absolute;
   left:0;
   top:0;
-  background:linear-gradient(transparent 150px, white);
+  background:linear-gradient(transparent 50px, #FFF);
 }
 
 .dataset-summray:hover .dataset-description > .markdown:before{
-  background:linear-gradient(transparent 150px, #f8f8f8);
+  background:linear-gradient(transparent 50px, #f8f8f8);
 }
 
 .dataset-summray-toggle-info-btn{
