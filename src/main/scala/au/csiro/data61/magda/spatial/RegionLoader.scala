@@ -78,9 +78,10 @@ class RegionLoader(implicit val system: ActorSystem, implicit val materializer: 
       .mapAsync(4)(regionSource => loadABSRegions(regionSource).map((_, regionSource)))
       .flatMapConcat {
         case (file, regionSource) =>
+          println(regionSource.name)
           val splitFlow = JsonFraming.objectScanner(Int.MaxValue)
 
-          FileIO.fromPath(file.toPath())
+          FileIO.fromPath(file.toPath(), 262144)
             .via(splitFlow)
             .map(byteString => byteString.decodeString("UTF-8"))
             .map(string => string.parseJson)

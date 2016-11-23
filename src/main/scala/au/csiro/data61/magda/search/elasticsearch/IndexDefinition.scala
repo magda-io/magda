@@ -68,7 +68,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 12,
+      version = 46,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -133,36 +133,41 @@ object IndexDefinition {
     geojson match {
       case JsObject(fields) => {
         val cleanLinearRing = (linearRing: Vector[JsValue]) => {
-          val firstPosition = linearRing.head
-          val lastPosition = linearRing.last
+          // Filter out duplicate points, except that the first and last point must be identical.
+          val hash = new scala.collection.mutable.HashSet[JsValue]
+          var result = Vector[JsValue]()
 
-          if (firstPosition == lastPosition) {
-            // Linear ring is already closed
-            linearRing
-          } else {
-            // Close the linear ring
-            linearRing :+ firstPosition
+          for (i <- 0 until linearRing.length) {
+            val value = linearRing(i)
+            if (!hash.contains(value)) {
+              result = result :+ value
+              hash.add(value)
+            }
           }
+
+          result :+ linearRing.head
         }
 
         val cleanPolygon = (linearRings: Vector[JsValue]) => {
           linearRings.map {
             case JsArray(linearRing) => JsArray(cleanLinearRing(linearRing))
-            case anythingElse => anythingElse
+            case anythingElse => {println("*** not a JsArray"); anythingElse}
           }
         }
 
         if (fields("type").convertTo[String] == "Polygon") {
           JsObject(fields.map {
             case ("coordinates", JsArray(linearRings)) => ("coordinates", JsArray(cleanPolygon(linearRings)))
+            case ("coordinates", anythingElse) => {println("**** coordinates is not a JsArray"); ("coordinates", anythingElse)}
             case (others, value) => (others, value)
           })
         } else if (fields("type").convertTo[String] == "MultiPolygon") {
           JsObject(fields.map {
             case ("coordinates", JsArray(polygons)) => ("coordinates", JsArray(polygons.map {
               case JsArray(linearRings) => JsArray(cleanPolygon(linearRings))
-              case anythingElse => anythingElse
+              case anythingElse => {println("*****not a JsArray2"); anythingElse}
             }))
+            case ("coordinates", anythingElse) => {println("**** coordinates is not a JsArray2"); ("coordinates", anythingElse)}
             case (others, value) => (others, value)
           })
         } else {

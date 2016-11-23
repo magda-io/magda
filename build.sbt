@@ -56,17 +56,18 @@ imageNames in docker := Seq(
   )
 )
 
+val fixWindowsPath = (path: String) => if (path.substring(0, 3) == "C:\\") {
+  // Dodgy hack to replace Windows paths with paths that will work within the minikube VM
+  "/c/" + path.substring(3).replace('\\', '/')
+} else {
+  path
+}
 
 sources in EditSource <++= baseDirectory.map(d => (d / "kubernetes" ** "*.yml").get)
 targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
 val baseDirPath = new File("./").getAbsolutePath
-val baseDir = if (baseDirPath.substring(0, 3) == "C:\\") {
-  // Dodgy hack to replace Windows paths with paths that will work within the minikube VM
-  "/c/" + baseDirPath.substring(3, baseDirPath.length - 2).replace('\\', '/')
-} else {
-  baseDirPath.substring(0, baseDirPath.length - 2)
-}
-val homeDir = System.getProperty("user.home")
+val baseDir = fixWindowsPath(baseDirPath.substring(0, baseDirPath.length - 2))
+val homeDir = fixWindowsPath(System.getProperty("user.home"))
 variables in EditSource += ("projectDir", baseDir)
 variables in EditSource += ("homeDir", homeDir)
 variables in EditSource += ("version", version.value)
