@@ -63,8 +63,6 @@ class FacetTemporal extends Component {
   checkActiveOption(option){
     let max = defined(this.props.activeDates[1]) ? + this.props.activeDates[1] : 4000;
     let min = defined(this.props.activeDates[0]) ? + this.props.activeDates[0] : 0;
-
-    console.log(option.upperBound, option.lowerBound, max, min)
     if((option.upperBound <= max) && (option.lowerBound >= min)){
       return true
     }
@@ -151,7 +149,6 @@ class FacetTemporal extends Component {
     let toIndex = defined(this.props.activeDates[1]) ? this.findUpperBound() : 0;
 
     let dragBarData=[(toIndex * itemHeight), (fromIndex * itemHeight)];
-    console.log(toIndex, fromIndex, dragBarData);
     return <DragBar dragBarData={dragBarData} onDrag={this.onDrag} height={height}/>
   }
 

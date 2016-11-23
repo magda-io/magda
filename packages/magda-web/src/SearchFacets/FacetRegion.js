@@ -52,7 +52,6 @@ class FacetRegion extends Component {
             </button>);
     }
 
-
     render(){
         return (
             <FacetWrapper onResetFacet={this.props.onResetFacet}

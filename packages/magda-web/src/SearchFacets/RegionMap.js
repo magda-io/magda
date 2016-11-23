@@ -18,7 +18,7 @@ class RegionMap extends Facet {
 
     componentDidMount(){
         this.map = L.map(this._c, { zoomControl: this.props.interaction});
-        this.map.setView([-27, 133], 4);
+        this.map.setView([-27, 133], 3);
 
         if(this.props.interaction === false){
             this._c.addEventListener('click', ()=>{
@@ -67,6 +67,7 @@ class RegionMap extends Facet {
         }
 
         let regionData = props.regionMapping[props.region.regionType];
+        console.log(props.region);
 
         if(defined(regionData)){
           this.getID = function(feature) { return feature.properties[regionData.regionProp]};
