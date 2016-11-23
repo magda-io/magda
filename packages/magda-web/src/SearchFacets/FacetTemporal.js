@@ -64,6 +64,8 @@ class FacetTemporal extends Component {
   checkActiveOption(option){
     let max = defined(this.props.activeDates[1]) ? + this.props.activeDates[1] : 4000;
     let min = defined(this.props.activeDates[0]) ? + this.props.activeDates[0] : 0;
+
+    console.log(option.upperBound, option.lowerBound, max, min)
     if((option.upperBound <= max) && (option.lowerBound >= min)){
       return true
     }
@@ -122,22 +124,23 @@ class FacetTemporal extends Component {
     // find all bound and pick the smallest index
     let indice = [];
     this.props.options.forEach((o, i)=>{
-      if((o.lowerBound <= this.props.activeDates[0]) && (o.upperBound >= this.props.activeDates[0])){
+      if(this.checkActiveOption(o)){
         indice.push(i)
       }
     });
-    return max(indice);
+    return indice.length > 0 ? max(indice) + 1 : this.props.options.length + 1;
   }
 
   findUpperBound(){
     // find all bounds and pick the highest
     let indice = [];
     this.props.options.forEach((o, i)=>{
-      if((o.lowerBound <= this.props.activeDates[1]) && (o.upperBound >= this.props.activeDates[1])){
+      if(this.checkActiveOption(o)){
         indice.push(i)
       }
     });
-    return min(indice);
+
+    return indice.length > 0 ? min(indice) + 1 : 0;
 
   }
 
@@ -145,10 +148,11 @@ class FacetTemporal extends Component {
     // the height of the dragbar should be the same with the height of all the options + any start date + any end date
     // remove last padding
     let height = (this.props.options.length + 2) * itemHeight - 4;
-    let fromIndex = defined(this.props.activeDates[0]) ? this.findLowerBound() + 1 : this.props.options.length + 1;
-    let toIndex = defined(this.props.activeDates[1]) ? this.findUpperBound() + 1 : 0;
+    let fromIndex = defined(this.props.activeDates[0]) ? this.findLowerBound() : this.props.options.length + 1;
+    let toIndex = defined(this.props.activeDates[1]) ? this.findUpperBound() : 0;
 
     let dragBarData=[(toIndex * itemHeight), (fromIndex * itemHeight)];
+    console.log(toIndex, fromIndex, dragBarData);
     return <DragBar dragBarData={dragBarData} onDrag={this.onDrag} height={height}/>
   }
 

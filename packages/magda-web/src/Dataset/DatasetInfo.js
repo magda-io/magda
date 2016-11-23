@@ -16,6 +16,10 @@ export default class DatasetInfo extends Component {
               <div className='traingle'></div>
               <div className='dataset-info-inner'>
                 <button className='dataset-info-close-btn'><i className="fa fa-times" aria-hidden="true" onClick={this.props.onClickClose}></i></button>
+                <div className='dataset-info--source clearfix'>
+                <h5>Source</h5>
+                    {dataset.catalog}
+                </div>
                 <div className='dataset-info--content clearfix'>
                 <h5>Contents</h5>
                   <ul className='list-unstyled'>
@@ -26,10 +30,6 @@ export default class DatasetInfo extends Component {
                       </li>
                     )}
                   </ul>
-                </div>
-                <div className='dataset-info--licence clearfix'>
-                <h5>Licence</h5>
-                    Creative Commons Attribution 3.0 Australia
                 </div>
               </div>
 

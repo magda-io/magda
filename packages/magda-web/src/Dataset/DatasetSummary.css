@@ -39,7 +39,7 @@
 }
 
 .dataset-description > .markdown{
-  max-height: 200px;
+  max-height: 100px;
   overflow: hidden;
   position: relative;
   margin-bottom: 10px;

@@ -46,7 +46,7 @@ export function updateProgress(progress){
   }
 }
 
-export function transferFailed(){
+export function transferFailed(error){
   return {
     type: FETCH_ERROR,
   }
@@ -62,12 +62,15 @@ export function fetchSearchResults(query) {
       dispatch(updateProgress(progressEvent.loaded / progressEvent.total))
       },
       (errorEvent)=>{
-        dispatch(transferFailed())
+        dispatch(transferFailed(errorEvent))
       }
     )
     .then(json =>
       dispatch(receiveResults(query, json))
     )
+    .catch(error=>{
+      dispatch(transferFailed(error))
+    })
   }
 }
 
