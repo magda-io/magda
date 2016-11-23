@@ -59,7 +59,7 @@ package misc {
 
   case class MatchingRegion(
     regionType: String,
-    regionID: String,
+    regionId: String,
     regionName: String
   )
 
