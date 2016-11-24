@@ -99,7 +99,7 @@ package misc {
     extraFields: Map[String, String] = Map())
 
   case class Location(
-    text: String,
+    text: Option[String] = None,
     geoJson: Option[Geometry] = None)
 
   object Location {
@@ -118,7 +118,7 @@ package misc {
         case x => x
       }
 
-      new Location(text, processedGeoJson)
+      new Location(Some(text), processedGeoJson)
     }
 
     def apply(string: String): Location = {
@@ -150,7 +150,7 @@ package misc {
     issued: Option[Instant] = None,
     modified: Option[Instant] = None,
     license: Option[License] = None,
-    rights: Option[License] = None,
+    rights: Option[String] = None,
     accessURL: Option[String] = None,
     downloadURL: Option[String] = None,
     byteSize: Option[Int] = None,

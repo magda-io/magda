@@ -16,6 +16,9 @@ import akka.stream.scaladsl.Sink
 import akka.stream.Materializer
 import scala.concurrent.duration._
 import akka.stream.ThrottleMode
+import scala.concurrent.Future
+import au.csiro.data61.magda.model.misc.DataSet
+
 
 class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig], materializer: Materializer, indexer: SearchIndexer) {
   val log = Logging(system, getClass)

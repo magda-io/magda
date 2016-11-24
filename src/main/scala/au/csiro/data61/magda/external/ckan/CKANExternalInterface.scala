@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.external
+package au.csiro.data61.magda.external.ckan
 
 import java.io.IOException
 import java.net.URL
@@ -33,6 +33,10 @@ import scala.util.{ Success, Failure }
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import java.net.URLEncoder
+import au.csiro.data61.magda.external.HttpFetcher
+import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.external.ExternalInterface
+
 class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
   implicit val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
