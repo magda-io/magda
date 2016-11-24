@@ -60,16 +60,10 @@ package misc {
     lowerBound: Option[String] = None,
     matched: Option[Boolean] = None)
 
-  case class MatchingRegion(
-    regionType: String,
-    regionId: String,
-    regionName: String
-  )
-
   case class RegionSearchResult(
     query: String,
     hitCount: Long,
-    regions: List[MatchingRegion]
+    regions: List[Region]
   )
 
   case class DataSet(
@@ -279,7 +273,6 @@ package misc {
     implicit val queryFormat = jsonFormat8(Query.apply)
     implicit val searchResultFormat = jsonFormat6(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
-    implicit val matchingRegionFormat = jsonFormat3(MatchingRegion.apply)
     implicit val regionSearchResultFormat = jsonFormat3(RegionSearchResult.apply)
   }
 

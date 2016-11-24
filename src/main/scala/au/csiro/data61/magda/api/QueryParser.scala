@@ -8,7 +8,6 @@ import scala.util.parsing.input.NoPosition
 import au.csiro.data61.magda.util.DateParser._
 import java.time.Instant
 
-import au.csiro.data61.magda.model.misc.MatchingRegion
 import au.csiro.data61.magda.spatial.RegionSource
 
 import scala.util.matching.Regex

@@ -332,7 +332,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
-            case _ => Future(RegionSearchResult(query, response.totalHits, response.as[MatchingRegion].toList))
+            case _ => Future(RegionSearchResult(query, response.totalHits, response.as[Region].toList))
           }
         }
     }
@@ -340,10 +340,10 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   def findRegion(regionType: String, regionId: String): Future[Region] = {
     clientFuture.flatMap { client =>
-      client.execute(ElasticDsl.search in "regions" / "regions" query { idsQuery(regionType + "/" + regionId) } start 0 limit 1 sourceExclude ("geometry"))
+      client.execute(ElasticDsl.search in "regions" / "regions" query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude ("geometry"))
         .flatMap { response =>
           response.totalHits match {
-            case 0 => Future(Region(regionType, regionId, "[Unknown]"))
+            case 0 => Future(Region(regionType, regionId, "[Unknown]", None))
             case _ => Future(response.as[Region].head)
           }
         }

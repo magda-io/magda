@@ -66,7 +66,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 11,
+      version = 14,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -75,7 +75,7 @@ object IndexDefinition {
               field("type").typed(StringType),
               field("id").typed(StringType),
               field("name").typed(StringType),
-              field("envelope").typed(GeoShapeType),
+              field("rectangle").typed(GeoShapeType),
               field("geometry").typed(GeoShapeType))),
       create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
 
@@ -99,7 +99,7 @@ object IndexDefinition {
               "type" -> JsString(regionSource.name),
               "id" -> properties.fields(regionSource.idProperty),
               "name" -> name,
-              "envelope" -> createEnvelope(jsonRegion.fields("geometry")),
+              "rectangle" -> createEnvelope(jsonRegion.fields("geometry")),
               "geometry" -> jsonRegion.fields("geometry")
             ).toJson)
       }
@@ -130,13 +130,21 @@ object IndexDefinition {
 
   def createEnvelope(geometry: JsValue): JsValue = geometry match {
     case JsObject(fields) => {
-      var west = 180
-      var east = -180
-      var south = 90
-      var north = -90
+      var west = 180.0
+      var east = -180.0
+      var south = 90.0
+      var north = -90.0
 
       val adjustEnvelopeWithLinearRing = (linearRing: Vector[JsValue]) => linearRing.foreach {
-        case JsArray(positions) => println(positions)
+        case JsArray(positions) => {
+          val longitude = positions(0).convertTo[Double]
+          val latitude = positions(1).convertTo[Double]
+          west = Math.min(west, longitude)
+          east = Math.max(east, longitude)
+          south = Math.min(south, latitude)
+          north = Math.max(north, latitude)
+        }
+        case anythingElse => Unit
       }
 
       val adjustEnvelopeWithPolygon = (linearRings: Vector[JsValue]) => linearRings.foreach {
@@ -149,7 +157,7 @@ object IndexDefinition {
           case ("coordinates", JsArray(linearRings)) => adjustEnvelopeWithPolygon(linearRings)
           case (others, value) => Unit
         }
-      } /*else if (fields("type").convertTo[String] == "MultiPolygon") {
+      } else if (fields("type").convertTo[String] == "MultiPolygon") {
         fields.foreach {
           case ("coordinates", JsArray(polygons)) => polygons.foreach {
             case JsArray(linearRings) => adjustEnvelopeWithPolygon(linearRings)
@@ -157,7 +165,16 @@ object IndexDefinition {
           }
           case (others, value) => Unit
         }
-      }*/
+      }
+
+      if (west == 180.0 && south == 90.0 && east == -180.0 && north == 90.0) JsNull
+      else JsObject(
+        "type" -> JsString("envelope"),
+        "coordinates" -> JsArray(
+          JsArray(JsNumber(west), JsNumber(north)),
+          JsArray(JsNumber(east), JsNumber(south))
+        )
+      )
     }
     case anythingElse => JsNull
   }
