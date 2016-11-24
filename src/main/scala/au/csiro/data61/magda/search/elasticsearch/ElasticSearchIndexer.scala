@@ -138,13 +138,13 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
           } flatMap { _ =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
-            definition.create(client, materializer, system)
+            definition.create(client, materializer, system).flatMap { _ =>
+              // Now we've created the index, record the version of it so we can look at it next time we boot up.
+              logger.info("Recording index version")
 
-            // Now we've created the index, record the version of it so we can look at it next time we boot up.
-            logger.info("Recording index version")
-
-            client.execute {
-              ElasticDsl.index into definition.name / "config" id "indexversion" source Map("version" -> definition.version).toJson
+              client.execute {
+                ElasticDsl.index into definition.name / "config" id "indexversion" source Map("version" -> definition.version).toJson
+              }
             }
           }
         } else Future.successful(Right(Unit))
