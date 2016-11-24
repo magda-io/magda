@@ -127,7 +127,6 @@ object IndexDefinition {
       .runWith(Sink.reduce((oldLength: Int, latestValuesLength: Int) => oldLength + latestValuesLength))
       .map { count => logger.info("Successfully indexed {} regions", count) }
   }
-<<<<<<< HEAD
 
   def createEnvelope(geometry: JsValue): JsValue = geometry match {
     case JsObject(fields) => {
@@ -180,6 +179,3 @@ object IndexDefinition {
     case _ => JsNull
   }
 }
-=======
-}
->>>>>>> origin/master
