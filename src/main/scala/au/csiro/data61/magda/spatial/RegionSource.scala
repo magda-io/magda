@@ -25,7 +25,7 @@ object RegionSource {
       case (name: String, config: ConfigObject) =>
         val regionSourceConfig = config.toConfig()
         RegionSource(
-          name.toLowerCase(),
+          name,
           new URL(regionSourceConfig.getString("url")),
           regionSourceConfig.getString("idField"),
           regionSourceConfig.getString("nameField"),
