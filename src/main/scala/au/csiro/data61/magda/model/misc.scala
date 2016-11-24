@@ -60,14 +60,12 @@ package misc {
   case class MatchingRegion(
     regionType: String,
     regionId: String,
-    regionName: String
-  )
+    regionName: String)
 
   case class RegionSearchResult(
     query: String,
     hitCount: Long,
-    regions: List[MatchingRegion]
-  )
+    regions: List[MatchingRegion])
 
   case class DataSet(
       identifier: String,
@@ -219,10 +217,21 @@ package misc {
         .headOption
     }
 
-    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType]): Option[String] = {
+    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType], description: Option[String]): Option[String] = {
       rawFormat
         .orElse(url.flatMap(Distribution.formatFromUrl(_)))
         .orElse(parsedMediaType.map(_.subType))
+        .orElse(description.flatMap(desc =>
+            urlToFormat.values.filter(format =>
+              desc.toLowerCase.contains(format.toLowerCase())
+            ).headOption
+        ))
+    }
+
+    def isDownloadUrl(url: String, title: String, description: Option[String], format: Option[String]): Boolean = {
+      title.toLowerCase.contains("download") ||
+        description.map(_.toLowerCase.contains("download")).getOrElse(false) ||
+        format.map(_.equals("HTML")).getOrElse(false)
     }
   }
 

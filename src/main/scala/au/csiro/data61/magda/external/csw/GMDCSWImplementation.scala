@@ -61,19 +61,23 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
         issued = publicationDate,
         modified = modifiedDate,
         language = Option(summaryRecord \ "language" \ "LanguageCode" \@ "codeListValue"),
-        publisher = publisherFromNode(citation \ "citedResponsibleParty" \ "CI_ResponsibleParty"),
+        publisher = publisherFromNode(citation \ "citedResponsibleParty" \ "CI_ResponsibleParty")
+          .orElse(publisherFromNode(summaryRecord \ "contact" \ "CI_ResponsibleParty"))
+          .orElse(publisherFromNode(identification \ "pointOfContact" \ "CI_ResponsibleParty"))
+          .orElse((summaryRecord \ "distributionInfo" \ "distributor" \ "MD_Distributor" \ "distributorContact" \ "CI_ResponsibleParty").headOption)
+          .map(x => buildAgent(false)(x.head)),
         accrualPeriodicity = nodeToStringOption(
-          identification \ "resourceMaintenance" \ "MD_MaintenanceInformation" \ "MaintenanceFrequencyCode"
+          identification \ "resourceMaintenance" \ "MD_MaintenanceInformation" \ "maintenanceAndUpdateFrequency" \ "MD_MaintenanceFrequencyCode"
         ).map(Periodicity.fromString(_)),
         spatial = buildLocation(extent \ "geographicElement" \ "EX_GeographicBoundingBox"),
         temporal = buildPeriodOfTime(modifiedDate)(extent \ "temporalElement" \ "EX_TemporalExtent"),
         theme = (identification \ "topicCategory" \ "TopicCategoryCode").map(_.text),
         keyword = (identification \ "descriptiveKeywords" \ "MD_Keywords" \ "keyword" \ "CharacterString").map(_.text),
-        contactPoint = nodeToOption(identification \ "pointOfContact" \ "CI_ResponsibleParty")
-          .orElse(nodeToOption(summaryRecord \ "contact" \ "CI_ResponsibleParty"))
-          .map(buildContactPoint),
+        contactPoint = nodeToOption(summaryRecord \ "contact" \ "CI_ResponsibleParty")
+          .orElse(nodeToOption(identification \ "pointOfContact" \ "CI_ResponsibleParty"))
+          .map(nodeSeq => buildAgent(true)(nodeSeq.head)),
         distributions = buildDistributions(
-          constraintNodes = summaryRecord \ "resourceConstraints",
+          constraintNodes = identification \ "resourceConstraints",
           distNodes = summaryRecord \ "distributionInfo" \ "MD_Distribution" \ "transferOptions" \ "MD_DigitalTransferOptions"
             \ "onLine" \ "CI_OnlineResource"
         ),
@@ -84,51 +88,67 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
   def findDateWithType(nodes: NodeSeq, dateType: String) = nodes.filter(node => (node \ "dateType" \ "CI_DateTypeCode").text.equals(dateType))
 
   def buildDistributions(constraintNodes: NodeSeq, distNodes: NodeSeq): Seq[Distribution] = {
-    val licenseName = nodeToStringOption(constraintNodes \ "resourceConstraints" \\ "licenseName")
-    val licenseUrl = nodeToStringOption(constraintNodes \ "resourceConstraints" \\ "licenseLink")
-    val license = (licenseName, licenseUrl) match {
+    val licenseName = nodeToStringOption(constraintNodes \\ "licenseName")
+    val licenseUrl = nodeToStringOption(constraintNodes \\ "licenseLink")
+    val license = ((licenseName, licenseUrl) match {
       case (None, None) => None
       case (name, url)  => Some(License(name, url))
-    }
+    }).orElse(
+      (constraintNodes \ "MD_LegalConstraints")
+        .filter(constraintNode => (constraintNode \ "useConstraints" \ "MD_RestrictionCode").text.trim.equals("license"))
+        .map(licenseConstraint => nodeToStringOption(licenseConstraint \ "otherConstraints" \ "CharacterString"))
+        .flatten
+        .map(licenseText => License(Some(licenseText)))
+        .headOption
+    )
+
     val rights = nodeToStringOption(constraintNodes \ "MD_LegalConstraints" \ "useLimitation"
       \ "CharacterString")
 
-    distNodes.toList.map { distNode =>
-      val url = nodeToStringOption(distNode \ "linkage" \ "URL")
-      val format = Distribution.parseFormat(None, url, None)
-      val isDownload = (distNode \ "function" \ "CI_OnlineFunctionCode" text) match {
-        case "download" => true
-        case _          => false
-      }
+    distNodes.toList
+      .filter(distNode => nodeToStringOption(distNode \ "linkage" \ "URL").isDefined)
+      .map { distNode =>
+        val url = nodeToStringOption(distNode \ "linkage" \ "URL").get
+        val title = distNode \ "name" \ "CharacterString" text
+        val description = nodeToStringOption(distNode \ "description" \ "CharacterString")
+        val format = Distribution.parseFormat(None, Some(url), None, description)
+        val isDownload = Distribution.isDownloadUrl(url, title, description, format) || ((distNode \ "function" \ "CI_OnlineFunctionCode" text) match {
+          case "download" => true
+          case _          => false
+        })
 
-      Distribution(
-        title = distNode \ "name" \ "CharacterString" text,
-        description = nodeToStringOption(distNode \ "description" \ "CharacterString"),
-        accessURL = if (!isDownload) nodeToStringOption(distNode \ "linkage" \ "URL") else None,
-        downloadURL = if (isDownload) nodeToStringOption(distNode \ "linkage" \ "URL") else None,
-        format = format,
-        license = license,
-        rights = rights
-      )
-    }
+        Distribution(
+          title = title,
+          description = description,
+          accessURL = if (!isDownload) Some(url) else None,
+          downloadURL = if (isDownload) Some(url) else None,
+          format = format,
+          mediaType = Distribution.parseMediaType(None, format, Some(url)),
+          license = license,
+          rights = rights
+        )
+      }
   }
 
-  def buildContactPoint(node: NodeSeq): Agent = {
+  def buildAgent(preferIndividual: Boolean = false)(node: Node): Agent = {
     val contactInfo = node \ "contactInfo" \ "CI_Contact"
     val address = contactInfo \ "address" \ "CI_Address"
+    val individual = nodeToStringOption(node \ "individualName" \ "CharacterString")
+    val organisation = nodeToStringOption(node \ "organisationName" \ "CharacterString")
 
     new Agent(
-      name = nodeToStringOption(node \ "individualName" \ "CharacterString")
-        .orElse(nodeToStringOption(node \ "organisationName" \ "CharacterString")),
+      name = if (preferIndividual) individual.orElse(organisation) else organisation.orElse(individual),
       homePage = nodeToStringOption(contactInfo \ "onlineResource" \ "CI_OnlineResource" \ "linkage" \ "URL"),
       email = nodeToStringOption(address \ "electronicMailAddress" \ "CharacterString"),
       extraFields =
-        nodesToMap(address, "deliveryPoint", "city", "administrativeArea", "postalCode", "country") ++
+        (
+          nodesToMap(address, "deliveryPoint", "city", "administrativeArea", "postalCode", "country") ++
           Map(
             "hoursOfService" -> nodeToStringOption(contactInfo \ "hoursOfService" \ "CharacterString"),
             "phone" -> nodeToStringOption(contactInfo \ "phone" \ "CI_Telephone" \ "voice" \ "CharacterString"),
-            "phone" -> nodeToStringOption(contactInfo \ "phone" \ "CI_Telephone" \ "facsimile" \ "CharacterString")
-          ).filter(_._2.isDefined).mapValues(_.get)
+            "fax" -> nodeToStringOption(contactInfo \ "phone" \ "CI_Telephone" \ "facsimile" \ "CharacterString")
+          ).filter { case (_, value) => value.isDefined }.mapValues(_.get)
+        ).filter(x => !x._2.isEmpty())
     )
   }
 
@@ -204,15 +224,12 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
         ))
     }
 
-  def publisherFromNode(responsibleParties: NodeSeq): Option[Agent] = {
-    val publisherOption = responsibleParties.filter(party => (party \ "role" \ "CI_RoleCode").text.trim.equals("publisher")).headOption
+  def publisherFromNode(responsibleParties: NodeSeq) = {
+    val grouped = responsibleParties.groupBy(party => (party \ "role" \ "CI_RoleCode").text.trim)
 
-    publisherOption.map(publisherNode =>
-      Agent(
-        name = nodeToStringOption(publisherNode \ "organisationName" \ "CharacterString"),
-        email = nodeToStringOption(publisherNode \ "contactInfo" \ "CI_Contact" \ "electronicMailAddress")
-      )
-    )
+    grouped.get("publisher").headOption
+      .orElse(grouped.get("owner").headOption)
+      .orElse(grouped.get("custodian").headOption)
   }
 
 }

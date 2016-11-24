@@ -82,7 +82,6 @@ class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val sy
           .getOrElse(false))
   }
 
-  val descriptionFormatRegex = "Download the file \\((.*)\\)".r
   def buildDistributions(uriNodes: NodeSeq, rightsNodes: NodeSeq): Seq[Distribution] = {
     val rights = rightsNodes.map(_.text.trim).distinct match {
       case Seq(x) => Some(x)
@@ -92,11 +91,7 @@ class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val sy
     def buildBasicDist(node: Node): (Node, String, Distribution) = {
       val url = node.text.trim
       val desc = node \@ "description"
-      val formatFromDesc = desc match {
-        case descriptionFormatRegex(format) => Some(format)
-        case _                              => None
-      }
-      val format = Distribution.parseFormat(formatFromDesc, Some(url), None)
+      val format = Distribution.parseFormat(None, Some(url), None, Some(desc))
 
       (node, url, Distribution(
         title = "",
