@@ -71,16 +71,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   override def search(query: Query, start: Long, limit: Int) = {
     Future.sequence(query.regions.map(region => findRegion(region.regionType, region.regionId))).flatMap { regions =>
-      val queryWithResolvedRegions = Query(
-        freeText = query.freeText,
-        quotes = query.quotes,
-        publishers = query.publishers,
-        dateFrom = query.dateFrom,
-        dateTo = query.dateTo,
-        regions = regions,
-        formats = query.formats,
-        error = query.error
-      )
+      val queryWithResolvedRegions = query.copy(regions = regions)
 
       clientFuture.flatMap { client =>
         client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchAll)).flatMap(response =>
