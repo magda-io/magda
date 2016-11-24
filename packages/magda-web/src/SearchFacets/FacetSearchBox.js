@@ -45,8 +45,6 @@ class FacetSearchBox extends Component {
   }
 
   handleKeyDown(e){
-    console.log('keydown');
-    
     if(e.keyCode === 38){
       e.preventDefault();
       this.move('up')
@@ -94,8 +92,10 @@ class FacetSearchBox extends Component {
   }
 
   onSearchTextChange(e){
+    // when the search text is updated, we need to reset the index
     this.setState({
-      searchText: e.target.value
+      searchText: e.target.value,
+      indexOfOptionOnFocus: -1
     });
     this.props.searchFacet(e.target.value);
   }
