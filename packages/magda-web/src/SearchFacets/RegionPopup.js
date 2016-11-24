@@ -52,7 +52,7 @@ class RegionPopup extends Facet {
 
     onFeatureClick(feature){
       let regionMapping= this.props.regionMapping;
-      let regionType = this.state._activeRegion.regionType;
+      let regionType = this.state._activeRegion.regionType.toUpperCase();
 
       let regionProp = regionMapping[regionType].regionProp;
       let nameProp = regionMapping[regionType].nameProp;
@@ -73,6 +73,7 @@ class RegionPopup extends Facet {
 
     render(){
         let region = this.state._activeRegion;
+        console.log(region);
         return (
             <div className='popup'>
               <div className='popup-inner'>
@@ -95,7 +96,7 @@ class RegionPopup extends Facet {
                     </div>
                     <div className='col-sm-6'>
                       {defined(this.props.regionMapping) &&
-                                <DropDown activeOption={defined(this.props.regionMapping[region.regionType]) ? this.props.regionMapping[region.regionType].description : ''}
+                                <DropDown activeOption={defined(region.regionType) ? this.props.regionMapping[region.regionType.toUpperCase()].description : ''}
                                           options={this.getDropDownOptions()}
                                           select={this.selectRegionType}/>
                       }

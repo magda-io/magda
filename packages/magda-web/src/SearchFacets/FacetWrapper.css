@@ -128,7 +128,7 @@
   color: red;
   font-size: 10px;
   vertical-align: baseline;
-  display: inline;
+  display: inline-block;
   padding-left: 3px;
 }
 

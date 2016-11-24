@@ -43,9 +43,10 @@ class RegionMap extends Facet {
            defined(nextProps.region.regionType) &&
            (nextProps.region !== this.props.region)){
               this.addRegion(nextProps);
-            } else {
-              this.removeRegion();
             }
+        else if(!defined(nextProps.region.regionType)){
+          this.removeRegion();
+        }
     }
 
     generateStyle(region) {
@@ -73,7 +74,8 @@ class RegionMap extends Facet {
 
     addRegion(props){
         this.removeRegion();
-        let regionData = props.regionMapping[props.region.regionType];
+        let regionData = props.regionMapping[props.region.regionType.toUpperCase()];
+        console.log(regionData);
         if(defined(regionData)){
           this.getID = function(feature) { return feature.properties[regionData.regionProp]};
           this.layer = new L.TileLayer.MVTSource({

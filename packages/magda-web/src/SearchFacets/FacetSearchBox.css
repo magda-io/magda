@@ -29,7 +29,7 @@
 .facet-search-box .faceted-options{
   position: absolute;
   background: #ecf0f1;
-  z-index: 999;
+  z-index: 9999;
   right: 0;
   left: 0;
   border-radius: 1px;
