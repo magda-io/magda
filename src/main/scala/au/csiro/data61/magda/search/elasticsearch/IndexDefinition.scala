@@ -66,7 +66,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 14,
+      version = 12,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -144,12 +144,12 @@ object IndexDefinition {
           south = Math.min(south, latitude)
           north = Math.max(north, latitude)
         }
-        case anythingElse => Unit
+        case _ => Unit
       }
 
       val adjustEnvelopeWithPolygon = (linearRings: Vector[JsValue]) => linearRings.foreach {
         case JsArray(linearRing) => adjustEnvelopeWithLinearRing(linearRing)
-        case anythingElse => Unit
+        case _ => Unit
       }
 
       if (fields("type").convertTo[String] == "Polygon") {
@@ -161,7 +161,7 @@ object IndexDefinition {
         fields.foreach {
           case ("coordinates", JsArray(polygons)) => polygons.foreach {
             case JsArray(linearRings) => adjustEnvelopeWithPolygon(linearRings)
-            case anythingElse => Unit
+            case _ => Unit
           }
           case (others, value) => Unit
         }
@@ -176,6 +176,6 @@ object IndexDefinition {
         )
       )
     }
-    case anythingElse => JsNull
+    case _ => JsNull
   }
 }

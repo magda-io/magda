@@ -10,13 +10,11 @@ import au.csiro.data61.magda.api.Query
 import com.monsanto.labs.mwundo.GeoJson._
 import com.monsanto.labs.mwundo.GeoJsonFormats._
 import java.util.regex.Pattern
+import au.csiro.data61.magda.api.BoundingBox
 import au.csiro.data61.magda.api.Region
 import au.csiro.data61.magda.search.SearchStrategy
 
 package misc {
-
-  import au.csiro.data61.magda.api.BoundingBox
-
   case class SearchResult(
     query: Query,
     hitCount: Long,
