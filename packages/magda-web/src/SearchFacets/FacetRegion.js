@@ -56,7 +56,7 @@ class FacetRegion extends Component {
         return (
             <FacetWrapper onResetFacet={this.props.onResetFacet}
                           title={this.props.title}
-                          activeRegion={[this.props.activeRegion.regionID, this.props.activeRegion.regionType]}
+                          activeRegion={[this.props.activeRegion.regionId, this.props.activeRegion.regionType]}
                           hasQuery={this.props.hasQuery}>
                <FacetSearchBox renderOption={this.renderOption}
                                onToggleOption={this.props.onToggleOption}

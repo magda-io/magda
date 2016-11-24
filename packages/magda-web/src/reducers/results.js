@@ -9,7 +9,7 @@ const initialData = {
   progress: 0,
   activePublishers: [],
   activeFormats: [],
-  activeRegion: {regionID: undefined, regionType: undefined},
+  activeRegion: {regionId: undefined, regionType: undefined},
   activeDateFrom: undefined,
   activeDateTo:undefined,
   publisherOptions: [],
@@ -58,7 +58,7 @@ const results = (state=initialData, action) => {
 
       let activeFormats = findMatchingObjs(query.formats, formatOptions);;
 
-      let activeRegion = {regionID: defined(query.regions[0]) ? query.regions[0].regionId : undefined,
+      let activeRegion = {regionId: defined(query.regions[0]) ? query.regions[0].regionId : undefined,
                           regionType: defined(query.regions[0]) ? query.regions[0].regionType : undefined};
 
       return Object.assign({}, state, {

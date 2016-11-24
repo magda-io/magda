@@ -89,9 +89,9 @@ class SearchFacets extends Component {
 
   onToggleRegionOption(region){
     console.log(region);
-    let {regionID, regionType} = region;
+    let {regionId, regionType} = region;
     this.props.updateQuery({
-      regionID,
+      regionId,
       regionType,
       page: undefined
     });
@@ -101,7 +101,7 @@ class SearchFacets extends Component {
 
   onResetRegionFacet(){
     this.props.updateQuery({
-      regionID: undefined,
+      regionId: undefined,
       regionType: undefined,
       page: undefined
     });
@@ -148,7 +148,7 @@ class SearchFacets extends Component {
         />
         <FacetRegion title='location'
                       id='region'
-                      hasQuery={defined(this.props.activeRegion.regionType) && defined(this.props.activeRegion.regionID)}
+                      hasQuery={defined(this.props.activeRegion.regionType) && defined(this.props.activeRegion.regionId)}
                       activeRegion={this.props.activeRegion}
                       facetSearchResults={this.props.regionSearchResults}
                       onToggleOption={this.onToggleRegionOption}

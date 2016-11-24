@@ -38,19 +38,26 @@ class RegionMap extends Facet {
     }
 
     componentWillReceiveProps(nextProps) {
-        // after we have received all the data we need,we can then display the layer
-        if(defined(nextProps.regionMapping) &&
-           defined(nextProps.region.regionType) &&
-           (nextProps.region !== this.props.region)){
-              this.addRegion(nextProps);
-            }
-        else if(!defined(nextProps.region.regionType)){
+        if(this.shouldRegionUpdates(this.props, nextProps)){
+          this.addRegion(nextProps);
+        } else if(!defined(nextProps.region.regionType)){
           this.removeRegion();
         }
     }
 
+    shouldRegionUpdates(preProps, nextProps){
+      if(!defined(nextProps.regionMapping) || !defined(nextProps.region.regionType)){
+        return false;
+      } else if((nextProps.region.regionType === preProps.region.regionType) &&
+                (nextProps.region.regionId === preProps.region.regionId)){
+          return false;
+        }
+      return true;
+    }
+
     generateStyle(region) {
-        return (feature) => ({
+        return (feature) => {
+          return{
             color: (region === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
                 outline: {
                     color: '#ddd',
@@ -62,7 +69,7 @@ class RegionMap extends Facet {
                         color: '#00B5FF'
                     }
                 }
-        });
+        }};
     }
 
     removeRegion(){
@@ -74,13 +81,13 @@ class RegionMap extends Facet {
 
     addRegion(props){
         this.removeRegion();
-        let regionData = props.regionMapping[props.region.regionType.toUpperCase()];
+        let regionData = props.regionMapping[props.region.regionType];
         console.log(regionData);
         if(defined(regionData)){
           this.getID = function(feature) { return feature.properties[regionData.regionProp]};
           this.layer = new L.TileLayer.MVTSource({
               url: regionData.server,
-              style: this.generateStyle(props.region.regionID),
+              style: this.generateStyle(props.region.regionId),
               hoverInteraction: props.interaction,
               /*onEachFeature: onEachFeature, */
               clickableLayers: (props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
