@@ -66,7 +66,7 @@ object IndexDefinition {
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
     new IndexDefinition(
       name = "regions",
-      version = 12,
+      version = 11,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -127,6 +127,7 @@ object IndexDefinition {
       .runWith(Sink.reduce((oldLength: Int, latestValuesLength: Int) => oldLength + latestValuesLength))
       .map { count => logger.info("Successfully indexed {} regions", count) }
   }
+<<<<<<< HEAD
 
   def createEnvelope(geometry: JsValue): JsValue = geometry match {
     case JsObject(fields) => {
@@ -179,3 +180,6 @@ object IndexDefinition {
     case _ => JsNull
   }
 }
+=======
+}
+>>>>>>> origin/master
