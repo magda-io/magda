@@ -60,14 +60,12 @@ package misc {
   case class MatchingRegion(
     regionType: String,
     regionId: String,
-    regionName: String
-  )
+    regionName: String)
 
   case class RegionSearchResult(
     query: String,
     hitCount: Long,
-    regions: List[MatchingRegion]
-  )
+    regions: List[MatchingRegion])
 
   case class DataSet(
       identifier: String,
@@ -99,7 +97,7 @@ package misc {
     extraFields: Map[String, String] = Map())
 
   case class Location(
-    text: String,
+    text: Option[String] = None,
     geoJson: Option[Geometry] = None)
 
   object Location {
@@ -118,7 +116,7 @@ package misc {
         case x => x
       }
 
-      new Location(text, processedGeoJson)
+      new Location(Some(text), processedGeoJson)
     }
 
     def apply(string: String): Location = {
@@ -150,7 +148,7 @@ package misc {
     issued: Option[Instant] = None,
     modified: Option[Instant] = None,
     license: Option[License] = None,
-    rights: Option[License] = None,
+    rights: Option[String] = None,
     accessURL: Option[String] = None,
     downloadURL: Option[String] = None,
     byteSize: Option[Int] = None,
@@ -219,10 +217,21 @@ package misc {
         .headOption
     }
 
-    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType]): Option[String] = {
+    def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType], description: Option[String]): Option[String] = {
       rawFormat
         .orElse(url.flatMap(Distribution.formatFromUrl(_)))
         .orElse(parsedMediaType.map(_.subType))
+        .orElse(description.flatMap(desc =>
+            urlToFormat.values.filter(format =>
+              desc.toLowerCase.contains(format.toLowerCase())
+            ).headOption
+        ))
+    }
+
+    def isDownloadUrl(url: String, title: String, description: Option[String], format: Option[String]): Boolean = {
+      title.toLowerCase.contains("download") ||
+        description.map(_.toLowerCase.contains("download")).getOrElse(false) ||
+        format.map(_.equals("HTML")).getOrElse(false)
     }
   }
 

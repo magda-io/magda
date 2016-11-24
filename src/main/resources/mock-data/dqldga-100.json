@@ -2,7 +2,7 @@
   "help": "https://data.qld.gov.au/api/3/action/help_show?name=package_search",
   "success": true,
   "result": {
-    "count": 2275,
+    "count": 100,
     "sort": "score desc, metadata_modified desc",
     "facets": {},
     "results": [

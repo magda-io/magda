@@ -172,7 +172,7 @@ trait CKANConverters {
   def ckanDistributionConv(resource: CKANResource, dataset: CKANDataSet): Distribution = {
     // Get the mediatype first because we'll need it to determine the format if none is provided.
     val mediaType = Distribution.parseMediaType(resource.mimetype orElse resource.mimetype_inner, resource.format, resource.url)
-    val format = Distribution.parseFormat(resource.format, resource.url, mediaType)
+    val format = Distribution.parseFormat(resource.format, resource.url, mediaType, resource.description)
 
     new Distribution(
       title = resource.name.getOrElse(resource.id),
