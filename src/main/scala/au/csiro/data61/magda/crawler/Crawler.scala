@@ -52,7 +52,7 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
         case e: Throwable =>
           log.error(e, "Failed while fetching")
       }
-      .runWith(Sink.ignore)
+      .runWith(Sink.last)
   }
 
   def streamForInterface(interfaceDef: InterfaceConfig) = {

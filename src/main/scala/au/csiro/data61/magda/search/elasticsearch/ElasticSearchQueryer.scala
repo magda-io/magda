@@ -165,7 +165,12 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   }
 
   /** Builds an elastic search query out of the passed general magda Query */
-  def buildQuery(query: Query, start: Long, limit: Int, strategy: SearchStrategy) = ElasticDsl.search.in("datasets" / "datasets").limit(limit).start(start.toInt).query(queryToQueryDef(query, strategy))
+  def buildQuery(query: Query, start: Long, limit: Int, strategy: SearchStrategy) =
+    ElasticDsl.search.in("datasets" / "datasets")
+      .limit(limit)
+      .start(start.toInt)
+      .query(queryToQueryDef(query, strategy))
+
   /** Same as {@link #buildQuery} but also adds aggregations */
   def buildQueryWithAggregations(query: Query, start: Long, limit: Int, strategy: SearchStrategy) = addAggregations(buildQuery(query, start, limit, strategy), query, strategy)
 
@@ -258,8 +263,13 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
       case (freeText, quotes) => Some(freeText + " " + quotes)
     }
 
+    val operator = strategy match {
+      case MatchAll  => "and"
+      case MatchPart => "or"
+    }
+
     val shouldClauses: Seq[Option[QueryDefinition]] = Seq(
-      stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).boost(2)),
+      stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).operator(operator).boost(2)),
       seqToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
       seqToOption(query.formats)(seq => should(seq.map(formatQuery))),
       query.dateFrom.map(dateFromQuery),
