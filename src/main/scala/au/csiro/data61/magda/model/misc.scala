@@ -14,6 +14,9 @@ import au.csiro.data61.magda.api.Region
 import au.csiro.data61.magda.search.SearchStrategy
 
 package misc {
+
+  import au.csiro.data61.magda.api.BoundingBox
+
   case class SearchResult(
     query: Query,
     hitCount: Long,
@@ -271,7 +274,8 @@ package misc {
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
-    implicit val regionFormat = jsonFormat2(Region.apply)
+    implicit val boundingBoxFormat = jsonFormat4(BoundingBox.apply)
+    implicit val regionFormat = jsonFormat4(Region.apply)
     implicit val queryFormat = jsonFormat8(Query.apply)
     implicit val searchResultFormat = jsonFormat6(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)

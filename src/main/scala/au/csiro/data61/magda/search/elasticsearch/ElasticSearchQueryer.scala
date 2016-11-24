@@ -70,26 +70,39 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   lazy val clientFuture: Future[ElasticClient] = getClient(system.scheduler, logger, ec)
 
   override def search(query: Query, start: Long, limit: Int) = {
-    clientFuture.flatMap { client =>
-      client.execute(buildQueryWithAggregations(query, start, limit, MatchAll)).flatMap(response =>
-        if (response.totalHits > 0)
-          Future.successful((response, MatchAll))
-        else
-          client.execute(buildQueryWithAggregations(query, start, limit, MatchPart)).map((_, MatchPart))
+    Future.sequence(query.regions.map(region => findRegion(region.regionType, region.regionId))).flatMap { regions =>
+      val queryWithResolvedRegions = Query(
+        freeText = query.freeText,
+        quotes = query.quotes,
+        publishers = query.publishers,
+        dateFrom = query.dateFrom,
+        dateTo = query.dateTo,
+        regions = regions,
+        formats = query.formats,
+        error = query.error
       )
-    } map {
-      case (response, strategy) => buildSearchResult(query, response, strategy)
-    } recover {
-      case remoteTransport: RemoteTransportException => remoteTransport.getCause match {
-        case searchPhase: SearchPhaseExecutionException => searchPhase.getCause match {
-          case notSerializable: NotSerializableExceptionWrapper => notSerializable.getCause match {
-            case illegalArgument: IllegalArgumentException => failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
+
+      clientFuture.flatMap { client =>
+        client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchAll)).flatMap(response =>
+          if (response.totalHits > 0)
+            Future.successful((response, MatchAll))
+          else
+            client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchPart)).map((_, MatchPart))
+        )
+      } map {
+        case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy)
+      } recover {
+        case remoteTransport: RemoteTransportException => remoteTransport.getCause match {
+          case searchPhase: SearchPhaseExecutionException => searchPhase.getCause match {
+            case notSerializable: NotSerializableExceptionWrapper => notSerializable.getCause match {
+              case illegalArgument: IllegalArgumentException => failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
+            }
           }
         }
+        case e: Throwable =>
+          logger.error(e, "Exception when searching")
+          failureSearchResult(query, "Unknown error")
       }
-      case e: Throwable =>
-        logger.error(e, "Exception when searching")
-        failureSearchResult(query, "Unknown error")
     }
   }
 
@@ -320,6 +333,18 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
             case _ => Future(RegionSearchResult(query, response.totalHits, response.as[MatchingRegion].toList))
+          }
+        }
+    }
+  }
+
+  def findRegion(regionType: String, regionId: String): Future[Region] = {
+    clientFuture.flatMap { client =>
+      client.execute(ElasticDsl.search in "regions" / "regions" query { idsQuery(regionType + "/" + regionId) } start 0 limit 1 sourceExclude ("geometry"))
+        .flatMap { response =>
+          response.totalHits match {
+            case 0 => Future(Region(regionType, regionId, "[Unknown]"))
+            case _ => Future(response.as[Region].head)
           }
         }
     }

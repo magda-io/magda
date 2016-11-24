@@ -1,14 +1,13 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.{CreateIndexDefinition, ElasticClient}
+import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.analyzers._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.AppConfig
 import spray.json._
-import com.sksamuel.elastic4s.ElasticDsl
 import akka.stream.Materializer
 
 import scala.util.Failure
@@ -17,7 +16,6 @@ import akka.stream.scaladsl.Source
 
 import scala.util.Success
 import akka.stream.scaladsl.Merge
-import com.sksamuel.elastic4s.BulkResult
 import akka.actor.ActorSystem
 
 import scala.concurrent.Future
@@ -26,11 +24,11 @@ import au.csiro.data61.magda.search.elasticsearch.Queries.generateRegionId
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import akka.stream.scaladsl.SourceQueueWithComplete
-import com.sksamuel.elastic4s.BulkDefinition
 import akka.stream.scaladsl.SourceQueue
 import akka.stream.QueueOfferResult._
 import akka.stream.scaladsl.Concat
 import java.io.File
+
 import akka.stream.scaladsl.FileIO
 import akka.stream.scaladsl.JsonFraming
 
@@ -77,6 +75,7 @@ object IndexDefinition {
               field("type").typed(StringType),
               field("id").typed(StringType),
               field("name").typed(StringType),
+              field("envelope").typed(GeoShapeType),
               field("geometry").typed(GeoShapeType))),
       create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
 
@@ -100,6 +99,7 @@ object IndexDefinition {
               "type" -> JsString(regionSource.name),
               "id" -> properties.fields(regionSource.idProperty),
               "name" -> name,
+              "envelope" -> createEnvelope(jsonRegion.fields("geometry")),
               "geometry" -> jsonRegion.fields("geometry")
             ).toJson)
       }
@@ -126,5 +126,39 @@ object IndexDefinition {
       }
       .runWith(Sink.reduce((oldLength: Int, latestValuesLength: Int) => oldLength + latestValuesLength))
       .map { count => logger.info("Successfully indexed {} regions", count) }
+  }
+
+  def createEnvelope(geometry: JsValue): JsValue = geometry match {
+    case JsObject(fields) => {
+      var west = 180
+      var east = -180
+      var south = 90
+      var north = -90
+
+      val adjustEnvelopeWithLinearRing = (linearRing: Vector[JsValue]) => linearRing.foreach {
+        case JsArray(positions) => println(positions)
+      }
+
+      val adjustEnvelopeWithPolygon = (linearRings: Vector[JsValue]) => linearRings.foreach {
+        case JsArray(linearRing) => adjustEnvelopeWithLinearRing(linearRing)
+        case anythingElse => Unit
+      }
+
+      if (fields("type").convertTo[String] == "Polygon") {
+        fields.foreach {
+          case ("coordinates", JsArray(linearRings)) => adjustEnvelopeWithPolygon(linearRings)
+          case (others, value) => Unit
+        }
+      } /*else if (fields("type").convertTo[String] == "MultiPolygon") {
+        fields.foreach {
+          case ("coordinates", JsArray(polygons)) => polygons.foreach {
+            case JsArray(linearRings) => adjustEnvelopeWithPolygon(linearRings)
+            case anythingElse => Unit
+          }
+          case (others, value) => Unit
+        }
+      }*/
+    }
+    case anythingElse => JsNull
   }
 }
