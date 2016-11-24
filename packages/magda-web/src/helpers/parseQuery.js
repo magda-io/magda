@@ -1,6 +1,5 @@
-import defined from './defined'
-// temp
-const NUMBERRESULTSPERPAGE = 20;
+import defined from './defined';
+import config from '../config';
 
 export default function(query){
   let keyword = defined(query.q) ? query.q : '';
@@ -9,9 +8,9 @@ export default function(query){
   let publisher = queryToString('+by', query.publisher);
   let format = queryToString('+as', query.format);
   let location = queryToLocation(query.regionId, query.regionType);
-  let startIndex = defined(query.page) ? (query.page - 1)*NUMBERRESULTSPERPAGE + 1 : 0;
+  let startIndex = defined(query.page) ? (query.page - 1)*config().resultsPerPage + 1 : 0;
 
-  let apiQuery = encodeURI(`${keyword}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${NUMBERRESULTSPERPAGE}`);
+  let apiQuery = encodeURI(`${keyword}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${config().resultsPerPage}`);
   return apiQuery;
 }
 
