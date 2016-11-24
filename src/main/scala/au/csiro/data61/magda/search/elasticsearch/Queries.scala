@@ -23,7 +23,7 @@ object Queries {
   def dateToQuery(dateTo: Instant) = filter(should(
     rangeQuery("temporal.end.date").lte(dateTo.toString),
     rangeQuery("temporal.start.date").lte(dateTo.toString)).minimumShouldMatch(1))
-  def generateRegionId(regionType: String, id: String) = s"${regionType}/$id"
+  def generateRegionId(regionType: String, id: String) = s"${regionType}/$id".toLowerCase
   def exactDateQuery(dateFrom: Instant, dateTo: Instant) = must(dateFromQuery(dateFrom), dateToQuery(dateTo))
 }
 
