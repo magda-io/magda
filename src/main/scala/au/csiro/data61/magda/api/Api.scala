@@ -37,6 +37,7 @@ import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchProvider
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
+import akka.http.scaladsl.coding.Gzip
 
 class Api(implicit val config: Config, implicit val system: ActorSystem,
           implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends misc.Protocols with CorsDirectives {
@@ -64,50 +65,55 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
     case e: Exception ⇒ {
       logger.error(e, "Exception encountered")
 
-      cors() {
-        complete(HttpResponse(InternalServerError, entity = "You are probably seeing this message because Alex messed up"))
+      encodeResponseWith(Gzip) {
+        cors() {
+          complete(HttpResponse(InternalServerError, entity = "You are probably seeing this message because Alex messed up"))
+        }
       }
     }
   }
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
-  val routes = cors() {
-    handleExceptions(myExceptionHandler) {
-      pathPrefix("facets") {
-        path(Segment / "options" / "search") { facetId ⇒
-          (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
-            FacetType.fromId(facetId) match {
-              case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, QueryCompiler(generalQuery), start, limit))
-              case None            ⇒ complete(NotFound)
-            }
-          }
-        }
-      } ~
-        pathPrefix("datasets") {
-          pathPrefix("search") {
-            (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-              onSuccess(searchQueryer.search(QueryCompiler(query), start, limit)) { result =>
-                val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
-
-                pathPrefix("datasets") {
-                  complete(status, result.copy(facets = None))
-                } ~ pathPrefix("facets") {
-                  complete(status, result.facets)
-                } ~ pathEnd {
-                  complete(status, result)
+  val routes =
+    encodeResponseWith(Gzip) {
+      cors() {
+        handleExceptions(myExceptionHandler) {
+          pathPrefix("facets") {
+            path(Segment / "options" / "search") { facetId ⇒
+              (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
+                FacetType.fromId(facetId) match {
+                  case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, QueryCompiler(generalQuery), start, limit))
+                  case None            ⇒ complete(NotFound)
                 }
               }
             }
-          }
-        } ~
-        path("region-types") { get { getFromResource("regionMapping.json") } } ~
-        path("regions" / "search" ) {
-          (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-            complete(searchQueryer.searchRegions(query, start, limit))
-          }
+          } ~
+            pathPrefix("datasets") {
+              pathPrefix("search") {
+                (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+                  onSuccess(searchQueryer.search(QueryCompiler(query), start, limit)) { result =>
+                    val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
+
+                    pathPrefix("datasets") {
+                      complete(status, result.copy(facets = None))
+                    } ~ pathPrefix("facets") {
+                      complete(status, result.facets)
+                    } ~ pathEnd {
+                      complete(status, result)
+                    }
+                  }
+                }
+              }
+            } ~
+            path("region-types") { get { getFromResource("regionMapping.json") } } ~
+            path("regions" / "search") {
+              (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+                complete(searchQueryer.searchRegions(query, start, limit))
+              }
+            }
         }
+      }
     }
-  }
 
   Http().bindAndHandle(routes, config.getString("http.interface"), config.getInt("http.port"))
 }
