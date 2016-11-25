@@ -108,13 +108,12 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
           id = facetType,
           options = {
             // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-            val filteredOptions = definition.postProcessFacets(
+            val filteredOptions =
               (aggsMap.get(facetType.id + "-filter") match {
                 case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
                 case None            => Nil
-              }).filter(definition.isFilterOptionRelevant(query)),
-              AGGREGATION_SIZE_LIMIT
-            ).map(_.copy(matched = Some(true)))
+              }).filter(definition.isFilterOptionRelevant(query))
+                .map(_.copy(matched = Some(true)))
 
             // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
             // display it to them to show them that it does *exist* but not for this query
@@ -135,25 +134,15 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
                 .flatten
                 .toSeq
 
-            // Alternative options show what *other* options the user could filter by and get results apart from what they've already done.
-            val remainingFacetSlots = AGGREGATION_SIZE_LIMIT - filteredOptions.size
+            val alternativeOptions =
+              definition.extractFacetOptions(
+                aggsMap
+                  .get(facetType.id + "-global")
+                  .get
+                  .getProperty("filter").asInstanceOf[Aggregation]
+                  .getProperty(facetType.id).asInstanceOf[Aggregation])
 
-            val alternativeOptions = if (remainingFacetSlots == 0) Nil else definition.postProcessFacets(definition.extractFacetOptions(
-              aggsMap
-                .get(facetType.id + "-global")
-                .get
-                .getProperty("filter").asInstanceOf[Aggregation]
-                .getProperty(facetType.id).asInstanceOf[Aggregation]
-            ), remainingFacetSlots)
-
-            val combined = (exactOptions ++ filteredOptions ++ alternativeOptions)
-            val lookup = combined.groupBy(_.value)
-
-            // It's possible that some of the options will overlap, so make sure we're only showing the first occurence of each.
-            combined.map(_.value)
-              .distinct
-              .map(lookup.get(_).get.head)
-              .take(AGGREGATION_SIZE_LIMIT)
+            definition.truncateFacets(filteredOptions, exactOptions, alternativeOptions, AGGREGATION_SIZE_LIMIT)
           })
       }.toSeq))
   }

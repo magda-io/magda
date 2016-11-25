@@ -84,10 +84,18 @@ trait FacetDefinition {
   def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)]
 
   /**
-   * Once the facets are extracted into FacetOptions, optionally perform some post-processing - e.g. reduce them into smaller
-   * groups or change the values so they reference the facet before and after.
+   * Reduce a list of facets to fit under the limit
    */
-  def postProcessFacets(inputFacets: Seq[FacetOption], limit: Int): Seq[FacetOption] = inputFacets
+  def truncateFacets(matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
+    val combined = (exactMatch ++ matched ++ unmatched)
+    val lookup = combined.groupBy(_.value)
+
+    // It's possible that some of the options will overlap, so make sure we're only showing the first occurence of each.
+    combined.map(_.value)
+      .distinct
+      .map(lookup.get(_).get.head)
+      .take(limit)
+  }
 }
 
 object FacetDefinition {
@@ -125,21 +133,61 @@ object YearFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
     aggregation.histogram(Year.id).field("years").interval(1).order(Histogram.Order.KEY_DESC)
 
-  def roundUp(num: Int, divisor: Int): Int = Math.ceil((num.toDouble / divisor)).toInt * divisor
-  def roundDown(num: Int, divisor: Int): Int = Math.floor((num.toDouble / divisor)).toInt * divisor
+  // FIXME: Warning: all binning code is so so so so so bad, revisit after the prototype
+  override def truncateFacets(matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] =
+    (matched, unmatched) match {
+      case (Nil, Nil)       => Nil
+      case (matched, Nil)   => super.truncateFacets(makeBins(matched, limit), Nil, Nil, limit)
+      case (Nil, unmatched) => super.truncateFacets(Nil, Nil, makeBins(unmatched, limit), limit)
+      case (matched, unmatched) =>
+        val matchedBins = makeBins(matched, limit).map(_.copy(matched = Some(true)))
 
-  override def postProcessFacets(inputFacets: Seq[FacetOption], limit: Int): Seq[FacetOption] = inputFacets match {
+        val hole = matchedBins match {
+          case Nil => None
+          case matchedBins =>
+            val lastYear = matchedBins.head.upperBound.get.toInt
+            val firstYear = matchedBins.last.lowerBound.get.toInt
+            Some(firstYear, lastYear)
+        }
+
+        val remainingFacetSlots = limit - matchedBins.size
+
+        super.truncateFacets(matchedBins, Nil, makeBins(unmatched, remainingFacetSlots, hole), limit)
+    }
+
+  def getBinSize(facets: Seq[FacetOption], limit: Int): Int = {
+    val lastYear = facets.head.value.toInt
+    val firstYear = facets.last.value.toInt
+
+    val yearDifference = lastYear - firstYear
+    yearBinSizes.view.map(x => (x, yearDifference / x)).filter(_._2 <= limit).map(_._1).head
+  }
+
+  def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)] = None): Seq[FacetOption] = facets match {
     case Nil => Nil
-    case inputFacets =>
-      val lastYear = inputFacets.head.value.toInt
-      val firstYear = inputFacets.last.value.toInt
+    case facets =>
+      val binSize = getBinSize(facets, limit)
+      val lastYear = facets.head.value.toInt
+      val firstYear = facets.last.value.toInt
 
-      val yearDifference = lastYear - firstYear
-      val binSize = yearBinSizes.view.map(x => (x, yearDifference / x)).filter(_._2 <= limit).map(_._1).head
+      val binsRaw = (for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1))
+      val bins = hole.map {
+        case (holeStart, holeEnd) =>
+          binsRaw.flatMap {
+              case (binStart, binEnd) =>
+                if (binStart > holeStart && binEnd < holeEnd)
+                  Nil
+                else if (binStart < holeStart && binEnd > holeEnd)
+                  Seq((binStart, holeStart - 1), (holeEnd + 1, binEnd))
+                else if (binStart <= holeStart && binEnd >= holeStart)
+                  Seq((binStart, holeStart - 1))
+                else if (binStart <= holeEnd && binEnd >= holeEnd)
+                  Seq((holeEnd + 1, binEnd))
+                else Seq((binStart, binEnd))
+            }
+      } getOrElse (binsRaw)
 
-      val bins = for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1)
-
-      val yearLookup = inputFacets.groupBy(_.value.toInt).mapValues(_.head.hitCount)
+      val yearLookup = facets.groupBy(_.value.toInt).mapValues(_.head.hitCount)
 
       bins.reverse.map {
         case (start, end) =>
@@ -154,6 +202,9 @@ object YearFacetDefinition extends FacetDefinition {
           )
       }.filter(_.hitCount > 0)
   }
+
+  def roundUp(num: Int, divisor: Int): Int = Math.ceil((num.toDouble / divisor)).toInt * divisor
+  def roundDown(num: Int, divisor: Int): Int = Math.floor((num.toDouble / divisor)).toInt * divisor
 
   override def relatedToQuery(query: Query): Boolean = query.dateFrom.isDefined || query.dateTo.isDefined
 
