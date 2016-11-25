@@ -143,7 +143,7 @@ private object QueryParser extends Parsers {
   private def region: Parser[AST.ASTRegion] = {
     accept("region", {
       case Tokens.RegionFilter(regionType, regionId) => RegionSource.forName(regionType) match {
-        case Some(regionSource) => AST.ASTRegion(Region(regionType, regionId))
+        case Some(regionSource) => AST.ASTRegion(Region(regionType, regionId, "[Unknown]", None))
         case None               => throw new RuntimeException("Could not find region for type " + regionType)
       }
     })
@@ -215,9 +215,17 @@ object QueryCompiler {
   }
 }
 
+case class BoundingBox(
+  west: Double,
+  south: Double,
+  east: Double,
+  north: Double)
+
 case class Region(
   regionType: String,
-  regionId: String)
+  regionId: String,
+  regionName: String,
+  boundingBox: Option[BoundingBox])
 
 case class Query(
   freeText: Option[String] = None,

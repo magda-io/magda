@@ -10,6 +10,7 @@ import au.csiro.data61.magda.api.Query
 import com.monsanto.labs.mwundo.GeoJson._
 import com.monsanto.labs.mwundo.GeoJsonFormats._
 import java.util.regex.Pattern
+import au.csiro.data61.magda.api.BoundingBox
 import au.csiro.data61.magda.api.Region
 import au.csiro.data61.magda.search.SearchStrategy
 
@@ -57,15 +58,10 @@ package misc {
     lowerBound: Option[String] = None,
     matched: Option[Boolean] = None)
 
-  case class MatchingRegion(
-    regionType: String,
-    regionId: String,
-    regionName: String)
-
   case class RegionSearchResult(
     query: String,
     hitCount: Long,
-    regions: List[MatchingRegion])
+    regions: List[Region])
 
   case class DataSet(
       identifier: String,
@@ -280,11 +276,11 @@ package misc {
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
-    implicit val regionFormat = jsonFormat2(Region.apply)
+    implicit val boundingBoxFormat = jsonFormat4(BoundingBox.apply)
+    implicit val regionFormat = jsonFormat4(Region.apply)
     implicit val queryFormat = jsonFormat8(Query.apply)
     implicit val searchResultFormat = jsonFormat6(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
-    implicit val matchingRegionFormat = jsonFormat3(MatchingRegion.apply)
     implicit val regionSearchResultFormat = jsonFormat3(RegionSearchResult.apply)
   }
 
