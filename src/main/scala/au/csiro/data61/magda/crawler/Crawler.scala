@@ -19,7 +19,6 @@ import akka.stream.ThrottleMode
 import scala.concurrent.Future
 import au.csiro.data61.magda.model.misc.DataSet
 
-
 class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig], materializer: Materializer, indexer: SearchIndexer) {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
@@ -47,12 +46,14 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
           (source, filteredDataSets)
       }
       .mapAsync(1) { case (source, dataSets) => indexer.index(source, dataSets).map(_ => (source, dataSets)) }
-      .map { case (source, dataSets) => log.info("Successfully indexed {} dataSets from {}", dataSets.size, source) }
       .recover {
         case e: Throwable =>
           log.error(e, "Failed while fetching")
       }
       .runWith(Sink.last)
+      .map { _ =>
+        indexer.snapshot()
+      }
   }
 
   def streamForInterface(interfaceDef: InterfaceConfig) = {

@@ -13,6 +13,9 @@ spec:
     spec:
       containers:
       - name: api
+        resources:
+          limits:
+            memory: 500Mi
         env:
         - name: SCALA_ENV
           value: local
@@ -34,9 +37,9 @@ spec:
       - name: regions
         hostPath:
           path: ${projectDir}/regions
-      - hostPath:
+      - name: src
+        hostPath:
           path: ${projectDir}
-        name: src
       - hostPath:
           path: ${homeDir}/.ivy2/
         name: ivy-cache
@@ -82,7 +85,7 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: quay.io/pires/docker-elasticsearch-kubernetes:2.4.1
+        image: localhost:5000/data61/elasticsearch-kubernetes:2.4.1
         env:
         - name: NAMESPACE
           valueFrom:
@@ -97,7 +100,9 @@ spec:
         - name: HTTP_ENABLE
           value: "true"
         - name: ES_HEAP_SIZE
-          value: "1500m"
+          value: "1000m"
+        - name: REPO
+          value: "/snapshots"
         ports:
         - containerPort: 9200
           name: http
@@ -108,7 +113,12 @@ spec:
         volumeMounts:
         - name: storage
           mountPath: /data
+        - name: snapshots
+          mountPath: /snapshots
       volumes:
+      - name: snapshots
+        hostPath:
+          path: ${projectDir}/snapshots
       - name: "storage"
         emptyDir: {}
 ---

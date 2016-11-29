@@ -8,6 +8,7 @@ import akka.actor.ActorSystem
 
 trait SearchIndexer {
   def index(source: String, dataSets: List[DataSet]): Future[Any]
+  def snapshot(): Future[Unit]
   def needsReindexing(): Future[Boolean]
 }
 

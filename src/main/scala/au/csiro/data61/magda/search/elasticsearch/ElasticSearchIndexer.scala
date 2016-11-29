@@ -1,35 +1,47 @@
-
 package au.csiro.data61.magda.search.elasticsearch
 
-import akka.stream.Materializer
-import akka.actor.ActorSystem
-import scala.concurrent.ExecutionContext
-import au.csiro.data61.magda.search.SearchIndexer
-import akka.stream.OverflowStrategy
-import com.sksamuel.elastic4s.ElasticClient
-import com.sksamuel.elastic4s.ElasticsearchClientUri
 import java.time.Instant
-import au.csiro.data61.magda.model.misc._
 import java.time.LocalDate
+import java.time.ZoneId
+
+import scala.collection.JavaConversions._
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration._
+
+import org.elasticsearch.index.IndexNotFoundException
+import org.elasticsearch.snapshots.SnapshotInfo
+import org.elasticsearch.transport.RemoteTransportException
+
+import com.sksamuel.elastic4s.BulkDefinition
+import com.sksamuel.elastic4s.BulkResult
+import com.sksamuel.elastic4s.ElasticClient
+import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.ElasticDsl._
+
+import akka.actor.ActorSystem
+import akka.stream.Materializer
+import akka.stream.OverflowStrategy
+import akka.stream.QueueOfferResult
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import scala.concurrent.Future
-import java.time.ZoneId
-import com.sksamuel.elastic4s.ElasticDsl
-import org.elasticsearch.index.IndexNotFoundException
-import org.elasticsearch.transport.RemoteTransportException
-import au.csiro.data61.magda.model.misc.Protocols._
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import com.sksamuel.elastic4s.ElasticDsl._
-import spray.json._
-import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
-import com.sksamuel.elastic4s.BulkResult
-import au.csiro.data61.magda.util.FutureRetry.retry
-import scala.concurrent.duration._
-import com.sksamuel.elastic4s.BulkDefinition
-import akka.stream.scaladsl.SourceQueueWithComplete
 import akka.stream.scaladsl.SourceQueue
-import akka.stream.QueueOfferResult
+import akka.stream.scaladsl.SourceQueueWithComplete
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.Protocols._
+import au.csiro.data61.magda.search.SearchIndexer
+import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
+import au.csiro.data61.magda.util.FutureRetry.retry
+import spray.json._
+import org.elasticsearch.action.admin.cluster.snapshots.create.CreateSnapshotResponse
+import org.elasticsearch.repositories.RepositoryMissingException
+import scala.util.Failure
+import scala.util.Success
+import scala.concurrent.Promise
+import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryResponse
+import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse
+import org.elasticsearch.rest.RestStatus
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -38,31 +50,57 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
    * Returns an initialised {@link ElasticClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
    *  ensures that all queries will only complete after the client is initialised.
    */
-  private lazy val setupFuture = setup()
+  private val setupFuture = setup()
 
   implicit val scheduler = system.scheduler
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
-  private lazy val indexQueue: SourceQueue[(String, Seq[DataSet])] =
-    Source.queue[(String, Seq[DataSet])](0, OverflowStrategy.backpressure)
+  private lazy val indexQueue: SourceQueue[(String, Seq[DataSet], Promise[BulkResult])] =
+    Source.queue[(String, Seq[DataSet], Promise[BulkResult])](0, OverflowStrategy.backpressure)
       .mapAsync(1) {
-        case (source, dataSets) =>
+        case (source, dataSets, promise) =>
           bulkIndex(buildDatasetIndexDefinition(dataSets))
-            .map((source, dataSets.length, _))
+            .map((source, dataSets.length, promise, _))
       }
       .map {
-        case (source, dataSetCount, result) =>
+        case (source, dataSetCount, promise, result) =>
           if (result.hasFailures) {
             logger.warning("Failure when indexing from {}: {}", source, result.failureMessage)
           } else {
             logger.info("Indexed {} datasets from {}", dataSetCount, source)
           }
 
-          result
+          promise.success(result)
       }
       .recover {
         case e: Throwable =>
           logger.error(e, "Error when indexing: {}", e.getMessage)
+      }
+      .to(Sink.last)
+      .run()
+
+  private lazy val restoreQueue: SourceQueue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
+    Source.queue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](0, OverflowStrategy.backpressure)
+      .mapAsync(1) {
+        case (client, definition, snapshot, promise) =>
+          logger.info("Restoring snapshot {} for {} version {}", snapshot.name, definition.name, definition.version)
+
+          client.execute {
+            restore snapshot snapshot.name from snapshotRepoName(definition) indexes definition.name waitForCompletion true
+          } map { response =>
+            response.status match {
+              case RestStatus.OK =>
+                logger.info("Restored {} version {}", definition.name, definition.version)
+                promise.success(RestoreSuccess)
+              case status: RestStatus =>
+                logger.info("Failed to restore for {} version {} with status {}", definition.name, definition.version, status)
+                promise.success(RestoreFailure)
+            }
+          }
+      }
+      .recover {
+        case e: Throwable =>
+          logger.error(e, "Error when restoring: {}", e.getMessage)
       }
       .to(Sink.last)
       .run()
@@ -72,10 +110,11 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     getClient(system.scheduler, logger, ec).flatMap(client =>
       retry(() => getIndexVersions(client), 10 seconds, 10, logger.warning("Failed to get index versions, {} retries left", _))
         .flatMap { versionPairs =>
-          updateIndices(client, versionPairs).map { _ =>
-            // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
-            client
-          }
+          updateIndices(client, versionPairs)
+            .map { _ =>
+              // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
+              client
+            }
         }
     )
   }
@@ -106,52 +145,119 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
         logger.info("{} index version is {}", definition.name, indexVersion)
 
         // If the index version on ES is lower than the code's version, wipe it all and start again.
-        if (indexVersion != definition.version) {
-          val deleteIndex =
-            client.execute {
-              delete index definition.name
-            } recover {
-              case outer: RemoteTransportException => outer.getCause match {
-                case (inner: IndexNotFoundException) => {
-                  // Meh, we were trying to delete it anyway.
-                }
-                case inner: RemoteTransportException => inner.getCause match {
-                  case (inner: IndexNotFoundException) => {
-                    // Meh, we were trying to delete it anyway.
-                  }
-                }
-                case e =>
-                  logger.debug("Inner exception class {}", e.getClass.toString)
-                  throw e
-              }
-              case e =>
-                logger.debug("Exception class {}", e.getClass.toString)
-                throw e
-            }
-
-          deleteIndex flatMap { _ =>
-            client.execute(definition.definition)
-          } recover {
-            case e: Throwable =>
-              logger.error(e, "Failed to set up the index")
-              throw e
-          } flatMap { _ =>
-            logger.info("Index {} version {} created", definition.name, definition.version)
-
-            definition.create(client, materializer, system).flatMap { _ =>
-              // Now we've created the index, record the version of it so we can look at it next time we boot up.
-              logger.info("Recording index version")
-
-              client.execute {
-                ElasticDsl.index into definition.name / "config" id "indexversion" source Map("version" -> definition.version).toJson
-              }
-            }
-          }
-        } else Future.successful(Right(Unit))
+        if (indexVersion != definition.version)
+          rebuildIndex(client, definition)
+        else
+          Future.successful(Unit)
     })
 
+  private def rebuildIndex(client: ElasticClient, definition: IndexDefinition): Future[Any] = {
+    restoreLatestSnapshot(client, definition) flatMap {
+      case RestoreSuccess => Future.successful(Unit) // no need to reindex 
+      case RestoreFailure =>
+        client.execute {
+          delete index definition.name
+        } recover {
+          case outer: RemoteTransportException => outer.getCause match {
+            case (inner: IndexNotFoundException) => {
+              // Meh, we were trying to delete it anyway.
+            }
+            case inner: RemoteTransportException => inner.getCause match {
+              case (inner: IndexNotFoundException) => {
+                // Meh, we were trying to delete it anyway.
+              }
+            }
+            case e =>
+              logger.debug("Inner exception class {}", e.getClass.toString)
+              throw e
+          }
+          case e =>
+            logger.debug("Exception class {}", e.getClass.toString)
+            throw e
+        } flatMap { _ =>
+          Future.sequence(Seq(
+            client.execute(definition.definition)
+          ))
+        } recover {
+          case e: Throwable =>
+            logger.error(e, "Failed to set up the index")
+            throw e
+        } flatMap { _ =>
+          logger.info("Index {} version {} created", definition.name, definition.version)
+
+          def recordVersion() = {
+            // Now we've created the index, record the version of it so we can look at it next time we boot up.
+            logger.info("Recording index version")
+
+            client.execute {
+              ElasticDsl.index into definition.name / "config" id "indexversion" source Map("version" -> definition.version).toJson
+            }
+          }
+
+          definition.create match {
+            case Some(createFunc) => createFunc(client, materializer, system)
+              .flatMap(_ => recordVersion)
+              .flatMap(_ => createSnapshot(client, definition))
+            case None => recordVersion()
+          }
+        }
+    }
+  }
+
+  sealed trait RestoreResult
+  case object RestoreSuccess extends RestoreResult
+  case object RestoreFailure extends RestoreResult
+
+  private def restoreLatestSnapshot(client: ElasticClient, index: IndexDefinition): Future[RestoreResult] = {
+    logger.info("Attempting to restore snapshot for {} version {}", index.name, index.version)
+
+    getLatestSnapshot(client, index) flatMap {
+      case None =>
+        logger.info("Could not find a snapshot for {} version {}", index.name, index.version)
+        Future.successful(RestoreFailure)
+      case Some(snapshot) =>
+        logger.info("Found snapshot {} for {} version {}, queueing restore operation", snapshot.name, index.name, index.version)
+        val promise = Promise[RestoreResult]()
+        restoreQueue.offer((client, index, snapshot, promise))
+        promise.future
+    }
+  }
+
+  private def getLatestSnapshot(client: ElasticClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
+    def getSnapshot(): Future[GetSnapshotsResponse] = client.execute {
+      get snapshot Seq() from snapshotRepoName(index)
+    }
+
+    getSnapshot()
+      .map(x => Future.successful(x))
+      .recover {
+        case (e: RemoteTransportException) => e.getCause match {
+          case (e: RepositoryMissingException) =>
+            createSnapshotRepo(client, index).flatMap(_ => getSnapshot)
+          case e => throw e
+        }
+      }
+      .flatMap(identity)
+      .map { response =>
+        response.getSnapshots
+          .view
+          .filter(_.name.startsWith(snapshotRepoName(index)))
+          .filter(_.failedShards() == 0)
+          .sortBy(-_.endTime)
+          .headOption
+      }
+  }
+
+  private def createSnapshotRepo(client: ElasticClient, definition: IndexDefinition): Future[PutRepositoryResponse] = {
+    client.execute(
+      create repository snapshotRepoName(definition) `type` "fs" settings Map("location" -> "/snapshots")
+    )
+  }
+
+  private def snapshotRepoName(definition: IndexDefinition) = s"${definition.name}-${definition.version}"
+
   /** Returns a list of all years between two Instants, inclusively, as strings */
-  def getYears(from: Option[Instant], to: Option[Instant]): List[Int] = {
+  private def getYears(from: Option[Instant], to: Option[Instant]): List[Int] = {
     def getYearsInner(from: LocalDate, to: LocalDate): List[Int] =
       if (from.isAfter(to)) {
         Nil
@@ -170,16 +276,39 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     }
   }
 
-  override def index(source: String, dataSets: List[DataSet]) = if (dataSets.length > 0) {
-    indexQueue.offer((source, dataSets))
-      .map {
-        case QueueOfferResult.Enqueued    => QueueOfferResult.Enqueued
-        case QueueOfferResult.Dropped     => throw new Exception("Dropped")
-        case QueueOfferResult.QueueClosed => throw new Exception("Queue Closed")
-        case QueueOfferResult.Failure(e)  => throw e
-      }
-  } else {
-    Future(None)
+  override def index(source: String, dataSets: List[DataSet]) =
+    if (dataSets.length > 0) {
+      val promise = Promise[BulkResult]()
+      indexQueue.offer((source, dataSets, promise))
+        .map {
+          case QueueOfferResult.Enqueued    => QueueOfferResult.Enqueued
+          case QueueOfferResult.Dropped     => throw new Exception("Dropped")
+          case QueueOfferResult.QueueClosed => throw new Exception("Queue Closed")
+          case QueueOfferResult.Failure(e)  => throw e
+        }
+
+      promise.future
+    } else {
+      Future(Unit)
+    }
+
+  def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.datasets)).map(_ => Unit)
+
+  private def createSnapshot(client: ElasticClient, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
+    logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
+
+    val future = client.execute {
+      create snapshot snapshotRepoName(definition) + "-" + Instant.now().toString.toLowerCase in snapshotRepoName(IndexDefinition.datasets) waitForCompletion true indexes definition.name
+    }
+
+    future.onComplete {
+      case Success(result) =>
+        val info = result.getSnapshotInfo
+        logger.info("Snapshotted {} shards of {} for {}", info.successfulShards(), info.totalShards(), definition.name)
+      case Failure(e) => logger.error(e, "Failed to snapshot {}", definition.name)
+    }
+
+    future
   }
 
   override def needsReindexing(): Future[Boolean] = {
@@ -196,13 +325,14 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   }
 
   private def bulkIndex(definition: BulkDefinition): Future[BulkResult] =
-    setupFuture.flatMap(client =>
+    setupFuture.flatMap { client =>
       client.execute(definition)
         .recover {
           case t: Throwable =>
             logger.error(t, "Error when indexing records")
             throw t
-        })
+        }
+    }
 
   /**
    * Indexes a number of datasets into ES using a bulk insert.

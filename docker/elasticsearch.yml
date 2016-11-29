@@ -1,0 +1,37 @@
+cluster:
+  name: ${CLUSTER_NAME}
+
+node:
+  master: ${NODE_MASTER}
+  data: ${NODE_DATA}
+
+network.host: ${NETWORK_HOST}
+
+path:
+  data: /data/data
+  logs: /data/log
+  plugins: /elasticsearch/plugins
+  work: /data/work
+  repo: ${REPO}
+
+bootstrap.mlockall: true
+
+http:
+  enabled: ${HTTP_ENABLE}
+  compression: true
+  cors:
+    enabled: ${HTTP_CORS_ENABLE}
+    allow-origin: ${HTTP_CORS_ALLOW_ORIGIN}
+
+cloud:
+  kubernetes:
+    service: ${DISCOVERY_SERVICE}
+    namespace: ${NAMESPACE}
+discovery:
+  type: kubernetes
+  zen:
+    minimum_master_nodes: ${NUMBER_OF_MASTERS}
+
+index:
+  number_of_shards: ${NUMBER_OF_SHARDS}
+  number_of_replicas: ${NUMBER_OF_REPLICAS}

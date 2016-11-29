@@ -36,10 +36,10 @@ case class IndexDefinition(
   name: String,
   version: Int,
   definition: CreateIndexDefinition,
-  create: (ElasticClient, Materializer, ActorSystem) => Future[Any] = (_, _, _) => Future(Unit))
+  create: Option[(ElasticClient, Materializer, ActorSystem) => Future[Any]] = None)
 
 object IndexDefinition {
-  val indices = Seq(new IndexDefinition(
+  val datasets = new IndexDefinition(
     name = "datasets",
     version = 12,
     definition =
@@ -63,7 +63,9 @@ object IndexDefinition {
           mapping(Format.id),
           mapping(Year.id),
           mapping(Publisher.id)
-        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))),
+        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter)))
+
+  val regions =
     new IndexDefinition(
       name = "regions",
       version = 11,
@@ -77,7 +79,9 @@ object IndexDefinition {
               field("name").typed(StringType),
               field("rectangle").typed(GeoShapeType),
               field("geometry").typed(GeoShapeType))),
-      create = (client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
+      create = Some((client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem)))
+
+  val indices = Seq(datasets, regions)
 
   def setupRegions(client: ElasticClient)(implicit materializer: Materializer, system: ActorSystem): Future[Any] = {
     val logger = system.log
@@ -92,6 +96,7 @@ object IndexDefinition {
           } else {
             properties.fields(regionSource.nameProperty)
           }
+          
           ElasticDsl.index
             .into("regions" / "regions")
             .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.fields(regionSource.idProperty).convertTo[String]))
@@ -149,19 +154,19 @@ object IndexDefinition {
 
       val adjustEnvelopeWithPolygon = (linearRings: Vector[JsValue]) => linearRings.foreach {
         case JsArray(linearRing) => adjustEnvelopeWithLinearRing(linearRing)
-        case _ => Unit
+        case _                   => Unit
       }
 
       if (fields("type").convertTo[String] == "Polygon") {
         fields.foreach {
           case ("coordinates", JsArray(linearRings)) => adjustEnvelopeWithPolygon(linearRings)
-          case (others, value) => Unit
+          case (others, value)                       => Unit
         }
       } else if (fields("type").convertTo[String] == "MultiPolygon") {
         fields.foreach {
           case ("coordinates", JsArray(polygons)) => polygons.foreach {
             case JsArray(linearRings) => adjustEnvelopeWithPolygon(linearRings)
-            case _ => Unit
+            case _                    => Unit
           }
           case (others, value) => Unit
         }
