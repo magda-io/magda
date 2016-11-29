@@ -42,6 +42,7 @@ import scala.concurrent.Promise
 import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryResponse
 import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse
 import org.elasticsearch.rest.RestStatus
+import au.csiro.data61.magda.AppConfig
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -249,8 +250,12 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   }
 
   private def createSnapshotRepo(client: ElasticClient, definition: IndexDefinition): Future[PutRepositoryResponse] = {
+    val repoConfig = AppConfig.conf.getConfig("elasticSearch.snapshotRepo")
+    val repoType = repoConfig.getString("type")
+    val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
+    
     client.execute(
-      create repository snapshotRepoName(definition) `type` "fs" settings Map("location" -> "/snapshots")
+      create repository snapshotRepoName(definition) `type` repoType settings settings
     )
   }
 

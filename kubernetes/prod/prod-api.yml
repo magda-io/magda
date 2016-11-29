@@ -71,6 +71,11 @@ spec:
           value: prod
         - name: MAGDA_SEARCH_ROLE
           value: indexer
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-key
+              key: s3-secret-key
         image: "data61/magda-metadata:v${version}"
         volumeMounts:
         - mountPath: /usr/regions

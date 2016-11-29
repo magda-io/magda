@@ -62,7 +62,8 @@ spec:
           name: regions
       volumes:
       - name: regions
-        emptyDir: {}
+        hostPath:
+          path: /usr/regions
 ---
 # ElasticSearch
 apiVersion: extensions/v1beta1
@@ -84,7 +85,7 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: quay.io/pires/docker-elasticsearch-kubernetes:2.4.1
+        image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           limits:
             memory: 3000Mi
@@ -113,7 +114,12 @@ spec:
         volumeMounts:
         - name: storage
           mountPath: /data
+        - name: snapshots
+          mountPath: /snapshots
       volumes:
+      - name: snapshots
+        hostPath:
+          path: /usr/snapshots
       - name: "storage"
         emptyDir: {}
 ---
