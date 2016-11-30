@@ -111,7 +111,7 @@ spec:
       volumes:
       - name: "storage"
         gcePersistentDisk:
-          pdName: elasticsearch-data-2
+          pdName: elasticsearch-data-1
           fsType: ext4
       nodeSelector:
         cloud.google.com/gke-nodepool: elasticsearch-persistent-disk
@@ -119,19 +119,19 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: es-data-ssd
+  name: es-data-ephemeral
   labels:
     component: elasticsearch
-    role: data-ssd
+    role: data-ephemeral
 spec:
   template:
     metadata:
       labels:
         component: elasticsearch
-        role: data-ssd
+        role: data-ephemeral
     spec:
       containers:
-      - name: es-data-ssd
+      - name: es-data-ephemeral
         securityContext:
           privileged: true
           capabilities:
@@ -169,20 +169,19 @@ spec:
           mountPath: /data
       volumes:
       - name: "storage"
-        hostPath:
-          path: "/mnt/disks/ssd0"
+        emptyDir: {}
       nodeSelector:
-        cloud.google.com/gke-nodepool: elasticsearch--ephemeral-ssd
+        cloud.google.com/gke-nodepool: elasticsearch-ephemeral
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: es-data-ssd
+  name: es-data-ephemeral
 spec:
   scaleTargetRef:
     apiVersion: extensions/v1beta1
     kind: Deployment
-    name: es-data-ssd
+    name: es-data-ephemeral
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 5
   targetCPUUtilizationPercentage: 80

@@ -8,5 +8,7 @@ RUN echo http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositorie
 	chown -R elasticsearch /snapshots && \
 	usermod -u 1000 elasticsearch && \
 	/elasticsearch/bin/plugin install cloud-aws
+	
+ENV REPO /snapshots
 
 ADD elasticsearch.yml /elasticsearch/config/elasticsearch.yml

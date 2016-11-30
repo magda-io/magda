@@ -7,9 +7,17 @@ import java.time.ZoneId
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.concurrent.duration._
+import scala.util.Failure
+import scala.util.Success
 
+import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryResponse
+import org.elasticsearch.action.admin.cluster.snapshots.create.CreateSnapshotResponse
+import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse
 import org.elasticsearch.index.IndexNotFoundException
+import org.elasticsearch.repositories.RepositoryMissingException
+import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.snapshots.SnapshotInfo
 import org.elasticsearch.transport.RemoteTransportException
 
@@ -27,6 +35,7 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.SourceQueue
 import akka.stream.scaladsl.SourceQueueWithComplete
+import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.search.SearchIndexer
@@ -34,15 +43,6 @@ import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.FutureRetry.retry
 import spray.json._
-import org.elasticsearch.action.admin.cluster.snapshots.create.CreateSnapshotResponse
-import org.elasticsearch.repositories.RepositoryMissingException
-import scala.util.Failure
-import scala.util.Success
-import scala.concurrent.Promise
-import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryResponse
-import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse
-import org.elasticsearch.rest.RestStatus
-import au.csiro.data61.magda.AppConfig
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -233,10 +233,16 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .map(x => Future.successful(x))
       .recover {
         case (e: RemoteTransportException) => e.getCause match {
+          case e: RemoteTransportException => e.getCause match {
+            case (e: RepositoryMissingException) =>
+              createSnapshotRepo(client, index).flatMap(_ => getSnapshot)
+            case e => throw new RuntimeException(e)
+          }
           case (e: RepositoryMissingException) =>
             createSnapshotRepo(client, index).flatMap(_ => getSnapshot)
-          case e => throw e
+          case e => throw new RuntimeException(e)
         }
+        case e: Throwable => throw new RuntimeException(e)
       }
       .flatMap(identity)
       .map { response =>
@@ -253,7 +259,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     val repoConfig = AppConfig.conf.getConfig("elasticSearch.snapshotRepo")
     val repoType = repoConfig.getString("type")
     val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
-    
+
     client.execute(
       create repository snapshotRepoName(definition) `type` repoType settings settings
     )

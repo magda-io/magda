@@ -57,7 +57,7 @@ spec:
           medium: ""
         name: "storage"
       nodeSelector:
-        beta.kubernetes.io/instance-type: "n1-standard-1"
+        cloud.google.com/gke-nodepool: elasticsearch-ephemeral
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler

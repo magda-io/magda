@@ -18,7 +18,10 @@ spec:
           value: prod
         - name: MAGDA_SEARCH_ROLE
           value: api
+        - name: S3_SECRET_KEY
+          value: dummy
         image: "data61/magda-metadata:v${version}"
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
       nodeSelector:
@@ -77,6 +80,7 @@ spec:
               name: s3-secret-key
               key: s3-secret-key
         image: "data61/magda-metadata:v${version}"
+        imagePullPolicy: Always
         volumeMounts:
         - mountPath: /usr/regions
           name: regions
