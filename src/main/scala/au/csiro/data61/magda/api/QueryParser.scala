@@ -206,11 +206,11 @@ object QueryCompiler {
       case AST.And(left, right)   => merge(flattenAST(left), flattenAST(right))
       case AST.DateFrom(instant)  => Query(dateFrom = Some(instant))
       case AST.DateTo(instant)    => Query(dateTo = Some(instant))
-      case AST.Publisher(name)    => Query(publishers = Seq(name))
-      case AST.Format(format)     => Query(formats = Seq(format))
-      case AST.ASTRegion(region)  => Query(regions = Seq(region))
+      case AST.Publisher(name)    => Query(publishers = Set(name))
+      case AST.Format(format)     => Query(formats = Set(format))
+      case AST.ASTRegion(region)  => Query(regions = Set(region))
       case AST.FreeTextWord(word) => Query(freeText = Some(word))
-      case AST.Quote(quote)       => Query(quotes = Seq(quote))
+      case AST.Quote(quote)       => Query(quotes = Set(quote))
     }
   }
 }
@@ -229,10 +229,10 @@ case class Region(
 
 case class Query(
   freeText: Option[String] = None,
-  quotes: Seq[String] = Nil,
-  publishers: Seq[String] = Nil,
+  quotes: Set[String] = Set(),
+  publishers: Set[String] = Set(),
   dateFrom: Option[Instant] = None,
   dateTo: Option[Instant] = None,
-  regions: Seq[Region] = Nil,
-  formats: Seq[String] = Nil,
+  regions: Set[Region] = Set(),
+  formats: Set[String] = Set(),
   error: Option[String] = None)

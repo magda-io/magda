@@ -43,6 +43,7 @@ dockerfile in docker := {
   new Dockerfile {
     from("java")
     entryPoint(s"$targetDir/bin/${executableScriptName.value}")
+    env("S3_SECRET_KEY", "DUMMY")
     copy(appDir, targetDir)
     expose(80)
   }

@@ -62,6 +62,8 @@ import au.csiro.data61.magda.util.DateParser._
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
+import au.csiro.data61.magda.util.SetExtractor
+
 
 class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = system.log
@@ -237,15 +239,15 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   /**
    * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.
    */
-  private def seqToOption[X, Y](seq: Seq[X])(fn: Seq[X] => Y): Option[Y] = seq match {
-    case Nil => None
+  private def setToOption[X, Y](seq: Set[X])(fn: Set[X] => Y): Option[Y] = seq match {
+    case SetExtractor() => None
     case x   => Some(fn(x))
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
   private def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
     val processedQuote = query.quotes.map(quote => s"""${quote}""") match {
-      case Nil => None
+      case SetExtractor() => None
       case xs  => Some(xs.reduce(_ + " " + _))
     }
 
@@ -263,11 +265,11 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
     val shouldClauses: Seq[Option[QueryDefinition]] = Seq(
       stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).operator(operator).boost(2)),
-      seqToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
-      seqToOption(query.formats)(seq => should(seq.map(formatQuery))),
+      setToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
+      setToOption(query.formats)(seq => should(seq.map(formatQuery))),
       query.dateFrom.map(dateFromQuery),
       query.dateTo.map(dateToQuery),
-      seqToOption(query.regions)(seq => should(seq.map(regionIdQuery))))
+      setToOption(query.regions)(seq => should(seq.map(regionIdQuery))))
 
     strategy(shouldClauses.flatten)
   }

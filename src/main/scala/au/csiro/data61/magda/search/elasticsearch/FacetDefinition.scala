@@ -81,7 +81,7 @@ trait FacetDefinition {
    * return datasets that have the *exact* publisher value "Ballarat Council" but won't return anything for "City of ySdney"
    * because it's spelled wrong.
    */
-  def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)]
+  def exactMatchQueries(query: Query): Set[(String, QueryDefinition)]
 
   /**
    * Reduce a list of facets to fit under the limit
@@ -118,13 +118,13 @@ object PublisherFacetDefinition extends FacetDefinition {
       query.publishers.map(publisherQuery(_))
     ).minimumShouldMatch(1)
 
-  override def removeFromQuery(query: Query): Query = query.copy(publishers = Nil)
+  override def removeFromQuery(query: Query): Query = query.copy(publishers = Set())
 
-  override def facetSearchQuery(textQuery: String): Query = Query(publishers = Seq(textQuery))
+  override def facetSearchQuery(textQuery: String): Query = Query(publishers = Set(textQuery))
 
   override def exactMatchQuery(query: String): QueryDefinition = exactPublisherQuery(query)
 
-  override def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
+  override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
 }
 
 object YearFacetDefinition extends FacetDefinition {
@@ -242,7 +242,7 @@ object YearFacetDefinition extends FacetDefinition {
     }
   }
 
-  override def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = Nil
+  override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = Set()
 }
 
 object FormatFacetDefinition extends FacetDefinition {
@@ -278,10 +278,10 @@ object FormatFacetDefinition extends FacetDefinition {
       case None           => false
     })
 
-  override def removeFromQuery(query: Query): Query = query.copy(formats = Nil)
-  override def facetSearchQuery(textQuery: String) = Query(formats = Seq(textQuery))
+  override def removeFromQuery(query: Query): Query = query.copy(formats = Set())
+  override def facetSearchQuery(textQuery: String) = Query(formats = Set(textQuery))
 
   override def exactMatchQuery(query: String): QueryDefinition = exactFormatQuery(query)
 
-  override def exactMatchQueries(query: Query): Seq[(String, QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
+  override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
 }

@@ -45,7 +45,14 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
 
           (source, filteredDataSets)
       }
-      .mapAsync(1) { case (source, dataSets) => indexer.index(source, dataSets).map(_ => (source, dataSets)) }
+      .mapAsync(1) {
+        case (source, dataSets) =>
+          indexer.index(source, dataSets).map(_ => (source, dataSets))
+            .recover {
+              case e: Throwable =>
+                log.error(e, "Failed while fetching")
+            }
+      }
       .recover {
         case e: Throwable =>
           log.error(e, "Failed while fetching")
