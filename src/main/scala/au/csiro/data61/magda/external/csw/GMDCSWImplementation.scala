@@ -29,6 +29,7 @@ import au.csiro.data61.magda.util.Xml._
 import scala.BigDecimal
 import com.monsanto.labs.mwundo.GeoJson.LineString
 import com.monsanto.labs.mwundo.GeoJson.MultiLineString
+import au.csiro.data61.magda.util.Collections.mapCatching
 
 class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   implicit val logger = Logging(system, getClass)
@@ -40,7 +41,7 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
   }
 
   def dataSetConv(res: NodeSeq): List[DataSet] =
-    res.toList.map { summaryRecord =>
+    mapCatching[NodeSeq, DataSet](res.toList, { summaryRecord =>
       val identifier = summaryRecord \ "fileIdentifier" \ "CharacterString" text
       val identification = nodeToOption(summaryRecord \ "identificationInfo" \ "MD_DataIdentification")
         .getOrElse(summaryRecord \ "identificationInfo" \ "SV_ServiceIdentification")
@@ -83,7 +84,9 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
         ),
         landingPage = Some(interfaceConfig.landingPageUrl(identifier))
       )
-    }
+    }, (e, input) => {
+      logger.error("Failed to parse a dataset from {}", input.toString)
+    })
 
   def findDateWithType(nodes: NodeSeq, dateType: String) = nodes.filter(node => (node \ "dateType" \ "CI_DateTypeCode").text.equals(dateType))
 
@@ -179,44 +182,16 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
     boundingBoxes.toList match {
       case Nil => None
       case boundingBoxList =>
-        val bBoxPoints = boundingBoxList
+        val geometry = Location.fromBoundingBox(boundingBoxList
           .map { boundingBox =>
             val north = BigDecimal(boundingBox \ "northBoundLatitude" \ "Decimal" text)
             val east = BigDecimal(boundingBox \ "eastBoundLongitude" \ "Decimal" text)
             val south = BigDecimal(boundingBox \ "southBoundLatitude" \ "Decimal" text)
             val west = BigDecimal(boundingBox \ "westBoundLongitude" \ "Decimal" text)
 
-            val northEast = Coordinate(east, north)
-            val northWest = Coordinate(west, north)
-            val southWest = Coordinate(west, south)
-            val southEast = Coordinate(east, south)
-
-            Seq(
-              northEast,
-              northWest,
-              southWest,
-              southEast
-            )
+            Location.BoundingBox(north, east, south, west)
           }
-          .map { seq => seq.distinct }
-          .distinct
-
-        val geometry =
-          if (bBoxPoints.size == 0) {
-            None
-          } else if (bBoxPoints.size == 1) {
-            val coords = bBoxPoints.head
-            Some(coords.size match {
-              case 1     => Point(coords.head)
-              case 2 | 3 => LineString(coords)
-              case _     => Polygon(Seq(coords.toList :+ coords.head))
-            })
-          } else if (!bBoxPoints.exists(_.size != 2)) {
-            Some(MultiLineString(bBoxPoints))
-          } else if (!bBoxPoints.exists(_.size < 3))
-            Some(MultiPolygon(Seq(bBoxPoints)))
-          else
-            Some(MultiPoint(bBoxPoints.flatten))
+        )
 
         Some(Location(
           text = Some(boundingBoxes.head.toString()),

@@ -18,6 +18,7 @@ import scala.concurrent.duration._
 import akka.stream.ThrottleMode
 import scala.concurrent.Future
 import au.csiro.data61.magda.model.misc.DataSet
+import akka.NotUsed
 
 class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig], materializer: Materializer, indexer: SearchIndexer) {
   val log = Logging(system, getClass)
@@ -50,12 +51,12 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
           indexer.index(source, dataSets).map(_ => (source, dataSets))
             .recover {
               case e: Throwable =>
-                log.error(e, "Failed while fetching")
+                log.error(e, "Failed while indexing")
             }
       }
       .recover {
         case e: Throwable =>
-          log.error(e, "Failed while fetching")
+          log.error(e, "Failed crawl")
       }
       .runWith(Sink.last)
       .map { _ =>
@@ -63,7 +64,7 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
       }
   }
 
-  def streamForInterface(interfaceDef: InterfaceConfig) = {
+  def streamForInterface(interfaceDef: InterfaceConfig): Source[(String, List[DataSet]), NotUsed] = {
     val interface = interfaces.get(interfaceDef.baseUrl).get
 
     Source.fromFuture(interface.getTotalDataSetCount())
@@ -74,8 +75,12 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
       }
       .throttle(1, 1 second, 1, ThrottleMode.Shaping)
       .mapAsync(1) {
-        case (start, size) =>
-          interface.getDataSets(start, size).map((interfaceDef.name, _))
+        case (start, size) => interface.getDataSets(start, size).map((interfaceDef.name, _))
+      }
+      .recover {
+        case e: Throwable =>
+          log.error(e, "Failed while fetching from {}", interfaceDef.name)
+          (interfaceDef.name, Nil)
       }
   }
 

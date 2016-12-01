@@ -263,15 +263,15 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
       case MatchPart => "or"
     }
 
-    val shouldClauses: Seq[Option[QueryDefinition]] = Seq(
+    val clauses: Seq[Option[QueryDefinition]] = Seq(
       stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).operator(operator).boost(2)),
-      setToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
-      setToOption(query.formats)(seq => should(seq.map(formatQuery))),
+      setToOption(query.publishers)(seq => strategy(seq.map(publisherQuery))),
+      setToOption(query.formats)(seq => strategy(seq.map(formatQuery))),
       query.dateFrom.map(dateFromQuery),
       query.dateTo.map(dateToQuery),
-      setToOption(query.regions)(seq => should(seq.map(regionIdQuery))))
+      setToOption(query.regions)(seq => strategy(seq.map(regionIdQuery))))
 
-    strategy(shouldClauses.flatten)
+    strategy(clauses.flatten)
   }
 
   override def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {

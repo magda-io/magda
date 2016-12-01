@@ -36,6 +36,7 @@ import java.net.URLEncoder
 import au.csiro.data61.magda.external.HttpFetcher
 import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.external.ExternalInterface
+import au.csiro.data61.magda.util.Collections.mapCatching
 
 class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
   implicit val logger = Logging(system, getClass)
@@ -52,7 +53,10 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val syste
     fetcher.request(s"$baseUrl&start=$start&rows=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[CKANSearchResponse].map { ckanDataSet =>
-          ckanDataSet.result.results.map(ckanDataSetConv(interfaceConfig))
+          mapCatching[CKANDataSet, DataSet](ckanDataSet.result.results,
+            { hit => ckanDataSetConv(interfaceConfig)(hit) },
+            { (e, item) => logger.error(e, "Could not parse item for {}: {}", interfaceConfig.name, item.toString) }
+          )
         }
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
           val error = s"CKAN request failed with status code ${response.status} and entity $entity"

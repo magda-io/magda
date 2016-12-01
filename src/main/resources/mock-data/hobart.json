@@ -1,0 +1,2224 @@
+{
+  "help": "http://data.gov.au/api/3/action/help_show?name=package_search",
+  "success": true,
+  "result": {
+    "count": 160,
+    "sort": "extras_harvest_portal asc, score desc, metadata_modified desc",
+    "facets": {
+      
+    },
+    "results": [
+      {
+        "license_title": "cc-by-4",
+        "maintainer": null,
+        "harvest_source_id": "62cc632b-caa9-49a8-9904-9156072cf6cc",
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Commonwealth",
+        "temporal_coverage_to": "2016-07-29T05:05:45.967Z",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 4,
+        "geospatial_topic": [
+          
+        ],
+        "id": "7f05b4b44c2c4e179f2e8914bbfebdad",
+        "metadata_created": "2016-08-14T14:21:45.396681",
+        "spatial_coverage": "147.23091310310548,-42.99079064851664,147.49012239904002,-42.809868972636735",
+        "metadata_modified": "2016-10-24T01:24:56.204811",
+        "author": "{u'name': u'City of Hobart'}",
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "spatial": "{\"type\": \"Polygon\", \"coordinates\": [[[147.230913103, -42.9907906485], [147.490122399, -42.9907906485],\n             [147.490122399, -42.8098689726], [147.230913103, -42.8098689726], [147.230913103, -42.9907906485]]]}",
+        "license_id": "cc-by-4",
+        "contact_point": "data.gov@finance.gov.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "7f05b4b44c2c4e179f2e8914bbfebdad",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "38d0e9da-82dc-49f6-b189-13bfa07e34ea",
+            "size": null,
+            "state": "active",
+            "hash": "",
+            "description": "",
+            "format": "HTML",
+            "last_modified": null,
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "ArcGIS Open Dataset",
+            "created": "2016-08-15T00:21:45.434500",
+            "url": "http://data-1.hobartcc.opendata.arcgis.com/datasets/3360d94fb84f456cb258e6f89d2e58a8_0",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 0,
+            "revision_id": "bff1d64c-1710-4833-a663-b3d18a4fc7b0",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "7f05b4b44c2c4e179f2e8914bbfebdad",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "da65af94-aae1-4011-afe4-40bc685a2fc8",
+            "size": null,
+            "state": "active",
+            "hash": "",
+            "description": "",
+            "format": "Esri REST",
+            "last_modified": null,
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "Esri Rest API",
+            "created": "2016-08-15T00:21:45.434529",
+            "url": "https://services1.arcgis.com/NHqdsnvwfSTg42I8/arcgis/rest/services/CADASTRE_River_Creek/FeatureServer/0",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 1,
+            "revision_id": "bff1d64c-1710-4833-a663-b3d18a4fc7b0",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "7f05b4b44c2c4e179f2e8914bbfebdad",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "d2a3b650-4510-496f-b18d-ffaf1ea2e0ec",
+            "size": null,
+            "state": "active",
+            "hash": "",
+            "description": "",
+            "format": "GeoJSON",
+            "last_modified": null,
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "GeoJSON",
+            "created": "2016-08-15T00:21:45.434535",
+            "url": "http://data-1.hobartcc.opendata.arcgis.com/datasets/3360d94fb84f456cb258e6f89d2e58a8_0.geojson",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 2,
+            "revision_id": "bff1d64c-1710-4833-a663-b3d18a4fc7b0",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "7f05b4b44c2c4e179f2e8914bbfebdad",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "783d0944-8feb-421b-ba8c-5da8046d63ec",
+            "size": null,
+            "state": "active",
+            "hash": "",
+            "description": "",
+            "format": "CSV",
+            "last_modified": null,
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "CSV",
+            "created": "2016-08-15T00:21:45.434540",
+            "url": "http://data-1.hobartcc.opendata.arcgis.com/datasets/3360d94fb84f456cb258e6f89d2e58a8_0.csv",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 3,
+            "revision_id": "bff1d64c-1710-4833-a663-b3d18a4fc7b0",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "7f05b4b44c2c4e179f2e8914bbfebdad",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "7cb99032-2216-4292-9dbf-a1ab3fa64948",
+            "size": null,
+            "state": "active",
+            "hash": "",
+            "description": "",
+            "format": "KML",
+            "last_modified": null,
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "KML",
+            "created": "2016-08-15T00:21:45.434545",
+            "url": "http://data-1.hobartcc.opendata.arcgis.com/datasets/3360d94fb84f456cb258e6f89d2e58a8_0.kml",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 4,
+            "revision_id": "bff1d64c-1710-4833-a663-b3d18a4fc7b0",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "7f05b4b44c2c4e179f2e8914bbfebdad",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "297a1fd3-2cb8-439d-b2e9-c62900c45f2b",
+            "size": null,
+            "state": "active",
+            "hash": "",
+            "description": "",
+            "format": "ZIP",
+            "last_modified": null,
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "Shapefile",
+            "created": "2016-08-15T00:21:45.434549",
+            "url": "http://data-1.hobartcc.opendata.arcgis.com/datasets/3360d94fb84f456cb258e6f89d2e58a8_0.zip",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 5,
+            "revision_id": "bff1d64c-1710-4833-a663-b3d18a4fc7b0",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 6,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "city-of-hobart",
+            "id": "8d012647-129d-4fc4-a992-7abd907b6e98",
+            "name": "city-of-hobart"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "environment",
+            "id": "025ddd17-0fbd-4906-9a62-e43c25e38acb",
+            "name": "environment"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "hobart",
+            "id": "e8c65490-5dbe-4a01-b11c-e691322392d3",
+            "name": "hobart"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "stormwater",
+            "id": "57477ed2-1ce0-4e0c-8090-73d64b2357cd",
+            "name": "stormwater"
+          }
+        ],
+        "harvest_source_title": "City of Hobart ArcGIS JSON Harvest",
+        "temporal_coverage_from": "2014-08-07T02:25:36.000Z",
+        "groups": [
+          
+        ],
+        "creator_user_id": "91af4eef-efb1-4e4e-87f2-171d81977ae0",
+        "harvest_object_id": "50fecce0-5af3-4552-9f5c-11f6d5b005e3",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "City of Hobart local government area, Tasmania",
+          "created": "2014-01-30T23:54:22.913959",
+          "title": "City of Hobart",
+          "name": "city-of-hobart",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "2015-07-21-002011.194966Logo-Black.png",
+          "revision_id": "ae74420f-2f28-4c64-b44b-fdc8819eb251",
+          "type": "organization",
+          "id": "ad9dab50-e932-457e-8445-96f1f65f3bf1",
+          "approval_status": "approved"
+        },
+        "name": "cadastre-river-creek",
+        "isopen": false,
+        "url": "http://data-1.hobartcc.opendata.arcgis.com/datasets/3360d94fb84f456cb258e6f89d2e58a8_0",
+        "notes": "City of Hobart Cadastre River and Creek",
+        "owner_org": "ad9dab50-e932-457e-8445-96f1f65f3bf1",
+        "extras": [
+          {
+            "key": "harvest_harvester_version",
+            "value": "0.9ap"
+          },
+          {
+            "key": "source_hash",
+            "value": "c5b4dd370b738eb426943bf63264fd9cbb2ff47c"
+          },
+          {
+            "key": "source_identifier",
+            "value": "http://data-1.hobartcc.opendata.arcgis.com/datasets/3360d94fb84f456cb258e6f89d2e58a8_0"
+          },
+          {
+            "key": "source_title",
+            "value": "City of Hobart ArcGIS JSON Harvest"
+          },
+          {
+            "key": "source_url",
+            "value": "http://data-1.hobartcc.opendata.arcgis.com/data.json"
+          }
+        ],
+        "data_state": "active",
+        "title": "CADASTRE River Creek",
+        "revision_id": "bff1d64c-1710-4833-a663-b3d18a4fc7b0",
+        "update_freq": "asNeeded"
+      },
+      {
+        "license_title": "Creative Commons Attribution 3.0 Australia",
+        "maintainer": "jcards",
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Local Government",
+        "temporal_coverage_to": "",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 8,
+        "geospatial_topic": [
+          
+        ],
+        "id": "98241dcb-5b09-44b6-aa63-0d2b3812a765",
+        "metadata_created": "2016-03-21T03:36:31.305604",
+        "spatial_coverage": "http://www.ga.gov.au/place-names/PlaceDetails.jsp?submit1=VIC30457",
+        "metadata_modified": "2016-07-28T21:55:50.941590",
+        "author": "City of Greater Geelong",
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "spatial": "{\"type\":\"Polygon\",\"coordinates\":[[[144.095190916428,-38.3459969407754],[144.095190916428,-37.711766160517],[144.721802248437,-37.711766160517],[144.721802248437,-38.3459969407754],[144.095190916428,-38.3459969407754]]]}",
+        "license_id": "cc-by",
+        "contact_point": "gis@geelongcity.vic.gov.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "98241dcb-5b09-44b6-aa63-0d2b3812a765",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "0926e45b-89ba-456d-a0c4-6305c3f01c4e",
+            "size": null,
+            "zip_extract": "True",
+            "wms_layer": "",
+            "state": "active",
+            "hash": "",
+            "description": "This layer provides Polygon data of the flood extent for the City of Greater Geelong area.",
+            "format": "SHP",
+            "last_modified": "2016-03-21T00:00:00",
+            "url_type": "upload",
+            "mimetype": null,
+            "cache_url": null,
+            "name": "Geelong Flood Extent",
+            "created": "2016-03-21T14:44:31.391208",
+            "url": "http://data.gov.au/dataset/98241dcb-5b09-44b6-aa63-0d2b3812a765/resource/0926e45b-89ba-456d-a0c4-6305c3f01c4e/download/placesfloodextent.zip",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 0,
+            "revision_id": "3a3e8e6e-6c1a-4d68-b985-687149ba1939",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "98241dcb-5b09-44b6-aa63-0d2b3812a765",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "63032ae5-5b08-47cc-8752-3c3dd775d066",
+            "size": null,
+            "wms_layer": "ckan_98241dcb_5b09_44b6_aa63_0d2b3812a765",
+            "state": "active",
+            "hash": "",
+            "description": "View the data in this dataset online via an online map",
+            "format": "WMS",
+            "last_modified": "2016-07-29T07:55:48.803508",
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "Flood Extent - City of Greater Geelong - Preview this Dataset (WMS)",
+            "created": "2016-03-22T08:07:58.486116",
+            "url": "http://data.gov.au/geoserver/flood-extent-city-of-greater-geelong/wms?request=GetCapabilities",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 1,
+            "revision_id": "981d9bed-a219-413c-9ded-8b1c60ea824f",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "98241dcb-5b09-44b6-aa63-0d2b3812a765",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "wfs_layer": "ckan_98241dcb_5b09_44b6_aa63_0d2b3812a765",
+            "size": null,
+            "id": "98af5bb8-1b07-44a7-9701-273ced3e9ace",
+            "state": "active",
+            "hash": "",
+            "description": "WFS API Link for use in Desktop GIS tools",
+            "format": "WFS",
+            "mimetype_inner": null,
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "Flood Extent - City of Greater Geelong Web Feature Service API Link",
+            "created": "2016-03-22T08:07:59.693571",
+            "url": "http://data.gov.au/geoserver/flood-extent-city-of-greater-geelong/wfs",
+            "webstore_url": null,
+            "last_modified": "2016-07-29T07:55:50.613102",
+            "position": 2,
+            "revision_id": "3654b1a4-7d3a-4e6e-a857-3aef447c68e7",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "98241dcb-5b09-44b6-aa63-0d2b3812a765",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "012ea94a-3476-4fba-a8ba-59fc559037f7",
+            "size": null,
+            "state": "active",
+            "hash": "",
+            "description": "For summary of the objects/data in this collection",
+            "format": "CSV",
+            "last_modified": "2016-03-22T08:08:01.274803",
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "Flood Extent - City of Greater Geelong CSV",
+            "created": "2016-03-22T08:08:02.117923",
+            "url": "http://data.gov.au/geoserver/flood-extent-city-of-greater-geelong/wfs?request=GetFeature&typeName=ckan_98241dcb_5b09_44b6_aa63_0d2b3812a765&outputFormat=csv",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 3,
+            "revision_id": "7cc3d540-f49b-4595-89d9-81eef85765a5",
+            "resource_type": null
+          },
+          {
+            "cache_last_updated": null,
+            "package_id": "98241dcb-5b09-44b6-aa63-0d2b3812a765",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "3f1fbcf2-80d1-44d6-9db5-fd942310de24",
+            "size": null,
+            "state": "active",
+            "hash": "",
+            "description": "For use in web-based data visualisation of this collection",
+            "format": "JSON",
+            "last_modified": "2016-03-22T08:08:03.704951",
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "Flood Extent - City of Greater Geelong GeoJSON",
+            "created": "2016-03-22T08:08:04.226778",
+            "url": "http://data.gov.au/geoserver/flood-extent-city-of-greater-geelong/wfs?request=GetFeature&typeName=ckan_98241dcb_5b09_44b6_aa63_0d2b3812a765&outputFormat=json",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 4,
+            "revision_id": "cb98b834-6254-410e-ab3b-efa010f76203",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 5,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Environment",
+            "id": "7bc851e2-be5b-4dea-b133-b57a2ab0c7e9",
+            "name": "Environment"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Planning",
+            "id": "7216b7d8-8b13-4d38-aed2-0c628fb6d766",
+            "name": "Planning"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Property",
+            "id": "b42fc9ca-4ed2-405c-88b8-2dad24283d32",
+            "name": "Property"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Transport",
+            "id": "99bc83f5-0dab-4a4f-914f-ad34d078a3ae",
+            "name": "Transport"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "floodmapping",
+            "id": "25c4b2e6-fa7e-4508-8c91-2b4e82c2c629",
+            "name": "floodmapping"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "rain",
+            "id": "a4521e42-0615-4d79-b9f8-cf82c8512fd4",
+            "name": "rain"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "river",
+            "id": "3d945e00-ae05-4db1-959c-9ae2596a3b94",
+            "name": "river"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "water",
+            "id": "d268de7b-9844-4ba3-8df4-4609e8e2f1d8",
+            "name": "water"
+          }
+        ],
+        "temporal_coverage_from": "2016-03-21",
+        "language": "English",
+        "groups": [
+          
+        ],
+        "creator_user_id": "d2e3330e-9e32-47aa-86af-8985d8cdda14",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "The City of Greater Geelong is Victoria’s largest regional centre",
+          "created": "2013-12-15T23:15:50.663563",
+          "title": "City of Greater Geelong",
+          "name": "city-of-greater-geelong",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "2015-06-10-104127.148954cogglogovicdata.gif",
+          "revision_id": "54786d07-3d71-441a-98fb-c5b51231bc94",
+          "type": "organization",
+          "id": "c91975d7-8048-4995-9425-fe8fe96ce947",
+          "approval_status": "approved"
+        },
+        "name": "flood-extent-city-of-greater-geelong",
+        "isopen": true,
+        "url": null,
+        "notes": "'Flood Extent' shows the extent of the largest recorded historical flood event or estimated 1% Annual Exceedance Probability (AEP) design flood event. Quality of data varies from high quality with floodmapping from detailed flood studies (eg Barwon River) to low quality where flood extent has been estimated subjectively from geological maps (eg Hovells Creek upstream of Lara).\r\n\r\nThe areas shown are considered to be designated as being liable to flooding in accordance with Regulation 802 of the Building Regulations 2006. \r\n\r\nAlthough all due care has been taken to ensure that these data are correct, no warranty is expressed or implied by the City of Greater Geelong in their use. Geographic Coordinate System: GCS_WGS_1984.",
+        "owner_org": "c91975d7-8048-4995-9425-fe8fe96ce947",
+        "license_url": "http://creativecommons.org/licenses/by/3.0/au/",
+        "data_state": "active",
+        "title": "Flood Extent - City of Greater Geelong",
+        "revision_id": "3a3e8e6e-6c1a-4d68-b985-687149ba1939",
+        "update_freq": "annually"
+      },
+      {
+        "license_title": "Creative Commons Attribution 4.0 International\nhttp://creativecommons.org/licenses/by/4.0/\n(c) Commonwealth of Australia (Bioregional Assessment Programme http://www.bioregionalassessments.gov.au)(c) State of Queensland (Department of Natural Resources and Mines) 2014(c) State of Queensland (Department of Natural Resources and Mines) 2015(c) Commonwealth of Australia (Geoscience Australia) 2014(c) Office of Environment and Heritage NSW(c) Commonwealth of Australia 2013(c) The Department for Manufacturing, Innovation, Trade, Resources and Energy, the Government of South Australia, Geoscientific Data, (Sourced in 2013), http://www.minerals.dmitre.sa.gov.au/geological_survey_of_sa/data(c) The Department for Manufacturing, Innovation, Trade, Resources and Energy, the Government of South Australia, Geoscientific Data, (Sourced in 2015), http://www.minerals.dmitre.sa.gov.au/geological_survey_of_sa/data(c) State of Queensland (Department of Natural Resources and Mines) 2012(c) State of South Australia (Department for Manufacturing, Innovation, Trade, Resources and Energy)(c) Commonwealth of Australia (Geoscience Australia) 2012",
+        "maintainer": null,
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Queensland",
+        "temporal_coverage_to": "N/A",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 3,
+        "geospatial_topic": [
+          
+        ],
+        "id": "e40abc9d-41c3-4321-8c1a-7389a83b2191",
+        "metadata_created": "2016-03-29T05:53:44.631541",
+        "spatial_coverage": "POLYGON ((0 0, 0 0, 0 0, 0 0))",
+        "metadata_modified": "2016-04-10T22:43:45.657599",
+        "author": null,
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "license_id": "Creative Commons Attribution 4.0 International\nhttp://creativecommons.org/licenses/by/4.0/\n(c) Commonwealth of Australia (Bioregional Assessment Programme http://www.bioregionalassessments.gov.au)(c) State of Queensland (Department of Natural Resources and Mines) 2014(c) State of Queensland (Department of Natural Resources and Mines) 2015(c) Commonwealth of Australia (Geoscience Australia) 2014(c) Office of Environment and Heritage NSW(c) Commonwealth of Australia 2013(c) The Department for Manufacturing, Innovation, Trade, Resources and Energy, the Government of South Australia, Geoscientific Data, (Sourced in 2013), http://www.minerals.dmitre.sa.gov.au/geological_survey_of_sa/data(c) The Department for Manufacturing, Innovation, Trade, Resources and Energy, the Government of South Australia, Geoscientific Data, (Sourced in 2015), http://www.minerals.dmitre.sa.gov.au/geological_survey_of_sa/data(c) State of Queensland (Department of Natural Resources and Mines) 2012(c) State of South Australia (Department for Manufacturing, Innovation, Trade, Resources and Energy)(c) Commonwealth of Australia (Geoscience Australia) 2012",
+        "contact_point": "bioregionalassessments@bom.gov.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "e40abc9d-41c3-4321-8c1a-7389a83b2191",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "e55ccadc-6c9a-4343-9c3f-fcddb40bc392",
+            "size": "299408",
+            "Description": "CSIRO Download Page",
+            "state": "active",
+            "hash": "",
+            "description": "Data File",
+            "format": "ZIP",
+            "last_modified": null,
+            "url_type": null,
+            "mimetype": null,
+            "cache_url": null,
+            "name": "Summary Analysis of QLD DNRM Licence Locations Linked to Cadastre Plan - Clipped to GAL PAE v01",
+            "created": "2016-04-11T08:43:45.768590",
+            "url": "https://datagovau.s3.amazonaws.com/bioregionalassessments/LEB/GAL/DATA/Hydrology/OfftakesGAL_DNRM_SWLic_Summary_v01/edd21ff8-0e42-49d9-a5f1-c619757860ac.zip",
+            "webstore_url": null,
+            "mimetype_inner": null,
+            "position": 0,
+            "revision_id": "0dd058f0-8b0b-4a98-a832-742e602ccf75",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 1,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Galilee subregion",
+            "id": "d61d0a80-3ca5-4dff-a8e9-beb2223453a4",
+            "name": "Galilee subregion"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Queensland",
+            "id": "b9840174-0e53-4386-8167-8b6192aa29ac",
+            "name": "Queensland"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "inlandWaters",
+            "id": "2931df3f-cb9f-4005-932f-bda4624e55b5",
+            "name": "inlandWaters"
+          }
+        ],
+        "temporal_coverage_from": "N/A",
+        "language": "eng",
+        "groups": [
+          
+        ],
+        "creator_user_id": "2846d45e-3969-4419-a085-84f5716ede91",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "The Australian Government Bioregional Assessment Programme is a collaboration between the Department of the Environment and Energy, the Bureau of Meteorology, CSIRO and Geoscience Australia.  The Programme seeks to better understand the potential impacts of coal seam gas and large coal mining developments on water resources and water-related assets. It is one of a number of actions undertaken by the Australian Government to strengthen the science underpinning decision making on coal seam gas and large coal mining developments.",
+          "created": "2015-10-30T05:17:42.164347",
+          "title": "Bioregional Assessment Programme",
+          "name": "bioregional-assessment-programme",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "2015-10-30-051742.096388Bioregional-assessments-logo-800.jpg",
+          "revision_id": "f536aad8-dae0-49b7-80ef-c21673e032f6",
+          "type": "organization",
+          "id": "69f37b4c-bdf0-4c85-bd56-82fa6d6b087a",
+          "approval_status": "approved"
+        },
+        "name": "edd21ff8-0e42-49d9-a5f1-c619757860ac",
+        "isopen": false,
+        "url": null,
+        "notes": "## **Abstract** \n\nThis dataset was derived by the Bioregional Assessment Programme. The parent datasets are identified in the Lineage field in this metadata statement. The processes undertaken to produce this derived dataset are described in the History field in this metadata statement.\n\n\n\nThis data file contains surface water allocation information for the different catchments in the Galilee subregion preliminary assessment extent (PAE). It describes permit types, location and owner of individual permit.\n\n## **Purpose** \n\nIt has been designed to extract water accounts (permit type and total allocation) in different river catchments within the Galilee subregion.\n\n## **Dataset History** \n\nThe Australia's River Basins 1997 dataset (GUID: d4561e86-2d13-4dcb-bf9e-aae75ba4850c) was spatially joined to the QLD DNRM Licence Locations Linked to Cadastre Plan - Clipped to GAL PAE dataset (GUID: da3fe07d-99f6-4efa-970a-6f445ebd16cc) and attribute table exported as an Excel worksheet: 'GAL_DNRM_SWLic_LinkedToLocation'\n\n\n\nA pivot table was exported as a summary ('Summary') showing the volume (ML) and number of entitlements per water year for each 'Purpose'.\n\n\n\nA pivot table (PivotT) was created from the output worksheet to summarise the count and volume (ML) of nominal water entitlements per catchment, per year.\n\nField List - Authorised (Purpose), NominalEntitlementPerWaterYearML\n\nColumn Labels - Values\n\nRow Labels - Authorised\n\nValues - Sum of NominalEntitlementPerWaterYearML, Count of NominalEntitlementPerWaterYearML\n\n\n\nA second pivot table was created ('PivotT') and exported as a summary ('Summary II\") showing the number and volume (ML) of entitlements per water year for each catchment.\n\n\n\nField List - NominalEntitlementPerWaterYearML, AssetName, BNAME\n\nColum Labels - Values\n\nRow Label - BNAME, AssetName\n\nValues - Count of NominalEntitlementPerWaterYearML, Sum of NominalEntitlementPerWaterYearML\n\n## **Dataset Citation** \n\nBioregional Assessment Programme (XXXX) Summary Analysis of QLD DNRM Licence Locations Linked to Cadastre Plan - Clipped to GAL PAE v01. Bioregional Assessment Derived Dataset. Viewed 11 April 2016, http://data.bioregionalassessments.gov.au/dataset/edd21ff8-0e42-49d9-a5f1-c619757860ac.\n\n## **Dataset Ancestors** \n\n* **Derived From** [SA Petroleum Exploration Licence/Permit Applications](http://data.gov.au/dataset/d5667303-96c8-473f-af05-d3f53ac7753c)\n\n* **Derived From** [QLD Mining Claim 6/3/2013](http://data.gov.au/dataset/ed3cb0ee-58c1-45ca-b86c-4a6f04f04834)\n\n* **Derived From** [South Australia Mineral Leases Production, 6 March 2013](http://data.gov.au/dataset/d7bf21ef-7b7f-40e0-a1a7-8be895a5842e)\n\n* **Derived From** [SA Petroleum Production License Applications](http://data.gov.au/dataset/ecf1a9b6-44ca-4403-9648-828537652a54)\n\n* **Derived From** [Galilee Subregion whole potential assessment extent v02](http://data.gov.au/dataset/7d48db4e-d4fc-431e-89c5-a36b97073656)\n\n* **Derived From** [Natural Resource Management (NRM) Regions 2010](http://data.gov.au/dataset/1d54e38f-4051-4f0c-a350-c7dbd8eba65b)\n\n* **Derived From** [SA Mineral and/or Opal Exploration Licenses](http://data.gov.au/dataset/f54faf14-213f-4eb0-ad65-eecb0d68a8e2)\n\n* **Derived From** [QLD Current Exploration Permits for Coal 6/3/2013](http://data.gov.au/dataset/1aea02ad-4a47-4a4c-8fe6-e8e5c7fd9cb4)\n\n* **Derived From** [QLD Current Authorities to Prospect for Petroleum (ATP), 6/3/2013](http://data.gov.au/dataset/038c169b-606f-4478-99db-e3125319b321)\n\n* **Derived From** [Lake Eyre Basin Groundwater Potential Assessment Extents (PAE) v01](http://data.gov.au/dataset/3d59fd39-8d26-49d4-b6de-2e1fba315ddb)\n\n* **Derived From** [QLD Mining Lease 6/3/2013](http://data.gov.au/dataset/fa634295-8514-4a5c-928c-afdb2408e338)\n\n* **Derived From** [GEODATA TOPO 250K Series 3, File Geodatabase format (.gdb)](http://data.gov.au/dataset/96ebf889-f726-4967-9964-714fb57d679b)\n\n* **Derived From** [GEODATA TOPO 250K Series 3](http://data.gov.au/dataset/a0650f18-518a-4b99-a553-44f82f28bb5f)\n\n* **Derived From** [Australian Geological Provinces, v02](http://data.gov.au/dataset/13ad6933-ee80-4c51-a97b-bac1e8bef16d)\n\n* **Derived From** [NSW Catchment Management Authority Boundaries   20130917](http://data.gov.au/dataset/0dc4272e-c081-4ed4-9645-aa336ffacd85)\n\n* **Derived From** [SA Mineral and/or Opal Exploration Licence Applications](http://data.gov.au/dataset/064b4ce1-cbf9-4cd3-ad2e-4d1a677c70b8)\n\n* **Derived From** [South Australia Mineral Production Claims, 6 March 2013](http://data.gov.au/dataset/a8dd189f-2886-47fa-9293-6449a0c54d15)\n\n* **Derived From** [SA Mining and Production Tenement Applications](http://data.gov.au/dataset/f87ed672-cde6-4526-a79f-8e048183dbd5)\n\n* **Derived From** [QLD Petroleum Leases 6/3/2013](http://data.gov.au/dataset/10837caf-8c17-4aa8-8cbc-62fd55a02509)\n\n* **Derived From** [SA Petroleum Exploration Licences/Permits](http://data.gov.au/dataset/f17f76af-fdad-4bdb-b8b2-c87d1a9d482e)\n\n* **Derived From** [QLD DNRM Licence Locations Linked to Cadastre Plan - v1 - 20140307](http://data.gov.au/dataset/bf1085d8-9752-4533-a65a-820a020907db)\n\n* **Derived From** [South Australia Petroleum Production Licenses](http://data.gov.au/dataset/13dc0f31-6eae-44d7-85be-dcba662623ff)\n\n* **Derived From** [Galilee Surface Water Preliminary Assessment Extent (PAE) v02](http://data.gov.au/dataset/ff45f897-f5b9-4f0f-b4b1-41fa2d337dc7)\n\n* **Derived From** [Lake Eyre Basin Surface water Potential Assessment Extents v01](http://data.gov.au/dataset/58be9173-4f37-4a0e-96cd-c35f9ce35e18)\n\n* **Derived From** [Geological Provinces - Full Extent](http://data.gov.au/dataset/0a064b3b-2a1e-4672-80d9-03333be67aad)\n\n* **Derived From** [Australia's River Basins 1997](http://data.gov.au/dataset/d4561e86-2d13-4dcb-bf9e-aae75ba4850c)\n\n* **Derived From** [QLD Mineral Development License 6/3/2013](http://data.gov.au/dataset/2a46b5c2-5d80-4d4a-a2c8-9423a7ad8d9e)\n\n* **Derived From** [Bioregional Assessment areas v01](http://data.gov.au/dataset/0fd0d820-30b3-451f-a126-a50040426999)\n\n* **Derived From** [Bioregional Assessment areas v02](http://data.gov.au/dataset/e414b1b3-c42e-42e9-9cc4-2093054aa35f)\n\n* **Derived From** [QLD Current Exploration Permits for Minerals (EPM) in Queensland 6/3/2013](http://data.gov.au/dataset/5d8c8f5c-7ace-40ce-87ce-0b311b028c10)\n\n* **Derived From** [QLD DNRM Licence Locations Linked to Cadastre Plan - Clipped to GAL PAE](http://data.gov.au/dataset/da3fe07d-99f6-4efa-970a-6f445ebd16cc)\n\n* **Derived From** [Galilee Groundwater Preliminary Assessment Extent (PAE) v02](http://data.gov.au/dataset/bec18bf8-fedc-4290-8008-68b97a76247f)\n\n",
+        "owner_org": "69f37b4c-bdf0-4c85-bd56-82fa6d6b087a",
+        "data_state": "completed",
+        "title": "Summary Analysis of QLD DNRM Licence Locations Linked to Cadastre Plan - Clipped to GAL PAE v01",
+        "revision_id": "e73d3037-9294-4381-8426-fd45f1834591",
+        "update_freq": "notPlanned"
+      },
+      {
+        "license_title": "Creative Commons Attribution 2.5 Australia",
+        "maintainer": null,
+        "harvest_source_id": "4c0f8483-b68b-407f-976b-a23242d3b239",
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Commonwealth of Australia",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 5,
+        "geospatial_topic": [
+          
+        ],
+        "id": "6dfe4812-43a9-4dbb-87b9-a74e115c07d3",
+        "spatial_harvester": "true",
+        "spatial_coverage": "{\"type\": \"Point\", \"coordinates\": [138.55, -34.783]}",
+        "metadata_modified": "2016-09-04T02:37:35.163439",
+        "author": null,
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "metadata_created": "2016-09-04T02:37:35.141797",
+        "spatial": "{\"type\": \"Point\", \"coordinates\": [138.55, -34.783]}",
+        "license_id": "cc-by-2.5",
+        "contact_point": "jochen.kaempf@flinders.edu.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "6dfe4812-43a9-4dbb-87b9-a74e115c07d3",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "8e2aa268-f849-4d31-b06b-4b9f4a51246d",
+            "size": null,
+            "state": "active",
+            "resource_locator_function": "",
+            "hash": "",
+            "description": "South Australian Coastal Study Data",
+            "format": "WMS",
+            "mimetype_inner": null,
+            "url_type": null,
+            "resource_locator_protocol": "OGC:WMS-1.1.1-http-get-map",
+            "mimetype": null,
+            "cache_url": null,
+            "name": "aodn:south_australian_coastal_data",
+            "created": "2016-09-04T12:37:35.195159",
+            "url": "http://geoserver.imos.org.au/geoserver/wms",
+            "webstore_url": null,
+            "last_modified": null,
+            "position": 0,
+            "revision_id": "00a24bfa-b848-461f-883b-7c7d6e3b9e59",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 1,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Ocean Temperature",
+            "id": "94bb4df0-7ba3-4b4e-b750-a47bd68ba21e",
+            "name": "Ocean Temperature"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Oceans",
+            "id": "61453050-2709-4d1a-a143-227647251892",
+            "name": "Oceans"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Salinity",
+            "id": "7fcd55ed-bd85-4295-86b0-0ecaf7c1389d",
+            "name": "Salinity"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Salinity/density",
+            "id": "4fc6a982-f16d-4199-b6aa-9749b00604e5",
+            "name": "Salinity/density"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Water Temperature",
+            "id": "5e43953d-ba0c-4579-a495-7af1a0f548eb",
+            "name": "Water Temperature"
+          }
+        ],
+        "harvest_source_title": "FIND (http://find.ga.gov.au) CSW Harvester",
+        "groups": [
+          
+        ],
+        "creator_user_id": "c2fbbe4a-4ba0-4945-808b-67454605a4cf",
+        "harvest_object_id": "5a6c7170-29a9-40a5-a384-12c8173c4b30",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "",
+          "title": "Flinders University",
+          "created": "2016-07-26T21:46:36.328532",
+          "approval_status": "approved",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "",
+          "revision_id": "d6199342-aac4-4213-b0e7-f007de0816db",
+          "type": "organization",
+          "id": "fba4a14a-70de-4d13-bf55-1e88e3caa018",
+          "name": "flinders-university"
+        },
+        "name": "swan-alley-creek-port-river-adelaide-salinometer-survey-november-19961",
+        "isopen": true,
+        "url": "http://find.ga.gov.au/FIND/metadata-record/uuid/916cba40-9e26-11dc-9839-00188b4c0af8",
+        "notes": "A total of 8 conductivity-temperature-depth (CTD) stations were collected on the 6th November 1996, from Swan Alley Creek in the Adelaide River, for collection of water temperature and salinity data.",
+        "owner_org": "fba4a14a-70de-4d13-bf55-1e88e3caa018",
+        "extras": [
+          {
+            "key": "access_constraints",
+            "value": "[]"
+          },
+          {
+            "key": "bbox-east-long",
+            "value": "138.566"
+          },
+          {
+            "key": "bbox-north-lat",
+            "value": "-34.783"
+          },
+          {
+            "key": "bbox-south-lat",
+            "value": "-34.783"
+          },
+          {
+            "key": "bbox-west-long",
+            "value": "138.550"
+          },
+          {
+            "key": "contact-email",
+            "value": "jochen.kaempf@flinders.edu.au"
+          },
+          {
+            "key": "coupled-resource",
+            "value": "[]"
+          },
+          {
+            "key": "dataset-reference-date",
+            "value": "[{\"type\": \"creation\", \"value\": \"2007-11-22T00:00:00\"}]"
+          },
+          {
+            "key": "dateStamp",
+            "value": ""
+          },
+          {
+            "key": "frequency-of-update",
+            "value": ""
+          },
+          {
+            "key": "graphic-preview-description",
+            "value": "thumbnail"
+          },
+          {
+            "key": "graphic-preview-file",
+            "value": "port_river_adelaide_s.png"
+          },
+          {
+            "key": "graphic-preview-type",
+            "value": "png"
+          },
+          {
+            "key": "guid",
+            "value": "916cba40-9e26-11dc-9839-00188b4c0af8"
+          },
+          {
+            "key": "licence",
+            "value": "cc-by-2.5"
+          },
+          {
+            "key": "licence_url",
+            "value": "http://creativecommons.org/licenses/by/2.5/au/"
+          },
+          {
+            "key": "metadata-date",
+            "value": "2007-06-22T16:15:00"
+          },
+          {
+            "key": "metadata-language",
+            "value": ""
+          },
+          {
+            "key": "metadataStandard",
+            "value": "Australian Marine Community Profile of ISO 19115:2005/19139"
+          },
+          {
+            "key": "metadataStandardVersion",
+            "value": "1.5-experimental"
+          },
+          {
+            "key": "progress",
+            "value": "completed"
+          },
+          {
+            "key": "resource-type",
+            "value": ""
+          },
+          {
+            "key": "responsible-party",
+            "value": "[{\"name\": \"School of the Environment, Flinders University\", \"roles\": [\"custodian\"]}]"
+          },
+          {
+            "key": "source",
+            "value": ""
+          },
+          {
+            "key": "spatial-data-service-type",
+            "value": ""
+          },
+          {
+            "key": "spatial-reference-system",
+            "value": ""
+          },
+          {
+            "key": "temporal_coverage",
+            "value": "2007-11-22T00:00:00"
+          },
+          {
+            "key": "use_constraints",
+            "value": "[]"
+          }
+        ],
+        "license_url": "http://creativecommons.org/licenses/by/2.5/au/",
+        "data_state": "inactive",
+        "title": "Swan Alley Creek Port River Adelaide Salinometer Survey November 1996",
+        "revision_id": "00a24bfa-b848-461f-883b-7c7d6e3b9e59"
+      },
+      {
+        "license_title": "Creative Commons Attribution 4.0 International",
+        "maintainer": null,
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Commonwealth of Australia",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 5,
+        "geospatial_topic": [
+          
+        ],
+        "id": "037724c3-cb3e-4ae9-938d-7e2bc8e5a812",
+        "spatial_harvester": "true",
+        "spatial_coverage": "{\"type\": \"Point\", \"coordinates\": [138.55, -34.783]}",
+        "metadata_modified": "2016-07-26T20:07:58.876980",
+        "author": null,
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "metadata_created": "2016-07-26T20:07:58.855612",
+        "spatial": "{\"type\": \"Point\", \"coordinates\": [138.55, -34.783]}",
+        "license_id": "cc-by-4.0",
+        "contact_point": "jochen.kaempf@flinders.edu.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "037724c3-cb3e-4ae9-938d-7e2bc8e5a812",
+            "webstore_last_updated": null,
+            "datastore_active": false,
+            "id": "cd5f602f-0196-4244-a406-c1711cd5dad7",
+            "size": null,
+            "state": "active",
+            "resource_locator_function": "",
+            "hash": "",
+            "description": "South Australian Coastal Study Data",
+            "format": "WMS",
+            "mimetype_inner": null,
+            "url_type": null,
+            "resource_locator_protocol": "OGC:WMS-1.1.1-http-get-map",
+            "mimetype": null,
+            "cache_url": null,
+            "name": "aodn:south_australian_coastal_data",
+            "created": "2016-07-27T06:07:58.884145",
+            "url": "http://geoserver.imos.org.au/geoserver/wms",
+            "webstore_url": null,
+            "last_modified": null,
+            "position": 0,
+            "revision_id": "0f3c074b-d132-42d8-8aa9-00687b124f12",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 1,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Ocean Temperature",
+            "id": "94bb4df0-7ba3-4b4e-b750-a47bd68ba21e",
+            "name": "Ocean Temperature"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Oceans",
+            "id": "61453050-2709-4d1a-a143-227647251892",
+            "name": "Oceans"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Salinity",
+            "id": "7fcd55ed-bd85-4295-86b0-0ecaf7c1389d",
+            "name": "Salinity"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Salinity/density",
+            "id": "4fc6a982-f16d-4199-b6aa-9749b00604e5",
+            "name": "Salinity/density"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Water Temperature",
+            "id": "5e43953d-ba0c-4579-a495-7af1a0f548eb",
+            "name": "Water Temperature"
+          }
+        ],
+        "groups": [
+          
+        ],
+        "creator_user_id": "de0ba262-83fe-45e2-adda-41bb9f0c86d8",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "",
+          "created": "2016-07-26T21:46:36.328532",
+          "title": "Flinders University",
+          "name": "flinders-university",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "",
+          "revision_id": "d6199342-aac4-4213-b0e7-f007de0816db",
+          "type": "organization",
+          "id": "fba4a14a-70de-4d13-bf55-1e88e3caa018",
+          "approval_status": "approved"
+        },
+        "name": "swan-alley-creek-port-river-adelaide-salinometer-survey-november-1996",
+        "isopen": true,
+        "url": "http://find.ga.gov.au/FIND/metadata-record/uuid/916cba40-9e26-11dc-9839-00188b4c0af8",
+        "notes": "A total of 8 conductivity-temperature-depth (CTD) stations were collected on the 6th November 1996, from Swan Alley Creek in the Adelaide River, for collection of water temperature and salinity data.",
+        "owner_org": "fba4a14a-70de-4d13-bf55-1e88e3caa018",
+        "extras": [
+          {
+            "key": "access_constraints",
+            "value": "[]"
+          },
+          {
+            "key": "bbox-east-long",
+            "value": "138.566"
+          },
+          {
+            "key": "bbox-north-lat",
+            "value": "-34.783"
+          },
+          {
+            "key": "bbox-south-lat",
+            "value": "-34.783"
+          },
+          {
+            "key": "bbox-west-long",
+            "value": "138.550"
+          },
+          {
+            "key": "contact-email",
+            "value": "jochen.kaempf@flinders.edu.au"
+          },
+          {
+            "key": "coupled-resource",
+            "value": "[]"
+          },
+          {
+            "key": "dataset-reference-date",
+            "value": "[{\"type\": \"creation\", \"value\": \"2007-11-22T00:00:00\"}]"
+          },
+          {
+            "key": "dateStamp",
+            "value": ""
+          },
+          {
+            "key": "frequency-of-update",
+            "value": ""
+          },
+          {
+            "key": "graphic-preview-description",
+            "value": "thumbnail"
+          },
+          {
+            "key": "graphic-preview-file",
+            "value": "port_river_adelaide_s.png"
+          },
+          {
+            "key": "graphic-preview-type",
+            "value": "png"
+          },
+          {
+            "key": "guid",
+            "value": "916cba40-9e26-11dc-9839-00188b4c0af8"
+          },
+          {
+            "key": "licence",
+            "value": "cc-by-4.0"
+          },
+          {
+            "key": "licence_url",
+            "value": "https://creativecommons.org/licenses/by/4.0"
+          },
+          {
+            "key": "metadata-date",
+            "value": "2007-06-22T16:15:00"
+          },
+          {
+            "key": "metadata-language",
+            "value": ""
+          },
+          {
+            "key": "metadataStandard",
+            "value": "Australian Marine Community Profile of ISO 19115:2005/19139"
+          },
+          {
+            "key": "metadataStandardVersion",
+            "value": "1.5-experimental"
+          },
+          {
+            "key": "progress",
+            "value": "completed"
+          },
+          {
+            "key": "resource-type",
+            "value": ""
+          },
+          {
+            "key": "responsible-party",
+            "value": "[{\"name\": \"School of the Environment, Flinders University\", \"roles\": [\"custodian\"]}]"
+          },
+          {
+            "key": "source",
+            "value": ""
+          },
+          {
+            "key": "spatial-data-service-type",
+            "value": ""
+          },
+          {
+            "key": "spatial-reference-system",
+            "value": ""
+          },
+          {
+            "key": "temporal_coverage",
+            "value": "2007-11-22T00:00:00"
+          },
+          {
+            "key": "use_constraints",
+            "value": "[]"
+          }
+        ],
+        "license_url": "http://creativecommons.org/licenses/by/4.0",
+        "data_state": "inactive",
+        "title": "Swan Alley Creek Port River Adelaide Salinometer Survey November 1996",
+        "revision_id": "0f3c074b-d132-42d8-8aa9-00687b124f12"
+      },
+      {
+        "license_title": "Creative Commons Attribution 4.0 International",
+        "maintainer": null,
+        "harvest_source_id": "4c0f8483-b68b-407f-976b-a23242d3b239",
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Commonwealth of Australia",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 5,
+        "geospatial_topic": [
+          
+        ],
+        "id": "ba643e2b-b25a-4f3d-abc3-a613c115c56f",
+        "spatial_harvester": "true",
+        "spatial_coverage": "{\"type\": \"Polygon\", \"coordinates\": [[[131.0, -13.75], [132.0, -13.75], [132.0, -13.2], [131.0, -13.2], [131.0, -13.75]]]}",
+        "metadata_modified": "2016-11-28T09:11:14.575282",
+        "author": null,
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "metadata_created": "2016-09-04T02:50:56.407258",
+        "spatial": "{\"type\": \"Polygon\", \"coordinates\": [[[131.0, -13.75], [132.0, -13.75], [132.0, -13.2], [131.0, -13.2], [131.0, -13.75]]]}",
+        "license_id": "cc-by-4.0",
+        "contact_point": "clientservices@ga.gov.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "ba643e2b-b25a-4f3d-abc3-a613c115c56f",
+            "webstore_last_updated": null,
+            "id": "2c05ef81-2556-4281-845c-0f7b85ac1250",
+            "size": null,
+            "state": "active",
+            "resource_locator_function": "download",
+            "hash": "",
+            "description": "Record (pdf)",
+            "format": "PDF",
+            "mimetype_inner": null,
+            "url_type": null,
+            "resource_locator_protocol": "",
+            "mimetype": null,
+            "cache_url": null,
+            "name": "File download",
+            "created": "2016-11-28T20:11:14.706372",
+            "url": "https://d28rz98at9flks.cloudfront.net/10845/Rec1961_119.pdf",
+            "webstore_url": null,
+            "last_modified": null,
+            "position": 0,
+            "revision_id": "cc46e954-3962-457b-99ab-b033631f2c44",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 1,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "AU-NT",
+            "id": "ade26032-5b92-41fb-9f19-ad2ac24a14a9",
+            "name": "AU-NT"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Earth Sciences",
+            "id": "40d58e59-cdeb-4021-9e5a-aae60edebdf5",
+            "name": "Earth Sciences"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "GA Publication",
+            "id": "e62fc1f2-3d55-4d1e-bd88-116cd26bc3fd",
+            "name": "GA Publication"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Record",
+            "id": "c66268f2-6d34-481b-8962-fd48c58ae831",
+            "name": "Record"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "geophysics",
+            "id": "9cc5d1d9-ff9d-4bc6-8454-22237e40208f",
+            "name": "geophysics"
+          }
+        ],
+        "harvest_source_title": "FIND (http://find.ga.gov.au) CSW Harvester",
+        "groups": [
+          
+        ],
+        "creator_user_id": "c2fbbe4a-4ba0-4945-808b-67454605a4cf",
+        "harvest_object_id": "f187452d-55a9-433c-861c-a38c78ad9176",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "Geoscience Australia",
+          "created": "2013-05-12T08:29:00.089491",
+          "title": "Geoscience Australia",
+          "name": "geoscienceaustralia",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "http://www.ga.gov.au/build/img/logo_stacked.gif",
+          "revision_id": "f2bd87be-da6e-4bb4-9461-659adf8b15b0",
+          "type": "organization",
+          "id": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+          "approval_status": "approved"
+        },
+        "name": "adelaide-river-brocks-creek-and-mckinlay-river-areas-airborne-radiometric-survey-northern-1960",
+        "isopen": true,
+        "url": "http://find.ga.gov.au/FIND/metadata-record/uuid/a05f7892-fe22-7506-e044-00144fdd4fa6",
+        "notes": "During April and May 1960, a Cessna aircraft of the Bureau of Mineral Resources carried out a low-level airborne radiometric survey in the Adelaide River, Brocks Creek, and McKinlay River areas of the Northern Territory. An area of 752 square miles was surveyed and 26 radiometric anomalies were located. The survey technique is described and the positions of the anomalies are shown on a map.",
+        "owner_org": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+        "extras": [
+          {
+            "key": "access_constraints",
+            "value": "[\"Creative Commons Attribution 4.0 International Licence\"]"
+          },
+          {
+            "key": "bbox-east-long",
+            "value": "132.0"
+          },
+          {
+            "key": "bbox-north-lat",
+            "value": "-13.2"
+          },
+          {
+            "key": "bbox-south-lat",
+            "value": "-13.75"
+          },
+          {
+            "key": "bbox-west-long",
+            "value": "131.0"
+          },
+          {
+            "key": "contact-email",
+            "value": "clientservices@ga.gov.au"
+          },
+          {
+            "key": "coupled-resource",
+            "value": "[]"
+          },
+          {
+            "key": "dataset-reference-date",
+            "value": "[{\"type\": \"publication\", \"value\": \"1961-01-01T00:00:00\"}]"
+          },
+          {
+            "key": "dateStamp",
+            "value": ""
+          },
+          {
+            "key": "frequency-of-update",
+            "value": "unknown"
+          },
+          {
+            "key": "guid",
+            "value": "a05f7892-fe22-7506-e044-00144fdd4fa6"
+          },
+          {
+            "key": "licence",
+            "value": "cc-by-4.0"
+          },
+          {
+            "key": "licence_url",
+            "value": "http://creativecommons.org/licenses/by/4.0"
+          },
+          {
+            "key": "metadata-date",
+            "value": ""
+          },
+          {
+            "key": "metadata-language",
+            "value": "eng"
+          },
+          {
+            "key": "metadataStandard",
+            "value": "ANZLIC Metadata Profile: An Australian/New Zealand Profile of AS/NZS ISO 19115:2005, Geographic information - Metadata"
+          },
+          {
+            "key": "metadataStandardVersion",
+            "value": "1.1"
+          },
+          {
+            "key": "progress",
+            "value": ""
+          },
+          {
+            "key": "resource-type",
+            "value": "nonGeographicDataset"
+          },
+          {
+            "key": "responsible-party",
+            "value": "[{\"name\": \"Commonwealth of Australia (Geoscience Australia)\", \"roles\": [\"owner\", \"custodian\"]}]"
+          },
+          {
+            "key": "source",
+            "value": ""
+          },
+          {
+            "key": "spatial-data-service-type",
+            "value": ""
+          },
+          {
+            "key": "spatial-reference-system",
+            "value": ""
+          },
+          {
+            "key": "temporal_coverage",
+            "value": "1961-01-01T00:00:00"
+          },
+          {
+            "key": "use_constraints",
+            "value": "[]"
+          }
+        ],
+        "license_url": "http://creativecommons.org/licenses/by/4.0",
+        "data_state": "inactive",
+        "title": "Adelaide River, Brocks Creek, and McKinlay River areas airborne radiometric survey, Northern Territory 1960",
+        "revision_id": "71cc144f-b456-4d95-868b-35571ce5d0ff",
+        "update_freq": "unknown"
+      },
+      {
+        "license_title": "Creative Commons Attribution 4.0 International",
+        "maintainer": null,
+        "harvest_source_id": "4c0f8483-b68b-407f-976b-a23242d3b239",
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Commonwealth of Australia",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 5,
+        "geospatial_topic": [
+          
+        ],
+        "id": "ae799956-f704-4a76-a09b-536e9d08a5af",
+        "spatial_harvester": "true",
+        "metadata_modified": "2016-11-28T15:17:56.699881",
+        "author": null,
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "metadata_created": "2016-09-04T15:11:42.714706",
+        "license_id": "cc-by-4.0",
+        "contact_point": "clientservices@ga.gov.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "ae799956-f704-4a76-a09b-536e9d08a5af",
+            "webstore_last_updated": null,
+            "id": "a9f2a3f6-5c21-4edf-847a-bd5a73d52ceb",
+            "size": null,
+            "state": "active",
+            "resource_locator_function": "download",
+            "hash": "",
+            "description": "Record (pdf)",
+            "format": "PDF",
+            "mimetype_inner": null,
+            "url_type": null,
+            "resource_locator_protocol": "",
+            "mimetype": null,
+            "cache_url": null,
+            "name": "File download",
+            "created": "2016-11-29T02:17:56.832040",
+            "url": "https://d28rz98at9flks.cloudfront.net/10544/Rec1959_114.pdf",
+            "webstore_url": null,
+            "last_modified": null,
+            "position": 0,
+            "revision_id": "54b801c5-c73c-4fc8-b75d-11ad8a0d5dcd",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 1,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "AU-QLD",
+            "id": "0275cb63-7fa7-43d7-ac32-7c454ab33257",
+            "name": "AU-QLD"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Earth Sciences",
+            "id": "40d58e59-cdeb-4021-9e5a-aae60edebdf5",
+            "name": "Earth Sciences"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "GA Publication",
+            "id": "e62fc1f2-3d55-4d1e-bd88-116cd26bc3fd",
+            "name": "GA Publication"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Record",
+            "id": "c66268f2-6d34-481b-8962-fd48c58ae831",
+            "name": "Record"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "geology",
+            "id": "a1247809-d04d-48ef-9eab-541baf255c2c",
+            "name": "geology"
+          }
+        ],
+        "harvest_source_title": "FIND (http://find.ga.gov.au) CSW Harvester",
+        "groups": [
+          
+        ],
+        "creator_user_id": "c2fbbe4a-4ba0-4945-808b-67454605a4cf",
+        "harvest_object_id": "d9bc0b8b-7ad9-4f41-ac0f-f6ce10f3743a",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "Geoscience Australia",
+          "created": "2013-05-12T08:29:00.089491",
+          "title": "Geoscience Australia",
+          "name": "geoscienceaustralia",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "http://www.ga.gov.au/build/img/logo_stacked.gif",
+          "revision_id": "f2bd87be-da6e-4bb4-9461-659adf8b15b0",
+          "type": "organization",
+          "id": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+          "approval_status": "approved"
+        },
+        "name": "progress-report-on-regional-geological-mapping-northern-queensland-1957-gray-creek-broken-river",
+        "isopen": true,
+        "url": "http://find.ga.gov.au/FIND/metadata-record/uuid/a05f7892-7e37-7506-e044-00144fdd4fa6",
+        "notes": "Legacy product - no abstract available",
+        "owner_org": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+        "extras": [
+          {
+            "key": "access_constraints",
+            "value": "[\"Creative Commons Attribution 4.0 International Licence\"]"
+          },
+          {
+            "key": "contact-email",
+            "value": "clientservices@ga.gov.au"
+          },
+          {
+            "key": "coupled-resource",
+            "value": "[]"
+          },
+          {
+            "key": "dataset-reference-date",
+            "value": "[{\"type\": \"publication\", \"value\": \"1959-01-01T00:00:00\"}]"
+          },
+          {
+            "key": "dateStamp",
+            "value": ""
+          },
+          {
+            "key": "frequency-of-update",
+            "value": "unknown"
+          },
+          {
+            "key": "guid",
+            "value": "a05f7892-7e37-7506-e044-00144fdd4fa6"
+          },
+          {
+            "key": "licence",
+            "value": "cc-by-4.0"
+          },
+          {
+            "key": "licence_url",
+            "value": "http://creativecommons.org/licenses/by/4.0"
+          },
+          {
+            "key": "metadata-date",
+            "value": ""
+          },
+          {
+            "key": "metadata-language",
+            "value": "eng"
+          },
+          {
+            "key": "metadataStandard",
+            "value": "ANZLIC Metadata Profile: An Australian/New Zealand Profile of AS/NZS ISO 19115:2005, Geographic information - Metadata"
+          },
+          {
+            "key": "metadataStandardVersion",
+            "value": "1.1"
+          },
+          {
+            "key": "progress",
+            "value": ""
+          },
+          {
+            "key": "resource-type",
+            "value": "nonGeographicDataset"
+          },
+          {
+            "key": "responsible-party",
+            "value": "[{\"name\": \"Commonwealth of Australia (Geoscience Australia)\", \"roles\": [\"owner\", \"custodian\"]}]"
+          },
+          {
+            "key": "source",
+            "value": ""
+          },
+          {
+            "key": "spatial-data-service-type",
+            "value": ""
+          },
+          {
+            "key": "spatial-reference-system",
+            "value": ""
+          },
+          {
+            "key": "temporal_coverage",
+            "value": "1959-01-01T00:00:00"
+          },
+          {
+            "key": "use_constraints",
+            "value": "[]"
+          }
+        ],
+        "license_url": "http://creativecommons.org/licenses/by/4.0",
+        "data_state": "inactive",
+        "title": "Progress report on regional geological mapping, northern Queensland, 1957 Gray Creek, Broken River and Clarke River areas",
+        "revision_id": "7dadedcc-d3f4-4c56-bf50-d8ee3c7e3876",
+        "update_freq": "unknown"
+      },
+      {
+        "license_title": "Creative Commons Attribution 4.0 International",
+        "maintainer": null,
+        "harvest_source_id": "4c0f8483-b68b-407f-976b-a23242d3b239",
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Commonwealth of Australia",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 5,
+        "geospatial_topic": [
+          
+        ],
+        "id": "66f43c6c-50ec-4a88-9dfe-1201fb652566",
+        "spatial_harvester": "true",
+        "spatial_coverage": "{\"type\": \"Polygon\", \"coordinates\": [[[132.5, -13.5], [133.0, -13.5], [133.0, -13.0], [132.5, -13.0], [132.5, -13.5]]]}",
+        "metadata_modified": "2016-11-28T10:28:38.540482",
+        "author": null,
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "metadata_created": "2016-09-03T16:20:46.043125",
+        "spatial": "{\"type\": \"Polygon\", \"coordinates\": [[[132.5, -13.5], [133.0, -13.5], [133.0, -13.0], [132.5, -13.0], [132.5, -13.5]]]}",
+        "license_id": "cc-by-4.0",
+        "contact_point": "clientservices@ga.gov.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "66f43c6c-50ec-4a88-9dfe-1201fb652566",
+            "webstore_last_updated": null,
+            "id": "15afac89-b477-407c-829e-a15385fa47d9",
+            "size": null,
+            "state": "active",
+            "resource_locator_function": "download",
+            "hash": "",
+            "description": "Record (pdf)",
+            "format": "PDF",
+            "mimetype_inner": null,
+            "url_type": null,
+            "resource_locator_protocol": "",
+            "mimetype": null,
+            "cache_url": null,
+            "name": "File download",
+            "created": "2016-11-28T21:28:38.671057",
+            "url": "https://d28rz98at9flks.cloudfront.net/10760/Rec1961_033.pdf",
+            "webstore_url": null,
+            "last_modified": null,
+            "position": 0,
+            "revision_id": "29f1ed41-71c6-40bc-99e3-ceda6e3ae212",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 1,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "AU-NT",
+            "id": "ade26032-5b92-41fb-9f19-ad2ac24a14a9",
+            "name": "AU-NT"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Earth Sciences",
+            "id": "40d58e59-cdeb-4021-9e5a-aae60edebdf5",
+            "name": "Earth Sciences"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "GA Publication",
+            "id": "e62fc1f2-3d55-4d1e-bd88-116cd26bc3fd",
+            "name": "GA Publication"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Record",
+            "id": "c66268f2-6d34-481b-8962-fd48c58ae831",
+            "name": "Record"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "geophysics",
+            "id": "9cc5d1d9-ff9d-4bc6-8454-22237e40208f",
+            "name": "geophysics"
+          }
+        ],
+        "harvest_source_title": "FIND (http://find.ga.gov.au) CSW Harvester",
+        "groups": [
+          
+        ],
+        "creator_user_id": "c2fbbe4a-4ba0-4945-808b-67454605a4cf",
+        "harvest_object_id": "a9ab4d34-cb40-4438-93f5-84f63a10431f",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "Geoscience Australia",
+          "created": "2013-05-12T08:29:00.089491",
+          "title": "Geoscience Australia",
+          "name": "geoscienceaustralia",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "http://www.ga.gov.au/build/img/logo_stacked.gif",
+          "revision_id": "f2bd87be-da6e-4bb4-9461-659adf8b15b0",
+          "type": "organization",
+          "id": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+          "approval_status": "approved"
+        },
+        "name": "koolpin-creek-and-el-sherana-geophysical-surveys-south-alligator-river-northern-territory-1960",
+        "isopen": true,
+        "url": "http://find.ga.gov.au/FIND/metadata-record/uuid/a05f7892-9537-7506-e044-00144fdd4fa6",
+        "notes": "Legacy product - no abstract available",
+        "owner_org": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+        "extras": [
+          {
+            "key": "access_constraints",
+            "value": "[\"Creative Commons Attribution 4.0 International Licence\"]"
+          },
+          {
+            "key": "bbox-east-long",
+            "value": "133.0"
+          },
+          {
+            "key": "bbox-north-lat",
+            "value": "-13.0"
+          },
+          {
+            "key": "bbox-south-lat",
+            "value": "-13.5"
+          },
+          {
+            "key": "bbox-west-long",
+            "value": "132.5"
+          },
+          {
+            "key": "contact-email",
+            "value": "clientservices@ga.gov.au"
+          },
+          {
+            "key": "coupled-resource",
+            "value": "[]"
+          },
+          {
+            "key": "dataset-reference-date",
+            "value": "[{\"type\": \"publication\", \"value\": \"1961-01-01T00:00:00\"}]"
+          },
+          {
+            "key": "dateStamp",
+            "value": ""
+          },
+          {
+            "key": "frequency-of-update",
+            "value": "unknown"
+          },
+          {
+            "key": "guid",
+            "value": "a05f7892-9537-7506-e044-00144fdd4fa6"
+          },
+          {
+            "key": "licence",
+            "value": "cc-by-4.0"
+          },
+          {
+            "key": "licence_url",
+            "value": "http://creativecommons.org/licenses/by/4.0"
+          },
+          {
+            "key": "metadata-date",
+            "value": ""
+          },
+          {
+            "key": "metadata-language",
+            "value": "eng"
+          },
+          {
+            "key": "metadataStandard",
+            "value": "ANZLIC Metadata Profile: An Australian/New Zealand Profile of AS/NZS ISO 19115:2005, Geographic information - Metadata"
+          },
+          {
+            "key": "metadataStandardVersion",
+            "value": "1.1"
+          },
+          {
+            "key": "progress",
+            "value": ""
+          },
+          {
+            "key": "resource-type",
+            "value": "nonGeographicDataset"
+          },
+          {
+            "key": "responsible-party",
+            "value": "[{\"name\": \"Commonwealth of Australia (Geoscience Australia)\", \"roles\": [\"owner\", \"custodian\"]}]"
+          },
+          {
+            "key": "source",
+            "value": ""
+          },
+          {
+            "key": "spatial-data-service-type",
+            "value": ""
+          },
+          {
+            "key": "spatial-reference-system",
+            "value": ""
+          },
+          {
+            "key": "temporal_coverage",
+            "value": "1961-01-01T00:00:00"
+          },
+          {
+            "key": "use_constraints",
+            "value": "[]"
+          }
+        ],
+        "license_url": "http://creativecommons.org/licenses/by/4.0",
+        "data_state": "inactive",
+        "title": "Koolpin Creek and El Sherana geophysical surveys, South Alligator River, Northern Territory 1960",
+        "revision_id": "46bc9240-4b76-4745-85ee-0ec256925d6e",
+        "update_freq": "unknown"
+      },
+      {
+        "license_title": "Creative Commons Attribution 4.0 International",
+        "maintainer": null,
+        "harvest_source_id": "4c0f8483-b68b-407f-976b-a23242d3b239",
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Commonwealth of Australia",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 5,
+        "geospatial_topic": [
+          
+        ],
+        "id": "10e7569a-d902-49b3-9d4b-9ef929b19a92",
+        "spatial_harvester": "true",
+        "spatial_coverage": "{\"type\": \"Polygon\", \"coordinates\": [[[150.0, -34.0], [150.5, -34.0], [150.5, -33.5], [150.0, -33.5], [150.0, -34.0]]]}",
+        "metadata_modified": "2016-11-28T03:33:10.049219",
+        "author": null,
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "metadata_created": "2016-09-02T19:02:13.932321",
+        "spatial": "{\"type\": \"Polygon\", \"coordinates\": [[[150.0, -34.0], [150.5, -34.0], [150.5, -33.5], [150.0, -33.5], [150.0, -34.0]]]}",
+        "license_id": "cc-by-4.0",
+        "contact_point": "clientservices@ga.gov.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "10e7569a-d902-49b3-9d4b-9ef929b19a92",
+            "webstore_last_updated": null,
+            "id": "c3baa83d-941c-40fb-927f-ab10c03c84dd",
+            "size": null,
+            "state": "active",
+            "resource_locator_function": "download",
+            "hash": "",
+            "description": "Record (pdf)",
+            "format": "PDF",
+            "mimetype_inner": null,
+            "url_type": null,
+            "resource_locator_protocol": "",
+            "mimetype": null,
+            "cache_url": null,
+            "name": "File download",
+            "created": "2016-11-28T14:33:10.184293",
+            "url": "https://d28rz98at9flks.cloudfront.net/10573/Rec1959_144.pdf",
+            "webstore_url": null,
+            "last_modified": null,
+            "position": 0,
+            "revision_id": "0f1b091e-e8dc-4af0-9428-70db3270aae3",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 1,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "AU-NSW",
+            "id": "6cfdc3e7-06b3-481a-94bf-6849cb7f62e9",
+            "name": "AU-NSW"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Earth Sciences",
+            "id": "40d58e59-cdeb-4021-9e5a-aae60edebdf5",
+            "name": "Earth Sciences"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "GA Publication",
+            "id": "e62fc1f2-3d55-4d1e-bd88-116cd26bc3fd",
+            "name": "GA Publication"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Record",
+            "id": "c66268f2-6d34-481b-8962-fd48c58ae831",
+            "name": "Record"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "palaeontology",
+            "id": "7af33935-0a2b-4bac-bb86-17de2fb96943",
+            "name": "palaeontology"
+          }
+        ],
+        "harvest_source_title": "FIND (http://find.ga.gov.au) CSW Harvester",
+        "groups": [
+          
+        ],
+        "creator_user_id": "c2fbbe4a-4ba0-4945-808b-67454605a4cf",
+        "harvest_object_id": "6db80049-5293-4654-91c7-ab54545170cb",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "Geoscience Australia",
+          "created": "2013-05-12T08:29:00.089491",
+          "title": "Geoscience Australia",
+          "name": "geoscienceaustralia",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "http://www.ga.gov.au/build/img/logo_stacked.gif",
+          "revision_id": "f2bd87be-da6e-4bb4-9461-659adf8b15b0",
+          "type": "organization",
+          "id": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+          "approval_status": "approved"
+        },
+        "name": "micropalaeontology-of-samples-from-the-kedimba-creek-and-coxs-river-area-blue-mountains-new-sou",
+        "isopen": true,
+        "url": "http://find.ga.gov.au/FIND/metadata-record/uuid/a05f7892-fe39-7506-e044-00144fdd4fa6",
+        "notes": "Legacy product - no abstract available",
+        "owner_org": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+        "extras": [
+          {
+            "key": "access_constraints",
+            "value": "[\"Creative Commons Attribution 4.0 International Licence\"]"
+          },
+          {
+            "key": "bbox-east-long",
+            "value": "150.5"
+          },
+          {
+            "key": "bbox-north-lat",
+            "value": "-33.5"
+          },
+          {
+            "key": "bbox-south-lat",
+            "value": "-34.0"
+          },
+          {
+            "key": "bbox-west-long",
+            "value": "150.0"
+          },
+          {
+            "key": "contact-email",
+            "value": "clientservices@ga.gov.au"
+          },
+          {
+            "key": "coupled-resource",
+            "value": "[]"
+          },
+          {
+            "key": "dataset-reference-date",
+            "value": "[{\"type\": \"publication\", \"value\": \"1959-01-01T00:00:00\"}]"
+          },
+          {
+            "key": "dateStamp",
+            "value": ""
+          },
+          {
+            "key": "frequency-of-update",
+            "value": "unknown"
+          },
+          {
+            "key": "guid",
+            "value": "a05f7892-fe39-7506-e044-00144fdd4fa6"
+          },
+          {
+            "key": "licence",
+            "value": "cc-by-4.0"
+          },
+          {
+            "key": "licence_url",
+            "value": "http://creativecommons.org/licenses/by/4.0"
+          },
+          {
+            "key": "metadata-date",
+            "value": ""
+          },
+          {
+            "key": "metadata-language",
+            "value": "eng"
+          },
+          {
+            "key": "metadataStandard",
+            "value": "ANZLIC Metadata Profile: An Australian/New Zealand Profile of AS/NZS ISO 19115:2005, Geographic information - Metadata"
+          },
+          {
+            "key": "metadataStandardVersion",
+            "value": "1.1"
+          },
+          {
+            "key": "progress",
+            "value": ""
+          },
+          {
+            "key": "resource-type",
+            "value": "nonGeographicDataset"
+          },
+          {
+            "key": "responsible-party",
+            "value": "[{\"name\": \"Commonwealth of Australia (Geoscience Australia)\", \"roles\": [\"owner\", \"custodian\"]}]"
+          },
+          {
+            "key": "source",
+            "value": ""
+          },
+          {
+            "key": "spatial-data-service-type",
+            "value": ""
+          },
+          {
+            "key": "spatial-reference-system",
+            "value": ""
+          },
+          {
+            "key": "temporal_coverage",
+            "value": "1959-01-01T00:00:00"
+          },
+          {
+            "key": "use_constraints",
+            "value": "[]"
+          }
+        ],
+        "license_url": "http://creativecommons.org/licenses/by/4.0",
+        "data_state": "inactive",
+        "title": "Micropalaeontology of samples from the Kedimba Creek and Cox's River area, Blue Mountains, New South Wales",
+        "revision_id": "d0c37c1c-a6be-4dd4-b2cb-a489c1eb952a",
+        "update_freq": "unknown"
+      },
+      {
+        "license_title": "Creative Commons Attribution 4.0 International",
+        "maintainer": null,
+        "harvest_source_id": "4c0f8483-b68b-407f-976b-a23242d3b239",
+        "relationships_as_object": [
+          
+        ],
+        "jurisdiction": "Commonwealth of Australia",
+        "private": false,
+        "maintainer_email": null,
+        "num_tags": 4,
+        "geospatial_topic": [
+          
+        ],
+        "id": "43e47722-456b-42aa-bf48-b5558f7677d4",
+        "spatial_harvester": "true",
+        "metadata_modified": "2016-11-28T01:26:36.626880",
+        "author": null,
+        "author_email": null,
+        "state": "active",
+        "version": null,
+        "metadata_created": "2016-09-03T06:42:41.246322",
+        "license_id": "cc-by-4.0",
+        "contact_point": "clientservices@ga.gov.au",
+        "type": "dataset",
+        "resources": [
+          {
+            "cache_last_updated": null,
+            "package_id": "43e47722-456b-42aa-bf48-b5558f7677d4",
+            "webstore_last_updated": null,
+            "id": "ccf68199-4629-4062-a6f6-0a9c80ca4980",
+            "size": null,
+            "state": "active",
+            "resource_locator_function": "download",
+            "hash": "",
+            "description": "Record (pdf)",
+            "format": "PDF",
+            "mimetype_inner": null,
+            "url_type": null,
+            "resource_locator_protocol": "",
+            "mimetype": null,
+            "cache_url": null,
+            "name": "File download",
+            "created": "2016-11-28T12:26:36.755036",
+            "url": "https://d28rz98at9flks.cloudfront.net/11430/Rec1964_174.pdf",
+            "webstore_url": null,
+            "last_modified": null,
+            "position": 0,
+            "revision_id": "a454694d-359c-40fd-85d9-0f448f69b413",
+            "resource_type": null
+          }
+        ],
+        "num_resources": 1,
+        "tags": [
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "AU-NSW",
+            "id": "6cfdc3e7-06b3-481a-94bf-6849cb7f62e9",
+            "name": "AU-NSW"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Earth Sciences",
+            "id": "40d58e59-cdeb-4021-9e5a-aae60edebdf5",
+            "name": "Earth Sciences"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "GA Publication",
+            "id": "e62fc1f2-3d55-4d1e-bd88-116cd26bc3fd",
+            "name": "GA Publication"
+          },
+          {
+            "vocabulary_id": null,
+            "state": "active",
+            "display_name": "Record",
+            "id": "c66268f2-6d34-481b-8962-fd48c58ae831",
+            "name": "Record"
+          }
+        ],
+        "harvest_source_title": "FIND (http://find.ga.gov.au) CSW Harvester",
+        "groups": [
+          
+        ],
+        "creator_user_id": "c2fbbe4a-4ba0-4945-808b-67454605a4cf",
+        "harvest_object_id": "bda79920-9bf1-41cf-abef-3e53046feb0f",
+        "relationships_as_subject": [
+          
+        ],
+        "field_of_research": [
+          
+        ],
+        "organization": {
+          "description": "Geoscience Australia",
+          "created": "2013-05-12T08:29:00.089491",
+          "title": "Geoscience Australia",
+          "name": "geoscienceaustralia",
+          "is_organization": true,
+          "state": "active",
+          "image_url": "http://www.ga.gov.au/build/img/logo_stacked.gif",
+          "revision_id": "f2bd87be-da6e-4bb4-9461-659adf8b15b0",
+          "type": "organization",
+          "id": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+          "approval_status": "approved"
+        },
+        "name": "prospective-dam-site-on-queanbeyan-river-near-ballinfad-creek-new-south-wales-september-1964",
+        "isopen": true,
+        "url": "http://find.ga.gov.au/FIND/metadata-record/uuid/a05f7892-7c91-7506-e044-00144fdd4fa6",
+        "notes": "Legacy product - no abstract available",
+        "owner_org": "5666db1a-1b62-4484-8ec8-350fb28bdc2f",
+        "extras": [
+          {
+            "key": "access_constraints",
+            "value": "[\"Creative Commons Attribution 4.0 International Licence\"]"
+          },
+          {
+            "key": "contact-email",
+            "value": "clientservices@ga.gov.au"
+          },
+          {
+            "key": "coupled-resource",
+            "value": "[]"
+          },
+          {
+            "key": "dataset-reference-date",
+            "value": "[{\"type\": \"publication\", \"value\": \"1964-01-01T00:00:00\"}]"
+          },
+          {
+            "key": "dateStamp",
+            "value": ""
+          },
+          {
+            "key": "frequency-of-update",
+            "value": "unknown"
+          },
+          {
+            "key": "guid",
+            "value": "a05f7892-7c91-7506-e044-00144fdd4fa6"
+          },
+          {
+            "key": "licence",
+            "value": "cc-by-4.0"
+          },
+          {
+            "key": "licence_url",
+            "value": "http://creativecommons.org/licenses/by/4.0"
+          },
+          {
+            "key": "metadata-date",
+            "value": ""
+          },
+          {
+            "key": "metadata-language",
+            "value": "eng"
+          },
+          {
+            "key": "metadataStandard",
+            "value": "ANZLIC Metadata Profile: An Australian/New Zealand Profile of AS/NZS ISO 19115:2005, Geographic information - Metadata"
+          },
+          {
+            "key": "metadataStandardVersion",
+            "value": "1.1"
+          },
+          {
+            "key": "progress",
+            "value": ""
+          },
+          {
+            "key": "resource-type",
+            "value": "nonGeographicDataset"
+          },
+          {
+            "key": "responsible-party",
+            "value": "[{\"name\": \"Commonwealth of Australia (Geoscience Australia)\", \"roles\": [\"owner\", \"custodian\"]}]"
+          },
+          {
+            "key": "source",
+            "value": ""
+          },
+          {
+            "key": "spatial-data-service-type",
+            "value": ""
+          },
+          {
+            "key": "spatial-reference-system",
+            "value": ""
+          },
+          {
+            "key": "temporal_coverage",
+            "value": "1964-01-01T00:00:00"
+          },
+          {
+            "key": "use_constraints",
+            "value": "[]"
+          }
+        ],
+        "license_url": "http://creativecommons.org/licenses/by/4.0",
+        "data_state": "inactive",
+        "title": "Prospective dam site on Queanbeyan River near Ballinfad Creek, New South Wales (September 1964)",
+        "revision_id": "c0d941d5-6caa-485b-8322-d0b6c3b37003",
+        "update_freq": "unknown"
+      }
+    ],
+    "search_facets": {
+      
+    }
+  }
+}
