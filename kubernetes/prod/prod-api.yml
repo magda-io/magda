@@ -86,6 +86,7 @@ spec:
           name: regions
       volumes:
       - name: regions
-        emptyDir: {}
+        hostPath:
+          path: /var/regions
       nodeSelector:
         beta.kubernetes.io/instance-type: "n1-standard-1"

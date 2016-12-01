@@ -63,7 +63,7 @@ spec:
       volumes:
       - name: regions
         hostPath:
-          path: /usr/regions
+          path: /var/regions
 ---
 # ElasticSearch
 apiVersion: extensions/v1beta1
@@ -118,8 +118,7 @@ spec:
           mountPath: /snapshots
       volumes:
       - name: snapshots
-        hostPath:
-          path: /usr/snapshots
+        emptyDir: {}
       - name: "storage"
         emptyDir: {}
 ---
