@@ -100,6 +100,9 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
    */
   def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy): SearchResult = {
     val aggsMap = response.aggregations.asMap().asScala
+
+    response.getHits.hits().foreach(hit => println(hit.explanation()))
+
     new SearchResult(
       strategy = Some(strategy),
       query = query,
@@ -160,6 +163,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(query: Query, start: Long, limit: Int, strategy: SearchStrategy) =
     ElasticDsl.search.in("datasets" / "datasets")
+      .explain(true)
       .limit(limit)
       .start(start.toInt)
       .query(queryToQueryDef(query, strategy))
@@ -262,7 +266,30 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
     }
 
     val shouldClauses: Seq[Option[QueryDefinition]] = Seq(
-      stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).operator(operator).boost(2)),
+      stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).operator(operator).boost(2)
+          .field("catalog")
+          .field("title", 4)
+          .field("title.english", 4)
+          .field("description")
+          .field("issued")
+          //.field("modified")
+          //.field("language")
+//          .field("publisher.*")
+//          .field("accrualPeriodicity.*")
+//          .field("spatial.text")
+//          .field("temporal.*")
+//          .field("theme")
+//          .field("keyword", 2)
+//          .field("contactPoint.*")
+//          .field("distributions.*")
+//          .field("landingPage")
+//          .field("years")
+//        .field("_all")
+//        // Matching the title and keyword fields is especially important,
+//        // even beyond the bonus ES will give them for its short length.
+//        .field("keyword", 2)
+//        .field("title", 4)
+      ),
       seqToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
       seqToOption(query.formats)(seq => should(seq.map(formatQuery))),
       query.dateFrom.map(dateFromQuery),

@@ -227,7 +227,7 @@ case class Region(
   regionName: String,
   boundingBox: Option[BoundingBox])
 
-case class Query(
+case class  Query(
   freeText: Option[String] = None,
   quotes: Seq[String] = Nil,
   publishers: Seq[String] = Nil,

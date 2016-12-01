@@ -41,12 +41,16 @@ case class IndexDefinition(
 object IndexDefinition {
   val indices = Seq(new IndexDefinition(
     name = "datasets",
-    version = 12,
+    version = 24,
     definition =
       create.index("datasets")
         .indexSetting("recovery.initial_shards", 1)
         .mappings(
           mapping("datasets").fields(
+            // Index the title field with both the standard and english analyzers
+            field("title").typed(StringType).analyzer("standard").fields(
+              field("english").typed(StringType).analyzer("english")
+            ),
             field("temporal").inner(
               field("start").inner(
                 field("text").typed(StringType)),
