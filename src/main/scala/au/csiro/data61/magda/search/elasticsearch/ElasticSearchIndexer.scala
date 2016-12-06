@@ -44,6 +44,7 @@ import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.FutureRetry.retry
 import spray.json._
+import com.sksamuel.elastic4s.BulkItemResult
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -62,14 +63,16 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .mapAsync(1) {
         case (source, dataSets, promise) =>
           bulkIndex(buildDatasetIndexDefinition(source, dataSets))
-            .map((source, dataSets.length, promise, _))
+            .map((source, dataSets, promise, _))
       }
       .map {
-        case (source, dataSetCount, promise, result) =>
+        case (source, dataSets, promise, result) =>
           if (result.hasFailures) {
             logger.warning("Failure when indexing from {}: {}", source.name, result.failureMessage)
+
+            reindexSpatialFails(source, dataSets, result.failures)
           } else {
-            logger.info("Indexed {} datasets from {}", dataSetCount, source.name)
+            logger.info("Indexed {} datasets from {}", dataSets.length, source.name)
           }
 
           promise.success(result)
@@ -127,6 +130,20 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
             }
         }
     )
+  }
+
+  private def reindexSpatialFails(source: InterfaceConfig, dataSets: Seq[DataSet], failures: Seq[BulkItemResult]) = {
+    val dataSetLookup = dataSets.groupBy(_.identifier).mapValues(_.head)
+    val geoFails = failures
+      .filter(_.failureMessage.contains("failed to parse [spatial.geoJson]"))
+      .map(result => dataSetLookup.get(result.id.split("%2F")(1)))
+      .flatten
+      .map(dataSet => dataSet.copy(spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None))))
+
+    if (geoFails.length > 0) {
+      logger.info("Determined that {} datasets were excluded due to bad geojson - trying these again with spatial.geoJson excluded", geoFails.length)
+      index(source, geoFails.toList)
+    }
   }
 
   /**
