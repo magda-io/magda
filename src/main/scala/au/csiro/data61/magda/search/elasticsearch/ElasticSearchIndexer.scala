@@ -43,6 +43,7 @@ import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.FutureRetry.retry
 import spray.json._
+import au.csiro.data61.magda.external.InterfaceConfig
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -56,8 +57,8 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   implicit val scheduler = system.scheduler
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
-  private lazy val indexQueue: SourceQueue[(String, Seq[DataSet], Promise[BulkResult])] =
-    Source.queue[(String, Seq[DataSet], Promise[BulkResult])](0, OverflowStrategy.backpressure)
+  private lazy val indexQueue: SourceQueue[(InterfaceConfig, Seq[DataSet], Promise[BulkResult])] =
+    Source.queue[(InterfaceConfig, Seq[DataSet], Promise[BulkResult])](0, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (source, dataSets, promise) =>
           bulkIndex(buildDatasetIndexDefinition(dataSets))
@@ -66,9 +67,9 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .map {
         case (source, dataSetCount, promise, result) =>
           if (result.hasFailures) {
-            logger.warning("Failure when indexing from {}: {}", source, result.failureMessage)
+            logger.warning("Failure when indexing from {}: {}", source.name, result.failureMessage)
           } else {
-            logger.info("Indexed {} datasets from {}", dataSetCount, source)
+            logger.info("Indexed {} datasets from {}", dataSetCount, source.name)
           }
 
           promise.success(result)
@@ -287,7 +288,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     }
   }
 
-  override def index(source: String, dataSets: List[DataSet]) =
+  override def index(source: InterfaceConfig, dataSets: List[DataSet]) =
     if (dataSets.length > 0) {
       val promise = Promise[BulkResult]()
       indexQueue.offer((source, dataSets, promise))
@@ -322,14 +323,14 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     future
   }
 
-  override def needsReindexing(): Future[Boolean] = {
+  override def needsReindexing(source: InterfaceConfig): Future[Boolean] = {
     setupFuture.flatMap(client =>
       retry(() =>
         client.execute {
-          ElasticDsl.search in "datasets" / "datasets" limit 0
+          ElasticDsl.search in "datasets" / "datasets" query matchQuery("catalog", source.name) limit 0
         }, 10 seconds, 10, logger.warning("Failed to get dataset count, {} retries left", _))
         .map { result =>
-          logger.debug("Reindex check hit count: {}", result.getHits.getTotalHits)
+          logger.debug("{} reindex check hit count: {}", source.name, result.getHits.getTotalHits)
           result.getHits.getTotalHits == 0
         }
     )

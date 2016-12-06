@@ -91,7 +91,7 @@ case class CKANRelationship(
 
 case class CKANResource(
   /** id of package that the resource should be added to. */
-  package_id: String,
+  package_id: Option[String],
   /** url of resource */
   id: String,
   revision_id: Option[String],

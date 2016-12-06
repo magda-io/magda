@@ -36,6 +36,16 @@ EclipseKeys.withSource := true
 Revolver.settings
 Revolver.enableDebugging(port = 8000, suspend = false)
 
+unmanagedResourceDirectories in Compile ++= {  
+  if (Option(System.getProperty("includeMockData")).getOrElse("false").equals("true")) {
+    println("mock-data")
+    List(baseDirectory.value / "mock-data")
+  } else {
+    println("nil")
+    Nil
+  }   
+}
+
 dockerfile in docker := {
   val appDir: File = stage.value
   val targetDir = "/app"

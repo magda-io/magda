@@ -67,7 +67,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
 
       encodeResponseWith(Gzip) {
         cors() {
-          complete(HttpResponse(InternalServerError, entity = "You are probably seeing this message because Alex messed up"))
+          complete(HttpResponse(InternalServerError, entity = "Failure"))
         }
       }
     }

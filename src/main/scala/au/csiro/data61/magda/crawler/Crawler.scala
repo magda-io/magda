@@ -33,7 +33,24 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
 
   def crawl() = {
     externalInterfaces
-      .map(streamForInterface(_))
+      .map { interface =>
+        val needsIndexingFuture = if (AppConfig.conf.getBoolean("indexer.alwaysReindex")) {
+          log.info("Indexing {} because indexer.alwaysReindex is true", interface.name)
+          Future(true)
+        } else {
+          indexer.needsReindexing(interface).map { needsReindexing =>
+            if (needsReindexing) {
+              log.info("Indexing {} because it was determined to have zero records", interface.name)
+            } else {
+              log.info("Not indexing {} because it already has records", interface.name)
+            }
+            needsReindexing
+          }
+        }
+
+        Source.fromFuture(needsIndexingFuture)
+          .flatMapConcat { needsReindexing => if (needsReindexing) streamForInterface(interface) else Source.empty[(InterfaceConfig, List[DataSet])] }
+      }
       .reduce((x, y) => Source.combine(x, y)(Merge(_)))
       .map {
         case (source, dataSets) =>
@@ -41,30 +58,37 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
 
           val ineligibleDataSetCount = dataSets.size - filteredDataSets.size
           if (ineligibleDataSetCount > 0) {
-            log.info("Filtering out {} datasets from {} because they have no distributions", ineligibleDataSetCount, source)
+            log.info("Filtering out {} datasets from {} because they have no distributions", ineligibleDataSetCount, source.name)
           }
 
           (source, filteredDataSets)
       }
       .mapAsync(1) {
         case (source, dataSets) =>
-          indexer.index(source, dataSets).map(_ => (source, dataSets))
+          indexer.index(source, dataSets)
+            .map(_ => (source, dataSets))
             .recover {
               case e: Throwable =>
                 log.error(e, "Failed while indexing")
+                (source, Nil)
             }
+      }
+      .runWith(Sink.fold(0)((a, b) => a + b._2.size))
+      .map { size =>
+        if (size > 0) {
+          log.info("Indexed {} datasets - snapshotting...", size)
+          indexer.snapshot()
+        } else {
+          log.info("Did not need to index anything, no need to snapshot either.")
+        }
       }
       .recover {
         case e: Throwable =>
           log.error(e, "Failed crawl")
       }
-      .runWith(Sink.last)
-      .map { _ =>
-        indexer.snapshot()
-      }
   }
 
-  def streamForInterface(interfaceDef: InterfaceConfig): Source[(String, List[DataSet]), NotUsed] = {
+  def streamForInterface(interfaceDef: InterfaceConfig): Source[(InterfaceConfig, List[DataSet]), NotUsed] = {
     val interface = interfaces.get(interfaceDef.baseUrl).get
 
     Source.fromFuture(interface.getTotalDataSetCount())
@@ -75,12 +99,12 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
       }
       .throttle(1, 1 second, 1, ThrottleMode.Shaping)
       .mapAsync(1) {
-        case (start, size) => interface.getDataSets(start, size).map((interfaceDef.name, _))
+        case (start, size) => interface.getDataSets(start, size).map((interfaceDef, _))
       }
       .recover {
         case e: Throwable =>
           log.error(e, "Failed while fetching from {}", interfaceDef.name)
-          (interfaceDef.name, Nil)
+          (interfaceDef, Nil)
       }
   }
 

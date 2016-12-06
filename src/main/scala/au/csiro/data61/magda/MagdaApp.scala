@@ -10,7 +10,6 @@ import au.csiro.data61.magda.spatial.RegionSource
 import com.typesafe.config.{ ConfigObject, ConfigValue }
 
 import scala.collection.JavaConversions._
-import au.csiro.data61.magda.crawler.ScrapeAll
 import au.csiro.data61.magda.crawler.Crawler
 import au.csiro.data61.magda.search.SearchIndexer
 import scala.concurrent.Future
@@ -57,22 +56,7 @@ object MagdaApp extends App {
     val indexer = SearchIndexer(system, system.dispatcher, materializer)
     val crawler = new Crawler(system, config, interfaceConfigs, materializer, indexer)
 
-    val needsReindexing =
-      if (AppConfig.conf.getBoolean("indexer.alwaysReindex"))
-        Future(true)
-      else
-        indexer.needsReindexing().recover {
-          case e: Throwable =>
-            logger.error(e, "Failed to determine whether the index needs reindexing - this might mean that there's out-of-date or no data to search on")
-            throw e
-        }
-
-    needsReindexing.map {
-      case true => crawler.crawl()
-      case false => // Index isn't empty so it's all good :) 
-        logger.info("Index wasn't empty, no need to crawl")
-        Future.successful(None)
-    } onComplete {
+    crawler.crawl() onComplete {
       case Success(_) =>
         logger.info("Successfully completed crawl")
       case Failure(e) =>
