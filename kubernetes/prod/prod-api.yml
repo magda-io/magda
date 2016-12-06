@@ -21,6 +21,9 @@ spec:
         - name: S3_SECRET_KEY
           value: dummy
         image: "data61/magda-metadata:v${version}"
+        resources:
+          requests:
+            cpu: 450m
         imagePullPolicy: Always
         ports:
         - containerPort: 80
@@ -39,6 +42,7 @@ spec:
   selector:
     service: api
   type: "LoadBalancer"
+  loadBalancerIP: "104.199.217.132"
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler

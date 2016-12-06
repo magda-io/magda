@@ -140,9 +140,10 @@ spec:
         image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           requests:
+            cpu: 800m
             memory: 5000Mi
-          limits: 
-            memory: 7000Mi
+          limits:
+            memory: 6500Mi
         env:
         - name: NAMESPACE
           valueFrom:
