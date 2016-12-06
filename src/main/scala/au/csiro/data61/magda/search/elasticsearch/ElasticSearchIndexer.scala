@@ -36,6 +36,7 @@ import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.SourceQueue
 import akka.stream.scaladsl.SourceQueueWithComplete
 import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.search.SearchIndexer
@@ -43,7 +44,6 @@ import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.FutureRetry.retry
 import spray.json._
-import au.csiro.data61.magda.external.InterfaceConfig
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -61,7 +61,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     Source.queue[(InterfaceConfig, Seq[DataSet], Promise[BulkResult])](0, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (source, dataSets, promise) =>
-          bulkIndex(buildDatasetIndexDefinition(dataSets))
+          bulkIndex(buildDatasetIndexDefinition(source, dataSets))
             .map((source, dataSets.length, promise, _))
       }
       .map {
@@ -86,6 +86,14 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
           logger.info("Restoring snapshot {} for {} version {}", snapshot.name, definition.name, definition.version)
+
+          logger.info("First deleting existing index if present...")
+
+          deleteIndex(client, definition).map(_ => (client, definition, snapshot, promise))
+      }
+      .mapAsync(1) {
+        case (client, definition, snapshot, promise) =>
+          logger.info("Restoring snapshot")
 
           client.execute {
             restore snapshot snapshot.name from snapshotRepoName(definition) indexes definition.name waitForCompletion true
@@ -154,29 +162,17 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     })
 
   private def rebuildIndex(client: ElasticClient, definition: IndexDefinition): Future[Any] = {
-    restoreLatestSnapshot(client, definition) flatMap {
+    val snapshotFuture = if (AppConfig.conf.getBoolean("indexer.readSnapshots"))
+      restoreLatestSnapshot(client, definition)
+    else {
+      logger.info("Snapshot restoration disabled, rebuilding index manually")
+      Future(RestoreFailure)
+    }
+
+    snapshotFuture flatMap {
       case RestoreSuccess => Future.successful(Unit) // no need to reindex 
       case RestoreFailure =>
-        client.execute {
-          delete index definition.name
-        } recover {
-          case outer: RemoteTransportException => outer.getCause match {
-            case (inner: IndexNotFoundException) => {
-              // Meh, we were trying to delete it anyway.
-            }
-            case inner: RemoteTransportException => inner.getCause match {
-              case (inner: IndexNotFoundException) => {
-                // Meh, we were trying to delete it anyway.
-              }
-            }
-            case e =>
-              logger.debug("Inner exception class {}", e.getClass.toString)
-              throw e
-          }
-          case e =>
-            logger.debug("Exception class {}", e.getClass.toString)
-            throw e
-        } flatMap { _ =>
+        deleteIndex(client, definition) flatMap { _ =>
           Future.sequence(Seq(
             client.execute(definition.definition)
           ))
@@ -199,11 +195,41 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
           definition.create match {
             case Some(createFunc) => createFunc(client, materializer, system)
               .flatMap(_ => recordVersion)
-              .flatMap(_ => createSnapshot(client, definition))
+              .flatMap(_ =>
+                if (AppConfig.conf.getBoolean("indexer.makeSnapshots"))
+                  createSnapshot(client, definition)
+                else {
+                  logger.info("Snapshotting disabled, skipping")
+                  Future(Unit)
+                }
+              )
             case None => recordVersion()
           }
         }
     }
+  }
+
+  def deleteIndex(client: ElasticClient, definition: IndexDefinition): Future[Unit] = client.execute {
+    delete index definition.name
+  } recover {
+    case outer: RemoteTransportException => outer.getCause match {
+      case (inner: IndexNotFoundException) => {
+        // Meh, we were trying to delete it anyway.
+      }
+      case inner: RemoteTransportException => inner.getCause match {
+        case (inner: IndexNotFoundException) => {
+          // Meh, we were trying to delete it anyway.
+        }
+      }
+      case e =>
+        logger.debug("Inner exception class {}", e.getClass.toString)
+        throw e
+    }
+    case e =>
+      logger.debug("Exception class {}", e.getClass.toString)
+      throw e
+  } map { _ =>
+    Unit
   }
 
   sealed trait RestoreResult
@@ -349,11 +375,12 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   /**
    * Indexes a number of datasets into ES using a bulk insert.
    */
-  private def buildDatasetIndexDefinition(dataSets: Seq[DataSet]): BulkDefinition =
+  private def buildDatasetIndexDefinition(source: InterfaceConfig, dataSets: Seq[DataSet]): BulkDefinition =
     bulk(
       dataSets.map { dataSet =>
         val indexDataSet = ElasticDsl.index into "datasets" / "datasets" id dataSet.uniqueId source (
           dataSet.copy(
+            catalog = source.name,
             years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
               case Nil  => None
               case list => Some(list)

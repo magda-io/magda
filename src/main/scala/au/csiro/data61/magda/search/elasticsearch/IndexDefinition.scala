@@ -41,7 +41,7 @@ case class IndexDefinition(
 object IndexDefinition {
   val datasets = new IndexDefinition(
     name = "datasets",
-    version = 12,
+    version = 13,
     definition =
       create.index("datasets")
         .indexSetting("recovery.initial_shards", 1)
@@ -53,13 +53,20 @@ object IndexDefinition {
               field("end").inner(
                 field("text").typed(StringType))),
             field("publisher").inner(
-              field("name").typed(StringType).fields(
+              field("name").typed(StringType).analyzer("english").fields(
                 field("untouched").typed(StringType).index("not_analyzed"))),
             field("distributions").nested(
+              field("title").typed(StringType).analyzer("english"),
+              field("description").typed(StringType).analyzer("english"),
               field("format").typed(StringType).fields(
                 field("untokenized").typed(StringType).analyzer("untokenized"))),
             field("spatial").inner(
-              field("geoJson").typed(GeoShapeType))),
+              field("geoJson").typed(GeoShapeType)),
+            field("title").typed(StringType).analyzer("english"),
+            field("description").typed(StringType).analyzer("english"),
+            field("keyword").typed(StringType).analyzer("english"),
+            field("theme").typed(StringType).analyzer("english")
+          ),
           mapping(Format.id),
           mapping(Year.id),
           mapping(Publisher.id)
@@ -96,7 +103,7 @@ object IndexDefinition {
           } else {
             properties.fields(regionSource.nameProperty)
           }
-          
+
           ElasticDsl.index
             .into("regions" / "regions")
             .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.fields(regionSource.idProperty).convertTo[String]))

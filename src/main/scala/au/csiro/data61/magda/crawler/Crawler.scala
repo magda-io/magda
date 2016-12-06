@@ -76,8 +76,11 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
       .runWith(Sink.fold(0)((a, b) => a + b._2.size))
       .map { size =>
         if (size > 0) {
-          log.info("Indexed {} datasets - snapshotting...", size)
-          indexer.snapshot()
+          log.info("Indexed {} datasets", size)
+          if (config.getBoolean("indexer.makeSnapshots")) {
+            log.info("Snapshotting...")
+            indexer.snapshot()
+          }
         } else {
           log.info("Did not need to index anything, no need to snapshot either.")
         }
