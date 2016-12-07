@@ -18,7 +18,8 @@ case class RegionSource(
   nameProperty: String,
   includeIdInName: Boolean,
   shapePath: String,
-  disabled: Boolean)
+  disabled: Boolean,
+  order: Int)
 
 object RegionSource {
   val sources = loadFromConfig(AppConfig.conf.getConfig("regionSources"))
@@ -38,7 +39,8 @@ object RegionSource {
           nameProperty = regionSourceConfig.getString("nameField"),
           includeIdInName = if (regionSourceConfig.hasPath("includeIdInName")) regionSourceConfig.getBoolean("includeIdInName") else false,
           shapePath = regionSourceConfig.getString("shapePath"),
-          disabled = regionSourceConfig.hasPath("disabled") && regionSourceConfig.getBoolean("disabled"))
+          disabled = regionSourceConfig.hasPath("disabled") && regionSourceConfig.getBoolean("disabled"),
+          order = regionSourceConfig.getInt("order"))
     }.toSeq.filterNot(_.disabled)
   }
 }

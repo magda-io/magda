@@ -59,7 +59,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
   private lazy val indexQueue: SourceQueue[(InterfaceConfig, Seq[DataSet], Promise[BulkResult])] =
-    Source.queue[(InterfaceConfig, Seq[DataSet], Promise[BulkResult])](0, OverflowStrategy.backpressure)
+    Source.queue[(InterfaceConfig, Seq[DataSet], Promise[BulkResult])](Int.MaxValue, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (source, dataSets, promise) =>
           bulkIndex(buildDatasetIndexDefinition(source, dataSets))
@@ -85,7 +85,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .run()
 
   private lazy val restoreQueue: SourceQueue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
-    Source.queue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](0, OverflowStrategy.backpressure)
+    Source.queue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
           logger.info("Restoring snapshot {} for {} version {}", snapshot.name, definition.name, definition.version)

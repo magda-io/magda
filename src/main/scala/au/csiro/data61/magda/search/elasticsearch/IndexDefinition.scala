@@ -75,7 +75,7 @@ object IndexDefinition {
   val regions =
     new IndexDefinition(
       name = "regions",
-      version = 11,
+      version = 13,
       definition =
         create.index("regions")
           .indexSetting("recovery.initial_shards", 1)
@@ -112,7 +112,8 @@ object IndexDefinition {
               "id" -> properties.fields(regionSource.idProperty),
               "name" -> name,
               "rectangle" -> createEnvelope(jsonRegion.fields("geometry")),
-              "geometry" -> jsonRegion.fields("geometry")
+              "geometry" -> jsonRegion.fields("geometry"),
+              "order" -> JsNumber(regionSource.order)
             ).toJson)
       }
       // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request

@@ -63,7 +63,7 @@ import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import au.csiro.data61.magda.util.SetExtractor
-
+import org.elasticsearch.search.sort.SortOrder
 
 class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
   val logger = system.log
@@ -241,14 +241,14 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
    */
   private def setToOption[X, Y](seq: Set[X])(fn: Set[X] => Y): Option[Y] = seq match {
     case SetExtractor() => None
-    case x   => Some(fn(x))
+    case x              => Some(fn(x))
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
   private def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
     val processedQuote = query.quotes.map(quote => s"""${quote}""") match {
       case SetExtractor() => None
-      case xs  => Some(xs.reduce(_ + " " + _))
+      case xs             => Some(xs.reduce(_ + " " + _))
     }
 
     val stringQuery: Option[String] = (query.freeText, processedQuote) match {
@@ -318,8 +318,17 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
-      client.execute(ElasticDsl.search in "regions" / "regions" query { matchPhrasePrefixQuery("name", query) } start start.toInt limit limit sourceExclude ("geometry"))
-        .flatMap { response =>
+      client.execute(
+        ElasticDsl.search in "regions" / "regions"
+          query { matchPhrasePrefixQuery("name", query) }
+          start start.toInt
+          limit limit
+          sort ( 
+            field sort "order" order SortOrder.ASC,
+            field sort "_score" order SortOrder.DESC
+          )
+          sourceExclude ("geometry")
+      ).flatMap { response =>
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
             case _ => Future(RegionSearchResult(query, response.totalHits, response.as[Region].toList))
