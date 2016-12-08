@@ -1,16 +1,17 @@
-export const REQUEST_REGIONS = 'REQUEST_REGIONS'
-export const RECEIVE_REGIONS = 'RECEIVE_REGIONS'
+import fetch from 'isomorphic-fetch'
+import config from '../config'
+import {actionTypes} from '../constants/ActionTypes';
 
 export function requestRegions(query){
   return {
-    type: REQUEST_REGIONS,
+    type: actionTypes.REQUEST_REGIONS,
     query
   }
 }
 
 export function receiveRegions(query, json){
   return {
-    type: RECEIVE_REGIONS,
+    type: actionTypes.RECEIVE_REGIONS,
     json: json,
     query
   }
@@ -19,7 +20,7 @@ export function receiveRegions(query, json){
 export function fetchRegionSearchResults(query) {
   return (dispatch)=>{
     dispatch(requestRegions(query))
-    return fetch(`http://magda-search-api.terria.io/regions/search?query=${query}`)
+    return fetch(config().searchApiBaseUrl + `regions/search?query=${query}`)
     .then(response => response.json())
     .then(json =>
       dispatch(receiveRegions(query, json))

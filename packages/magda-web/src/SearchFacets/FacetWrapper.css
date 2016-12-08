@@ -5,7 +5,6 @@
 
 
 .facet-wrapper .btn{
-   background: transparent;
    border: 0;
    box-shadow: 0;
 }
@@ -18,6 +17,7 @@
     color: rgb(102, 181, 252);
     line-height: 2;
     font-weight: 600;
+    background: transparent;
 }
 
 
@@ -31,6 +31,7 @@
    position: relative;
    padding: 0;
    line-height: 2.3;
+   background: transparent;
 }
 
 .btn-facet-option__volume-indicator{
@@ -105,8 +106,23 @@
     padding: 2px 5px 2px 12px;
 }
 
+.btn-facet-option__detail {
+  font-size: small;
+  color: #999;
+  padding: 0px 0px 0px 12px;
+}
+
+.btn-facet-option__location {
+  line-height: initial;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
 .btn-facet-option__location .btn-facet-option__name{
   width: calc(100% - 50px);
+  float: none;
+  display: inline;
+  padding: 2px 0px 2px 12px;
 }
 
 

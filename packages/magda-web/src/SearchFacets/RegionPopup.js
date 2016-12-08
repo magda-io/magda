@@ -57,10 +57,12 @@ class RegionPopup extends Facet {
       let regionProp = regionMapping[regionType].regionProp;
       let nameProp = regionMapping[regionType].nameProp;
       this.setState({
-        _activeRegion: Object.assign({}, this.state._activeRegion,
-          {regionId: feature.properties[regionProp],
-          regionName: feature.properties[nameProp]})
-      })
+        _activeRegion: {
+          regionType: regionType,
+          regionId: feature.properties[regionProp],
+          regionName: feature.properties[nameProp]
+        }
+      });
     }
 
     getDropDownOptions(){

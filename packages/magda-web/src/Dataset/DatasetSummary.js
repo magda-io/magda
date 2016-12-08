@@ -8,6 +8,10 @@ export default class DatasetSummary extends Component {
   constructor(props) {
     super(props);
     this.onClick = this.onClick.bind(this);
+    this.getTags = this.getTags.bind(this);
+    this.state ={
+      tagsExpanded: false
+    }
   }
 
   truncate(s) {
@@ -19,13 +23,45 @@ export default class DatasetSummary extends Component {
     this.props.onClickTag(tag);
   }
 
+  getTags(){
+    let allTags = this.props.dataset.keyword;
+    let tags = allTags;
+    let defaultSize = 5;
+    let toggleText = '';
+    let that = this;
+
+    function toggleTagExpansion(e){
+      e.stopPropagation();
+      that.setState({
+        tagsExpanded: !that.state.tagsExpanded
+      })
+    }
+    if(allTags.length > defaultSize){
+      if(!this.state.tagsExpanded){
+        tags = allTags.slice(0, defaultSize-1);
+        toggleText = `show ${allTags.length - defaultSize} more tags`;
+      } else{
+        tags = allTags;
+        toggleText = `show ${allTags.length - defaultSize} less tags`;
+      }
+    }
+    return <ul className='list-unstyled search-result-tags'>
+        {tags.map((tag, i)=>
+          <li key={`${tag}-${i}`} className='search-result-tag'><a onClick={this.onClick.bind(this, tag)}>#{tag}</a></li>
+        )}
+        {allTags.length > defaultSize &&
+          <li><button className='search-result--tag-toggle btn' onClick={toggleTagExpansion} >{toggleText}</button></li>
+        }
+    </ul>
+  }
+
   render(){
     let dataset = this.props.dataset;
     return <div className='dataset-summray' onClick={(e)=>{window.open(dataset.landingPage, '_blank');}}>
               <div className='dataset-summray-main'>
                 <h3 className='result-header'>
                   <div className='result-header-left'>
-                    <a href={dataset.landingPage} target='_blank' className='dataset-summray-title' type='button'>{dataset.title}</a>
+                    <span target='_blank' className='dataset-summray-title' type='button'>{dataset.title}</span>
                   </div>
                   <div className='result-header-middle'>
                     <Star/>
@@ -43,14 +79,9 @@ export default class DatasetSummary extends Component {
                   <MarkdownViewer markdown={dataset.description}/>
                 </div>
                 <ul className='list-unstyled tags'>
-                  {
-                    dataset.keyword.map((tag, i)=>
-                      <li key={`${tag}-${i}`} className='search-result--tag'><a onClick={this.onClick.bind(this, tag)}>#{tag}</a></li>
-                    )
-                  }
+                  {this.getTags()}
                 </ul>
               </div>
-              {this.props.children}
           </div>
   }
 }

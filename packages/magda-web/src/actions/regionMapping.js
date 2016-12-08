@@ -1,15 +1,16 @@
-export const REQUEST_REGION_MAPPING = 'REQUEST_REGION_MAPPING'
-export const RECEIVE_REGION_MAPPING = 'RECEIVE_REGION_MAPPING'
+import fetch from 'isomorphic-fetch'
+import config from '../config'
+import {actionTypes} from '../constants/ActionTypes';
 
 export function requestRegionMapping(){
   return {
-    type: REQUEST_REGION_MAPPING,
+    type: actionTypes.REQUEST_REGION_MAPPING,
   }
 }
 
 export function receiveRegionMapping(json){
   return {
-    type: RECEIVE_REGION_MAPPING,
+    type: actionTypes.RECEIVE_REGION_MAPPING,
     json: json,
   }
 }
@@ -17,7 +18,7 @@ export function receiveRegionMapping(json){
 export function fetchRegionMapping() {
   return (dispatch)=>{
     dispatch(requestRegionMapping())
-    return fetch('http://magda-search-api.terria.io/region-types')
+    return fetch(config().searchApiBaseUrl + 'region-types')
     .then(response => response.json())
     .then(json =>
       dispatch(receiveRegionMapping(json))

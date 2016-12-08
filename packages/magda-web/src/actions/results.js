@@ -1,39 +1,19 @@
 import futch from '../helpers/futch';
 import parseQuery from '../helpers/parseQuery'
+import config from '../config'
 
-export const SET_URL_QUERY = 'SET_URL_QUERY'
-export const REQUEST_RESULTS = 'REQUEST_RESULTS'
-export const RECEIVE_RESULTS = 'RECEIVE_RESULTS'
-export const UPDATE_PROGRESS = 'UPDATE_PROGRESS'
-export const FETCH_ERROR = 'FETCH_ERROR'
-
-export const ADD_PUBLISHER = 'ADD_PUBLISHER'
-export const REMOVE_PUBLISHER = 'REMOVE_PUBLISHER'
-export const RESET_PUBLISHER = 'RESET_PUBLISHER'
-
-export const ADD_REGION = 'ADD_REGION'
-export const RESET_REGION = 'RESET_REGION'
-
-export const SET_DATE_FROM = 'SET_DATE_FROM'
-export const SET_DATE_TO = 'SET_DATE_TO'
-
-export const RESET_DATE_FROM = 'RESET_DATE_FROM';
-export const RESET_DATE_TO = 'RESET_DATE_TO';
-
-export const ADD_FORMAT = 'ADD_FORMAT'
-export const REMOVE_FORMAT = 'REMOVE_FORMAT'
-export const RESET_FORMAT = 'RESET_FORMAT'
+import {actionTypes} from '../constants/ActionTypes';
 
 export function requestResults(apiQuery){
   return {
-    type: REQUEST_RESULTS,
+    type: actionTypes.REQUEST_RESULTS,
     apiQuery
   }
 }
 
 export function receiveResults(apiQuery, json){
   return {
-    type: RECEIVE_RESULTS,
+    type: actionTypes.RECEIVE_RESULTS,
     apiQuery,
     json,
   }
@@ -41,34 +21,32 @@ export function receiveResults(apiQuery, json){
 
 export function updateProgress(progress){
   return{
-    type: UPDATE_PROGRESS,
+    type: actionTypes.UPDATE_PROGRESS,
     progress
   }
 }
 
-export function transferFailed(error){
+export function transferFailed(errorMessage){
   return {
-    type: FETCH_ERROR,
+    type: actionTypes.FETCH_ERROR,
+    errorMessage
   }
 }
 
 
 export function fetchSearchResults(query) {
   return (dispatch)=>{
-    console.log(`http://magda-search-api.terria.io/datasets/search?query=${query}`);
+    console.log(config().searchApiBaseUrl + `datasets/search?query=${query}`);
     dispatch(requestResults(query))
-    return futch(`http://magda-search-api.terria.io/datasets/search?query=${query}`,
+    return futch(config().searchApiBaseUrl + `datasets/search?query=${query}`,
       (progressEvent)=>{
       dispatch(updateProgress(progressEvent.loaded / progressEvent.total))
-      },
-      (errorEvent)=>{
-        dispatch(transferFailed(errorEvent))
       }
     )
     .then(json =>
       dispatch(receiveResults(query, json))
     )
-    .catch(error=>{
+    .catch((error)=>{
       dispatch(transferFailed(error))
     })
   }
@@ -98,80 +76,80 @@ export function fetchSearchResultsIfNeeded(urlQueryObject){
 
 export function addPublisher(publisher){
   return {
-    type: ADD_PUBLISHER,
+    type: actionTypes.ADD_PUBLISHER,
     item: publisher
   }
 }
 
 export function removePublisher(publisher){
   return {
-    type: REMOVE_PUBLISHER,
+    type: actionTypes.REMOVE_PUBLISHER,
     item: publisher
   }
 }
 
 export function resetPublisher(){
   return {
-    type: RESET_PUBLISHER,
+    type: actionTypes.RESET_PUBLISHER,
   }
 }
 
 export function addFormat(format){
   return {
-    type: ADD_FORMAT,
+    type: actionTypes.ADD_FORMAT,
     item: format
   }
 }
 
 export function removeFormat(format){
   return {
-    type: REMOVE_FORMAT,
+    type: actionTypes.REMOVE_FORMAT,
     item: format
   }
 }
 
 export function resetFormat(){
   return {
-    type: RESET_FORMAT,
+    type: actionTypes.RESET_FORMAT,
   }
 }
 
 export function addRegion(region){
   return {
-    type: ADD_REGION,
+    type: actionTypes.ADD_REGION,
     item: region
   }
 }
 
 export function resetRegion(){
   return {
-    type: RESET_REGION,
+    type: actionTypes.RESET_REGION,
   }
 }
 
 
 export function setDateFrom(date){
   return {
-    type: SET_DATE_FROM,
+    type: actionTypes.SET_DATE_FROM,
     item: date
   }
 }
 
 export function setDateTo(date){
   return {
-    type: SET_DATE_TO,
+    type: actionTypes.SET_DATE_TO,
     item: date
   }
 }
 
 export function resetDateFrom(){
   return {
-    type: RESET_DATE_FROM
+    type: actionTypes.RESET_DATE_FROM
   }
 }
 
 export function resetDateTo(){
   return {
-    type: RESET_DATE_TO
+    type: actionTypes.RESET_DATE_TO
   }
 }

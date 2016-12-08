@@ -8,7 +8,7 @@ export default function(query){
   let publisher = queryToString('+by', query.publisher);
   let format = queryToString('+as', query.format);
   let location = queryToLocation(query.regionId, query.regionType);
-  let startIndex = defined(query.page) ? (query.page - 1)*config().resultsPerPage + 1 : 0;
+  let startIndex = defined(query.page) ? (query.page - 1)*config().resultsPerPage : 0;
 
   let apiQuery = encodeURI(`${keyword}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${config().resultsPerPage}`);
   return apiQuery;

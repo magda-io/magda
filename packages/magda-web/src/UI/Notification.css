@@ -1,0 +1,55 @@
+.notification-error .notification-heading{
+	background: #e74c3c;
+	color: #fff;
+	padding: 10px;
+}
+
+
+.notification-error button{
+  padding: 5px 10px;
+  margin: 10px;
+  background: #e74c3c;
+	color: #fff;
+}
+
+.notification-error button:hover,
+.notification-error button:focus{
+  color: #fff;
+  background: #e67e22;
+}
+
+
+.notification{
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999
+}
+
+
+.notification-inner{
+  background: #fff;
+
+}
+
+.notification-body{
+  padding: 10px;
+}
+
+
+.notification-inner{
+  height: auto;
+  width: 300px;
+  margin: 0 auto;
+  max-height: 500px;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.notification-heading{
+  text-transform: uppercase;
+}

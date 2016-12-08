@@ -8,7 +8,7 @@ export default class DatasetInfo extends Component {
     if(fileTypes.indexOf(format) > 0){
       type = fileTypes.indexOf(format)
     }
-    return `../assets/file-icons/${fileTypes[type]}.png`;
+    return `./assets/file-icons/${fileTypes[type]}.png`;
   }
   render(){
     let dataset = this.props.dataset;
@@ -26,7 +26,7 @@ export default class DatasetInfo extends Component {
                     {dataset.distributions.map((d, i)=>
                       <li key={i} className={`dataset-info--download-link clearfix ${d.format}`}>
                         <img src={this.getIcon(d.format)} alt={d.format} className='dataset-file-icon'/>
-                        <a href={d.downloadURL} target='_blank'>{d.description}({d.format})</a>
+                        <a href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
                       </li>
                     )}
                   </ul>
@@ -47,6 +47,4 @@ export default class DatasetInfo extends Component {
   }
 }
 
-DatasetInfo.propTypes = {isOpen: React.PropTypes.bool,
-                         dataset: React.PropTypes.object};
-DatasetInfo.defaultProps = {isOpen: false};
+DatasetInfo.propTypes = {dataset: React.PropTypes.object};

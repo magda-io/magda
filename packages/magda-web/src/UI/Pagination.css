@@ -13,6 +13,10 @@
   text-align: right;
 }
 
+.pagination-start{
+  text-align: left;
+}
+
 .pagination-secondary-info{
   font-size: 13px;
   color: #aaa;
@@ -39,8 +43,4 @@
 .pagination-previous .fa,
 .pagination-start .fa{
   padding-right: 10px;
-}
-
-.pagination-item{
-  text-align: right;
 }

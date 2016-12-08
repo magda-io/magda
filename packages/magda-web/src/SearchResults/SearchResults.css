@@ -18,8 +18,12 @@
   font-weight: normal;
 }
 
+.search-result-dataset-info{
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s;
+}
 
-.search-result--tag{
-  display: inline-block;
-  margin-right: 8px;
+.search-result-dataset-info.is-open{
+  max-height: 600px;
 }

@@ -1,10 +1,10 @@
-import '../../node_modules/leaflet/dist/leaflet.css';
+import 'leaflet/dist/leaflet.css';
 import './RegionMap.css';
 import Facet from './FacetWrapper';
 // eslint-disable-next-line
 import L from 'leaflet';
 // eslint-disable-next-line
-import MVTSource from '../../node_modules/leaflet-mapbox-vector-tile/src/index.js';
+import MVTSource from 'leaflet-mapbox-vector-tile';
 import defined from '../helpers/defined';
 import React from 'react';
 
@@ -17,7 +17,7 @@ class RegionMap extends Facet {
     }
 
     componentDidMount(){
-        this.map = L.map(this._c, { zoomControl: this.props.interaction});
+        this.map = L.map(this._c, { zoomControl: this.props.interaction, maxZoom: 12 });
         this.map.setView([-27, 133], 3);
 
         if(this.props.interaction === false){
@@ -35,40 +35,57 @@ class RegionMap extends Facet {
             this.map.touchZoom.disable();
             this.map.scrollWheelZoom.disable();
         }
+
+        this.updateRegion({}, this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if(this.shouldRegionUpdates(this.props, nextProps)){
-          this.addRegion(nextProps);
-        } else if(!defined(nextProps.region.regionType)){
-          this.removeRegion();
+    updateRegion(previousProps, nextProps) {
+      if(this.shouldRegionUpdate(previousProps, nextProps)) {
+        this.addRegion(nextProps);
+      } else if(!defined(nextProps.region.regionType)){
+        this.removeRegion();
+      }
+
+      if (defined(nextProps.region)) {
+        const bbox = nextProps.region.boundingBox;
+        if (bbox) {
+          this.map.fitBounds([
+            [bbox.south, bbox.west],
+            [bbox.north, bbox.east]
+          ]);
         }
+      }
     }
 
-    shouldRegionUpdates(preProps, nextProps){
-      if(!defined(nextProps.regionMapping) || !defined(nextProps.region.regionType)){
+    componentDidUpdate(previousProps, previousState) {
+      this.updateRegion(previousProps, this.props);
+    }
+
+    shouldRegionUpdate(preProps, nextProps){
+      if (!defined(nextProps.regionMapping) || !defined(nextProps.region.regionType)) {
         return false;
-      } else if((nextProps.region.regionType === preProps.region.regionType) &&
-                (nextProps.region.regionId === preProps.region.regionId)){
-          return false;
-        }
+      } else if (this.layer &&
+                 nextProps.region.regionType === preProps.region.regionType &&
+                 nextProps.region.regionId === preProps.region.regionId) {
+        return false;
+      }
       return true;
     }
 
     generateStyle(region) {
         return (feature) => {
           return{
-            color: (region === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
+            color: (region === this.getID(feature)) ? 'rgba(0, 181, 255, 0.6)' : 'rgba(0,0,0,0)',
+            outline: {
+                color: '#ddd',
+                size: 1
+            },
+            selected: {
+                color: (region === this.getID(feature)) ? 'rgba(0, 181, 255, 0.6)' : 'rgba(0,0,0,0)',
                 outline: {
-                    color: '#ddd',
-                    size: 1
-                },
-                selected: {
-                    color: (region === this.getID(feature)) ? '#00B5FF' : 'rgba(0,0,0,0)',
-                    outline: {
-                        color: '#00B5FF'
-                    }
+                    color: '#00B5FF'
                 }
+            }
         }};
     }
 

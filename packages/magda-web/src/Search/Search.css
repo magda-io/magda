@@ -41,8 +41,8 @@
 	height: 10px;
 }
 
-.search-error{
-	background: #e74c3c;
-	color: #fff;
+.no-match{
 	padding: 10px;
+	font-weight: 600;
+	background: #ecf0f1;
 }

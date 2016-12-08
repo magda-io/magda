@@ -17,6 +17,7 @@
   display: block;
   width: 100%;
   text-align: left;
+  background: #fff;
 }
 
 .dropdown button:hover{

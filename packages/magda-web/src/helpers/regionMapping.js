@@ -1,4 +1,6 @@
 import getJsonp from '../helpers/getJsonp';
+import config from '../config'
+
 export const REQUEST_REGION_MAPPING = 'REQUEST_REGION_MAPPING'
 export const RECEIVE_REGION_MAPPING = 'RECEIVE_REGION_MAPPING'
 
@@ -18,7 +20,7 @@ export function receiveRegionMapping(json){
 export function fetchRegionMapping() {
   return (dispatch)=>{
     dispatch(requestRegionMapping())
-    return fetch('http://magda-search-api.terria.io/region-types')
+    return fetch(config().searchApiBaseUrl + 'region-types')
     .then(response => response.json())
     .then(json =>
       dispatch(receiveRegionMapping(json))

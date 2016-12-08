@@ -4,3 +4,8 @@
   padding: 5px;
   margin-top: -8px;
 }
+
+.region-type {
+	font-size: small;
+	color: #ccc;
+}

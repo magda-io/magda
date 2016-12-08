@@ -6,14 +6,16 @@
   "devDependencies": {
     "deep-freeze": "0.0.1",
     "expect": "^1.20.2",
-    "react-scripts": "0.7.0"
+    "nock": "^9.0.2",
+    "react-scripts": "0.7.0",
+    "redux-mock-store": "^1.2.1"
   },
   "dependencies": {
     "d3-drag": "^1.0.1",
     "d3-selection": "^1.0.2",
     "isomorphic-fetch": "^2.2.1",
     "leaflet": "^0.7.7",
-    "leaflet-mapbox-vector-tile": "steve9164/Leaflet.MapboxVectorTile",
+    "leaflet-mapbox-vector-tile": "TerriaJS/Leaflet.MapboxVectorTile",
     "lodash.debounce": "^4.0.8",
     "lodash.find": "^4.6.0",
     "lodash.findindex": "^4.6.0",

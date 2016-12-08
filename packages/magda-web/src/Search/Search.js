@@ -1,30 +1,50 @@
-import React, { Component } from 'react';
-import {fetchSearchResultsIfNeeded} from '../actions/results';
-import {fetchRegionMapping} from '../actions/regionMapping';
+// eslint-disable-next-line
+import {RouterContext } from 'react-router';
+
+import './Search.css';
+import {addPublisher, removePublisher, resetPublisher, addRegion, resetRegion, setDateFrom, setDateTo, addFormat, removeFormat, resetFormat, resetDateFrom, resetDateTo} from '../actions/results';
 import {connect} from 'react-redux';
+import {fetchFormatSearchResults} from '../actions/facetFormatSearch';
+import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
+import {fetchRegionMapping} from '../actions/regionMapping';
+import {fetchRegionSearchResults} from '../actions/facetRegionSearch';
 import config from '../config.js';
 import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
-import './Search.css';
-// eslint-disable-next-line
-import {RouterContext } from 'react-router';
-// eslint-disable-next-line
 import Pagination from '../UI/Pagination';
+import Notification from '../UI/Notification';
 import ProgressBar from '../UI/ProgressBar';
+import React, { Component } from 'react';
 import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
 import SearchResults from '../SearchResults/SearchResults';
+import Recomendations from './Recomendations';
+
 
 class Search extends Component {
 
   constructor(props) {
     super(props);
-    this.updateQuery = this.updateQuery.bind(this);
-    this.onSearchTextChange = this.onSearchTextChange.bind(this);
-    this.goToPage=this.goToPage.bind(this);
-    this.onClickTag = this.onClickTag.bind(this);
-    this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
     this.debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
+    this.goToPage=this.goToPage.bind(this);
+    this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
+    this.onClickTag = this.onClickTag.bind(this);
+    this.onResetPublisherFacet = this.onResetPublisherFacet.bind(this);
+    this.onResetRegionFacet = this.onResetRegionFacet.bind(this);
+    this.onResetTemporalFacet = this.onResetTemporalFacet.bind(this);
+    this.onResetFormatFacet = this.onResetFormatFacet.bind(this);
+    this.onSearchFormatFacet = this.onSearchFormatFacet.bind(this);
+    this.onSearchPublisherFacet = this.onSearchPublisherFacet.bind(this);
+    this.onSearchRegionFacet = this.onSearchRegionFacet.bind(this);
+    this.onSearchTextChange = this.onSearchTextChange.bind(this);
+    this.onToggleFormatOption = this.onToggleFormatOption.bind(this);
+    this.onTogglePublisherOption = this.onTogglePublisherOption.bind(this);
+    this.onToggleRegionOption = this.onToggleRegionOption.bind(this);
+    this.onToggleTemporalOption = this.onToggleTemporalOption.bind(this);
+    this.updateQuery = this.updateQuery.bind(this);
+    this.onDismissError = this.onDismissError.bind(this);
+    this.modifyUserSearchString = this.modifyUserSearchString.bind(this);
+
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
     this.state={
@@ -34,11 +54,6 @@ class Search extends Component {
 
   componentWillMount(){
     this.props.dispatch(fetchRegionMapping());
-    this.props.dispatch(fetchSearchResultsIfNeeded(this.props.location.query));
-  }
-
-  componentWillReceiveProps(nextProps){
-    this.props.dispatch(fetchSearchResultsIfNeeded(this.props.location.query));
   }
 
   onSearchTextChange(text){
@@ -54,6 +69,7 @@ class Search extends Component {
     });
     this.updateSearchQuery(tag);
   }
+
 
   updateSearchQuery(text){
     this.updateQuery({
@@ -72,7 +88,7 @@ class Search extends Component {
     // when user hit enter, no need to submit the form
     if(event.charCode===13){
         event.preventDefault();
-        this.updateSearchQuery(this.state.searchText)
+        this.debounceUpdateSearchQuery.flush();
     }
   }
 
@@ -101,12 +117,124 @@ class Search extends Component {
 
   noMatchText(){
     if(defined(this.props.location.query.q) &&
-       this.props.location.query.q > 0 &&
+       this.props.location.query.q.length > 0 &&
        this.props.strategy === 'match-part'){
+         console.log('park');
       return <div className='no-match'>
               Sorry we can not find what you were looking for, you might find the following related datasets useful?
             </div>
     }
+  }
+
+  onTogglePublisherOption(publisher){
+    this.toggleBasicOption(publisher, this.props.activePublishers, 'publisher', removePublisher, addPublisher);
+  }
+
+  onToggleFormatOption(format){
+    this.toggleBasicOption(format, this.props.activeFormats, 'format', removeFormat, addFormat);
+  }
+
+  toggleBasicOption(option, activeOptions, key,  removeOption, addOption){
+    this.updateQuery({
+      page: undefined
+    });
+
+    let existingOptions = activeOptions.map(o=>o.value);
+    let index = existingOptions.indexOf(option.value);
+    if(index > -1){
+      this.updateQuery({
+        [key]: [...existingOptions.slice(0, index), ...existingOptions.slice(index+1)]
+      })
+      this.props.dispatch(removeOption(option))
+    } else{
+      this.updateQuery({
+        [key]: [...existingOptions, option.value]
+      })
+      this.props.dispatch(addOption(option))
+    }
+  }
+
+
+  onResetPublisherFacet(){
+    // update url
+    this.updateQuery({
+      publisher: [],
+      page: undefined
+    })
+    // update redux
+    this.props.dispatch(resetPublisher());
+  }
+
+  onSearchPublisherFacet(facetKeyword){
+    this.props.dispatch(fetchPublisherSearchResults(this.props.location.query.q, facetKeyword))
+  }
+
+
+  onResetFormatFacet(){
+    this.updateQuery({
+      format: [],
+      page: undefined
+    })
+    this.props.dispatch(resetFormat());
+  }
+
+  onSearchFormatFacet(facetKeyword){
+    this.props.dispatch(fetchFormatSearchResults(this.props.location.query.q, facetKeyword))
+  }
+
+
+  onToggleRegionOption(region){
+    let {regionId, regionType} = region;
+    this.updateQuery({
+      regionId,
+      regionType,
+      page: undefined
+    });
+
+    this.props.dispatch(addRegion(region));
+  }
+
+  modifyUserSearchString(additionalString){
+    let base = this.props.freeText;
+    this.updateSearchQuery(`${base} ${additionalString}`);
+  }
+
+  onResetRegionFacet(){
+    this.updateQuery({
+      regionId: undefined,
+      regionType: undefined,
+      page: undefined
+    });
+    this.props.dispatch(resetRegion());
+  }
+
+  onSearchRegionFacet(facetKeyword){
+    this.props.dispatch(fetchRegionSearchResults(facetKeyword));
+  }
+
+  onToggleTemporalOption(datesArray){
+    this.updateQuery({
+      dateFrom: defined(datesArray[0]) ? datesArray[0]: undefined,
+      dateTo: defined(datesArray[1]) ? datesArray[1]: undefined,
+      page: undefined
+    });
+    this.props.dispatch(setDateTo(datesArray[1]));
+    this.props.dispatch(setDateFrom(datesArray[0]));
+  }
+
+  onResetTemporalFacet(){
+    this.updateQuery({
+      dateFrom: undefined,
+      dateTo: undefined,
+      page: undefined
+    });
+    // dispatch event
+    this.props.dispatch(resetDateFrom());
+    this.props.dispatch(resetDateTo());
+  }
+
+  onDismissError(){
+    this.updateSearchQuery('');
   }
 
 
@@ -117,17 +245,55 @@ class Search extends Component {
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
-              <SearchBox value={this.getSearchBoxValue()}
-                         onChange={this.onSearchTextChange}
-                         onKeyPress={this.handleSearchFieldEnterKeyPress}/>
+              <div className='col-sm-8 col-sm-offset-4'>
+                <SearchBox value={this.getSearchBoxValue()}
+                           onChange={this.onSearchTextChange}
+                           onKeyPress={this.handleSearchFieldEnterKeyPress}/>
+              </div>
             </div>
           </div>
           <div className='search__search-body container'>
             <div className='col-sm-4'>
-                <SearchFacets updateQuery={this.updateQuery} keyword={this.props.location.query.q}/>
+                {this.getSearchBoxValue().length > 0 &&
+                 <SearchFacets publisherOptions={this.props.publisherOptions}
+                               formatOptions={this.props.formatOptions}
+                               temporalOptions={this.props.temporalOptions}
+                               activePublishers={this.props.activePublishers}
+                               activeRegion={this.props.activeRegion}
+                               activeDateFrom={this.props.activeDateFrom}
+                               activeDateTo={this.props.activeDateTo}
+                               activeFormats={this.props.activeFormats}
+                               publisherSearchResults={this.props.publisherSearchResults}
+                               regionSearchResults={this.props.regionSearchResults}
+                               formatSearchResults={this.props.formatSearchResults}
+                               regionMapping={this.props.regionMapping}
+                               onResetPublisherFacet={this.onResetPublisherFacet}
+                               onResetRegionFacet={this.onResetRegionFacet}
+                               onResetTemporalFacet={this.onResetTemporalFacet}
+                               onResetFormatFacet={this.onResetFormatFacet}
+                               onSearchFormatFacet={this.onSearchFormatFacet}
+                               onSearchPublisherFacet={this.onSearchPublisherFacet}
+                               onSearchRegionFacet={this.onSearchRegionFacet}
+                               onSearchTextChange={this.onSearchTextChange}
+                               onToggleFormatOption={this.onToggleFormatOption}
+                               onTogglePublisherOption={this.onTogglePublisherOption}
+                               onToggleRegionOption={this.onToggleRegionOption}
+                               onToggleTemporalOption={this.onToggleTemporalOption}
+                />
+                }
             </div>
             <div className='col-sm-8'>
-                {!this.props.isFetching && !this.props.hasError && <div>
+                {this.getSearchBoxValue().length > 0 &&
+                 !this.props.isFetching &&
+                 !this.props.hasError &&
+                 <div>
+
+                   <Recomendations options={this.props.publisherOptions}
+                                   onClick={this.onTogglePublisherOption}
+                                   activeOptions={this.props.activePublishers}
+                                   description={"Are you searching for items published by "}
+                                   modifyUserSearchString={this.modifyUserSearchString}
+                   />
                   {this.noMatchText()}
                   <SearchResults
                       searchResults={this.props.datasets}
@@ -144,7 +310,9 @@ class Search extends Component {
                  </div>
                }
                {!this.props.isFetching && this.props.hasError &&
-                 <div className='search-error'> error in request </div>
+                  <Notification content={this.props.errorMessage}
+                                type='error'
+                                onDismiss={this.onDismissError}/>
                }
             </div>
           </div>
@@ -166,18 +334,37 @@ Search.propTypes = {
   progress: React.PropTypes.number.isRequired,
   hasError: React.PropTypes.bool.isRequired,
   strategy: React.PropTypes.string.isRequired,
+  freeText: React.PropTypes.string,
+  errorMessage: React.PropTypes.string
 }
 
 
 function mapStateToProps(state) {
-  let { results } = state;
+  let { results , facetPublisherSearch, facetRegionSearch, facetFormatSearch, regionMapping} = state;
   return {
     datasets: results.datasets,
     hitCount: results.hitCount,
     isFetching: results.isFetching,
     progress: results.progress,
     hasError: results.hasError,
-    strategy: results.strategy
+    strategy: results.strategy,
+    errorMessage: results.errorMessage,
+    freeText: results.freeText,
+
+    publisherOptions: results.publisherOptions,
+    formatOptions: results.formatOptions,
+    temporalOptions: results.temporalOptions,
+
+    activePublishers: results.activePublishers,
+    activeRegion: results.activeRegion,
+    activeDateFrom: results.activeDateFrom,
+    activeDateTo: results.activeDateTo,
+    activeFormats: results.activeFormats,
+
+    publisherSearchResults: facetPublisherSearch.data,
+    regionSearchResults: facetRegionSearch.data,
+    formatSearchResults: facetFormatSearch.data,
+    regionMapping: regionMapping.data
   }
 }
 
