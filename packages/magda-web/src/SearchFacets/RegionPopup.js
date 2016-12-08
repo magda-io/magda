@@ -117,7 +117,7 @@ class RegionPopup extends Facet {
                   </div>
                   <div className='popup-footer clearfix'>
                     <button className='btn popup-cancel-btn' onClick={()=>this.props.closePopUp()} >Cancel</button>
-                    <button className='btn popup-done-btn' disabled={!defined(this.state._activeRegion)} onClick={this.onClickDone} >Done</button>
+                    <button className='btn popup-done-btn' disabled={!defined(this.state._activeRegion)} onClick={this.onClickDone} >Apply</button>
                   </div>
               </div>
             </div>
