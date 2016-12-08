@@ -6,6 +6,7 @@ import RegionMap from './RegionMap';
 import RegionPopup from './RegionPopup';
 import FacetSearchBox from './FacetSearchBox';
 import RegionSummary from './RegionSummary';
+import defined from '../helpers/defined';
 
 /*
 * the region (location) facet facet, extends Facet class
@@ -49,7 +50,10 @@ class FacetRegion extends Component {
                     onClick={onClick.bind(this, option)}
                     title={option.regionName}>
               <span className='btn-facet-option__name'>{option.regionName}</span><br />
-              <span className='btn-facet-option__detail'>{this.props.regionMapping[option.regionType].description}</span>
+              <span className='btn-facet-option__detail'>
+                {defined(this.props.regionMapping[option.regionType]) ?
+                  this.props.regionMapping[option.regionType].description : ''}
+              </span>
             </button>);
     }
 
