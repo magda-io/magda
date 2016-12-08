@@ -19,6 +19,8 @@ import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
 import SearchResults from '../SearchResults/SearchResults';
 import Recomendations from './Recomendations';
+import WelcomeText from './WelcomeText';
+import NoMatching from './NoMatching';
 
 
 class Search extends Component {
@@ -44,6 +46,9 @@ class Search extends Component {
     this.updateQuery = this.updateQuery.bind(this);
     this.onDismissError = this.onDismissError.bind(this);
     this.modifyUserSearchString = this.modifyUserSearchString.bind(this);
+    this.updateSearchQuery = this.updateSearchQuery.bind(this);
+    this.onClearSearch = this.onClearSearch.bind(this);
+    this.onClickSearch = this.onClickSearch.bind(this);
 
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
@@ -54,6 +59,12 @@ class Search extends Component {
 
   componentWillMount(){
     this.props.dispatch(fetchRegionMapping());
+  }
+
+  componentWillReceiveProps(nextProps){
+    this.setState({
+      searchText: nextProps.location.query.q
+    })
   }
 
   onSearchTextChange(text){
@@ -84,12 +95,21 @@ class Search extends Component {
     });
   }
 
+  onClearSearch(){
+    this.updateSearchQuery('');
+    this.debounceUpdateSearchQuery.cancel();
+  }
+
   handleSearchFieldEnterKeyPress(event) {
     // when user hit enter, no need to submit the form
     if(event.charCode===13){
         event.preventDefault();
         this.debounceUpdateSearchQuery.flush();
     }
+  }
+
+  onClickSearch(){
+    this.debounceUpdateSearchQuery.flush();
   }
 
   goToPage(index){
@@ -113,17 +133,6 @@ class Search extends Component {
       return this.props.location.query.q
     }
     return '';
-  }
-
-  noMatchText(){
-    if(defined(this.props.location.query.q) &&
-       this.props.location.query.q.length > 0 &&
-       this.props.strategy === 'match-part'){
-         console.log('park');
-      return <div className='no-match'>
-              Sorry we can not find what you were looking for, you might find the following related datasets useful?
-            </div>
-    }
   }
 
   onTogglePublisherOption(publisher){
@@ -245,15 +254,23 @@ class Search extends Component {
         <div className='search'>
           <div className='search__search-header'>
             <div className='container'>
+              <div className='row'>
               <div className='col-sm-8 col-sm-offset-4'>
                 <SearchBox value={this.getSearchBoxValue()}
                            onChange={this.onSearchTextChange}
-                           onKeyPress={this.handleSearchFieldEnterKeyPress}/>
+                           onKeyPress={this.handleSearchFieldEnterKeyPress}
+                           onClearSearch={this.onClearSearch}
+                           onClickSearch={this.onClickSearch}/>
+                {this.getSearchBoxValue().length === 0 &&
+                  <WelcomeText onClick={this.updateSearchQuery}/>
+                }
               </div>
             </div>
           </div>
+          </div>
           <div className='search__search-body container'>
-            <div className='col-sm-4'>
+          <div className='row'>
+            <div className='col-sm-4 hidden-xs'>
                 {this.getSearchBoxValue().length > 0 &&
                  <SearchFacets publisherOptions={this.props.publisherOptions}
                                formatOptions={this.props.formatOptions}
@@ -287,14 +304,18 @@ class Search extends Component {
                  !this.props.isFetching &&
                  !this.props.hasError &&
                  <div>
-
                    <Recomendations options={this.props.publisherOptions}
                                    onClick={this.onTogglePublisherOption}
                                    activeOptions={this.props.activePublishers}
                                    description={"Are you searching for items published by "}
                                    modifyUserSearchString={this.modifyUserSearchString}
                    />
-                  {this.noMatchText()}
+                 {defined(this.props.location.query.q) &&
+                  this.props.location.query.q.length > 0 &&
+                    <NoMatching datasets={this.props.datasets}
+                                strategy={this.props.strategy}
+                    />
+                  }
                   <SearchResults
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
@@ -314,6 +335,7 @@ class Search extends Component {
                                 type='error'
                                 onDismiss={this.onDismissError}/>
                }
+              </div>
             </div>
           </div>
         </div>

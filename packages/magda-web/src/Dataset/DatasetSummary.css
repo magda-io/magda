@@ -1,15 +1,12 @@
 .dataset-summray{
-  padding: 1.5em 10px;
+  padding: 1.5em 0;
   border-bottom: 1px solid #eee;
-}
-.dataset-summray:hover{
-  cursor: pointer;
-  background: #f8f8f8;
 }
 
 .dataset-summray-title{
   background: transparent;
-  color: #000;
+  font-size: 16px;
+  color: #2980B9;
   font-weight: 600;
   padding: 0;
   font-size: 1.2em;
@@ -17,6 +14,7 @@
   text-align: left;
   padding-right: 5px;
 }
+
 
 .dataset-summray h1{
   font-size: 1.2em;
@@ -40,11 +38,21 @@
   font-size: 0.8em;
 }
 
+.dataset-description{
+  font-weight: 400;
+  font-size: 16px;
+  color: #000000 ;
+}
+
 .dataset-description > .markdown{
   max-height: 100px;
   overflow: hidden;
   position: relative;
   margin-bottom: 10px;
+}
+
+.dataset-description:hover{
+  cursor: pointer;
 }
 
 
@@ -58,8 +66,9 @@
   background:linear-gradient(rgba(255, 255, 255, 0) 50px, #FFF);
 }
 
-.dataset-summray:hover .dataset-description > .markdown:before{
-  background:linear-gradient(rgba(255, 255, 255, 0) 50px, #f8f8f8);
+
+.dataset-summray.is-expanded .dataset-description > .markdown:before{
+  background: rgba(255, 255, 255, 0);
 }
 
 .dataset-summray-toggle-info-btn{
@@ -107,6 +116,10 @@
   margin-right: 8px;
 }
 
+.search-result-tags li a{
+  cursor: pointer;
+}
+
 
 .search-result--tag-toggle{
   background: rgba(255, 255, 255, 0);
@@ -114,4 +127,33 @@
   padding: 0;
   text-decoration: underline;
   vertical-align: baseline;
+}
+
+.search-result--publisher{
+  font-weight: 400;
+  font-size: 16px;
+  color: #7F8C8D
+}
+
+.dataset-summary-mobile-footer{
+  height: 20px;
+  margin-bottom: -5px;
+  margin-top: 5px;
+}
+
+.dataset-summary-mobile-footer .dataset-summray-toggle-info-btn{
+  float: left;
+  font-size: 20px;
+  padding: 0 5px;
+  height: 20px;
+}
+
+.dataset-summary-mobile-footer .dataset-summray-toggle-info-btn .fa{
+  vertical-align: top;
+}
+
+@media (max-width: 768px) {
+  .dataset-summray{
+    padding: 10px 15px;
+  }
 }

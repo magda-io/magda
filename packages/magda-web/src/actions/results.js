@@ -1,4 +1,4 @@
-import futch from '../helpers/futch';
+import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import config from '../config'
 
@@ -33,22 +33,20 @@ export function transferFailed(errorMessage){
   }
 }
 
-
 export function fetchSearchResults(query) {
   return (dispatch)=>{
     console.log(config().searchApiBaseUrl + `datasets/search?query=${query}`);
     dispatch(requestResults(query))
-    return futch(config().searchApiBaseUrl + `datasets/search?query=${query}`,
-      (progressEvent)=>{
-      dispatch(updateProgress(progressEvent.loaded / progressEvent.total))
+    return fetch(config().searchApiBaseUrl + `datasets/search?query=${query}`)
+    .then(response => {
+      if (response.status >= 400) {
+        dispatch(transferFailed('Bad response from server'))
       }
+      return response.json()}
     )
     .then(json =>
       dispatch(receiveResults(query, json))
     )
-    .catch((error)=>{
-      dispatch(transferFailed(error))
-    })
   }
 }
 

@@ -57,16 +57,21 @@ export default class DatasetSummary extends Component {
 
   render(){
     let dataset = this.props.dataset;
-    return <div className='dataset-summray' onClick={(e)=>{window.open(dataset.landingPage, '_blank');}}>
+    return <div className={`dataset-summray ${this.props.isExpanded ? 'is-expanded': ''}`}>
               <div className='dataset-summray-main'>
                 <h3 className='result-header'>
                   <div className='result-header-left'>
-                    <span target='_blank' className='dataset-summray-title' type='button'>{dataset.title}</span>
+                    <button target='_blank'
+                            className='dataset-summray-title btn'
+                            type='button'
+                            onClick={(e)=>{window.open(dataset.landingPage, '_blank')}}>
+                      {dataset.title}
+                    </button>
                   </div>
-                  <div className='result-header-middle'>
+                  <div className='result-header-middle hidden-xs'>
                     <Star/>
                   </div>
-                  <div className='result-header-right'>
+                  <div className='result-header-right hidden-xs'>
                     {!this.props.isExpanded && <button className='dataset-summray-toggle-info-btn'
                                                        onClick={this.props.onClickDataset}
                                                        type='button'>
@@ -74,13 +79,20 @@ export default class DatasetSummary extends Component {
                     </button>}
                   </div>
                 </h3>
-                {defined(dataset.publisher) && <label className='search-result--publisher'>{dataset.publisher.name}</label>}
-                <div className='dataset-description'>
-                  <MarkdownViewer markdown={dataset.description}/>
+                <label className='search-result--publisher'>{defined(dataset.publisher) ? dataset.publisher.name : 'unspecified'}</label>
+                <div className='dataset-description' onClick={this.props.onClickDataset}>
+                  <MarkdownViewer markdown={dataset.description} stripped={true}/>
                 </div>
                 <ul className='list-unstyled tags'>
                   {this.getTags()}
                 </ul>
+              </div>
+              <div className='dataset-summary-mobile-footer visible-xs clearfix'>
+              {!this.props.isExpanded && <button className='dataset-summray-toggle-info-btn'
+                                                 onClick={this.props.onClickDataset}
+                                                 type='button'>
+                  <i className="fa fa-ellipsis-h" aria-hidden="true"></i>
+              </button>}
               </div>
           </div>
   }

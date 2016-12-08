@@ -1,9 +1,12 @@
-
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #333333;
+}
+
+.navbar-header{
+  background: #fff;
 }
 
 .form-control{
@@ -16,7 +19,7 @@ body {
 }
 
 .navbar-brand{
-  padding: 10px;
+  padding: 10px 0;
   height: 80px;
 }
 
@@ -30,4 +33,25 @@ body {
   color: #fff;
   padding: 5px;
   text-align: center;
+}
+
+input[type=text].form-control{
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.15)!important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 10px 15px;
+}
+
+@media (max-width: 768px) {
+	body{
+		background: #dcdfe1;
+	}
+  .form-control:focus {
+    border: none;
+  }
+
+  .navbar-brand{
+    padding: 10px 15px;
+  }
 }

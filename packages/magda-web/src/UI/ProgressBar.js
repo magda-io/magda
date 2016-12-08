@@ -3,7 +3,7 @@ import './ProgressBar.css';
 class ProgressBar extends Component {
     render(){
       let style = {
-        width: this.props.progress * 100 + '%',
+        width: '100%',
         height: '100%'
       }
       return <div className='progress-bar'>

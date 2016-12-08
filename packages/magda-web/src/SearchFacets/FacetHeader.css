@@ -1,9 +1,19 @@
 .facet-title{
-    font-weight: bold;
-    text-transform: uppercase;
-    flex-grow: 2;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: #2B2B2B ;
+  text-transform: uppercase;
+	font-weight: 700;
+  margin: 15px 0;
 }
 
 .facet-header{
-    display: flex;
+  position: relative;
+}
+
+.facet-header .btn-reset{
+  position: absolute;
+  right: 0;
+  top: 3px;
+  padding-right: 0;
 }

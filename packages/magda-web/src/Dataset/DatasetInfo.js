@@ -13,9 +13,9 @@ export default class DatasetInfo extends Component {
   render(){
     let dataset = this.props.dataset;
     return <div className='dataset-info'>
-              <div className='traingle'></div>
+              <div className='traingle hidden-xs'></div>
               <div className='dataset-info-inner'>
-                <button className='dataset-info-close-btn'><i className="fa fa-times" aria-hidden="true" onClick={this.props.onClickClose}></i></button>
+                <button className='dataset-info-close-btn hidden-xs' onClick={this.props.onClickClose}><i className="fa fa-times" aria-hidden="true" ></i></button>
                 <div className='dataset-info--source clearfix'>
                 <h5>Source</h5>
                     {dataset.catalog}
@@ -42,6 +42,9 @@ export default class DatasetInfo extends Component {
                   <div className='dataset-info-footer--right'>
                     <a className='btn' href={dataset.landingPage} target='_blank'>View dataset</a>
                   </div>
+              </div>
+              <div className='dataset-info-mobile-footer clearfix visible-xs'>
+                <button className='dataset-info-close-btn--footer' onClick={this.props.onClickClose}>Close</button>
               </div>
            </div>
   }

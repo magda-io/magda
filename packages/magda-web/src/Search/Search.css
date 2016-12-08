@@ -1,16 +1,16 @@
 .search__search-header{
-	background-color: #ecf0f1;
+	background-color: #dcdfe1;
   padding: 23px 0;
-  margin-bottom: 20px;
+	margin-bottom: 10px;
 }
 
 .search__search-body__header{
-  border-bottom: 1px solid #ecf0f1;
+  border-bottom: 1px solid #dcdfe1;
   margin-bottom: 20px;
 }
 
 .summary{
-    background: #ecf0f1;
+    background: #dcdfe1;
     padding: 10px;
 }
 
@@ -44,5 +44,18 @@
 .no-match{
 	padding: 10px;
 	font-weight: 600;
-	background: #ecf0f1;
+	background: #dcdfe1;
+}
+
+
+
+@media (max-width: 768px) {
+	.search__search-body{
+		background: #dcdfe1;
+	}
+
+	.search__search-header{
+		margin-bottom: 0px;
+		padding-bottom: 0;
+	}
 }

@@ -2,6 +2,10 @@
   position: relative;
 }
 
+.facet-search-box input.form-control{
+  padding-left: 30px;
+}
+
 .facet-search-box form{
     position: relative;
     margin-bottom: 8px;
@@ -29,7 +33,7 @@
 
 .facet-search-box .faceted-options{
   position: absolute;
-  background: #ecf0f1;
+  background: #dcdfe1;
   z-index: 9999;
   right: 0;
   left: 0;

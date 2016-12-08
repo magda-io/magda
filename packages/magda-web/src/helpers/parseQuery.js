@@ -10,7 +10,7 @@ export default function(query){
   let location = queryToLocation(query.regionId, query.regionType);
   let startIndex = defined(query.page) ? (query.page - 1)*config().resultsPerPage : 0;
 
-  let apiQuery = encodeURI(`${keyword}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${config().resultsPerPage}`);
+  let apiQuery = `${keyword}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${config().resultsPerPage}`;
   return apiQuery;
 }
 
@@ -18,14 +18,14 @@ function queryToString(preposition, query){
   if(!defined(query)) return '';
   if(Array.isArray(query)){
     return query.map(q=>
-    `${preposition} ${q}`).join(' ')
+    `${preposition}+${encodeURIComponent(q)}`).join('+')
   } else {
-    return `${preposition} ${query}`
+    return `${preposition}+${encodeURIComponent(query)}`
   }
 }
 
 function queryToLocation(regionId, regiontype){
   // what if there are more than one regionId or regionType in the url?
   if(!defined(regionId) || !defined(regiontype)) return '';
-  return `+in ${regiontype}:${regionId}`;
+  return `+in+${regiontype}:${regionId}`;
 }

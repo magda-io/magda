@@ -1,11 +1,11 @@
 .dataset-info{
-  background: #ecf0f1;
-  margin: 20px 0 30px 0;
+  background: #dcdfe1;
+  margin: 20px 0 20px 0;
   position: relative;
 }
 
 .dataset-info .traingle{
-  border-bottom: 10px solid #ecf0f1;
+  border-bottom: 10px solid #dcdfe1;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
   height: 0;
@@ -89,4 +89,27 @@
   background: transparent;
   border: 0;
   color: #444;
+}
+
+.dataset-info-close-btn--footer{
+  background: transparent;
+  color: #337ab7;
+  border: 0;
+  box-shadow: none;
+  margin: 0 10px;
+}
+
+.dataset-info--content{
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+	.dataset-info,
+  .dataset-info-footer{
+		background: #ffffff;
+	}
+  .dataset-info .traingle{
+    display: none;
+  }
 }

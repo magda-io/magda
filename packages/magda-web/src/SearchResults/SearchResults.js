@@ -7,7 +7,7 @@ class SearchResults extends Component {
   constructor(props) {
     super(props);
 
-    this.onExpandDataset=this.onExpandDataset.bind(this);
+    this.onToggleExpandDataset=this.onToggleExpandDataset.bind(this);
     this.onCloseDataset = this.onCloseDataset.bind(this);
 
     this.state={
@@ -15,11 +15,12 @@ class SearchResults extends Component {
     }
   }
 
-  onExpandDataset(result, event){
+  onToggleExpandDataset(result, event){
     event.stopPropagation();
     this.setState({
-      expandedItem: result
+      expandedItem: this.state.expandedItem === result ? null : result
     });
+
   }
 
   onCloseDataset(){
@@ -32,7 +33,7 @@ class SearchResults extends Component {
     if(this.props.searchResults.length){
       return (
           <div className='search-results-count'>
-            <h4><strong>{this.props.totalNumberOfResults} results found</strong></h4>
+            {this.props.totalNumberOfResults} results found
           </div>);
     }
     return null;
@@ -47,7 +48,7 @@ class SearchResults extends Component {
           this.props.searchResults.map((result, i)=>
             <li key={result.title + i}  className='search-result'>
               <DatasetSummary dataset={result}
-                              onClickDataset={this.onExpandDataset.bind(this, result)}
+                              onClickDataset={this.onToggleExpandDataset.bind(this, result)}
                               isExpanded={this.state.expandedItem === result}
                               onClickTag={this.props.onClickTag}
               />

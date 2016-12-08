@@ -4,19 +4,20 @@
     color: #2980b9;
 }
 
-.search-results-count{
-  font-size: 18px;
-	font-weight: bold;
-	color: #2b2b2b;
-  margin: 15px 0;
-  text-transform: uppercase;
-  padding: 0 10px;
+.search-result{
+  background: #fff;
 }
 
-.search-result--publisher{
-  color: #95a5a6;
-  font-weight: normal;
+.search-results-count{
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: #2B2B2B ;
+  text-transform: uppercase;
+	font-weight: 700;
+  margin: 15px 0;
 }
+
+
 
 .search-result-dataset-info{
   max-height: 0;
@@ -26,4 +27,11 @@
 
 .search-result-dataset-info.is-open{
   max-height: 600px;
+}
+
+@media (max-width: 768px) {
+  .search-result{
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.15);
+  }
 }

@@ -3,7 +3,6 @@ import FacetBasic from './FacetBasic';
 import FacetTemporal from './FacetTemporal';
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
-import {connect} from 'react-redux';
 
 class SearchFacets extends Component {
   render() {

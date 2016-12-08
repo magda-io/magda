@@ -57,12 +57,11 @@ class Recomendations extends Component {
   }
   render() {
     let suggestedOptions =
-    this.props.options.filter(p=>p.matched == true && !find(this.props.activeOptions, (item)=>item.value === p.value));
+    this.props.options.filter(p=>p.matched === true && !find(this.props.activeOptions, (item)=>item.value === p.value));
     if(suggestedOptions.length > 0){
 
       let topSugguestion = suggestedOptions[0];
       let restOfOptions = suggestedOptions.slice(1, suggestedOptions.length-1);
-      console.log(this.state.isVisible);
       return (
         <div className={`search-recomendation clearfix ${this.state.isVisible ? '' : 'hidden'}`} >
             <div className='main'>

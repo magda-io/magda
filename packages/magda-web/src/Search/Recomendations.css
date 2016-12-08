@@ -1,5 +1,5 @@
 .search-recomendation{
-  margin: 0px 10px 20px 10px;
+  margin: 10px 0;
   /*font-weight: 600;*/
   background-color: #3498db;
   color: #FFFFFF;
@@ -15,6 +15,12 @@
   display: inline-block;
   width: auto;
   vertical-align: baseline;
+  font-style: italic;
+}
+
+.search-recomendation-option-btn:hover{
+  color: #ecf0f1;
+  text-decoration: underline;
 }
 
 .more-option-btn{

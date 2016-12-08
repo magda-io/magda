@@ -2,16 +2,40 @@
   height: 50px;
 	border-radius: 1px;
 	background-color: #ffffff;
-	border: solid 1px #3498db;
   font-size: 18px;
 }
 
-.search-box .input-group-addon{
-	height: 50px;
-  padding: 6px 18px;
-  font-size: 18px;
+.search-box{
+  position: relative;
+}
+
+.search-box .btn-clear-search{
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 10;
+  height: 100%;
+  background: transparent;
+
+}
+
+.search-box .btn-search-icon{
 	border-radius: 1px;
 	background-color: #3498db;
-  border: 1px solid #3498db;
   color: #fff;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 53px;
+}
+
+.search-input{
+  width: calc(100% - 53px);
+  position: relative;
+}
+
+.search-box .fa{
+  vertical-align: bottom;
+  font-size: 20px;
 }

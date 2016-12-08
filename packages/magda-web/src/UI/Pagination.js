@@ -20,7 +20,7 @@ class Pagination extends Component {
             <li className='pagination-start pagination-item'>
               <button className='pagination-btn btn' onClick={this.onClick.bind(this, 1)}>
                 <i className="fa fa-angle-double-left" aria-hidden="true"></i>
-                Start
+                <span className='hidden-xs'>Start</span>
               </button>
             </li>}
           {this.props.currentPage > 1 &&
@@ -29,7 +29,7 @@ class Pagination extends Component {
                 <i className="fa fa-angle-left" aria-hidden="true"></i>
                 Previous
               </button>
-              <div className='pagination-secondary-info'>
+              <div className='pagination-secondary-info hidden-xs'>
                 Page {currentPage - 1} of {this.props.maxPage}
               </div>
             </li>}
@@ -39,7 +39,7 @@ class Pagination extends Component {
                 Next
                 <i className="fa fa-angle-right" aria-hidden="true"></i>
               </button>
-              <div className='pagination-secondary-info'>Page {currentPage + 1} of {this.props.maxPage}</div>
+              <div className='pagination-secondary-info hidden-xs'>Page {currentPage + 1} of {this.props.maxPage}</div>
           </li>}
         </ul>
       );
