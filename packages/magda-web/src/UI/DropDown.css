@@ -10,7 +10,9 @@
 }
 
 .dropdown .btn-dropdown .fa{
-  float: right;
+  position: absolute;
+  right: 10px;
+  top: 10px;
 }
 
 .dropdown button{
