@@ -6,7 +6,14 @@
 }
 
 .progress{
-  background: #3498db;
-  transition: width 0.5s linear;
+  background: linear-gradient(to right, #3498db, #dcdfe1, #3498db, #dcdfe1, #B294FF, #57E6E6);
   border-radius: 1px;
+  animation: gradient 3s linear infinite;
+  background-position: 0% 0%;
+  background-size: 500% auto;
+}
+
+@keyframes gradient {
+  0%{background-position:0 0}
+  100%{background-position:100% 0}
 }
