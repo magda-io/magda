@@ -1,7 +1,35 @@
 .dataset-summray{
-  padding: 1.5em 15px;
   border: 1px solid #fff;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 15px;
+}
+
+.dataset-summray .header,
+.dataset-summray .body,
+.dataset-summray .footer{
+  padding: 0 15px;
+}
+
+.dataset-summray .header{
+  padding-top: 15px;
+}
+
+.dataset-summray.is-expanded .header,
+.dataset-summray.is-expanded .body,
+.dataset-summray.is-expanded .footer{
+  padding: 15px;
+}
+
+.dataset-summray.is-expanded .body{
+    padding-bottom: 0px;
+}
+
+.dataset-summray .footer{
+  padding-top: 0;
+}
+
+.dataset-summray.is-expanded .header{
+  background: #F2F4F5;
+  padding-bottom: 15px;
 }
 
 .dataset-summray.is-expanded{
@@ -23,8 +51,10 @@
   border-radius: 1px;
 }
 
+
 .dataset-summray-title{
   background: transparent;
+  width: calc(100% - 60px);
   font-size: 18px;
   color: #2980B9;
   font-weight: 600;
@@ -33,6 +63,10 @@
   white-space: normal;
   text-align: left;
   padding-right: 5px;
+}
+
+.dataset-summray .middle{
+    margin-top: 15px;
 }
 
 .dataset-summray .middle div{
@@ -55,6 +89,13 @@
 .dataset-summray .license{
   font-size: 16px;
   color: #16A085;
+}
+
+.dataset-summray .source{
+  padding-bottom: 15px;
+  border-top: 1px solid #ECF0F1;
+  border-bottom: 1px solid #ECF0F1;
+  font-size: 16px;
 }
 
 
@@ -115,6 +156,7 @@
   padding: 2px 10px;
   position: absolute;
   right: 20px;
+  top: 13px;
 }
 
 .dataset-summray-toggle-info-btn span{
@@ -169,35 +211,26 @@
 }
 
 .dataset-summary-mobile-footer{
-  height: 20px;
-  margin-bottom: -5px;
-  margin-top: 5px;
+  height: 30px;
+  position: relative;
+  text-align: left;
 }
 
 .dataset-summary-mobile-footer .dataset-summray-toggle-info-btn{
-  float: left;
-  font-size: 20px;
-  padding: 0 5px;
-  height: 20px;
+  position: relative;
+  padding: 0;
+  left: 0;
 }
 
 .dataset-summary-mobile-footer .dataset-summray-toggle-info-btn .fa{
   vertical-align: top;
+  margin-top: -5px;
 }
 
-.dataset-more-info{
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.5s;
-}
 
-.dataset-more-info.is-open{
-  max-height: 600px;
-}
 
 @media (max-width: 768px) {
   .dataset-summray{
-    padding: 10px 15px;
     border: 1px solid #fff;
   }
 

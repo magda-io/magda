@@ -7,6 +7,7 @@
 
 .search-box{
   position: relative;
+  padding: 0 15px;
 }
 
 .search-box .btn-clear-search{
@@ -24,7 +25,7 @@
 	background-color: #3498db;
   color: #fff;
   position: absolute;
-  right: 0;
+  right: 15px;
   top: 0;
   bottom: 0;
   width: 53px;
