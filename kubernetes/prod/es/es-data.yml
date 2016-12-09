@@ -22,9 +22,10 @@ spec:
         image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           requests:
-            memory: 5000Mi
-          limits: 
-            memory: 7000Mi
+            cpu: 1500m
+            memory: 10000Mi
+          limits:
+            memory: 13000Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -41,7 +42,7 @@ spec:
         - name: NUMBER_OF_REPLICAS
           value: "4"
         - name: ES_HEAP_SIZE
-          value: "3250m"
+          value: "6000m"
         ports:
         - containerPort: 9300
           name: transport
@@ -81,9 +82,10 @@ spec:
         image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           requests:
-            memory: 5000Mi
-          limits: 
-            memory: 7000Mi
+            cpu: 1500m
+            memory: 10000Mi
+          limits:
+            memory: 13000Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -100,7 +102,7 @@ spec:
         - name: NUMBER_OF_REPLICAS
           value: "4"
         - name: ES_HEAP_SIZE
-          value: "3250m"
+          value: "6000m"
         ports:
         - containerPort: 9300
           name: transport
@@ -140,10 +142,10 @@ spec:
         image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           requests:
-            cpu: 800m
-            memory: 5000Mi
+            cpu: 1500m
+            memory: 10000Mi
           limits:
-            memory: 6500Mi
+            memory: 13000Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -160,7 +162,7 @@ spec:
         - name: NUMBER_OF_REPLICAS
           value: "4"
         - name: ES_HEAP_SIZE
-          value: "3250m"
+          value: "6000m"
         ports:
         - containerPort: 9300
           name: transport
@@ -172,7 +174,7 @@ spec:
       - name: "storage"
         emptyDir: {}
       nodeSelector:
-        cloud.google.com/gke-nodepool: elasticsearch-ephemeral
+        cloud.google.com/gke-nodepool: ephemeral
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
@@ -184,5 +186,5 @@ spec:
     kind: Deployment
     name: es-data-ephemeral
   minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 80
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60

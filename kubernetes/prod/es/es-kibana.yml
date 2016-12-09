@@ -18,6 +18,8 @@ spec:
         name: kibana
         ports:
         - containerPort: 5601
+      nodeSelector:
+        cloud.google.com/gke-nodepool: ephemeral
 ---
 apiVersion: v1
 kind: Service

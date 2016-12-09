@@ -28,7 +28,7 @@ spec:
         ports:
         - containerPort: 80
       nodeSelector:
-        beta.kubernetes.io/instance-type: "n1-standard-1"
+        cloud.google.com/gke-nodepool: ephemeral
 ---
 apiVersion: v1
 kind: Service
@@ -93,4 +93,4 @@ spec:
         hostPath:
           path: /var/regions
       nodeSelector:
-        beta.kubernetes.io/instance-type: "n1-standard-1"
+        cloud.google.com/gke-nodepool: ephemeral

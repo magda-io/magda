@@ -1,5 +1,7 @@
 cluster:
   name: ${CLUSTER_NAME}
+  routing.rebalance.enable: replicas
+  routing.allocation.allow_rebalance: always
 
 node:
   master: ${NODE_MASTER}
@@ -35,3 +37,4 @@ discovery:
 index:
   number_of_shards: ${NUMBER_OF_SHARDS}
   number_of_replicas: ${NUMBER_OF_REPLICAS}
+  search.default_search_timeout: 10s

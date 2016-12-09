@@ -57,5 +57,3 @@ spec:
       - emptyDir:
           medium: ""
         name: "storage"
-      nodeSelector:
-        beta.kubernetes.io/instance-type: "n1-standard-1"

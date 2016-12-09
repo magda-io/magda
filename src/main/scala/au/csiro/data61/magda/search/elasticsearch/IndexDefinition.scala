@@ -70,7 +70,8 @@ object IndexDefinition {
           mapping(Format.id),
           mapping(Year.id),
           mapping(Publisher.id)
-        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter)))
+        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+        .indexSetting("requests.cache.enable", true))
 
   val regions =
     new IndexDefinition(
