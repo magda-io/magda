@@ -55,12 +55,41 @@ export default class DatasetSummary extends Component {
     </ul>
   }
 
+  getIcon(format){
+    let fileTypes = ['Default', 'CSV', 'DOC', 'DOCX', 'HTML', 'JSON', 'KML', 'PDF', 'TXT', 'XLS','XLSX', 'ZIP'];
+    let type = 0;
+    if(fileTypes.indexOf(format) > 0){
+      type = fileTypes.indexOf(format)
+    }
+    return `./assets/file-icons/${fileTypes[type]}.png`;
+  }
+
+  renderLinks(){
+    return <div className={`dataset-more-info ${this.props.isExpanded ? 'is-open' : ''}`}>
+              <div className='source clearfix'>
+              <h5>Source</h5>
+                  {this.props.dataset.catalog}
+              </div>
+              <div className='content clearfix'>
+              <h5>Contents</h5>
+                <ul className='list-unstyled'>
+                  {this.props.dataset.distributions.map((d, i)=>
+                    <li key={i} className={`dataset-info--download-link clearfix ${d.format}`}>
+                      <img src={this.getIcon(d.format)} alt={d.format} className='dataset-file-icon'/>
+                      <a href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
+                    </li>
+                  )}
+                </ul>
+              </div>
+           </div>
+  }
+
   render(){
     let dataset = this.props.dataset;
     return <div className={`dataset-summray ${this.props.isExpanded ? 'is-expanded': ''}`}>
               <div className='dataset-summray-main'>
-                <h3 className='result-header'>
-                  <div className='result-header-left'>
+                <div className='header'>
+                  <div className='header-left'>
                     <button target='_blank'
                             className='dataset-summray-title btn'
                             type='button'
@@ -68,17 +97,17 @@ export default class DatasetSummary extends Component {
                       {dataset.title}
                     </button>
                   </div>
-                  <div className='result-header-middle hidden-xs'>
-                    <Star/>
-                  </div>
-                  <div className='result-header-right hidden-xs'>
-                    {!this.props.isExpanded && <button className='dataset-summray-toggle-info-btn'
+                  <div className='header-right hidden-xs'>
+                    <button className='dataset-summray-toggle-info-btn'
                                                        onClick={this.props.onClickDataset}
                                                        type='button'>
-                        <i className="fa fa-ellipsis-h" aria-hidden="true"></i>
-                    </button>}
+                        {this.props.isExpanded ? <span>Close</span> : <i className="fa fa-ellipsis-h" aria-hidden="true"></i>}
+                    </button>
                   </div>
-                </h3>
+                </div>
+                <div className='middle'>
+                    <Star/>
+                </div>
                 <label className='search-result--publisher'>{defined(dataset.publisher) ? dataset.publisher.name : 'unspecified'}</label>
                 <div className='dataset-description' onClick={this.props.onClickDataset}>
                   <MarkdownViewer markdown={dataset.description} stripped={true}/>
@@ -94,6 +123,7 @@ export default class DatasetSummary extends Component {
                   <i className="fa fa-ellipsis-h" aria-hidden="true"></i>
               </button>}
               </div>
+                {this.renderLinks()}
           </div>
   }
 }

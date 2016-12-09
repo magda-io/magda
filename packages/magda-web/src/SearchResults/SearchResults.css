@@ -17,18 +17,6 @@
   margin: 15px 0;
 }
 
-
-
-.search-result-dataset-info{
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.5s;
-}
-
-.search-result-dataset-info.is-open{
-  max-height: 600px;
-}
-
 @media (max-width: 768px) {
   .search-result{
     margin-bottom: 10px;

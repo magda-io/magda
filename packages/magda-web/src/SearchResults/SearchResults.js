@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import DatasetSummary from '../Dataset/DatasetSummary';
-import DatasetInfo from '../Dataset/DatasetInfo';
 import './SearchResults.css';
 
 class SearchResults extends Component {
@@ -50,11 +49,7 @@ class SearchResults extends Component {
               <DatasetSummary dataset={result}
                               onClickDataset={this.onToggleExpandDataset.bind(this, result)}
                               isExpanded={this.state.expandedItem === result}
-                              onClickTag={this.props.onClickTag}
-              />
-              <div className={`search-result-dataset-info ${this.state.expandedItem === result ? 'is-open' : ''}`}>
-                <DatasetInfo dataset={result} onClickClose={this.onCloseDataset}/>
-              </div>
+                              onClickTag={this.props.onClickTag}/>
             </li>
           )
         }
