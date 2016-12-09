@@ -67,16 +67,21 @@ export default class DatasetSummary extends Component {
   renderLinks(){
     return <div className={`dataset-more-info ${this.props.isExpanded ? 'is-open' : ''}`}>
               <div className='source clearfix'>
-              <h5>Source</h5>
+              <h5 className='sub-heading'>Source</h5>
                   {this.props.dataset.catalog}
               </div>
               <div className='content clearfix'>
-              <h5>Contents</h5>
+              <h5 className='sub-heading'>Contents</h5>
                 <ul className='list-unstyled'>
                   {this.props.dataset.distributions.map((d, i)=>
-                    <li key={i} className={`dataset-info--download-link clearfix ${d.format}`}>
-                      <img src={this.getIcon(d.format)} alt={d.format} className='dataset-file-icon'/>
-                      <a href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
+                    <li key={i} className={`media clearfix ${d.format}`}>
+                      <div className='media-left'>
+                        <img src={this.getIcon(d.format)} alt={d.format} className='media-object'/>
+                      </div>
+                      <div className="media-body">
+                        <a className='media-heading' href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
+                        <div className='license'>{d.license.name}</div>
+                      </div>
                     </li>
                   )}
                 </ul>
@@ -105,8 +110,14 @@ export default class DatasetSummary extends Component {
                     </button>
                   </div>
                 </div>
-                <div className='middle'>
-                    <Star/>
+                <div className='middle clearfix'>
+                    <div><a className='btn btn-view-dataset' href={dataset.landingPage} target='_blank'>View dataset</a></div>
+                    <div><Star/></div>
+                    <div>
+                      <a className='btn' href={`https://twitter.com/intent/tweet?url=${dataset.landingPage}`} target='_blank'>
+                        <i className="fa fa-share-alt" aria-hidden="true"></i>
+                      </a>
+                    </div>
                 </div>
                 <label className='search-result--publisher'>{defined(dataset.publisher) ? dataset.publisher.name : 'unspecified'}</label>
                 <div className='dataset-description' onClick={this.props.onClickDataset}>

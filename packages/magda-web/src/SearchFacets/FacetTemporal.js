@@ -33,25 +33,8 @@ class FacetTemporal extends Component {
 
 
   onToggleOption(option){
-    console.log(option);
-
     let tempDateFrom = this.props.activeDates[0];
     let tempDateTo = this.props.activeDates[1];
-    // if(!defined(tempDateFrom) && !defined(tempDateTo)){
-    //   tempDateFrom = option.lowerBound;
-    //   tempDateTo = option.upperBound;
-    // }
-    // if(!defined(tempDateFrom)|| (option.lowerBound < tempDateFrom.value) || (option.upperBound === tempDateTo.value)){
-    //   tempDateFrom = option.lowerBound
-    // } else if(!defined(tempDateTo)){
-    //   tempDateTo = option.upperBound
-    // } else{
-    //   if(!defined(tempDateFrom) ){
-    //     tempDateFrom = option.lowerBound
-    //   }else {
-    //     tempDateTo = option.upperBound
-    //   }
-    // }
 
     if(!defined(tempDateFrom)){
       // if end date is undefined either, define both
