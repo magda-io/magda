@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import Star from '../UI/Star';
+import ToggleList from '../UI/ToggleList';
 import './DatasetSummary.css';
 
 export default class DatasetSummary extends Component {
   constructor(props) {
     super(props);
     this.onClick = this.onClick.bind(this);
-    this.getTags = this.getTags.bind(this);
     this.state ={
       tagsExpanded: false
     }
@@ -17,38 +17,6 @@ export default class DatasetSummary extends Component {
   onClick(tag, e){
     e.stopPropagation();
     this.props.onClickTag(tag);
-  }
-
-  getTags(){
-    let allTags = this.props.dataset.keyword;
-    let tags = allTags;
-    let defaultSize = 5;
-    let toggleText = '';
-    let that = this;
-
-    function toggleTagExpansion(e){
-      e.stopPropagation();
-      that.setState({
-        tagsExpanded: !that.state.tagsExpanded
-      })
-    }
-    if(allTags.length > defaultSize){
-      if(!this.state.tagsExpanded){
-        tags = allTags.slice(0, defaultSize-1);
-        toggleText = `show ${allTags.length - defaultSize} more tags`;
-      } else{
-        tags = allTags;
-        toggleText = `show ${allTags.length - defaultSize} less tags`;
-      }
-    }
-    return <ul className='list-unstyled search-result-tags'>
-        {tags.map((tag, i)=>
-          <li key={`${tag}-${i}`} className='search-result-tag'><a onClick={this.onClick.bind(this, tag)}>#{tag}</a></li>
-        )}
-        {allTags.length > defaultSize &&
-          <li><button className='search-result--tag-toggle btn' onClick={toggleTagExpansion} >{toggleText}</button></li>
-        }
-    </ul>
   }
 
   getIcon(format){
@@ -60,6 +28,18 @@ export default class DatasetSummary extends Component {
     return `./assets/file-icons/${fileTypes[type]}.png`;
   }
 
+  renderDownloadLink(d){
+    return <div className={`media clearfix ${d.format}`}>
+            <div className='media-left'>
+              <img src={this.getIcon(d.format)} alt={d.format} className='media-object'/>
+            </div>
+            <div className="media-body">
+             <a className='media-heading' href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
+             <div className='license'>{d.license.name}</div>
+            </div>
+          </div>
+  }
+
   renderLinks(){
     return <div className='dataset-more-info'>
               <div className='source clearfix'>
@@ -67,36 +47,28 @@ export default class DatasetSummary extends Component {
                   {this.props.dataset.catalog}
               </div>
               <div className='content clearfix'>
-              <h5 className='sub-heading'>Contents</h5>
-                <ul className='list-unstyled'>
-                  {this.props.dataset.distributions.map((d, i)=>
-                    <li key={i} className={`media clearfix ${d.format}`}>
-                      <div className='media-left'>
-                        <img src={this.getIcon(d.format)} alt={d.format} className='media-object'/>
-                      </div>
-                      <div className="media-body">
-                        <a className='media-heading' href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
-                        <div className='license'>{d.license.name}</div>
-                      </div>
-                    </li>
-                  )}
-                </ul>
+                <h5 className='sub-heading'>Contents</h5>
+                <ToggleList list={this.props.dataset.distributions}
+                            renderFunction={item=>this.renderDownloadLink(item)}
+                            className={''}
+                            defaultLength={3}
+                            getKey={item=>item.downloadURL}/>
               </div>
            </div>
   }
 
   render(){
     let dataset = this.props.dataset;
-    return <div className={`dataset-summray ${this.props.isExpanded ? 'is-expanded': ''}`}>
+    return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
                 <div className='header'>
                   <div className='header-top clearfix'>
                     <button target='_blank'
-                            className='dataset-summray-title btn'
+                            className='dataset-summary-title btn'
                             type='button'
                             onClick={(e)=>{window.open(dataset.landingPage, '_blank')}}>
                       {dataset.title}
                     </button>
-                    <button className='dataset-summray-toggle-info-btn hidden-xs'
+                    <button className='dataset-summary-toggle-info-btn hidden-xs'
                                                        onClick={this.props.onClickDataset}
                                                        type='button'>
                         {this.props.isExpanded ? <span>Close</span> : <i className="fa fa-ellipsis-h" aria-hidden="true"></i>}
@@ -117,14 +89,19 @@ export default class DatasetSummary extends Component {
                   <div className='dataset-description' onClick={this.props.onClickDataset}>
                     <MarkdownViewer markdown={dataset.description} stripped={true}/>
                   </div>
-                  <ul className='list-unstyled tags'>
-                    {this.getTags()}
-                  </ul>
+
+                  <ToggleList list={this.props.dataset.keyword}
+                              getKey={tag=>tag}
+                              renderFunction={tag=><a onClick={this.onClick.bind(this, tag)}>#{tag}</a>}
+                              defaultLength={5}
+                              className={"dataset-summary-tags"}
+                              />
+
                 </div>
               <div className='footer'>
                   {this.props.isExpanded && this.renderLinks()}
                   <div className='dataset-summary-mobile-footer visible-xs clearfix'>
-                    <button className='dataset-summray-toggle-info-btn'
+                    <button className='dataset-summary-toggle-info-btn'
                                                        onClick={this.props.onClickDataset}
                                                        type='button'>
                         {this.props.isExpanded ? <span>Close</span> : <i className="fa fa-ellipsis-h" aria-hidden="true"></i>}

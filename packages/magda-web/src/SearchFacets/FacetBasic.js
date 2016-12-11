@@ -5,6 +5,7 @@ import maxBy from 'lodash.maxby';
 import defined from '../helpers/defined';
 import FacetSearchBox from './FacetSearchBox';
 import config from '../config.js'
+import ToggleList from '../UI/ToggleList';
 
 // extends Facet class
 class FacetBasic extends Component {
@@ -69,10 +70,7 @@ class FacetBasic extends Component {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
     // the option that has the max object.value value, use to calculate volumne indicator
     let maxOptionOptionList = maxBy(this.props.options, o=> +o.hitCount);
-    // the size of the list visible by default, it should either be DEFAULTSIZE or the size of the list if there's no overflow
-    let tempSize = defaultSize > inactiveOptions.length ? inactiveOptions.length : defaultSize;
-    // the size of list to display, depends on whether the list is expanded or not
-    let size = this.state.isExpanded ? inactiveOptions.length : tempSize;
+
 
     return <FacetWrapper onResetFacet={this.props.onResetFacet}
                          title={this.props.title}
@@ -86,15 +84,7 @@ class FacetBasic extends Component {
                <ul className='list-unstyled'>
                  {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
                </ul>
-               <ul className='list-unstyled'>
-                 {inactiveOptions.slice(0, size).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
-                 {inactiveOptions.length - tempSize > 0 &&
-                   <li><button onClick={this.toggleExpand}
-                           className='btn btn-toggle-expand'>
-                            {this.state.isExpanded ? `Show less` : `Show ${inactiveOptions.length - tempSize} more`}
-                  </button></li>}
-               </ul>
-
+               <ToggleList list={inactiveOptions} defaultLength={defaultSize} renderFunction= {(o)=>this.renderOption(o, this.props.onToggleOption, maxOptionOptionList)} getKey={(o)=>o.value} className={''}/>
            </FacetWrapper>
   }
 }

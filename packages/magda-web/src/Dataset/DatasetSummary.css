@@ -1,49 +1,49 @@
-.dataset-summray{
+.dataset-summary{
   border: 1px solid #fff;
   margin-bottom: 15px;
 }
 
-.dataset-summray .header,
-.dataset-summray .body,
-.dataset-summray .footer{
+.dataset-summary .header,
+.dataset-summary .body,
+.dataset-summary .footer{
   padding: 0 15px;
 }
 
-.dataset-summray .header{
+.dataset-summary .header{
   padding-top: 15px;
 }
 
-.dataset-summray.is-expanded .header,
-.dataset-summray.is-expanded .body,
-.dataset-summray.is-expanded .footer{
+.dataset-summary.is-expanded .header,
+.dataset-summary.is-expanded .body,
+.dataset-summary.is-expanded .footer{
   padding: 15px;
 }
 
-.dataset-summray.is-expanded .body{
+.dataset-summary.is-expanded .body{
     padding-bottom: 0px;
 }
 
-.dataset-summray .footer{
+.dataset-summary .footer{
   padding-top: 0;
 }
 
-.dataset-summray.is-expanded .header{
+.dataset-summary.is-expanded .header{
   background: #F2F4F5;
   padding-bottom: 15px;
 }
 
-.dataset-summray.is-expanded{
+.dataset-summary.is-expanded{
   background: #FFFFFF;
   border: 1px solid #BDC3C7;
   box-shadow: 0 1px 4px 0 #BDC3C7;
   border-radius: 1px;
 }
 
-.dataset-summray .header{
+.dataset-summary .header{
   position: relative;
 }
 
-.dataset-summray .btn-view-dataset{
+.dataset-summary .btn-view-dataset{
   font-size: 16px;
   color: #FFFFFF;
   background: #3498DB;
@@ -52,7 +52,7 @@
 }
 
 
-.dataset-summray-title{
+.dataset-summary-title{
   background: transparent;
   width: calc(100% - 60px);
   font-size: 18px;
@@ -65,16 +65,16 @@
   padding-right: 5px;
 }
 
-.dataset-summray .middle{
+.dataset-summary .middle{
     margin-top: 15px;
 }
 
-.dataset-summray .middle div{
+.dataset-summary .middle div{
   display: inline-block;
   float: left;
 }
 
-.dataset-summray .sub-heading{
+.dataset-summary .sub-heading{
   font-size: 14px;
   color: #7F8C8D;
   font-family: 'Montserrat', sans-serif;
@@ -82,16 +82,16 @@
   text-transform: uppercase;
 }
 
-.dataset-summray .media-heading{
+.dataset-summary .media-heading{
   font-size: 16px;
 }
 
-.dataset-summray .license{
+.dataset-summary .license{
   font-size: 16px;
   color: #16A085;
 }
 
-.dataset-summray .source{
+.dataset-summary .source{
   padding-bottom: 15px;
   border-top: 1px solid #ECF0F1;
   border-bottom: 1px solid #ECF0F1;
@@ -99,15 +99,15 @@
 }
 
 
-.dataset-summray h1{
+.dataset-summary h1{
   font-size: 1.2em;
 }
 
-.dataset-summray h2{
+.dataset-summary h2{
   font-size: 1.1em;
 }
 
-.dataset-summray h3{
+.dataset-summary h3{
   font-size: 1em;
   margin-top: 0;
   margin-bottom: 0;
@@ -144,11 +144,11 @@
 }
 
 
-.dataset-summray.is-expanded .dataset-description > .markdown:before{
+.dataset-summary.is-expanded .dataset-description > .markdown:before{
   background: rgba(255, 255, 255, 0);
 }
 
-.dataset-summray-toggle-info-btn{
+.dataset-summary-toggle-info-btn{
   border: 0;
   background: transparent;
   font-size: 18px;
@@ -159,13 +159,13 @@
   top: 13px;
 }
 
-.dataset-summray-toggle-info-btn span{
+.dataset-summary-toggle-info-btn span{
   font-size: 16px;
   color: #3498db;
 }
 
-.dataset-summray-toggle-info-btn:hover,
-.dataset-summray-toggle-info-btn:focus{
+.dataset-summary-toggle-info-btn:hover,
+.dataset-summary-toggle-info-btn:focus{
   color: #337ab7;
 }
 
@@ -186,13 +186,20 @@
 }
 
 
-.search-result-tags li{
+.dataset-summary-tags li{
   display: inline-block;
   margin-right: 8px;
 }
 
-.search-result-tags li a{
+.dataset-summary-tags li a{
   cursor: pointer;
+}
+
+.dataset-summary-tags .btn-toggle-expand{
+  padding: 0;
+  display: block;
+  line-height: 1;
+  text-decoration: underline;
 }
 
 
@@ -216,13 +223,13 @@
   text-align: left;
 }
 
-.dataset-summary-mobile-footer .dataset-summray-toggle-info-btn{
+.dataset-summary-mobile-footer .dataset-summary-toggle-info-btn{
   position: relative;
   padding: 0;
   left: 0;
 }
 
-.dataset-summary-mobile-footer .dataset-summray-toggle-info-btn .fa{
+.dataset-summary-mobile-footer .dataset-summary-toggle-info-btn .fa{
   vertical-align: top;
   margin-top: -5px;
 }
@@ -230,11 +237,11 @@
 
 
 @media (max-width: 768px) {
-  .dataset-summray{
+  .dataset-summary{
     border: 1px solid #fff;
   }
 
-  .dataset-summray.is-expanded{
+  .dataset-summary.is-expanded{
     border: 1px solid #fff;
   }
 
