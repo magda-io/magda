@@ -222,7 +222,7 @@
 .search-result--publisher{
   font-weight: 400;
   font-size: 16px;
-  color: #7F8C8D
+  color: #7F8C8D;
 }
 
 .dataset-summary-mobile-footer{
@@ -246,8 +246,14 @@
 .dataset-summary .star-btn{
   font-size: 26px;
   padding: 3px 8px;
-
+  color: #7F8C8D;
 }
+
+.dataset-summary .btn-share:hover,
+.dataset-summary .star-btn:hover{
+  color: #3498DB;
+}
+
 
 .dataset-summary .fa{
   vertical-align: text-top;
