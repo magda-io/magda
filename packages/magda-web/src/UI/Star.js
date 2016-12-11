@@ -6,7 +6,6 @@ class Star extends Component {
       this.onClick = this.onClick.bind(this);
       this.hideInfo = this.hideInfo.bind(this);
       this.state = {
-        isActive: false,
         showInfo: false
       };
     }
@@ -17,9 +16,9 @@ class Star extends Component {
 
     onClick(event){
       event.stopPropagation();
+      this.props.onClick();
       this.setState({
-        isActive: !this.state.isActive,
-        showInfo: !this.state.isActive
+        showInfo: !this.props.isOn
       })
     }
 
@@ -35,7 +34,7 @@ class Star extends Component {
 
     render(){
       return <div className='star'>
-                <button onClick={this.onClick} className={`btn star-btn ${this.state.isActive ? 'is-active' : ''}`}>
+                <button onClick={this.onClick} className={`btn star-btn ${this.props.isOn ? 'is-active' : ''}`}>
                   <i className="fa fa-star" aria-hidden="true"/>
                 </button>
                 {this.state.showInfo && <div className='star-info'>

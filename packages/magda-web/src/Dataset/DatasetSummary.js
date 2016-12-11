@@ -9,8 +9,10 @@ export default class DatasetSummary extends Component {
   constructor(props) {
     super(props);
     this.onClick = this.onClick.bind(this);
+    this.onClickStar = this.onClickStar.bind(this);
     this.state ={
-      tagsExpanded: false
+      tagsExpanded: false,
+      isFav: false
     }
   }
 
@@ -26,6 +28,12 @@ export default class DatasetSummary extends Component {
       type = fileTypes.indexOf(format)
     }
     return `./assets/file-icons/${fileTypes[type]}.png`;
+  }
+
+  onClickStar(){
+    this.setState({
+      isFav: !this.state.isFav
+    })
   }
 
   renderDownloadLink(d){
@@ -62,12 +70,15 @@ export default class DatasetSummary extends Component {
     return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
                 <div className='header'>
                   <div className='header-top clearfix'>
-                    <button target='_blank'
-                            className='dataset-summary-title btn'
-                            type='button'
-                            onClick={(e)=>{window.open(dataset.landingPage, '_blank')}}>
-                      {dataset.title}
-                    </button>
+                    <div className ='title-group'>
+                      <button target='_blank'
+                              className='dataset-summary-title btn'
+                              type='button'
+                              onClick={(e)=>{window.open(dataset.landingPage, '_blank')}}>
+                        {dataset.title}
+                      </button>
+                    {!this.props.isExpanded && <Star onClick={this.onClickStar} isOn={this.state.isFav}/>}
+                    </div>
                     <button className='dataset-summary-toggle-info-btn hidden-xs'
                                                        onClick={this.props.onClickDataset}
                                                        type='button'>
@@ -76,7 +87,7 @@ export default class DatasetSummary extends Component {
                   </div>
                   {this.props.isExpanded && <div className='middle clearfix'>
                       <div><a className='btn btn-view-dataset' href={dataset.landingPage} target='_blank'>View dataset</a></div>
-                      <div><Star/></div>
+                      <div><Star onClick={this.onClickStar} isOn={this.state.isFav}/></div>
                       <div>
                         <a className='btn btn-share' href={`https://twitter.com/intent/tweet?url=${dataset.landingPage}`} target='_blank'>
                           <i className="fa fa-share-alt" aria-hidden="true"></i>

@@ -1,24 +1,17 @@
 .star{
   position: relative;
 }
-.star-btn {
-  background: transparent;
-}
 
-.star-btn .fa{
-  vertical-align: text-top;
+.star-btn, .star-btn:focus{
+    background: rgba(255, 255, 255, 0);
+    vertical-align: text-top;
+    color: #bbb;
 }
-
-.star-btn:hover,
-.star-btn.is-active{
-  color: #e67e22;
-}
-
 
 .star-info{
   position: absolute;
-  left: -30px;
-  top: 30px;
+  left: -20px;
+  top: 37px;
   width: 170px;
   padding: 10px;
   border: 1px solid #ddd;
