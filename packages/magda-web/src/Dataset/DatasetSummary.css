@@ -242,6 +242,17 @@
   margin-top: -5px;
 }
 
+.dataset-summary .btn-share,
+.dataset-summary .star-btn{
+  font-size: 26px;
+  padding: 3px 8px;
+
+}
+
+.dataset-summary .fa{
+  vertical-align: text-top;
+}
+
 
 
 @media (max-width: 768px) {

@@ -78,7 +78,7 @@ export default class DatasetSummary extends Component {
                       <div><a className='btn btn-view-dataset' href={dataset.landingPage} target='_blank'>View dataset</a></div>
                       <div><Star/></div>
                       <div>
-                        <a className='btn' href={`https://twitter.com/intent/tweet?url=${dataset.landingPage}`} target='_blank'>
+                        <a className='btn btn-share' href={`https://twitter.com/intent/tweet?url=${dataset.landingPage}`} target='_blank'>
                           <i className="fa fa-share-alt" aria-hidden="true"></i>
                         </a>
                       </div>
