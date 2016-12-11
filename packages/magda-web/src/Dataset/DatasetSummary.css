@@ -43,6 +43,14 @@
   position: relative;
 }
 
+.dataset-summary .media{
+  margin-bottom: 15px;
+}
+
+.dataset-summary .btn-toggle-expand{
+  padding-left: 0;
+}
+
 .dataset-summary .btn-view-dataset{
   font-size: 16px;
   color: #FFFFFF;
