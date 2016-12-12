@@ -43,7 +43,7 @@ export default class DatasetSummary extends Component {
             </div>
             <div className="media-body">
              <a className='media-heading' href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
-             <div className='license'>{d.license.name}</div>
+             <div className='license'>{defined(d.license) && d.license.name}</div>
             </div>
           </div>
   }

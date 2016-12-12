@@ -86,7 +86,6 @@ class RegionPopup extends Facet {
 
     render(){
         let region = this.state._activeRegion;
-        console.log(this.getActiveRegionType());
         return (
             <div className='popup'>
               <div className='popup-inner'>
