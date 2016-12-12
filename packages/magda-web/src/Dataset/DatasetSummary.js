@@ -70,7 +70,7 @@ export default class DatasetSummary extends Component {
     return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
                 <div className='header'>
                   <div className='header-top clearfix'>
-                    <div className ='title-group'>
+                    <div className='title-group'>
                       <button target='_blank'
                               className='dataset-summary-title btn'
                               type='button'

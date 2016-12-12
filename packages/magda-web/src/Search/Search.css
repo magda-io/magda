@@ -45,6 +45,7 @@
 	padding: 10px;
 	font-weight: 600;
 	background: #dcdfe1;
+	margin: 15px;
 }
 
 
@@ -57,5 +58,8 @@
 	.search__search-header{
 		margin-bottom: 0px;
 		padding-bottom: 0;
+	}
+	.no-match{
+		margin: 15px 0;
 	}
 }

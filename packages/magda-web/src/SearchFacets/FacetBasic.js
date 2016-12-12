@@ -84,7 +84,7 @@ class FacetBasic extends Component {
                <ul className='list-unstyled'>
                  {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
                </ul>
-               <ToggleList list={inactiveOptions} defaultLength={defaultSize} renderFunction= {(o)=>this.renderOption(o, this.props.onToggleOption, maxOptionOptionList)} getKey={(o)=>o.value} className={''}/>
+               <ToggleList list={inactiveOptions} defaultLength={defaultSize} renderFunction={(o)=>this.renderOption(o, this.props.onToggleOption, maxOptionOptionList)} getKey={(o)=>o.value} className={''}/>
            </FacetWrapper>
   }
 }

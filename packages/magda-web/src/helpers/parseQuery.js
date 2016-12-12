@@ -10,7 +10,7 @@ export default function(query){
   let location = queryToLocation(query.regionId, query.regionType);
   let startIndex = defined(query.page) ? (query.page - 1)*config().resultsPerPage : 0;
 
-  let apiQuery = `${keyword}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${config().resultsPerPage}`;
+  let apiQuery = `${encodeURIComponent(keyword)}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${config().resultsPerPage}`;
   return apiQuery;
 }
 
