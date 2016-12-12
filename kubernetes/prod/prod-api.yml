@@ -1,5 +1,53 @@
-#API
+#VARNISH
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: varnish
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: varnish
+    spec:
+      containers:
+      - name: varnish
+        image: "mobulum/varnish"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1000Mi
+        imagePullPolicy: Always
+        env:
+        - name: BACKEND_PORT_80_TCP_ADDR
+          value: api
+        - name: BACKEND_ENV_PORT
+          value: "80"
+        - name: LISTEN_PORT
+          value: "80"
+        - name: THROTTLE_LIMIT
+          value: "150req/30s"
+        - name: CACHE_SIZE
+          value: "750MB"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: varnish
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: varnish
+  type: "LoadBalancer"
+  loadBalancerIP: "104.199.217.132"
+---
 
+#API
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -42,7 +90,6 @@ spec:
   selector:
     service: api
   type: "LoadBalancer"
-  loadBalancerIP: "104.199.217.132"
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler

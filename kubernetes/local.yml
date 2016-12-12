@@ -23,6 +23,8 @@ spec:
           value: "80"
         - name: THROTTLE_LIMIT
           value: "1000req/1s"
+        - name: CACHE_SIZE
+          value: 0MB
         ports:
         - containerPort: 80
 ---
