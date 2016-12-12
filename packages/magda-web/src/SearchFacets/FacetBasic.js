@@ -22,7 +22,7 @@ class FacetBasic extends Component {
  * @param {object} option the current option to render
  */
   checkActiveOption(option){
-    return find(this.props.activeOptions, o=> o.value === option.value);
+    return find(this.props.activeOptions, o=> o.value.toLowerCase() === option.value.toLowerCase());
   }
   /**
     * expand the list (reacting to show more less button )
