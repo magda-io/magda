@@ -6,6 +6,9 @@ metadata:
     component: elasticsearch
     role: client
 spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   template:
     metadata:
       labels:

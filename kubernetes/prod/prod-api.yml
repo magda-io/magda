@@ -5,11 +5,14 @@ metadata:
   name: varnish
 spec:
   replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   template:
     metadata:
       labels:
         service: varnish
-    spec:
+    spec:    
       containers:
       - name: varnish
         image: "mobulum/varnish"
@@ -54,6 +57,9 @@ metadata:
   name: api
 spec:
   replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   template:
     metadata:
       labels:

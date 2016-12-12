@@ -6,6 +6,9 @@ metadata:
     component: elasticsearch
     role: data-pd-1
 spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -66,6 +69,9 @@ metadata:
     component: elasticsearch
     role: data-pd-2
 spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -126,6 +132,9 @@ metadata:
     component: elasticsearch
     role: data-ephemeral
 spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   template:
     metadata:
       labels:

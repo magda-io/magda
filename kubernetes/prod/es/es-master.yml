@@ -6,6 +6,9 @@ metadata:
     component: elasticsearch
     role: master
 spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   replicas: 3
   template:
     metadata:
