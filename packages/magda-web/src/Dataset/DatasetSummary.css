@@ -61,12 +61,11 @@
 
 .dataset-summary .header-top .star{
   display: inline-block;
-  font-size: 18px;
 }
 
-
-.dataset-summary .header-top .fa{
-    font-size: 18px;
+.dataset-summary .header-top .star-btn{
+  padding: 0;
+  font-size: 18px;
 }
 
 .dataset-summary .title-group{
@@ -177,7 +176,7 @@
   padding: 2px 10px;
   position: absolute;
   right: 20px;
-  top: 13px;
+  top: 15px;
 }
 
 .dataset-summary-toggle-info-btn span{
