@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Source Sans Pro', sans-serif;
+  color: #333333;
+}
+
+.navbar-header{
+  background: #fff;
+}
+
+.navbar-brand{
+  padding: 10px 0;
+  height: 80px;
+}
+
+.logo{
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.prototype-warning{
+  background-color: #3498db;
+  color: #fff;
+  padding: 5px;
+  text-align: center;
+}
