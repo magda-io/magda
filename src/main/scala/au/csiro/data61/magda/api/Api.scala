@@ -44,12 +44,17 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
   val logger = Logging(system, getClass)
   val searchQueryer = new ElasticSearchQueryer()
 
+  // Disallow credentials so that we return "Access-Control-Allow-Origin: *" instead of
+  // "Access-Control-Allow-Origin: foo.com".  The latter is fine until Chrome decides to
+  // cache the response and re-use it for other origins, causing a CORS failure.
+  val corsSettings = CorsSettings.defaultSettings.copy(allowCredentials = false)
+
   implicit def rejectionHandler = RejectionHandler.newBuilder()
     .handleAll[MethodRejection] { rejections ⇒
       val methods = rejections map (_.supported)
       lazy val names = methods map (_.name) mkString ", "
 
-      cors() {
+      cors(corsSettings) {
         options {
           complete(s"Supported methods : $names.")
         } ~
@@ -66,7 +71,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
       logger.error(e, "Exception encountered")
 
       encodeResponseWith(Gzip) {
-        cors() {
+        cors(corsSettings) {
           complete(HttpResponse(InternalServerError, entity = "Failure"))
         }
       }
@@ -76,7 +81,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes =
     encodeResponseWith(Gzip) {
-      cors() {
+      cors(corsSettings) {
         handleExceptions(myExceptionHandler) {
           pathPrefix("facets") {
             path(Segment / "options" / "search") { facetId ⇒
