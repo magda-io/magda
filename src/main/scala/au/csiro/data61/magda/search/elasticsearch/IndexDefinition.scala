@@ -41,7 +41,7 @@ case class IndexDefinition(
 object IndexDefinition {
   val datasets = new IndexDefinition(
     name = "datasets",
-    version = 13,
+    version = 14,
     definition =
       create.index("datasets")
         .indexSetting("recovery.initial_shards", 1)

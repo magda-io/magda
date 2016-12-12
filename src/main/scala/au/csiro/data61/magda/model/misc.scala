@@ -80,8 +80,7 @@ package misc {
       contactPoint: Option[Agent] = None,
       distributions: Seq[Distribution] = Seq(),
       landingPage: Option[String] = None,
-      // TODO: Investigate making this only exist in ElasticSearch
-      years: Option[List[Int]] = None) {
+      years: Option[String] = None) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
   }

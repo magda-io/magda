@@ -400,7 +400,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
             catalog = source.name,
             years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
               case Nil  => None
-              case list => Some(list)
+              case list => Some(list.foldLeft("")(_ + "," + _))
             }).toJson)
 
         val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>

@@ -1,23 +1,25 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import scala.collection.JavaConverters._
-import com.sksamuel.elastic4s.QueryDefinition
+
+import org.elasticsearch.search.aggregations.Aggregation
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram
+import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
+import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
+
+import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
 import com.sksamuel.elastic4s.AbstractAggregationDefinition
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.QueryDefinition
+
+import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc
-import au.csiro.data61.magda.api.Query
-import org.elasticsearch.search.aggregations.Aggregation
-import com.sksamuel.elastic4s.ElasticDsl._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.util.DateParser._
-import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
-import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
 import au.csiro.data61.magda.search.elasticsearch.Queries._
+import au.csiro.data61.magda.util.DateParser._
 import au.csiro.data61.magda.util.DateParser
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
-import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation.InternalBucket
-import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
-import org.elasticsearch.search.aggregations.bucket.histogram.Histogram
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -154,10 +156,10 @@ object YearFacetDefinition extends FacetDefinition {
 
         super.truncateFacets(matchedBins, Nil, makeBins(unmatched, remainingFacetSlots, hole), limit)
     }
-
-  def getBinSize(facets: Seq[FacetOption], limit: Int): Int = {
-    val lastYear = facets.head.value.toInt
-    val firstYear = facets.last.value.toInt
+  
+  def getBinSize(firstYear: Int, lastYear: Int, years: List[Int], limit: Int): Int = {
+    val lastYear = years.head
+    val firstYear = years.last
 
     val yearDifference = lastYear - firstYear
     yearBinSizes.view.map(x => (x, yearDifference / x)).filter(_._2 <= limit).map(_._1).head
@@ -166,33 +168,50 @@ object YearFacetDefinition extends FacetDefinition {
   def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)] = None): Seq[FacetOption] = facets match {
     case Nil => Nil
     case facets =>
-      val binSize = getBinSize(facets, limit)
-      val lastYear = facets.head.value.toInt
-      val firstYear = facets.last.value.toInt
+      val yearLookup = facets.foldRight(Map[Int, Seq[String]]()){(facet, map) => 
+         val years = facet.value.split(",").map(_.toInt)
+         
+         map ++ years.foldRight(Map[Int, Seq[String]]()){(year, innerMap) => 
+           innerMap + (
+             facet.value -> innerMap.getOrElse(facet.value, 0) + facet.hitCount
+             )
+         }
+         
+      }
+      
+      
+      val years = yearLookup.keySet.flatMap(_.split(",")).map(_.toInt).toList.sortBy(_ * -1)
+      val lastYear = years.head
+      val firstYear = years.last
+      val binSize = getBinSize(firstYear, lastYear, years, limit)
 
       val binsRaw = (for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1))
       val bins = hole.map {
         case (holeStart, holeEnd) =>
           binsRaw.flatMap {
-              case (binStart, binEnd) =>
-                if (binStart > holeStart && binEnd < holeEnd)
-                  Nil
-                else if (binStart < holeStart && binEnd > holeEnd)
-                  Seq((binStart, holeStart - 1), (holeEnd + 1, binEnd))
-                else if (binStart <= holeStart && binEnd >= holeStart)
-                  Seq((binStart, holeStart - 1))
-                else if (binStart <= holeEnd && binEnd >= holeEnd)
-                  Seq((holeEnd + 1, binEnd))
-                else Seq((binStart, binEnd))
-            }
+            case (binStart, binEnd) =>
+              if (binStart > holeStart && binEnd < holeEnd)
+                Nil
+              else if (binStart < holeStart && binEnd > holeEnd)
+                Seq((binStart, holeStart - 1), (holeEnd + 1, binEnd))
+              else if (binStart <= holeStart && binEnd >= holeStart)
+                Seq((binStart, holeStart - 1))
+              else if (binStart <= holeEnd && binEnd >= holeEnd)
+                Seq((holeEnd + 1, binEnd))
+              else Seq((binStart, binEnd))
+          }
       } getOrElse (binsRaw)
 
-      val yearLookup = facets.groupBy(_.value.toInt).mapValues(_.head.hitCount)
 
       bins.reverse.map {
         case (start, end) =>
           val yearsAffected = for (i <- start to end) yield i
-          val hitCount = yearsAffected.foldRight(0l)((year, count) => count + yearLookup.get(year).getOrElse(0l))
+
+          val min = yearsAffected.map(yearLookup.get).flatten match {
+            case Seq() => 0
+            case some  => some.reduce((average, current) => Math.ceil((average + current) / 2).toLong)
+          }
+          val hitCount = min + yearsAffected.foldRight(0l)((year, agg) => agg + yearLookup.getOrElse(year, 0l) - min)
 
           FacetOption(
             value = if (start != end) s"$start - $end" else start.toString,
@@ -284,4 +303,4 @@ object FormatFacetDefinition extends FacetDefinition {
   override def exactMatchQuery(query: String): QueryDefinition = exactFormatQuery(query)
 
   override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
-}
+})
