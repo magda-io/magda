@@ -1,6 +1,30 @@
 {
   "comments": "Matching takes place in the order defined in this file. Place code matches before name matches, and smaller regions before larger ones.",
   "regionWmsMap": {
+    "STE": {
+      "layerName": "FID_STE_2011_AUST",
+      "server": "https://vector-tiles.terria.io/FID_STE_2011_AUST/{z}/{x}/{y}.pbf",
+      "regionProp": "STE_CODE11",
+      "aliases": [
+        "ste_code",
+        "ste_code_2011",
+        "ste"
+      ],
+      "digits": 1,
+      "regionIdsFile": "data/regionids/region_map-FID_STE_2011_AUST_STE_CODE11.json",
+      "serverType": "MVT",
+      "serverSubdomains": [],
+      "serverMinZoom": 0,
+      "serverMaxNativeZoom": 12,
+      "serverMaxZoom": 28,
+      "bbox": [
+        96.81694140799998,
+        -43.74050960300003,
+        159.10921900799997,
+        -9.142175976999999
+      ],
+      "nameProp": "STE_NAME11"
+    },
     "SA4": {
       "layerName": "FID_SA4_2011_AUST",
       "server": "https://vector-tiles.terria.io/FID_SA4_2011_AUST/{z}/{x}/{y}.pbf",

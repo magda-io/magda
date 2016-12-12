@@ -2,7 +2,7 @@ enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 name := "magda-metadata"
 organization := "au.com.csiro.data61"
-version := "0.0.7"
+version := "0.0.8"
 scalaVersion := "2.11.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")

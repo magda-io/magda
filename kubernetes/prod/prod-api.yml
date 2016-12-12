@@ -90,6 +90,8 @@ spec:
   selector:
     service: api
   type: "LoadBalancer"
+  loadBalancerSourceRanges:
+  - 10.0.0.0/8
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
