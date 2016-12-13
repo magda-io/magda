@@ -12,8 +12,8 @@ import ProgressBar from '../UI/ProgressBar';
 import React, { Component } from 'react';
 import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
+import Publisher from '../SearchFacets/Publisher';
 import SearchResults from '../SearchResults/SearchResults';
-import Recomendations from './Recomendations';
 import WelcomeText from './WelcomeText';
 import NoMatching from './NoMatching';
 import {fetchRegionMapping} from '../actions/regionMapping';
@@ -33,6 +33,7 @@ class Search extends Component {
     this.updateSearchQuery = this.updateSearchQuery.bind(this);
     this.onClearSearch = this.onClearSearch.bind(this);
     this.onClickSearch = this.onClickSearch.bind(this);
+    this.onSearchTextChange = this.onSearchTextChange.bind(this);
 
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
@@ -152,11 +153,10 @@ class Search extends Component {
           <div className='search__search-body container'>
           <div className='row'>
             <div className='col-sm-4 hidden-xs'>
-               <Recomendations description={"Are you searching for items published by "}
-                               modifyUserSearchString={this.modifyUserSearchString}
-               />
                 {this.getSearchBoxValue().length > 0 &&
-                 <SearchFacets updateQuery={this.updateQuery}/>
+                 <SearchFacets updateQuery={this.updateQuery}
+                               modifyUserSearchString={this.modifyUserSearchString}
+                 />
                 }
             </div>
             <div className='col-sm-8'>
@@ -164,6 +164,10 @@ class Search extends Component {
                  !this.props.isFetching &&
                  !this.props.hasError &&
                  <div>
+                 <Publisher updateQuery={this.updateQuery}
+                            modifyUserSearchString={this.modifyUserSearchString}
+                            component={'recomendations'}
+                 />
 
                  {defined(this.props.location.query.q) &&
                   this.props.location.query.q.length > 0 &&

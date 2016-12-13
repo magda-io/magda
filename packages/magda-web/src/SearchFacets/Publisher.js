@@ -5,6 +5,7 @@ import ProgressBar from '../UI/ProgressBar';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'
+import Recomendations from '../Search/Recomendations';
 
 class Publisher extends Component {
 
@@ -40,18 +41,32 @@ class Publisher extends Component {
   }
 
   render() {
-    return (
-      <FacetBasic title='publisher'
-                  id='publisher'
-                  hasQuery={Boolean(this.props.activePublishers.length)}
-                  options={this.props.publisherOptions}
-                  activeOptions={this.props.activePublishers}
-                  facetSearchResults={this.props.publisherSearchResults}
-                  onToggleOption={this.onTogglePublisherOption}
-                  onResetFacet={this.onResetPublisherFacet}
-                  searchFacet={this.onSearchPublisherFacet}
-      />
-    );
+    switch (this.props.component) {
+      case 'facet':
+        return (
+          <FacetBasic title='publisher'
+                      id='publisher'
+                      hasQuery={Boolean(this.props.activePublishers.length)}
+                      options={this.props.publisherOptions}
+                      activeOptions={this.props.activePublishers}
+                      facetSearchResults={this.props.publisherSearchResults}
+                      onToggleOption={this.onTogglePublisherOption}
+                      onResetFacet={this.onResetPublisherFacet}
+                      searchFacet={this.onSearchPublisherFacet}
+          />
+        );
+      case 'recomendations':
+        return (
+          <Recomendations options={this.props.publisherOptions}
+                          onClick={this.onTogglePublisherOption}
+                          activeOptions={this.props.activePublishers}
+                          description={"Are you searching for items published by "}
+                          modifyUserSearchString={this.props.modifyUserSearchString}
+          />
+        );
+      default:
+        return null;
+      }
   }
 }
 

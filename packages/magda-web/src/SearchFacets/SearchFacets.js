@@ -12,7 +12,8 @@ class SearchFacets extends Component {
   render() {
     return (
       <div>
-        <Publisher updateQuery={this.props.updateQuery}/>
+        <Publisher updateQuery={this.props.updateQuery}
+                   component={'facet'}/>
         <Region updateQuery={this.props.updateQuery}/>
         <Temporal updateQuery={this.props.updateQuery}/>
         <Format updateQuery={this.props.updateQuery}/>
