@@ -89,7 +89,9 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
       } map {
         case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy)
       } recover {
-        case CausedBy(CausedBy(CausedBy(illegalArgument: IllegalArgumentException))) => failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
+        case CausedBy(CausedBy(CausedBy(illegalArgument: IllegalArgumentException))) =>
+          logger.error(illegalArgument, "Exception when searching")
+          failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
         case e: Throwable =>
           logger.error(e, "Exception when searching")
           failureSearchResult(query, "Unknown error")
@@ -323,11 +325,11 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
           query { matchPhrasePrefixQuery("name", query) }
           start start.toInt
           limit limit
-          sort ( 
+          sort (
             field sort "order" order SortOrder.ASC,
             field sort "_score" order SortOrder.DESC
           )
-          sourceExclude ("geometry")
+            sourceExclude ("geometry")
       ).flatMap { response =>
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more

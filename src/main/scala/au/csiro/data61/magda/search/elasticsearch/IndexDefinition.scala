@@ -65,10 +65,10 @@ object IndexDefinition {
             field("title").typed(StringType).analyzer("english"),
             field("description").typed(StringType).analyzer("english"),
             field("keyword").typed(StringType).analyzer("english"),
-            field("theme").typed(StringType).analyzer("english")
+            field("theme").typed(StringType).analyzer("english"),
+            field("years").typed(StringType).analyzer("untokenized")
           ),
           mapping(Format.id),
-          mapping(Year.id),
           mapping(Publisher.id)
         ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
         .indexSetting("requests.cache.enable", true))

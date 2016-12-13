@@ -311,23 +311,13 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
 
   private def snapshotRepoName(definition: IndexDefinition) = s"${definition.name}-${definition.version}"
 
-  /** Returns a list of all years between two Instants, inclusively, as strings */
-  private def getYears(from: Option[Instant], to: Option[Instant]): List[Int] = {
-    def getYearsInner(from: LocalDate, to: LocalDate): List[Int] =
-      if (from.isAfter(to)) {
-        Nil
-      } else {
-        from.getYear :: getYearsInner(from.plusYears(1), to)
-      }
+  private def getYears(from: Option[Instant], to: Option[Instant]): Option[String] = {
+    val newFrom = from.orElse(to).map(_.atZone(ZoneId.systemDefault).toLocalDate.getYear)
+    val newTo = to.orElse(from).map(_.atZone(ZoneId.systemDefault).toLocalDate.getYear)
 
-    (from, to) match {
-      case (None, None) => Nil
-      case _ => {
-        val newFrom = from.getOrElse(to.get).atZone(ZoneId.systemDefault).toLocalDate
-        val newTo = to.getOrElse(from.get).atZone(ZoneId.systemDefault).toLocalDate
-
-        getYearsInner(newFrom, newTo)
-      }
+    (newFrom, newTo) match {
+      case (Some(newFrom), Some(newTo)) => Some(s"$newFrom-$newTo")
+      case _                            => None
     }
   }
 
@@ -398,27 +388,23 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
         val indexDataSet = ElasticDsl.index into "datasets" / "datasets" id dataSet.uniqueId source (
           dataSet.copy(
             catalog = source.name,
-            years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))) match {
-              case Nil  => None
-              case list => Some(list.foldLeft("")(_ + "," + _))
-            }).toJson)
+            years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
+          ).toJson
+        )
 
         val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
           ElasticDsl.index into "datasets" / Publisher.id
             id publisherName.toLowerCase
             source Map("value" -> publisherName).toJson))
 
-        val indexYears = getYears(
-          dataSet.temporal.flatMap(_.start.flatMap(_.date)),
-          dataSet.temporal.flatMap(_.end.flatMap(_.date))).map(year => ElasticDsl.index into "datasets" / Year.id id year source Map("value" -> year).toJson)
-
+    
         val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
           val format = distribution.format.get
 
           ElasticDsl.index into "datasets" / Format.id id format.toLowerCase source Map("value" -> format).toJson
         }
 
-        indexDataSet :: indexYears ++ indexPublisher.toList ++ indexFormats
+        indexDataSet :: indexPublisher.toList ++ indexFormats
       }.flatten)
 
 }

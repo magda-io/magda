@@ -133,7 +133,7 @@ object YearFacetDefinition extends FacetDefinition {
   val yearBinSizes = List(1, 2, 5, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
 
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
-    aggregation.histogram(Year.id).field("years").interval(1).order(Histogram.Order.KEY_DESC)
+    aggregation.terms(Year.id).field("years").size(Int.MaxValue)
 
   // FIXME: Warning: all binning code is so so so so so bad, revisit after the prototype
   override def truncateFacets(matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] =
@@ -156,7 +156,7 @@ object YearFacetDefinition extends FacetDefinition {
 
         super.truncateFacets(matchedBins, Nil, makeBins(unmatched, remainingFacetSlots, hole), limit)
     }
-  
+
   def getBinSize(firstYear: Int, lastYear: Int, years: List[Int], limit: Int): Int = {
     val lastYear = years.head
     val firstYear = years.last
@@ -168,19 +168,8 @@ object YearFacetDefinition extends FacetDefinition {
   def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)] = None): Seq[FacetOption] = facets match {
     case Nil => Nil
     case facets =>
-      val yearLookup = facets.foldRight(Map[Int, Seq[String]]()){(facet, map) => 
-         val years = facet.value.split(",").map(_.toInt)
-         
-         map ++ years.foldRight(Map[Int, Seq[String]]()){(year, innerMap) => 
-           innerMap + (
-             facet.value -> innerMap.getOrElse(facet.value, 0) + facet.hitCount
-             )
-         }
-         
-      }
-      
-      
-      val years = yearLookup.keySet.flatMap(_.split(",")).map(_.toInt).toList.sortBy(_ * -1)
+      val parsedFacets = facets.map(facet => (facet.value.split("-").map(_.toInt), facet.hitCount))
+      val years = parsedFacets.flatMap(_._1).distinct.toList.sortBy(_ * -1)
       val lastYear = years.head
       val firstYear = years.last
       val binSize = getBinSize(firstYear, lastYear, years, limit)
@@ -202,22 +191,23 @@ object YearFacetDefinition extends FacetDefinition {
           }
       } getOrElse (binsRaw)
 
-
       bins.reverse.map {
-        case (start, end) =>
-          val yearsAffected = for (i <- start to end) yield i
+        case (bucketStart, bucketEnd) =>
+          val hitCount = parsedFacets.filter {
+            case (years, hitCount) =>
+              val facetStart = years.head
+              val facetEnd = years.last
 
-          val min = yearsAffected.map(yearLookup.get).flatten match {
-            case Seq() => 0
-            case some  => some.reduce((average, current) => Math.ceil((average + current) / 2).toLong)
-          }
-          val hitCount = min + yearsAffected.foldRight(0l)((year, agg) => agg + yearLookup.getOrElse(year, 0l) - min)
+              (facetStart >= bucketStart && facetStart <= bucketEnd) ||
+                (facetEnd >= bucketStart && facetEnd <= bucketEnd) ||
+                (facetStart <= bucketStart && facetEnd >= bucketEnd)
+          }.foldLeft(0l)(_ + _._2)
 
           FacetOption(
-            value = if (start != end) s"$start - $end" else start.toString,
+            value = if (bucketStart != bucketEnd) s"$bucketStart - $bucketEnd" else bucketStart.toString,
             hitCount,
-            lowerBound = Some(start.toString),
-            upperBound = Some(end.toString)
+            lowerBound = Some(bucketStart.toString),
+            upperBound = Some(bucketEnd.toString)
           )
       }.filter(_.hitCount > 0)
   }
@@ -238,8 +228,12 @@ object YearFacetDefinition extends FacetDefinition {
   override def removeFromQuery(query: Query): Query = query.copy(dateFrom = None, dateTo = None)
 
   override def isFilterOptionRelevant(query: Query)(filterOption: FacetOption): Boolean = {
+    val (rawFrom, rawTo) = filterOption.value.split("-") match {
+      case Array(date)     => (date, date)
+      case Array(from, to) => (from, to)
+    }
     //FIXME: This is nah-stee
-    (parseDate(filterOption.value, false), parseDate(filterOption.value, true)) match {
+    (parseDate(rawFrom, false), parseDate(rawTo, true)) match {
       case (InstantResult(from), InstantResult(to)) =>
         query.dateFrom.map(x => x.isBefore(to) || x.equals(to)).getOrElse(true) &&
           query.dateTo.map(x => x.isAfter(from) || x.equals(from)).getOrElse(true)
@@ -303,4 +297,4 @@ object FormatFacetDefinition extends FacetDefinition {
   override def exactMatchQuery(query: String): QueryDefinition = exactFormatQuery(query)
 
   override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
-})
+}
