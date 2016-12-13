@@ -1,8 +1,9 @@
-.search-box input {
+.search-box input[type=text].form-control {
   height: 50px;
 	border-radius: 1px;
 	background-color: #ffffff;
   font-size: 18px;
+  padding-right: 30px;
 }
 
 .search-box{
@@ -12,12 +13,11 @@
 
 .search-box .btn-clear-search{
   position: absolute;
-  right: 0;
+  right: 1px;
   top: 0;
   z-index: 10;
   height: 100%;
   background: transparent;
-
 }
 
 .search-box .btn-search-icon{
@@ -25,14 +25,14 @@
 	background-color: #3498db;
   color: #fff;
   position: absolute;
-  right: 15px;
+  right: 0;
   top: 0;
   bottom: 0;
   width: 53px;
 }
 
 .search-input{
-  width: calc(100% - 53px);
+  width: calc(100% - 38px);
   position: relative;
 }
 
@@ -44,9 +44,6 @@
 
 @media (max-width: 768px) {
 	.search-box{
-		padding: 0;
+		padding-left: 0;
 	}
-  .search-box .btn-clear-search{
-    right: 10px;
-  }
 }

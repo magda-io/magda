@@ -1,6 +1,5 @@
 .search-recomendation{
-  margin: 10px 0;
-  /*font-weight: 600;*/
+  margin: 10px 15px;
   background-color: #3498db;
   color: #FFFFFF;
   padding: 10px 15px;
@@ -45,4 +44,10 @@
 .search-recomendation .more-options{
   width: 50px;
   float: left;
+}
+
+@media (max-width: 768px) {
+  .search-recomendation{
+    margin: 10px 0;
+  }
 }
