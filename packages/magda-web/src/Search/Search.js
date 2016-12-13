@@ -21,6 +21,7 @@ import SearchResults from '../SearchResults/SearchResults';
 import Recomendations from './Recomendations';
 import WelcomeText from './WelcomeText';
 import NoMatching from './NoMatching';
+import Publisher from '../SearchFacets/Publisher';
 
 
 class Search extends Component {
@@ -271,6 +272,7 @@ class Search extends Component {
           <div className='search__search-body container'>
           <div className='row'>
             <div className='col-sm-4 hidden-xs'>
+            <Publisher updateQuery={this.updateQuery}/>
                 {this.getSearchBoxValue().length > 0 &&
                  <SearchFacets publisherOptions={this.props.publisherOptions}
                                formatOptions={this.props.formatOptions}
