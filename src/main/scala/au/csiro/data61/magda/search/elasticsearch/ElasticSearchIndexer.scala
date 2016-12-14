@@ -49,6 +49,7 @@ import com.sksamuel.elastic4s.mappings.GetMappingsResult
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
+  val SNAPSHOT_REPO_NAME = "snapshots"
 
   /**
    * Returns an initialised {@link ElasticClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
@@ -100,7 +101,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
           logger.info("Restoring snapshot")
 
           client.execute {
-            restore snapshot snapshot.name from snapshotRepoName(definition) indexes definition.name waitForCompletion true
+            restore snapshot snapshot.name from SNAPSHOT_REPO_NAME indexes definition.indexName waitForCompletion true
           } map { response =>
             response.status match {
               case RestStatus.OK =>
@@ -122,7 +123,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the indices */
   private def setup(): Future[ElasticClient] = {
     getClient(system.scheduler, logger, ec).flatMap(client =>
-      retry(() => getIndexVersions(client), 10 seconds, 10, logger.warning("Failed to get index versions, {} retries left", _))
+      retry(() => getIndexDefinitions(client), 10 seconds, 10, logger.warning("Failed to get indexes, {} retries left", _))
         .flatMap { indexPairs =>
           updateIndices(client, indexPairs)
             .map { _ =>
@@ -148,31 +149,37 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   }
 
   /**
-   * Returns a future that gets a seq of each index paired with its current version number in ES
+   * Returns a future that gets a seq of each index paired with its current ES definition.
    */
-  private def getIndexVersions(client: ElasticClient) = Future.sequence(
-    IndexDefinition.indices.map(indexDef =>
-      client.execute(get.mapping(indexDef.indexName))
-        .map(Some(_))
-        .recover {
-          // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
-          case CausedBy(inner: IndexNotFoundException) =>
-            logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
-            None
-        }))
-    .map(versions => versions.zip(IndexDefinition.indices))
+  private def getIndexDefinitions(client: ElasticClient) = {
+    def indexNotFound(indexDef: IndexDefinition, inner: IndexNotFoundException) = {
+      logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
+      None
+    }
 
-  private def updateIndices(client: ElasticClient, versionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
-    Future.sequence(versionPairs.map {
-      case (mappings, definition) =>
+    Future.sequence(
+      IndexDefinition.indices.map(indexDef =>
+        client.execute(get.mapping(indexDef.indexName))
+          .map(Some(_))
+          .recover {
+            // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
+            case CausedBy(inner: IndexNotFoundException)           => indexNotFound(indexDef, inner)
+            case CausedBy(CausedBy(inner: IndexNotFoundException)) => indexNotFound(indexDef, inner)
+          }))
+      .map(esDefinitions => esDefinitions.zip(IndexDefinition.indices))
+  }
+
+  private def updateIndices(client: ElasticClient, definitionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
+    Future.sequence(definitionPairs.map {
+      case (mapping, definition) =>
         // If no index, create it
-        mappings match {
+        mapping match {
           case Some(_) =>
-            logger.info("{} index version {} does not exist, creating", definition.name, definition.version)
-            buildIndex(client, definition)
-          case None =>
             logger.info("{} index version {} already exists", definition.name, definition.version)
             Future.successful(Unit)
+          case None =>
+            logger.info("{} index version {} does not exist, creating", definition.name, definition.version)
+            buildIndex(client, definition)
         }
     })
 
@@ -197,18 +204,8 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
           } flatMap { _ =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
-            def recordVersion() = {
-              // Now we've created the index, record the version of it so we can look at it next time we boot up.
-              logger.info("Recording index version")
-
-              client.execute {
-                ElasticDsl.index into definition.name / "config" id "indexversion" source Map("version" -> definition.version).toJson
-              }
-            }
-
             definition.create match {
               case Some(createFunc) => createFunc(client, materializer, system)
-                .flatMap(_ => recordVersion)
                 .flatMap(_ =>
                   if (AppConfig.conf.getBoolean("indexer.makeSnapshots"))
                     createSnapshot(client, definition)
@@ -217,7 +214,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
                     Future(Unit)
                   }
                 )
-              case None => recordVersion()
+              case None => Future(Unit)
             }
           }
     }
@@ -267,7 +264,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
 
   private def getLatestSnapshot(client: ElasticClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
     def getSnapshot(): Future[GetSnapshotsResponse] = client.execute {
-      get snapshot Seq() from snapshotRepoName(index)
+      get snapshot Seq() from snapshotPrefix(index)
     }
 
     getSnapshot()
@@ -289,7 +286,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .map { response =>
         response.getSnapshots
           .view
-          .filter(_.name.startsWith(snapshotRepoName(index)))
+          .filter(_.name.startsWith(snapshotPrefix(index)))
           .filter(_.failedShards() == 0)
           .sortBy(-_.endTime)
           .headOption
@@ -302,11 +299,11 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
 
     client.execute(
-      create repository snapshotRepoName(definition) `type` repoType settings settings
+      create repository SNAPSHOT_REPO_NAME `type` repoType settings settings
     )
   }
-
-  private def snapshotRepoName(definition: IndexDefinition) = s"${definition.name}-${definition.version}"
+  
+  private def snapshotPrefix(definition: IndexDefinition) = s"${definition.name}-${definition.version}"
 
   private def getYears(from: Option[Instant], to: Option[Instant]): Option[String] = {
     val newFrom = from.orElse(to).map(_.atZone(ZoneId.systemDefault).toLocalDate.getYear)
@@ -340,7 +337,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
 
     val future = client.execute {
-      create snapshot snapshotRepoName(definition) + "-" + Instant.now().toString.toLowerCase in snapshotRepoName(IndexDefinition.datasets) waitForCompletion true indexes definition.name
+      create snapshot snapshotPrefix(definition) + "-" + Instant.now().toString.toLowerCase in SNAPSHOT_REPO_NAME waitForCompletion true indexes definition.indexName
     }
 
     future.onComplete {

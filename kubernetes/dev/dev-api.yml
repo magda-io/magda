@@ -5,21 +5,18 @@ metadata:
   name: varnish
 spec:
   replicas: 1
-  strategy:
-    rollingUpdate:
-      maxUnavailable: 0
   template:
     metadata:
       labels:
         service: varnish
-    spec:    
+    spec:
       containers:
       - name: varnish
         image: "mobulum/varnish"
         resources:
           requests:
-            cpu: 200m
-            memory: 1000Mi
+            cpu: 0m
+            memory: 0Mi
         imagePullPolicy: Always
         env:
         - name: BACKEND_PORT_80_TCP_ADDR
@@ -30,8 +27,6 @@ spec:
           value: "80"
         - name: THROTTLE_LIMIT
           value: "150req/30s"
-        - name: CACHE_SIZE
-          value: "750MB"
         ports:
         - containerPort: 80
 ---
@@ -47,7 +42,7 @@ spec:
   selector:
     service: varnish
   type: "LoadBalancer"
-  loadBalancerIP: "104.199.217.132"
+  loadBalancerIP: "104.199.177.83"
 ---
 
 #API
@@ -57,9 +52,6 @@ metadata:
   name: api
 spec:
   replicas: 1
-  strategy:
-    rollingUpdate:
-      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -69,20 +61,13 @@ spec:
       - name: api
         env:
         - name: SCALA_ENV
-          value: prod
+          value: dev
         - name: MAGDA_SEARCH_ROLE
           value: api
-        - name: S3_SECRET_KEY
-          value: dummy
         image: "data61/magda-metadata:v${version}"
-        resources:
-          requests:
-            cpu: 450m
         imagePullPolicy: Always
         ports:
         - containerPort: 80
-      nodeSelector:
-        cloud.google.com/gke-nodepool: ephemeral
 ---
 apiVersion: v1
 kind: Service
@@ -96,18 +81,3 @@ spec:
   selector:
     service: api
   type: "LoadBalancer"
-  loadBalancerSourceRanges:
-  - 10.0.0.0/8
----
-apiVersion: autoscaling/v1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: api
-spec:
-  scaleTargetRef:
-    apiVersion: extensions/v1beta1
-    kind: Deployment
-    name: api
-  minReplicas: 1
-  maxReplicas: 5
-  targetCPUUtilizationPercentage: 80
