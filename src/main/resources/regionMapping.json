@@ -11,6 +11,7 @@
         "ste"
       ],
       "digits": 1,
+      "description": "States and Territories (STE)",
       "regionIdsFile": "data/regionids/region_map-FID_STE_2011_AUST_STE_CODE11.json",
       "serverType": "MVT",
       "serverSubdomains": [],
