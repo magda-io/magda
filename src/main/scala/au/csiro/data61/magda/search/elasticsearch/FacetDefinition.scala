@@ -135,7 +135,6 @@ object YearFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
     aggregation.terms(Year.id).field("years").size(Int.MaxValue)
 
-  // FIXME: Warning: all binning code is so so so so so bad, revisit after the prototype
   override def truncateFacets(matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] =
     (matched, unmatched) match {
       case (Nil, Nil)       => Nil

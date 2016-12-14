@@ -6,7 +6,7 @@ import com.sksamuel.elastic4s.ElasticClient
 import au.csiro.data61.magda.AppConfig
 import com.sksamuel.elastic4s.ElasticsearchClientUri
 import scala.concurrent.Future
-import au.csiro.data61.magda.util.FutureRetry.retry
+import au.csiro.data61.magda.util.ErrorHandling.retry
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import org.elasticsearch.common.settings.Settings

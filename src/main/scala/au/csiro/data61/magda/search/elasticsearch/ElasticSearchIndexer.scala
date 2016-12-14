@@ -42,9 +42,10 @@ import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.util.FutureRetry.retry
+import au.csiro.data61.magda.util.ErrorHandling.{ retry, CausedBy }
 import spray.json._
 import com.sksamuel.elastic4s.BulkItemResult
+import com.sksamuel.elastic4s.mappings.GetMappingsResult
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -122,8 +123,8 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   private def setup(): Future[ElasticClient] = {
     getClient(system.scheduler, logger, ec).flatMap(client =>
       retry(() => getIndexVersions(client), 10 seconds, 10, logger.warning("Failed to get index versions, {} retries left", _))
-        .flatMap { versionPairs =>
-          updateIndices(client, versionPairs)
+        .flatMap { indexPairs =>
+          updateIndices(client, indexPairs)
             .map { _ =>
               // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
               client
@@ -151,34 +152,31 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
    */
   private def getIndexVersions(client: ElasticClient) = Future.sequence(
     IndexDefinition.indices.map(indexDef =>
-      client.execute(get id "indexversion" from indexDef.name / "config")
-        .map(x => if (x.isSourceEmpty || !x.isExists) 0 else x.source.get("version").asInstanceOf[Int])
+      client.execute(get.mapping(indexDef.indexName))
+        .map(Some(_))
         .recover {
           // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
-          case outer: RemoteTransportException => outer.getCause match {
-            case (inner: IndexNotFoundException) =>
-              logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, outer.getMessage)
-              0
-          }
+          case CausedBy(inner: IndexNotFoundException) =>
+            logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
+            None
         }))
     .map(versions => versions.zip(IndexDefinition.indices))
 
-  /**
-   * Compares the passed index versions with those of the codebase - if there's a mismatch then it deletes the index from ES and rebuilds it.
-   */
-  private def updateIndices(client: ElasticClient, versionPairs: Seq[(Int, IndexDefinition)]): Future[Object] =
+  private def updateIndices(client: ElasticClient, versionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
     Future.sequence(versionPairs.map {
-      case (indexVersion, definition) =>
-        logger.info("{} index version is {}", definition.name, indexVersion)
-
-        // If the index version on ES is lower than the code's version, wipe it all and start again.
-        if (indexVersion != definition.version)
-          rebuildIndex(client, definition)
-        else
-          Future.successful(Unit)
+      case (mappings, definition) =>
+        // If no index, create it
+        mappings match {
+          case Some(_) =>
+            logger.info("{} index version {} does not exist, creating", definition.name, definition.version)
+            buildIndex(client, definition)
+          case None =>
+            logger.info("{} index version {} already exists", definition.name, definition.version)
+            Future.successful(Unit)
+        }
     })
 
-  private def rebuildIndex(client: ElasticClient, definition: IndexDefinition): Future[Any] = {
+  private def buildIndex(client: ElasticClient, definition: IndexDefinition): Future[Any] = {
     val snapshotFuture = if (AppConfig.conf.getBoolean("indexer.readSnapshots"))
       restoreLatestSnapshot(client, definition)
     else {
@@ -189,45 +187,44 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     snapshotFuture flatMap {
       case RestoreSuccess => Future.successful(Unit) // no need to reindex 
       case RestoreFailure =>
-        deleteIndex(client, definition) flatMap { _ =>
-          Future.sequence(Seq(
-            client.execute(definition.definition)
-          ))
-        } recover {
-          case e: Throwable =>
-            logger.error(e, "Failed to set up the index")
-            throw e
-        } flatMap { _ =>
-          logger.info("Index {} version {} created", definition.name, definition.version)
+        deleteIndex(client, definition)
+          .flatMap { _ =>
+            client.execute(definition.definition())
+          } recover {
+            case e: Throwable =>
+              logger.error(e, "Failed to set up the index")
+              throw e
+          } flatMap { _ =>
+            logger.info("Index {} version {} created", definition.name, definition.version)
 
-          def recordVersion() = {
-            // Now we've created the index, record the version of it so we can look at it next time we boot up.
-            logger.info("Recording index version")
+            def recordVersion() = {
+              // Now we've created the index, record the version of it so we can look at it next time we boot up.
+              logger.info("Recording index version")
 
-            client.execute {
-              ElasticDsl.index into definition.name / "config" id "indexversion" source Map("version" -> definition.version).toJson
+              client.execute {
+                ElasticDsl.index into definition.name / "config" id "indexversion" source Map("version" -> definition.version).toJson
+              }
+            }
+
+            definition.create match {
+              case Some(createFunc) => createFunc(client, materializer, system)
+                .flatMap(_ => recordVersion)
+                .flatMap(_ =>
+                  if (AppConfig.conf.getBoolean("indexer.makeSnapshots"))
+                    createSnapshot(client, definition)
+                  else {
+                    logger.info("Snapshotting disabled, skipping")
+                    Future(Unit)
+                  }
+                )
+              case None => recordVersion()
             }
           }
-
-          definition.create match {
-            case Some(createFunc) => createFunc(client, materializer, system)
-              .flatMap(_ => recordVersion)
-              .flatMap(_ =>
-                if (AppConfig.conf.getBoolean("indexer.makeSnapshots"))
-                  createSnapshot(client, definition)
-                else {
-                  logger.info("Snapshotting disabled, skipping")
-                  Future(Unit)
-                }
-              )
-            case None => recordVersion()
-          }
-        }
     }
   }
 
   def deleteIndex(client: ElasticClient, definition: IndexDefinition): Future[Unit] = client.execute {
-    delete index definition.name
+    delete index (definition.indexName)
   } recover {
     case outer: RemoteTransportException => outer.getCause match {
       case (inner: IndexNotFoundException) => {
@@ -349,8 +346,8 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     future.onComplete {
       case Success(result) =>
         val info = result.getSnapshotInfo
-        logger.info("Snapshotted {} shards of {} for {}", info.successfulShards(), info.totalShards(), definition.name)
-      case Failure(e) => logger.error(e, "Failed to snapshot {}", definition.name)
+        logger.info("Snapshotted {} shards of {} for {}", info.successfulShards(), info.totalShards(), definition.indexName)
+      case Failure(e) => logger.error(e, "Failed to snapshot {}", definition.indexName)
     }
 
     future
@@ -360,7 +357,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     setupFuture.flatMap(client =>
       retry(() =>
         client.execute {
-          ElasticDsl.search in "datasets" / "datasets" query matchQuery("catalog", source.name) limit 0
+          ElasticDsl.search in IndexDefinition.datasets.indexName / IndexDefinition.datasets.name query matchQuery("catalog", source.name) limit 0
         }, 10 seconds, 10, logger.warning("Failed to get dataset count, {} retries left", _))
         .map { result =>
           logger.debug("{} reindex check hit count: {}", source.name, result.getHits.getTotalHits)
@@ -385,7 +382,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   private def buildDatasetIndexDefinition(source: InterfaceConfig, dataSets: Seq[DataSet]): BulkDefinition =
     bulk(
       dataSets.map { dataSet =>
-        val indexDataSet = ElasticDsl.index into "datasets" / "datasets" id dataSet.uniqueId source (
+        val indexDataSet = ElasticDsl.index into IndexDefinition.datasets.indexName / IndexDefinition.datasets.name id dataSet.uniqueId source (
           dataSet.copy(
             catalog = source.name,
             years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
@@ -393,15 +390,14 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
         )
 
         val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-          ElasticDsl.index into "datasets" / Publisher.id
+          ElasticDsl.index into IndexDefinition.datasets.indexName / Publisher.id
             id publisherName.toLowerCase
             source Map("value" -> publisherName).toJson))
 
-    
         val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
           val format = distribution.format.get
 
-          ElasticDsl.index into "datasets" / Format.id id format.toLowerCase source Map("value" -> format).toJson
+          ElasticDsl.index into IndexDefinition.datasets.indexName / Format.id id format.toLowerCase source Map("value" -> format).toJson
         }
 
         indexDataSet :: indexPublisher.toList ++ indexFormats

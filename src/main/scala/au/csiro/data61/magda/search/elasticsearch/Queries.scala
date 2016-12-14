@@ -15,7 +15,7 @@ object Queries {
     .query(matchQuery("distributions.format.untokenized", format))
   def regionIdQuery(region: Region) = indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), "regions")
     .relation(ShapeRelation.INTERSECTS)
-    .shapeIndex("regions")
+    .shapeIndex(IndexDefinition.regions.indexName)
     .shapePath("geometry")
   def dateFromQuery(dateFrom: Instant) = filter(should(
     rangeQuery("temporal.end.date").gte(dateFrom.toString),

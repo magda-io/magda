@@ -33,18 +33,21 @@ import akka.stream.scaladsl.FileIO
 import akka.stream.scaladsl.JsonFraming
 
 case class IndexDefinition(
-  name: String,
-  version: Int,
-  definition: CreateIndexDefinition,
-  create: Option[(ElasticClient, Materializer, ActorSystem) => Future[Any]] = None)
+    name: String,
+    version: Int,
+    definition: () => CreateIndexDefinition,
+    create: Option[(ElasticClient, Materializer, ActorSystem) => Future[Any]] = None) {
+  def indexName: String = this.name + this.version
+}
 
 object IndexDefinition {
-  val datasets = new IndexDefinition(
+  val datasets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 14,
-    definition =
-      create.index("datasets")
+    definition = () =>
+      create.index(datasets.indexName)
         .indexSetting("recovery.initial_shards", 1)
+        .indexSetting("requests.cache.enable", true)
         .mappings(
           mapping("datasets").fields(
             field("temporal").inner(
@@ -70,15 +73,14 @@ object IndexDefinition {
           ),
           mapping(Format.id),
           mapping(Publisher.id)
-        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
-        .indexSetting("requests.cache.enable", true))
+        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter)))
 
-  val regions =
+  val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
       version = 13,
-      definition =
-        create.index("regions")
+      definition = () =>
+        create.index(regions.indexName)
           .indexSetting("recovery.initial_shards", 1)
           .mappings(
             mapping("regions").fields(
@@ -106,7 +108,7 @@ object IndexDefinition {
           }
 
           ElasticDsl.index
-            .into("regions" / "regions")
+            .into(IndexDefinition.regions.indexName / IndexDefinition.regions.name)
             .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.fields(regionSource.idProperty).convertTo[String]))
             .source(JsObject(
               "type" -> JsString(regionSource.name),

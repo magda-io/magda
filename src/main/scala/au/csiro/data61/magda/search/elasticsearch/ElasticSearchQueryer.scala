@@ -59,6 +59,7 @@ import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.search.MatchPart
 import au.csiro.data61.magda.search.MatchAll
 import au.csiro.data61.magda.util.DateParser._
+import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
@@ -70,10 +71,6 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   val AGGREGATION_SIZE_LIMIT = 10
 
   lazy val clientFuture: Future[ElasticClient] = getClient(system.scheduler, logger, ec)
-
-  object CausedBy {
-    def unapply(e: Throwable): Option[Throwable] = Option(e.getCause)
-  }
 
   override def search(query: Query, start: Long, limit: Int) = {
     Future.sequence(query.regions.map(region => findRegion(region.regionType, region.regionId))).flatMap { regions =>
@@ -163,7 +160,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(query: Query, start: Long, limit: Int, strategy: SearchStrategy) =
-    ElasticDsl.search.in("datasets" / "datasets")
+    ElasticDsl.search.in(IndexDefinition.datasets.indexName / IndexDefinition.datasets.name)
       .limit(limit)
       .start(start.toInt)
       .query(queryToQueryDef(query, strategy))
@@ -281,7 +278,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
-      client.execute(ElasticDsl.search in "datasets" / facetType.id query facetQuery start start.toInt limit limit)
+      client.execute(ElasticDsl.search in IndexDefinition.datasets.indexName / facetType.id query facetQuery start start.toInt limit limit)
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
@@ -321,7 +318,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client.execute(
-        ElasticDsl.search in "regions" / "regions"
+        ElasticDsl.search in IndexDefinition.regions.indexName / IndexDefinition.regions.name
           query { matchPhrasePrefixQuery("name", query) }
           start start.toInt
           limit limit
@@ -341,7 +338,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   def findRegion(regionType: String, regionId: String): Future[Region] = {
     clientFuture.flatMap { client =>
-      client.execute(ElasticDsl.search in "regions" / "regions" query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude ("geometry"))
+      client.execute(ElasticDsl.search in IndexDefinition.regions.indexName / IndexDefinition.regions.name query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude ("geometry"))
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(Region(regionType, regionId, "[Unknown]", None))
