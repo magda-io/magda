@@ -77,7 +77,7 @@ class RegionPopup extends Facet {
       let region = this.state._activeRegion;
       let regionType = '';
       if(defined(region.regionType && this.props.regionMapping)){
-        if(defined(this.props.regionMapping[region.regionType]) && defined(this.props.regionMapping[region.regionType]).description){
+        if(defined(this.props.regionMapping[region.regionType]) && defined(this.props.regionMapping[region.regionType].description)){
           regionType = this.props.regionMapping[region.regionType].description
         }
       }
@@ -86,6 +86,7 @@ class RegionPopup extends Facet {
 
     render(){
         let region = this.state._activeRegion;
+        console.log(this.getActiveRegionType());
         return (
             <div className='popup'>
               <div className='popup-inner'>

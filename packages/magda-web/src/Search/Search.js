@@ -122,7 +122,9 @@ class Search extends Component {
 
   modifyUserSearchString(additionalString){
     let base = this.props.freeText;
-    this.updateSearchQuery(`${base} ${additionalString}`);
+    this.updateQuery({
+      q: `${base} ${additionalString}`
+    })
   }
 
   onDismissError(){

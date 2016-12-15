@@ -52,7 +52,8 @@ class FacetBasic extends Component {
     <button type='button'
             ref={b=>{if(b != null && onFocus === true){b.focus()}}}
             className={`${isActive ? 'is-active' : ''} btn-facet-option btn`}
-            onClick={onClick.bind(this, option)}>
+            onClick={onClick.bind(this, option)}
+            title={option.value}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>
         {option.value}

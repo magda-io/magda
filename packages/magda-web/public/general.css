@@ -29,11 +29,13 @@ body {
 
 .error{
   background: #FFFFFF;
-  border: 1px solid #BDC3C7;
-  box-shadow: 0 1px 4px 0 #BDC3C7;
-  border-radius: 1px;
   margin-top: 30px;
   padding: 30px;
+}
+
+.image{
+    max-width: 100%;
+    height: auto;
 }
 @media (max-width: 768px) {
   .navbar-brand{

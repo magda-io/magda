@@ -2,7 +2,7 @@ import './WelcomeText.css';
 import React, { Component } from 'react';
 
 const examples = [
-  'mobile black spots',
+  'mobile black spot',
   'taxation from 2014 to 2016',
   'water in Melbourne',
   'health as CSV',
