@@ -1,22 +1,18 @@
-import FacetRegion from './FacetRegion';
-import FacetBasic from './FacetBasic';
-import FacetTemporal from './FacetTemporal';
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import Publisher from './Publisher';
 import Format from './Format';
 import Region from './Region';
 import Temporal from './Temporal';
+import config from '../config.js';
 
 class SearchFacets extends Component {
   render() {
     return (
       <div>
-        <Publisher updateQuery={this.props.updateQuery}
-                   component={'facet'}/>
-        <Region updateQuery={this.props.updateQuery}/>
-        <Temporal updateQuery={this.props.updateQuery}/>
-        <Format updateQuery={this.props.updateQuery}/>
+        {config().facets.map(c=>
+          <c.component key={c.id} updateQuery={this.props.updateQuery} component={'facet'}/>
+        )}
       </div>
     );
   }

@@ -5,7 +5,7 @@ import ProgressBar from '../UI/ProgressBar';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'
-import Recomendations from '../Search/Recomendations';
+import Recommendations from '../Search/Recommendations';
 
 class Publisher extends Component {
 
@@ -55,9 +55,9 @@ class Publisher extends Component {
                       searchFacet={this.onSearchPublisherFacet}
           />
         );
-      case 'recomendations':
+      case 'recommendations':
         return (
-          <Recomendations options={this.props.publisherOptions}
+          <Recommendations options={this.props.publisherOptions}
                           onClick={this.onTogglePublisherOption}
                           activeOptions={this.props.activePublishers}
                           description={"Are you searching for items published by "}

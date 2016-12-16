@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import find from 'lodash.find';
 
 
-import './Recomendations.css';
+import './Recommendations.css';
 
-class Recomendations extends Component {
+class Recommendations extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -92,7 +92,7 @@ class Recomendations extends Component {
     }
   }
 }
-Recomendations.propTypes = {};
+Recommendations.propTypes = {};
 
 
-export default Recomendations;
+export default Recommendations;

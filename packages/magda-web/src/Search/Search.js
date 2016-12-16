@@ -168,7 +168,7 @@ class Search extends Component {
                  <div>
                  <Publisher updateQuery={this.updateQuery}
                             modifyUserSearchString={this.modifyUserSearchString}
-                            component={'recomendations'}
+                            component={'recommendations'}
                  />
 
                  {defined(this.props.location.query.q) &&
