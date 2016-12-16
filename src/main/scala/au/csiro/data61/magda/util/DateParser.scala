@@ -14,6 +14,7 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoField
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.Temporal
+import au.csiro.data61.magda.AppConfig
 
 object DateParser {
 
@@ -35,14 +36,14 @@ object DateParser {
     val format: String = ""
     val precision: ChronoUnit = ChronoUnit.YEARS
   }
-  case class ZonedDateTimeFormat(override val format: String, override val precision: ChronoUnit) extends Format
+  case class OffsetDateTimeFormat(override val format: String, override val precision: ChronoUnit) extends Format
   case class DateTimeFormat(override val format: String, override val precision: ChronoUnit) extends Format
   case class DateFormat(override val format: String, override val precision: ChronoUnit) extends Format
 
   // TODO: push the strings into config.
   private val timeFormats = List(
     DateTimeFormat("HH:mm:ss", ChronoUnit.SECONDS),
-    ZonedDateTimeFormat("HH:mm:ss.SSSXXX", ChronoUnit.SECONDS),
+    OffsetDateTimeFormat("HH:mm:ss.SSSXXX", ChronoUnit.SECONDS),
     DateTimeFormat("HH:mm", ChronoUnit.MINUTES))
   private val dateFormats = List(
     DateFormat("yyyy{sep}MM{sep}dd", ChronoUnit.DAYS),
@@ -98,7 +99,7 @@ object DateParser {
   }
 
   sealed trait ParseResult
-  case class InstantResult(instant: Instant) extends ParseResult
+  case class DateTimeResult(instant: OffsetDateTime) extends ParseResult
   case class ConstantResult(dateConstant: DateConstant) extends ParseResult
   case object ParseFailure extends ParseResult
 
@@ -119,9 +120,11 @@ object DateParser {
               case (_, format, originalFormat) => {
                 catching(classOf[DateTimeParseException]) opt {
                   originalFormat match {
-                    case ZonedDateTimeFormat(_, _) => roundUp(shouldRoundUp, ZonedDateTime.parse(raw, format), originalFormat).toInstant()
-                    case DateTimeFormat(_, _)      => roundUp(shouldRoundUp, LocalDateTime.parse(raw, format), originalFormat).toInstant(ZoneOffset.UTC)
-                    case DateFormat(_, _)          => roundUp(shouldRoundUp, LocalDate.parse(raw, format).atStartOfDay(), originalFormat).toInstant(ZoneOffset.UTC)
+                    case OffsetDateTimeFormat(_, _) => roundUp(shouldRoundUp, OffsetDateTime.parse(raw, format), originalFormat)
+                    case DateTimeFormat(_, _) => roundUp(shouldRoundUp, LocalDateTime.parse(raw, format), originalFormat)
+                      .atOffset(ZoneOffset.of(AppConfig.conf.getString("time.defaultOffset")))
+                    case DateFormat(_, _) => roundUp(shouldRoundUp, LocalDate.parse(raw, format).atStartOfDay(), originalFormat)
+                      .atOffset(ZoneOffset.of(AppConfig.conf.getString("time.defaultOffset")))
                   }
                 }
               }
@@ -129,7 +132,22 @@ object DateParser {
             .filter(_.isDefined)
             .map(_.get)
             .headOption
-            .map(date => InstantResult(date))
+            .map(date => DateTimeResult(date))
             .getOrElse(ParseFailure)
       }
+
+  def parseDateDefault(raw: String, shouldRoundUp: Boolean): Option[OffsetDateTime] =
+    parseDate(raw, shouldRoundUp) match {
+      case DateTimeResult(zonedDateTime) => Some(zonedDateTime)
+      case ConstantResult(constant) => constant match {
+        case Now => Some(OffsetDateTime.now())
+      }
+      case ParseFailure => None
+    }
+
+  class InstantToDateConverter(instant: Instant) {
+    def toDefaultZonedTime() = instant.atOffset(ZoneOffset.of(AppConfig.conf.getString("time.defaultOffset")))
+  }
+
+  implicit def implicitInstantConv(instant: Instant): InstantToDateConverter = new InstantToDateConverter(instant)
 }

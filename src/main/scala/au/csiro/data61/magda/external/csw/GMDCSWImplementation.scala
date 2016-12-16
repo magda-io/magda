@@ -15,7 +15,6 @@ import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.util.DateParser._
-import java.time.Instant
 import com.monsanto.labs.mwundo.GeoJson.Coordinate
 import com.monsanto.labs.mwundo.GeoJson.Polygon
 import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
@@ -30,6 +29,7 @@ import scala.BigDecimal
 import com.monsanto.labs.mwundo.GeoJson.LineString
 import com.monsanto.labs.mwundo.GeoJson.MultiLineString
 import au.csiro.data61.magda.util.Collections.mapCatching
+import java.time.OffsetDateTime
 
 class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   implicit val logger = Logging(system, getClass)
@@ -155,23 +155,23 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
     )
   }
 
-  def buildPeriodOfTime(modified: Option[Instant])(temporalElements: NodeSeq): Option[PeriodOfTime] = {
-    val sortedInstants = temporalElements.toList
+  def buildPeriodOfTime(modified: Option[OffsetDateTime])(temporalElements: NodeSeq): Option[PeriodOfTime] = {
+    val sortedDates = temporalElements.toList
       .map(timePeriod =>
         List(
-          ApiInstant.parse(timePeriod \ "beginPosition" text, modified, false),
-          ApiInstant.parse(timePeriod \ "endPosition" text, modified, true)
+          ApiDate.parse(timePeriod \ "beginPosition" text, modified, false),
+          ApiDate.parse(timePeriod \ "endPosition" text, modified, true)
         )
       )
       .flatten
       .flatten
       .filter(instant => instant.date.isDefined)
-      .sortWith { case (instant1, instant2) => instant1.date.get.isAfter(instant2.date.get) }
+      .sortWith { case (date1, date2) => date1.date.get.isAfter(date2.date.get) }
 
-    if (!sortedInstants.isEmpty) {
+    if (!sortedDates.isEmpty) {
       Some(PeriodOfTime(
-        start = Some(sortedInstants.head),
-        end = Some(sortedInstants.last)
+        start = Some(sortedDates.head),
+        end = Some(sortedDates.last)
       ))
     } else {
       None

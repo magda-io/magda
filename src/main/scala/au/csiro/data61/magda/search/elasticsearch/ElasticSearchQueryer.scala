@@ -147,7 +147,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
                   .getProperty("filter").asInstanceOf[Aggregation]
                   .getProperty(facetType.id).asInstanceOf[Aggregation])
 
-            definition.truncateFacets(filteredOptions, exactOptions, alternativeOptions, AGGREGATION_SIZE_LIMIT)
+            definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, AGGREGATION_SIZE_LIMIT)
           })
       }.toSeq))
   }

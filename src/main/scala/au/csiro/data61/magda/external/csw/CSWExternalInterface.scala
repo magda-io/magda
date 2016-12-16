@@ -16,7 +16,6 @@ import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.util.DateParser._
-import java.time.Instant
 import com.monsanto.labs.mwundo.GeoJson.Coordinate
 import com.monsanto.labs.mwundo.GeoJson.Polygon
 import com.monsanto.labs.mwundo.GeoJson.MultiPolygon

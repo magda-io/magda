@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.model
 
 import java.time.Duration
-import java.time.Instant
 import spray.json._
 import au.csiro.data61.magda.model.temporal._
 import akka.http.scaladsl.model.MediaType
@@ -13,6 +12,7 @@ import java.util.regex.Pattern
 import au.csiro.data61.magda.api.BoundingBox
 import au.csiro.data61.magda.api.Region
 import au.csiro.data61.magda.search.SearchStrategy
+import java.time.OffsetDateTime
 
 package misc {
   case class SearchResult(
@@ -68,8 +68,8 @@ package misc {
       catalog: String,
       title: Option[String] = None,
       description: Option[String] = None,
-      issued: Option[Instant] = None,
-      modified: Option[Instant] = None,
+      issued: Option[OffsetDateTime] = None,
+      modified: Option[OffsetDateTime] = None,
       language: Option[String] = None,
       publisher: Option[Agent] = None,
       accrualPeriodicity: Option[Periodicity] = None,
@@ -183,8 +183,8 @@ package misc {
   case class Distribution(
     title: String,
     description: Option[String] = None,
-    issued: Option[Instant] = None,
-    modified: Option[Instant] = None,
+    issued: Option[OffsetDateTime] = None,
+    modified: Option[OffsetDateTime] = None,
     license: Option[License] = None,
     rights: Option[String] = None,
     accessURL: Option[String] = None,

@@ -16,18 +16,18 @@ package temporal {
   case class Periodicity private (text: Option[String] = None, duration: Option[java.time.Duration] = None)
 
   case class PeriodOfTime(
-    start: Option[ApiInstant] = None,
-    end: Option[ApiInstant] = None)
+    start: Option[ApiDate] = None,
+    end: Option[ApiDate] = None)
 
   object PeriodOfTime {
     val splitters = List("\\s*to\\s*", "\\s*-\\s*")
 
-    def trySplit(raw: String, modified: Option[Instant]): Option[PeriodOfTime] =
+    def trySplit(raw: String, modified: Option[OffsetDateTime]): Option[PeriodOfTime] =
       splitters
         .view
         .map(raw.split(_))
         .filter(_.length == 2)
-        .map(array => PeriodOfTime(ApiInstant.parse(array(0), modified, false), (ApiInstant.parse(array(1), modified, true))))
+        .map(array => PeriodOfTime(ApiDate.parse(array(0), modified, false), (ApiDate.parse(array(1), modified, true))))
         .filter(x => x.start.map(_.date).isDefined || x.end.map(_.date).isDefined)
         .sortWith { (leftPeriod, rightPeriod) =>
           // Create a list of tuples where _1 is the text option and _2 is the parsed date option
@@ -44,12 +44,12 @@ package temporal {
           }
         }.headOption
 
-    def parse(start: Option[String], end: Option[String], modified: Option[Instant]): Option[PeriodOfTime] = {
-      val startInstant = start.flatMap(ApiInstant.parse(_, modified, false))
-      val endInstant = end.flatMap(ApiInstant.parse(_, modified, true))
-      lazy val defaultPeriod = Some(new PeriodOfTime(startInstant, endInstant))
+    def parse(start: Option[String], end: Option[String], modified: Option[OffsetDateTime]): Option[PeriodOfTime] = {
+      val startDate = start.flatMap(ApiDate.parse(_, modified, false))
+      val endDate = end.flatMap(ApiDate.parse(_, modified, true))
+      lazy val defaultPeriod = Some(new PeriodOfTime(startDate, endDate))
 
-      (startInstant.map(_.text), endInstant.map(_.text), startInstant.flatMap(_.date), endInstant.flatMap(_.date)) match {
+      (startDate.map(_.text), endDate.map(_.text), startDate.flatMap(_.date), endDate.flatMap(_.date)) match {
         // Unparsable text in both start and end - this might mean that there's split values in both (e.g. start=1999-2000, end=2010-2011).
         // In this case we split each and take the earlier value for start and later value for end.
         case (Some(start), Some(end), None, None) => Some(new PeriodOfTime(
@@ -66,17 +66,17 @@ package temporal {
     }
   }
 
-  case class ApiInstant(
-    date: Option[Instant] = None,
+  case class ApiDate(
+    date: Option[OffsetDateTime] = None,
     text: String)
 
-  object ApiInstant {
-    def parse(raw: String, modifiedOption: Option[Instant], atEnd: Boolean): Option[ApiInstant] = parseDate(raw, atEnd) match {
-      case InstantResult(instant) => Some(ApiInstant(Some(instant), raw))
+  object ApiDate {
+    def parse(raw: String, modifiedOption: Option[OffsetDateTime], atEnd: Boolean): Option[ApiDate] = parseDate(raw, atEnd) match {
+      case DateTimeResult(instant) => Some(ApiDate(Some(instant), raw))
       case ConstantResult(constant) => constant match {
         case Now => modifiedOption match {
-          case Some(modified) => Some(ApiInstant(Some(modified), raw))
-          case None => Some(ApiInstant(None, raw))
+          case Some(modified) => Some(ApiDate(Some(modified), raw))
+          case None => Some(ApiDate(None, raw))
         }
       }
       case ParseFailure => None
@@ -84,11 +84,11 @@ package temporal {
   }
 
   trait Protocols extends DefaultJsonProtocol {
-    implicit object InstantFormat extends JsonFormat[Instant] {
-      override def write(instant: Instant): JsString = JsString.apply(instant.toString())
-      override def read(json: JsValue): Instant = Instant.parse(json.convertTo[String])
+    implicit object DateTimeFormat extends JsonFormat[OffsetDateTime] {
+      override def write(dateTime: OffsetDateTime): JsString = JsString.apply(dateTime.toString())
+      override def read(json: JsValue): OffsetDateTime = OffsetDateTime.parse(json.convertTo[String])
     }
-    implicit val apiInstant = jsonFormat2(ApiInstant.apply)
+    implicit val apiDate = jsonFormat2(ApiDate.apply)
     implicit val periodOfTimeFormat = jsonFormat2(PeriodOfTime.apply)
     implicit object DurationFormat extends JsonFormat[Duration] {
       override def write(duration: Duration): JsNumber = JsNumber(duration.toMillis())

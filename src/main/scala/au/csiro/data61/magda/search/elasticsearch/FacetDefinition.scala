@@ -20,6 +20,7 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.util.DateParser._
 import au.csiro.data61.magda.util.DateParser
+import scalaz.Memo
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -88,7 +89,7 @@ trait FacetDefinition {
   /**
    * Reduce a list of facets to fit under the limit
    */
-  def truncateFacets(matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
+  def truncateFacets(query: Query, matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
     val combined = (exactMatch ++ matched ++ unmatched)
     val lookup = combined.groupBy(_.value)
 
@@ -135,13 +136,16 @@ object YearFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
     aggregation.terms(Year.id).field("years").size(Int.MaxValue)
 
-  override def truncateFacets(matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] =
+  override def truncateFacets(query: Query, matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
+    lazy val firstYear = query.dateFrom.map(_.getYear)
+    lazy val lastYear = query.dateTo.map(_.getYear)
+
     (matched, unmatched) match {
       case (Nil, Nil)       => Nil
-      case (matched, Nil)   => super.truncateFacets(makeBins(matched, limit), Nil, Nil, limit)
-      case (Nil, unmatched) => super.truncateFacets(Nil, Nil, makeBins(unmatched, limit), limit)
+      case (matched, Nil)   => super.truncateFacets(query, makeBins(matched, limit, None, firstYear, lastYear), Nil, Nil, limit)
+      case (Nil, unmatched) => super.truncateFacets(query, Nil, Nil, makeBins(unmatched, limit, None, None, None), limit)
       case (matched, unmatched) =>
-        val matchedBins = makeBins(matched, limit).map(_.copy(matched = Some(true)))
+        val matchedBins = makeBins(matched, limit, None, firstYear, lastYear).map(_.copy(matched = Some(true)))
 
         val hole = matchedBins match {
           case Nil => None
@@ -153,25 +157,36 @@ object YearFacetDefinition extends FacetDefinition {
 
         val remainingFacetSlots = limit - matchedBins.size
 
-        super.truncateFacets(matchedBins, Nil, makeBins(unmatched, remainingFacetSlots, hole), limit)
+        super.truncateFacets(query, matchedBins, Nil, makeBins(unmatched, remainingFacetSlots, hole, None, None), limit)
     }
-
-  def getBinSize(firstYear: Int, lastYear: Int, years: List[Int], limit: Int): Int = {
-    val lastYear = years.head
-    val firstYear = years.last
-
-    val yearDifference = lastYear - firstYear
-    yearBinSizes.view.map(x => (x, yearDifference / x)).filter(_._2 <= limit).map(_._1).head
   }
 
-  def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)] = None): Seq[FacetOption] = facets match {
+  def getBinSize(firstYear: Int, lastYear: Int, limit: Int): Int = {
+    val yearDifference = lastYear - firstYear
+    yearBinSizes.view.map(x => (x, yearDifference / x)).filter(_._2 < limit).map(_._1).head
+  }
+
+  val parseFacets = Memo.mutableHashMapMemo((facets: Seq[FacetOption]) => facets
+    .map(facet => (facet.value.split("-").map(_.toInt), facet.hitCount))
+  )
+
+  def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)], firstYearOpt: Option[Int], lastYearOpt: Option[Int]): Seq[FacetOption] = {
+    lazy val yearsFromFacets = parseFacets(facets)
+      .flatMap(_._1)
+      .distinct
+      .toList
+      .sorted
+
+    val firstYear = firstYearOpt.getOrElse(yearsFromFacets.head)
+    val lastYear = lastYearOpt.getOrElse(yearsFromFacets.last)
+
+    makeBins(facets, limit, hole, firstYear, lastYear)
+  }
+
+  def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)], firstYear: Int, lastYear: Int): Seq[FacetOption] = facets match {
     case Nil => Nil
     case facets =>
-      val parsedFacets = facets.map(facet => (facet.value.split("-").map(_.toInt), facet.hitCount))
-      val years = parsedFacets.flatMap(_._1).distinct.toList.sortBy(_ * -1)
-      val lastYear = years.head
-      val firstYear = years.last
-      val binSize = getBinSize(firstYear, lastYear, years, limit)
+      val binSize = getBinSize(firstYear, lastYear, limit)
 
       val binsRaw = (for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1))
       val bins = hole.map {
@@ -192,7 +207,7 @@ object YearFacetDefinition extends FacetDefinition {
 
       bins.reverse.map {
         case (bucketStart, bucketEnd) =>
-          val hitCount = parsedFacets.filter {
+          val hitCount = parseFacets(facets).filter {
             case (years, hitCount) =>
               val facetStart = years.head
               val facetEnd = years.last
@@ -233,16 +248,17 @@ object YearFacetDefinition extends FacetDefinition {
     }
     //FIXME: This is nah-stee
     (parseDate(rawFrom, false), parseDate(rawTo, true)) match {
-      case (InstantResult(from), InstantResult(to)) =>
+      case (DateTimeResult(from), DateTimeResult(to)) =>
         query.dateFrom.map(x => x.isBefore(to) || x.equals(to)).getOrElse(true) &&
           query.dateTo.map(x => x.isAfter(from) || x.equals(from)).getOrElse(true)
+      case _ => false
     }
   }
 
   override def facetSearchQuery(textQuery: String) = (parseDate(textQuery, false), parseDate(textQuery, true)) match {
-    case (InstantResult(from), InstantResult(to)) => Query(dateFrom = Some(from), dateTo = Some(to))
+    case (DateTimeResult(from), DateTimeResult(to)) => Query(dateFrom = Some(from), dateTo = Some(to))
     // The idea is that this will come from our own index so it shouldn't even be some weird wildcard thing
-    case _                                        => throw new RuntimeException("Date " + query + " not recognised")
+    case _ => throw new RuntimeException("Date " + query + " not recognised")
   }
 
   override def exactMatchQuery(query: String): QueryDefinition = {
@@ -250,7 +266,7 @@ object YearFacetDefinition extends FacetDefinition {
     val to = DateParser.parseDate(query, true)
 
     (from, to) match {
-      case (InstantResult(fromInstant), InstantResult(toInstant)) => exactDateQuery(fromInstant, toInstant)
+      case (DateTimeResult(fromInstant), DateTimeResult(toInstant)) => exactDateQuery(fromInstant, toInstant)
     }
   }
 

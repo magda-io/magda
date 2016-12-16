@@ -6,9 +6,9 @@ import scala.util.parsing.input.Reader
 import scala.util.parsing.input.Position
 import scala.util.parsing.input.NoPosition
 import au.csiro.data61.magda.util.DateParser._
-import java.time.Instant
 import au.csiro.data61.magda.spatial.RegionSource
 import scala.util.matching.Regex
+import java.time.OffsetDateTime
 
 private object Tokens {
   sealed trait QueryToken
@@ -76,8 +76,8 @@ object AST {
   case class FreeTextWord(freeText: String) extends ReturnedAST
 
   sealed trait Filter extends ReturnedAST
-  case class DateFrom(value: Instant) extends Filter
-  case class DateTo(value: Instant) extends Filter
+  case class DateFrom(value: OffsetDateTime) extends Filter
+  case class DateTo(value: OffsetDateTime) extends Filter
   case class Publisher(value: String) extends Filter
   case class Format(value: String) extends Filter
   case class ASTRegion(region: Region) extends Filter
@@ -149,12 +149,12 @@ private object QueryParser extends Parsers {
     })
   }
 
-  private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: String, atEnd: Boolean, applyFn: Instant => A, recoveryFn: => AST.ReturnedAST): A = {
+  private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: String, atEnd: Boolean, applyFn: OffsetDateTime => A, recoveryFn: => AST.ReturnedAST): A = {
     val date = parseDate(rawDate, atEnd)
     date match {
-      case InstantResult(instant) => applyFn(instant)
+      case DateTimeResult(instant) => applyFn(instant)
       case ConstantResult(constant) => constant match {
-        case Now => applyFn(Instant.now())
+        case Now => applyFn(OffsetDateTime.now())
       }
       case _ => recoveryFn
     }
@@ -231,8 +231,8 @@ case class Query(
   freeText: Option[String] = None,
   quotes: Set[String] = Set(),
   publishers: Set[String] = Set(),
-  dateFrom: Option[Instant] = None,
-  dateTo: Option[Instant] = None,
+  dateFrom: Option[OffsetDateTime] = None,
+  dateTo: Option[OffsetDateTime] = None,
   regions: Set[Region] = Set(),
   formats: Set[String] = Set(),
   error: Option[String] = None)

@@ -1,6 +1,5 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -46,6 +45,8 @@ import au.csiro.data61.magda.util.ErrorHandling.{ retry, CausedBy }
 import spray.json._
 import com.sksamuel.elastic4s.BulkItemResult
 import com.sksamuel.elastic4s.mappings.GetMappingsResult
+import java.time.OffsetDateTime
+import java.time.Instant
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
@@ -264,7 +265,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
 
   private def getLatestSnapshot(client: ElasticClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
     def getSnapshot(): Future[GetSnapshotsResponse] = client.execute {
-      get snapshot Seq() from snapshotPrefix(index)
+      get snapshot Seq() from SNAPSHOT_REPO_NAME
     }
 
     getSnapshot()
@@ -302,12 +303,12 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       create repository SNAPSHOT_REPO_NAME `type` repoType settings settings
     )
   }
-  
+
   private def snapshotPrefix(definition: IndexDefinition) = s"${definition.name}-${definition.version}"
 
-  private def getYears(from: Option[Instant], to: Option[Instant]): Option[String] = {
-    val newFrom = from.orElse(to).map(_.atZone(ZoneId.systemDefault).toLocalDate.getYear)
-    val newTo = to.orElse(from).map(_.atZone(ZoneId.systemDefault).toLocalDate.getYear)
+  private def getYears(from: Option[OffsetDateTime], to: Option[OffsetDateTime]): Option[String] = {
+    val newFrom = from.orElse(to).map(_.getYear)
+    val newTo = to.orElse(from).map(_.getYear)
 
     (newFrom, newTo) match {
       case (Some(newFrom), Some(newTo)) => Some(s"$newFrom-$newTo")

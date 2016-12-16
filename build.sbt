@@ -2,7 +2,7 @@ enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 name := "magda-metadata"
 organization := "au.com.csiro.data61"
-version := "0.0.10"
+version := "0.0.11"
 scalaVersion := "2.11.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
@@ -24,6 +24,7 @@ libraryDependencies ++= {
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
     "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
+    "org.scalaz" %% "scalaz-core" % "7.2.8",
     
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"

@@ -1,9 +1,11 @@
 package au.csiro.data61.magda.util
 
+import java.time.OffsetDateTime
+
 import scala.xml.NodeSeq
-import java.time.Instant
-import au.csiro.data61.magda.util.DateParser._
+
 import akka.event.LoggingAdapter
+import au.csiro.data61.magda.util.DateParser._
 
 object Xml {
   implicit def nodeToOption[T](node: NodeSeq, toValue: NodeSeq => Option[T] = (node: NodeSeq) => Some.apply(node)): Option[T] =
@@ -11,16 +13,8 @@ object Xml {
 
   def nodeToStringOption(node: NodeSeq): Option[String] = nodeToOption(node, x => if (x.text.isEmpty()) None else Some(x.text))
 
-  def parseDateFromNode(node: NodeSeq)(implicit logger: LoggingAdapter): Option[Instant] =
-    nodeToStringOption(node).flatMap(parseDate(_, false) match {
-      case InstantResult(instant) => Some(instant)
-      case ConstantResult(constant) => constant match {
-        case Now => Some(Instant.now())
-      }
-      case ParseFailure =>
-        logger.debug("Parse failure for {}", node text)
-        None
-    })
+  def parseDateFromNode(node: NodeSeq)(implicit logger: LoggingAdapter): Option[OffsetDateTime] =
+    nodeToStringOption(node).flatMap(parseDateDefault(_, false))
 
   def nodesWithAttribute(sourceNodes: NodeSeq, name: String, value: String): NodeSeq = {
     sourceNodes

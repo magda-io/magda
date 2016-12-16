@@ -15,7 +15,6 @@ import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.util.DateParser._
-import java.time.Instant
 import com.monsanto.labs.mwundo.GeoJson.Coordinate
 import com.monsanto.labs.mwundo.GeoJson.Polygon
 import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
@@ -27,6 +26,7 @@ import au.csiro.data61.magda.external.HttpFetcher
 import au.csiro.data61.magda.external.InterfaceConfig
 import scala.BigDecimal
 import au.csiro.data61.magda.util.Xml._
+import java.time.OffsetDateTime
 
 class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   val logger = Logging(system, getClass)
@@ -39,15 +39,7 @@ class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val sy
 
   implicit def dataSetConv(res: NodeSeq) =
     res map { summaryRecord =>
-      val modified = nodeToStringOption(summaryRecord \ "date").flatMap(parseDate(_, false) match {
-        case InstantResult(instant) => Some(instant)
-        case ConstantResult(constant) => constant match {
-          case Now => Some(Instant.now())
-        }
-        case ParseFailure =>
-          logger.debug("Parse failure for {}", summaryRecord \ "date" text)
-          None
-      })
+      val modified = nodeToStringOption(summaryRecord \ "date").flatMap(parseDateDefault(_, false))
 
       val identifier = summaryRecord \ "identifier" text
 
@@ -135,20 +127,20 @@ class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val sy
   }
 
   val temporalCoveragePattern = """.*start="(.*)"; end="(.*)"""".r
-  def temporalFromString(modified: Option[Instant])(nodes: NodeSeq): Option[PeriodOfTime] = {
+  def temporalFromString(modified: Option[OffsetDateTime])(nodes: NodeSeq): Option[PeriodOfTime] = {
     val dates = nodes.map { node =>
       val text = node.text.trim
       text match {
         case temporalCoveragePattern(startTime, endTime) => PeriodOfTime.parse(Some(startTime), Some(endTime), modified)
         case "" => None
-        case _ => Some(PeriodOfTime(start = Some(ApiInstant(text = text))))
+        case _ => Some(PeriodOfTime(start = Some(ApiDate(text = text))))
       }
     }.flatMap {
       case Some(periodOfTime) => Seq(periodOfTime.start, periodOfTime.end)
       case None               => Seq()
     }.flatten
       .filter(_.date.isDefined)
-      .sortBy(_.date.get.getEpochSecond)
+      .sortBy(_.date.get.toEpochSecond())
 
     dates match {
       case Seq()             => None

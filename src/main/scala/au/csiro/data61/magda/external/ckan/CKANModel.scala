@@ -10,9 +10,9 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Distribution
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.model._
-import java.time.Instant
 import java.text.SimpleDateFormat
 import akka.http.scaladsl.model.MediaType
+import au.csiro.data61.magda.util.DateParser.implicitInstantConv
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)
 case class CKANSearchResult(count: Int, results: List[CKANDataSet])
@@ -139,13 +139,13 @@ trait CKANConverters {
   implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
 
   implicit def ckanDataSetConv(interface: InterfaceConfig)(hit: CKANDataSet): DataSet = {
-    val modified = ckanDateTimeWithMsFormat.parse(hit.metadata_modified).toInstant
+    val modified = ckanDateTimeWithMsFormat.parse(hit.metadata_modified).toInstant.toDefaultZonedTime
     DataSet(
       identifier = hit.name,
       catalog = interface.name,
       title = hit.title,
       description = hit.notes,
-      issued = Some(ckanDateTimeWithMsFormat.parse(hit.metadata_created).toInstant),
+      issued = Some(ckanDateTimeWithMsFormat.parse(hit.metadata_created).toInstant.toDefaultZonedTime()),
       modified = Some(modified),
       language = hit.language,
       publisher = hit.organization,
@@ -177,8 +177,8 @@ trait CKANConverters {
     new Distribution(
       title = resource.name.getOrElse(resource.id),
       description = resource.description,
-      issued = resource.created.map(ckanDateTimeFormat.parse(_).toInstant),
-      modified = resource.last_modified.map(ckanDateTimeFormat.parse(_).toInstant),
+      issued = resource.created.map(ckanDateTimeFormat.parse(_).toInstant.toDefaultZonedTime()),
+      modified = resource.last_modified.map(ckanDateTimeFormat.parse(_).toInstant.toDefaultZonedTime()),
       license = dataset.license_title.map(name => new License(Some(name))),
       rights = None,
       accessURL = resource.webstore_url,
