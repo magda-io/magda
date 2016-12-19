@@ -80,9 +80,9 @@ spec:
       - name: es
         resources:
           requests:
-            memory: 1500Mi
+            memory: 1000Mi
           limits:
-            memory: 3000Mi
+            memory: 2000Mi
         securityContext:
           privileged: true
           capabilities:
@@ -176,6 +176,9 @@ spec:
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
         image: seeruk/docker-kibana-sense
+        resources:
+          limits:
+            memory: 500Mi
         name: kibana
         ports:
         - containerPort: 5601

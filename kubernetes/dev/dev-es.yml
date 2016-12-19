@@ -21,7 +21,7 @@ spec:
         image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           limits:
-            memory: 3000Mi
+            memory: 2000Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -36,7 +36,7 @@ spec:
         - name: HTTP_ENABLE
           value: "true"
         - name: ES_HEAP_SIZE
-          value: "1500m"
+          value: "1000m"
         ports:
         - containerPort: 9200
           name: http
@@ -105,6 +105,8 @@ spec:
           value: http://elasticsearch:9200
         image: seeruk/docker-kibana-sense
         resources:
+          limits:
+            memory: 500Mi
           requests:
             cpu: 0m
             memory: 0Mi

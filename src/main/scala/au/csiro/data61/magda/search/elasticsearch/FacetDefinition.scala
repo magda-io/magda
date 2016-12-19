@@ -111,7 +111,11 @@ object FacetDefinition {
 
 object PublisherFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition = {
-    aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit).exclude("")
+    val agg = aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit)
+
+    agg.aggregationBuilder.missing("Unspecified")
+
+    agg
   }
 
   def relatedToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -163,7 +167,7 @@ object YearFacetDefinition extends FacetDefinition {
 
   def getBinSize(firstYear: Int, lastYear: Int, limit: Int): Int = {
     val yearDifference = lastYear - firstYear
-    yearBinSizes.view.map(x => (x, yearDifference / x)).filter(_._2 < limit).map(_._1).head
+    yearBinSizes.view.map(yearBinSize => (yearBinSize, yearDifference / yearBinSize)).filter(_._2 < limit).map(_._1).head
   }
 
   val parseFacets = Memo.mutableHashMapMemo((facets: Seq[FacetOption]) => facets
@@ -183,9 +187,9 @@ object YearFacetDefinition extends FacetDefinition {
     makeBins(facets, limit, hole, firstYear, lastYear)
   }
 
-  def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)], firstYear: Int, lastYear: Int): Seq[FacetOption] = facets match {
-    case Nil => Nil
-    case facets =>
+  def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)], firstYear: Int, lastYear: Int): Seq[FacetOption] = (facets, limit) match {
+    case (Nil, _) | (_, 0) => Nil
+    case (facets, _) =>
       val binSize = getBinSize(firstYear, lastYear, limit)
 
       val binsRaw = (for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1))
@@ -203,7 +207,7 @@ object YearFacetDefinition extends FacetDefinition {
                 Seq((holeEnd + 1, binEnd))
               else Seq((binStart, binEnd))
           }
-      } getOrElse (binsRaw)
+      } getOrElse (binsRaw) take limit
 
       bins.reverse.map {
         case (bucketStart, bucketEnd) =>
@@ -276,9 +280,13 @@ object YearFacetDefinition extends FacetDefinition {
 object FormatFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
     aggregation nested Format.id path "distributions" aggregations {
-      aggregation terms "nested" field "distributions.format.untokenized" size limit exclude "" aggs {
+      val termsAgg = aggregation terms "nested" field "distributions.format.untokenized" size limit exclude "" aggs {
         aggregation reverseNested "reverse"
       }
+
+      termsAgg.aggregationBuilder.missing("Unspecified")
+
+      termsAgg
     }
 
   override def extractFacetOptions(aggregation: Aggregation): Seq[FacetOption] = {
