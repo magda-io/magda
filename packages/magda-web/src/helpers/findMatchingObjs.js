@@ -1,3 +1,5 @@
+import find from 'lodash.find';
+
 export default function (valueList, objList) {
   let list = [];
   function checkActiveOption(option){

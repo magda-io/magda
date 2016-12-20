@@ -1,11 +1,9 @@
-import {addRegion, removeRegion, resetRegion} from '../actions/results';
+import {addRegion, resetRegion} from '../actions/results';
 import {connect} from 'react-redux';
 import {fetchRegionSearchResults} from '../actions/facetRegionSearch';
 import defined from '../helpers/defined';
 import FacetRegion from './FacetRegion';
-import ProgressBar from '../UI/ProgressBar';
 import React, { Component } from 'react';
-import toggleBasicOption from '../helpers/toggleBasicOption'
 
 class Region extends Component {
 

@@ -1,7 +1,6 @@
 import {addPublisher, removePublisher, resetPublisher} from '../actions/results';
 import {connect} from 'react-redux';
 import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
-import ProgressBar from '../UI/ProgressBar';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'
@@ -58,10 +57,10 @@ class Publisher extends Component {
       case 'recommendations':
         return (
           <Recommendations options={this.props.publisherOptions}
-                          onClick={this.onTogglePublisherOption}
-                          activeOptions={this.props.activePublishers}
-                          description={"Are you searching for items published by "}
-                          modifyUserSearchString={this.props.modifyUserSearchString}
+                           onClick={this.onTogglePublisherOption}
+                           activeOptions={this.props.activePublishers}
+                           description={"Are you searching for items published by "}
+                           modifyUserSearchString={this.props.modifyUserSearchString}
           />
         );
       default:

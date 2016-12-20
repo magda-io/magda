@@ -1,7 +1,6 @@
 import {addFormat, removeFormat, resetFormat} from '../actions/results';
 import {connect} from 'react-redux';
 import {fetchFormatSearchResults} from '../actions/facetFormatSearch';
-import ProgressBar from '../UI/ProgressBar';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'

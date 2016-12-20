@@ -1,9 +1,4 @@
 import React, { Component } from 'react';
-import defined from '../helpers/defined';
-import Publisher from './Publisher';
-import Format from './Format';
-import Region from './Region';
-import Temporal from './Temporal';
 import config from '../config.js';
 
 class SearchFacets extends Component {

@@ -223,7 +223,7 @@ Search.propTypes = {
 
 
 function mapStateToProps(state) {
-  let { results , facetPublisherSearch, facetRegionSearch, facetFormatSearch, regionMapping} = state;
+  let { results } = state;
   return {
     datasets: results.datasets,
     hitCount: results.hitCount,

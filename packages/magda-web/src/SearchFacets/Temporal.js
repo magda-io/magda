@@ -2,7 +2,6 @@ import {setDateFrom, setDateTo, resetDateFrom, resetDateTo} from '../actions/res
 import {connect} from 'react-redux';
 import defined from '../helpers/defined';
 import FacetTemporal from './FacetTemporal';
-import ProgressBar from '../UI/ProgressBar';
 import React, { Component } from 'react';
 
 class Temporal extends Component {
