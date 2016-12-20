@@ -1,0 +1,1 @@
+name := "magda-metadata-common"

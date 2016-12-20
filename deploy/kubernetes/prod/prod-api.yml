@@ -1,0 +1,113 @@
+#VARNISH
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: varnish
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        service: varnish
+    spec:    
+      containers:
+      - name: varnish
+        image: "mobulum/varnish"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1000Mi
+        imagePullPolicy: Always
+        env:
+        - name: BACKEND_PORT_80_TCP_ADDR
+          value: api
+        - name: BACKEND_ENV_PORT
+          value: "80"
+        - name: LISTEN_PORT
+          value: "80"
+        - name: THROTTLE_LIMIT
+          value: "150req/30s"
+        - name: CACHE_SIZE
+          value: "750MB"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: varnish
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: varnish
+  type: "LoadBalancer"
+  loadBalancerIP: "104.199.217.132"
+---
+
+#API
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        service: api
+    spec:
+      containers:
+      - name: api
+        env:
+        - name: SCALA_ENV
+          value: prod
+        - name: MAGDA_SEARCH_ROLE
+          value: api
+        - name: S3_SECRET_KEY
+          value: dummy
+        image: "data61/magda-metadata:v${version}"
+        resources:
+          requests:
+            cpu: 450m
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+      nodeSelector:
+        cloud.google.com/gke-nodepool: ephemeral
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: api
+  type: "LoadBalancer"
+  loadBalancerSourceRanges:
+  - 10.0.0.0/8
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api
+spec:
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: api
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80

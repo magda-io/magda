@@ -1,0 +1,199 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: es-data-pd-1
+  labels:
+    component: elasticsearch
+    role: data-pd-1
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: data-pd-1
+    spec:
+      containers:
+      - name: es-data-pd-1
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: data61/elasticsearch-kubernetes:2.4.1
+        resources:
+          requests:
+            cpu: 1500m
+            memory: 10000Mi
+          limits:
+            memory: 13000Mi
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_MASTER
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "false"
+        - name: NUMBER_OF_SHARDS
+          value: "3"
+        - name: NUMBER_OF_REPLICAS
+          value: "4"
+        - name: ES_HEAP_SIZE
+          value: "6000m"
+        ports:
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+      volumes:
+      - name: "storage"
+        gcePersistentDisk:
+          pdName: elasticsearch-data-1
+          fsType: ext4
+      nodeSelector:
+        cloud.google.com/gke-nodepool: elasticsearch-persistent-disk
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: es-data-pd-2
+  labels:
+    component: elasticsearch
+    role: data-pd-2
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: data-pd-2
+    spec:
+      containers:
+      - name: es-data-pd-2
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: data61/elasticsearch-kubernetes:2.4.1
+        resources:
+          requests:
+            cpu: 1500m
+            memory: 10000Mi
+          limits:
+            memory: 13000Mi
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_MASTER
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "false"
+        - name: NUMBER_OF_SHARDS
+          value: "3"
+        - name: NUMBER_OF_REPLICAS
+          value: "4"
+        - name: ES_HEAP_SIZE
+          value: "6000m"
+        ports:
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+      volumes:
+      - name: "storage"
+        gcePersistentDisk:
+          pdName: elasticsearch-data-1
+          fsType: ext4
+      nodeSelector:
+        cloud.google.com/gke-nodepool: elasticsearch-persistent-disk
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: es-data-ephemeral
+  labels:
+    component: elasticsearch
+    role: data-ephemeral
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: data-ephemeral
+    spec:
+      containers:
+      - name: es-data-ephemeral
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: data61/elasticsearch-kubernetes:2.4.1
+        resources:
+          requests:
+            cpu: 1500m
+            memory: 10000Mi
+          limits:
+            memory: 13000Mi
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_MASTER
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "false"
+        - name: NUMBER_OF_SHARDS
+          value: "3"
+        - name: NUMBER_OF_REPLICAS
+          value: "4"
+        - name: ES_HEAP_SIZE
+          value: "6000m"
+        ports:
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+      volumes:
+      - name: "storage"
+        emptyDir: {}
+      nodeSelector:
+        cloud.google.com/gke-nodepool: ephemeral
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: es-data-ephemeral
+spec:
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: es-data-ephemeral
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60
