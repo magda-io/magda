@@ -76,6 +76,7 @@ class FacetTemporal extends Component {
   }
 
   renderOption(option, onClick){
+    let marginBottom = 1;
     if(!option){
       return null;
     }
@@ -83,10 +84,17 @@ class FacetTemporal extends Component {
       width: +option.hitCount/maxBy(this.props.options, 'hitCount').hitCount * 160 + 'px'
     }
 
+    let buttonStyle = {
+      height: itemHeight - marginBottom + 'px',
+      marginBottom: marginBottom + 'px'
+    }
+
     return (
     <button type='button'
             className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn-facet-date-option btn`}
-            onClick={onClick.bind(this, option)}>
+            onClick={onClick.bind(this, option)}
+            style={buttonStyle}
+            >
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}</span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
