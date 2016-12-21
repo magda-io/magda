@@ -32,7 +32,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem,
   // "Access-Control-Allow-Origin: foo.com".  The latter is fine until Chrome decides to
   // cache the response and re-use it for other origins, causing a CORS failure.
   val corsSettings = CorsSettings.defaultSettings.copy(allowCredentials = false)
-
+//
   implicit def rejectionHandler = RejectionHandler.newBuilder()
     .handleAll[MethodRejection] { rejections ⇒
       val methods = rejections map (_.supported)

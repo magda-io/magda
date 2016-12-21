@@ -21,3 +21,24 @@ libraryDependencies ++= {
        "org.scalatest"     %% "scalatest" % scalaTestV % "test"
      )
 }
+
+dockerfile in docker := {
+  val appDir: File = stage.value
+  val targetDir = "/app"
+
+  new Dockerfile {
+    from("java")
+    entryPoint(s"$targetDir/bin/${executableScriptName.value}")
+    env("S3_SECRET_KEY", "DUMMY")
+    copy(appDir, targetDir)
+    expose(80)
+  }
+}
+
+imageNames in docker := Seq(
+  ImageName(
+    namespace = Some("data61"),
+    repository = name.value,
+    tag = Some("v" + version.value)
+  )
+)

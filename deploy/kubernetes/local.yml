@@ -14,18 +14,76 @@ spec:
       - name: api
         resources:
           requests:
-            memory: 150Mi
-          limits:
-            memory: 500Mi
+            memory: 0
         env:
         - name: SCALA_ENV
           value: local
-        - name: MAGDA_SEARCH_ROLE
-          value: both
         image: "localhost:5000/data61/magda-metadata-local:latest"
+        command: ["sbt", "~searchApi/re-start"]
         imagePullPolicy: Always
         ports:
         - containerPort: 80
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /usr/regions
+          name: regions
+        - mountPath: /usr/src/app/
+          name: src
+        - mountPath: /root/.ivy2/
+          name: ivy-cache
+      volumes:
+      - name: regions
+        hostPath:
+          path: ${projectDir}/indexer/regions
+      - name: src
+        hostPath:
+          path: ${projectDir}
+      - hostPath:
+          path: ${homeDir}/.ivy2/
+        name: ivy-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30009
+  - name: debug
+    port: 8000
+    targetPort: 8000
+    nodePort: 30080
+  selector:
+    service: api
+  type: "NodePort"
+---
+# Indexer
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: indexer
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: indexer
+    spec:
+      containers:
+      - name: api
+        resources:
+          requests:
+            memory: 0
+        env:
+        - name: SCALA_ENV
+          value: local
+        image: "localhost:5000/data61/magda-metadata-local:latest"
+        command: ["sbt", "-DincludeMockData=true", "~indexer/re-start"]
+        imagePullPolicy: Always
+        ports:
         - containerPort: 8000
         volumeMounts:
         - mountPath: /usr/regions
@@ -48,19 +106,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api
+  name: indexer
 spec:
   ports:
-  - name: http
-    port: 80
-    targetPort: 80
-    nodePort: 30009
   - name: debug
     port: 8000
     targetPort: 8000
-    nodePort: 30008
+    nodePort: 30081
   selector:
-    service: api
+    service: indexer
   type: "NodePort"
 ---
 # ElasticSearch

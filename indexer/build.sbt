@@ -26,12 +26,6 @@ libraryDependencies ++= {
   )
 }
 
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true
-
-Revolver.settings
-Revolver.enableDebugging(port = 8000, suspend = false)
-
 unmanagedResourceDirectories in Compile ++= {  
   if (Option(System.getProperty("includeMockData")).getOrElse("false").equals("true")) {
     println("mock-data")
@@ -62,19 +56,3 @@ imageNames in docker := Seq(
     tag = Some("v" + version.value)
   )
 )
-
-val fixWindowsPath = (path: String) => if (path.substring(0, 3) == "C:\\") {
-  // Dodgy hack to replace Windows paths with paths that will work within the minikube VM
-  "/c/" + path.substring(3).replace('\\', '/')
-} else {
-  path
-}
-
-sources in EditSource <++= baseDirectory.map(d => (d / "kubernetes" ** "*.yml").get)
-targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
-val baseDirPath = new File("./").getAbsolutePath
-val baseDir = fixWindowsPath(baseDirPath.substring(0, baseDirPath.length - 2))
-val homeDir = fixWindowsPath(System.getProperty("user.home"))
-variables in EditSource += ("projectDir", baseDir)
-variables in EditSource += ("homeDir", homeDir)
-variables in EditSource += ("version", version.value)
