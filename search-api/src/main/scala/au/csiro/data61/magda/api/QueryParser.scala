@@ -7,8 +7,11 @@ import scala.util.parsing.input.Position
 import scala.util.parsing.input.NoPosition
 import au.csiro.data61.magda.util.DateParser._
 import au.csiro.data61.magda.spatial.RegionSource
+
 import scala.util.matching.Regex
 import java.time.OffsetDateTime
+
+import au.csiro.data61.magda.model.misc.Region
 
 private object Tokens {
   sealed trait QueryToken
@@ -214,18 +217,6 @@ object QueryCompiler {
     }
   }
 }
-
-case class BoundingBox(
-  west: Double,
-  south: Double,
-  east: Double,
-  north: Double)
-
-case class Region(
-  regionType: String,
-  regionId: String,
-  regionName: String,
-  boundingBox: Option[BoundingBox])
 
 case class Query(
   freeText: Option[String] = None,

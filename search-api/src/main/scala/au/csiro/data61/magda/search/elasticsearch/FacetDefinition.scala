@@ -1,25 +1,19 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import scala.collection.JavaConverters._
-
-import org.elasticsearch.search.aggregations.Aggregation
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
-import org.elasticsearch.search.aggregations.bucket.histogram.Histogram
-import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
-import org.elasticsearch.search.aggregations.bucket.terms.Terms.Order
-
-import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
-import com.sksamuel.elastic4s.AbstractAggregationDefinition
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.QueryDefinition
-
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.elasticsearch.Queries._
-import au.csiro.data61.magda.util.DateParser._
 import au.csiro.data61.magda.util.DateParser
+import au.csiro.data61.magda.util.DateParser._
+import com.sksamuel.elastic4s.{AbstractAggregationDefinition, QueryDefinition}
+import com.sksamuel.elastic4s.ElasticDsl._
+import org.elasticsearch.search.aggregations.Aggregation
+import au.csiro.data61.magda.search.elasticsearch.Queries._
+import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
+import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
+
+import collection.JavaConverters._
 import scalaz.Memo
 
 /**

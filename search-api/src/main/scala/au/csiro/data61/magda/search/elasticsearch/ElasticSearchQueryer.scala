@@ -1,74 +1,30 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import spray.json._
-
-import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.collection.mutable.Buffer
-import scala.util.control.Exception._
-import scala.util.Try
-import scala.util.Success
-import scala.util.Failure
-import scala.concurrent.duration._
-import scala.concurrent.Await
-import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.source.Indexable
-import com.sksamuel.elastic4s.AbstractAggregationDefinition
-import com.sksamuel.elastic4s.IndexAndTypes.apply
-import com.sksamuel.elastic4s.IndexesAndTypes.apply
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval
-import org.elasticsearch.search.aggregations.bucket.terms._
-import org.elasticsearch.search.aggregations.Aggregation
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
-import org.elasticsearch.action.ActionRequestValidationException
-import org.elasticsearch.index.IndexNotFoundException
-import org.elasticsearch.client.transport.NoNodeAvailableException
-import org.elasticsearch.transport.RemoteTransportException
-import org.elasticsearch.search.aggregations.InvalidAggregationPathException
-import au.csiro.data61.magda.search.SearchProvider
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.model.misc
-import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.misc.Protocols._
-import au.csiro.data61.magda.api.Query
 import akka.actor.ActorSystem
-import akka.event.Logging
-import akka.http.scaladsl.common.EntityStreamingSupport
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
 import akka.stream.Materializer
-import akka.stream.scaladsl.FileIO
-import akka.stream.ThrottleMode
-import akka.util.ByteString
-import java.time._
-import java.io.File
-import java.nio.file.Paths
-
-import au.csiro.data61.magda.AppConfig
-import akka.stream.scaladsl.Merge
-import au.csiro.data61.magda.api.Region
-import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper
-import org.elasticsearch.search.SearchParseException
-import org.elasticsearch.action.search.SearchPhaseExecutionException
-import akka.stream.OverflowStrategy
-import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
-import au.csiro.data61.magda.search.SearchStrategy
-import au.csiro.data61.magda.search.MatchPart
-import au.csiro.data61.magda.search.MatchAll
-import au.csiro.data61.magda.util.DateParser._
-import au.csiro.data61.magda.util.ErrorHandling.CausedBy
-import au.csiro.data61.magda.search.elasticsearch.Queries._
-import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
+import au.csiro.data61.magda.api.Query
+import au.csiro.data61.magda.api.model.{RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
+import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
+import au.csiro.data61.magda.search.elasticsearch.Indexes._
+import au.csiro.data61.magda.search.elasticsearch.Queries._
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
+import au.csiro.data61.magda.search.{MatchAll, MatchPart, SearchProvider, SearchStrategy}
+import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import au.csiro.data61.magda.util.SetExtractor
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s._
+import org.elasticsearch.search.aggregations.Aggregation
+import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import org.elasticsearch.search.sort.SortOrder
 
+import scala.collection.JavaConverters._
+import scala.concurrent.{ExecutionContext, Future}
+
 class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
-  val logger = system.log
-  val AGGREGATION_SIZE_LIMIT = 10
+  private val logger = system.log
+  private val AGGREGATION_SIZE_LIMIT = 10
 
   lazy val clientFuture: Future[ElasticClient] = getClient(system.scheduler, logger, ec)
 
@@ -81,8 +37,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
           if (response.totalHits > 0)
             Future.successful((response, MatchAll))
           else
-            client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchPart)).map((_, MatchPart))
-        )
+            client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchPart)).map((_, MatchPart)))
       } map {
         case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy)
       } recover {
@@ -112,44 +67,47 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
         new Facet(
           id = facetType,
           options = {
-            // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-            val filteredOptions =
-              (aggsMap.get(facetType.id + "-filter") match {
-                case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-                case None            => Nil
-              }).filter(definition.isFilterOptionRelevant(query))
-                .map(_.copy(matched = Some(true)))
+          // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
+          val filteredOptions =
+            (aggsMap.get(facetType.id + "-filter") match {
+              case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
+              case None            => Nil
+            }).filter(definition.isFilterOptionRelevant(query))
+              .map(_.copy(matched = Some(true)))
 
-            // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
-            // display it to them to show them that it does *exist* but not for this query
-            val exactOptions =
-              definition.exactMatchQueries(query)
-                .map {
-                  case (name, query) => (
-                    name,
-                    aggsMap
-                    .get(facetType.id + "-global")
-                    .get
-                    .getProperty(facetType.id + "-exact-" + name)
-                  )
-                }
-                .map {
-                  case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0)) else None
-                }
-                .flatten
-                .toSeq
-
-            val alternativeOptions =
-              definition.extractFacetOptions(
-                aggsMap
+          // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
+          // display it to them to show them that it does *exist* but not for this query
+          val exactOptions =
+            definition.exactMatchQueries(query)
+              .map {
+                case (name, query) => (
+                  name,
+                  aggsMap
                   .get(facetType.id + "-global")
                   .get
-                  .getProperty("filter").asInstanceOf[Aggregation]
-                  .getProperty(facetType.id).asInstanceOf[Aggregation])
+                  .getProperty(facetType.id + "-exact-" + name)
+                )
+              }
+              .map {
+                case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0)) else None
+              }
+              .flatten
+              .toSeq
 
-            definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, AGGREGATION_SIZE_LIMIT)
-          })
-      }.toSeq))
+          val alternativeOptions =
+            definition.extractFacetOptions(
+              aggsMap
+              .get(facetType.id + "-global")
+              .get
+              .getProperty("filter").asInstanceOf[Aggregation]
+              .getProperty(facetType.id).asInstanceOf[Aggregation]
+            )
+
+          definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, AGGREGATION_SIZE_LIMIT)
+        }
+        )
+      }.toSeq)
+    )
   }
 
   /** Converts from a general search strategy to the actual elastic4s method that will combine a number of queries using that strategy.*/
@@ -160,7 +118,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(query: Query, start: Long, limit: Int, strategy: SearchStrategy) =
-    ElasticDsl.search.in(IndexDefinition.datasets.indexName / IndexDefinition.datasets.name)
+    ElasticDsl.search.in(getIndexAndType(DATASETS_INDEX_NAME))
       .limit(limit)
       .start(start.toInt)
       .query(queryToQueryDef(query, strategy))
@@ -180,8 +138,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   def addAggregations(searchDef: SearchDefinition, query: Query, strategy: SearchStrategy) = {
     val aggregations: List[AbstractAggregationDefinition] =
       FacetType.all.flatMap(facetType =>
-        aggsForFacetType(query, facetType, strategy)
-      ).toList
+        aggsForFacetType(query, facetType, strategy)).toList
 
     searchDef.aggregations(aggregations)
   }
@@ -203,9 +160,9 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
         // in the query... this is useful if say the user types in "Ballarat", we can suggest "Ballarat Council"
         Some(
           aggregation
-            .filter(facetType.id + "-filter")
-            .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(AGGREGATION_SIZE_LIMIT))
-            .asInstanceOf[AbstractAggregationDefinition]
+          .filter(facetType.id + "-filter")
+          .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(AGGREGATION_SIZE_LIMIT))
+          .asInstanceOf[AbstractAggregationDefinition]
         )
       else
         None
@@ -268,7 +225,8 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
       setToOption(query.formats)(seq => should(seq.map(formatQuery))),
       query.dateFrom.map(dateFromQuery),
       query.dateTo.map(dateToQuery),
-      setToOption(query.regions)(seq => should(seq.map(regionIdQuery))))
+      setToOption(query.regions)(seq => should(seq.map(regionIdQuery)))
+    )
 
     strategy(clauses.flatten)
   }
@@ -278,7 +236,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
-      client.execute(ElasticDsl.search in IndexDefinition.datasets.indexName / facetType.id query facetQuery start start.toInt limit limit)
+      client.execute(ElasticDsl.search in DATASETS_INDEX_NAME / facetType.id query facetQuery start start.toInt limit limit)
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
@@ -287,8 +245,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
               // Create a dataset filter aggregation for each hit in the initial query
               val filters = hitNames.map(name =>
-                aggregation.filter(name).filter(facetDef.exactMatchQuery(name))
-              )
+                aggregation.filter(name).filter(facetDef.exactMatchQuery(name)))
 
               // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
               // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
@@ -318,7 +275,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
   override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client.execute(
-        ElasticDsl.search in IndexDefinition.regions.indexName / IndexDefinition.regions.name
+        ElasticDsl.search in getIndexAndType(REGIONS_INDEX_NAME)
           query { matchPhrasePrefixQuery("name", query) }
           start start.toInt
           limit limit
@@ -338,7 +295,7 @@ class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: Ex
 
   def findRegion(regionType: String, regionId: String): Future[Region] = {
     clientFuture.flatMap { client =>
-      client.execute(ElasticDsl.search in IndexDefinition.regions.indexName / IndexDefinition.regions.name query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude ("geometry"))
+      client.execute(ElasticDsl.search in getIndexAndType(REGIONS_INDEX_NAME) query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude ("geometry"))
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(Region(regionType, regionId, "[Unknown]", None))

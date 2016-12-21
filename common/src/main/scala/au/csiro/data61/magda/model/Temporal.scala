@@ -1,12 +1,12 @@
 package au.csiro.data61.magda.model
 
-import java.util.Locale
 import java.time._
-import spray.json._
-import au.csiro.data61.magda.model.temporal._
+
 import au.csiro.data61.magda.util.DateParser._
+import spray.json._
 
 package temporal {
+
   object Periodicity {
     val asNeeded: Periodicity = new Periodicity(text = Some("As Needed"))
 
@@ -17,7 +17,8 @@ package temporal {
 
   case class PeriodOfTime(
     start: Option[ApiDate] = None,
-    end: Option[ApiDate] = None)
+    end: Option[ApiDate] = None
+  )
 
   object PeriodOfTime {
     val splitters = List("\\s*to\\s*", "\\s*-\\s*")
@@ -54,21 +55,24 @@ package temporal {
         // In this case we split each and take the earlier value for start and later value for end.
         case (Some(start), Some(end), None, None) => Some(new PeriodOfTime(
           start = trySplit(start, modified).flatMap(_.start),
-          end = trySplit(end, modified).flatMap(_.end)))
+
+          end = trySplit(end, modified).flatMap(_.end)
+        ))
         // We didn't get any dates, so maybe one of the text fields conflates both, e.g. "2015-2016"
         case (Some(start), None, _, None) => trySplit(start, modified) orElse defaultPeriod
         case (None, Some(end), None, _)   => trySplit(end, modified) orElse defaultPeriod
         // No values for anything
-        case (None, None, None, None)        => None
+        case (None, None, None, None)     => None
         // We already managed to parse a date, so leave this alone
-        case _                               => defaultPeriod
+        case _                            => defaultPeriod
       }
     }
   }
 
   case class ApiDate(
     date: Option[OffsetDateTime] = None,
-    text: String)
+    text: String
+  )
 
   object ApiDate {
     def parse(raw: String, modifiedOption: Option[OffsetDateTime], atEnd: Boolean): Option[ApiDate] = parseDate(raw, atEnd) match {
@@ -76,7 +80,7 @@ package temporal {
       case ConstantResult(constant) => constant match {
         case Now => modifiedOption match {
           case Some(modified) => Some(ApiDate(Some(modified), raw))
-          case None => Some(ApiDate(None, raw))
+          case None           => Some(ApiDate(None, raw))
         }
       }
       case ParseFailure => None
@@ -84,16 +88,23 @@ package temporal {
   }
 
   trait Protocols extends DefaultJsonProtocol {
+
     implicit object DateTimeFormat extends JsonFormat[OffsetDateTime] {
       override def write(dateTime: OffsetDateTime): JsString = JsString.apply(dateTime.toString())
+
       override def read(json: JsValue): OffsetDateTime = OffsetDateTime.parse(json.convertTo[String])
     }
+
     implicit val apiDate = jsonFormat2(ApiDate.apply)
     implicit val periodOfTimeFormat = jsonFormat2(PeriodOfTime.apply)
+
     implicit object DurationFormat extends JsonFormat[Duration] {
       override def write(duration: Duration): JsNumber = JsNumber(duration.toMillis())
+
       override def read(json: JsValue): Duration = Duration.ofMillis(json.convertTo[Long])
     }
+
     implicit val periodicityFormat = jsonFormat2(Periodicity.apply)
   }
+
 }

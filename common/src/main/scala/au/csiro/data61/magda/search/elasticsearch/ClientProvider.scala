@@ -2,14 +2,13 @@ package au.csiro.data61.magda.search.elasticsearch
 
 import akka.actor.Scheduler
 import akka.event.LoggingAdapter
-import com.sksamuel.elastic4s.ElasticClient
 import au.csiro.data61.magda.AppConfig
-import com.sksamuel.elastic4s.ElasticsearchClientUri
-import scala.concurrent.Future
 import au.csiro.data61.magda.util.ErrorHandling.retry
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext
+import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
 import org.elasticsearch.common.settings.Settings
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
 
 object ClientProvider {
   private var clientFuture: Option[Future[ElasticClient]] = None

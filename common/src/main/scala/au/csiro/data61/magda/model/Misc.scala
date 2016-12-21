@@ -1,31 +1,18 @@
 package au.csiro.data61.magda.model
 
-import java.time.Duration
 import spray.json._
 import au.csiro.data61.magda.model.temporal._
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
-import au.csiro.data61.magda.api.Query
 import com.monsanto.labs.mwundo.GeoJson._
 import com.monsanto.labs.mwundo.GeoJsonFormats._
-import java.util.regex.Pattern
-import au.csiro.data61.magda.api.BoundingBox
-import au.csiro.data61.magda.api.Region
-import au.csiro.data61.magda.search.SearchStrategy
 import java.time.OffsetDateTime
 
 package misc {
-  case class SearchResult(
-    query: Query,
-    hitCount: Long,
-    facets: Option[Seq[Facet]] = None,
-    dataSets: List[DataSet],
-    errorMessage: Option[String] = None,
-    strategy: Option[SearchStrategy] = None)
-
   sealed trait FacetType {
     def id: String
   }
+
   object FacetType {
     val all = Seq(Publisher, Year, Format)
 
@@ -33,54 +20,56 @@ package misc {
 
     def fromId(id: String): Option[FacetType] = idToFacet get id
   }
+
   case object Publisher extends FacetType {
     override def id = "publisher"
   }
+
   case object Year extends FacetType {
     override def id = "year"
   }
+
   case object Format extends FacetType {
     override def id = "format"
   }
 
   case class FacetSearchResult(
     hitCount: Long,
-    options: Seq[FacetOption])
+    options: Seq[FacetOption]
+  )
 
   case class Facet(
     id: FacetType,
-    options: Seq[FacetOption])
+    options: Seq[FacetOption]
+  )
 
   case class FacetOption(
     value: String,
     hitCount: Long,
     upperBound: Option[String] = None,
     lowerBound: Option[String] = None,
-    matched: Option[Boolean] = None)
-
-  case class RegionSearchResult(
-    query: String,
-    hitCount: Long,
-    regions: List[Region])
+    matched: Option[Boolean] = None
+  )
 
   case class DataSet(
-      identifier: String,
-      catalog: String,
-      title: Option[String] = None,
-      description: Option[String] = None,
-      issued: Option[OffsetDateTime] = None,
-      modified: Option[OffsetDateTime] = None,
-      language: Option[String] = None,
-      publisher: Option[Agent] = None,
-      accrualPeriodicity: Option[Periodicity] = None,
-      spatial: Option[Location] = None,
-      temporal: Option[PeriodOfTime] = None,
-      theme: Seq[String] = List(),
-      keyword: Seq[String] = List(),
-      contactPoint: Option[Agent] = None,
-      distributions: Seq[Distribution] = Seq(),
-      landingPage: Option[String] = None,
-      years: Option[String] = None) {
+    identifier: String,
+    catalog: String,
+    title: Option[String] = None,
+    description: Option[String] = None,
+    issued: Option[OffsetDateTime] = None,
+    modified: Option[OffsetDateTime] = None,
+    language: Option[String] = None,
+    publisher: Option[Agent] = None,
+    accrualPeriodicity: Option[Periodicity] = None,
+    spatial: Option[Location] = None,
+    temporal: Option[PeriodOfTime] = None,
+    theme: Seq[String] = List(),
+    keyword: Seq[String] = List(),
+    contactPoint: Option[Agent] = None,
+    distributions: Seq[Distribution] = Seq(),
+    landingPage: Option[String] = None,
+    years: Option[String] = None
+  ) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
   }
@@ -89,11 +78,13 @@ package misc {
     name: Option[String] = None,
     homePage: Option[String] = None,
     email: Option[String] = None,
-    extraFields: Map[String, String] = Map())
+    extraFields: Map[String, String] = Map()
+  )
 
   case class Location(
     text: Option[String] = None,
-    geoJson: Option[Geometry] = None)
+    geoJson: Option[Geometry] = None
+  )
 
   object Location {
     val geoJsonPattern = "\\{\"type\": \".+\",.*\\}".r
@@ -132,7 +123,7 @@ package misc {
                 val Array(x, y) = stringCoords.trim.split("\\s").map(_.toDouble)
                 Coordinate(x, y)
               } catch {
-                case e => println(stringCoords); throw e
+                case e: Throwable => println(stringCoords); throw e
               }
             }.toSeq
 
@@ -141,7 +132,7 @@ package misc {
       })
     }
 
-    case class BoundingBox(north: BigDecimal, east: BigDecimal, south: BigDecimal, west: BigDecimal)
+
     def fromBoundingBox(boundingBoxList: Seq[BoundingBox]): Option[Geometry] = {
       val bBoxPoints = boundingBoxList
         .map { boundingBox =>
@@ -180,6 +171,15 @@ package misc {
     }
   }
 
+  case class BoundingBox(north: BigDecimal, east: BigDecimal, south: BigDecimal, west: BigDecimal)
+
+  case class Region(
+    regionType: String,
+    regionId: String,
+    regionName: String,
+    boundingBox: Option[BoundingBox]
+  )
+
   case class Distribution(
     title: String,
     description: Option[String] = None,
@@ -191,7 +191,8 @@ package misc {
     downloadURL: Option[String] = None,
     byteSize: Option[Int] = None,
     mediaType: Option[MediaType] = None,
-    format: Option[String] = None)
+    format: Option[String] = None
+  )
 
   object Distribution {
     private val extensionRegex = new scala.util.matching.Regex("\\.([^./]+)$", "extension")
@@ -199,6 +200,7 @@ package misc {
     private val formatToMimeType: Map[String, MediaType] = Map(
       "GeoJSON" -> MediaTypes.`application/json`,
       "KML" -> MediaTypes.`application/vnd.google-earth.kml+xml`,
+
       "CSV" -> MediaTypes.`text/csv`,
       "JSON" -> MediaTypes.`application/json`,
       "SHP" -> MediaTypes.`application/octet-stream`
@@ -261,9 +263,7 @@ package misc {
         .orElse(parsedMediaType.map(_.subType))
         .orElse(description.flatMap(desc =>
           urlToFormat.values.filter(format =>
-            desc.toLowerCase.contains(format.toLowerCase())
-          ).headOption
-        ))
+            desc.toLowerCase.contains(format.toLowerCase())).headOption))
     }
 
     def isDownloadUrl(url: String, title: String, description: Option[String], format: Option[String]): Boolean = {
@@ -278,18 +278,19 @@ package misc {
   trait Protocols extends DefaultJsonProtocol with temporal.Protocols {
 
     implicit val licenseFormat = jsonFormat2(License.apply)
+
     implicit object FacetTypeFormat extends JsonFormat[FacetType] {
       override def write(facetType: FacetType): JsString = JsString.apply(facetType.id)
+
       override def read(json: JsValue): FacetType = FacetType.fromId(json.convertTo[String]).get
     }
+
     implicit object MediaTypeFormat extends JsonFormat[MediaType] {
       override def write(mediaType: MediaType): JsString = JsString.apply(mediaType.value)
+
       override def read(json: JsValue): MediaType = MediaType.parse(json.convertTo[String]).right.get
     }
-    implicit object SearchStrategyFormat extends JsonFormat[SearchStrategy] {
-      override def write(strat: SearchStrategy): JsString = JsString.apply(strat.name)
-      override def read(json: JsValue): SearchStrategy = SearchStrategy.parse(json.convertTo[String])
-    }
+
     implicit object GeometryFormat extends JsonFormat[Geometry] {
       override def write(geometry: Geometry): JsValue = geometry match {
         case point: Point           => PointFormat.write(point)
@@ -299,6 +300,7 @@ package misc {
         case point: Polygon         => PolygonFormat.write(point)
         case point: MultiPolygon    => MultiPolygonFormat.write(point)
       }
+
       override def read(json: JsValue): Geometry = json match {
         case JsObject(jsObj) => jsObj.get("type") match {
           case Some(JsString("Point"))           => PointFormat.read(json)
@@ -312,21 +314,20 @@ package misc {
         case _ => deserializationError(s"'$json' is not a valid geojson shape")
       }
     }
+
+    implicit val boundingBoxFormat = jsonFormat4(BoundingBox.apply)
+    implicit val regionFormat = jsonFormat4(Region.apply)
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
-    implicit val boundingBoxFormat = jsonFormat4(BoundingBox.apply)
-    implicit val regionFormat = jsonFormat4(Region.apply)
-    implicit val queryFormat = jsonFormat8(Query.apply)
-    implicit val searchResultFormat = jsonFormat6(SearchResult.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
-    implicit val regionSearchResultFormat = jsonFormat3(RegionSearchResult.apply)
   }
 
   object Protocols extends Protocols {
 
   }
+
 }

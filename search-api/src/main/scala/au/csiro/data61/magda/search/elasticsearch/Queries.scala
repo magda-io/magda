@@ -1,10 +1,12 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import com.sksamuel.elastic4s.ElasticDsl._
-import au.csiro.data61.magda.api.Region
-import org.elasticsearch.common.geo.ShapeRelation
-import au.csiro.data61.magda.search.elasticsearch.IndexedGeoShapeQueryDefinition._
 import java.time.OffsetDateTime
+
+import au.csiro.data61.magda.model.misc.Region
+import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
+import au.csiro.data61.magda.search.elasticsearch.IndexedGeoShapeQueryDefinition._
+import com.sksamuel.elastic4s.ElasticDsl._
+import org.elasticsearch.common.geo.ShapeRelation
 
 object Queries {
   def publisherQuery(publisher: String) = matchPhraseQuery("publisher.name", publisher)
@@ -13,9 +15,9 @@ object Queries {
     .query(matchQuery("distributions.format", format))
   def exactFormatQuery(format: String) = nestedQuery("distributions")
     .query(matchQuery("distributions.format.untokenized", format))
-  def regionIdQuery(region: Region) = indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), "regions")
+  def regionIdQuery(region: Region) = indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), Indexes.REGIONS_INDEX_NAME)
     .relation(ShapeRelation.INTERSECTS)
-    .shapeIndex(IndexDefinition.regions.indexName)
+    .shapeIndex(Indexes.REGIONS_INDEX_NAME)
     .shapePath("geometry")
   def dateFromQuery(dateFrom: OffsetDateTime) = filter(should(
     rangeQuery("temporal.end.date").gte(dateFrom.toString),
@@ -23,7 +25,6 @@ object Queries {
   def dateToQuery(dateTo: OffsetDateTime) = filter(should(
     rangeQuery("temporal.end.date").lte(dateTo.toString),
     rangeQuery("temporal.start.date").lte(dateTo.toString)).minimumShouldMatch(1))
-  def generateRegionId(regionType: String, id: String) = s"${regionType}/$id".toLowerCase
   def exactDateQuery(dateFrom: OffsetDateTime, dateTo: OffsetDateTime) = must(dateFromQuery(dateFrom), dateToQuery(dateTo))
 }
 

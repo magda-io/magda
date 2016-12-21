@@ -66,12 +66,11 @@ class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val sy
     sourceNodes
       .filter(node =>
         node.attribute(name)
-          .map(
+          .exists(
             _.exists { x =>
               x.text.trim.equals(value)
             }
-          )
-          .getOrElse(false))
+          ))
   }
 
   def buildDistributions(uriNodes: NodeSeq, rightsNodes: NodeSeq): Seq[Distribution] = {

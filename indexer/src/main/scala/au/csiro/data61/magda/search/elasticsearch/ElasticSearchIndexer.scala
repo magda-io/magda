@@ -1,16 +1,20 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import java.time.LocalDate
-import java.time.ZoneId
+import java.time.{Instant, OffsetDateTime}
 
-import scala.collection.JavaConversions._
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.Promise
-import scala.concurrent.duration._
-import scala.util.Failure
-import scala.util.Success
-
+import akka.actor.ActorSystem
+import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
+import akka.stream.scaladsl.{Sink, Source, SourceQueue}
+import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.model.misc.{DataSet, Format, Publisher}
+import au.csiro.data61.magda.search.SearchIndexer
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
+import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
+import au.csiro.data61.magda.util.ErrorHandling.{CausedBy, retry}
+import com.sksamuel.elastic4s._
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.mappings.GetMappingsResult
 import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryResponse
 import org.elasticsearch.action.admin.cluster.snapshots.create.CreateSnapshotResponse
 import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse
@@ -19,34 +23,12 @@ import org.elasticsearch.repositories.RepositoryMissingException
 import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.snapshots.SnapshotInfo
 import org.elasticsearch.transport.RemoteTransportException
-
-import com.sksamuel.elastic4s.BulkDefinition
-import com.sksamuel.elastic4s.BulkResult
-import com.sksamuel.elastic4s.ElasticClient
-import com.sksamuel.elastic4s.ElasticDsl
-import com.sksamuel.elastic4s.ElasticDsl._
-
-import akka.actor.ActorSystem
-import akka.stream.Materializer
-import akka.stream.OverflowStrategy
-import akka.stream.QueueOfferResult
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.SourceQueue
-import akka.stream.scaladsl.SourceQueueWithComplete
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.misc.Protocols._
-import au.csiro.data61.magda.search.SearchIndexer
-import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.util.ErrorHandling.{ retry, CausedBy }
 import spray.json._
-import com.sksamuel.elastic4s.BulkItemResult
-import com.sksamuel.elastic4s.mappings.GetMappingsResult
-import java.time.OffsetDateTime
-import java.time.Instant
+
+import scala.collection.JavaConversions._
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log

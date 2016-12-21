@@ -43,7 +43,7 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
   def dataSetConv(res: NodeSeq): List[DataSet] =
     mapCatching[NodeSeq, DataSet](res.toList, { summaryRecord =>
       val identifier = summaryRecord \ "fileIdentifier" \ "CharacterString" text
-      val identification = nodeToOption(summaryRecord \ "identificationInfo" \ "MD_DataIdentification")
+      val identification = nodeToNodeOption(summaryRecord \ "identificationInfo" \ "MD_DataIdentification")
         .getOrElse(summaryRecord \ "identificationInfo" \ "SV_ServiceIdentification")
       val citation = identification \ "citation" \ "CI_Citation"
 
@@ -74,8 +74,8 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
         temporal = buildPeriodOfTime(modifiedDate)(extent \ "temporalElement" \ "EX_TemporalExtent"),
         theme = (identification \ "topicCategory" \ "TopicCategoryCode").map(_.text),
         keyword = (identification \ "descriptiveKeywords" \ "MD_Keywords" \ "keyword" \ "CharacterString").map(_.text),
-        contactPoint = nodeToOption(summaryRecord \ "contact" \ "CI_ResponsibleParty")
-          .orElse(nodeToOption(identification \ "pointOfContact" \ "CI_ResponsibleParty"))
+        contactPoint = nodeToNodeOption(summaryRecord \ "contact" \ "CI_ResponsibleParty")
+          .orElse(nodeToNodeOption(identification \ "pointOfContact" \ "CI_ResponsibleParty"))
           .map(nodeSeq => buildAgent(true)(nodeSeq.head)),
         distributions = buildDistributions(
           constraintNodes = identification \ "resourceConstraints",
@@ -189,7 +189,7 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system
             val south = BigDecimal(boundingBox \ "southBoundLatitude" \ "Decimal" text)
             val west = BigDecimal(boundingBox \ "westBoundLongitude" \ "Decimal" text)
 
-            Location.BoundingBox(north, east, south, west)
+            BoundingBox(north, east, south, west)
           }
         )
 

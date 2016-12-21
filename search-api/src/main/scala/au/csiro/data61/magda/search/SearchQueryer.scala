@@ -1,13 +1,10 @@
 package au.csiro.data61.magda.search
 
-import akka.actor.ActorSystem
-import akka.stream.Materializer
 import au.csiro.data61.magda.api.Query
+import au.csiro.data61.magda.api.model.{RegionSearchResult, SearchResult}
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
-import au.csiro.data61.magda.spatial.RegionSource
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 
 trait SearchProvider {
   def search(query: Query, start: Long, limit: Int): Future[SearchResult]

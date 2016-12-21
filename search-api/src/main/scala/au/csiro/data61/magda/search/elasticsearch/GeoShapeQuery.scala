@@ -1,9 +1,8 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import org.elasticsearch.index.query.QueryBuilders
-import com.sksamuel.elastic4s.GeoBoundingBoxQueryDefinition
 import com.sksamuel.elastic4s.QueryDefinition
 import org.elasticsearch.common.geo.ShapeRelation
+import org.elasticsearch.index.query.QueryBuilders
 
 class IndexedGeoShapeQueryDefinition(field: String, indexedShapeDocId: String, indexedShapeType: String) extends QueryDefinition {
 

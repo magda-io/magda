@@ -1,24 +1,18 @@
 package au.csiro.data61.magda.crawler
 
-import akka.actor.ActorSystem
-
-import au.csiro.data61.magda.external.InterfaceConfig
-import com.typesafe.config.Config
-import au.csiro.data61.magda.external.ExternalInterface
-import au.csiro.data61.magda.AppConfig
-import akka.event.Logging
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.Merge
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
-import au.csiro.data61.magda.search.SearchIndexer
-import akka.stream.scaladsl.Sink
-import akka.stream.Materializer
-import scala.concurrent.duration._
-import akka.stream.ThrottleMode
-import scala.concurrent.Future
-import au.csiro.data61.magda.model.misc.DataSet
 import akka.NotUsed
+import akka.actor.ActorSystem
+import akka.event.Logging
+import akka.stream.{Materializer, ThrottleMode}
+import akka.stream.scaladsl.{Merge, Sink, Source}
+import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.external.{ExternalInterface, InterfaceConfig}
+import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.search.SearchIndexer
+import com.typesafe.config.Config
+
+import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig], materializer: Materializer, indexer: SearchIndexer) {
   val log = Logging(system, getClass)

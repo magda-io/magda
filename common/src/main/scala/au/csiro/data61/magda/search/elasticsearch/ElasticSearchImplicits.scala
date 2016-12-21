@@ -1,16 +1,16 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import scala.collection.JavaConverters._
-import com.sksamuel.elastic4s._
+import au.csiro.data61.magda.model.misc.{BoundingBox, DataSet, FacetOption, Region}
+import au.csiro.data61.magda.model.misc.Protocols
 import com.sksamuel.elastic4s.source.Indexable
-import spray.json._
+import com.sksamuel.elastic4s.{HitAs, RichSearchHit}
 import org.elasticsearch.search.aggregations.Aggregation
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
-import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.misc.Protocols._
-import au.csiro.data61.magda.api.{BoundingBox, Region}
+import spray.json._
+import collection.JavaConverters._
 
-object ElasticSearchImplicits {
+object ElasticSearchImplicits extends Protocols {
+
   implicit object SprayJsonIndexable extends Indexable[JsValue] {
     override def json(t: JsValue): String = t.toString(CompactPrinter)
   }
@@ -34,7 +34,7 @@ object ElasticSearchImplicits {
           case (JsString("envelope"), JsArray(Vector(
             JsArray(Vector(JsNumber(west), JsNumber(north))),
             JsArray(Vector(JsNumber(east), JsNumber(south)))
-          ))) => Some(BoundingBox(west.toDouble, south.toDouble, east.toDouble, north.toDouble))
+          ))) => Some(BoundingBox(west, south, east, north))
           case _ => None
         }
         case _ => None

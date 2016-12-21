@@ -2,14 +2,16 @@ package au.csiro.data61.magda.util
 
 import java.time.OffsetDateTime
 
-import scala.xml.NodeSeq
-
 import akka.event.LoggingAdapter
 import au.csiro.data61.magda.util.DateParser._
 
+import scala.xml.NodeSeq
+
 object Xml {
-  implicit def nodeToOption[T](node: NodeSeq, toValue: NodeSeq => Option[T] = (node: NodeSeq) => Some.apply(node)): Option[T] =
+  implicit def nodeToOption[T](node: NodeSeq, toValue: NodeSeq => Option[T]): Option[T] =
     if (node.size == 0) None else toValue(node)
+
+  def nodeToNodeOption(node: NodeSeq): Option[NodeSeq] = nodeToOption(node, nodeSeq => Some.apply(nodeSeq))
 
   def nodeToStringOption(node: NodeSeq): Option[String] = nodeToOption(node, x => if (x.text.isEmpty()) None else Some(x.text))
 
