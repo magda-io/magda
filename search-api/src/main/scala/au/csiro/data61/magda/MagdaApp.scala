@@ -3,8 +3,10 @@ package au.csiro.data61.magda
 
 import akka.actor.{Actor, ActorLogging, ActorSystem, DeadLetter, Props}
 import akka.event.Logging
+import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.api.Api
+import au.csiro.data61.magda.search.elasticsearch.{DefaultClientProvider, ElasticSearchQueryer}
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
@@ -20,7 +22,11 @@ object MagdaApp extends App {
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
   logger.debug("Starting API")
-  new Api()
+  implicit val clientProvider = new DefaultClientProvider
+  val searchQueryer = new ElasticSearchQueryer()
+  val api = new Api(logger, config, searchQueryer)
+
+  Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
 }
 
 class Listener extends Actor with ActorLogging {

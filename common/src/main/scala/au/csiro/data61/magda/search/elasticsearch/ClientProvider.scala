@@ -10,11 +10,15 @@ import org.elasticsearch.common.settings.Settings
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-object ClientProvider {
+trait ClientProvider {
+  def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[ElasticClientTrait]
+}
+
+class DefaultClientProvider extends ClientProvider {
   private var clientFuture: Option[Future[ElasticClient]] = None
 
-  def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[ElasticClient] =
-    clientFuture match {
+  override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[ElasticClientTrait] = {
+    val outerFuture = clientFuture match {
       case Some(future) => future
       case None =>
         val future = retry(() => Future {
@@ -32,5 +36,8 @@ object ClientProvider {
         future
     }
 
-  def onRetry(logger: LoggingAdapter)(retriesLeft: Int) = logger.warning("Failed to make initial contact with ES server, {} retries left", retriesLeft)
+    outerFuture.map(new ElasticClientAdapter(_))
+  }
+
+  private def onRetry(logger: LoggingAdapter)(retriesLeft: Int) = logger.warning("Failed to make initial contact with ES server, {} retries left", retriesLeft)
 }

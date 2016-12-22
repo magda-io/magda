@@ -18,7 +18,8 @@ libraryDependencies ++= {
        "org.scalaz" %% "scalaz-core" % "7.2.8",
 
        "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
-       "org.scalatest"     %% "scalatest" % scalaTestV % "test"
+       "org.scalatest"     %% "scalatest" % scalaTestV % "test",
+       "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test"
      )
 }
 

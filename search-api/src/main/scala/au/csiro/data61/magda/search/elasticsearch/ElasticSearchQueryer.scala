@@ -5,12 +5,11 @@ import akka.stream.Materializer
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.api.model.{RegionSearchResult, SearchResult}
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.Indexes._
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.{MatchAll, MatchPart, SearchProvider, SearchStrategy}
+import au.csiro.data61.magda.search.{MatchAll, MatchPart, SearchQueryer, SearchStrategy}
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -22,11 +21,11 @@ import org.elasticsearch.search.sort.SortOrder
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
-class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchProvider {
+class ElasticSearchQueryer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer, implicit val clientProvider: ClientProvider) extends SearchQueryer {
   private val logger = system.log
   private val AGGREGATION_SIZE_LIMIT = 10
 
-  lazy val clientFuture: Future[ElasticClient] = getClient(system.scheduler, logger, ec)
+  lazy val clientFuture: Future[ElasticClientTrait] = clientProvider.getClient(system.scheduler, logger, ec)
 
   override def search(query: Query, start: Long, limit: Int) = {
     Future.sequence(query.regions.map(region => findRegion(region.regionType, region.regionId))).flatMap { regions =>

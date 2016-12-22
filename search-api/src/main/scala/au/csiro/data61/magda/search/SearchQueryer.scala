@@ -6,7 +6,7 @@ import au.csiro.data61.magda.model.misc._
 
 import scala.concurrent.Future
 
-trait SearchProvider {
+trait SearchQueryer {
   def search(query: Query, start: Long, limit: Int): Future[SearchResult]
   def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult]
   def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult]
