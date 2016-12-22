@@ -19,7 +19,7 @@ spec:
         - name: SCALA_ENV
           value: local
         image: "localhost:5000/data61/magda-metadata-local:latest"
-        command: ["sbt", "~searchApi/re-start"]
+        command: ["sbt", "-Dproject=searchApi", "~searchApi/re-start"]
         imagePullPolicy: Always
         ports:
         - containerPort: 80
@@ -29,7 +29,7 @@ spec:
           name: regions
         - mountPath: /usr/src/app/
           name: src
-        - mountPath: /root/.ivy2/
+        - mountPath: /root/.ivy2
           name: ivy-cache
       volumes:
       - name: regions
@@ -39,7 +39,7 @@ spec:
         hostPath:
           path: ${projectDir}
       - hostPath:
-          path: ${homeDir}/.ivy2/
+          path: ${projectDir}/search-api/target/.ivy2
         name: ivy-cache
 ---
 apiVersion: v1
@@ -81,7 +81,7 @@ spec:
         - name: SCALA_ENV
           value: local
         image: "localhost:5000/data61/magda-metadata-local:latest"
-        command: ["sbt", "-DincludeMockData=true", "~indexer/re-start"]
+        command: ["sbt", "-Dproject=indexer", "-DincludeMockData=true", "~indexer/re-start"]
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -90,7 +90,7 @@ spec:
           name: regions
         - mountPath: /usr/src/app/
           name: src
-        - mountPath: /root/.ivy2/
+        - mountPath: /root/.ivy2
           name: ivy-cache
       volumes:
       - name: regions
@@ -100,7 +100,7 @@ spec:
         hostPath:
           path: ${projectDir}
       - hostPath:
-          path: ${homeDir}/.ivy2/
+          path: ${projectDir}/indexer/target/.ivy2
         name: ivy-cache
 ---
 apiVersion: v1

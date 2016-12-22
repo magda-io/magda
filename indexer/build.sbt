@@ -28,10 +28,8 @@ libraryDependencies ++= {
 
 unmanagedResourceDirectories in Compile ++= {  
   if (Option(System.getProperty("includeMockData")).getOrElse("false").equals("true")) {
-    println("mock-data")
     List(baseDirectory.value / "mock-data")
   } else {
-    println("nil")
     Nil
   }   
 }
@@ -56,3 +54,11 @@ imageNames in docker := Seq(
     tag = Some("v" + version.value)
   )
 )
+
+watchSources <<= (watchSources) map { files =>
+  if (Option(System.getProperty("project")).getOrElse("none").equals("indexer")) {
+    files
+  } else {
+    Nil
+  }
+}

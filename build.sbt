@@ -1,3 +1,4 @@
+
 name := "magda-metadata"
 
 lazy val commonSettings = Seq(
@@ -6,9 +7,9 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.8"
 )
 
-lazy val root = (project in file("."))
-  .aggregate(common, searchApi, indexer)
-  .settings(commonSettings: _*)
+//lazy val root = (project in file("."))
+//  .aggregate(common, searchApi, indexer)
+//  .settings(commonSettings: _*)
 lazy val common = (project in file("common"))
   .settings(commonSettings: _*)
 lazy val searchApi = (project in file("search-api"))

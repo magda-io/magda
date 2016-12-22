@@ -42,3 +42,11 @@ imageNames in docker := Seq(
     tag = Some("v" + version.value)
   )
 )
+
+watchSources <<= (watchSources) map { files =>
+  if (Option(System.getProperty("project")).getOrElse("none").equals("searchApi")) {
+    files
+  } else {
+    Nil
+  }
+}
