@@ -23,14 +23,14 @@ class Search extends Component {
 
   constructor(props) {
     super(props);
-    this.debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
+    this.debounceUpdateSearchQuery = debounce(this.updateSearchText, 3000);
     this.goToPage=this.goToPage.bind(this);
     this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
     this.onClickTag = this.onClickTag.bind(this);
     this.updateQuery = this.updateQuery.bind(this);
     this.onDismissError = this.onDismissError.bind(this);
     this.modifyUserSearchString = this.modifyUserSearchString.bind(this);
-    this.updateSearchQuery = this.updateSearchQuery.bind(this);
+    this.updateSearchText = this.updateSearchText.bind(this);
     this.onClearSearch = this.onClearSearch.bind(this);
     this.onClickSearch = this.onClickSearch.bind(this);
     this.onSearchTextChange = this.onSearchTextChange.bind(this);
@@ -63,11 +63,13 @@ class Search extends Component {
     this.setState({
       searchText: tag
     });
-    this.updateSearchQuery(tag);
+    this.updateSearchText(tag);
   }
 
-
-  updateSearchQuery(text){
+  /**
+   * update only the search text, remove all facets
+   */
+  updateSearchText(text){
     this.updateQuery({
       q: text,
       publisher: [],
@@ -81,7 +83,8 @@ class Search extends Component {
   }
 
   onClearSearch(){
-    this.updateSearchQuery('');
+    this.updateSearchText('');
+    // cancle any future requests from debounce
     this.debounceUpdateSearchQuery.cancel();
   }
 
@@ -93,16 +96,27 @@ class Search extends Component {
     }
   }
 
+  /**
+   * If the search button is clicked, we do the search immediately
+   */
   onClickSearch(){
     this.debounceUpdateSearchQuery.flush();
   }
 
+
+  /**
+   * Pagination
+   */
   goToPage(index){
     this.updateQuery({
       page: index
     })
   }
 
+  /**
+   * query in this case, is one or more of the params
+   * eg: {'q': 'water'}
+   */
   updateQuery(query){
     let {router} = this.context;
     router.push({
@@ -111,6 +125,9 @@ class Search extends Component {
     });
   }
 
+  /**
+   * This calculate the value to show in the search box
+   */
   getSearchBoxValue(){
     if(defined(this.state.searchText)){
       return this.state.searchText;
@@ -120,6 +137,7 @@ class Search extends Component {
     return '';
   }
 
+  // If a suer click on a recomendation, we want to modify their search text to reflect that
   modifyUserSearchString(additionalString){
     let base = this.props.freeText;
     this.updateQuery({
@@ -128,7 +146,8 @@ class Search extends Component {
   }
 
   onDismissError(){
-    this.updateSearchQuery('');
+    // remove all current configurations
+    this.updateSearchText('');
   }
 
   render() {
@@ -146,7 +165,7 @@ class Search extends Component {
                            onClearSearch={this.onClearSearch}
                            onClickSearch={this.onClickSearch}/>
                 {this.getSearchBoxValue().length === 0 &&
-                  <WelcomeText onClick={this.updateSearchQuery}/>
+                  <WelcomeText onClick={this.updateSearchText}/>
                 }
               </div>
             </div>
@@ -170,7 +189,6 @@ class Search extends Component {
                             modifyUserSearchString={this.modifyUserSearchString}
                             component={'recommendations'}
                  />
-
                  {defined(this.props.location.query.q) &&
                   this.props.location.query.q.length > 0 &&
                     <NoMatching datasets={this.props.datasets}
