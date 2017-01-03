@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch'
-import config from '../config'
+import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 
 export function requestRegionMapping(){
@@ -18,7 +18,7 @@ export function receiveRegionMapping(json){
 export function fetchRegionMapping() {
   return (dispatch)=>{
     dispatch(requestRegionMapping())
-    return fetch(config().searchApiBaseUrl + 'region-types')
+    return fetch(config.searchApiBaseUrl + 'region-types')
     .then(response => response.json())
     .then(json =>
       dispatch(receiveRegionMapping(json))

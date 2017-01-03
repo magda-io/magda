@@ -25,7 +25,12 @@ function SearchBox(props){
       </form>
     );
 }
-SearchBox.propTypes = {onChange: React.PropTypes.func, value: React.PropTypes.string, onKeyPress: React.PropTypes.func};
+SearchBox.propTypes = {onChange: React.PropTypes.func,
+                       value: React.PropTypes.string,
+                       onKeyPress: React.PropTypes.func,
+                       onClearSearch: React.PropTypes.func,
+                       onClickSearch: React.PropTypes.func
+                     };
 
 
 

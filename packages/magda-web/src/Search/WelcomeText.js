@@ -1,13 +1,6 @@
 import './WelcomeText.css';
 import React, { Component } from 'react';
-
-const examples = [
-  'mobile black spot',
-  'taxation from 2014 to 2016',
-  'water in Melbourne',
-  'health as CSV',
-  'advisers by Australian securities'
-];
+import {config} from '../config';
 
 class WelcomeText extends Component {
   constructor(props) {
@@ -21,7 +14,7 @@ class WelcomeText extends Component {
   }
   render(){
     return (<div className='welcome-text'> <div className='intro'>Try searching for</div>
-                <ul className='list-unstyled'>{examples.map(e=>
+                <ul className='list-unstyled'>{config.exampleSearch.map(e=>
                       <li key={e}> <a href='#' onClick={this.onClick.bind(this, e)}>{e}</a></li>
                     )}
                 </ul>

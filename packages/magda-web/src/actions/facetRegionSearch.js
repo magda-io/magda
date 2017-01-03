@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch'
-import config from '../config'
+import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 
 export function requestRegions(query){
@@ -20,7 +20,7 @@ export function receiveRegions(query, json){
 export function fetchRegionSearchResults(query) {
   return (dispatch)=>{
     dispatch(requestRegions(query))
-    return fetch(config().searchApiBaseUrl + `regions/search?query=${query}`)
+    return fetch(config.searchApiBaseUrl + `regions/search?query=${query}`)
     .then(response => response.json())
     .then(json =>
       dispatch(receiveRegions(query, json))

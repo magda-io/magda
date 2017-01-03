@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import marked from 'marked';
-import config from '../config';
+import {config} from '../config';
 import './MarkdownViewer.css';
 
 const LIST = ['blockquote',
@@ -34,7 +34,7 @@ class MarkdownViewer extends Component {
       if(this.props.stripped === true){
         let text = marked(this.props.markdown, { renderer: renderer });
 
-        let length = config().descriptionLength;
+        let length = config.descriptionLength;
         let array = text.split(" ");
         let string = array.slice(0, length).join(" ");
         if(array.length > length){

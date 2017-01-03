@@ -3,7 +3,7 @@ import {RouterContext } from 'react-router';
 
 import './Search.css';
 import {connect} from 'react-redux';
-import config from '../config.js';
+import {config} from '../config.js';
 import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
 import Pagination from '../UI/Pagination';
@@ -203,7 +203,7 @@ class Search extends Component {
                   {this.props.hitCount > 20 &&
                       <Pagination
                         currentPage={+this.props.location.query.page || 1}
-                        maxPage={Math.ceil(this.props.hitCount/config().resultsPerPage)}
+                        maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
                         goToPage={this.goToPage}
                       />
                    }

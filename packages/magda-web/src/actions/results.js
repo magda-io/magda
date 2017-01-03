@@ -1,7 +1,6 @@
 import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
-import config from '../config'
-
+import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 
 export function requestResults(apiQuery){
@@ -35,9 +34,9 @@ export function transferFailed(errorMessage){
 
 export function fetchSearchResults(query) {
   return (dispatch)=>{
-    console.log(config().searchApiBaseUrl + `datasets/search?query=${query}`);
+    console.log(config.searchApiBaseUrl + `datasets/search?query=${query}`);
     dispatch(requestResults(query))
-    return fetch(config().searchApiBaseUrl + `datasets/search?query=${query}`)
+    return fetch(config.searchApiBaseUrl + `datasets/search?query=${query}`)
     .then(response => {
       if (response.status >= 400) {
         dispatch(transferFailed('Bad response from server'))
