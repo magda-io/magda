@@ -177,6 +177,7 @@ class Search extends Component {
                 {this.getSearchBoxValue().length > 0 &&
                  <SearchFacets updateQuery={this.updateQuery}
                                modifyUserSearchString={this.modifyUserSearchString}
+                               location={this.props.location}
                  />
                 }
             </div>
