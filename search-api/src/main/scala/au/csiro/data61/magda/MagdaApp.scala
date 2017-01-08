@@ -23,7 +23,7 @@ object MagdaApp extends App {
 
   logger.debug("Starting API")
   implicit val clientProvider = new DefaultClientProvider
-  val searchQueryer = new ElasticSearchQueryer()
+  val searchQueryer = ElasticSearchQueryer(config)
   val api = new Api(logger, config, searchQueryer)
 
   Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))

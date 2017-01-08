@@ -1,17 +1,15 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import java.time.{Instant, OffsetDateTime}
+import java.time.{ Instant, OffsetDateTime }
 
 import akka.actor.ActorSystem
-import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
-import akka.stream.scaladsl.{Sink, Source, SourceQueue}
-import au.csiro.data61.magda.AppConfig
+import akka.stream.{ Materializer, OverflowStrategy, QueueOfferResult }
+import akka.stream.scaladsl.{ Sink, Source, SourceQueue }
 import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.model.misc.{DataSet, Format, Publisher}
+import au.csiro.data61.magda.model.misc.{ DataSet, Format, Publisher }
 import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.elasticsearch.ClientProvider.getClient
-import au.csiro.data61.magda.util.ErrorHandling.{CausedBy, retry}
+import au.csiro.data61.magda.util.ErrorHandling.{ CausedBy, retry }
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.GetMappingsResult
@@ -26,16 +24,22 @@ import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
+import com.typesafe.config.Config
 
-class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends SearchIndexer {
+class ElasticSearchIndexer(
+    val clientProvider: ClientProvider,
+    val config: Config,
+    implicit val system: ActorSystem,
+    implicit val ec: ExecutionContext,
+    implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
   val SNAPSHOT_REPO_NAME = "snapshots"
 
   /**
-   * Returns an initialised {@link ElasticClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
+   * Returns an initialised {@link ElasticClientTrait} on completion. Using this to get the client rather than just keeping a reference to an initialised client
    *  ensures that all queries will only complete after the client is initialised.
    */
   private val setupFuture = setup()
@@ -69,8 +73,8 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .to(Sink.last)
       .run()
 
-  private lazy val restoreQueue: SourceQueue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
-    Source.queue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
+  private lazy val restoreQueue: SourceQueue[(ElasticClientTrait, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
+    Source.queue[(ElasticClientTrait, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
           logger.info("Restoring snapshot {} for {} version {}", snapshot.name, definition.name, definition.version)
@@ -103,10 +107,10 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       .to(Sink.last)
       .run()
 
-  /** Initialises an {@link ElasticClient}, handling initial connection to the ElasticSearch server and creation of the indices */
-  private def setup(): Future[ElasticClient] = {
-    getClient(system.scheduler, logger, ec).flatMap(client =>
-      retry(() => getIndexDefinitions(client), 10 seconds, 10, logger.warning("Failed to get indexes, {} retries left", _))
+  /** Initialises an {@link ElasticClientTrait}, handling initial connection to the ElasticSearch server and creation of the indices */
+  private def setup(): Future[ElasticClientTrait] = {
+    clientProvider.getClient(system.scheduler, logger, ec).flatMap(client =>
+      retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.warning("Failed to get indexes, {} retries left", _))
         .flatMap { indexPairs =>
           updateIndices(client, indexPairs)
             .map { _ =>
@@ -134,7 +138,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   /**
    * Returns a future that gets a seq of each index paired with its current ES definition.
    */
-  private def getIndexDefinitions(client: ElasticClient) = {
+  private def getIndexDefinitions(client: ElasticClientTrait) = {
     def indexNotFound(indexDef: IndexDefinition, inner: IndexNotFoundException) = {
       logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
       None
@@ -146,13 +150,14 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
           .map(Some(_))
           .recover {
             // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
+            case inner: IndexNotFoundException                     => indexNotFound(indexDef, inner)
             case CausedBy(inner: IndexNotFoundException)           => indexNotFound(indexDef, inner)
             case CausedBy(CausedBy(inner: IndexNotFoundException)) => indexNotFound(indexDef, inner)
           }))
       .map(esDefinitions => esDefinitions.zip(IndexDefinition.indices))
   }
 
-  private def updateIndices(client: ElasticClient, definitionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
+  private def updateIndices(client: ElasticClientTrait, definitionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
     Future.sequence(definitionPairs.map {
       case (mapping, definition) =>
         // If no index, create it
@@ -166,8 +171,8 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
         }
     })
 
-  private def buildIndex(client: ElasticClient, definition: IndexDefinition): Future[Any] = {
-    val snapshotFuture = if (AppConfig.conf.getBoolean("indexer.readSnapshots"))
+  private def buildIndex(client: ElasticClientTrait, definition: IndexDefinition): Future[Any] = {
+    val snapshotFuture = if (config.getBoolean("indexer.readSnapshots"))
       restoreLatestSnapshot(client, definition)
     else {
       logger.info("Snapshot restoration disabled, rebuilding index manually")
@@ -188,9 +193,9 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
             logger.info("Index {} version {} created", definition.name, definition.version)
 
             definition.create match {
-              case Some(createFunc) => createFunc(client, materializer, system)
+              case Some(createFunc) => createFunc(client, config, materializer, system)
                 .flatMap(_ =>
-                  if (AppConfig.conf.getBoolean("indexer.makeSnapshots"))
+                  if (config.getBoolean("indexer.makeSnapshots"))
                     createSnapshot(client, definition)
                   else {
                     logger.info("Snapshotting disabled, skipping")
@@ -203,7 +208,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     }
   }
 
-  def deleteIndex(client: ElasticClient, definition: IndexDefinition): Future[Unit] = client.execute {
+  def deleteIndex(client: ElasticClientTrait, definition: IndexDefinition): Future[Unit] = client.execute {
     delete index (definition.indexName)
   } recover {
     case outer: RemoteTransportException => outer.getCause match {
@@ -230,7 +235,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
   case object RestoreSuccess extends RestoreResult
   case object RestoreFailure extends RestoreResult
 
-  private def restoreLatestSnapshot(client: ElasticClient, index: IndexDefinition): Future[RestoreResult] = {
+  private def restoreLatestSnapshot(client: ElasticClientTrait, index: IndexDefinition): Future[RestoreResult] = {
     logger.info("Attempting to restore snapshot for {} version {}", index.name, index.version)
 
     getLatestSnapshot(client, index) flatMap {
@@ -245,7 +250,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
     }
   }
 
-  private def getLatestSnapshot(client: ElasticClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
+  private def getLatestSnapshot(client: ElasticClientTrait, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
     def getSnapshot(): Future[GetSnapshotsResponse] = client.execute {
       get snapshot Seq() from SNAPSHOT_REPO_NAME
     }
@@ -276,8 +281,8 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
       }
   }
 
-  private def createSnapshotRepo(client: ElasticClient, definition: IndexDefinition): Future[PutRepositoryResponse] = {
-    val repoConfig = AppConfig.conf.getConfig("elasticSearch.snapshotRepo")
+  private def createSnapshotRepo(client: ElasticClientTrait, definition: IndexDefinition): Future[PutRepositoryResponse] = {
+    val repoConfig = config.getConfig("elasticSearch.snapshotRepo")
     val repoType = repoConfig.getString("type")
     val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
 
@@ -316,7 +321,7 @@ class ElasticSearchIndexer(implicit val system: ActorSystem, implicit val ec: Ex
 
   def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.datasets)).map(_ => Unit)
 
-  private def createSnapshot(client: ElasticClient, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
+  private def createSnapshot(client: ElasticClientTrait, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
     logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
 
     val future = client.execute {

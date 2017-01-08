@@ -12,6 +12,10 @@ import scala.util.matching.Regex
 import java.time.OffsetDateTime
 
 import au.csiro.data61.magda.model.misc.Region
+import au.csiro.data61.magda.spatial.RegionSources
+import au.csiro.data61.magda.api.QueryLexer
+import au.csiro.data61.magda.api.QueryParser
+
 
 private object Tokens {
   sealed trait QueryToken
@@ -23,7 +27,7 @@ private object Tokens {
 
 case class QueryCompilationError(error: String)
 
-private object QueryLexer extends RegexParsers {
+private class QueryLexer(regionSources: RegionSources) extends RegexParsers {
   override def skipWhitespace = true
   override val whiteSpace = "[\t\r\f\n]+".r
 
@@ -57,7 +61,7 @@ private object QueryLexer extends RegexParsers {
     s"(^|\\s)(?i)($filterWordsJoined)(\\s|$$)".r ^^ { str => Tokens.Filter(str.trim) }
   }
   def region: Parser[Tokens.RegionFilter] = {
-    val regionTypesJoined = RegionSource.sources.map(_.name).reduce { (left, right) => left + "|" + right }
+    val regionTypesJoined = regionSources.sources.map(_.name).reduce { (left, right) => left + "|" + right }
     regexMatch(s"(^|\\s)(?i)in ($regionTypesJoined):([A-Za-z0-9]+)(\\s|$$)".r) ^^ { regexMatch => Tokens.RegionFilter(regexMatch.group(2), regexMatch.group(3)) }
   }
 
@@ -96,7 +100,7 @@ object AST {
   case class FilterValue(value: String) extends QueryAST
 }
 
-private object QueryParser extends Parsers {
+private class QueryParser(regionSources: RegionSources) extends Parsers {
   override type Elem = Tokens.QueryToken
 
   class QueryTokenReader(tokens: Seq[Tokens.QueryToken]) extends Reader[Tokens.QueryToken] {
@@ -145,7 +149,7 @@ private object QueryParser extends Parsers {
 
   private def region: Parser[AST.ASTRegion] = {
     accept("region", {
-      case Tokens.RegionFilter(regionType, regionId) => RegionSource.forName(regionType) match {
+      case Tokens.RegionFilter(regionType, regionId) => regionSources.forName(regionType) match {
         case Some(regionSource) => AST.ASTRegion(Region(regionType, regionId, "[Unknown]", None))
         case None               => throw new RuntimeException("Could not find region for type " + regionType)
       }
@@ -176,11 +180,14 @@ private object QueryParser extends Parsers {
   }
 }
 
-object QueryCompiler {
+class QueryCompiler(regionSources: RegionSources) {
+  private val lexer = new QueryLexer(regionSources)
+  private val parser = new QueryParser(regionSources)
+  
   def apply(code: String): Query = {
     val result = for {
-      tokens <- QueryLexer(code).right
-      ast <- QueryParser(tokens).right
+      tokens <- lexer.apply(code).right
+      ast <- parser.apply(tokens).right
     } yield ast
 
     result match {

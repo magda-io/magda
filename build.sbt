@@ -7,14 +7,15 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.8"
 )
 
-//lazy val root = (project in file("."))
-//  .aggregate(common, searchApi, indexer)
-//  .settings(commonSettings: _*)
+lazy val root = (project in file("."))
+  .aggregate(common, searchApi, indexer)
+  .settings(commonSettings: _*)
 lazy val common = (project in file("common"))
   .settings(commonSettings: _*)
 lazy val searchApi = (project in file("search-api"))
   .settings(commonSettings: _*)
   .dependsOn(common)
+  .dependsOn(indexer % "test")
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 lazy val indexer = (project in file("indexer"))
   .settings(commonSettings: _*)

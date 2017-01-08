@@ -28,7 +28,7 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
   def crawl() = {
     externalInterfaces
       .map { interface =>
-        val needsIndexingFuture = if (AppConfig.conf.getBoolean("indexer.alwaysReindex")) {
+        val needsIndexingFuture = if (config.getBoolean("indexer.alwaysReindex")) {
           log.info("Indexing {} because indexer.alwaysReindex is true", interface.name)
           Future(true)
         } else {
@@ -71,7 +71,7 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
       .map { size =>
         if (size > 0) {
           log.info("Indexed {} datasets", size)
-          if (config.getBoolean("indexer.makeSnapshots")) {
+          if (config.getBoolean("crawler.makeSnapshots")) {
             log.info("Snapshotting...")
             indexer.snapshot()
           }
@@ -91,7 +91,7 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
     Source.fromFuture(interface.getTotalDataSetCount())
       .mapConcat { count =>
         log.info("{} has {} datasets", interfaceDef.baseUrl, count)
-        val maxFromConfig = if (AppConfig.conf.hasPath("crawler.maxResults")) AppConfig.conf.getLong("crawler.maxResults") else Long.MaxValue
+        val maxFromConfig = if (config.hasPath("maxResults")) config.getLong("maxResults") else Long.MaxValue
         createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
       }
       .throttle(1, 1 second, 1, ThrottleMode.Shaping)

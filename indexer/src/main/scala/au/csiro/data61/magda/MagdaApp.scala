@@ -1,16 +1,24 @@
 
 package au.csiro.data61.magda
 
-import akka.actor.{Actor, ActorLogging, ActorSystem, DeadLetter, Props}
+import scala.collection.JavaConversions._
+import scala.util.Failure
+import scala.util.Success
+
+import com.typesafe.config.ConfigObject
+import com.typesafe.config.ConfigValue
+
+import akka.actor.Actor
+import akka.actor.ActorLogging
+import akka.actor.ActorSystem
+import akka.actor.DeadLetter
+import akka.actor.Props
 import akka.event.Logging
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.crawler.Crawler
 import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.search.SearchIndexer
-import com.typesafe.config.{ConfigObject, ConfigValue}
-
-import scala.collection.JavaConversions._
-import scala.util.{Failure, Success}
+import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
@@ -34,8 +42,8 @@ object MagdaApp extends App {
   //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
 
   logger.debug("Starting Crawler")
-  val indexer = SearchIndexer(system, system.dispatcher, materializer)
-  val crawler = new Crawler(system, config, interfaceConfigs, materializer, indexer)
+  val indexer = SearchIndexer(new DefaultClientProvider, config)
+  val crawler = new Crawler(system, config.getConfig("indexer"), interfaceConfigs, materializer, indexer)
 
   crawler.crawl() onComplete {
     case Success(_) =>

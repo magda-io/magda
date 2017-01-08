@@ -36,8 +36,9 @@ import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl
 import spray.json.JsString
 import akka.stream.IOResult
+import au.csiro.data61.magda.spatial.RegionSources
 
-class RegionLoader(implicit val system: ActorSystem, implicit val materializer: Materializer) {
+class RegionLoader(regionSources: List[RegionSource], implicit val system: ActorSystem, implicit val materializer: Materializer) {
   implicit val ec = system.dispatcher
   val pool = Http().superPool[Int]()
 
@@ -74,7 +75,7 @@ class RegionLoader(implicit val system: ActorSystem, implicit val materializer: 
   }
 
   def setupRegions(): Source[(RegionSource, JsObject), _] = {
-    Source(RegionSource.sources.toList)
+    Source(regionSources)
       .mapAsync(4)(regionSource => loadABSRegions(regionSource).map((_, regionSource)))
       .flatMapConcat {
         case (file, regionSource) =>

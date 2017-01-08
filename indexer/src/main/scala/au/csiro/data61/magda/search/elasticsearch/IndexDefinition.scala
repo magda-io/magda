@@ -4,23 +4,25 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.model.misc.{Format, Publisher}
+import au.csiro.data61.magda.model.misc.{ Format, Publisher }
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter}
-import com.sksamuel.elastic4s.mappings.FieldType.{GeoShapeType, StringType}
-import com.sksamuel.elastic4s.{CreateIndexDefinition, ElasticClient, ElasticDsl}
+import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter }
+import com.sksamuel.elastic4s.mappings.FieldType.{ GeoShapeType, StringType }
+import com.sksamuel.elastic4s.{ CreateIndexDefinition, ElasticClient, ElasticDsl }
 import spray.json._
 
 import scala.concurrent.Future
+import au.csiro.data61.magda.spatial.RegionSource
+import com.typesafe.config.Config
+import au.csiro.data61.magda.spatial.RegionSources
 
 case class IndexDefinition(
-  name: String,
-  version: Int,
-  definition: () => CreateIndexDefinition,
-  create: Option[(ElasticClient, Materializer, ActorSystem) => Future[Any]] = None
-) {
+    name: String,
+    version: Int,
+    definition: () => CreateIndexDefinition,
+    create: Option[(ElasticClientTrait, Config, Materializer, ActorSystem) => Future[Any]] = None) {
   def indexName: String = this.name + this.version
 }
 
@@ -29,43 +31,43 @@ object IndexDefinition extends DefaultJsonProtocol {
     name = "datasets",
     version = 14,
     definition = () =>
-    create.index(datasets.indexName)
-      .indexSetting("recovery.initial_shards", 1)
-      .indexSetting("requests.cache.enable", true)
-      .mappings(
-        mapping("datasets").fields(
-          field("temporal").inner(
-            field("start").inner(
-              field("text").typed(StringType)
+      create.index(datasets.indexName)
+        .indexSetting("recovery.initial_shards", 1)
+        .indexSetting("requests.cache.enable", true)
+        .mappings(
+          mapping("datasets").fields(
+            field("temporal").inner(
+              field("start").inner(
+                field("text").typed(StringType)
+              ),
+              field("end").inner(
+                field("text").typed(StringType)
+              )
             ),
-            field("end").inner(
-              field("text").typed(StringType)
-            )
-          ),
-          field("publisher").inner(
-            field("name").typed(StringType).analyzer("english").fields(
-              field("untouched").typed(StringType).index("not_analyzed")
-            )
-          ),
-          field("distributions").nested(
+            field("publisher").inner(
+              field("name").typed(StringType).analyzer("english").fields(
+                field("untouched").typed(StringType).index("not_analyzed")
+              )
+            ),
+            field("distributions").nested(
+              field("title").typed(StringType).analyzer("english"),
+              field("description").typed(StringType).analyzer("english"),
+              field("format").typed(StringType).fields(
+                field("untokenized").typed(StringType).analyzer("untokenized")
+              )
+            ),
+            field("spatial").inner(
+              field("geoJson").typed(GeoShapeType)
+            ),
             field("title").typed(StringType).analyzer("english"),
             field("description").typed(StringType).analyzer("english"),
-            field("format").typed(StringType).fields(
-              field("untokenized").typed(StringType).analyzer("untokenized")
-            )
+            field("keyword").typed(StringType).analyzer("english"),
+            field("theme").typed(StringType).analyzer("english"),
+            field("years").typed(StringType).analyzer("untokenized")
           ),
-          field("spatial").inner(
-            field("geoJson").typed(GeoShapeType)
-          ),
-          field("title").typed(StringType).analyzer("english"),
-          field("description").typed(StringType).analyzer("english"),
-          field("keyword").typed(StringType).analyzer("english"),
-          field("theme").typed(StringType).analyzer("english"),
-          field("years").typed(StringType).analyzer("untokenized")
-        ),
-        mapping(Format.id),
-        mapping(Publisher.id)
-      ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+          mapping(Format.id),
+          mapping(Publisher.id)
+        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
   )
 
   val regions: IndexDefinition =
@@ -73,25 +75,28 @@ object IndexDefinition extends DefaultJsonProtocol {
       name = "regions",
       version = 13,
       definition = () =>
-      create.index(regions.indexName)
-        .indexSetting("recovery.initial_shards", 1)
-        .mappings(
-          mapping("regions").fields(
-            field("type").typed(StringType),
-            field("id").typed(StringType),
-            field("name").typed(StringType),
-            field("rectangle").typed(GeoShapeType),
-            field("geometry").typed(GeoShapeType)
-          )
-        ),
-      create = Some((client, materializer, actorSystem) => setupRegions(client)(materializer, actorSystem))
+        create.index(regions.indexName)
+          .indexSetting("recovery.initial_shards", 1)
+          .mappings(
+            mapping("regions").fields(
+              field("type").typed(StringType),
+              field("id").typed(StringType),
+              field("name").typed(StringType),
+              field("rectangle").typed(GeoShapeType),
+              field("geometry").typed(GeoShapeType)
+            )
+          ),
+      create = Some((client, config, materializer, actorSystem) => setupRegions(client, config)(materializer, actorSystem))
     )
 
   val indices = Seq(datasets, regions)
 
-  def setupRegions(client: ElasticClient)(implicit materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: ElasticClientTrait, config: Config)(implicit materializer: Materializer, system: ActorSystem): Future[Any] = {
     val logger = system.log
-    val loader = new RegionLoader()
+    val regionSourceConfig = config.getConfig("regionSources")
+    val regionSources = new RegionSources(regionSourceConfig)
+    
+    val loader = new RegionLoader(regionSources.sources.toList, system, materializer)
     implicit val ec = system.dispatcher
 
     loader.setupRegions

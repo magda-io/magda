@@ -15,6 +15,8 @@ libraryDependencies ++= {
        "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
        "org.scalaz" %% "scalaz-core" % "7.2.8",
 
-       "org.scalatest"     %% "scalatest" % scalaTestV % "test"
+       "org.scalatest" %% "scalatest" % scalaTestV % "test",
+       "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test",
+       "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "2.3.0" % "test"
      )
 }

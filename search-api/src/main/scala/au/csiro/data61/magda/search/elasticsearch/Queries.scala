@@ -15,9 +15,9 @@ object Queries {
     .query(matchQuery("distributions.format", format))
   def exactFormatQuery(format: String) = nestedQuery("distributions")
     .query(matchQuery("distributions.format.untokenized", format))
-  def regionIdQuery(region: Region) = indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), Indexes.REGIONS_INDEX_NAME)
+  def regionIdQuery(region: Region) = indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), Indices.REGIONS_INDEX_NAME)
     .relation(ShapeRelation.INTERSECTS)
-    .shapeIndex(Indexes.REGIONS_INDEX_NAME)
+    .shapeIndex(Indices.REGIONS_INDEX_NAME)
     .shapePath("geometry")
   def dateFromQuery(dateFrom: OffsetDateTime) = filter(should(
     rangeQuery("temporal.end.date").gte(dateFrom.toString),

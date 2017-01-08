@@ -3,7 +3,7 @@ package au.csiro.data61.magda.spatial
 import java.net.URL
 
 import au.csiro.data61.magda.AppConfig
-import com.typesafe.config.{Config, ConfigObject}
+import com.typesafe.config.{ Config, ConfigObject }
 
 import scala.collection.JavaConversions._
 
@@ -18,11 +18,13 @@ case class RegionSource(
   order: Int)
 
 object RegionSource {
-  val sources = loadFromConfig(AppConfig.conf.getConfig("regionSources"))
+  def generateRegionId(regionType: String, id: String) = s"${regionType}/$id".toLowerCase
+}
+
+class RegionSources(config: Config) {
+  val sources = loadFromConfig(config)
 
   private lazy val lookup = sources.groupBy(_.name.toLowerCase).mapValues(_.head)
-
-  def generateRegionId(regionType: String, id: String) = s"${regionType}/$id".toLowerCase
 
   def forName(name: String): Option[RegionSource] = lookup.get(name.toLowerCase)
 
@@ -42,3 +44,4 @@ object RegionSource {
     }.toSeq.filterNot(_.disabled)
   }
 }
+
