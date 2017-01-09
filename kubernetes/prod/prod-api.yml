@@ -81,8 +81,6 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 80
-      nodeSelector:
-        cloud.google.com/gke-nodepool: ephemeral
 ---
 apiVersion: v1
 kind: Service
