@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit
 import akka.actor.ActorSystem
 import akka.event.{ Logging, LoggingAdapter }
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.http.scaladsl.model.StatusCodes._
@@ -52,10 +51,8 @@ class Api(val logger: LoggingAdapter, val searchQueryer: SearchQueryer)(implicit
     case e: Exception ⇒ {
       logger.error(e, "Exception encountered")
 
-      encodeResponseWith(Gzip) {
-        cors(corsSettings) {
-          complete(HttpResponse(InternalServerError, entity = "Failure"))
-        }
+      cors(corsSettings) {
+        complete(HttpResponse(InternalServerError, entity = "Failure"))
       }
     }
   }

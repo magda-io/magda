@@ -38,9 +38,12 @@ import java.io.File
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.api.model.Protocols
 import akka.http.scaladsl.model.HttpHeader
+import org.scalatest.prop.PropertyChecks
+import org.scalacheck.Gen
 
-class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MockFactory with ProxyMockFactory with ElasticSugar with BeforeAndAfter with Protocols {
+class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with Protocols with PropertyChecks {
   override def testConfigSource = "akka.loglevel = DEBUG"
+  val RESULT_COUNT = 100
   val logger = Logging(system, getClass)
 
   override def testConfig = ConfigFactory.empty()
@@ -51,7 +54,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MockFac
     }
 
     val properties = new Properties()
-    properties.setProperty("regionLoading.cachePath", new File("./../magda-metadata-indexer/regions").getAbsolutePath())
+    properties.setProperty("regionLoading.cachePath", new File("./src/test/resources").getAbsolutePath())
     val generatedConf = ConfigFactory.parseProperties(properties)
 
     implicit val config = generatedConf.withFallback(AppConfig.conf(Some("test")))
@@ -68,21 +71,54 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MockFac
     val crawler = new Crawler(interfaceConfigs, indexer)
 
     crawler.crawl().await(100 seconds)
+
+    Thread.sleep(500)
   }
 
-  def fixture = new Fixture
+  val fixture = new Fixture
 
-  describe("standard query") {
-
-    it("should respond to query") {
-
+  describe("query") {
+    it("* should return all results") {
       Get(s"/datasets/search?query=*") ~> fixture.routes ~> check {
         status shouldBe OK
         contentType shouldBe `application/json`
+        responseAs[SearchResult].hitCount shouldEqual RESULT_COUNT
+      }
+    }
 
-        val blah = responseAs[SearchResult]
+    it("querying a datasets title should return that dataset first") {
+      Get(s"/datasets/search?query=*") ~> fixture.routes ~> check {
+        val dataSets = for (dataset <- Gen.oneOf(responseAs[SearchResult].dataSets)) yield dataset
 
-        blah.hitCount.toInt should be > 0
+        forAll(dataSets) { dataSet =>
+          Get(s"/datasets/search?query=${java.net.URLEncoder.encode(dataSet.title.get, "UTF-8")}") ~> fixture.routes ~> check {
+            val result = responseAs[SearchResult]
+            result.dataSets.head.identifier shouldEqual (dataSet.identifier)
+          }
+        }
+      }
+    }
+  }
+
+  describe("pagination") {
+    Get(s"/datasets/search?query=*&start=0&limit=$RESULT_COUNT") ~> fixture.routes ~> check {
+      val originalResult = responseAs[SearchResult]
+
+      it("should match the result of getting all datasets and using .drop(start).take(limit) to select a subset") {
+        val starts = for (n <- Gen.choose(0, RESULT_COUNT)) yield n
+        val limits = for (n <- Gen.choose(0, RESULT_COUNT)) yield n
+
+        forAll(starts, limits) { (start, limit) =>
+          whenever(start >= 0 && start <= RESULT_COUNT && limit >= 0 && limit <= RESULT_COUNT) {
+            Get(s"/datasets/search?query=*&start=${start}&limit=${limit}") ~> fixture.routes ~> check {
+              val result = responseAs[SearchResult]
+
+              val expectedResultIdentifiers = originalResult.dataSets.drop(start).take(limit).map(_.identifier)
+
+              expectedResultIdentifiers shouldEqual result.dataSets.map(_.identifier)
+            }
+          }
+        }
       }
     }
   }
