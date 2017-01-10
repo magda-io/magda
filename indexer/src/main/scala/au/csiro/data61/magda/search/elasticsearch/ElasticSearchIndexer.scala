@@ -9,7 +9,7 @@ import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.model.misc.{ DataSet, Format, Publisher }
 import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.util.ErrorHandling.{ CausedBy, retry }
+import au.csiro.data61.magda.util.ErrorHandling.{ RootCause, retry }
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.GetMappingsResult
@@ -150,9 +150,7 @@ class ElasticSearchIndexer(
           .map(Some(_))
           .recover {
             // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
-            case inner: IndexNotFoundException                     => indexNotFound(indexDef, inner)
-            case CausedBy(inner: IndexNotFoundException)           => indexNotFound(indexDef, inner)
-            case CausedBy(CausedBy(inner: IndexNotFoundException)) => indexNotFound(indexDef, inner)
+            case RootCause(inner: IndexNotFoundException) => indexNotFound(indexDef, inner)
           }))
       .map(esDefinitions => esDefinitions.zip(IndexDefinition.indices))
   }
@@ -211,19 +209,7 @@ class ElasticSearchIndexer(
   def deleteIndex(client: ElasticClientTrait, definition: IndexDefinition): Future[Unit] = client.execute {
     delete index (definition.indexName)
   } recover {
-    case outer: RemoteTransportException => outer.getCause match {
-      case (inner: IndexNotFoundException) => {
-        // Meh, we were trying to delete it anyway.
-      }
-      case inner: RemoteTransportException => inner.getCause match {
-        case (inner: IndexNotFoundException) => {
-          // Meh, we were trying to delete it anyway.
-        }
-      }
-      case e =>
-        logger.debug("Inner exception class {}", e.getClass.toString)
-        throw e
-    }
+    case RootCause(inner: IndexNotFoundException) => // Meh, we were trying to delete it anyway.
     case e =>
       logger.debug("Exception class {}", e.getClass.toString)
       throw e
@@ -258,16 +244,8 @@ class ElasticSearchIndexer(
     getSnapshot()
       .map(x => Future.successful(x))
       .recover {
-        case (e: RemoteTransportException) => e.getCause match {
-          case e: RemoteTransportException => e.getCause match {
-            case (e: RepositoryMissingException) =>
-              createSnapshotRepo(client, index).flatMap(_ => getSnapshot)
-            case e => throw new RuntimeException(e)
-          }
-          case (e: RepositoryMissingException) =>
-            createSnapshotRepo(client, index).flatMap(_ => getSnapshot)
-          case e => throw new RuntimeException(e)
-        }
+        case RootCause(e: RepositoryMissingException) =>
+          createSnapshotRepo(client, index).flatMap(_ => getSnapshot)
         case e: Throwable => throw new RuntimeException(e)
       }
       .flatMap(identity)

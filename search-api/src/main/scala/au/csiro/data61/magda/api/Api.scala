@@ -25,7 +25,7 @@ import scala.concurrent.duration.FiniteDuration
 import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.api.QueryCompiler
 
-class Api(val logger: LoggingAdapter, val config: Config, val searchQueryer: SearchQueryer) extends misc.Protocols with CorsDirectives with apimodel.Protocols {
+class Api(val logger: LoggingAdapter, val searchQueryer: SearchQueryer)(implicit val config: Config) extends misc.Protocols with CorsDirectives with apimodel.Protocols {
   // Disallow credentials so that we return "Access-Control-Allow-Origin: *" instead of
   // "Access-Control-Allow-Origin: foo.com".  The latter is fine until Chrome decides to
   // cache the response and re-use it for other origins, causing a CORS failure.
@@ -63,43 +63,41 @@ class Api(val logger: LoggingAdapter, val config: Config, val searchQueryer: Sea
   val queryCompiler = new QueryCompiler(new RegionSources(config.getConfig("regionSources")))
 
   val routes =
-    encodeResponseWith(Gzip) {
-      cors(corsSettings) {
-        handleExceptions(myExceptionHandler) {
-          pathPrefix("facets") {
-            path(Segment / "options" / "search") { facetId ⇒
-              (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
-                FacetType.fromId(facetId) match {
-                  case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, queryCompiler.apply(generalQuery), start, limit))
-                  case None            ⇒ complete(NotFound)
+    cors(corsSettings) {
+      handleExceptions(myExceptionHandler) {
+        pathPrefix("facets") {
+          path(Segment / "options" / "search") { facetId ⇒
+            (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
+              FacetType.fromId(facetId) match {
+                case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, queryCompiler.apply(generalQuery), start, limit))
+                case None            ⇒ complete(NotFound)
+              }
+            }
+          }
+        } ~
+          pathPrefix("datasets") {
+            pathPrefix("search") {
+              (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+                onSuccess(searchQueryer.search(queryCompiler.apply(query), start, limit)) { result =>
+                  val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
+
+                  pathPrefix("datasets") {
+                    complete(status, result.copy(facets = None))
+                  } ~ pathPrefix("facets") {
+                    complete(status, result.facets)
+                  } ~ pathEnd {
+                    complete(status, result)
+                  }
                 }
               }
             }
           } ~
-            pathPrefix("datasets") {
-              pathPrefix("search") {
-                (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-                  onSuccess(searchQueryer.search(queryCompiler.apply(query), start, limit)) { result =>
-                    val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
-
-                    pathPrefix("datasets") {
-                      complete(status, result.copy(facets = None))
-                    } ~ pathPrefix("facets") {
-                      complete(status, result.facets)
-                    } ~ pathEnd {
-                      complete(status, result)
-                    }
-                  }
-                }
-              }
-            } ~
-            path("region-types") { get { getFromResource("regionMapping.json") } } ~
-            path("regions" / "search") {
-              (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-                complete(searchQueryer.searchRegions(query, start, limit))
-              }
+          path("region-types") { get { getFromResource("regionMapping.json") } } ~
+          path("regions" / "search") {
+            (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+              complete(searchQueryer.searchRegions(query, start, limit))
             }
-        }
+          }
       }
     }
 }

@@ -26,6 +26,7 @@ import au.csiro.data61.magda.external.ExternalInterface
 import au.csiro.data61.magda.external.HttpFetcher
 import au.csiro.data61.magda.external.InterfaceConfig
 import scala.BigDecimal
+import com.typesafe.config.Config
 
 trait CSWImplementation {
   def schema: String
@@ -33,10 +34,10 @@ trait CSWImplementation {
 }
 
 object CSWExternalInterface {
-  def apply(interfaceConfig: InterfaceConfig)(implicit system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
+  def apply(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
     val implementation = interfaceConfig.raw.getOptionalString("schema") match {
-      case Some("http://www.isotc211.org/2005/gmd") => new GMDCSWImplementation(interfaceConfig, system)
-      case _                                        => new DefaultCSWImplementation(interfaceConfig, system)
+      case Some("http://www.isotc211.org/2005/gmd") => new GMDCSWImplementation(interfaceConfig, config, system)
+      case _                                        => new DefaultCSWImplementation(interfaceConfig, config, system)
     }
 
     new CSWExternalInterface(interfaceConfig, implementation, system, executor, materializer)

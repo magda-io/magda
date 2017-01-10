@@ -37,12 +37,19 @@ import au.csiro.data61.magda.external.HttpFetcher
 import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.external.ExternalInterface
 import au.csiro.data61.magda.util.Collections.mapCatching
+import java.time.ZoneOffset
 
-class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
+class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends CKANProtocols with ExternalInterface with CKANConverters {
   implicit val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
+  implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
+
   val exclusionQueryString = {
-    val excludedHarvesterTitles = interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet
+    val excludedHarvesterTitles = interfaceConfig.raw.hasPath("ignoreHarvestSources") match {
+      case true  => interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet
+      case false => Set()
+    }
+
     val solrQueries = excludedHarvesterTitles.map(title => s"-harvest_source_title:${URLEncoder.encode('"' + title + '"', "UTF-8")}")
 
     if (solrQueries.isEmpty) None else Some(solrQueries.reduce(_ + "+" + _))

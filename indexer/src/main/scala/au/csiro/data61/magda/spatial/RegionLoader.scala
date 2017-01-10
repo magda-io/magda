@@ -37,13 +37,14 @@ import com.sksamuel.elastic4s.ElasticDsl
 import spray.json.JsString
 import akka.stream.IOResult
 import au.csiro.data61.magda.spatial.RegionSources
+import com.typesafe.config.Config
 
-class RegionLoader(regionSources: List[RegionSource], implicit val system: ActorSystem, implicit val materializer: Materializer) {
+class RegionLoader(regionSources: List[RegionSource])(implicit val config: Config, implicit val system: ActorSystem, implicit val materializer: Materializer) {
   implicit val ec = system.dispatcher
   val pool = Http().superPool[Int]()
 
   def loadABSRegions(regionSource: RegionSource): Future[File] = {
-    val file = new File(s"/usr/regions/${regionSource.name}.json")
+    val file = new File(s"${config.getString("regionLoading.cachePath")}/${regionSource.name}.json")
 
     if (file.exists()) {
       system.log.info("Found shapes for region {} at {}, loading from there", regionSource.name, file.getPath)

@@ -22,7 +22,7 @@ class DefaultClientProvider extends ClientProvider {
       case Some(future) => future
       case None =>
         val future = retry(() => Future {
-          val uri = ElasticsearchClientUri(AppConfig.conf.getString("elasticSearch.serverUrl"))
+          val uri = ElasticsearchClientUri(AppConfig.conf().getString("elasticSearch.serverUrl"))
           val settings = Settings.settingsBuilder().put("cluster.name", "myesdb").build()
           ElasticClient.transport(settings, uri)
         }, 10 seconds, 10, onRetry(logger)(_))

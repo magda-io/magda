@@ -3,10 +3,10 @@ package au.csiro.data61.magda.crawler
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.stream.{Materializer, ThrottleMode}
-import akka.stream.scaladsl.{Merge, Sink, Source}
+import akka.stream.{ Materializer, ThrottleMode }
+import akka.stream.scaladsl.{ Merge, Sink, Source }
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.external.{ExternalInterface, InterfaceConfig}
+import au.csiro.data61.magda.external.{ ExternalInterface, InterfaceConfig }
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.SearchIndexer
 import com.typesafe.config.Config
@@ -14,15 +14,14 @@ import com.typesafe.config.Config
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[InterfaceConfig], materializer: Materializer, indexer: SearchIndexer) {
+class Crawler(val externalInterfaces: Seq[InterfaceConfig], indexer: SearchIndexer)(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
-  implicit val m = materializer
 
   val interfaces = externalInterfaces
     .groupBy(_.baseUrl)
     .mapValues(interfaceDef =>
-      ExternalInterface(interfaceDef.head)(system, system.dispatcher, materializer)
+      ExternalInterface(interfaceDef.head)
     )
 
   def crawl() = {
@@ -71,7 +70,7 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
       .map { size =>
         if (size > 0) {
           log.info("Indexed {} datasets", size)
-          if (config.getBoolean("crawler.makeSnapshots")) {
+          if (config.getBoolean("indexer.makeSnapshots")) {
             log.info("Snapshotting...")
             indexer.snapshot()
           }
@@ -91,7 +90,7 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
     Source.fromFuture(interface.getTotalDataSetCount())
       .mapConcat { count =>
         log.info("{} has {} datasets", interfaceDef.baseUrl, count)
-        val maxFromConfig = if (config.hasPath("maxResults")) config.getLong("maxResults") else Long.MaxValue
+        val maxFromConfig = if (config.hasPath("indexer.maxResults")) config.getLong("indexer.maxResults") else Long.MaxValue
         createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
       }
       .throttle(1, 1 second, 1, ThrottleMode.Shaping)
@@ -114,4 +113,9 @@ class Crawler(system: ActorSystem, config: Config, val externalInterfaces: Seq[I
       (start, nextPageSize) :: createBatches(interfaceDef, start + nextPageSize, end)
     }
   }
+}
+
+object Crawler {
+  def apply(externalInterfaces: Seq[InterfaceConfig], indexer: SearchIndexer)(implicit system: ActorSystem, config: Config, materializer: Materializer) =
+    new Crawler(externalInterfaces, indexer)
 }

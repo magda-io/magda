@@ -11,6 +11,7 @@ import au.csiro.data61.magda.model.misc._
 import java.net.URL
 import au.csiro.data61.magda.external.csw.CSWExternalInterface
 import au.csiro.data61.magda.external.ckan.CKANExternalInterface
+import com.typesafe.config.Config
 
 object ExternalInterface {
   object ExternalInterfaceType extends Enumeration {
@@ -19,8 +20,8 @@ object ExternalInterface {
   }
   import ExternalInterfaceType._
 
-  def apply(interfaceConfig: InterfaceConfig)(implicit system: ActorSystem, executor: ExecutionContext, materializer: Materializer): ExternalInterface = interfaceConfig.interfaceType match {
-    case CKAN => new CKANExternalInterface(interfaceConfig, system, executor, materializer)
+  def apply(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): ExternalInterface = interfaceConfig.interfaceType match {
+    case CKAN => new CKANExternalInterface(interfaceConfig, config, system, executor, materializer)
     case CSW  => CSWExternalInterface(interfaceConfig)
   }
 }

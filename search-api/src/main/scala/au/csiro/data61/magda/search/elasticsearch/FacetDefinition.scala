@@ -5,7 +5,7 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
-import com.sksamuel.elastic4s.{AbstractAggregationDefinition, QueryDefinition}
+import com.sksamuel.elastic4s.{ AbstractAggregationDefinition, QueryDefinition }
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
@@ -15,6 +15,9 @@ import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
 
 import collection.JavaConverters._
 import scalaz.Memo
+import java.time.ZoneOffset
+import au.csiro.data61.magda.search.elasticsearch.YearFacetDefinition
+import com.typesafe.config.Config
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -96,9 +99,9 @@ trait FacetDefinition {
 }
 
 object FacetDefinition {
-  def facetDefForType(facetType: FacetType): FacetDefinition = facetType match {
+  def facetDefForType(facetType: FacetType)(implicit config: Config): FacetDefinition = facetType match {
     case Format    => FormatFacetDefinition
-    case Year      => YearFacetDefinition
+    case Year      => new YearFacetDefinition
     case Publisher => PublisherFacetDefinition
   }
 }
@@ -128,7 +131,8 @@ object PublisherFacetDefinition extends FacetDefinition {
   override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
 }
 
-object YearFacetDefinition extends FacetDefinition {
+class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
+  implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
   val yearBinSizes = List(1, 2, 5, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
 
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
@@ -253,11 +257,12 @@ object YearFacetDefinition extends FacetDefinition {
     }
   }
 
-  override def facetSearchQuery(textQuery: String) = (parseDate(textQuery, false), parseDate(textQuery, true)) match {
-    case (DateTimeResult(from), DateTimeResult(to)) => Query(dateFrom = Some(from), dateTo = Some(to))
-    // The idea is that this will come from our own index so it shouldn't even be some weird wildcard thing
-    case _ => throw new RuntimeException("Date " + query + " not recognised")
-  }
+  override def facetSearchQuery(textQuery: String) =
+    (parseDate(textQuery, false), parseDate(textQuery, true)) match {
+      case (DateTimeResult(from), DateTimeResult(to)) => Query(dateFrom = Some(from), dateTo = Some(to))
+      // The idea is that this will come from our own index so it shouldn't even be some weird wildcard thing
+      case _ => throw new RuntimeException("Date " + query + " not recognised")
+    }
 
   override def exactMatchQuery(query: String): QueryDefinition = {
     val from = DateParser.parseDate(query, false)

@@ -6,6 +6,7 @@ import akka.event.LoggingAdapter
 import au.csiro.data61.magda.util.DateParser._
 
 import scala.xml.NodeSeq
+import java.time.ZoneOffset
 
 object Xml {
   implicit def nodeToOption[T](node: NodeSeq, toValue: NodeSeq => Option[T]): Option[T] =
@@ -15,7 +16,7 @@ object Xml {
 
   def nodeToStringOption(node: NodeSeq): Option[String] = nodeToOption(node, x => if (x.text.isEmpty()) None else Some(x.text))
 
-  def parseDateFromNode(node: NodeSeq)(implicit logger: LoggingAdapter): Option[OffsetDateTime] =
+  def parseDateFromNode(node: NodeSeq)(implicit logger: LoggingAdapter, defaultOffset: ZoneOffset): Option[OffsetDateTime] =
     nodeToStringOption(node).flatMap(parseDateDefault(_, false))
 
   def nodesWithAttribute(sourceNodes: NodeSeq, name: String, value: String): NodeSeq = {

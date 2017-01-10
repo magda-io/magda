@@ -23,4 +23,14 @@ object ErrorHandling {
   object CausedBy {
     def unapply(e: Throwable): Option[Throwable] = Option(e.getCause)
   }
+
+  object RootCause {
+    def unapply(e: Throwable): Option[Throwable] = Option(getRootCause(e))
+  }
+
+  def getRootCause(e: Throwable): Throwable =
+    Option(e.getCause) match {
+      case Some(cause) => getRootCause(cause)
+      case None        => e
+    }
 }

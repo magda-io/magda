@@ -23,7 +23,7 @@ package temporal {
   object PeriodOfTime {
     val splitters = List("\\s*to\\s*", "\\s*-\\s*")
 
-    def trySplit(raw: String, modified: Option[OffsetDateTime]): Option[PeriodOfTime] =
+    def trySplit(raw: String, modified: Option[OffsetDateTime])(implicit defaultOffset: ZoneOffset): Option[PeriodOfTime] =
       splitters
         .view
         .map(raw.split(_))
@@ -45,7 +45,7 @@ package temporal {
           }
         }.headOption
 
-    def parse(start: Option[String], end: Option[String], modified: Option[OffsetDateTime]): Option[PeriodOfTime] = {
+    def parse(start: Option[String], end: Option[String], modified: Option[OffsetDateTime])(implicit defaultOffset: ZoneOffset): Option[PeriodOfTime] = {
       val startDate = start.flatMap(ApiDate.parse(_, modified, false))
       val endDate = end.flatMap(ApiDate.parse(_, modified, true))
       lazy val defaultPeriod = Some(new PeriodOfTime(startDate, endDate))
@@ -75,7 +75,7 @@ package temporal {
   )
 
   object ApiDate {
-    def parse(raw: String, modifiedOption: Option[OffsetDateTime], atEnd: Boolean): Option[ApiDate] = parseDate(raw, atEnd) match {
+    def parse(raw: String, modifiedOption: Option[OffsetDateTime], atEnd: Boolean)(implicit defaultOffset: ZoneOffset): Option[ApiDate] = parseDate(raw, atEnd) match {
       case DateTimeResult(instant) => Some(ApiDate(Some(instant), raw))
       case ConstantResult(constant) => constant match {
         case Now => modifiedOption match {

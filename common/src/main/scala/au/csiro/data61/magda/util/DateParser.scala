@@ -106,7 +106,7 @@ object DateParser {
   private def roundUp[T <: Temporal](roundUp: Boolean, date: T, originalFormat: Format): T =
     if (roundUp) date.plus(1, originalFormat.precision).minus(1, ChronoUnit.MILLIS).asInstanceOf[T] else date
 
-  def parseDate(raw: String, shouldRoundUp: Boolean): ParseResult =
+  def parseDate(raw: String, shouldRoundUp: Boolean)(implicit defaultOffset: ZoneOffset): ParseResult =
     if (raw.isEmpty())
       ParseFailure
     else
@@ -122,9 +122,9 @@ object DateParser {
                   originalFormat match {
                     case OffsetDateTimeFormat(_, _) => roundUp(shouldRoundUp, OffsetDateTime.parse(raw, format), originalFormat)
                     case DateTimeFormat(_, _) => roundUp(shouldRoundUp, LocalDateTime.parse(raw, format), originalFormat)
-                      .atOffset(ZoneOffset.of(AppConfig.conf.getString("time.defaultOffset")))
+                      .atOffset(defaultOffset)
                     case DateFormat(_, _) => roundUp(shouldRoundUp, LocalDate.parse(raw, format).atStartOfDay(), originalFormat)
-                      .atOffset(ZoneOffset.of(AppConfig.conf.getString("time.defaultOffset")))
+                      .atOffset(defaultOffset)
                   }
                 }
               }
@@ -136,7 +136,7 @@ object DateParser {
             .getOrElse(ParseFailure)
       }
 
-  def parseDateDefault(raw: String, shouldRoundUp: Boolean): Option[OffsetDateTime] =
+  def parseDateDefault(raw: String, shouldRoundUp: Boolean)(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] =
     parseDate(raw, shouldRoundUp) match {
       case DateTimeResult(zonedDateTime) => Some(zonedDateTime)
       case ConstantResult(constant) => constant match {
@@ -144,10 +144,4 @@ object DateParser {
       }
       case ParseFailure => None
     }
-
-  class InstantToDateConverter(instant: Instant) {
-    def toDefaultZonedTime() = instant.atOffset(ZoneOffset.of(AppConfig.conf.getString("time.defaultOffset")))
-  }
-
-  implicit def implicitInstantConv(instant: Instant): InstantToDateConverter = new InstantToDateConverter(instant)
 }

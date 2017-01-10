@@ -24,11 +24,11 @@ object MagdaApp extends App {
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  implicit val config = AppConfig.conf
+  implicit val config = AppConfig.conf()
 
   val logger = Logging(system, getClass)
 
-  logger.info("Starting Indexer in env {}", AppConfig.env)
+  logger.info("Starting Indexer in env {}", AppConfig.getEnv)
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
@@ -43,7 +43,7 @@ object MagdaApp extends App {
 
   logger.debug("Starting Crawler")
   val indexer = SearchIndexer(new DefaultClientProvider, config)
-  val crawler = new Crawler(system, config.getConfig("indexer"), interfaceConfigs, materializer, indexer)
+  val crawler = Crawler(interfaceConfigs, indexer)
 
   crawler.crawl() onComplete {
     case Success(_) =>

@@ -30,9 +30,13 @@ import com.monsanto.labs.mwundo.GeoJson.LineString
 import com.monsanto.labs.mwundo.GeoJson.MultiLineString
 import au.csiro.data61.magda.util.Collections.mapCatching
 import java.time.OffsetDateTime
+import com.typesafe.config.Config
+import java.time.ZoneOffset
 
-class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
+class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config: Config, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   implicit val logger = Logging(system, getClass)
+  
+  implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
   override def schema = "http://www.isotc211.org/2005/gmd"
 

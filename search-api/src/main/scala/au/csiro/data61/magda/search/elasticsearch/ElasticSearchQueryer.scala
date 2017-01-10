@@ -3,13 +3,13 @@ package au.csiro.data61.magda.search.elasticsearch
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import au.csiro.data61.magda.api.Query
-import au.csiro.data61.magda.api.model.{RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.api.model.{ RegionSearchResult, SearchResult }
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.Indices._
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.{MatchAll, MatchPart, SearchQueryer, SearchStrategy}
+import au.csiro.data61.magda.search.{ MatchAll, MatchPart, SearchQueryer, SearchStrategy }
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -19,15 +19,15 @@ import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import org.elasticsearch.search.sort.SortOrder
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import com.typesafe.config.Config
 
-class ElasticSearchQueryer(config: Config,
-    implicit val system: ActorSystem, 
+class ElasticSearchQueryer(
+    implicit val config: Config,
+    implicit val system: ActorSystem,
     implicit val ec: ExecutionContext,
-    implicit val materializer: Materializer, 
-    implicit val clientProvider: ClientProvider
-    ) extends SearchQueryer {
+    implicit val materializer: Materializer,
+    implicit val clientProvider: ClientProvider) extends SearchQueryer {
   private val logger = system.log
   private val AGGREGATION_SIZE_LIMIT = 10
 
@@ -72,44 +72,44 @@ class ElasticSearchQueryer(config: Config,
         new Facet(
           id = facetType,
           options = {
-          // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-          val filteredOptions =
-            (aggsMap.get(facetType.id + "-filter") match {
-              case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-              case None            => Nil
-            }).filter(definition.isFilterOptionRelevant(query))
-              .map(_.copy(matched = Some(true)))
+            // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
+            val filteredOptions =
+              (aggsMap.get(facetType.id + "-filter") match {
+                case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
+                case None            => Nil
+              }).filter(definition.isFilterOptionRelevant(query))
+                .map(_.copy(matched = Some(true)))
 
-          // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
-          // display it to them to show them that it does *exist* but not for this query
-          val exactOptions =
-            definition.exactMatchQueries(query)
-              .map {
-                case (name, query) => (
-                  name,
-                  aggsMap
+            // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
+            // display it to them to show them that it does *exist* but not for this query
+            val exactOptions =
+              definition.exactMatchQueries(query)
+                .map {
+                  case (name, query) => (
+                    name,
+                    aggsMap
+                    .get(facetType.id + "-global")
+                    .get
+                    .getProperty(facetType.id + "-exact-" + name)
+                  )
+                }
+                .map {
+                  case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0)) else None
+                }
+                .flatten
+                .toSeq
+
+            val alternativeOptions =
+              definition.extractFacetOptions(
+                aggsMap
                   .get(facetType.id + "-global")
                   .get
-                  .getProperty(facetType.id + "-exact-" + name)
-                )
-              }
-              .map {
-                case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0)) else None
-              }
-              .flatten
-              .toSeq
+                  .getProperty("filter").asInstanceOf[Aggregation]
+                  .getProperty(facetType.id).asInstanceOf[Aggregation]
+              )
 
-          val alternativeOptions =
-            definition.extractFacetOptions(
-              aggsMap
-              .get(facetType.id + "-global")
-              .get
-              .getProperty("filter").asInstanceOf[Aggregation]
-              .getProperty(facetType.id).asInstanceOf[Aggregation]
-            )
-
-          definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, AGGREGATION_SIZE_LIMIT)
-        }
+            definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, AGGREGATION_SIZE_LIMIT)
+          }
         )
       }.toSeq)
     )
@@ -165,9 +165,9 @@ class ElasticSearchQueryer(config: Config,
         // in the query... this is useful if say the user types in "Ballarat", we can suggest "Ballarat Council"
         Some(
           aggregation
-          .filter(facetType.id + "-filter")
-          .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(AGGREGATION_SIZE_LIMIT))
-          .asInstanceOf[AbstractAggregationDefinition]
+            .filter(facetType.id + "-filter")
+            .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(AGGREGATION_SIZE_LIMIT))
+            .asInstanceOf[AbstractAggregationDefinition]
         )
       else
         None
@@ -312,6 +312,5 @@ class ElasticSearchQueryer(config: Config,
 }
 
 object ElasticSearchQueryer {
-  def apply(config: Config)(implicit system: ActorSystem,  ec: ExecutionContext,  materializer: Materializer,  clientProvider: ClientProvider) = 
-    new ElasticSearchQueryer(config, system, ec, materializer, clientProvider)
+  def apply(implicit config: Config, system: ActorSystem, ec: ExecutionContext, materializer: Materializer, clientProvider: ClientProvider) = new ElasticSearchQueryer()
 }

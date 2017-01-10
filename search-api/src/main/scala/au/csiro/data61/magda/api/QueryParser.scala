@@ -15,6 +15,8 @@ import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.api.QueryLexer
 import au.csiro.data61.magda.api.QueryParser
+import java.time.ZoneOffset
+import com.typesafe.config.Config
 
 
 private object Tokens {
@@ -100,7 +102,7 @@ object AST {
   case class FilterValue(value: String) extends QueryAST
 }
 
-private class QueryParser(regionSources: RegionSources) extends Parsers {
+private class QueryParser(regionSources: RegionSources)(implicit val defaultOffset: ZoneOffset) extends Parsers {
   override type Elem = Tokens.QueryToken
 
   class QueryTokenReader(tokens: Seq[Tokens.QueryToken]) extends Reader[Tokens.QueryToken] {
@@ -180,7 +182,8 @@ private class QueryParser(regionSources: RegionSources) extends Parsers {
   }
 }
 
-class QueryCompiler(regionSources: RegionSources) {
+class QueryCompiler(regionSources: RegionSources)(implicit val config: Config) {
+  private implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
   private val lexer = new QueryLexer(regionSources)
   private val parser = new QueryParser(regionSources)
   

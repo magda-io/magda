@@ -86,17 +86,17 @@ object IndexDefinition extends DefaultJsonProtocol {
               field("geometry").typed(GeoShapeType)
             )
           ),
-      create = Some((client, config, materializer, actorSystem) => setupRegions(client, config)(materializer, actorSystem))
+      create = Some((client, config, materializer, actorSystem) => setupRegions(client)(config, materializer, actorSystem))
     )
 
   val indices = Seq(datasets, regions)
 
-  def setupRegions(client: ElasticClientTrait, config: Config)(implicit materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: ElasticClientTrait)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     val logger = system.log
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
     
-    val loader = new RegionLoader(regionSources.sources.toList, system, materializer)
+    val loader = new RegionLoader(regionSources.sources.toList)
     implicit val ec = system.dispatcher
 
     loader.setupRegions
@@ -122,7 +122,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             ).toJson)
       }
       // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request
-      .batchWeighted(AppConfig.conf.getLong("regionBufferMb") * 1000000, defin => defin.build.source().length(), Seq(_))(_ :+ _)
+      .batchWeighted(config.getLong("regionLoading.regionBufferMb") * 1000000, defin => defin.build.source().length(), Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
       // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
       // available to index them right away

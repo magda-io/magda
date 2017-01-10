@@ -12,7 +12,6 @@ import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.model._
 import java.text.SimpleDateFormat
 import akka.http.scaladsl.model.MediaType
-import au.csiro.data61.magda.util.DateParser.implicitInstantConv
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)
 case class CKANSearchResult(count: Int, results: List[CKANDataSet])
@@ -23,6 +22,7 @@ object CKANState extends Enumeration {
 }
 import CKANState._
 import au.csiro.data61.magda.external.InterfaceConfig
+import java.time.ZoneOffset
 
 case class CKANDataSet(
   id: String,
@@ -138,14 +138,14 @@ trait CKANConverters {
   )
   implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
 
-  implicit def ckanDataSetConv(interface: InterfaceConfig)(hit: CKANDataSet): DataSet = {
-    val modified = ckanDateTimeWithMsFormat.parse(hit.metadata_modified).toInstant.toDefaultZonedTime
+  implicit def ckanDataSetConv(interface: InterfaceConfig)(hit: CKANDataSet)(implicit defaultOffset: ZoneOffset): DataSet = {
+    val modified = ckanDateTimeWithMsFormat.parse(hit.metadata_modified).toInstant.atOffset(defaultOffset)
     DataSet(
       identifier = hit.name,
       catalog = interface.name,
       title = hit.title,
       description = hit.notes,
-      issued = Some(ckanDateTimeWithMsFormat.parse(hit.metadata_created).toInstant.toDefaultZonedTime()),
+      issued = Some(ckanDateTimeWithMsFormat.parse(hit.metadata_created).toInstant.atOffset(defaultOffset)),
       modified = Some(modified),
       language = hit.language,
       publisher = hit.organization,
@@ -165,11 +165,11 @@ trait CKANConverters {
         email.map(email => new Agent(email = Some(email), name = hit.author))
       },
       landingPage = Some(interface.landingPageUrl(hit.name)), // FIXME!!!
-      distributions = hit.resources.map(_.map(ckanDistributionConv(_, hit))).getOrElse(Seq())
+      distributions = hit.resources.map(_.map(ckanDistributionConv(_, hit, defaultOffset))).getOrElse(Seq())
     )
   }
 
-  def ckanDistributionConv(resource: CKANResource, dataset: CKANDataSet): Distribution = {
+  def ckanDistributionConv(resource: CKANResource, dataset: CKANDataSet, defaultOffset: ZoneOffset): Distribution = {
     // Get the mediatype first because we'll need it to determine the format if none is provided.
     val mediaType = Distribution.parseMediaType(resource.mimetype orElse resource.mimetype_inner, resource.format, resource.url)
     val format = Distribution.parseFormat(resource.format, resource.url, mediaType, resource.description)
@@ -177,8 +177,8 @@ trait CKANConverters {
     new Distribution(
       title = resource.name.getOrElse(resource.id),
       description = resource.description,
-      issued = resource.created.map(ckanDateTimeFormat.parse(_).toInstant.toDefaultZonedTime()),
-      modified = resource.last_modified.map(ckanDateTimeFormat.parse(_).toInstant.toDefaultZonedTime()),
+      issued = resource.created.map(ckanDateTimeFormat.parse(_).toInstant.atOffset(defaultOffset)),
+      modified = resource.last_modified.map(ckanDateTimeFormat.parse(_).toInstant.atOffset(defaultOffset)),
       license = dataset.license_title.map(name => new License(Some(name))),
       rights = None,
       accessURL = resource.webstore_url,

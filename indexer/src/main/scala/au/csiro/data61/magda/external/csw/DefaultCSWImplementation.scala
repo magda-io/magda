@@ -27,11 +27,14 @@ import au.csiro.data61.magda.external.InterfaceConfig
 import scala.BigDecimal
 import au.csiro.data61.magda.util.Xml._
 import java.time.OffsetDateTime
+import com.typesafe.config.Config
+import java.time.ZoneOffset
 
-class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
+class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config: Config, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   val logger = Logging(system, getClass)
 
   def schema = "http://www.opengis.net/cat/csw/2.0.2"
+  implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
   override def responseConv(res: NodeSeq): List[DataSet] = {
     dataSetConv(res \ "SearchResults" \ "Record")
