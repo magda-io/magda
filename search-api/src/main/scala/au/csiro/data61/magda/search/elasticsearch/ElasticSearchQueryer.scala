@@ -29,22 +29,21 @@ class ElasticSearchQueryer(
     implicit val materializer: Materializer,
     implicit val clientProvider: ClientProvider) extends SearchQueryer {
   private val logger = system.log
-  private val AGGREGATION_SIZE_LIMIT = 10
 
   lazy val clientFuture: Future[ElasticClientTrait] = clientProvider.getClient(system.scheduler, logger, ec)
 
-  override def search(query: Query, start: Long, limit: Int) = {
+  override def search(query: Query, start: Long, limit: Int, facetSize: Int) = {
     Future.sequence(query.regions.map(region => findRegion(region.regionType, region.regionId))).flatMap { regions =>
       val queryWithResolvedRegions = query.copy(regions = regions)
 
       clientFuture.flatMap { client =>
-        client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchAll)).flatMap(response =>
+        client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchAll, facetSize)).flatMap(response =>
           if (response.totalHits > 0)
             Future.successful((response, MatchAll))
           else
-            client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchPart)).map((_, MatchPart)))
+            client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchPart, facetSize)).map((_, MatchPart)))
       } map {
-        case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy)
+        case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy, facetSize)
       } recover {
         case CausedBy(CausedBy(CausedBy(illegalArgument: IllegalArgumentException))) =>
           logger.error(illegalArgument, "Exception when searching")
@@ -59,7 +58,7 @@ class ElasticSearchQueryer(
   /**
    * Turns an ES response into a magda SearchResult.
    */
-  def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy): SearchResult = {
+  def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
     val aggsMap = response.aggregations.asMap().asScala
     new SearchResult(
       strategy = Some(strategy),
@@ -70,7 +69,7 @@ class ElasticSearchQueryer(
         val definition = facetDefForType(facetType)
 
         new Facet(
-          id = facetType,
+          id = facetType.id,
           options = {
             // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
             val filteredOptions =
@@ -108,7 +107,7 @@ class ElasticSearchQueryer(
                   .getProperty(facetType.id).asInstanceOf[Aggregation]
               )
 
-            definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, AGGREGATION_SIZE_LIMIT)
+            definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, facetSize)
           }
         )
       }.toSeq)
@@ -129,7 +128,7 @@ class ElasticSearchQueryer(
       .query(queryToQueryDef(query, strategy))
 
   /** Same as {@link #buildQuery} but also adds aggregations */
-  def buildQueryWithAggregations(query: Query, start: Long, limit: Int, strategy: SearchStrategy) = addAggregations(buildQuery(query, start, limit, strategy), query, strategy)
+  def buildQueryWithAggregations(query: Query, start: Long, limit: Int, strategy: SearchStrategy, facetSize: Int) = addAggregations(buildQuery(query, start, limit, strategy), query, strategy, facetSize)
 
   /** Builds an empty dummy searchresult that conveys some kind of error message to the user. */
   def failureSearchResult(query: Query, message: String) = new SearchResult(
@@ -140,23 +139,23 @@ class ElasticSearchQueryer(
   )
 
   /** Adds standard aggregations to an elasticsearch query */
-  def addAggregations(searchDef: SearchDefinition, query: Query, strategy: SearchStrategy) = {
+  def addAggregations(searchDef: SearchDefinition, query: Query, strategy: SearchStrategy, facetSize: Int) = {
     val aggregations: List[AbstractAggregationDefinition] =
       FacetType.all.flatMap(facetType =>
-        aggsForFacetType(query, facetType, strategy)).toList
+        aggsForFacetType(query, facetType, strategy, facetSize)).toList
 
     searchDef.aggregations(aggregations)
   }
 
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
-  def aggsForFacetType(query: Query, facetType: FacetType, strategy: SearchStrategy): List[AbstractAggregationDefinition] = {
+  def aggsForFacetType(query: Query, facetType: FacetType, strategy: SearchStrategy, facetSize: Int): List[AbstractAggregationDefinition] = {
     val facetDef = facetDefForType(facetType)
 
     // Sub-aggregations of "global" aggregate on all datasets independently of the query passed in.
     val globalAgg =
       aggregation
         .global(facetType.id + "-global")
-        .aggs(alternativesAggregation(query, facetDef, strategy) :: exactMatchAggregations(query, facetType, facetDef, strategy))
+        .aggs(alternativesAggregation(query, facetDef, strategy, facetSize) :: exactMatchAggregations(query, facetType, facetDef, strategy))
         .asInstanceOf[AbstractAggregationDefinition]
 
     val partialMatchesAgg =
@@ -166,7 +165,7 @@ class ElasticSearchQueryer(
         Some(
           aggregation
             .filter(facetType.id + "-filter")
-            .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(AGGREGATION_SIZE_LIMIT))
+            .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(facetSize))
             .asInstanceOf[AbstractAggregationDefinition]
         )
       else
@@ -191,11 +190,11 @@ class ElasticSearchQueryer(
    * filtering on this facet - e.g. if I was searching for datasets from a certain publisher,
    * this shows me other publishers I could search on instead
    */
-  def alternativesAggregation(query: Query, facetDef: FacetDefinition, strategy: SearchStrategy) =
+  def alternativesAggregation(query: Query, facetDef: FacetDefinition, strategy: SearchStrategy, facetSize: Int) =
     aggregation
       .filter("filter")
       .filter(queryToQueryDef(facetDef.removeFromQuery(query), strategy))
-      .aggs(facetDef.aggregationDefinition(AGGREGATION_SIZE_LIMIT))
+      .aggs(facetDef.aggregationDefinition(facetSize))
 
   /**
    * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.

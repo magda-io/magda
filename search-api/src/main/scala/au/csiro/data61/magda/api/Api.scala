@@ -74,8 +74,8 @@ class Api(val logger: LoggingAdapter, val searchQueryer: SearchQueryer)(implicit
         } ~
           pathPrefix("datasets") {
             pathPrefix("search") {
-              (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-                onSuccess(searchQueryer.search(queryCompiler.apply(query), start, limit)) { result =>
+              (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10, "facetSize" ? 10)) { (query, start, limit, facetSize) ⇒
+                onSuccess(searchQueryer.search(queryCompiler.apply(query), start, limit, facetSize)) { result =>
                   val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
 
                   pathPrefix("datasets") {

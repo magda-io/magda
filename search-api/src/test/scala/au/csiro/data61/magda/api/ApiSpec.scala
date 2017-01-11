@@ -1,49 +1,49 @@
 package au.csiro.data61.magda.api
 
-import java.net.URL
+import java.io.File
+import java.util.Properties
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.concurrent.duration._
+import scala.concurrent.duration.DurationInt
 
-import org.scalamock.proxy.ProxyMockFactory
-import org.scalamock.scalatest.MockFactory
-
+import org.scalacheck.Gen
+import org.scalatest.BeforeAndAfter
+import org.scalatest.FunSpec
+import org.scalatest.Matchers
+import org.scalatest.prop.PropertyChecks
 import org.scalatest._
 import org.scalatest.Matchers._
 
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.ElasticDsl.RichFuture
 import com.sksamuel.elastic4s.testkit.ElasticSugar
 import com.typesafe.config.ConfigFactory
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.actor.Scheduler
 import akka.event.Logging
 import akka.event.LoggingAdapter
-import akka.http.scaladsl.model.ContentTypes._
-import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model.ContentTypes.`application/json`
+import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.api.model.Protocols
+import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.crawler.Crawler
-import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType
-import au.csiro.data61.magda.external.FakeConfig
 import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider
 import au.csiro.data61.magda.search.elasticsearch.ElasticClientAdapter
 import au.csiro.data61.magda.search.elasticsearch.ElasticClientTrait
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
-import java.util.Properties
-import java.io.File
-import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.api.model.Protocols
-import akka.http.scaladsl.model.HttpHeader
-import org.scalatest.prop.PropertyChecks
-import org.scalacheck.Gen
+import au.csiro.data61.magda.search.elasticsearch.FacetDefinition
+import au.csiro.data61.magda.search.elasticsearch.PublisherFacetDefinition
+import au.csiro.data61.magda.model.misc._
 
 class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with Protocols with PropertyChecks {
   override def testConfigSource = "akka.loglevel = DEBUG"
-  val RESULT_COUNT = 100
+  val RESULT_COUNT = 921
+  val QUERIES = Seq("*", "water", "2016", "history")
   val logger = Logging(system, getClass)
 
   override def testConfig = ConfigFactory.empty()
@@ -72,28 +72,47 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
     crawler.crawl().await(100 seconds)
 
-    Thread.sleep(500)
+    def blah(): Future[Unit] = searchQueryer.search(Query(Some("*")), 0, RESULT_COUNT, 0).flatMap { result =>
+      if (result.hitCount != RESULT_COUNT) {
+        Thread.sleep(500)
+        blah()
+      } else {
+        Future(Unit)
+      }
+    }
+
+    blah().await(100 seconds)
   }
 
   val fixture = new Fixture
 
-  describe("query") {
+  describe("dataset search") {
     it("* should return all results") {
-      Get(s"/datasets/search?query=*") ~> fixture.routes ~> check {
+      Get(s"/datasets/search?query=*&limit=$RESULT_COUNT") ~> fixture.routes ~> check {
         status shouldBe OK
         contentType shouldBe `application/json`
-        responseAs[SearchResult].hitCount shouldEqual RESULT_COUNT
+        val response = responseAs[SearchResult]
+        response.hitCount shouldEqual RESULT_COUNT
+        response.dataSets.size shouldEqual RESULT_COUNT
       }
     }
 
-    it("querying a datasets title should return that dataset first") {
+    it("hitCount should reflect all hits in the system, not just what is returned") {
+      Get(s"/datasets/search?query=*&limit=${RESULT_COUNT / 2}") ~> fixture.routes ~> check {
+        val response = responseAs[SearchResult]
+        response.hitCount shouldEqual RESULT_COUNT
+        response.dataSets.size should not equal RESULT_COUNT
+      }
+    }
+
+    it("querying a dataset's title should return that dataset") {
       Get(s"/datasets/search?query=*") ~> fixture.routes ~> check {
         val dataSets = for (dataset <- Gen.oneOf(responseAs[SearchResult].dataSets)) yield dataset
 
         forAll(dataSets) { dataSet =>
-          Get(s"/datasets/search?query=${java.net.URLEncoder.encode(dataSet.title.get, "UTF-8")}") ~> fixture.routes ~> check {
+          Get(s"/datasets/search?query=${java.net.URLEncoder.encode(dataSet.title.get, "UTF-8")}&limit=$RESULT_COUNT") ~> fixture.routes ~> check {
             val result = responseAs[SearchResult]
-            result.dataSets.head.identifier shouldEqual (dataSet.identifier)
+            result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
           }
         }
       }
@@ -101,12 +120,12 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
   }
 
   describe("pagination") {
-    Get(s"/datasets/search?query=*&start=0&limit=$RESULT_COUNT") ~> fixture.routes ~> check {
-      val originalResult = responseAs[SearchResult]
+    it("should match the result of getting all datasets and using .drop(start).take(limit) to select a subset") {
+      Get(s"/datasets/search?query=*&start=0&limit=$RESULT_COUNT") ~> fixture.routes ~> check {
+        val originalResult = responseAs[SearchResult]
 
-      it("should match the result of getting all datasets and using .drop(start).take(limit) to select a subset") {
-        val starts = for (n <- Gen.choose(0, RESULT_COUNT)) yield n
-        val limits = for (n <- Gen.choose(0, RESULT_COUNT)) yield n
+        val starts = for (n <- Gen.choose(0, 100)) yield n
+        val limits = for (n <- Gen.choose(0, 100)) yield n
 
         forAll(starts, limits) { (start, limit) =>
           whenever(start >= 0 && start <= RESULT_COUNT && limit >= 0 && limit <= RESULT_COUNT) {
@@ -114,12 +133,61 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
               val result = responseAs[SearchResult]
 
               val expectedResultIdentifiers = originalResult.dataSets.drop(start).take(limit).map(_.identifier)
-
               expectedResultIdentifiers shouldEqual result.dataSets.map(_.identifier)
             }
           }
         }
       }
     }
+  }
+
+  describe("facets") {
+    val FACET_SIZE = 10
+    val queries = for (dataset <- Gen.oneOf(QUERIES)) yield dataset
+    val facetSizes = for (n <- Gen.choose(0, 10)) yield n
+
+    describe("publisher") {
+      it("should be consistent with grouping all the facet results by publisher id") {
+        forAll(queries, facetSizes) { (query, facetSize) =>
+          whenever(QUERIES.contains(query) && facetSize > 0) {
+            Get(s"/datasets/search?query=$query&start=0&limit=$RESULT_COUNT&facetSize=$facetSize") ~> fixture.routes ~> check {
+              val result = responseAs[SearchResult]
+              val groupedResult = result.dataSets.groupBy(_.publisher.get.name.get)
+
+              val publisherFacet = result.facets.get.find(_.id.equals(Publisher.id)).get
+
+              publisherFacet.options.size should be <= facetSize
+
+              val facetMinimal = publisherFacet.options.map(facet => (facet.value, facet.hitCount))
+
+              facetMinimal shouldEqual groupedResult.mapValues(_.size).toList.sortBy(_._1).sortBy(-_._2).take(facetSize)
+            }
+          }
+        }
+      }
+    }
+
+    describe("year") {
+      it("should be consistent with grouping all the facet results by temporal coverage year") {
+        forAll(queries, facetSizes) { (query, facetSize) =>
+          whenever(QUERIES.contains(query) && facetSize > 0) {
+            Get(s"/datasets/search?query=$query&start=0&limit=$RESULT_COUNT&facetSize=$facetSize") ~> fixture.routes ~> check {
+              val result = responseAs[SearchResult]
+              val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+
+              yearFacet.options.foreach { option =>
+                val matchingDatasets = result.dataSets
+                  .filter(x => x.temporal.isDefined && (x.temporal.get.start.isDefined || x.temporal.get.end.isDefined))
+                  .filter(dataSet => dataSet.temporal.get.start.orElse(dataSet.temporal.get.end).get.date.get.getYear <= option.upperBound.get.toInt)
+                  .filter(dataSet => dataSet.temporal.get.end.orElse(dataSet.temporal.get.start).get.date.get.getYear >= option.lowerBound.get.toInt)
+
+                matchingDatasets.size shouldEqual option.hitCount
+              }
+            }
+          }
+        }
+      }
+    }
+
   }
 }

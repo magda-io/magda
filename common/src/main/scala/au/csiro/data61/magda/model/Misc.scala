@@ -22,15 +22,15 @@ package misc {
   }
 
   case object Publisher extends FacetType {
-    override def id = "publisher"
+    override def id = "Publisher"
   }
 
   case object Year extends FacetType {
-    override def id = "year"
+    override def id = "Year"
   }
 
   case object Format extends FacetType {
-    override def id = "format"
+    override def id = "Format"
   }
 
   case class FacetSearchResult(
@@ -39,7 +39,7 @@ package misc {
   )
 
   case class Facet(
-    id: FacetType,
+    id: String,
     options: Seq[FacetOption]
   )
 
