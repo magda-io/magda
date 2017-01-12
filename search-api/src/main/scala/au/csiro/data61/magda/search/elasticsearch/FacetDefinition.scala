@@ -133,7 +133,6 @@ object PublisherFacetDefinition extends FacetDefinition {
 
 class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
-  val yearBinSizes = List(1, 2, 5, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
 
   override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
     aggregation.terms(Year.id).field("years").size(Int.MaxValue)
@@ -165,7 +164,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
 
   def getBinSize(firstYear: Int, lastYear: Int, limit: Int): Int = {
     val yearDifference = lastYear - firstYear
-    yearBinSizes.view.map(yearBinSize => (yearBinSize, yearDifference / yearBinSize)).filter(_._2 < limit).map(_._1).head
+    YearFacetDefinition.YEAR_BIN_SIZES.view.map(yearBinSize => (yearBinSize, yearDifference / yearBinSize)).filter(_._2 < limit).map(_._1).head
   }
 
   val parseFacets = Memo.mutableHashMapMemo((facets: Seq[FacetOption]) => facets
@@ -274,6 +273,10 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
   }
 
   override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = Set()
+}
+
+object YearFacetDefinition {
+  val YEAR_BIN_SIZES = List(1, 2, 5, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
 }
 
 object FormatFacetDefinition extends FacetDefinition {

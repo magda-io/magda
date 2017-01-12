@@ -39,6 +39,7 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition
 import au.csiro.data61.magda.search.elasticsearch.PublisherFacetDefinition
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.search.elasticsearch.YearFacetDefinition
 
 class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with Protocols with PropertyChecks {
   override def testConfigSource = "akka.loglevel = DEBUG"
@@ -168,6 +169,36 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
     }
 
     describe("year") {
+      it("should generate even, non-overlapping facets") {
+        forAll(queries, facetSizes) { (query, facetSize) =>
+          whenever(QUERIES.contains(query) && facetSize > 0) {
+            Get(s"/datasets/search?query=$query&start=0&limit=$RESULT_COUNT&facetSize=$facetSize") ~> fixture.routes ~> check {
+              val result = responseAs[SearchResult]
+              val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+
+              yearFacet.options.size should be > 0
+              yearFacet.options.size should be <= facetSize
+
+              yearFacet.options.foreach { option =>
+                val upperBound = option.upperBound.get.toInt
+                val lowerBound = option.lowerBound.get.toInt
+                val size = upperBound - lowerBound + 1
+
+                option.value should equal (s"$lowerBound - $upperBound") 
+                YearFacetDefinition.YEAR_BIN_SIZES should contain (size)
+                if (facetSize > 1) withClue(s"[$lowerBound-$upperBound with size $size]") { lowerBound % size shouldEqual 0 }
+              }
+
+              if (facetSize > 1)
+                yearFacet.options.sliding(2).foreach {
+                  case Seq(higherOption, lowerOption) =>
+                    lowerOption.upperBound.get.toInt shouldEqual higherOption.lowerBound.get.toInt - 1
+                }
+            }
+          }
+        }
+      }
+
       it("should be consistent with grouping all the facet results by temporal coverage year") {
         forAll(queries, facetSizes) { (query, facetSize) =>
           whenever(QUERIES.contains(query) && facetSize > 0) {
@@ -180,6 +211,26 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
                   .filter(x => x.temporal.isDefined && (x.temporal.get.start.isDefined || x.temporal.get.end.isDefined))
                   .filter(dataSet => dataSet.temporal.get.start.orElse(dataSet.temporal.get.end).get.date.get.getYear <= option.upperBound.get.toInt)
                   .filter(dataSet => dataSet.temporal.get.end.orElse(dataSet.temporal.get.start).get.date.get.getYear >= option.lowerBound.get.toInt)
+
+                matchingDatasets.size shouldEqual option.hitCount
+              }
+            }
+          }
+        }
+      }
+    }
+
+    describe("format") {
+      it("should be consistent with grouping all the facet results by format") {
+        forAll(queries, facetSizes) { (query, facetSize) =>
+          whenever(QUERIES.contains(query) && facetSize > 0) {
+            Get(s"/datasets/search?query=$query&start=0&limit=$RESULT_COUNT&facetSize=$facetSize") ~> fixture.routes ~> check {
+              val result = responseAs[SearchResult]
+              val formatFacet = result.facets.get.find(_.id.equals(Format.id)).get
+
+              formatFacet.options.foreach { option =>
+                val matchingDatasets = result.dataSets
+                  .filter(_.distributions.exists(_.format.map(_.equalsIgnoreCase(option.value)).getOrElse(false)))
 
                 matchingDatasets.size shouldEqual option.hitCount
               }
