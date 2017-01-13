@@ -18,5 +18,5 @@ trait SearchIndexer {
 
 object SearchIndexer {
   def apply(clientProvider: ClientProvider, config: Config)(implicit system: ActorSystem, ec: ExecutionContext, materializer: Materializer) =
-    new ElasticSearchIndexer(clientProvider, config, system, ec, materializer)
+    new ElasticSearchIndexer(clientProvider, config)
 }

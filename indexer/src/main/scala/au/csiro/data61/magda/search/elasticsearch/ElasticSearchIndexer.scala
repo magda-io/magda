@@ -31,10 +31,10 @@ import com.typesafe.config.Config
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
-    val config: Config,
-    implicit val system: ActorSystem,
-    implicit val ec: ExecutionContext,
-    implicit val materializer: Materializer) extends SearchIndexer {
+    val config: Config)(
+        implicit val system: ActorSystem,
+        implicit val ec: ExecutionContext,
+        implicit val materializer: Materializer) extends SearchIndexer {
   val logger = system.log
   val SNAPSHOT_REPO_NAME = "snapshots"
 
@@ -182,7 +182,7 @@ class ElasticSearchIndexer(
       case RestoreFailure =>
         deleteIndex(client, definition)
           .flatMap { _ =>
-            client.execute(definition.definition())
+            client.execute(definition.definition(None))
           } recover {
             case e: Throwable =>
               logger.error(e, "Failed to set up the index")
@@ -282,6 +282,8 @@ class ElasticSearchIndexer(
   }
 
   override def index(source: InterfaceConfig, dataSets: List[DataSet]) =
+    // TODO: Check for empty identifier strings.
+    
     if (dataSets.length > 0) {
       val promise = Promise[BulkResult]()
       indexQueue.offer((source, dataSets, promise))

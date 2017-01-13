@@ -21,21 +21,24 @@ import au.csiro.data61.magda.spatial.RegionSources
 case class IndexDefinition(
     name: String,
     version: Int,
-    definition: () => CreateIndexDefinition,
+    definition: (Option[String]) => CreateIndexDefinition,
     create: Option[(ElasticClientTrait, Config, Materializer, ActorSystem) => Future[Any]] = None) {
   def indexName: String = this.name + this.version
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
+  val DATASETS_TYPE_NAME = "datasets"
+  val REGIONS_TYPE_NAME = "regions"
+  
   val datasets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 14,
-    definition = () =>
-      create.index(datasets.indexName)
+    definition = (overrideIndexName) =>
+      create.index(overrideIndexName.getOrElse(datasets.indexName))
         .indexSetting("recovery.initial_shards", 1)
         .indexSetting("requests.cache.enable", true)
         .mappings(
-          mapping("datasets").fields(
+          mapping(DATASETS_TYPE_NAME).fields(
             field("temporal").inner(
               field("start").inner(
                 field("text").typed(StringType)
@@ -74,11 +77,11 @@ object IndexDefinition extends DefaultJsonProtocol {
     new IndexDefinition(
       name = "regions",
       version = 13,
-      definition = () =>
-        create.index(regions.indexName)
+      definition = (overrideIndexName) =>
+        create.index(overrideIndexName.getOrElse(regions.indexName))
           .indexSetting("recovery.initial_shards", 1)
           .mappings(
-            mapping("regions").fields(
+            mapping(REGIONS_TYPE_NAME).fields(
               field("type").typed(StringType),
               field("id").typed(StringType),
               field("name").typed(StringType),
@@ -95,7 +98,7 @@ object IndexDefinition extends DefaultJsonProtocol {
     val logger = system.log
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
-    
+
     val loader = new RegionLoader(regionSources.sources.toList)
     implicit val ec = system.dispatcher
 
