@@ -1,4 +1,5 @@
 language: scala
+sudo: required
 services: docker
 script:
 - deploy/kubernetes/setup.sh
