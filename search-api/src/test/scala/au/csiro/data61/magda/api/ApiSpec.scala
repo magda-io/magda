@@ -41,12 +41,14 @@ import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.util.Generators._
 import spray.json._
 import org.elasticsearch.common.settings.Settings
+import org.elasticsearch.common.util.concurrent.EsExecutors
 
 class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with Protocols with GeneratorDrivenPropertyChecks with ParallelTestExecution {
   override def testConfigSource = "akka.loglevel = WARN"
   val logger = Logging(system, getClass)
-  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = 8, minSuccessful = 8, sizeRange = 50)
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = 2, minSuccessful = 8, sizeRange = 50)
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(5 seconds)
+  override def httpEnabled = false
 
   val properties = new Properties()
   properties.setProperty("regionLoading.cachePath", new File("./src/test/resources").getAbsolutePath())
@@ -62,15 +64,15 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
     builder
       .put("cluster.routing.allocation.disk.watermark.high", "100%")
       .put("cluster.routing.allocation.disk.watermark.low", "100%")
-      .put("transient.logger._root", "WARN")
+//      .put("processors", 1)
 
   override def blockUntil(explain: String)(predicate: () => Boolean): Unit = {
 
     var backoff = 0
     var done = false
 
-    while (backoff <= 3 && !done) {
-      if (backoff > 0) Thread.sleep(200 * (backoff))
+    while (backoff <= 5 && !done) {
+      Thread.sleep(200 * (backoff))
       backoff = backoff + 1
       try {
         done = predicate()
@@ -103,6 +105,8 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
         val routes = api.routes
 
         client.execute(IndexDefinition.datasets.definition(Some(indexName))).await(100 seconds)
+        blockUntilGreen()
+        blockUntilIndexExists(indexName)
 
         if (!dataSets.isEmpty) {
           client.execute(bulk(
@@ -113,11 +117,10 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
             case e: Throwable =>
               logger.error(e, "")
               throw e
-          }.await
+          }.await(30 seconds)
         }
 
-        blockUntilGreen()
-        blockUntilIndexExists(indexName)
+        Thread.sleep(1100)
         blockUntilCount(dataSets.length, indexName)
 
         Get(s"/datasets/search?query=*&limit=${dataSets.length}") ~> routes ~> check {
@@ -125,10 +128,12 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
           contentType shouldBe `application/json`
           val response = responseAs[SearchResult]
           println(s"${response.hitCount} / ${dataSets.length}")
+          println(dataSets)
+          
           response.hitCount shouldEqual dataSets.length
           response.dataSets shouldEqual dataSets
 
-          //          client.execute(deleteIndex(indexName))
+//          client.execute(deleteIndex(indexName))
         }
       }
     }

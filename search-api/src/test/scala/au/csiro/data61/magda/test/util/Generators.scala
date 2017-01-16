@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit
 
 import org.scalacheck.Gen
 import org.scalacheck.Gen.Choose._
+import org.scalacheck.Arbitrary._
 
 import com.monsanto.labs.mwundo.GeoJson._
 
@@ -14,12 +15,13 @@ import java.time.ZonedDateTime
 import com.fortysevendeg.scalacheck.datetime.instances.jdk8._
 import com.fortysevendeg.scalacheck.datetime.GenDateTime.genDateTimeWithinRange
 import java.time.ZoneOffset
+import com.vividsolutions.jts.geom
+import com.vividsolutions.jts.operation.valid.IsValidOp
 
 object Generators {
-  def alphaStrNonEmpty: Gen[String] =
-    Gen.nonEmptyListOf(Gen.alphaChar).map(_.mkString)
+  def biasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
 
-  val calendarGen = Gen.calendar
+  val keyGen = arbitrary[String].suchThat(!_.contains("."))
 
   val offsetDateTimeGen = for {
     dateTime <- genDateTimeWithinRange(ZonedDateTime.parse("1900-01-01T00:00:00Z"), Duration.ofDays(100 * 365))
@@ -30,10 +32,10 @@ object Generators {
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds))
 
   val agentGen = for {
-    name <- Gen.option(Gen.alphaStr)
-    homePage <- Gen.option(Gen.alphaStr)
-    email <- Gen.option(Gen.alphaStr)
-    extraFields <- Gen.mapOf(Gen.zip(Gen.alphaStr, Gen.alphaStr))
+    name <- biasedOption(arbitrary[String])
+    homePage <- biasedOption(arbitrary[String])
+    email <- biasedOption(arbitrary[String])
+    extraFields <- Gen.mapOf(Gen.zip(keyGen, arbitrary[String]))
   } yield new Agent(name, homePage, email, extraFields)
 
   val durationGen = for {
@@ -42,29 +44,58 @@ object Generators {
   } yield Duration.of(number, unit)
 
   val periodicityGen = for {
-    text <- Gen.option(Gen.alphaStr)
-    duration <- Gen.option(durationGen)
+    text <- biasedOption(arbitrary[String])
+    duration <- biasedOption(durationGen)
   } yield Periodicity(text, duration)
 
-  val coordBigDecimalGen =
-    Gen.chooseNum(0d, 359d).map(BigDecimal.apply)
+  val xGen =
+    Gen.chooseNum(-180, 180).map(BigDecimal.apply)
+
+  val yGen =
+    Gen.chooseNum(-90, 90).map(BigDecimal.apply)
 
   val coordGen = for {
-    x <- coordBigDecimalGen
-    y <- coordBigDecimalGen
+    x <- xGen
+    y <- yGen
   } yield Coordinate(x, y)
+
+  def nonConsecutiveDuplicates[T](min: Int, max: Int, gen: Gen[T]) = listSizeBetween(min, max, gen)
+    .suchThat(list => list.sliding(2).forall {
+      case Seq(before, after) => !before.equals(after)
+    })
+
+  val gf = new geom.GeometryFactory()
+  implicit def buildJTSPolygon(polygon: Polygon) = {
+    val coords = polygon.coordinates.flatten.map(x => new geom.Coordinate(x.x.toDouble, x.y.toDouble))
+    val lr = gf.createLinearRing(coords.toArray)
+    gf.createPolygon(lr, Array())
+  }
+  implicit def buildJTSMultiPolygon(multiPolygon: MultiPolygon) = {
+    gf.createMultiPolygon(multiPolygon.coordinates.map(x => buildJTSPolygon(Polygon(x))).toArray)
+  }
+
+  def listSizeBetween[T](min: Int, max: Int, gen: Gen[T]) = Gen.chooseNum(min, max)
+    .flatMap(x => Gen.listOfN(x, gen))
 
   val pointGen = coordGen.map(Point.apply)
   val multiPointGen = Gen.nonEmptyListOf(coordGen).map(MultiPoint.apply)
-  val lineStringGen = Gen.nonEmptyListOf(coordGen).map(LineString.apply)
-  val multiLineStringGen = Gen.nonEmptyListOf(Gen.nonEmptyListOf(coordGen))
+  val lineStringGenInner = nonConsecutiveDuplicates(2, 5, coordGen)
+  val lineStringGen = lineStringGenInner.map(LineString.apply)
+  val multiLineStringGen = listSizeBetween(1, 10, lineStringGenInner)
     .map(MultiLineString.apply)
-  val polygonStringGen = Gen.nonEmptyListOf(Gen.nonEmptyListOf(coordGen)
-    .map(sortClockwise))
+  val polygonGenInner = listSizeBetween(3, 10, Gen.zip(Gen.choose(10, 90)))
+    .map(_.sorted)
+    .map(list => list.zipWithIndex.map {
+      case (hypotenuse, index) =>
+        val angle = (Math.PI / list.size) * (index + 1)
+        Coordinate(hypotenuse * Math.cos(angle), hypotenuse * Math.sin(angle))
+    })
+    .map(x => x :+ x.head)
+  val polygonStringGen = Gen.listOfN(1, polygonGenInner) // FIXME: Do we need a hole generator?
     .map(Polygon.apply)
-  val multiPolygonStringGen = Gen.nonEmptyListOf(Gen.nonEmptyListOf(Gen.nonEmptyListOf(coordGen)
-    .map(sortClockwise)))
-    .map(MultiPolygon.apply)
+  val multiPolygonStringGen =
+    Gen.chooseNum(1, 5).flatMap(Gen.listOfN(_, polygonStringGen.map(_.coordinates)))
+      .map(MultiPolygon.apply)
 
   val geometryGen = Gen.oneOf(
     pointGen,
@@ -76,21 +107,21 @@ object Generators {
   )
 
   val locationGen = for {
-    text <- Gen.option(Gen.alphaStr)
-    geoJson <- Gen.option(geometryGen)
+    text <- biasedOption(arbitrary[String])
+    geoJson <- biasedOption(geometryGen)
   } yield new Location(text, geoJson)
 
   val dataSetGen = for {
-    identifier <- Gen.listOf(Gen.choose(0.toChar, 5000.toChar)).map(_.mkString)
-    catalog <- Gen.alphaStr
-    title <- Gen.option(Gen.alphaStr)
-    description <- Gen.option(Gen.alphaStr)
-    issued <- Gen.option(offsetDateTimeGen)
-    modified <- Gen.option(offsetDateTimeGen)
-    language <- Gen.option(Gen.alphaStr)
-    publisher <- Gen.option(Gen.alphaStr)
-    accrualPeriodicity <- Gen.option(periodicityGen)
-    spatial <- locationGen
+    identifier <- Gen.numStr
+    catalog <- arbitrary[String]
+    title <- biasedOption(arbitrary[String])
+    description <- biasedOption(arbitrary[String])
+    issued <- biasedOption(offsetDateTimeGen)
+    modified <- biasedOption(offsetDateTimeGen)
+    language <- biasedOption(arbitrary[String])
+    publisher <- biasedOption(agentGen)
+    accrualPeriodicity <- biasedOption(periodicityGen)
+    spatial <- biasedOption(locationGen)
   } yield DataSet(
     identifier = identifier,
     catalog = catalog,
@@ -98,59 +129,11 @@ object Generators {
     description = description,
     issued = issued,
     modified = modified,
-    language = language
+    language = language,
+    publisher = publisher,
+    accrualPeriodicity = accrualPeriodicity,
+    spatial = spatial
   )
 
   val dataSetListGen = Gen.listOf(dataSetGen)
-
-  def findCentre(points: Seq[Coordinate]) = {
-    val cartesians = points
-      .map(coord => (Math.toRadians(coord.x.toDouble), Math.toRadians(coord.y.toDouble)))
-      .map {
-        case (x, y) => (
-          Math.cos(x) * Math.cos(y),
-          Math.cos(x) * Math.sin(y),
-          Math.sin(y)
-        )
-      }
-
-    val (sumX, sumY, sumZ) = cartesians.reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
-    val number = cartesians.size
-    val (avgX, avgY, avgZ) = (sumX / number, sumY / number, sumZ / number)
-
-    val lon = Math.atan2(avgY, avgX)
-    val hyp = Math.sqrt(avgX * avgX + avgY * avgY)
-    val lat = Math.atan2(avgZ, hyp)
-
-    new Coordinate(lat.toDegrees, lon.toDegrees)
-  }
-
-  def sortClockwise(points: Seq[Coordinate]) = {
-    val center = findCentre(points)
-
-    points.sortWith { (a, b) =>
-      if (a.x - center.x >= 0 && b.x - center.x < 0)
-        true;
-      if (a.x - center.x < 0 && b.x - center.x >= 0)
-        false;
-      if (a.x - center.x == 0 && b.x - center.x == 0) {
-        if (a.y - center.y >= 0 || b.y - center.y >= 0)
-          a.y > b.y;
-        b.y > a.y;
-      } else {
-        // compute the cross product of vectors (center -> a) x (center -> b)
-        val det = (a.x - center.x) * (b.y - center.y) - (b.x - center.x) * (a.y - center.y);
-        if (det < 0)
-          true;
-        if (det > 0)
-          false;
-
-        // points a and b are on the same line from the center
-        // check which point is closer to the center
-        val d1 = (a.x - center.x) * (a.x - center.x) + (a.y - center.y) * (a.y - center.y);
-        val d2 = (b.x - center.x) * (b.x - center.x) + (b.y - center.y) * (b.y - center.y);
-        d1 > d2;
-      }
-    }
-  }
 }
