@@ -1,5 +1,3 @@
 language: scala
-sudo: required
-services: docker
-script:
-- deploy/kubernetes/setup.sh
+scala:
+  - 2.11.8
