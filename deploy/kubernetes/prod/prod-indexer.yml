@@ -32,5 +32,3 @@ spec:
       - name: regions
         hostPath:
           path: /var/regions
-      nodeSelector:
-        cloud.google.com/gke-nodepool: ephemeral

@@ -8,7 +8,7 @@ metadata:
 spec:
   strategy:
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: 1
   template:
     metadata:
       labels:
@@ -25,10 +25,10 @@ spec:
         image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           requests:
-            cpu: 1500m
-            memory: 10000Mi
+            cpu: 800m
+            memory: 5000Mi
           limits:
-            memory: 13000Mi
+            memory: 6500Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -45,7 +45,7 @@ spec:
         - name: NUMBER_OF_REPLICAS
           value: "4"
         - name: ES_HEAP_SIZE
-          value: "6000m"
+          value: "3000m"
         ports:
         - containerPort: 9300
           name: transport
@@ -58,8 +58,6 @@ spec:
         gcePersistentDisk:
           pdName: elasticsearch-data-1
           fsType: ext4
-      nodeSelector:
-        cloud.google.com/gke-nodepool: elasticsearch-persistent-disk
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -71,7 +69,7 @@ metadata:
 spec:
   strategy:
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: 1
   template:
     metadata:
       labels:
@@ -88,10 +86,10 @@ spec:
         image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           requests:
-            cpu: 1500m
-            memory: 10000Mi
+            cpu: 800m
+            memory: 5000Mi
           limits:
-            memory: 13000Mi
+            memory: 6500Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -108,7 +106,7 @@ spec:
         - name: NUMBER_OF_REPLICAS
           value: "4"
         - name: ES_HEAP_SIZE
-          value: "6000m"
+          value: "3000m"
         ports:
         - containerPort: 9300
           name: transport
@@ -120,9 +118,9 @@ spec:
       - name: "storage"
         gcePersistentDisk:
           pdName: elasticsearch-data-1
-          fsType: ext4
+          fsType: ext4        
       nodeSelector:
-        cloud.google.com/gke-nodepool: elasticsearch-persistent-disk
+        cloud.google.com/gke-nodepool: pool-1
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -151,10 +149,10 @@ spec:
         image: data61/elasticsearch-kubernetes:2.4.1
         resources:
           requests:
-            cpu: 1500m
-            memory: 10000Mi
+            cpu: 800m
+            memory: 5000Mi
           limits:
-            memory: 13000Mi
+            memory: 6500Mi
         env:
         - name: NAMESPACE
           valueFrom:
@@ -171,7 +169,7 @@ spec:
         - name: NUMBER_OF_REPLICAS
           value: "4"
         - name: ES_HEAP_SIZE
-          value: "6000m"
+          value: "3000m"
         ports:
         - containerPort: 9300
           name: transport
@@ -181,9 +179,9 @@ spec:
           mountPath: /data
       volumes:
       - name: "storage"
-        emptyDir: {}
+        emptyDir: {}        
       nodeSelector:
-        cloud.google.com/gke-nodepool: ephemeral
+        cloud.google.com/gke-nodepool: pool-1
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
