@@ -1,0 +1,4 @@
+language: scala
+services: docker
+script:
+- deploy/kubernetes/setup.sh
