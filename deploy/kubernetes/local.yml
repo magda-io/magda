@@ -307,3 +307,72 @@ spec:
   selector:
     service: kibana
   type: "NodePort"
+---
+# A block of persistent storage for the cluster
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: storage-volume
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /tmp/storage-volume
+---
+# Claim some storage for the Registry's Postgres DB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-datastore-volume-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Postgres for the Registry
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: registry-datastore
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: registry-datastore
+    spec:
+      containers:
+      - name: registry-datastore
+        image: postgres
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgresdata
+        - mountPath: /docker-entrypoint-initdb.d
+          name: docker-entrypoint-initdb
+      volumes:
+      - name: docker-entrypoint-initdb
+        hostPath:
+          path: ${projectDir}/registry-api/postgres/scripts
+      - name: postgresdata
+        persistentVolumeClaim:
+          claimName: registry-datastore-volume-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-datastore
+spec:
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+  selector:
+    service: registry-datastore
