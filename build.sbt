@@ -21,6 +21,9 @@ lazy val indexer = (project in file("indexer"))
   .settings(commonSettings: _*)
   .dependsOn(common)
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
+lazy val registryApi = (project in file("registry-api"))
+  .settings(commonSettings: _*)
+  .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true

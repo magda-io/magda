@@ -1,24 +1,24 @@
-#API
+# Search API
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: api
+  name: search-api
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        service: api
+        service: search-api
     spec:
       containers:
-      - name: api
+      - name: search-api
         resources:
           requests:
             memory: 0
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-metadata-local:latest"
+        image: "localhost:5000/data61/magda-sbt-local:latest"
         command: ["sbt", "-Dproject=searchApi", "~searchApi/re-start"]
         imagePullPolicy: Always
         ports:
@@ -45,7 +45,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api
+  name: search-api
 spec:
   ports:
   - name: http
@@ -57,7 +57,64 @@ spec:
     targetPort: 8000
     nodePort: 30080
   selector:
-    service: api
+    service: search-api
+  type: "NodePort"
+---
+# Registry API
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: registry-api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: registry-api
+    spec:
+      containers:
+      - name: registry-api
+        resources:
+          requests:
+            memory: 0
+        env:
+        - name: SCALA_ENV
+          value: local
+        image: "localhost:5000/data61/magda-sbt-local:latest"
+        command: ["sbt", "-Dproject=registryApi", "~registryApi/re-start"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /usr/src/app/
+          name: src
+        - mountPath: /root/.ivy2
+          name: ivy-cache
+      volumes:
+      - name: src
+        hostPath:
+          path: ${projectDir}
+      - hostPath:
+          path: ${projectDir}/registry-api/target/.ivy2
+        name: ivy-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-api
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30010
+  - name: debug
+    port: 8000
+    targetPort: 8000
+    nodePort: 30100
+  selector:
+    service: registry-api
   type: "NodePort"
 ---
 # Indexer
@@ -73,14 +130,14 @@ spec:
         service: indexer
     spec:
       containers:
-      - name: api
+      - name: search-api
         resources:
           requests:
             memory: 0
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-metadata-local:latest"
+        image: "localhost:5000/data61/magda-sbt-local:latest"
         command: ["sbt", "-Dproject=indexer", "-DincludeMockData=true", "~indexer/re-start"]
         imagePullPolicy: Always
         ports:
