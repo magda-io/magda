@@ -32,7 +32,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   
   def getById(implicit session: DBSession, id: String): Option[Record] = {
     tuplesToRecords(sql"""select recordId, Records.name as recordName, aspectId, Aspects.name as aspectName, data
-                          from Record
+                          from Records
                           left outer join RecordAspects using (recordId)
                           left outer join Aspects using (aspectId)
                           where recordId=$id"""
