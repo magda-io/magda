@@ -112,7 +112,7 @@ object Generators {
   } yield new Location(text, geoJson)
 
   val dataSetGen = for {
-    identifier <- Gen.numStr
+    identifier <- Gen.uuid
     catalog <- arbitrary[String]
     title <- biasedOption(arbitrary[String])
     description <- biasedOption(arbitrary[String])
@@ -123,7 +123,7 @@ object Generators {
     accrualPeriodicity <- biasedOption(periodicityGen)
     spatial <- biasedOption(locationGen)
   } yield DataSet(
-    identifier = identifier,
+    identifier = identifier.toString,
     catalog = catalog,
     title = title,
     description = description,

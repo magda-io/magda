@@ -42,11 +42,14 @@ import au.csiro.data61.magda.test.util.Generators._
 import spray.json._
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.util.concurrent.EsExecutors
+import org.scalactic.anyvals.PosInt
 
 class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with Protocols with GeneratorDrivenPropertyChecks with ParallelTestExecution {
   override def testConfigSource = "akka.loglevel = WARN"
   val logger = Logging(system, getClass)
-  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = 2, minSuccessful = 8, sizeRange = 50)
+  val processors = PosInt.from(Runtime.getRuntime().availableProcessors()).get
+  logger.info("Running with {} processors", processors.toString)
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = processors, minSuccessful = 8, sizeRange = 50)
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(5 seconds)
   override def httpEnabled = false
 
@@ -64,14 +67,13 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
     builder
       .put("cluster.routing.allocation.disk.watermark.high", "100%")
       .put("cluster.routing.allocation.disk.watermark.low", "100%")
-//      .put("processors", 1)
 
   override def blockUntil(explain: String)(predicate: () => Boolean): Unit = {
 
     var backoff = 0
     var done = false
 
-    while (backoff <= 5 && !done) {
+    while (backoff <= 10 && !done) {
       Thread.sleep(200 * (backoff))
       backoff = backoff + 1
       try {
@@ -128,7 +130,6 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
           contentType shouldBe `application/json`
           val response = responseAs[SearchResult]
           println(s"${response.hitCount} / ${dataSets.length}")
-          println(dataSets)
           
           response.hitCount shouldEqual dataSets.length
           response.dataSets shouldEqual dataSets
