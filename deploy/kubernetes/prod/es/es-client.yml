@@ -59,7 +59,9 @@ spec:
       volumes:
       - emptyDir:
           medium: ""
-        name: "storage"
+        name: "storage"        
+      nodeSelector:
+        cloud.google.com/gke-nodepool: pool-1
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
