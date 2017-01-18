@@ -31,8 +31,8 @@ object Generators {
   } yield dateTime.toInstant().atOffset(
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds))
 
-  val agentGen = for {
-    name <- biasedOption(arbitrary[String])
+  def agentGen(nameGen: Gen[String]) = for {
+    name <- biasedOption(nameGen)
     homePage <- biasedOption(arbitrary[String])
     email <- biasedOption(arbitrary[String])
     extraFields <- Gen.mapOf(Gen.zip(keyGen, arbitrary[String]))
@@ -111,15 +111,41 @@ object Generators {
     geoJson <- biasedOption(geometryGen)
   } yield new Location(text, geoJson)
 
+  def wordsGen(size: Int) = {
+    var wordCache: Option[List[String]] = None
+
+    Gen.delay {
+      wordCache match {
+        case Some(wordCache) =>
+          Gen.const(wordCache)
+        case None =>
+          Gen.listOfN(size, Gen.choose(1, 20).flatMap(Gen.listOfN(_, Gen.alphaNumChar).map(_.mkString))).map { words =>
+            wordCache = Some(words)
+            words
+          }
+      }
+    }
+  }
+
+  val descWordGen = wordsGen(1000)
+  val publisherGen = wordsGen(10)
+
+  def textGen(inner: Gen[List[String]]) = inner
+    .flatMap(Gen.someOf(_))
+    .map {
+      case Nil => ""
+      case seq => seq.reduce(_ + " " + _)
+    }
+
   val dataSetGen = for {
     identifier <- Gen.uuid
+    title <- biasedOption(Gen.alphaNumStr)
     catalog <- arbitrary[String]
-    title <- biasedOption(arbitrary[String])
-    description <- biasedOption(arbitrary[String])
+    description <- biasedOption(textGen(descWordGen))
     issued <- biasedOption(offsetDateTimeGen)
     modified <- biasedOption(offsetDateTimeGen)
     language <- biasedOption(arbitrary[String])
-    publisher <- biasedOption(agentGen)
+    publisher <- biasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
     accrualPeriodicity <- biasedOption(periodicityGen)
     spatial <- biasedOption(locationGen)
   } yield DataSet(
@@ -135,5 +161,4 @@ object Generators {
     spatial = spatial
   )
 
-  val dataSetListGen = Gen.listOf(dataSetGen)
 }

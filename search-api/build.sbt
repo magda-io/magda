@@ -40,13 +40,7 @@ imageNames in docker := Seq(
   )
 )
 
-watchSources <<= (watchSources) map { files =>
-  if (Option(System.getProperty("project")).getOrElse("none").equals("searchApi")) {
-    files
-  } else {
-    Nil
-  }
-}
-
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
+
+testOptions in Test += Tests.Argument("-oF")
