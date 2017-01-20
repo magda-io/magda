@@ -1,3 +1,5 @@
+enablePlugins(JavaServerAppPackaging)
+
 name := "magda-metadata-api"
 
 libraryDependencies ++= {
