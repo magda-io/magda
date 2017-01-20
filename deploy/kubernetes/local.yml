@@ -117,6 +117,63 @@ spec:
     service: registry-api
   type: "NodePort"
 ---
+# CKAN Connector
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ckan-connector
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: ckan-connector
+    spec:
+      containers:
+      - name: ckan-connector
+        resources:
+          requests:
+            memory: 0
+        env:
+        - name: SCALA_ENV
+          value: local
+        image: "localhost:5000/data61/magda-sbt-local:latest"
+        command: ["sbt", "-Dproject=ckanConnector", "~ckanConnector/re-start"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /usr/src/app/
+          name: src
+        - mountPath: /root/.ivy2
+          name: ivy-cache
+      volumes:
+      - name: src
+        hostPath:
+          path: ${projectDir}
+      - hostPath:
+          path: ${projectDir}/ckan-connector/target/.ivy2
+        name: ivy-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ckan-connector
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30011
+  - name: debug
+    port: 8000
+    targetPort: 8000
+    nodePort: 30110
+  selector:
+    service: ckan-connector
+  type: "NodePort"
+---
 # Indexer
 apiVersion: extensions/v1beta1
 kind: Deployment
