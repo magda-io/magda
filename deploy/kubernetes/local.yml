@@ -232,7 +232,7 @@ spec:
       volumes:
       - name: snapshots
         hostPath:
-          path: ${projectDir}/snapshots
+          path: /tmp/snapshots
       - name: "storage"
         emptyDir: {}
 ---
@@ -308,33 +308,6 @@ spec:
     service: kibana
   type: "NodePort"
 ---
-# A block of persistent storage for the cluster
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: storage-volume
-  labels:
-    type: local
-spec:
-  capacity:
-    storage: 2Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: /tmp/storage-volume
----
-# Claim some storage for the Registry's Postgres DB
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: registry-datastore-volume-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 # Postgres for the Registry
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -354,16 +327,16 @@ spec:
         - containerPort: 5432
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
-          name: postgresdata
+          name: registrydata
         - mountPath: /docker-entrypoint-initdb.d
           name: docker-entrypoint-initdb
       volumes:
       - name: docker-entrypoint-initdb
         hostPath:
           path: ${projectDir}/registry-api/postgres/scripts
-      - name: postgresdata
-        persistentVolumeClaim:
-          claimName: registry-datastore-volume-claim
+      - name: registrydata
+        hostPath:
+          path: /tmp/registrydata
 ---
 apiVersion: v1
 kind: Service
