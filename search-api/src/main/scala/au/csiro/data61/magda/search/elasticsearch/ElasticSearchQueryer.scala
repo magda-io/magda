@@ -22,7 +22,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import com.typesafe.config.Config
 
-class ElasticSearchQueryer(indices: Indices = Indices.defaultIndices)(
+class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
     implicit val system: ActorSystem,
     implicit val ec: ExecutionContext,
@@ -122,7 +122,7 @@ class ElasticSearchQueryer(indices: Indices = Indices.defaultIndices)(
 
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(query: Query, start: Long, limit: Int, strategy: SearchStrategy) = {
-    ElasticDsl.search.in(indices.getIndex(config, indices.datasetsIndexName) / "datasets")
+    ElasticDsl.search.in(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
       .limit(limit)
       .start(start.toInt)
       .query(queryToQueryDef(query, strategy))
@@ -241,7 +241,7 @@ class ElasticSearchQueryer(indices: Indices = Indices.defaultIndices)(
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
-      client.execute(ElasticDsl.search in indices.datasetsIndexName / facetType.id query facetQuery start start.toInt limit limit)
+      client.execute(ElasticDsl.search in indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)) query facetQuery start start.toInt limit limit)
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
@@ -280,7 +280,7 @@ class ElasticSearchQueryer(indices: Indices = Indices.defaultIndices)(
   override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client.execute(
-        ElasticDsl.search in indices.getIndex(config, indices.regionsIndexName) / "regions"
+        ElasticDsl.search in indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType)
           query { matchPhrasePrefixQuery("name", query) }
           start start.toInt
           limit limit
@@ -300,7 +300,7 @@ class ElasticSearchQueryer(indices: Indices = Indices.defaultIndices)(
 
   def findRegion(regionType: String, regionId: String): Future[Region] = {
     clientFuture.flatMap { client =>
-      client.execute(ElasticDsl.search in indices.getIndex(config, indices.regionsIndexName) / "regions"
+      client.execute(ElasticDsl.search in indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType)
         query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude ("geometry"))
         .flatMap { response =>
           response.totalHits match {

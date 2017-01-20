@@ -8,6 +8,7 @@ import au.csiro.data61.magda.search.elasticsearch.IndexedGeoShapeQueryDefinition
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.elasticsearch.common.geo.ShapeRelation
 import au.csiro.data61.magda.search.elasticsearch.Indices
+import com.typesafe.config.Config
 
 object Queries {
   def publisherQuery(publisher: String) = matchPhraseQuery("publisher.name", publisher)
@@ -16,10 +17,12 @@ object Queries {
     .query(matchQuery("distributions.format", format))
   def exactFormatQuery(format: String) = nestedQuery("distributions")
     .query(matchQuery("distributions.format.untokenized", format))
-  def regionIdQuery(region: Region, indices: Indices) = indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), indices.regionsIndexName)
-    .relation(ShapeRelation.INTERSECTS)
-    .shapeIndex(indices.regionsIndexName)
-    .shapePath("geometry")
+  def regionIdQuery(region: Region, indices: Indices)(implicit config: Config) = {
+    indexedGeoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), indices.getType(Indices.RegionsIndexType))
+      .relation(ShapeRelation.INTERSECTS)
+      .shapeIndex(indices.getIndex(config, Indices.RegionsIndex))
+      .shapePath("geometry")
+  }
   def dateFromQuery(dateFrom: OffsetDateTime) = filter(should(
     rangeQuery("temporal.end.date").gte(dateFrom.toString),
     rangeQuery("temporal.start.date").gte(dateFrom.toString)).minimumShouldMatch(1))

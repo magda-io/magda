@@ -2,12 +2,11 @@ package au.csiro.data61.magda.search
 
 import au.csiro.data61.magda.model.misc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.Materializer
 import akka.actor.ActorSystem
 import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
-import au.csiro.data61.magda.search.elasticsearch.ClientProvider
+import au.csiro.data61.magda.search.elasticsearch.{ClientProvider, ElasticSearchIndexer, Indices}
 import com.typesafe.config.Config
 
 trait SearchIndexer {
@@ -17,6 +16,6 @@ trait SearchIndexer {
 }
 
 object SearchIndexer {
-  def apply(clientProvider: ClientProvider, config: Config)(implicit system: ActorSystem, ec: ExecutionContext, materializer: Materializer) =
-    new ElasticSearchIndexer(clientProvider, config)
+  def apply(clientProvider: ClientProvider, indices: Indices)(implicit config: Config, system: ActorSystem, ec: ExecutionContext, materializer: Materializer) =
+    new ElasticSearchIndexer(clientProvider, indices)
 }

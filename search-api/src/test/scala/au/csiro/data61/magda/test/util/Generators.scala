@@ -17,26 +17,48 @@ import com.fortysevendeg.scalacheck.datetime.GenDateTime.genDateTimeWithinRange
 import java.time.ZoneOffset
 import com.vividsolutions.jts.geom
 import com.vividsolutions.jts.operation.valid.IsValidOp
+import java.time.Instant
+import akka.http.scaladsl.model.MediaTypes
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
+import java.util.concurrent.atomic.AtomicInteger
 
 object Generators {
   def biasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
 
   val keyGen = arbitrary[String].suchThat(!_.contains("."))
 
-  val offsetDateTimeGen = for {
-    dateTime <- genDateTimeWithinRange(ZonedDateTime.parse("1900-01-01T00:00:00Z"), Duration.ofDays(100 * 365))
+  val defaultStartTime = ZonedDateTime.parse("1850-01-01T00:00:00Z").toInstant
+  val defaultEndTime = ZonedDateTime.parse("2020-01-01T00:00:00Z").toInstant
+
+  def genInstant(start: Instant, end: Instant) =
+    Gen.choose(start.toEpochMilli(), end.toEpochMilli())
+      .flatMap(Instant.ofEpochMilli(_))
+
+  def offsetDateTimeGen(start: Instant = defaultStartTime, end: Instant = defaultEndTime) = for {
+    dateTime <- genInstant(start, end)
     offsetHours <- Gen.chooseNum(-17, 17)
     offsetMinutes <- Gen.chooseNum(0, 59).map(_ * offsetHours.signum)
     offsetSeconds <- Gen.chooseNum(0, 59).map(_ * offsetHours.signum)
-  } yield dateTime.toInstant().atOffset(
+  } yield dateTime.atOffset(
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds))
+
+  def apiDateGen(start: Instant = defaultStartTime, end: Instant = defaultEndTime) = for {
+    date <- biasedOption(offsetDateTimeGen())
+    text <- if (date.isDefined) Gen.const(date.get.toString) else arbitrary[String]
+  } yield ApiDate(date, text)
+
+  val periodOfTimeGen = (for {
+    start <- biasedOption(apiDateGen())
+    end <- biasedOption(apiDateGen(start.flatMap(_.date).map(_.toInstant).getOrElse(defaultStartTime)))
+  } yield new PeriodOfTime(start, end))
 
   def agentGen(nameGen: Gen[String]) = for {
     name <- biasedOption(nameGen)
     homePage <- biasedOption(arbitrary[String])
     email <- biasedOption(arbitrary[String])
-    extraFields <- Gen.mapOf(Gen.zip(keyGen, arbitrary[String]))
-  } yield new Agent(name, homePage, email, extraFields)
+//    extraFields <- Gen.mapOf(Gen.zip(keyGen, arbitrary[String]))
+  } yield new Agent(name, homePage, email)
 
   val durationGen = for {
     number <- Gen.chooseNum(0l, 100l)
@@ -64,15 +86,15 @@ object Generators {
       case Seq(before, after) => !before.equals(after)
     })
 
-  val gf = new geom.GeometryFactory()
-  implicit def buildJTSPolygon(polygon: Polygon) = {
-    val coords = polygon.coordinates.flatten.map(x => new geom.Coordinate(x.x.toDouble, x.y.toDouble))
-    val lr = gf.createLinearRing(coords.toArray)
-    gf.createPolygon(lr, Array())
-  }
-  implicit def buildJTSMultiPolygon(multiPolygon: MultiPolygon) = {
-    gf.createMultiPolygon(multiPolygon.coordinates.map(x => buildJTSPolygon(Polygon(x))).toArray)
-  }
+  //  val gf = new geom.GeometryFactory()
+  //  implicit def buildJTSPolygon(polygon: Polygon) = {
+  //    val coords = polygon.coordinates.flatten.map(x => new geom.Coordinate(x.x.toDouble, x.y.toDouble))
+  //    val lr = gf.createLinearRing(coords.toArray)
+  //    gf.createPolygon(lr, Array())
+  //  }
+  //  implicit def buildJTSMultiPolygon(multiPolygon: MultiPolygon) = {
+  //    gf.createMultiPolygon(multiPolygon.coordinates.map(x => buildJTSPolygon(Polygon(x))).toArray)
+  //  }
 
   def listSizeBetween[T](min: Int, max: Int, gen: Gen[T]) = Gen.chooseNum(min, max)
     .flatMap(x => Gen.listOfN(x, gen))
@@ -129,6 +151,14 @@ object Generators {
 
   val descWordGen = wordsGen(1000)
   val publisherGen = wordsGen(10)
+  val mediaTypeGen = Gen.oneOf(Seq(
+    MediaTypes.`application/json`,
+    MediaTypes.`application/vnd.google-earth.kml+xml`,
+    MediaTypes.`text/csv`,
+    MediaTypes.`application/json`,
+    MediaTypes.`application/octet-stream`
+  ))
+  val randomFormatGen = wordsGen(10)
 
   def textGen(inner: Gen[List[String]]) = inner
     .flatMap(Gen.someOf(_))
@@ -137,17 +167,57 @@ object Generators {
       case seq => seq.reduce(_ + " " + _)
     }
 
+  val licenseGen = for {
+    name <- biasedOption(arbitrary[String])
+    url <- biasedOption(arbitrary[String])
+  } yield License(name, url)
+
+  val distGen = for {
+    title <- arbitrary[String]
+    description <- biasedOption(arbitrary[String])
+    issued <- biasedOption(offsetDateTimeGen())
+    modified <- biasedOption(offsetDateTimeGen())
+    license <- biasedOption(licenseGen)
+    rights <- biasedOption(arbitrary[String])
+    accessURL <- biasedOption(arbitrary[String])
+    byteSize <- biasedOption(arbitrary[Int])
+    mediaType <- Gen.option(mediaTypeGen)
+    randomFormat <- biasedOption(randomFormatGen.flatMap(Gen.oneOf(_)))
+  } yield Distribution(
+    title = title,
+    description = description,
+    issued = issued,
+    modified = modified,
+    license = license,
+    rights = rights,
+    accessURL = accessURL,
+    byteSize = byteSize,
+    mediaType = mediaType,
+    format = mediaType.flatMap(_.fileExtensions.headOption).orElse(randomFormat)
+  )
+
+  val incrementer: AtomicInteger = new AtomicInteger (0);
+
+
   val dataSetGen = for {
-    identifier <- Gen.uuid
+    identifier <- Gen.delay {
+      incrementer.incrementAndGet()
+    }
     title <- biasedOption(Gen.alphaNumStr)
     catalog <- arbitrary[String]
     description <- biasedOption(textGen(descWordGen))
-    issued <- biasedOption(offsetDateTimeGen)
-    modified <- biasedOption(offsetDateTimeGen)
+    issued <- biasedOption(offsetDateTimeGen())
+    modified <- biasedOption(offsetDateTimeGen())
     language <- biasedOption(arbitrary[String])
     publisher <- biasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
     accrualPeriodicity <- biasedOption(periodicityGen)
-    spatial <- biasedOption(locationGen)
+    spatial <- Gen.option(locationGen)
+    temporal <- biasedOption(periodOfTimeGen)
+    theme <- Gen.listOf(arbitrary[String])
+    keyword <- Gen.listOf(arbitrary[String])
+    contactPoint <- biasedOption(agentGen(arbitrary[String]))
+    distributions <- Gen.nonEmptyListOf(distGen)
+    landingPage <- biasedOption(arbitrary[String])
   } yield DataSet(
     identifier = identifier.toString,
     catalog = catalog,
@@ -158,7 +228,14 @@ object Generators {
     language = language,
     publisher = publisher,
     accrualPeriodicity = accrualPeriodicity,
-    spatial = spatial
+    spatial = spatial,
+    temporal = temporal,
+    theme = theme,
+    keyword = keyword,
+    contactPoint = contactPoint,
+    distributions = distributions,
+    landingPage = landingPage,
+    years = ElasticSearchIndexer.getYears(temporal.flatMap(_.start.flatMap(_.date)), temporal.flatMap(_.end.flatMap(_.date)))
   )
 
 }

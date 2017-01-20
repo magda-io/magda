@@ -1,70 +1,55 @@
 package au.csiro.data61.magda.api
 
 import java.io.File
-import scalaz.Memo
 import java.util.Properties
+import java.util.concurrent.ConcurrentHashMap
 
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
-
-import org.scalatest._
-import org.scalatest.BeforeAndAfter
-import org.scalatest.Matchers
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-
-import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.testkit.ElasticSugar
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-
-import akka.actor.ActorSystem
-import akka.actor.Scheduler
-import akka.event.Logging
-import akka.event.LoggingAdapter
+import akka.actor.{ActorSystem, Scheduler}
+import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
-import akka.http.scaladsl.testkit.RouteTestTimeout
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.api.model.Protocols
-import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.search.elasticsearch.ClientProvider
-import au.csiro.data61.magda.search.elasticsearch.ElasticClientAdapter
-import au.csiro.data61.magda.search.elasticsearch.ElasticClientTrait
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
-import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
-import au.csiro.data61.magda.search.elasticsearch.Indices
-import au.csiro.data61.magda.test.util.Generators._
-import spray.json._
-import org.elasticsearch.common.settings.Settings
-import org.elasticsearch.common.util.concurrent.EsExecutors
-import org.scalactic.anyvals.PosInt
-import au.csiro.data61.magda.model.misc.DataSet
-import org.scalacheck.Gen
 import akka.http.scaladsl.server.Route
-import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.search.elasticsearch.YearFacetDefinition
-import scala.collection.mutable
+import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
+import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.api.model.{Protocols, SearchResult}
+import au.csiro.data61.magda.model.misc.{DataSet, _}
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
+import au.csiro.data61.magda.search.elasticsearch._
+import au.csiro.data61.magda.test.util.Generators._
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.testkit.ElasticSugar
+import com.typesafe.config.{Config, ConfigFactory}
+import org.elasticsearch.common.settings.Settings
+import org.scalacheck.Shrink._
+import org.scalacheck._
+import org.scalactic.anyvals.PosInt
+import org.scalatest.{BeforeAndAfter, Matchers, _}
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import spray.json._
 
-class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with Protocols with GeneratorDrivenPropertyChecks {
+import scala.collection.JavaConverters._
+import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.DurationInt
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.function.Consumer
+
+class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with GeneratorDrivenPropertyChecks {
   override def testConfigSource = "akka.loglevel = WARN"
+  val INSERTION_WAIT_TIME = 45 seconds
   //  override def indexRefresh = - 1 seconds
   val logger = Logging(system, getClass)
   val processors = PosInt.from(Runtime.getRuntime().availableProcessors() / 2).get
+  //      val processors = PosInt.from(1).get
   logger.info("Running with {} processors", processors.toString)
-  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = processors, minSuccessful = 20, sizeRange = 40)
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = processors, minSuccessful = 50, sizeRange = 100)
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(5 seconds)
   override def httpEnabled = false
 
   val properties = new Properties()
   properties.setProperty("regionLoading.cachePath", new File("./src/test/resources").getAbsolutePath())
   val generatedConf = configWith(Map("regionLoading.cachePath" -> new File("./src/test/resources").getAbsolutePath()))
-  val config = generatedConf.withFallback(AppConfig.conf(Some("test")))
+  implicit val config = generatedConf.withFallback(AppConfig.conf(Some("test")))
   override def testConfig = ConfigFactory.empty()
 
   implicit object MockClientProvider extends ClientProvider {
@@ -80,8 +65,8 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
       .put("index.gateway.type", "none")
       .put("index.store.throttle.type", "none")
       .put("index.translog.disable_flush", "true")
-      .put("indices.memory.index_buffer_size", "50%")
-      .put("index.refresh_interval", "-1")
+      .put("index.memory.index_buffer_size", "50%")
+  //      .put("index.refresh_interval", "-1")
 
   //      .put("gateway.type", "none")
 
@@ -90,11 +75,17 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
     var backoff = 0
     var done = false
 
-    while (backoff <= 20 && !done) {
-      Thread.sleep(200 * (backoff))
+    while (backoff <= 10 && !done) {
       backoff = backoff + 1
       try {
         done = predicate()
+
+        if (!done) {
+          println(s"Waiting another ${200 * backoff}ms for $explain")
+          Thread.sleep(200 * (backoff))
+        } else {
+          println(s"$explain is true, proceeding.")
+        }
       } catch {
         case e: Throwable =>
           logger.error(e, "")
@@ -125,65 +116,82 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
   //  val indexGen: Gen[(List[DataSet], Route)] = Gen.parameterized(params => indexGenInner(params.size))
 
-  def indexName(rawIndexName: String): String = rawIndexName + 1
-
   var generatedIndexCount = 0
 
-  var genCache: mutable.Map[Int, Future[(List[DataSet], Route)]] = mutable.Map()
+  var genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
 
-  def indexGen: Gen[(List[DataSet], Route)] =
+  case class FakeIndices(rawIndexName: String) extends Indices {
+    override def getIndex(config: Config, index: Indices.Index): String = rawIndexName
+  }
+
+  implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
+    case (indexName, dataSets, route) =>
+      println(s"preshrink: ${dataSets.size}")
+      shrink(dataSets).map(dataSets => {
+        println(s"postshrink: ${dataSets.size}")
+        val result = putDataSetsInIndex(dataSets).await(INSERTION_WAIT_TIME)
+
+        cleanUpQueue.add(result._1)
+
+        result
+      })
+  }
+
+  def indexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
       Gen.size.flatMap { size =>
-        val cacheKey = size
+        val cacheKey = if (size < 10) size
+        else if (size < 50) size - size % 5
+        else size - size % 10
 
-        genCache.get(cacheKey) match {
+        Option(genCache.get(cacheKey)) match {
+          //                  Option.empty[Future[(List[DataSet], Route)]] match {
           case None =>
-            Gen.listOf(dataSetGen).map { dataSetsRaw =>
+            Gen.listOfN(size, dataSetGen).map { dataSetsRaw =>
               val dataSets = dataSetsRaw.groupBy(_.identifier).mapValues(_.head).values.toList
               val dataSetCount = dataSets.size
-              genCache.put(cacheKey, Future {
-                generatedIndexCount += 1
-                println(s"Cache miss for for ${cacheKey}: $generatedIndexCount misses so far")
-
-                val rawIndexName = java.util.UUID.randomUUID.toString
-
-                client.execute(IndexDefinition.datasets.definition(Some(indexName(rawIndexName)))).await
-                blockUntilGreen()
-
-                implicit val thisConf = configWith(Map(s"elasticsearch.indexes.$rawIndexName.version" -> "1")).withFallback(config)
-                val searchQueryer = new ElasticSearchQueryer(new Indices(rawIndexName, "regions"))
-                val api = new Api(logger, searchQueryer)
-
-                val creationFuture = if (!dataSets.isEmpty) {
-                  client.execute(bulk(
-                    dataSets.map(dataSet =>
-                      index into indexName(rawIndexName) / IndexDefinition.datasets.name id dataSet.identifier source dataSet.toJson
-                    )
-                  )).map { _ =>
-                    client.execute(refreshIndex(indexName(rawIndexName)))
-                  } recover {
-                    case e: Throwable =>
-                      logger.error(e, "")
-                      throw e
-                  }
-                } else Future.successful(Unit)
-
-                creationFuture.await(60 seconds)
-                refresh(indexName(rawIndexName)).await(60 seconds)
-
-                blockUntilCount(dataSetCount, indexName(rawIndexName))
-
-                (dataSets, api.routes)
-              })
-
-              genCache.get(cacheKey).get.await(60 seconds)
+              println(s"Cache miss for for ${cacheKey}")
+              genCache.put(cacheKey, putDataSetsInIndex(dataSets))
+              genCache.get(cacheKey).await(INSERTION_WAIT_TIME)
             }
           case Some(cachedValue) =>
-            println(s"Cache hit for ${cacheKey}!")
-            cachedValue.await(30 seconds)
+            val value = cachedValue.await(INSERTION_WAIT_TIME)
+
+            println(s"Cache hit for ${cacheKey}: ${value._2.size}")
+
+            value
         }
       }
     }
+
+  def putDataSetsInIndex(dataSets: List[DataSet]): Future[(String, List[DataSet], Route)] = {
+    val rawIndexName = java.util.UUID.randomUUID.toString
+    val fakeIndices = FakeIndices(rawIndexName)
+
+    val indexName = fakeIndices.getIndex(config, Indices.DataSetsIndex)
+    client.execute(IndexDefinition.datasets.definition(config, fakeIndices)).await
+    blockUntilGreen()
+
+    //                implicit val thisConf = configWith(Map(s"elasticsearch.indexes.$rawIndexName.version" -> "1")).withFallback(config)
+    val searchQueryer = new ElasticSearchQueryer(fakeIndices)
+    val api = new Api(logger, searchQueryer)
+
+    if (!dataSets.isEmpty) {
+      client.execute(bulk(
+        dataSets.map(dataSet =>
+          index into indexName / fakeIndices.getType(Indices.DataSetsIndexType) id dataSet.identifier source dataSet.toJson)
+      )).flatMap { _ =>
+        client.execute(refreshIndex(indexName))
+      }.map { _ =>
+        blockUntilCount(dataSets.size, indexName)
+        (indexName, dataSets, api.routes)
+      } recover {
+        case e: Throwable =>
+          logger.error(e, "")
+          throw e
+      }
+    } else Future.successful((indexName, List[DataSet](), api.routes))
+  }
   //
   //  val blah3Gen = blah2Gen.flatMap { listOfLists =>
   //    Gen.oneOf(listOfLists)
@@ -228,7 +236,7 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
   "searching *" should "return all results" in {
     forAll(indexGen) {
-      case (dataSets, routes) =>
+      case (indexName, dataSets, routes) =>
         Get(s"/datasets/search?query=*&limit=${dataSets.length}") ~> routes ~> check {
           status shouldBe OK
           contentType shouldBe `application/json`
@@ -237,15 +245,13 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
           response.hitCount shouldEqual dataSets.length
           response.dataSets shouldEqual dataSets
-
-          //          client.execute(deleteIndex(indexName))
         }
     }
   }
 
   "hitCount" should "reflect all hits in the system, not just what is returned" in {
     forAll(indexGen) {
-      case (dataSets, routes) =>
+      case (indexName, dataSets, routes) =>
         Get(s"/datasets/search?query=*&limit=${dataSets.length / 2}") ~> routes ~> check {
           val response = responseAs[SearchResult]
 
@@ -257,7 +263,7 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
   "querying a dataset's title" should "return that dataset" in {
     forAll(indexGen) {
-      case (dataSetsRaw, routes) =>
+      case (indexName, dataSetsRaw, routes) =>
         val dataSets = dataSetsRaw.filter(dataSet => dataSet.title.isDefined && !dataSet.title.get.isEmpty())
 
         whenever(!dataSets.isEmpty) {
@@ -275,7 +281,7 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
   "pagination" should "match the result of getting all datasets and using .drop(start).take(limit) to select a subset" in {
     forAll(indexGen) {
-      case (dataSets, routes) =>
+      case (indexName, dataSets, routes) =>
         val dataSetCount = dataSets.size
 
         val starts = for (n <- Gen.choose(0, dataSetCount)) yield n
@@ -299,7 +305,7 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
   "publisher facet" should "be consistent with grouping all the facet results by publisher id" in {
     forAll(indexGen, queryGen, facetSizes) { (tuple, query, facetSize) =>
-      val (dataSets, routes) = tuple
+      val (indexName, dataSets, routes) = tuple
 
       whenever(facetSize > 0 && query.matches("""[^.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]"']*""")) {
         Get(s"/datasets/search?query=${encodeForUrl(query)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
@@ -319,7 +325,7 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
   "year facet" should "generate even, non-overlapping facets" in {
     forAll(indexGen, queryGen, facetSizes) { (tuple, query, facetSize) =>
-      val (dataSets, routes) = tuple
+      val (indexName, dataSets, routes) = tuple
 
       whenever(facetSize > 0 && query.matches("""[^.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]"']*""")) {
         Get(s"/datasets/search?query=${encodeForUrl(query)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
@@ -349,7 +355,7 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
   "year facet" should "be consistent with grouping all the facet results by temporal coverage year" in {
     forAll(indexGen, queryGen, facetSizes) { (tuple, query, facetSize) =>
-      val (dataSets, routes) = tuple
+      val (indexName, dataSets, routes) = tuple
 
       whenever(facetSize > 0 && query.matches("""[^.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]"']*""")) {
         Get(s"/datasets/search?query=${encodeForUrl(query)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
@@ -371,7 +377,7 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
 
   "format" should "be consistent with grouping all the facet results by format" in {
     forAll(indexGen, queryGen, facetSizes) { (tuple, query, facetSize) =>
-      val (dataSets, routes) = tuple
+      val (indexName, dataSets, routes) = tuple
 
       whenever(facetSize > 0 && query.matches("""[^.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]"']*""")) {
         Get(s"/datasets/search?query=${encodeForUrl(query)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
@@ -389,4 +395,30 @@ class ApiSpec extends FlatSpec with Matchers with ScalatestRouteTest with Elasti
     }
   }
 
+  val cleanUpQueue = new ConcurrentLinkedQueue[String]()
+
+  def cleanUpIndexes() = {
+    cleanUpQueue.iterator().forEachRemaining(
+      new Consumer[String] {
+        override def accept(indexName: String) = {
+          println(s"Deleting index $indexName")
+          client.execute(deleteIndex(indexName)).await()
+          cleanUpQueue.remove()
+        }
+      }
+    )
+  }
+
+  after {
+    cleanUpIndexes()
+  }
+
+  override def afterAll() = {
+    super.afterAll()
+
+    println("cleaning up cache")
+
+    Future.sequence((genCache.values).asScala.map(future =>
+      future.flatMap { case (indexName, _, _) => client.execute(deleteIndex(indexName)) })).await(60 seconds)
+  }
 }
