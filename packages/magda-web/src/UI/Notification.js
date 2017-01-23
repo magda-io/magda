@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import './Notification.css';
 class Notification extends Component {
     render(){
-      return <div className={`notification notification-${this.props.type}`}>
-                <div className='notification-inner'>
-                  <div className='notification-heading'>{this.props.type}</div>
-                  <div className='notification-body'>{this.props.content}</div>
-                  <button className='btn notification-dismiss-btn'
+      return <div className={`notification notification__${this.props.type}`}>
+                <div className='notification__inner'>
+                  <div className='notification__heading'>{this.props.type}</div>
+                  <div className='notification__body'>{this.props.content}</div>
+                  <button className='btn notification__dismiss-btn'
                           onClick={this.props.onDismiss}>
                           Dismiss
                   </button>

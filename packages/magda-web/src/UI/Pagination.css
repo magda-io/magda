@@ -1,28 +1,28 @@
-.pagination-group{
+.pagination__group{
   display: table;
   width: 100%;
   margin-bottom: 30px;
 }
 
-.pagination-group li{
+.pagination__group li{
   display: table-cell;
 }
 
-.pagination-next{
+.pagination__next{
   width: 60%;
   text-align: right;
 }
 
-.pagination-start{
+.pagination__start{
   text-align: left;
 }
 
-.pagination-secondary-info{
+.pagination__secondary-info{
   font-size: 13px;
   color: #aaa;
 }
 
-.pagination-btn{
+.pagination__btn{
   background: transparent;
   color: #2980b9;
   font-size: 1.2em;
@@ -31,16 +31,16 @@
   line-height: 1.6;
 }
 
-.pagination-btn .fa{
+.pagination__btn .fa{
   font-size: 1.6em;
   vertical-align: top;
 }
 
-.pagination-next .fa{
+.pagination__next .fa{
   padding-left: 10px;
 }
 
-.pagination-previous .fa,
-.pagination-start .fa{
+.pagination__previous .fa,
+.pagination__start .fa{
   padding-right: 10px;
 }

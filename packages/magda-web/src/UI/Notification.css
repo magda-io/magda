@@ -1,19 +1,19 @@
-.notification-error .notification-heading{
+.notification__error .notification__heading{
 	background: #e74c3c;
 	color: #fff;
 	padding: 10px;
 }
 
 
-.notification-error button{
+.notification__error button{
   padding: 5px 10px;
   margin: 10px;
   background: #e74c3c;
 	color: #fff;
 }
 
-.notification-error button:hover,
-.notification-error button:focus{
+.notification__error button:hover,
+.notification__error button:focus{
   color: #fff;
   background: #e67e22;
 }
@@ -30,17 +30,17 @@
 }
 
 
-.notification-inner{
+.notification__inner{
   background: #fff;
 
 }
 
-.notification-body{
+.notification__body{
   padding: 10px;
 }
 
 
-.notification-inner{
+.notification__inner{
   height: auto;
   width: 300px;
   margin: 0 auto;
@@ -50,6 +50,6 @@
   transform: translateY(-50%);
 }
 
-.notification-heading{
+.notification__heading{
   text-transform: uppercase;
 }

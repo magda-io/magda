@@ -3,12 +3,9 @@
     position: relative;
 }
 
-
 .facet-wrapper .btn{
-   border: 0;
    box-shadow: 0;
 }
-
 
 .facet-wrapper .btn-reset,
 .facet-wrapper .btn-toggle-expand{
@@ -136,13 +133,4 @@
   vertical-align: baseline;
   display: inline-block;
   padding-left: 3px;
-}
-
-.map{
-    height: 200px;
-    margin-top: 10px;
-}
-
-.map .leaflet-control-attribution{
-    display: none;
 }

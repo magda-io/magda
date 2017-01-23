@@ -7,8 +7,7 @@
     z-index: 9999;
     background: rgba(0, 0, 0, 0.3);
 }
-
-.popup .popup-inner{
+.popup__inner{
     position: relative;
     margin: 10vh auto;
     height: 80vh;
@@ -22,42 +21,42 @@
     background: #fff;
 }
 
-.popup .popup-body{
+.popup__body{
   height: calc(100% - 80px);
   width: 100%;
   padding: 10px 20px;
   position: relative;
 }
 
-.popup .popup-map{
+.popup__map{
   height: calc(100% - 40px);
 }
 
-.popup .popup-footer{
+.popup__footer{
   padding: 0 20px;
 }
 
-.popup .popup-header{
+.popup__header{
   background: #dcdfe1;
 }
 
-.popup .popup-footer .btn{
+.popup__footer .btn{
   float: right;
 }
 
-.popup .popup-done-btn,
-.popup .popup-cancel-btn{
+.popup__done-btn,
+.popup__cancel-btn{
   background: #3498db;
   color: #fff;
   border-radius: 1px
 }
 
-.popup .popup-cancel-btn{
+.popup__cancel-btn{
   background: #7f8c8d;
   margin-left: 10px;
 }
 
-.popup-close-btn{
+.popup__close-btn{
   text-align: right;
   padding: 6px 6px;
   float: right;
@@ -65,7 +64,7 @@
   background: rgba(255, 255, 255, 0);
 }
 
-.popup .map{
+.popup__map{
     width: 100%;
     height: 100%;
 }

@@ -29,13 +29,13 @@ class DropDown extends Component {
   render(){
     return (
       <div className={`dropdown ${this.state.isOpen ? 'is-open': ''}`}>
-        <button className='btn-dropdown btn'
+        <button className='dropdown__toggle-btn btn'
                 onClick={this.toggle}>{this.props.activeOption}
                 <i className='fa fa-caret-down' aria-hidden='true'></i>
         </button>
-        <ul className='list-unstyled dropdown-options'>
+        <ul className='list-unstyled dropdown__options'>
           {this.props.options.map(o=>
-          <li key={o.id}><button className='btn btn-dropdown--option'  onClick={this.select.bind(this, o)}>{o.value}</button></li>)}
+          <li key={o.id}><button className='btn dropdown__option-btn'  onClick={this.select.bind(this, o)}>{o.value}</button></li>)}
         </ul>
 
       </div>

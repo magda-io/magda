@@ -1,14 +1,8 @@
-
-.result-title{
-    font-size: 18px;
-    color: #2980b9;
-}
-
-.search-result{
+.search-results__result{
   background: #fff;
 }
 
-.search-results-count{
+.search-results__count{
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   color: #2B2B2B ;

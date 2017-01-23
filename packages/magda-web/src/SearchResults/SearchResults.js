@@ -31,7 +31,7 @@ class SearchResults extends Component {
   getSummaryText(){
     if(this.props.searchResults.length){
       return (
-          <div className='search-results-count'>
+          <div className='search-results__count'>
             {this.props.totalNumberOfResults} results found
           </div>);
     }
@@ -45,7 +45,7 @@ class SearchResults extends Component {
         <ul className='list-unstyled'>
         {
           this.props.searchResults.map((result, i)=>
-            <li key={result.title + i}  className='search-result'>
+            <li key={result.title + i}  className='search-results__result'>
               <DatasetSummary dataset={result}
                               onClickDataset={this.onToggleExpandDataset.bind(this, result)}
                               isExpanded={this.state.expandedItem === result}

@@ -89,17 +89,17 @@ class RegionPopup extends Facet {
         console.log(this.getActiveRegionType());
         return (
             <div className='popup'>
-              <div className='popup-inner'>
-              <div className='popup-header clearfix'>
+              <div className='popup__inner'>
+              <div className='popup__header clearfix'>
                 <div className='col-xs-11'>
                   <h4 className='facet-title'>Location</h4>
                 </div>
                 <div className='col-xs-1'>
-                  <button className='btn popup-close-btn' onClick={()=>this.props.closePopUp()}><i className='fa fa-times' aria-hidden='true'></i></button>
+                  <button className='btn popup__close-btn' onClick={()=>this.props.closePopUp()}><i className='fa fa-times' aria-hidden='true'></i></button>
                 </div>
               </div>
-              <div className='popup-body clearfix'>
-                  <div className='popup-tools row'>
+              <div className='popup__body clearfix'>
+                  <div className='popup__tools row'>
                     <div className='col-sm-6'>
                       <FacetSearchBox renderOption={this.props.renderOption}
                                       options={this.props.facetSearchResults}
@@ -116,7 +116,7 @@ class RegionPopup extends Facet {
                     </div>
                   </div>
                   <RegionSummray region={this.state._activeRegion}/>
-                  <div className='popup-map'>
+                  <div className='popup__map'>
                     <RegionMap title='region'
                                id='region'
                                interaction={true}
@@ -127,9 +127,9 @@ class RegionPopup extends Facet {
 
                   </div>
                   </div>
-                  <div className='popup-footer clearfix'>
-                    <button className='btn popup-cancel-btn' onClick={()=>this.props.closePopUp()} >Cancel</button>
-                    <button className='btn popup-done-btn' disabled={!defined(this.state._activeRegion)} onClick={this.onClickDone} >Apply</button>
+                  <div className='popup__footer clearfix'>
+                    <button className='btn popup__cancel-btn' onClick={()=>this.props.closePopUp()} >Cancel</button>
+                    <button className='btn popup__done-btn' disabled={!defined(this.state._activeRegion)} onClick={this.onClickDone} >Apply</button>
                   </div>
               </div>
             </div>

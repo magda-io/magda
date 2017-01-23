@@ -2,13 +2,13 @@
   position: relative;
 }
 
-.star-btn, .star-btn:focus{
+.star__btn, .star__btn:focus{
     background: rgba(255, 255, 255, 0);
     vertical-align: text-top;
     color: #bbb;
 }
 
-.star-info{
+.star__info{
   position: absolute;
   left: -20px;
   top: 37px;
@@ -19,7 +19,7 @@
   z-index: 9;
 }
 
-.star-info:before{
+.star__info:before{
   content: '';
   width: 20px;
   height: 20px;

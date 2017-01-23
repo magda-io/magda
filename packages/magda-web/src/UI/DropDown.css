@@ -2,14 +2,14 @@
   display: relative;
 }
 
-.dropdown .btn-dropdown{
+.dropdown__toggle-btn{
   height: 34px;
 	border-radius: 1px;
 	background-color: rgba(255, 255, 255, 0.83);
 	border: solid 1px #bdc3c7;
 }
 
-.dropdown .btn-dropdown .fa{
+.dropdown__toggle-btn .fa{
   position: absolute;
   right: 10px;
   top: 10px;
@@ -27,11 +27,11 @@
   color: #fff;
 }
 
-.dropdown.is-open .dropdown-options{
+.dropdown.is-open .dropdown__options{
   display: block;
 }
 
-.dropdown-options{
+.dropdown__options{
   display: none;
   position: absolute;
   top: 34px;
@@ -46,6 +46,6 @@
 }
 
 
-.dropdown-options li{
+.dropdown__options li{
   display: block;
 }

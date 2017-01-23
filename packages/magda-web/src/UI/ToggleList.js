@@ -25,7 +25,7 @@ class ToggleList extends Component {
                 {list.length - tempSize > 0 &&
                   <li>
                     <button onClick={this.onClick}
-                          className='btn btn-toggle-expand'>
+                          className='btn toggle-list__toggle-expand-btn'>
                            {this.state.isExpanded ? `Show less` : `+ Show ${list.length - tempSize} more`}
                     </button>
                   </li>

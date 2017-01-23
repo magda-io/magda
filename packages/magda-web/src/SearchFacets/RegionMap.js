@@ -124,7 +124,7 @@ class RegionMap extends Facet {
     render(){
         return (
             <div className='region-map'>
-              <div className='map' ref={(c) => {this._c = c}}/>
+              <div className='region-map__map' ref={(c) => {this._c = c}}/>
             </div>
       );
     }
