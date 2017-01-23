@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import find from 'lodash.find';
 
-
 import './Recommendations.css';
-
 class Recommendations extends Component {
   constructor(props) {
     super(props);
@@ -64,21 +62,21 @@ class Recommendations extends Component {
       let restOfOptions = suggestedOptions.slice(1, suggestedOptions.length-1);
       return (
         <div className={`search-recomendation clearfix ${this.state.isVisible ? '' : 'hidden'}`} >
-            <div className='main'>
+            <div className='search-recomendation__main'>
               {this.props.description}
-              <button className='search-recomendation-option-btn btn'
+              <button className='search-recomendation__option-btn btn'
                       onClick={this.onClick.bind(this, topSugguestion)}>
                       {topSugguestion.value}
               </button> ?
             </div>
           {restOfOptions.length > 0 &&
-            <div className='more-options'>
-              <button onClick={this.onToggle} className='more-option-btn btn'>
+            <div className='search-recomendation__more-options'>
+              <button onClick={this.onToggle} className='search-recomendation__more-option-btn btn'>
                 More
-                <i className='fa fa-caret-down' aria-hidden="true"></i>
+              
               </button>
               {this.state.isOpen &&
-                <ul className='list-unstyled more-options-options'>
+                <ul className='list-unstyled search-recomendation__more-options-options'>
                   {restOfOptions.map(o=>
                     <li key={o.value}>{this.renderOption(o)}</li>
                   )}

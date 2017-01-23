@@ -5,7 +5,7 @@
   padding: 10px 15px;
 }
 
-.search-recomendation-option-btn{
+.search-recomendation__option-btn{
   background: none;
   font-weight: 600;
   color: #FFFFFF;
@@ -17,18 +17,20 @@
   font-style: italic;
 }
 
-.search-recomendation-option-btn:hover{
+.search-recomendation__option-btn:hover,
+.search-recomendation__more-option-btn:hover,
+.search-recomendation__more-option-btn:focus{
   color: #ecf0f1;
   text-decoration: underline;
 }
 
-.more-option-btn{
+.search-recomendation__more-option-btn{
   background: rgba(255, 255, 255, 0);
-  color: #3498db;
+  color: #ffffff;
   padding: 0;
 }
 
-.more-options-options{
+.search-recomendation__more-options-options{
   position: absolute;
   background: #fff;
   z-index: 999;
@@ -36,14 +38,36 @@
   right: 0;
 }
 
-.search-recomendation .main{
+.search-recomendation__main{
   width: calc(100% - 50px);
   float: left;
 }
 
-.search-recomendation .more-options{
-  width: 50px;
-  float: left;
+.search-recomendation__more-options{
+  float: right;
+}
+
+.btn-suggested-option{
+	background: transparent;
+	font-weight: bold;
+	font-style: italic;
+	padding: 0 10px 0 0;
+}
+
+.btn-suggested-option:hover{
+	text-decoration: underline;
+}
+
+.btn-suggested-option.is-active{
+	color: #3498db;
+}
+
+.btn-suggested-option.is-active:after{
+	content: '\f00d';
+	font-family: 'FontAwesome';
+	display: inline-block;
+	width: 10px;
+	height: 10px;
 }
 
 @media (max-width: 768px) {

@@ -1,0 +1,12 @@
+.no-matching{
+	padding: 10px;
+	font-weight: 600;
+	background: #dcdfe1;
+	margin: 15px;
+}
+
+@media (max-width: 768px) {
+	.no-matching{
+		margin: 15px 0;
+	}
+}
