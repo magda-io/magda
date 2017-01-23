@@ -29,7 +29,9 @@ object Generators {
   val keyGen = arbitrary[String].suchThat(!_.contains("."))
 
   val defaultStartTime = ZonedDateTime.parse("1850-01-01T00:00:00Z").toInstant
+  val defaultTightStartTime = ZonedDateTime.parse("2000-01-01T00:00:00Z").toInstant
   val defaultEndTime = ZonedDateTime.parse("2020-01-01T00:00:00Z").toInstant
+  val defaultTightEndTime = ZonedDateTime.parse("2015-01-01T00:00:00Z").toInstant
 
   def genInstant(start: Instant, end: Instant) =
     Gen.choose(start.toEpochMilli(), end.toEpochMilli())
@@ -41,23 +43,29 @@ object Generators {
     offsetMinutes <- Gen.chooseNum(0, 59).map(_ * offsetHours.signum)
     offsetSeconds <- Gen.chooseNum(0, 59).map(_ * offsetHours.signum)
   } yield dateTime.atOffset(
-    ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds))
+    ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds)
+  )
 
-  def apiDateGen(start: Instant = defaultStartTime, end: Instant = defaultEndTime) = for {
-    date <- biasedOption(offsetDateTimeGen())
+  def apiDateGen(start: Instant, end: Instant) = for {
+    date <- biasedOption(offsetDateTimeGen(start, end))
     text <- if (date.isDefined) Gen.const(date.get.toString) else arbitrary[String]
   } yield ApiDate(date, text)
 
   val periodOfTimeGen = (for {
-    start <- biasedOption(apiDateGen())
-    end <- biasedOption(apiDateGen(start.flatMap(_.date).map(_.toInstant).getOrElse(defaultStartTime)))
-  } yield new PeriodOfTime(start, end))
+    startTime <- Gen.frequency((9, Gen.const(defaultTightStartTime)), (1, defaultStartTime))
+    endTime <- Gen.frequency((9, Gen.const(defaultTightEndTime)), (1, defaultEndTime))
+    start <- biasedOption(apiDateGen(startTime, endTime))
+    end <- biasedOption(apiDateGen(start.flatMap(_.date).map(_.toInstant).getOrElse(startTime), endTime))
+  } yield new PeriodOfTime(start, end)).suchThat {
+    case PeriodOfTime(Some(ApiDate(Some(start), _)), Some(ApiDate(Some(end), _))) => start.isBefore(end)
+    case _ => true
+  }
 
   def agentGen(nameGen: Gen[String]) = for {
     name <- biasedOption(nameGen)
     homePage <- biasedOption(arbitrary[String])
     email <- biasedOption(arbitrary[String])
-//    extraFields <- Gen.mapOf(Gen.zip(keyGen, arbitrary[String]))
+    //    extraFields <- Gen.mapOf(Gen.zip(keyGen, arbitrary[String]))
   } yield new Agent(name, homePage, email)
 
   val durationGen = for {
@@ -100,12 +108,12 @@ object Generators {
     .flatMap(x => Gen.listOfN(x, gen))
 
   val pointGen = coordGen.map(Point.apply)
-  val multiPointGen = Gen.nonEmptyListOf(coordGen).map(MultiPoint.apply)
+  val multiPointGen = listSizeBetween(1, 10, coordGen).map(MultiPoint.apply)
   val lineStringGenInner = nonConsecutiveDuplicates(2, 5, coordGen)
   val lineStringGen = lineStringGenInner.map(LineString.apply)
   val multiLineStringGen = listSizeBetween(1, 10, lineStringGenInner)
     .map(MultiLineString.apply)
-  val polygonGenInner = listSizeBetween(3, 10, Gen.zip(Gen.choose(10, 90)))
+  val polygonGenInner = listSizeBetween(3, 10, Gen.zip(Gen.choose(1, 90)))
     .map(_.sorted)
     .map(list => list.zipWithIndex.map {
       case (hypotenuse, index) =>
@@ -196,8 +204,7 @@ object Generators {
     format = mediaType.flatMap(_.fileExtensions.headOption).orElse(randomFormat)
   )
 
-  val incrementer: AtomicInteger = new AtomicInteger (0);
-
+  val incrementer: AtomicInteger = new AtomicInteger(0);
 
   val dataSetGen = for {
     identifier <- Gen.delay {

@@ -46,8 +46,8 @@ package misc {
   case class FacetOption(
     value: String,
     hitCount: Long,
-    upperBound: Option[String] = None,
-    lowerBound: Option[String] = None,
+    upperBound: Option[Int] = None,
+    lowerBound: Option[Int] = None,
     matched: Option[Boolean] = None
   )
 

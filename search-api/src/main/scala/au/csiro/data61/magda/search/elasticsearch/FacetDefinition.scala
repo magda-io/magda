@@ -5,7 +5,7 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
-import com.sksamuel.elastic4s.{ AbstractAggregationDefinition, QueryDefinition }
+import com.sksamuel.elastic4s.{AbstractAggregationDefinition, QueryDefinition}
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
@@ -168,8 +168,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
   }
 
   val parseFacets = Memo.mutableHashMapMemo((facets: Seq[FacetOption]) => facets
-    .map(facet => (facet.value.split("-").map(_.toInt), facet.hitCount))
-  )
+    .map(facet => (facet.value.split("-").map(_.toInt), facet.hitCount)))
 
   def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)], firstYearOpt: Option[Int], lastYearOpt: Option[Int]): Seq[FacetOption] = {
     lazy val yearsFromFacets = parseFacets(facets)
@@ -221,10 +220,13 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
           FacetOption(
             value = if (bucketStart != bucketEnd) s"$bucketStart - $bucketEnd" else bucketStart.toString,
             hitCount,
-            lowerBound = Some(bucketStart.toString),
-            upperBound = Some(bucketEnd.toString)
+            lowerBound = Some(bucketStart),
+            upperBound = Some(bucketEnd)
           )
-      }.filter(_.hitCount > 0)
+      }
+        .filter(_.hitCount > 0)
+//        .sortBy(_.lowerBound)
+//        .reverse
   }
 
   def roundUp(num: Int, divisor: Int): Int = Math.ceil((num.toDouble / divisor)).toInt * divisor
@@ -314,7 +316,8 @@ object FormatFacetDefinition extends FacetDefinition {
     format => WeightedLevenshteinMetric(10, 0.1, 1).compare(format.toLowerCase, filterOption.value.toLowerCase) match {
       case Some(distance) => distance < 1.5
       case None           => false
-    })
+    }
+  )
 
   override def removeFromQuery(query: Query): Query = query.copy(formats = Set())
   override def facetSearchQuery(textQuery: String) = Query(formats = Set(textQuery))
