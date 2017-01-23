@@ -68,7 +68,7 @@ class FacetRegion extends Component {
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
                <RegionSummary region={this.props.activeRegion} regionMapping={this.props.regionMapping}/>
-               <div className='preview'>
+               <div className='facet-region__preview'>
                   <RegionMap title='location'
                              id='location'
                              onClick={this.openPopup}

@@ -1,11 +1,7 @@
-.active-region{
-  background: #3498db;
-  color: #fff;
-  padding: 5px;
-  margin-top: -8px;
+.facet-region__preview{
+    height: 300px;
 }
 
-.region-type {
-	font-size: small;
-	color: #ccc;
+.facet-region__preview .map{
+    height: 100%;
 }

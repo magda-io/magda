@@ -31,7 +31,7 @@
 }
 
 
-.facet-search-box .faceted-options{
+.facet-search-box__options{
   position: absolute;
   background: #dcdfe1;
   z-index: 9999;

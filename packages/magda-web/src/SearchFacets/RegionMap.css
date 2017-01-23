@@ -7,13 +7,6 @@
     margin-top: 0;
 }
 
-.preview{
-    height: 300px;
-}
-
-.preview .map{
-    height: 100%;
-}
 .leaflet-left .leaflet-control {
     margin-top: 50px;
 }

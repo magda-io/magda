@@ -13,7 +13,7 @@ class WelcomeText extends Component {
     this.props.onClick(text);
   }
   render(){
-    return (<div className='welcome-text'> <div className='intro'>Try searching for</div>
+    return (<div className='welcome-text'> <div className='welcome-text__intro'>Try searching for</div>
                 <ul className='list-unstyled'>{config.exampleSearch.map(e=>
                       <li key={e}> <a href='#' onClick={this.onClick.bind(this, e)}>{e}</a></li>
                     )}

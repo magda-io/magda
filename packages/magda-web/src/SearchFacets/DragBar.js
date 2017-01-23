@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import debounce from 'lodash.debounce';
 import {event as d3Event, select as d3Select} from 'd3-selection';
 import {drag as d3Drag} from 'd3-drag';
+import './DragBar.css';
 
 const r = 15;
 const color = '#3498db';

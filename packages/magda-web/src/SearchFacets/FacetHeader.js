@@ -4,7 +4,6 @@ import './FacetHeader.css';
   * Facet header component, contains a title of the facet and a reset button when there is a active facet
   */
 class FacetHeader extends Component {
-
   renderResetButton(){
     if(this.props.hasQuery){
       return <button type='button'
@@ -20,7 +19,7 @@ class FacetHeader extends Component {
 
     return (
       <div className='clearfix facet-header'>
-        <h4 className='facet-title'>{this.props.title}</h4>
+        <h4 className='facet-header__title'>{this.props.title}</h4>
         {this.renderResetButton()}
       </div>
       );
