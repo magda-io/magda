@@ -48,7 +48,7 @@ package misc {
     hitCount: Long,
     upperBound: Option[Int] = None,
     lowerBound: Option[Int] = None,
-    matched: Option[Boolean] = None
+    matched: Boolean = false
   )
 
   case class DataSet(

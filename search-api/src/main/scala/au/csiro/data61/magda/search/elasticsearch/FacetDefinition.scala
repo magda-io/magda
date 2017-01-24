@@ -146,7 +146,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
       case (matched, Nil)   => super.truncateFacets(query, makeBins(matched, limit, None, firstYear, lastYear), Nil, Nil, limit)
       case (Nil, unmatched) => super.truncateFacets(query, Nil, Nil, makeBins(unmatched, limit, None, None, None), limit)
       case (matched, unmatched) =>
-        val matchedBins = makeBins(matched, limit, None, firstYear, lastYear).map(_.copy(matched = Some(true)))
+        val matchedBins = makeBins(matched, limit, None, firstYear, lastYear).map(_.copy(matched = true))
 
         val hole = matchedBins match {
           case Nil => None

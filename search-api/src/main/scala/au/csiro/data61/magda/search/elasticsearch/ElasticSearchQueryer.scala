@@ -92,7 +92,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
               case None            => Nil
             }).filter(definition.isFilterOptionRelevant(query))
-              .map(_.copy(matched = Some(true)))
+              .map(_.copy(matched = true))
 
           // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
           // display it to them to show them that it does *exist* but not for this query
@@ -105,7 +105,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 )
               }
               .flatMap {
-                case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0)) else None
+                case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0, matched = true)) else None
               }
               .toSeq
 

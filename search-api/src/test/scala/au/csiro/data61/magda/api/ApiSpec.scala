@@ -45,7 +45,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
   val processors = Math.max(Runtime.getRuntime().availableProcessors() / 2, 2)
   //      val processors = 1
   logger.info("Running with {} processors", processors.toString)
-  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(10))
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(50))
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(5 seconds)
   override def httpEnabled = false
 
@@ -117,7 +117,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
   implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
     case (indexName, dataSets, route) =>
-      println("shrinking!")
       logger.info("preshrink: {}", dataSets.size)
       shrink(dataSets).map(dataSets => {
         logger.info("postshrink: {}", dataSets.size)
@@ -131,7 +130,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
   implicit def textQueryShrinker(implicit s: Shrink[String], s1: Shrink[Query]): Shrink[(String, Query)] = Shrink[(String, Query)] {
     case (queryString, queryObj) =>
-      println("Shrinking query")
       shrink(queryObj).map { shrunkQuery =>
         val list = Seq(shrunkQuery.freeText).flatten ++
           shrunkQuery.quotes.map(""""""" + _ + """"""") ++
@@ -299,8 +297,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
           objQuery.formats.forall(_.matches(LUCENE_CONTROL_CHARACTER_REGEX)) &&
           objQuery.publishers.forall(_.matches(LUCENE_CONTROL_CHARACTER_REGEX))
 
-        println(textQuery)
-
         whenever(valid) {
           Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
             inner(responseAs[SearchResult].dataSets, facetSize, objQuery)
@@ -327,14 +323,16 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
           publisherFacet.options.size should be <= facetSize
 
-          if (publisherFacet.options.size < facetSize) {
-            publisherFacet.options.size should be(groupedResult.size)
-          }
+          //          if (publisherFacet.options.size < facetSize) {
+          //            publisherFacet.options.size should be(groupedResult.size)
+          //          }
 
           publisherFacet.options.foreach { facetOption =>
-            withClue(s"With publishers (${dataSets.map(_.publisher.flatMap(_.name).getOrElse("None")).mkString(",")}) and facetOption ${facetOption.value}: ") {
-              groupedResult.contains(facetOption.value) should be (true)
-              facetOption.hitCount should be (groupedResult(facetOption.value).size)
+            withClue(s"With publishers (${dataSets.map(_.publisher.flatMap(_.name).getOrElse("None")).mkString(",")}) and facetOption ${facetOption}: ") {
+              if (facetOption.matched && facetOption.hitCount != 0) {
+                groupedResult.contains(facetOption.value) should be(true)
+                facetOption.hitCount should be(groupedResult(facetOption.value).size)
+              }
             }
           }
         }
@@ -445,20 +443,19 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       describe("should be consistent with grouping all the facet results by distribution format") {
         checkFacetsBoth { (dataSets, facetSize) =>
           val result = responseAs[SearchResult]
-          val formatFacet = result.facets.get.find(_.id.equals(Format.id)).get
+          val formatFacet = result.facets.get.find(_.id.equals(Format.id.toString)).get
 
           formatFacet.options.foreach { option =>
             val matchingDataSets = if (!option.value.equals("Unspecified")) {
               dataSets
                 .filter(dataSet =>
                   dataSet.distributions.exists(distribution =>
-                    distribution.format.map(format => format.equalsIgnoreCase(option.value))
-                      .getOrElse(false)))
+                    distribution.format.exists(format => format.equalsIgnoreCase(option.value))))
             } else {
               dataSets
                 .filter(dataSet =>
                   dataSet.distributions.exists(distribution =>
-                    !distribution.format.isDefined))
+                    distribution.format.isEmpty))
             }
 
             val matchingFormats = for {
@@ -466,7 +463,9 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
             } yield dataSet.distributions.map(_.format)
 
             withClue(s"option: $option, matching dataSets: $matchingFormats") {
-              matchingDataSets.size shouldEqual option.hitCount
+              if (option.matched && option.hitCount != 0) {
+                matchingDataSets.size shouldEqual option.hitCount
+              }
             }
           }
         }
