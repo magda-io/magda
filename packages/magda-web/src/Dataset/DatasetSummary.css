@@ -182,6 +182,10 @@
   top: 15px;
 }
 
+.dataset-summary__toggle-info-btn.mobile{
+  top: 0;
+}
+
 .dataset-summary__toggle-info-btn span{
   font-size: 16px;
   color: #3498db;
@@ -234,13 +238,12 @@
   text-align: left;
 }
 
+
 .dataset-summary__toggle-info-btn.mobile{
   position: relative;
   padding: 0;
   left: 0;
 }
-
-
 
 .dataset-summary__btn-share,
 .dataset-summary__star-btn{
