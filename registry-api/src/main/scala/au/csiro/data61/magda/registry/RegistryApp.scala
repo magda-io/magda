@@ -21,7 +21,7 @@ object RegistryApp extends App {
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
-
+//test
   val api = new Api()
 }
 

@@ -56,7 +56,7 @@ imageNames in docker := Seq(
 )
 
 watchSources <<= (watchSources) map { files =>
-  if (Option(System.getProperty("project")).getOrElse("none").equals("indexer")) {
+  if (Option(System.getProperty("project")).getOrElse("none").equals("ckanConnector")) {
     files
   } else {
     Nil

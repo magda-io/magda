@@ -29,6 +29,8 @@ object MagdaApp extends App {
 
   logger.info("Starting ckan-connector in env {}", AppConfig.getEnv)
 
+  logger.info("Starting again!!")
+
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
