@@ -3,25 +3,30 @@ package au.csiro.data61.magda.test.util
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-import org.scalacheck.Gen
+import org.scalacheck.{Gen, Shrink}
 import org.scalacheck.Gen.Choose._
 import org.scalacheck.Arbitrary._
-
 import com.monsanto.labs.mwundo.GeoJson._
-
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.temporal._
 import java.time.ZonedDateTime
+
 import com.fortysevendeg.scalacheck.datetime.instances.jdk8._
 import com.fortysevendeg.scalacheck.datetime.GenDateTime.genDateTimeWithinRange
 import java.time.ZoneOffset
+
 import com.vividsolutions.jts.geom
 import com.vividsolutions.jts.operation.valid.IsValidOp
 import java.time.Instant
+
 import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
 import java.util.concurrent.atomic.AtomicInteger
+
+import akka.http.scaladsl.server.Route
+import au.csiro.data61.magda.api.Query
+import org.scalacheck.Shrink.shrink
 
 object Generators {
   def biasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -180,6 +185,11 @@ object Generators {
     url <- biasedOption(arbitrary[String])
   } yield License(name, url)
 
+  val formatGen = for {
+    mediaType <- Gen.option(mediaTypeGen)
+    randomFormat <- biasedOption(randomFormatGen.flatMap(Gen.oneOf(_)))
+  } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).orElse(randomFormat))
+
   val distGen = for {
     title <- arbitrary[String]
     description <- biasedOption(arbitrary[String])
@@ -189,8 +199,7 @@ object Generators {
     rights <- biasedOption(arbitrary[String])
     accessURL <- biasedOption(arbitrary[String])
     byteSize <- biasedOption(arbitrary[Int])
-    mediaType <- Gen.option(mediaTypeGen)
-    randomFormat <- biasedOption(randomFormatGen.flatMap(Gen.oneOf(_)))
+    format <- formatGen
   } yield Distribution(
     title = title,
     description = description,
@@ -200,11 +209,11 @@ object Generators {
     rights = rights,
     accessURL = accessURL,
     byteSize = byteSize,
-    mediaType = mediaType,
-    format = mediaType.flatMap(_.fileExtensions.headOption).orElse(randomFormat)
+    mediaType = format._1,
+    format = format._2
   )
 
-  val incrementer: AtomicInteger = new AtomicInteger(0);
+  val incrementer: AtomicInteger = new AtomicInteger(0)
 
   val dataSetGen = for {
     identifier <- Gen.delay {
@@ -235,7 +244,7 @@ object Generators {
     language = language,
     publisher = publisher,
     accrualPeriodicity = accrualPeriodicity,
-    spatial = spatial,
+    //    spatial = spatial,
     temporal = temporal,
     theme = theme,
     keyword = keyword,
@@ -245,4 +254,34 @@ object Generators {
     years = ElasticSearchIndexer.getYears(temporal.flatMap(_.start.flatMap(_.date)), temporal.flatMap(_.end.flatMap(_.date)))
   )
 
+  val queryTextGen = descWordGen.flatMap(Gen.oneOf(_))
+
+  def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
+
+  val queryGen = for {
+    freeText <- biasedOption(queryTextGen)
+    quotes <- probablyEmptySet(queryTextGen)
+    publishers <- probablyEmptySet(publisherGen.flatMap(Gen.oneOf(_)))
+    dateFrom <- periodOfTimeGen.map(_.start.flatMap(_.date))
+    dateTo <- periodOfTimeGen.map(_.end.flatMap(_.date))
+    formats <- probablyEmptySet(formatGen.map(_._2)).map(_.flatten)
+  } yield Query(
+    freeText = freeText,
+    quotes = quotes,
+    publishers = publishers,
+    dateFrom = dateFrom,
+    dateTo = dateTo,
+    formats = formats
+  )
+
+  val textQueryGen: Gen[(String, Query)] = queryGen.flatMap { query =>
+    val list = Seq(query.freeText).flatten ++
+      query.quotes.map(""""""" + _ + """"""") ++
+      query.publishers.map(publisher => s"by $publisher") ++
+      Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
+      Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
+      query.formats.map(format => s"as $format")
+
+    Gen.pick(list.length, list).map(queryStringList => (queryStringList.mkString(" "), query))
+  }
 }

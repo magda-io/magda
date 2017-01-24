@@ -117,15 +117,31 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
   implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
     case (indexName, dataSets, route) =>
-      logger.debug("preshrink: {}", dataSets.size)
+      println("shrinking!")
+      logger.info("preshrink: {}", dataSets.size)
       shrink(dataSets).map(dataSets => {
-        logger.debug("postshrink: {}", dataSets.size)
+        logger.info("postshrink: {}", dataSets.size)
         val result = putDataSetsInIndex(dataSets).await(INSERTION_WAIT_TIME)
 
         cleanUpQueue.add(result._1)
 
         result
       })
+  }
+
+  implicit def textQueryShrinker(implicit s: Shrink[String], s1: Shrink[Query]): Shrink[(String, Query)] = Shrink[(String, Query)] {
+    case (queryString, queryObj) =>
+      println("Shrinking query")
+      shrink(queryObj).map { shrunkQuery =>
+        val list = Seq(shrunkQuery.freeText).flatten ++
+          shrunkQuery.quotes.map(""""""" + _ + """"""") ++
+          shrunkQuery.publishers.map(publisher => s"by $publisher") ++
+          Seq(shrunkQuery.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
+          Seq(shrunkQuery.dateTo.map(dateTo => s"to $dateTo")).flatten ++
+          shrunkQuery.formats.map(format => "as $format")
+
+        (list.mkString(" "), shrunkQuery)
+      }
   }
 
   def indexGen: Gen[(String, List[DataSet], Route)] =
@@ -141,14 +157,14 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
             Gen.listOfN(size, dataSetGen).map { dataSetsRaw =>
               val dataSets = dataSetsRaw.groupBy(_.identifier).mapValues(_.head).values.toList
               val dataSetCount = dataSets.size
-              logger.debug("Cache miss for {}", cacheKey)
+              logger.info("Cache miss for {}", cacheKey)
               genCache.put(cacheKey, putDataSetsInIndex(dataSets))
               genCache.get(cacheKey).await(INSERTION_WAIT_TIME)
             }
           case Some(cachedValue) =>
             val value = cachedValue.await(INSERTION_WAIT_TIME)
 
-            logger.debug("Cache hit for {}: {}", cacheKey, value._2.size)
+            logger.info("Cache hit for {}: {}", cacheKey, value._2.size)
 
             value
         }
@@ -257,42 +273,69 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
     }
   }
 
-  val queryGen = descWordGen.flatMap(Gen.oneOf(_))
-
   describe("facets") {
     val facetSizes = for (n <- Gen.choose(0, 10)) yield n
 
-    def checkFacets(inner: (List[DataSet], Int) => Unit) = {
-      forAll(indexGen, queryGen, Gen.posNum[Int], Gen.posNum[Int], Gen.posNum[Int], arbitrary[Boolean]) { (tuple, query, facetSize, start, limit, allParams) =>
+    def checkFacetsNoQuery(inner: (List[DataSet], Int) => Unit) = {
+      forAll(indexGen, Gen.posNum[Int], Gen.posNum[Int], Gen.posNum[Int]) { (tuple, facetSize, start, limit) =>
         val (indexName, dataSets, routes) = tuple
 
-        whenever(facetSize >= 0 && start >= 0 && limit >= 0 && query.matches(LUCENE_CONTROL_CHARACTER_REGEX)) {
-          if (allParams) {
-            Get(s"/datasets/search?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> routes ~> check {
-              inner(dataSets, facetSize)
-            }
-          } else {
-            Get(s"/datasets/search?query=${encodeForUrl(query)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
-              inner(responseAs[SearchResult].dataSets, facetSize)
-            }
+        whenever(facetSize >= 0 && start >= 0 && limit >= 0) {
+          Get(s"/datasets/search?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> routes ~> check {
+            inner(dataSets, facetSize)
           }
         }
       }
     }
 
+    def checkFacetsWithQuery(inner: (List[DataSet], Int, Query) => Unit) = {
+      forAll(indexGen, textQueryGen, Gen.posNum[Int]) { (tuple, query, facetSize) =>
+        val (indexName, dataSets, routes) = tuple
+        val (textQuery, objQuery) = query
+
+        val valid = facetSize >= 0 &&
+          objQuery.freeText.map(_.matches(LUCENE_CONTROL_CHARACTER_REGEX)).getOrElse(false) &&
+          objQuery.quotes.forall(_.matches(LUCENE_CONTROL_CHARACTER_REGEX)) &&
+          objQuery.formats.forall(_.matches(LUCENE_CONTROL_CHARACTER_REGEX)) &&
+          objQuery.publishers.forall(_.matches(LUCENE_CONTROL_CHARACTER_REGEX))
+
+        println(textQuery)
+
+        whenever(valid) {
+          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
+            inner(responseAs[SearchResult].dataSets, facetSize, objQuery)
+          }
+        }
+      }
+    }
+
+    def checkFacetsBoth(inner: (List[DataSet], Int) => Unit) = {
+      it("with no query and various pagination values") {
+        checkFacetsNoQuery(inner(_, _))
+      }
+      it("with a query") {
+        checkFacetsWithQuery((dataSets, facetSize, query) => inner(dataSets, facetSize))
+      }
+    }
+
     describe("publisher") {
-      it("should be consistent with grouping all the facet results by publisher id") {
-        checkFacets { (dataSets, facetSize) =>
+      describe("should be consistent with grouping all the facet results by publisher id") {
+        checkFacetsBoth { (dataSets: List[DataSet], facetSize: Int) =>
           val result = responseAs[SearchResult]
           val groupedResult = dataSets.groupBy(_.publisher.flatMap(_.name).getOrElse("Unspecified"))
           val publisherFacet = result.facets.get.find(_.id.equals(Publisher.id)).get
 
           publisherFacet.options.size should be <= facetSize
 
-          val facetMinimal = publisherFacet.options.map(facet => (facet.value, facet.hitCount))
+          if (publisherFacet.options.size < facetSize) {
+            publisherFacet.options.size should be(groupedResult.size)
+          }
 
-          withClue(s"With publishers ${dataSets.map(_.publisher.flatMap(_.name))}") {
-            facetMinimal shouldEqual groupedResult.mapValues(_.size).toList.sortBy(_._1).sortBy(-_._2).take(facetSize)
+          publisherFacet.options.foreach { facetOption =>
+            withClue(s"With publishers (${dataSets.map(_.publisher.flatMap(_.name).getOrElse("None")).mkString(",")}) and facetOption ${facetOption.value}: ") {
+              groupedResult.contains(facetOption.value) should be (true)
+              facetOption.hitCount should be (groupedResult(facetOption.value).size)
+            }
           }
         }
       }
@@ -300,8 +343,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
     describe("year") {
       it("should generate even facets") {
-        checkFacets { (dataSets, facetSize) =>
-
+        checkFacetsNoQuery { (dataSets, facetSize) =>
           val result = responseAs[SearchResult]
           val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
           yearFacet.options.size should be <= facetSize
@@ -318,12 +360,11 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
               lowerBound % size shouldEqual 0
             }
           }
-
         }
       }
 
       it("should generate non-overlapping facets") {
-        checkFacets { (dataSets, facetSize) =>
+        checkFacetsNoQuery { (dataSets, facetSize) =>
           val result = responseAs[SearchResult]
           val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
@@ -344,7 +385,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
 
       it("should only have gaps where there are no results") {
-        checkFacets { (dataSets, facetSize) =>
+        checkFacetsNoQuery { (dataSets, facetSize) =>
           val result = responseAs[SearchResult]
           val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
@@ -364,7 +405,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
 
       it("should be consistent with grouping all the facet results by temporal coverage year") {
-        checkFacets { (dataSets, facetSize) =>
+        checkFacetsNoQuery { (dataSets, facetSize) =>
           val result = responseAs[SearchResult]
           val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
@@ -401,8 +442,8 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
     }
 
     describe("format") {
-      it("should be consistent with grouping all the facet results by distribution format") {
-        checkFacets { (dataSets, facetSize) =>
+      describe("should be consistent with grouping all the facet results by distribution format") {
+        checkFacetsBoth { (dataSets, facetSize) =>
           val result = responseAs[SearchResult]
           val formatFacet = result.facets.get.find(_.id.equals(Format.id)).get
 

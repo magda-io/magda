@@ -3,13 +3,13 @@ package au.csiro.data61.magda.search.elasticsearch
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import au.csiro.data61.magda.api.Query
-import au.csiro.data61.magda.api.model.{ RegionSearchResult, SearchResult }
+import au.csiro.data61.magda.api.model.{RegionSearchResult, SearchResult}
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.Indices._
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.{ MatchAll, MatchPart, SearchQueryer, SearchStrategy }
+import au.csiro.data61.magda.search.{MatchAll, MatchPart, SearchQueryer, SearchStrategy}
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -19,22 +19,26 @@ import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import org.elasticsearch.search.sort.SortOrder
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import com.typesafe.config.Config
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
-    implicit val config: Config,
-    implicit val system: ActorSystem,
-    implicit val ec: ExecutionContext,
-    implicit val materializer: Materializer,
-    implicit val clientProvider: ClientProvider) extends SearchQueryer {
+  implicit
+  val config: Config,
+  implicit val system: ActorSystem,
+  implicit val ec: ExecutionContext,
+  implicit val materializer: Materializer,
+  implicit val clientProvider: ClientProvider
+) extends SearchQueryer {
   private val logger = system.log
 
   lazy val clientFuture: Future[ElasticClientTrait] = clientProvider.getClient(system.scheduler, logger, ec)
 
-  override def search(query: Query, start: Long, limit: Int, facetSize: Int) = {
+  override def search(query: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
     Future.sequence(query.regions.map(region => findRegion(region.regionType, region.regionId))).flatMap { regions =>
       val queryWithResolvedRegions = query.copy(regions = regions)
+
+      val facetSize = idealFacetSize(query, requestedFacetSize)
 
       clientFuture.flatMap { client =>
         client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchAll, facetSize)).flatMap(response =>
@@ -43,7 +47,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           else
             client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchPart, facetSize)).map((_, MatchPart)))
       } map {
-        case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy, facetSize)
+        case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy, requestedFacetSize)
       } recover {
         case CausedBy(CausedBy(CausedBy(illegalArgument: IllegalArgumentException))) =>
           logger.error(illegalArgument, "Exception when searching")
@@ -53,6 +57,17 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           failureSearchResult(query, "Unknown error")
       }
     }
+  }
+
+  /**
+    * Calculate the ideal facet size for this query - we have to take the facet exact match queries into account because
+    * if we always passed through the requested facetSize, we might end up in a situation where requested facet size
+    * was 1 but the query had 3 exact match queries for publishers in it - we'd only know the hitCount for the first
+    * exact match because we only asked for 1 facet from ES.
+    */
+  private def idealFacetSize(query: Query, requestedFacetSize: Int) = {
+    val queryFacetSize = FacetType.all.map(FacetDefinition.facetDefForType(_).exactMatchQueries(query).size).max
+    Math.max(queryFacetSize, requestedFacetSize)
   }
 
   /**
@@ -71,44 +86,38 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         new Facet(
           id = facetType.id,
           options = {
-            // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-            val filteredOptions =
-              (aggsMap.get(facetType.id + "-filter") match {
-                case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-                case None            => Nil
-              }).filter(definition.isFilterOptionRelevant(query))
-                .map(_.copy(matched = Some(true)))
+          // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
+          val filteredOptions =
+            (aggsMap.get(facetType.id + "-filter") match {
+              case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
+              case None            => Nil
+            }).filter(definition.isFilterOptionRelevant(query))
+              .map(_.copy(matched = Some(true)))
 
-            // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
-            // display it to them to show them that it does *exist* but not for this query
-            val exactOptions =
-              definition.exactMatchQueries(query)
-                .map {
-                  case (name, query) => (
-                    name,
-                    aggsMap
-                    .get(facetType.id + "-global")
-                    .get
-                    .getProperty(facetType.id + "-exact-" + name)
-                  )
-                }
-                .map {
-                  case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0)) else None
-                }
-                .flatten
-                .toSeq
+          // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
+          // display it to them to show them that it does *exist* but not for this query
+          val exactOptions =
+            definition.exactMatchQueries(query)
+              .map {
+                case (name, query) => (
+                  name,
+                  aggsMap(facetType.id + "-global").getProperty(facetType.id + "-exact-" + name)
+                )
+              }
+              .flatMap {
+                case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0)) else None
+              }
+              .toSeq
 
-            val alternativeOptions =
-              definition.extractFacetOptions(
-                aggsMap
-                  .get(facetType.id + "-global")
-                  .get
-                  .getProperty("filter").asInstanceOf[Aggregation]
-                  .getProperty(facetType.id).asInstanceOf[Aggregation]
-              )
+          val alternativeOptions =
+            definition.extractFacetOptions(
+              aggsMap(facetType.id + "-global")
+              .getProperty("filter").asInstanceOf[Aggregation]
+              .getProperty(facetType.id).asInstanceOf[Aggregation]
+            )
 
-            definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, facetSize)
-          }
+          definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, facetSize)
+        }
         )
       }.toSeq)
     )
@@ -160,14 +169,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .asInstanceOf[AbstractAggregationDefinition]
 
     val partialMatchesAgg =
-      if (facetDef.relatedToQuery(query)) // If there's details in the query that relate to this facet...
+      if (facetDef.isRelevantToQuery(query)) // If there's details in the query that relate to this facet...
         // Then create an aggregation that shows all results for this facet that partially match the details
         // in the query... this is useful if say the user types in "Ballarat", we can suggest "Ballarat Council"
         Some(
           aggregation
-            .filter(facetType.id + "-filter")
-            .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(facetSize))
-            .asInstanceOf[AbstractAggregationDefinition]
+          .filter(facetType.id + "-filter")
+          .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(facetSize))
+          .asInstanceOf[AbstractAggregationDefinition]
         )
       else
         None
@@ -269,7 +278,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
                 FacetSearchResult(
                   hitCount = response.totalHits,
-                  options = hitNames.map { hitName => aggregations.get(hitName).get }
+                  options = hitNames.map { hitName => aggregations(hitName) }
                 )
               }
           }
@@ -288,7 +297,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             field sort "order" order SortOrder.ASC,
             field sort "_score" order SortOrder.DESC
           )
-            sourceExclude ("geometry")
+            sourceExclude "geometry"
       ).flatMap { response =>
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
@@ -301,7 +310,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   def findRegion(regionType: String, regionId: String): Future[Region] = {
     clientFuture.flatMap { client =>
       client.execute(ElasticDsl.search in indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType)
-        query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude ("geometry"))
+        query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry")
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(Region(regionType, regionId, "[Unknown]", None))

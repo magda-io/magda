@@ -33,7 +33,7 @@ trait FacetDefinition {
    * Determines whether the passed query has any relevance to this facet - e.g. a query is only relevant to Year if it
    * has some kind of date parameters specified.
    */
-  def relatedToQuery(query: Query): Boolean
+  def isRelevantToQuery(query: Query): Boolean
 
   /**
    * Returns a QueryDefinition for only the part of the query that's relevant for this facet... e.g. for Year it creates
@@ -115,7 +115,7 @@ object PublisherFacetDefinition extends FacetDefinition {
     agg
   }
 
-  def relatedToQuery(query: Query): Boolean = !query.publishers.isEmpty
+  def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
     should(
@@ -232,7 +232,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
   def roundUp(num: Int, divisor: Int): Int = Math.ceil((num.toDouble / divisor)).toInt * divisor
   def roundDown(num: Int, divisor: Int): Int = Math.floor((num.toDouble / divisor)).toInt * divisor
 
-  override def relatedToQuery(query: Query): Boolean = query.dateFrom.isDefined || query.dateTo.isDefined
+  override def isRelevantToQuery(query: Query): Boolean = query.dateFrom.isDefined || query.dateTo.isDefined
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
     must {
@@ -306,7 +306,7 @@ object FormatFacetDefinition extends FacetDefinition {
     }
   }
 
-  override def relatedToQuery(query: Query): Boolean = !query.formats.isEmpty
+  override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
     should(query.formats.map(formatQuery(_)))
