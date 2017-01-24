@@ -40,7 +40,7 @@ class MarkdownViewer extends Component {
         if(array.length > length){
            string += "...";
         }
-        return <div className='markdown-stripped'>{string}</div>
+        return <div className='markdown__stripped markdown__wrap'>{string}</div>
       } else{
         let markdown = {__html: marked(this.props.markdown)};
         return <div className='markdown' dangerouslySetInnerHTML={markdown}/>
