@@ -7,9 +7,9 @@ function RegionSummary(props){
                    defined(props.regionMapping[props.region.regionType]) ?
                    props.regionMapping[props.region.regionType].description : '';
   if(name.length > 0 || typeName.length > 0){
-    return <div className='active-region'>
+    return <div className='region-summary'>
               {name}
-              <div className='region-type'>
+              <div className='region-summary__region-type'>
               	{typeName}
               </div>
             </div>

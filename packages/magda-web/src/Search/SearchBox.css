@@ -1,4 +1,4 @@
-.search-box input[type=text].form-control {
+.search-box__form-control {
   height: 50px;
 	border-radius: 1px;
 	background-color: #ffffff;
@@ -6,21 +6,27 @@
   padding-right: 30px;
 }
 
+.search-box__input{
+  width: calc(100% - 38px);
+  position: relative;
+}
+
 .search-box{
   position: relative;
   padding: 0 15px;
 }
 
-.search-box .btn-clear-search{
+.search-box__clear-btn{
   position: absolute;
   right: 1px;
-  top: 0;
+  top: 3px;
+  bottom: 3px;
   z-index: 10;
-  height: 100%;
   background: transparent;
+  background: #fff;
 }
 
-.search-box .btn-search-icon{
+.search-box__icon{
 	border-radius: 1px;
 	background-color: #3498db;
   color: #fff;
@@ -29,11 +35,6 @@
   top: 0;
   bottom: 0;
   width: 53px;
-}
-
-.search-input{
-  width: calc(100% - 38px);
-  position: relative;
 }
 
 .search-box .fa{

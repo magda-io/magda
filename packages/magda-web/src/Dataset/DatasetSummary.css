@@ -72,6 +72,10 @@
   width: calc(100% - 60px);
 }
 
+.dataset-summary__title-group .star__btn{
+  padding: 3px;
+}
+
 .dataset-summary__title{
   background: transparent;
   font-size: 18px;
@@ -151,7 +155,6 @@
 .dataset-summary__dataset-description:hover{
   cursor: pointer;
 }
-
 
 .dataset-summary__dataset-description > .markdown:before {
   content:'';
@@ -237,10 +240,7 @@
   left: 0;
 }
 
-.dataset-summary__toggle-info-btn .fa{
-  vertical-align: top;
-  margin-top: -5px;
-}
+
 
 .dataset-summary__btn-share,
 .dataset-summary__star-btn{

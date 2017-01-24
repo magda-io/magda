@@ -1,11 +1,11 @@
-.region-summary__active-region{
+.region-summary{
   background: #3498db;
   color: #fff;
   padding: 5px;
   margin-top: -8px;
 }
 
-.region-summary__region-type {
+.region-summary__region-type{
 	font-size: small;
 	color: #ccc;
 }

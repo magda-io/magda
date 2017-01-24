@@ -4,11 +4,11 @@ import './SearchBox.css';
 function SearchBox(props){
     return (
       <form className="search-box">
-        <div className='search-input'>
+        <div className='search-box__input'>
         <input
           type="text"
           name="search"
-          className='form-control'
+          className='form-control search-box__form-control'
           placeholder="Search"
           value={props.value}
           onChange={(e)=>{props.onChange(e.target.value)}}
@@ -16,12 +16,12 @@ function SearchBox(props){
           ref={(searchBox)=>{searchBox && searchBox.focus()}}
         />
         {props.value.length > 0 &&
-          <button type='button' className='btn btn-clear-search' onClick={props.onClearSearch}>
+          <button type='button' className='btn search-box__clear-btn' onClick={props.onClearSearch}>
             <i className="fa fa-times" aria-hidden="true"></i>
           </button>
         }
         </div>
-        <button onClick={props.onClickSearch} type='button' className="btn btn-search-icon"><i className="fa fa-search" aria-hidden="true"></i> </button>
+        <button onClick={props.onClickSearch} type='button' className="btn search-box__icon"><i className="fa fa-search" aria-hidden="true"></i> </button>
       </form>
     );
 }

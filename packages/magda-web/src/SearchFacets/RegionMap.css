@@ -5,10 +5,10 @@
 
 .region-map__map{
     margin-top: 0;
-    height: 200px;
+    height: 100%;
     margin-top: 10px;
 }
 
-.leaflet-left .leaflet-control {
+.region-map .leaflet-left .leaflet-control {
     margin-top: 50px;
 }
