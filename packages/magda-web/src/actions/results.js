@@ -18,13 +18,6 @@ export function receiveResults(apiQuery, json){
   }
 }
 
-export function updateProgress(progress){
-  return{
-    type: actionTypes.UPDATE_PROGRESS,
-    progress
-  }
-}
-
 export function transferFailed(errorMessage){
   return {
     type: actionTypes.FETCH_ERROR,

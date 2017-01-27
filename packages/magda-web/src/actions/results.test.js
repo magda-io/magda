@@ -1,34 +1,68 @@
-import {config}ureMockStore from 'redux-mock-store'
-import thunk from 'redux-thunk'
-import * as actions from '../actions/results'
-import * as types from '../constants/ActionTypes'
-import nock from 'nock'
-import expect from 'expect' // You can use any testing library
+import * as actions from '../actions/results';
+import * as types from '../constants/ActionTypes';
 
-
-const middlewares = [ thunk ]
-const mockStore = configureMockStore(middlewares)
-
-describe('async actions', () => {
-  afterEach(() => {
-    nock.cleanAll()
+describe('results actions', () => {
+  it('should create an action to initiate an api request', () => {
+    const apiQuery ='';
+    const expectedAction = {
+      type: types.actionTypes.REQUEST_RESULTS,
+      apiQuery
+    }
+    expect(actions.requestResults(apiQuery)).toEqual(expectedAction)
   })
+})
 
-  it('creates RECEIVE_RESULTS when fetching results has been done', () => {
-    nock('http://magda-search-api.terria.io/')
-      .get('/datasets/search?query=water')
-      .reply(200, { body: { results: {dataset: []}  }})
+describe('results actions', () => {
+  it('should receive results', () => {
+    const apiQuery ='';
+    const json = {};
+    const expectedAction = {
+      type: types.actionTypes.RECEIVE_RESULTS,
+      apiQuery,
+      json
+    }
+    expect(actions.receiveResults(apiQuery, json)).toEqual(expectedAction)
+  })
+})
 
-    const expectedActions = [
-      { type: types.REQUEST_RESULTS},
-      { type: types.RECEIVE_RESULTS, body: { results: {dataset: []}  } }
-    ]
-    const store = mockStore({ results: {} })
+describe('results actions', () => {
+  it('should catch error', () => {
+    const errorMessage ='';
+    const expectedAction = {
+      type: types.actionTypes.FETCH_ERROR,
+      errorMessage
+    }
+    expect(actions.transferFailed(errorMessage)).toEqual(expectedAction)
+  })
+})
 
-    return store.dispatch(actions.fetchSearchResults())
-      .then(() => { // return of async actions
-        console.log(store.getActions());
-        // expect(store.getActions()).toEqual(expectedActions)
-      })
+describe('results actions', () => {
+  it('should add publisher', () => {
+    const item ={};
+    const expectedAction = {
+      type: types.actionTypes.ADD_PUBLISHER,
+      item
+    }
+    expect(actions.addPublisher(item)).toEqual(expectedAction)
+  })
+})
+
+describe('results actions', () => {
+  it('should remove publisher', () => {
+    const item ={};
+    const expectedAction = {
+      type: types.actionTypes.REMOVE_PUBLISHER,
+      item
+    }
+    expect(actions.removePublisher(item)).toEqual(expectedAction)
+  })
+})
+
+describe('results actions', () => {
+  it('should reset publisher', () => {
+    const expectedAction = {
+      type: types.actionTypes.RESET_PUBLISHER,
+    }
+    expect(actions.resetPublisher()).toEqual(expectedAction)
   })
 })
