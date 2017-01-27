@@ -257,14 +257,30 @@ object Generators {
   val queryTextGen = descWordGen.flatMap(Gen.oneOf(_))
 
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
+  def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
 
   val queryGen = for {
-    freeText <- biasedOption(queryTextGen)
+    freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
     publishers <- probablyEmptySet(publisherGen.flatMap(Gen.oneOf(_)))
+    dateFrom <- Gen.option(periodOfTimeGen.map(_.start.flatMap(_.date)))
+    dateTo <- Gen.option(periodOfTimeGen.map(_.end.flatMap(_.date)))
+    formats <- probablyEmptySet(formatGen.map(_._2)).map(_.flatten)
+  } yield Query(
+    freeText = freeText,
+    quotes = quotes,
+    publishers = publishers,
+    dateFrom = dateFrom.flatten,
+    dateTo = dateTo.flatten,
+    formats = formats
+  )
+  val specificBiasedQueryGen = for {
+    freeText <- biasedOption(queryTextGen)
+    quotes <- set(queryTextGen)
+    publishers <- set(publisherGen.flatMap(Gen.oneOf(_)))
     dateFrom <- periodOfTimeGen.map(_.start.flatMap(_.date))
     dateTo <- periodOfTimeGen.map(_.end.flatMap(_.date))
-    formats <- probablyEmptySet(formatGen.map(_._2)).map(_.flatten)
+    formats <- set(formatGen.map(_._2)).map(_.flatten)
   } yield Query(
     freeText = freeText,
     quotes = quotes,
@@ -274,7 +290,7 @@ object Generators {
     formats = formats
   )
 
-  val textQueryGen: Gen[(String, Query)] = queryGen.flatMap { query =>
+  def textQueryGen(queryGen: Gen[Query] = queryGen): Gen[(String, Query)] = queryGen.flatMap { query =>
     val list = Seq(query.freeText).flatten ++
       query.quotes.map(""""""" + _ + """"""") ++
       query.publishers.map(publisher => s"by $publisher") ++

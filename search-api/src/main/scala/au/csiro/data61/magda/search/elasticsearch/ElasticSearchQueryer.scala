@@ -10,7 +10,7 @@ import au.csiro.data61.magda.search.elasticsearch.Indices._
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.{MatchAll, MatchPart, SearchQueryer, SearchStrategy}
-import au.csiro.data61.magda.util.ErrorHandling.CausedBy
+import au.csiro.data61.magda.util.ErrorHandling.{CausedBy, RootCause}
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -49,7 +49,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       } map {
         case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy, requestedFacetSize)
       } recover {
-        case CausedBy(CausedBy(CausedBy(illegalArgument: IllegalArgumentException))) =>
+        case RootCause(illegalArgument: IllegalArgumentException) =>
           logger.error(illegalArgument, "Exception when searching")
           failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
         case e: Throwable =>
@@ -60,11 +60,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /**
-    * Calculate the ideal facet size for this query - we have to take the facet exact match queries into account because
-    * if we always passed through the requested facetSize, we might end up in a situation where requested facet size
-    * was 1 but the query had 3 exact match queries for publishers in it - we'd only know the hitCount for the first
-    * exact match because we only asked for 1 facet from ES.
-    */
+   * Calculate the ideal facet size for this query - we have to take the facet exact match queries into account because
+   * if we always passed through the requested facetSize, we might end up in a situation where requested facet size
+   * was 1 but the query had 3 exact match queries for publishers in it - we'd only know the hitCount for the first
+   * exact match because we only asked for 1 facet from ES.
+   */
   private def idealFacetSize(query: Query, requestedFacetSize: Int) = {
     val queryFacetSize = FacetType.all.map(FacetDefinition.facetDefForType(_).exactMatchQueries(query).size).max
     Math.max(queryFacetSize, requestedFacetSize)

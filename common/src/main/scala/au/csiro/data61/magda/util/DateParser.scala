@@ -45,8 +45,9 @@ object DateParser {
 
   // TODO: push the strings into config.
   private val timeFormats = List(
-    OffsetDateTimeFormat("HH:mm:ssXXXXX", ChronoUnit.SECONDS),
     OffsetDateTimeFormat("HH:mm:ss.SSSXXXXX", ChronoUnit.SECONDS),
+    OffsetDateTimeFormat("HH:mm:ssXXXXX", ChronoUnit.SECONDS),
+    OffsetDateTimeFormat("HH:mmXXXXX", ChronoUnit.SECONDS),
     DateTimeFormat("HH:mm:ss.SSS", ChronoUnit.SECONDS),
     DateTimeFormat("HH:mm:ss", ChronoUnit.SECONDS),
     DateTimeFormat("HH:mm", ChronoUnit.MINUTES)
