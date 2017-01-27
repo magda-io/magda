@@ -126,11 +126,26 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
         if (shrunkDataSets.equals(dataSets)) {
           (indexName, dataSets, route)
         } else {
-          val result = putDataSetsInIndex(shrunkDataSets).await(INSERTION_WAIT_TIME)
+          def insertNew() = {
+            val result = putDataSetsInIndex(shrunkDataSets).await(INSERTION_WAIT_TIME)
+            cleanUpQueue.add(result._1)
+            result
+          }
 
-          cleanUpQueue.add(result._1)
+          if (shrunkDataSets.forall(dataSets.contains(_))) {
+            println("shrunk datasets was a subset")
+            insertNew
+          } else {
+            getFromIndexCache(shrunkDataSets.size) match {
+              case (_, Some(result)) =>
+                val cachedResult = result.await(INSERTION_WAIT_TIME)
+                val cachedDataSets = cachedResult._2
 
-          result
+                if (cachedDataSets.equals(dataSets)) insertNew
+                else cachedResult
+              case (_, None) => insertNew
+            }
+          }
         }
       })
   }
@@ -152,13 +167,8 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
   def indexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
       Gen.size.flatMap { size =>
-        val cacheKey = if (size < 10) size
-        else if (size < 50) size - size % 5
-        else size - size % 10
-
-        Option(genCache.get(cacheKey)) match {
-          //                  Option.empty[Future[(List[DataSet], Route)]] match {
-          case None =>
+        getFromIndexCache(size) match {
+          case (cacheKey, None) =>
             Gen.listOfN(size, dataSetGen).map { dataSetsRaw =>
               val dataSets = dataSetsRaw.groupBy(_.identifier).mapValues(_.head).values.toList
               val dataSetCount = dataSets.size
@@ -166,7 +176,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
               genCache.put(cacheKey, putDataSetsInIndex(dataSets))
               genCache.get(cacheKey).await(INSERTION_WAIT_TIME)
             }
-          case Some(cachedValue) =>
+          case (cacheKey, Some(cachedValue)) =>
             val value = cachedValue.await(INSERTION_WAIT_TIME)
 
             logger.info("Cache hit for {}: {}", cacheKey, value._2.size)
@@ -175,6 +185,14 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
         }
       }
     }
+
+  def getFromIndexCache(size: Int) = {
+    val cacheKey = if (size < 10) size
+    else if (size < 50) size - size % 5
+    else size - size % 10
+
+    (cacheKey, Option(genCache.get(cacheKey)))
+  }
 
   def putDataSetsInIndex(dataSets: List[DataSet]): Future[(String, List[DataSet], Route)] = {
     val rawIndexName = java.util.UUID.randomUUID.toString
@@ -245,9 +263,9 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
             val dataSetsPicker = for (dataset <- Gen.oneOf(indexedDataSets)) yield dataset
 
             forAll(dataSetsPicker) { dataSet =>
-              Get(s"""/datasets/search?query=${encodeForUrl(dataSet.title.get)}&limit=${indexedDataSets.size}""") ~> routes ~> check {
+              Get(s"""/datasets/search?query=${encodeForUrl(dataSet.title.get)}&limit=${dataSetsRaw.size}""") ~> routes ~> check {
                 val result = responseAs[SearchResult]
-                withClue(s"title: ${dataSet.title.get} and identifier ${dataSet.identifier} in ${dataSetsRaw.map(_.title.getOrElse("(none)")).mkString(", ")}") {
+                withClue(s"title: ${dataSet.title.get} and identifier: ${dataSet.identifier} in ${dataSetsRaw.map(_.title.getOrElse("(none)")).mkString(", ")}") {
                   result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
                 }
               }
@@ -323,8 +341,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
     }
 
-    // val groupedResult = dataSets.groupBy(_.publisher.flatMap(_.name).getOrElse("Unspecified"))
-
     def specificFacetSpecs(facetType: FacetType, reducer: DataSet => Seq[String], queryCounter: Query => Int) = {
       def groupResult(dataSets: Seq[DataSet]): Map[String, Seq[DataSet]] = {
         dataSets.foldRight(Map[String, Seq[DataSet]]()) { (currentDataSet, aggregator) =>
@@ -342,13 +358,14 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
         }
       }
 
+      def getFacet(result: SearchResult) = result.facets.get.find(_.id.equals(facetType.id)).get
+
       describe("all facet options should correspond with grouping the datasets for that query") {
         checkFacetsBoth { (dataSets: List[DataSet], facetSize: Int) =>
           val result = responseAs[SearchResult]
 
           val groupedResult = groupResult(dataSets)
-
-          val facet = result.facets.get.find(_.id.equals(facetType.id)).get
+          val facet = getFacet(result)
 
           withClue(s"With reduced values (${groupedResult.mapValues(_.size)})") {
             facet.options.foreach { facetOption =>
@@ -363,13 +380,13 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
         }
       }
 
-      describe("each group of datasets should correspond with a facet unless facet size was too small to accommodate it") {
+      describe("each dataset should be aggregated into a facet unless facet size was too small to accommodate it") {
         checkFacetsBoth { (dataSets: List[DataSet], facetSize: Int) =>
           val result = responseAs[SearchResult]
           val groupedResult = groupResult(dataSets)
 
           whenever(facetSize >= groupedResult.size + queryCounter(result.query)) {
-            val facet = result.facets.get.find(_.id.equals(facetType.id)).get
+            val facet = getFacet(result)
 
             withClue(s"With reduced values (${dataSets.map(reducer(_)).mkString(",")})") {
               groupedResult.mapValues(_.size).foreach {
@@ -403,87 +420,32 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       specificFacetSpecs(Publisher, reducer, queryToInt)
     }
 
-    //    it("Non-empty ") {
-    //      checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen)) { (dataSets, facetSize, query) =>
-    //        val result = responseAs[SearchResult]
-    //        val groupedResult = dataSets.groupBy(_.publisher.flatMap(_.name).getOrElse("Unspecified"))
-    //
-    //        whenever(result.strategy.get == MatchPart) {
-    //          val publisherFacet = result.facets.get.find(_.id.equals(Publisher.id)).get
-    //
-    //          withClue(s"With publishers (${dataSets.map(_.publisher.flatMap(_.name).getOrElse("None")).mkString(",")})") {
-    //            withClue(s" and publisherFacet ${publisherFacet.options} and groupedResult ${groupedResult.mapValues(_.size)}") {
-    //              publisherFacet.options.count(facetOption => facetOption.hitCount > 0) should equal(Math.min(groupedResult.size, facetSize))
-    //            }
-    //          }
-    //        }
-    //      }
-    //    }
-
     describe("year") {
-      it("should generate even facets") {
-        checkFacetsNoQuery { (dataSets, facetSize) =>
+
+      describe("should generate non-overlapping facets") {
+        checkFacetsBoth { (dataSets, facetSize) =>
           val result = responseAs[SearchResult]
           val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
-          yearFacet.options.foreach { option =>
-            val upperBound = option.upperBound.get.toInt
-            val lowerBound = option.lowerBound.get.toInt
-            val size = upperBound - lowerBound + 1
-
-            option.value should equal(if (lowerBound == upperBound) lowerBound.toString else s"$lowerBound - " +
-              s"$upperBound")
-            YearFacetDefinition.YEAR_BIN_SIZES should contain(size)
-            if (facetSize > 1) withClue(s"[$lowerBound-$upperBound with size $size]") {
-              lowerBound % size shouldEqual 0
-            }
-          }
-        }
-      }
-
-      it("should generate non-overlapping facets") {
-        checkFacetsNoQuery { (dataSets, facetSize) =>
-          val result = responseAs[SearchResult]
-          val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+          val options = yearFacet.options
 
           val pairs = for {
-            facet1 <- yearFacet.options
-            facet2 <- yearFacet.options.filterNot(_ == facet1)
+            facet1 <- options
+            facet2 <- options.filterNot(_ == facet1)
           } yield ((facet1.lowerBound.get, facet1.upperBound.get), (facet2.lowerBound.get, facet2.upperBound.get))
 
           pairs.foreach { pair =>
-            val options = yearFacet.options.map(_.value)
+            val optionValues = options.map(_.value)
             val dataSetYears = dataSets.map(_.temporal.getOrElse("(no temporal)"))
-            withClue(s"for options $options and dataSet years $dataSetYears") {
+            withClue(s"for options $optionValues and dataSet years $dataSetYears") {
               overlaps(pair) should be(false)
             }
-
           }
         }
       }
 
-      it("should only have gaps where there are no results") {
-        checkFacetsNoQuery { (dataSets, facetSize) =>
-          val result = responseAs[SearchResult]
-          val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-          whenever(facetSize > 1 && yearFacet.options.size > 1) {
-            yearFacet.options.reverse.sliding(2).foreach {
-              case Seq(before, after) =>
-                val gap = after.lowerBound.get - before.upperBound.get
-                if (gap != 1) {
-                  val options = yearFacet.options.map(_.value)
-                  withClue(s"For facets ${options}") {
-                    filterDataSetsForYearRange(dataSets, before.upperBound.get + 1, after.lowerBound.get - 1).size should equal(0)
-                  }
-                }
-            }
-          }
-        }
-      }
-
-      it("should be consistent with grouping all the facet results by temporal coverage year") {
-        checkFacetsNoQuery { (dataSets, facetSize) =>
+      describe("should be consistent with grouping all the facet results by temporal coverage year") {
+        checkFacetsBoth { (dataSets, facetSize) =>
           val result = responseAs[SearchResult]
           val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
@@ -493,6 +455,49 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
             withClue(s"For option ${option.value} and years $dataSetYears") {
               matchingDataSets.size shouldEqual option.hitCount
+            }
+          }
+        }
+      }
+
+      describe("when no query") {
+        it("should generate even facets") {
+          checkFacetsNoQuery { (dataSets, facetSize) =>
+            val result = responseAs[SearchResult]
+            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+
+            yearFacet.options.foreach { option =>
+              val upperBound = option.upperBound.get.toInt
+              val lowerBound = option.lowerBound.get.toInt
+              val size = upperBound - lowerBound + 1
+
+              option.value should equal(
+                if (lowerBound == upperBound) lowerBound.toString
+                else s"$lowerBound - " + s"$upperBound"
+              )
+              YearFacetDefinition.YEAR_BIN_SIZES should contain(size)
+              if (facetSize > 1) withClue(s"[$lowerBound-$upperBound with size $size]") {
+                lowerBound % size shouldEqual 0
+              }
+            }
+          }
+        }
+        it("should only have gaps where there are no results") {
+          checkFacetsNoQuery { (dataSets, facetSize) =>
+            val result = responseAs[SearchResult]
+            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+
+            whenever(facetSize > 1 && yearFacet.options.size > 1) {
+              yearFacet.options.reverse.sliding(2).foreach {
+                case Seq(before, after) =>
+                  val gap = after.lowerBound.get - before.upperBound.get
+                  if (gap != 1) {
+                    val options = yearFacet.options.map(_.value)
+                    withClue(s"For facets ${options}") {
+                      filterDataSetsForYearRange(dataSets, before.upperBound.get + 1, after.lowerBound.get - 1).size should equal(0)
+                    }
+                  }
+              }
             }
           }
         }
@@ -518,39 +523,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       def formatYears(dataSet: DataSet) = s"${dataSet.temporal.flatMap(_.start.flatMap(_.date.map(_.getYear))).getOrElse("n/a")}-${dataSet.temporal.flatMap(_.end.flatMap(_.date.map(_.getYear))).getOrElse("n/a")}"
 
     }
-
-    //    describe("format") {
-    //      describe("should be consistent with grouping all the facet results by distribution format") {
-    //        checkFacetsBoth { (dataSets, facetSize) =>
-    //          val result = responseAs[SearchResult]
-    //          val formatFacet = result.facets.get.find(_.id.equals(Format.id.toString)).get
-    //
-    //          formatFacet.options.foreach { option =>
-    //            val matchingDataSets = if (!option.value.equals("Unspecified")) {
-    //              dataSets
-    //                .filter(dataSet =>
-    //                  dataSet.distributions.exists(distribution =>
-    //                    distribution.format.exists(format => format.equalsIgnoreCase(option.value))))
-    //            } else {
-    //              dataSets
-    //                .filter(dataSet =>
-    //                  dataSet.distributions.exists(distribution =>
-    //                    distribution.format.isEmpty))
-    //            }
-    //
-    //            val matchingFormats = for {
-    //              dataSet <- dataSets
-    //            } yield dataSet.distributions.map(_.format)
-    //
-    //            withClue(s"option: $option, matching dataSets: $matchingFormats") {
-    //              if (option.matched && option.hitCount != 0) {
-    //                matchingDataSets.size shouldEqual option.hitCount
-    //              }
-    //            }
-    //          }
-    //        }
-    //      }
-    //    }
   }
 
   def cleanUpIndexes() = {

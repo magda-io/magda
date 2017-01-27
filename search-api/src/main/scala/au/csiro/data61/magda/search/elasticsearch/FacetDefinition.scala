@@ -151,8 +151,8 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
         val hole = matchedBins match {
           case Nil => None
           case matchedBins =>
-            val lastYear = matchedBins.head.upperBound.get.toInt
-            val firstYear = matchedBins.last.lowerBound.get.toInt
+            val lastYear = matchedBins.head.upperBound.get
+            val firstYear = matchedBins.last.lowerBound.get
             Some(firstYear, lastYear)
         }
 
@@ -188,27 +188,37 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
     case (facets, _) =>
       val binSize = getBinSize(firstYear, lastYear, limit)
 
-      val binsRaw = (for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1))
+      val binsRaw = for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1)
+
       val bins = hole.map {
         case (holeStart, holeEnd) =>
           binsRaw.flatMap {
             case (binStart, binEnd) =>
-              if (binStart > holeStart && binEnd < holeEnd)
+              if (binStart >= holeStart && binEnd <= holeEnd)
+                // If bin is entirely within the hole, remove it
                 Nil
-              else if (binStart < holeStart && binEnd > holeEnd)
+              else if (binEnd < holeStart || binStart > holeEnd) {
+                // If the bin and hole don't intersect at all, just leave the bin as is
+                Seq((binStart, binEnd))
+              } else if (holeStart > binStart && holeEnd < binEnd) {
+                // If hole is entirely within the bin, split it into two - one from the start of the bin to just before the start of the hole, and one from after the end of the hole to the end of the bin
                 Seq((binStart, holeStart - 1), (holeEnd + 1, binEnd))
-              else if (binStart <= holeStart && binEnd >= holeStart)
-                Seq((binStart, holeStart - 1))
-              else if (binStart <= holeEnd && binEnd >= holeEnd)
+              } else if (holeStart <= binStart && holeEnd <= binEnd) {
+                // If hole overlaps the start of the bin, move the bin to cover just after the hole to the end of the bin
                 Seq((holeEnd + 1, binEnd))
-              else Seq((binStart, binEnd))
+              } else if (holeStart <= binEnd && holeEnd >= binStart) {
+                // If hole overlaps the end of the bin, move the bin to cover the start of the bin to just before the hole starts
+                Seq((binStart, holeStart - 1))
+              } else {
+                throw new RuntimeException(s"Could not find a way to reconcile the bin ($binStart-$binEnd) with hole ($holeStart-$holeEnd)")
+              }
           }
-      } getOrElse (binsRaw) take limit
+      } getOrElse binsRaw take limit
 
       bins.reverse.map {
         case (bucketStart, bucketEnd) =>
           val hitCount = parseFacets(facets).filter {
-            case (years, hitCount) =>
+            case (years, _) =>
               val facetStart = years.head
               val facetEnd = years.last
 
@@ -223,10 +233,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
             lowerBound = Some(bucketStart),
             upperBound = Some(bucketEnd)
           )
-      }
-        .filter(_.hitCount > 0)
-//        .sortBy(_.lowerBound)
-//        .reverse
+      }.filter(_.hitCount > 0)
   }
 
   def roundUp(num: Int, divisor: Int): Int = Math.ceil((num.toDouble / divisor)).toInt * divisor
