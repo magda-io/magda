@@ -36,4 +36,36 @@ describe('results reducer', () => {
       }
     )
   });
+
+  it('should handle REQUEST_RESULTS', () => {
+    const apiQuery = '';
+    expect(
+      reducer([], {
+        type: actionTypes.REQUEST_RESULTS,
+        apiQuery
+      })
+    ).toEqual(
+      {
+        isFetching: true,
+        hasError: false,
+        apiQuery
+      }
+    )
+  });
+
+  it('should handle catch error', () => {
+    const errorMessage = '';
+    expect(
+      reducer([], {
+        type: actionTypes.FETCH_ERROR,
+        errorMessage
+      })
+    ).toEqual(
+      {
+        isFetching: false,
+        hasError: true,
+        errorMessage
+      }
+    )
+  });
 });
