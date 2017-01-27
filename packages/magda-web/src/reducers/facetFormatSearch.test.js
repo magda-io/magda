@@ -1,7 +1,7 @@
 import {actionTypes} from '../constants/ActionTypes';
 import reducer from './facetFormatSearch';
 
-describe('todos reducer', () => {
+describe('format search reducer', () => {
   it('should return the initial state', () => {
     expect(
       reducer(undefined, {})
