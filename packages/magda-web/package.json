@@ -11,13 +11,13 @@
   "devDependencies": {
     "deep-freeze": "0.0.1",
     "expect": "^1.20.2",
-    "nock": "^9.0.2",
     "react-scripts": "0.7.0",
     "redux-mock-store": "^1.2.1"
   },
   "dependencies": {
     "d3-drag": "^1.0.1",
     "d3-selection": "^1.0.2",
+    "fetch-mock": "^5.8.1",
     "isomorphic-fetch": "^2.2.1",
     "leaflet": "^0.7.7",
     "leaflet-mapbox-vector-tile": "TerriaJS/Leaflet.MapboxVectorTile",
