@@ -169,8 +169,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .asInstanceOf[AbstractAggregationDefinition]
 
     val partialMatchesAgg =
-      if (facetDef.isRelevantToQuery(query)) // If there's details in the query that relate to this facet...
-        // Then create an aggregation that shows all results for this facet that partially match the details
+      if (facetDef.isRelevantToQuery(query))
+        // If there's details in the query that relate to this facet
+        // then create an aggregation that shows all results for this facet that partially match the details
         // in the query... this is useful if say the user types in "Ballarat", we can suggest "Ballarat Council"
         Some(
           aggregation

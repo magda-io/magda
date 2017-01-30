@@ -29,7 +29,8 @@ import au.csiro.data61.magda.api.Query
 import org.scalacheck.Shrink.shrink
 
 object Generators {
-  def biasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
+  def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
+  def noneBiasedOption[T](inner: Gen[T]) = Gen.frequency((1, Gen.some(inner)), (4, None))
 
   val keyGen = arbitrary[String].suchThat(!_.contains("."))
 
@@ -52,24 +53,24 @@ object Generators {
   )
 
   def apiDateGen(start: Instant, end: Instant) = for {
-    date <- biasedOption(offsetDateTimeGen(start, end))
+    date <- someBiasedOption(offsetDateTimeGen(start, end))
     text <- if (date.isDefined) Gen.const(date.get.toString) else arbitrary[String]
   } yield ApiDate(date, text)
 
   val periodOfTimeGen = (for {
     startTime <- Gen.frequency((9, Gen.const(defaultTightStartTime)), (1, defaultStartTime))
     endTime <- Gen.frequency((9, Gen.const(defaultTightEndTime)), (1, defaultEndTime))
-    start <- biasedOption(apiDateGen(startTime, endTime))
-    end <- biasedOption(apiDateGen(start.flatMap(_.date).map(_.toInstant).getOrElse(startTime), endTime))
+    start <- someBiasedOption(apiDateGen(startTime, endTime))
+    end <- someBiasedOption(apiDateGen(start.flatMap(_.date).map(_.toInstant).getOrElse(startTime), endTime))
   } yield new PeriodOfTime(start, end)).suchThat {
     case PeriodOfTime(Some(ApiDate(Some(start), _)), Some(ApiDate(Some(end), _))) => start.isBefore(end)
     case _ => true
   }
 
   def agentGen(nameGen: Gen[String]) = for {
-    name <- biasedOption(nameGen)
-    homePage <- biasedOption(arbitrary[String])
-    email <- biasedOption(arbitrary[String])
+    name <- someBiasedOption(nameGen)
+    homePage <- someBiasedOption(arbitrary[String])
+    email <- someBiasedOption(arbitrary[String])
     //    extraFields <- Gen.mapOf(Gen.zip(keyGen, arbitrary[String]))
   } yield new Agent(name, homePage, email)
 
@@ -79,8 +80,8 @@ object Generators {
   } yield Duration.of(number, unit)
 
   val periodicityGen = for {
-    text <- biasedOption(arbitrary[String])
-    duration <- biasedOption(durationGen)
+    text <- someBiasedOption(arbitrary[String])
+    duration <- someBiasedOption(durationGen)
   } yield Periodicity(text, duration)
 
   val xGen =
@@ -142,8 +143,8 @@ object Generators {
   )
 
   val locationGen = for {
-    text <- biasedOption(arbitrary[String])
-    geoJson <- biasedOption(geometryGen)
+    text <- someBiasedOption(arbitrary[String])
+    geoJson <- someBiasedOption(geometryGen)
   } yield new Location(text, geoJson)
 
   def wordsGen(size: Int) = {
@@ -181,24 +182,24 @@ object Generators {
     }
 
   val licenseGen = for {
-    name <- biasedOption(arbitrary[String])
-    url <- biasedOption(arbitrary[String])
+    name <- someBiasedOption(arbitrary[String])
+    url <- someBiasedOption(arbitrary[String])
   } yield License(name, url)
 
   val formatGen = for {
     mediaType <- Gen.option(mediaTypeGen)
-    randomFormat <- biasedOption(randomFormatGen.flatMap(Gen.oneOf(_)))
+    randomFormat <- someBiasedOption(randomFormatGen.flatMap(Gen.oneOf(_)))
   } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).orElse(randomFormat))
 
   val distGen = for {
     title <- arbitrary[String]
-    description <- biasedOption(arbitrary[String])
-    issued <- biasedOption(offsetDateTimeGen())
-    modified <- biasedOption(offsetDateTimeGen())
-    license <- biasedOption(licenseGen)
-    rights <- biasedOption(arbitrary[String])
-    accessURL <- biasedOption(arbitrary[String])
-    byteSize <- biasedOption(arbitrary[Int])
+    description <- someBiasedOption(arbitrary[String])
+    issued <- someBiasedOption(offsetDateTimeGen())
+    modified <- someBiasedOption(offsetDateTimeGen())
+    license <- someBiasedOption(licenseGen)
+    rights <- someBiasedOption(arbitrary[String])
+    accessURL <- someBiasedOption(arbitrary[String])
+    byteSize <- someBiasedOption(arbitrary[Int])
     format <- formatGen
   } yield Distribution(
     title = title,
@@ -219,21 +220,21 @@ object Generators {
     identifier <- Gen.delay {
       incrementer.incrementAndGet()
     }
-    title <- biasedOption(Gen.alphaNumStr)
+    title <- someBiasedOption(Gen.alphaNumStr)
     catalog <- arbitrary[String]
-    description <- biasedOption(textGen(descWordGen))
-    issued <- biasedOption(offsetDateTimeGen())
-    modified <- biasedOption(offsetDateTimeGen())
-    language <- biasedOption(arbitrary[String])
-    publisher <- biasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
-    accrualPeriodicity <- biasedOption(periodicityGen)
+    description <- someBiasedOption(textGen(descWordGen))
+    issued <- someBiasedOption(offsetDateTimeGen())
+    modified <- someBiasedOption(offsetDateTimeGen())
+    language <- someBiasedOption(arbitrary[String])
+    publisher <- someBiasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
+    accrualPeriodicity <- someBiasedOption(periodicityGen)
     spatial <- Gen.option(locationGen)
-    temporal <- biasedOption(periodOfTimeGen)
+    temporal <- someBiasedOption(periodOfTimeGen)
     theme <- Gen.listOf(arbitrary[String])
     keyword <- Gen.listOf(arbitrary[String])
-    contactPoint <- biasedOption(agentGen(arbitrary[String]))
+    contactPoint <- someBiasedOption(agentGen(arbitrary[String]))
     distributions <- Gen.nonEmptyListOf(distGen)
-    landingPage <- biasedOption(arbitrary[String])
+    landingPage <- someBiasedOption(arbitrary[String])
   } yield DataSet(
     identifier = identifier.toString,
     catalog = catalog,
@@ -256,8 +257,9 @@ object Generators {
 
   val queryTextGen = descWordGen.flatMap(Gen.oneOf(_))
 
-  def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
   def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
+  def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
+  def veryProbablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.choose(1, 3).flatMap(x => Gen.containerOfN[Set, T](x, gen))), (6, Gen.const(Set())))
 
   val queryGen = for {
     freeText <- Gen.option(queryTextGen)
@@ -274,8 +276,9 @@ object Generators {
     dateTo = dateTo.flatten,
     formats = formats
   )
+
   val specificBiasedQueryGen = for {
-    freeText <- biasedOption(queryTextGen)
+    freeText <- someBiasedOption(queryTextGen)
     quotes <- set(queryTextGen)
     publishers <- set(publisherGen.flatMap(Gen.oneOf(_)))
     dateFrom <- periodOfTimeGen.map(_.start.flatMap(_.date))

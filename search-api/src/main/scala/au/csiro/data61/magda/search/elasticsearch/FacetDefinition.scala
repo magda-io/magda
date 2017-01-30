@@ -141,12 +141,14 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
     lazy val firstYear = query.dateFrom.map(_.getYear)
     lazy val lastYear = query.dateTo.map(_.getYear)
 
+    def makeMatchedBins() = makeBins(matched, limit, None, firstYear, lastYear).map(_.copy(matched = true))
+
     (matched, unmatched) match {
       case (Nil, Nil)       => Nil
-      case (matched, Nil)   => super.truncateFacets(query, makeBins(matched, limit, None, firstYear, lastYear), Nil, Nil, limit)
+      case (matched, Nil)   => super.truncateFacets(query, makeMatchedBins(), Nil, Nil, limit)
       case (Nil, unmatched) => super.truncateFacets(query, Nil, Nil, makeBins(unmatched, limit, None, None, None), limit)
       case (matched, unmatched) =>
-        val matchedBins = makeBins(matched, limit, None, firstYear, lastYear).map(_.copy(matched = true))
+        val matchedBins = makeMatchedBins()
 
         val hole = matchedBins match {
           case Nil => None
@@ -217,14 +219,19 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
 
       bins.reverse.map {
         case (bucketStart, bucketEnd) =>
-          val hitCount = parseFacets(facets).filter {
-            case (years, _) =>
+          val parsedFacets = parseFacets(facets)
+
+          val hitCount = parsedFacets.filter {
+            case (years, count) =>
               val facetStart = years.head
               val facetEnd = years.last
 
-              (facetStart >= bucketStart && facetStart <= bucketEnd) ||
-                (facetEnd >= bucketStart && facetEnd <= bucketEnd) ||
-                (facetStart <= bucketStart && facetEnd >= bucketEnd)
+              (facetStart >= bucketStart && facetStart <= bucketEnd) || // facetStart is in the bucket bounds
+                (facetEnd >= bucketStart && facetEnd <= bucketEnd) || // facetEnd is in the bucket bounds
+                (facetStart <= bucketStart && facetEnd >= bucketEnd) // The facet completely overlaps the bucket
+          }.map {
+            case (array, integer) =>
+              (array, integer)
           }.foldLeft(0l)(_ + _._2)
 
           FacetOption(

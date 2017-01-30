@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.api
 
 import java.io.File
+import java.time.{Instant, OffsetDateTime}
 import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 
@@ -189,7 +190,9 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
   def getFromIndexCache(size: Int) = {
     val cacheKey = if (size < 10) size
     else if (size < 50) size - size % 5
-    else size - size % 10
+    else if (size < 100) size - size % 10
+    else size - size % 25
+    //    val cacheKey = size
 
     (cacheKey, Option(genCache.get(cacheKey)))
   }
@@ -313,20 +316,22 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
     }
 
-    def checkFacetsWithQuery(queryGen: Gen[(String, Query)] = textQueryGen())(inner: (List[DataSet], Int, Query) => Unit) = {
-      forAll(indexGen, queryGen, Gen.posNum[Int]) { (tuple, query, facetSize) =>
+    def checkFacetsWithQuery(queryGen: Gen[(String, Query)] = textQueryGen())(inner: (List[DataSet], Int, Query, List[DataSet]) => Unit) = {
+      forAll(indexGen, queryGen, Gen.posNum[Int]) { (tuple, query, rawFacetSize) =>
         val (indexName, dataSets, routes) = tuple
         val (textQuery, objQuery) = query
+        val facetSize = Math.max(rawFacetSize, 1)
 
-        val valid = facetSize >= 0 &&
-          objQuery.freeText.map(_.matches(LUCENE_CONTROL_CHARACTER_REGEX)).getOrElse(false) &&
+        val valid = objQuery.freeText.map(_.matches(LUCENE_CONTROL_CHARACTER_REGEX)).getOrElse(true) &&
           objQuery.quotes.forall(_.matches(LUCENE_CONTROL_CHARACTER_REGEX)) &&
           objQuery.formats.forall(_.matches(LUCENE_CONTROL_CHARACTER_REGEX)) &&
           objQuery.publishers.forall(_.matches(LUCENE_CONTROL_CHARACTER_REGEX))
 
+        println(textQuery)
+
         whenever(valid) {
           Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
-            inner(responseAs[SearchResult].dataSets, facetSize, objQuery)
+            inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets)
           }
         }
       }
@@ -337,7 +342,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
         checkFacetsNoQuery(inner(_, _))
       }
       it("with a query") {
-        checkFacetsWithQuery()((dataSets, facetSize, query) => inner(dataSets, facetSize))
+        checkFacetsWithQuery()((dataSets, facetSize, _, _) => inner(dataSets, facetSize))
       }
     }
 
@@ -445,16 +450,37 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
 
       describe("should be consistent with grouping all the facet results by temporal coverage year") {
-        checkFacetsBoth { (dataSets, facetSize) =>
-          val result = responseAs[SearchResult]
-          val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+        it("when no query") {
+          checkFacetsNoQuery { (dataSets, facetSize) =>
+            val result = responseAs[SearchResult]
+            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
-          yearFacet.options.foreach { option =>
-            val matchingDataSets = filterDataSetsForYearRange(dataSets, option.lowerBound.get, option.upperBound.get)
-            val dataSetYears = dataSets.map(_.temporal.getOrElse("(no temporal)"))
+            yearFacet.options.foreach { option =>
+              val matchingDataSets = filterDataSetsForYearRange(dataSets, option.lowerBound.get, option.upperBound.get)
+              val dataSetYears = dataSets.map(_.temporal.map(temporal => temporal.start.flatMap(_.date.map(_.getYear)) + "-" + temporal.end.flatMap(_.date.map(_.getYear))).getOrElse("(no temporal)"))
 
-            withClue(s"For option ${option.value} and years $dataSetYears") {
-              matchingDataSets.size shouldEqual option.hitCount
+              withClue(s"For option ${option.value} and years $dataSetYears") {
+                matchingDataSets.size shouldEqual option.hitCount
+              }
+            }
+          }
+        }
+
+        it("with a query") {
+          checkFacetsWithQuery() { (dataSets, _, query, allDataSets) =>
+            val result = responseAs[SearchResult]
+
+            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+
+            yearFacet.options.filter(_.matched).foreach { option =>
+              val queryFilteredDataSets = filterDataSetsForDateRange(dataSets, query.dateFrom, query.dateTo)
+              val facetDataSets = filterDataSetsForYearRange(queryFilteredDataSets, option.lowerBound.get, option.upperBound.get)
+
+              val dataSetYears = facetDataSets.map(_.temporal.map(temporal => temporal.start.flatMap(_.date.map(_.getYear)) + "-" + temporal.end.flatMap(_.date.map(_.getYear))).getOrElse("(no temporal)"))
+
+              withClue(s"For option ${option.value} and years $dataSetYears") {
+                facetDataSets.size shouldEqual option.hitCount
+              }
             }
           }
         }
@@ -513,6 +539,20 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
               dataSetStart.getYear <= upperBound && dataSetEnd.getYear >= lowerBound
             case _ => false
           }
+        }
+
+      def filterDataSetsForDateRange(dataSets: List[DataSet], lowerBound: Option[OffsetDateTime], upperBound: Option[OffsetDateTime]) = dataSets
+        .filter { dataSet =>
+          val startOption = dataSet.temporal.flatMap(_.start).flatMap(_.date)
+          val endOption = dataSet.temporal.flatMap(_.end).flatMap(_.date)
+
+          val start = startOption.orElse(endOption).getOrElse(OffsetDateTime.MAX)
+          val end = endOption.orElse(startOption).getOrElse(OffsetDateTime.MIN)
+
+          val lower = lowerBound.getOrElse(OffsetDateTime.MIN)
+          val upper = upperBound.getOrElse(OffsetDateTime.MAX)
+
+          !(start.isAfter(upper) || end.isBefore(lower))
         }
 
       def overlaps(tuple: ((Int, Int), (Int, Int))) = {
