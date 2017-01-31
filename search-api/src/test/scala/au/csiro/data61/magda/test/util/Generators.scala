@@ -30,7 +30,7 @@ import org.scalacheck.Shrink.shrink
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
-  def noneBiasedOption[T](inner: Gen[T]) = Gen.frequency((1, Gen.some(inner)), (4, None))
+  def noneBiasedOption[T](inner: Gen[T]) = Gen.frequency((1, Gen.some(inner)), (20, None))
 
   val keyGen = arbitrary[String].suchThat(!_.contains("."))
 
@@ -255,16 +255,16 @@ object Generators {
     years = ElasticSearchIndexer.getYears(temporal.flatMap(_.start.flatMap(_.date)), temporal.flatMap(_.end.flatMap(_.date)))
   )
 
-  val queryTextGen = descWordGen.flatMap(Gen.oneOf(_))
+  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" "))
 
   def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
-  def veryProbablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.choose(1, 3).flatMap(x => Gen.containerOfN[Set, T](x, gen))), (6, Gen.const(Set())))
+  def smallSet[T](gen: Gen[T]): Gen[Set[T]] = probablyEmptySet(gen).flatMap(set => Gen.pick(set.size % 3, set)).map(_.toSet)
 
   val queryGen = for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
-    publishers <- probablyEmptySet(publisherGen.flatMap(Gen.oneOf(_)))
+    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
     dateFrom <- Gen.option(periodOfTimeGen.map(_.start.flatMap(_.date)))
     dateTo <- Gen.option(periodOfTimeGen.map(_.end.flatMap(_.date)))
     formats <- probablyEmptySet(formatGen.map(_._2)).map(_.flatten)
@@ -280,7 +280,7 @@ object Generators {
   val specificBiasedQueryGen = for {
     freeText <- someBiasedOption(queryTextGen)
     quotes <- set(queryTextGen)
-    publishers <- set(publisherGen.flatMap(Gen.oneOf(_)))
+    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
     dateFrom <- periodOfTimeGen.map(_.start.flatMap(_.date))
     dateTo <- periodOfTimeGen.map(_.end.flatMap(_.date))
     formats <- set(formatGen.map(_._2)).map(_.flatten)
@@ -292,6 +292,22 @@ object Generators {
     dateTo = dateTo,
     formats = formats
   )
+
+  val unspecificQueryGen = (for {
+    freeText <- noneBiasedOption(queryTextGen)
+    quotes <- smallSet(queryTextGen)
+    publishers <- Gen.frequency((4, Gen.const(Set[String]())), (1, publisherGen.flatMap(publishers => Gen.choose(0, 2).flatMap(size => Gen.pick(size, publishers))).map(_.toSet)))
+    dateFrom <- noneBiasedOption(periodOfTimeGen.map(_.start.flatMap(_.date)))
+    dateTo <- noneBiasedOption(periodOfTimeGen.map(_.end.flatMap(_.date)))
+    formats <- smallSet(mediaTypeGen.map(_.fileExtensions.headOption)).map(_.flatten)
+  } yield Query(
+    freeText = freeText,
+    quotes = quotes,
+    publishers = publishers,
+    dateFrom = dateFrom.flatten,
+    dateTo = dateTo.flatten,
+    formats = formats
+  )).flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
 
   def textQueryGen(queryGen: Gen[Query] = queryGen): Gen[(String, Query)] = queryGen.flatMap { query =>
     val list = Seq(query.freeText).flatten ++
