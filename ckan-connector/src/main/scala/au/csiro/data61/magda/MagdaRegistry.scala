@@ -64,7 +64,7 @@ class MagdaRegistry(
         put <- http.singleRequest(HttpRequest(
           // TODO: get  the base URL from configuration
           // TODO: URI encode the ID
-          uri = "http://localhost:9001/api/0.1/sections/" + section.id,
+          uri = "http://registry-api/api/0.1/sections/" + section.id,
           method = HttpMethods.PUT,
           entity = entity
         ))
@@ -101,7 +101,7 @@ class MagdaRegistry(
         http.singleRequest(HttpRequest(
           // TODO: get  the base URL from configuration
           // TODO: URI encode the ID
-          uri = "http://localhost:9001/api/0.1/records/" + dataset.identifier,
+          uri = "http://registry-api/api/0.1/records/" + dataset.identifier,
           method = HttpMethods.PUT,
           entity = entity
         )).flatMap(response => {

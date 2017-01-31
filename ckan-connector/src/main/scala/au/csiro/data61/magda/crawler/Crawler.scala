@@ -27,8 +27,8 @@ class Crawler(val externalInterfaces: Seq[InterfaceConfig], registry: Registry)(
   def crawl() = {
     externalInterfaces
       .map { interface =>
-        val needsIndexingFuture = if (config.getBoolean("indexer.alwaysReindex")) {
-          log.info("Indexing {} because indexer.alwaysReindex is true", interface.name)
+        val needsIndexingFuture = if (config.getBoolean("connector.alwaysReindex")) {
+          log.info("Indexing {} because connector.alwaysReindex is true", interface.name)
           Future(true)
         } else {
           registry.needsReindexing(interface).map { needsReindexing =>
