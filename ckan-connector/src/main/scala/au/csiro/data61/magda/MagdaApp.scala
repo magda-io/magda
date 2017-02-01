@@ -46,11 +46,16 @@ object MagdaApp extends App {
   val registry = Registry(new DefaultClientProvider, config)
   val crawler = Crawler(interfaceConfigs, registry)
 
-  crawler.crawl() onComplete {
-    case Success(_) =>
-      logger.info("Successfully completed crawl")
-    case Failure(e) =>
-      logger.error(e, "Crawl failed")
+  registry.initialize().map { result =>
+    println("Initialized!")
+    crawler.crawl() onComplete {
+      case Success(_) =>
+        logger.info("Successfully completed crawl")
+      case Failure(e) =>
+        logger.error(e, "Crawl failed")
+    }
+  }.failed.map { exception =>
+    println(exception)
   }
 }
 

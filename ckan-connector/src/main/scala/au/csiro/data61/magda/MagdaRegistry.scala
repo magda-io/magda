@@ -19,12 +19,12 @@ import spray.json.DefaultJsonProtocol._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 case class Record(
-  id: String,
-  name: String,
-  sections: Map[String, JsObject]
+                   id: String,
+                   name: String,
+                   aspects: Map[String, JsObject]
 )
 
-case class SectionDefinition(
+case class AspectDefinition(
   id: String,
   name: String,
   jsonSchema: JsObject
@@ -49,13 +49,13 @@ class MagdaRegistry(
   private implicit val recordFormat = jsonFormat3(Record)
   private implicit val sourceSectionFormat = jsonFormat2(SourceSection)
   private implicit val badRequestFormat = jsonFormat1(BadRequest)
-  private implicit val sectionDefinitionFormat = jsonFormat3(SectionDefinition)
+  private implicit val sectionDefinitionFormat = jsonFormat3(AspectDefinition)
 
   override def initialize(): Future[Any] = {
     val sections = List(
-      SectionDefinition("source", "Source", JsObject()),
-      SectionDefinition("dataset-summary", "Dataset Summary", JsObject()),
-      SectionDefinition("distribution-summary", "Distribution Summary", JsObject())
+      AspectDefinition("source", "Source", JsObject()),
+      AspectDefinition("dataset-summary", "Dataset Summary", JsObject()),
+      AspectDefinition("distribution-summary", "Distribution Summary", JsObject())
     )
 
     Source(sections).mapAsync(6)(section => {
@@ -64,20 +64,20 @@ class MagdaRegistry(
         put <- http.singleRequest(HttpRequest(
           // TODO: get  the base URL from configuration
           // TODO: URI encode the ID
-          uri = "http://registry-api/api/0.1/sections/" + section.id,
+          uri = "http://registry-api/api/0.1/aspects/" + section.id,
           method = HttpMethods.PUT,
           entity = entity
         ))
         result <- put.status match {
-          case StatusCodes.OK => Unmarshal(put.entity).to[SectionDefinition]
+          case StatusCodes.OK => Unmarshal(put.entity).to[AspectDefinition]
           case StatusCodes.BadRequest => Unmarshal(put.entity).to[BadRequest].map(badRequest => throw new RuntimeException(badRequest.message))
           case anythingElse => {
             put.discardEntityBytes()
-            throw new RuntimeException("Section definition creation failed.")
+            throw new RuntimeException("Aspect definition creation failed.")
           }
         }
       } yield result
-    }).runForeach(sectionResult => println("Created section " + sectionResult.id))
+    }).runFold(Seq[AspectDefinition]())((definitions, definition) => definition +: definitions)
   }
 
   override def add(source: InterfaceConfig, dataSets: List[DataSet]): Future[Any] = {
@@ -91,7 +91,7 @@ class MagdaRegistry(
         // TODO: prefix the identifier, e.g. "dga:" + dataset.identifier
         id = dataset.identifier,
         name = dataset.title.getOrElse(dataset.identifier),
-        sections = Map(
+        aspects = Map(
           "source" -> source.toJson.asJsObject(),
           "dataset-summary" -> dataset.toJson.asJsObject()
         )

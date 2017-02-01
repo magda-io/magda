@@ -46,11 +46,15 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
             s"HTTP method not allowed, supported methods: $names!")
       }
     }
+    .handleAll[MalformedRequestContentRejection] { rejections =>
+      val messages = ("The request content did not have the expected format:" +: rejections.map(_.message)).mkString("\n")
+      complete(StatusCodes.BadRequest, au.csiro.data61.magda.registry.BadRequest(messages))
+    }
     .result()
 
   val myExceptionHandler = ExceptionHandler {
     case e: Exception => {
-      logger.error(e, "Exception encountered") //test
+      logger.error(e, "Exception encountered")
 
       cors() {
         complete(StatusCodes.InternalServerError, au.csiro.data61.magda.registry.BadRequest("The server encountered an unexpected error."))
