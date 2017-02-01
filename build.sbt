@@ -8,8 +8,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  //.aggregate(common, searchApi, indexer, registryApi, ckanConnector)
-  .aggregate(registryApi)
+  .aggregate(common, searchApi, indexer, registryApi, ckanConnector)
   .settings(commonSettings: _*)
 lazy val common = (project in file("common"))
   .settings(commonSettings: _*)

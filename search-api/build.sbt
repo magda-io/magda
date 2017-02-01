@@ -1,6 +1,6 @@
 enablePlugins(JavaServerAppPackaging)
 
-name := "magda-metadata-api"
+name := "magda-search-api"
 
 libraryDependencies ++= {
   val akkaV       = "2.4.9"
@@ -36,19 +36,11 @@ dockerfile in docker := {
 
 imageNames in docker := Seq(
   ImageName(
-    namespace = Some("data61"),
+    namespace = Some("localhost:5000/data61"),
     repository = name.value,
-    tag = Some("v" + version.value)
+    tag = Some("latest")
   )
 )
-
-watchSources <<= (watchSources) map { files =>
-  if (Option(System.getProperty("project")).getOrElse("none").equals("searchApi")) {
-    files
-  } else {
-    Nil
-  }
-}
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true

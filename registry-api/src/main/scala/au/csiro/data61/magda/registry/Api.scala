@@ -50,7 +50,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
 
   val myExceptionHandler = ExceptionHandler {
     case e: Exception => {
-      logger.error(e, "Exception encountered")
+      logger.error(e, "Exception encountered") //test
 
       cors() {
         complete(StatusCodes.InternalServerError, au.csiro.data61.magda.registry.BadRequest("The server encountered an unexpected error."))

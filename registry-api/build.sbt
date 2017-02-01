@@ -1,7 +1,5 @@
 enablePlugins(JavaServerAppPackaging)
 
-import sys.process.Process
-
 name := "magda-registry-api"
 
 libraryDependencies ++= {
@@ -49,27 +47,5 @@ imageNames in docker := Seq(
   )
 )
 
-//watchSources <<= (watchSources) map { files =>
-//  if (Option(System.getProperty("project")).getOrElse("none").equals("registryApi")) {
-//    files
-//  } else {
-//    Nil
-//  }
-//}
-
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
-
-val deployLocal = taskKey[Unit]("Deploy this service to the local Kubernetes cluster.")
-
-deployLocal := {
-  val dockerImageID = DockerKeys.dockerBuildAndPush.value
-
-  // Remove the created image; we don't need it once it has been pushed to the registry
-  val rmi = Process("docker rmi " + dockerImageID).!!
-  println(rmi)
-
-  // Delete pods associated with this deployment, so they spin back up with the new version
-  val delete = Process("kubectl delete pods -l service=" + baseDirectory.value.getName()).!!
-  println(delete)
-}

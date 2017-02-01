@@ -18,29 +18,17 @@ spec:
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-sbt-local:latest"
-        command: ["sbt", "-Dproject=searchApi", "~searchApi/re-start"]
-        imagePullPolicy: Always
+        image: "localhost:5000/data61/magda-search-api:latest"
         ports:
         - containerPort: 80
         - containerPort: 8000
         volumeMounts:
         - mountPath: /usr/regions
           name: regions
-        - mountPath: /usr/src/app/
-          name: src
-        - mountPath: /root/.ivy2
-          name: ivy-cache
       volumes:
       - name: regions
         hostPath:
-          path: ${projectDir}/indexer/regions
-      - name: src
-        hostPath:
-          path: ${projectDir}
-      - hostPath:
-          path: ${projectDir}/search-api/target/.ivy2
-        name: ivy-cache
+          path: /tmp/regions
 ---
 apiVersion: v1
 kind: Service
@@ -80,24 +68,7 @@ spec:
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-sbt-local:latest"
-        command: ["sbt", "-Dproject=registryApi", "~registryApi/re-start"]
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-        - containerPort: 8000
-        volumeMounts:
-        - mountPath: /usr/src/app/
-          name: src
-        - mountPath: /root/.ivy2
-          name: ivy-cache
-      volumes:
-      - name: src
-        hostPath:
-          path: ${projectDir}
-      - hostPath:
-          path: ${projectDir}/registry-api/target/.ivy2
-        name: ivy-cache
+        image: "localhost:5000/data61/magda-registry-api:latest"
 ---
 apiVersion: v1
 kind: Service
@@ -137,24 +108,7 @@ spec:
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-sbt-local:latest"
-        command: ["sbt", "-Dproject=ckanConnector", "-DincludeMockData=true", "~ckanConnector/re-start"]
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-        - containerPort: 8000
-        volumeMounts:
-        - mountPath: /usr/src/app/
-          name: src
-        - mountPath: /root/.ivy2
-          name: ivy-cache
-      volumes:
-      - name: src
-        hostPath:
-          path: ${projectDir}
-      - hostPath:
-          path: ${projectDir}/ckan-connector/target/.ivy2
-        name: ivy-cache
+        image: "localhost:5000/data61/magda-ckan-connector:latest"
 ---
 apiVersion: v1
 kind: Service
@@ -194,28 +148,14 @@ spec:
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-sbt-local:latest"
-        command: ["sbt", "-Dproject=indexer", "-DincludeMockData=true", "~indexer/re-start"]
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8000
+        image: "localhost:5000/data61/magda-metadata-indexer:latest"
         volumeMounts:
         - mountPath: /usr/regions
           name: regions
-        - mountPath: /usr/src/app/
-          name: src
-        - mountPath: /root/.ivy2
-          name: ivy-cache
       volumes:
       - name: regions
         hostPath:
-          path: ${projectDir}/regions
-      - name: src
-        hostPath:
-          path: ${projectDir}
-      - hostPath:
-          path: ${projectDir}/indexer/target/.ivy2
-        name: ivy-cache
+          path: /tmp/regions
 ---
 apiVersion: v1
 kind: Service
@@ -379,18 +319,13 @@ spec:
     spec:
       containers:
       - name: registry-datastore
-        image: postgres
+        image: localhost:5000/data61/registry-datastore:latest
         ports:
         - containerPort: 5432
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: registrydata
-        - mountPath: /docker-entrypoint-initdb.d
-          name: docker-entrypoint-initdb
       volumes:
-      - name: docker-entrypoint-initdb
-        hostPath:
-          path: ${projectDir}/registry-api/postgres/scripts
       - name: registrydata
         hostPath:
           path: /tmp/registrydata

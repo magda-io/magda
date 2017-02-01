@@ -49,16 +49,8 @@ dockerfile in docker := {
 
 imageNames in docker := Seq(
   ImageName(
-    namespace = Some("data61"),
+    namespace = Some("localhost:5000/data61"),
     repository = name.value,
-    tag = Some("v" + version.value)
+    tag = Some("latest")
   )
 )
-
-watchSources <<= (watchSources) map { files =>
-  if (Option(System.getProperty("project")).getOrElse("none").equals("indexer")) {
-    files
-  } else {
-    Nil
-  }
-}
