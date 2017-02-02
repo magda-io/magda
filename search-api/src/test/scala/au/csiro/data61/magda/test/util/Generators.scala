@@ -318,8 +318,5 @@ object Generators {
       query.formats.map(format => s"as $format")
 
     Gen.pick(textList.size, textList).flatMap(existingList => Gen.pick(facetList.size, facetList).map(existingList ++ _)).map(queryStringList => (queryStringList.mkString(" "), query))
-  } map { query =>
-    println(query._1)
-    query
   }
 }

@@ -232,30 +232,87 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
 
-  describe("searching *") {
-    it("should return all results") {
-      forAll(indexGen) {
-        case (indexName, dataSets, routes) ⇒
-          Get(s"/datasets/search?query=*&limit=${dataSets.length}") ~> routes ~> check {
-            status shouldBe OK
-            contentType shouldBe `application/json`
-            val response = responseAs[SearchResult]
+  describe("searching") {
+    describe("*") {
+      it("should return all results") {
+        forAll(indexGen) {
+          case (indexName, dataSets, routes) ⇒
+            Get(s"/datasets/search?query=*&limit=${dataSets.length}") ~> routes ~> check {
+              status shouldBe OK
+              contentType shouldBe `application/json`
+              val response = responseAs[SearchResult]
 
-            response.hitCount shouldEqual dataSets.length
-            response.dataSets shouldEqual dataSets
-          }
+              response.hitCount shouldEqual dataSets.length
+              response.dataSets shouldEqual dataSets
+            }
+        }
+      }
+
+      it("hitCount should reflect all hits in the system, not just what is returned") {
+        forAll(indexGen) {
+          case (indexName, dataSets, routes) ⇒
+            Get(s"/datasets/search?query=*&limit=${dataSets.length / 2}") ~> routes ~> check {
+              val response = responseAs[SearchResult]
+
+              response.hitCount shouldEqual dataSets.length
+              response.dataSets should equal(dataSets.take(dataSets.length / 2))
+            }
+        }
       }
     }
 
-    it("hitCount should reflect all hits in the system, not just what is returned") {
-      forAll(indexGen) {
-        case (indexName, dataSets, routes) ⇒
-          Get(s"/datasets/search?query=*&limit=${dataSets.length / 2}") ~> routes ~> check {
-            val response = responseAs[SearchResult]
+    it("should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart") {
+      val filterQueryGen = queryGen
+        .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
 
-            response.hitCount shouldEqual dataSets.length
-            response.dataSets should equal(dataSets.take(dataSets.length / 2))
+      forAll(indexGen, textQueryGen(filterQueryGen)) { (indexTuple, queryTuple) ⇒
+        val (_, dataSets, routes) = indexTuple
+        val (textQuery, query) = queryTuple
+        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
+          val response = responseAs[SearchResult]
+
+          response.dataSets.foreach { dataSet =>
+            val temporal = dataSet.temporal
+            val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
+            val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
+              case (Some(innerQueryDateTo), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
+              case (Some(_), None) => false
+              case _ => true
+            }
+
+            val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
+            val dateToMatched = (query.dateFrom, dataSetDateTo) match {
+              case (Some(innerQueryDateFrom), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
+              case (Some(_), None) => false
+              case _ => true
+            }
+
+            val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
+            val publisherMatched = if (!query.publishers.isEmpty) {
+              query.publishers.exists(queryPublisher =>
+                dataSetPublisherName.map(_.equals(queryPublisher)).getOrElse(false)
+              )
+            } else true
+
+            val formatMatched = if (!query.formats.isEmpty) {
+              query.formats.exists(queryFormat =>
+                dataSet.distributions.exists(distribution =>
+                  distribution.format.map(_.equals(queryFormat)).getOrElse(false)
+                )
+              )
+            } else true
+
+            val allValid = dateFromMatched && dateToMatched && publisherMatched && formatMatched
+
+            withClue(s"with query $textQuery and dataSet dateTo $dataSetDateTo dateFrom $dataSetDateFrom publisher ${dataSet.publisher} formats ${dataSet.distributions.map(_.format).mkString(",")}") {
+              if (response.strategy.get == MatchAll) {
+                allValid should be(true)
+              } else if (query.quotes.isEmpty && query.freeText.isEmpty) {
+                allValid should be(false)
+              }
+            }
           }
+        }
       }
     }
   }
