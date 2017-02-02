@@ -6,7 +6,7 @@ import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.search.SearchStrategy
 import spray.json.{DefaultJsonProtocol, JsString, JsValue, JsonFormat}
 
-package model {
+package Model {
   case class SearchResult(
     query: Query,
     hitCount: Long,

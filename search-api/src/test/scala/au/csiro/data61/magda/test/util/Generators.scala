@@ -3,7 +3,7 @@ package au.csiro.data61.magda.test.util
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-import org.scalacheck.{Gen, Shrink}
+import org.scalacheck.{ Gen, Shrink }
 import org.scalacheck.Gen.Choose._
 import org.scalacheck.Arbitrary._
 import com.monsanto.labs.mwundo.GeoJson._
@@ -310,13 +310,16 @@ object Generators {
   )).flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
 
   def textQueryGen(queryGen: Gen[Query] = queryGen): Gen[(String, Query)] = queryGen.flatMap { query =>
-    val list = Seq(query.freeText).flatten ++
-      query.quotes.map(""""""" + _ + """"""") ++
-      query.publishers.map(publisher => s"by $publisher") ++
+    val textList = (Seq(query.freeText).flatten ++
+      query.quotes.map(""""""" + _ + """"""")).toSet
+    val facetList = query.publishers.map(publisher => s"by $publisher") ++
       Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
       Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
       query.formats.map(format => s"as $format")
 
-    Gen.pick(list.length, list).map(queryStringList => (queryStringList.mkString(" "), query))
+    Gen.pick(textList.size, textList).flatMap(existingList => Gen.pick(facetList.size, facetList).map(existingList ++ _)).map(queryStringList => (queryStringList.mkString(" "), query))
+  } map { query =>
+    println(query._1)
+    query
   }
 }

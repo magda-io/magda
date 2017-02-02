@@ -3,14 +3,14 @@ package au.csiro.data61.magda.search.elasticsearch
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import au.csiro.data61.magda.api.Query
-import au.csiro.data61.magda.api.model.{RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.api.Model.{ RegionSearchResult, SearchResult }
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.Indices._
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.{MatchAll, MatchPart, SearchQueryer, SearchStrategy}
-import au.csiro.data61.magda.util.ErrorHandling.{CausedBy, RootCause}
+import au.csiro.data61.magda.search.{ MatchAll, MatchPart, SearchQueryer, SearchStrategy }
+import au.csiro.data61.magda.util.ErrorHandling.{ CausedBy, RootCause }
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -19,17 +19,15 @@ import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import org.elasticsearch.search.sort.SortOrder
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import com.typesafe.config.Config
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
-  implicit
-  val config: Config,
-  implicit val system: ActorSystem,
-  implicit val ec: ExecutionContext,
-  implicit val materializer: Materializer,
-  implicit val clientProvider: ClientProvider
-) extends SearchQueryer {
+    implicit val config: Config,
+    implicit val system: ActorSystem,
+    implicit val ec: ExecutionContext,
+    implicit val materializer: Materializer,
+    implicit val clientProvider: ClientProvider) extends SearchQueryer {
   private val logger = system.log
 
   lazy val clientFuture: Future[ElasticClientTrait] = clientProvider.getClient(system.scheduler, logger, ec)
@@ -86,38 +84,38 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         new Facet(
           id = facetType.id,
           options = {
-          // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-          val filteredOptions =
-            (aggsMap.get(facetType.id + "-filter") match {
-              case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
-              case None            => Nil
-            }).filter(definition.isFilterOptionRelevant(query))
-              .map(_.copy(matched = true))
+            // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
+            val filteredOptions =
+              (aggsMap.get(facetType.id + "-filter") match {
+                case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[Aggregation])
+                case None            => Nil
+              }).filter(definition.isFilterOptionRelevant(query))
+                .map(_.copy(matched = true))
 
-          // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
-          // display it to them to show them that it does *exist* but not for this query
-          val exactOptions =
-            definition.exactMatchQueries(query)
-              .map {
-                case (name, query) => (
-                  name,
-                  aggsMap(facetType.id + "-global").getProperty(facetType.id + "-exact-" + name)
-                )
-              }
-              .flatMap {
-                case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0, matched = true)) else None
-              }
-              .toSeq
+            // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
+            // display it to them to show them that it does *exist* but not for this query
+            val exactOptions =
+              definition.exactMatchQueries(query)
+                .map {
+                  case (name, query) => (
+                    name,
+                    aggsMap(facetType.id + "-global").getProperty(facetType.id + "-exact-" + name)
+                  )
+                }
+                .flatMap {
+                  case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0, matched = true)) else None
+                }
+                .toSeq
 
-          val alternativeOptions =
-            definition.extractFacetOptions(
-              aggsMap(facetType.id + "-global")
-              .getProperty("filter").asInstanceOf[Aggregation]
-              .getProperty(facetType.id).asInstanceOf[Aggregation]
-            )
+            val alternativeOptions =
+              definition.extractFacetOptions(
+                aggsMap(facetType.id + "-global")
+                  .getProperty("filter").asInstanceOf[Aggregation]
+                  .getProperty(facetType.id).asInstanceOf[Aggregation]
+              )
 
-          definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, facetSize)
-        }
+            definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, facetSize)
+          }
         )
       }.toSeq)
     )
@@ -175,9 +173,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         // in the query... this is useful if say the user types in "Ballarat", we can suggest "Ballarat Council"
         Some(
           aggregation
-          .filter(facetType.id + "-filter")
-          .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(facetSize))
-          .asInstanceOf[AbstractAggregationDefinition]
+            .filter(facetType.id + "-filter")
+            .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(facetSize))
+            .asInstanceOf[AbstractAggregationDefinition]
         )
       else
         None
@@ -222,11 +220,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       case xs             => Some(xs.reduce(_ + " " + _))
     }
 
-    val stringQuery: Option[String] = (query.freeText, processedQuote) match {
-      case (None, None)       => None
-      case (None, some)       => some
-      case (some, None)       => some
-      case (freeText, quotes) => Some(freeText + " " + quotes)
+    val stringQuery: Option[String] = {
+      val freeTextString = if (query.freeText.isEmpty) None else Some(query.freeText.mkString(" "))
+      
+      (freeTextString, processedQuote) match {
+        case (None, None)       => None
+        case (None, some)       => some
+        case (some, None)       => some
+        case (Some(freeText), Some(quotes)) => Some(freeText + " " + quotes)
+      }
     }
 
     val operator = strategy match {

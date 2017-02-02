@@ -6,18 +6,14 @@ import scala.util.parsing.input.Reader
 import scala.util.parsing.input.Position
 import scala.util.parsing.input.NoPosition
 import au.csiro.data61.magda.util.DateParser._
-import au.csiro.data61.magda.spatial.RegionSource
 
 import scala.util.matching.Regex
 import java.time.OffsetDateTime
 
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.spatial.RegionSources
-import au.csiro.data61.magda.api.QueryLexer
-import au.csiro.data61.magda.api.QueryParser
 import java.time.ZoneOffset
 import com.typesafe.config.Config
-
 
 private object Tokens {
   sealed trait QueryToken
@@ -52,7 +48,10 @@ private class QueryLexer(regionSources: RegionSources) extends RegexParsers {
   }
 
   def quote: Parser[Tokens.Quote] = {
-    """"[^"]*"""".r ^^ { str => Tokens.Quote(str.substring(1, str.length - 1)) }
+    """\s*"[^"]*"\s*""".r ^^ { str =>
+      val trimmed = str.trim
+      Tokens.Quote(trimmed.substring(1, trimmed.length - 1))
+    }
   }
 
   def freeTextWord: Parser[Tokens.FreeTextWord] = {
@@ -186,7 +185,7 @@ class QueryCompiler(regionSources: RegionSources)(implicit val config: Config) {
   private implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
   private val lexer = new QueryLexer(regionSources)
   private val parser = new QueryParser(regionSources)
-  
+
   def apply(code: String): Query = {
     val result = for {
       tokens <- lexer.apply(code).right
