@@ -72,6 +72,8 @@ package misc {
   ) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
+    
+    override def toString: String = s"Dataset(identifier = $identifier, title=$title)" 
   }
 
   case class Agent(

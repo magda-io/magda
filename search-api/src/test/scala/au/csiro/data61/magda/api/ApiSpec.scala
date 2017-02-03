@@ -35,7 +35,7 @@ import scala.concurrent.duration.DurationInt
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
-
+import au.csiro.data61.magda.util.SetExtractor
 import org.scalacheck.Arbitrary._
 import au.csiro.data61.magda.model.temporal.PeriodOfTime
 import au.csiro.data61.magda.search.{ MatchAll, MatchPart }
@@ -124,7 +124,8 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       shrink(dataSets).map(shrunkDataSets ⇒ {
         logger.info("postshrink: {}", shrunkDataSets.size)
 
-        if (shrunkDataSets.equals(dataSets)) {
+        if (shrunkDataSets.forall(dataSets.contains(_)) && dataSets.forall(shrunkDataSets.contains(_))) {
+          println("shrunk datasets was the same")
           (indexName, dataSets, route)
         } else {
           def insertNew() = {
@@ -315,10 +316,8 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
         }
       }
     }
-  }
 
-  describe("querying a dataset's title") {
-    it("should return that dataset") {
+    it("for a dataset's title should return that dataset (eventually)") {
       forAll(indexGen) {
         case (indexName, dataSetsRaw, routes) ⇒
           val indexedDataSets = dataSetsRaw.filter(dataSet ⇒ dataSet.title.isDefined && !dataSet.title.get.isEmpty())
@@ -362,7 +361,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
     }
   }
 
-  def consistentQuery(query: Query): Boolean = {
+  def noFiltersInFreeText(query: Query): Boolean = {
     def validString(string: String): Boolean = !string.contains("by") && !string.contains("to") && !string.contains("from") &&
       !string.contains(""""""") && !string.contains("as")
 
@@ -380,7 +379,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
-        whenever(validQuery(query) && consistentQuery(query)) {
+        whenever(validQuery(query) && noFiltersInFreeText(query)) {
           Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
             val response = responseAs[SearchResult]
             if (textQuery.equals("")) {
@@ -439,18 +438,25 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
     }
 
-    def specificFacetSpecs(facetType: FacetType, reducer: DataSet ⇒ Seq[String], queryCounter: Query ⇒ Int) = {
-      def groupResult(dataSets: Seq[DataSet]): Map[String, Seq[DataSet]] = {
-        dataSets.foldRight(Map[String, Seq[DataSet]]()) { (currentDataSet, aggregator) ⇒
-          val reduced = reducer(currentDataSet) match {
-            case Seq() ⇒ Seq("Unspecified")
-            case xs    ⇒ xs
-          }
+    def specificFacetSpecs(facetType: FacetType, reducer: DataSet ⇒ Set[String], queryCounter: Query ⇒ Int) = {
+      def filter(dataSet: DataSet, facetOption: FacetOption) = {
+        val facetValue = reducer(dataSet)
+        if (facetOption.value.equals("Unspecified")) {
+          facetValue.isEmpty || facetValue.forall(_.equals("")) || facetValue.exists(_.equals(facetOption.value))
+        } else {
+          facetValue.exists(_.equals(facetOption.value))
+        }
+      }
+
+      def groupResult(dataSets: Seq[DataSet]): Map[String, Set[DataSet]] = {
+        dataSets.foldRight(Map[String, Set[DataSet]]()) { (currentDataSet, aggregator) ⇒
+          val reducedRaw = reducer(currentDataSet)
+          val reduced = if (reducedRaw.isEmpty) Set("Unspecified") else reducedRaw
 
           reduced.foldRight(aggregator) { (string, aggregator) ⇒
             aggregator + (string -> (aggregator.get(string) match {
-              case Some(existingDataSets) ⇒ currentDataSet +: existingDataSets
-              case None                   ⇒ Seq(currentDataSet)
+              case Some(existingDataSets) ⇒ existingDataSets + currentDataSet
+              case None                   ⇒ Set(currentDataSet)
             }))
           }
         }
@@ -459,18 +465,50 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       def getFacet(result: SearchResult) = result.facets.get.find(_.id.equals(facetType.id)).get
 
       describe("all facet options should correspond with grouping the datasets for that query") {
-        checkFacetsBoth { (dataSets: List[DataSet], facetSize: Int) ⇒
-          val result = responseAs[SearchResult]
+        it("without query") {
+          checkFacetsNoQuery { (dataSets: List[DataSet], facetSize: Int) ⇒
+            val result = responseAs[SearchResult]
 
-          val groupedResult = groupResult(dataSets)
-          val facet = getFacet(result)
+            val groupedResult = groupResult(dataSets)
+            val facet = getFacet(result)
 
-          withClue(s"With reduced values (${groupedResult.mapValues(_.size)})") {
             facet.options.foreach { facetOption ⇒
-              withClue(s" and facetOption ${facetOption}: ") {
-                if (facetOption.matched && facetOption.hitCount != 0) {
+              withClue(s"With reduced values (${groupedResult.mapValues(_.size)}) and facetOption ${facetOption}: ") {
+                if (facetOption.hitCount != 0) {
                   groupedResult.contains(facetOption.value) should be(true)
                   facetOption.hitCount should be(groupedResult(facetOption.value).size)
+                } else {
+                  groupedResult.contains(facetOption.value) should be(false)
+                }
+              }
+            }
+          }
+        }
+
+        it("with query") {
+          checkFacetsWithQuery() { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            val outerResult = responseAs[SearchResult]
+
+            val groupedResult = groupResult(dataSets)
+            val facet = getFacet(outerResult)
+
+            val queryWithoutFilter = FacetDefinition.facetDefForType(facetType).removeFromQuery(query)
+
+            whenever(!queryWithoutFilter.equals(Query())) {
+              val textQueryWithoutFacet = queryToText(queryWithoutFilter)
+
+              Get(s"/datasets/search?query=${encodeForUrl(textQueryWithoutFacet)}&start=0&limit=${allDataSets.size}&facetSize=0") ~> routes ~> check {
+                val innerResult = responseAs[SearchResult]
+                val innerDataSets = innerResult.dataSets
+
+                whenever(innerResult.strategy.get.equals(outerResult.strategy.get) && innerResult.strategy.get.equals(MatchAll)) {
+                  facet.options.filter(!_.matched).foreach { option ⇒
+                    val facetDataSets = innerDataSets.filter(filter(_, option))
+
+                    withClue(s"For option ${option.value} and publishers ${groupResult(innerDataSets).mapValues(_.size)}") {
+                      facetDataSets.size shouldEqual option.hitCount
+                    }
+                  }
                 }
               }
             }
@@ -479,20 +517,87 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
 
       describe("each dataset should be aggregated into a facet unless facet size was too small to accommodate it") {
-        checkFacetsBoth { (dataSets: List[DataSet], facetSize: Int) ⇒
-          val result = responseAs[SearchResult]
-          val groupedResult = groupResult(dataSets)
+        it("without query") {
+          checkFacetsNoQuery { (dataSets: List[DataSet], facetSize: Int) ⇒
+            val result = responseAs[SearchResult]
+            val groupedResult = groupResult(dataSets)
 
-          whenever(facetSize >= groupedResult.size + queryCounter(result.query)) {
-            val facet = getFacet(result)
+            val formats = dataSets.map(_.distributions.map(_.format.map(_.name).getOrElse("Unspecified")).groupBy(identity).mapValues(_.size))
 
-            withClue(s"With reduced values (${dataSets.map(reducer(_)).mkString(",")})") {
-              groupedResult.mapValues(_.size).foreach {
-                case (facetValue, hitCount) ⇒
-                  withClue(s" and value $facetValue -> $hitCount: ") {
-                    facet.options.exists(_.value.equals(facetValue)) should be(true)
-                    facet.options.find(_.value.equals(facetValue)).get.hitCount should equal(hitCount)
+            whenever(facetSize >= groupedResult.size + queryCounter(result.query)) {
+              val facet = getFacet(result)
+
+              withClue(s"With formats $formats") { //reduced values (${groupedResult.mapValues(_.size)}") {
+
+                groupedResult.mapValues(_.size).foreach {
+                  case (facetValue, hitCount) ⇒
+                    val option = facet.options.find(_.value.equals(facetValue))
+                    withClue(s" and option $option: ") {
+                      option.isDefined should be(true)
+                      hitCount should equal(option.get.hitCount)
+                    }
+                }
+              }
+            }
+          }
+        }
+
+        describe("with query") {
+          it("matched") {
+            checkFacetsWithQuery() { (dataSets, facetSize, query, allDataSets, routes) ⇒
+              val outerResult = responseAs[SearchResult]
+              val outerDataSets = outerResult.dataSets
+              val facet = getFacet(outerResult)
+
+              val outerGroupedResults = groupResult(outerDataSets)
+              val outerFormats = outerDataSets.map(_.distributions.map(_.format.map(_.name).getOrElse("Unspecified")).groupBy(identity).mapValues(_.size))
+              whenever(facetSize >= outerGroupedResults.size + queryCounter(outerResult.query)) {
+                withClue(s"With formats outerFormats") {
+                  outerGroupedResults.mapValues(_.size).foreach {
+                    case (facetValue, hitCount) ⇒
+                      val option = facet.options.find(_.value.equals(facetValue))
+                      withClue(s" and option $option: ") {
+                        option.isDefined should be(true)
+                        if (option.get.matched) {
+                          hitCount should equal(option.get.hitCount)
+                        }
+                      }
                   }
+                }
+              }
+            }
+          }
+
+          it("unmatched") {
+            checkFacetsWithQuery(textQueryGen(unspecificQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+              val outerResult = responseAs[SearchResult]
+              val facet = getFacet(outerResult)
+
+              val queryWithoutFilter = FacetDefinition.facetDefForType(facetType).removeFromQuery(query)
+              whenever(!queryWithoutFilter.equals(Query())) {
+                val textQueryWithoutFacet = queryToText(queryWithoutFilter)
+
+                Get(s"/datasets/search?query=${encodeForUrl(textQueryWithoutFacet)}&start=0&limit=${allDataSets.size}&facetSize=0") ~> routes ~> check {
+                  val innerResult = responseAs[SearchResult]
+                  val innerDataSets = innerResult.dataSets
+                  val innerGroupedResult = groupResult(innerDataSets)
+                  val innerFormats = innerDataSets.map(_.distributions.map(_.format.map(_.name).getOrElse("Unspecified")).groupBy(identity).mapValues(_.size))
+
+                  whenever(innerResult.strategy.get.equals(outerResult.strategy.get) && innerResult.strategy.get.equals(MatchAll) && facetSize >= innerGroupedResult.size + queryCounter(outerResult.query)) {
+                    withClue(s"With formats $innerFormats") {
+                      innerGroupedResult.mapValues(_.size).foreach {
+                        case (facetValue, hitCount) ⇒
+                          val option = facet.options.find(_.value.equals(facetValue))
+                          withClue(s" and option $option: ") {
+                            option.isDefined should be(true)
+                            if (!option.get.matched) {
+                              hitCount should equal(option.get.hitCount)
+                            }
+                          }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -512,14 +617,20 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
     }
 
     describe("publisher") {
-      def reducer(dataSet: DataSet) = Seq(dataSet.publisher.flatMap(_.name)).flatten
+      def reducer(dataSet: DataSet) = Set(dataSet.publisher.flatMap(_.name)).flatten
       def queryToInt(query: Query) = query.publishers.size
 
       specificFacetSpecs(Publisher, reducer, queryToInt)
     }
 
-    describe("year") {
+    describe("format") {
+      def reducer(dataSet: DataSet) = dataSet.distributions.map(_.format.map(_.name.toLowerCase).getOrElse("Unspecified")).toSet
+      def queryToInt(query: Query) = query.formats.size
 
+      specificFacetSpecs(Format, reducer, queryToInt)
+    }
+
+    describe("year") {
       describe("should generate non-overlapping facets") {
         checkFacetsBoth { (dataSets, facetSize) ⇒
           val result = responseAs[SearchResult]
