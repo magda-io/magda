@@ -1,30 +1,27 @@
 import sbt._
 import sbt.Keys._
 
-import sys.process.Process
-import sbtdocker.DockerKeys
-import spray.revolver.Actions.restartApp
-import spray.revolver.RevolverPlugin.autoImport.{reForkOptions, reLogTag, reStartArgs}
-
 object RelaunchKeys {
-  lazy val relaunch = taskKey[Unit]("Launch this project using sbt-revolver whenever the incremental compile actually does something.")
+  lazy val relaunch = taskKey[Boolean]("Launch this project using sbt-revolver whenever the incremental compile actually does something.")
 }
 
 object RelaunchPlugin extends AutoPlugin {
   override val projectSettings = Seq(
     RelaunchKeys.relaunch := Def.taskDyn {
-      val incrementalCompileResult = (sbt.Keys.compileIncremental in Compile).value
       (sbt.Keys.compile in Compile).value // make sure the entire compile finishes first
 
-      // Is this project already running with sbt-revolver?
-      val isRunning = spray.revolver.Actions.revolverState.getProcess(thisProjectRef.value).find(_.isRunning) match {
-        case Some(_) => true
-        case None => false
-      }
+      // Does this project have a mainClass we can run?
+      val hasMainClass = (mainClass in run in Compile).value.nonEmpty
 
-      if (!isRunning || incrementalCompileResult.hasModified) {
+      // Is this project already running with sbt-revolver?
+      val isRunning = spray.revolver.Actions.revolverState.getProcess(thisProjectRef.value).find(_.isRunning).nonEmpty
+
+      // Did the incremental compile actually do anything?
+      val incrementalCompileDidSomething = (sbt.Keys.compileIncremental in Compile).value.hasModified
+
+      if (hasMainClass && (!isRunning || incrementalCompileDidSomething)) {
         Def.task {
-          val restart = (spray.revolver.RevolverPlugin.autoImport.reStart in Compile).toTask("").value
+          (spray.revolver.RevolverPlugin.autoImport.reStart in Compile).toTask("").value
           true
         }
       } else {
