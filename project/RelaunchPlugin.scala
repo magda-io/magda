@@ -17,7 +17,8 @@ object RelaunchPlugin extends AutoPlugin {
       val isRunning = spray.revolver.Actions.revolverState.getProcess(thisProjectRef.value).find(_.isRunning).nonEmpty
 
       // Did the incremental compile actually do anything?
-      val incrementalCompileDidSomething = (sbt.Keys.compileIncremental in Compile).value.hasModified
+      // We need to look to see if any of this project's dependencies compiled.
+      val incrementalCompileDidSomething = (sbt.Keys.compileIncremental in Compile).all(ScopeFilter(inDependencies(ThisProject))).value.find(_.hasModified).nonEmpty
 
       if (hasMainClass && (!isRunning || incrementalCompileDidSomething)) {
         Def.task {

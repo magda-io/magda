@@ -16,7 +16,8 @@ object DeployPlugin extends AutoPlugin {
       val hasMainClass = (mainClass in run in Compile).value.nonEmpty
 
       // Did the incremental compile actually do anything?
-      val incrementalCompileDidSomething = (sbt.Keys.compileIncremental in Compile).value.hasModified
+      // We need to look to see if any of this project's dependencies compiled.
+      val incrementalCompileDidSomething = (sbt.Keys.compileIncremental in Compile).all(ScopeFilter(inDependencies(ThisProject))).value.find(_.hasModified).nonEmpty
 
       if (hasMainClass && incrementalCompileDidSomething) {
         Def.task {
