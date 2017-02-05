@@ -7,84 +7,32 @@ import spray.revolver.Actions.restartApp
 import spray.revolver.RevolverPlugin.autoImport.{reForkOptions, reLogTag, reStartArgs}
 
 object RelaunchKeys {
-  lazy val relaunch = taskKey[Unit]("Launch this project using sbt-revolver whenever its JAR changes.")
-  lazy val foofoo = taskKey[Unit]("foofoo")
+  lazy val relaunch = taskKey[Unit]("Launch this project using sbt-revolver whenever the incremental compile actually does something.")
 }
 
 object RelaunchPlugin extends AutoPlugin {
-  val dynamic = Def.taskDyn {
-    val foo = (sbt.Keys.`package` in Compile).value
-    println(foo)
-    println((sbt.Keys.fullClasspath in Compile).value)
-    if (name.value == "magda-registry-api")
-      Def.task {
-        val restart = (spray.revolver.RevolverPlugin.autoImport.reStart in Compile).toTask("").value
-        println(restart)
-        true
-      }
-    else
-      Def.task {
-        true
-      }
-  }
-
-  val checkForCompileChange = Def.taskDyn {
-    val incrementalCompileResult = (sbt.Keys.compileIncremental in Compile).value
-    if (incrementalCompileResult.hasModified) {
-      Def.task {
-        val restart = (spray.revolver.RevolverPlugin.autoImport.reStart in Compile).toTask("").value
-        true
-      }
-    } else {
-      Def.task {
-        false
-      }
-    }
-  }
-
   override val projectSettings = Seq(
-    RelaunchKeys.foofoo := {
-      println(checkForCompileChange.value)
-//      val cr = (sbt.Keys.compile in Compile).value
-//      val mostRecentCompilation = cr.compilations.allCompilations(cr.compilations.allCompilations.length - 1)
-//      println(mostRecentCompilation)
-//      val justCompiledInternal = cr.apis.internal.filter(x => x._2.compilation() == mostRecentCompilation)
-//      println(justCompiledInternal)
-    },
-//    RelaunchKeys.relaunch in Compile := Def.task {
-//      println("Foo")
-////      val jar = (sbt.Keys.`package` in Compile).value
-////
-////      spray.revolver.Actions.stopAppWithStreams(streams.value, thisProjectRef.value)
-////
-////      val cmdLineOptions = spray.revolver.Actions.ExtraCmdLineOptions(Seq[String](), Seq[String]())
-////      val reStart = spray.revolver.RevolverPlugin.autoImport.reStart
-////      spray.revolver.Actions.startApp(
-////        streams.value,
-////        reLogTag.value,
-////        thisProjectRef.value,
-////        reForkOptions.value,
-////        (mainClass in reStart).value,
-////        (fullClasspath in reStart).value,
-////        reStartArgs.value,
-////        cmdLineOptions)
-//
-//      //restartApp(streams, reLogTag, thisProjetRef, reForkOptions, mainClass in reStart, fullClasspath in reStart, reStartArgs, spray.revolver.Actions.ExtraCmdLineOptions(Seq[String](), Seq[String]()))
-////      val reStart = spray.revolver.RevolverPlugin.autoImport.reStart
-////      (streams, reLogTag, thisProjectRef, reForkOptions, mainClass in reStart, fullClasspath in reStart, reStartArgs, spray.revolver.Actions.ExtraCmdLineOptions(Seq[String](), Seq[String]()))
-////        .map(restartApp)
-////        .dependsOn(products in Compile)
-//
-//      //      spray.revolver.RevolverPlugin.autoImport.reStart.evaluated
-////      println(jar)
-//    }.triggeredBy(sbt.Keys.`package` in Compile)
+    RelaunchKeys.relaunch := Def.taskDyn {
+      val incrementalCompileResult = (sbt.Keys.compileIncremental in Compile).value
+      (sbt.Keys.compile in Compile).value // make sure the entire compile finishes first
 
-    // Using deprecated syntax because the new syntax apparently doesn't work?
-    // http://stackoverflow.com/questions/23445644/triggered-execution-in-sbt-0-13-x
-    RelaunchKeys.relaunch in Compile <<= Def.task {
-      println(dynamic.value)
-      println("TRIGGERED BY COMPILE")
-    }.triggeredBy(sbt.Keys.`package` in Compile)
+      // Is this project already running with sbt-revolver?
+      val isRunning = spray.revolver.Actions.revolverState.getProcess(thisProjectRef.value).find(_.isRunning) match {
+        case Some(_) => true
+        case None => false
+      }
+
+      if (!isRunning || incrementalCompileResult.hasModified) {
+        Def.task {
+          val restart = (spray.revolver.RevolverPlugin.autoImport.reStart in Compile).toTask("").value
+          true
+        }
+      } else {
+        Def.task {
+          false
+        }
+      }
+    }.value
   )
 
   override def requires = spray.revolver.RevolverPlugin
