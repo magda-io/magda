@@ -92,6 +92,21 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               }).filter(definition.isFilterOptionRelevant(query))
                 .map(_.copy(matched = true))
 
+            // filteredExact aggregations are those that exactly match a filter (e.g. "Ballarat Council" exactly) but are also filtered by
+            // the rest of the query - we use this to filter the exact options below and make sure we don't show 0 results for a filtered
+            // aggregation that does actually have results.
+            val filteredExact = definition.exactMatchQueries(query)
+              .map {
+                case (name, query) => (
+                  name,
+                  aggsMap(facetType.id + "-exact-" + name + "-filter")
+                )
+              }
+              .map {
+                case (name, agg: InternalFilter) => name -> agg.getDocCount
+              }
+              .toMap
+
             // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
             // display it to them to show them that it does *exist* but not for this query
             val exactOptions =
@@ -103,7 +118,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                   )
                 }
                 .flatMap {
-                  case (name, agg: InternalFilter) => if (agg.getDocCount > 0 && !filteredOptions.exists(_.value == name)) Some(FacetOption(name, 0, matched = true)) else None
+                  case (name, agg: InternalFilter) =>
+                    if (agg.getDocCount > 0 && filteredExact.get(name).getOrElse(0l) == 0l) {
+                      Some(FacetOption(name, 0, matched = true))
+                    } else None
                 }
                 .toSeq
 
@@ -166,21 +184,21 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .aggs(alternativesAggregation(query, facetDef, strategy, facetSize) :: exactMatchAggregations(query, facetType, facetDef, strategy))
         .asInstanceOf[AbstractAggregationDefinition]
 
-    val partialMatchesAgg =
+    val partialMatchesAggs =
       if (facetDef.isRelevantToQuery(query))
         // If there's details in the query that relate to this facet
         // then create an aggregation that shows all results for this facet that partially match the details
         // in the query... this is useful if say the user types in "Ballarat", we can suggest "Ballarat Council"
-        Some(
+        exactMatchAggregations(query, facetType, facetDef, strategy, "-filter") :+
           aggregation
-            .filter(facetType.id + "-filter")
-            .filter(facetDef.filterAggregationQuery(query)).aggs(facetDef.aggregationDefinition(facetSize))
-            .asInstanceOf[AbstractAggregationDefinition]
-        )
+          .filter(facetType.id + "-filter")
+          .filter(facetDef.filterAggregationQuery(query))
+          .aggs(facetDef.aggregationDefinition(facetSize))
+          .asInstanceOf[AbstractAggregationDefinition]
       else
-        None
+        List()
 
-    List(Some(globalAgg), partialMatchesAgg).flatten
+    partialMatchesAggs :+ globalAgg
   }
 
   /**
@@ -188,10 +206,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
    * to see whether that exists in the system at all even if it has no hits with their current
    * query, in order to more helpfully correct their search if they mispelled etc.
    */
-  def exactMatchAggregations(query: Query, facetType: FacetType, facetDef: FacetDefinition, strategy: SearchStrategy): List[FilterAggregationDefinition] =
+  def exactMatchAggregations(query: Query, facetType: FacetType, facetDef: FacetDefinition, strategy: SearchStrategy, suffix: String = ""): List[FilterAggregationDefinition] =
     facetDef.exactMatchQueries(query).map {
       case (name, query) =>
-        aggregation.filter(facetType.id + "-exact-" + name).filter(query)
+        aggregation.filter(facetType.id + "-exact-" + name + suffix).filter(query)
     }.toList
 
   /**
@@ -222,11 +240,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     val stringQuery: Option[String] = {
       val freeTextString = if (query.freeText.isEmpty) None else Some(query.freeText.mkString(" "))
-      
+
       (freeTextString, processedQuote) match {
-        case (None, None)       => None
-        case (None, some)       => some
-        case (some, None)       => some
+        case (None, None)                   => None
+        case (None, some)                   => some
+        case (some, None)                   => some
         case (Some(freeText), Some(quotes)) => Some(freeText + " " + quotes)
       }
     }

@@ -89,7 +89,7 @@ trait FacetDefinition {
   def truncateFacets(query: Query, matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
     val combined = (exactMatch ++ matched ++ unmatched)
     val lookup = combined.groupBy(_.value)
-
+    
     // It's possible that some of the options will overlap, so make sure we're only showing the first occurence of each.
     combined.map(_.value)
       .distinct
