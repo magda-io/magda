@@ -68,7 +68,15 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
     logLevel = 'DEBUG
   )
 
-  DBs.setupAll()
+  case class DBsWithEnvSpecificConfig(configToUse: Config) extends DBs
+    with TypesafeConfigReader
+    with TypesafeConfig
+    with EnvPrefix {
+
+    override val config = configToUse
+  }
+
+  DBsWithEnvSpecificConfig(config).setupAll()
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {

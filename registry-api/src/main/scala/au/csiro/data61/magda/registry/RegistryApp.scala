@@ -8,26 +8,26 @@ import akka.actor.DeadLetter
 import akka.actor.Props
 import akka.event.Logging
 import akka.stream.ActorMaterializer
+import au.csiro.data61.magda.AppConfig
 
 object RegistryApp extends App {
+  class Listener extends Actor with ActorLogging {
+    def receive = {
+      case d: DeadLetter => //log.info(d.message)
+    }
+  }
+
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  implicit val config = Config.conf
+  implicit val config = AppConfig.conf()
 
   val logger = Logging(system, getClass)
 
-  logger.info("Starting MAGDA Registry with env {}", Config.env)
+  logger.info("Starting MAGDA Registry with env {}", AppConfig.getEnv)
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
   val api = new Api()
 }
-
-class Listener extends Actor with ActorLogging {
-  def receive = {
-    case d: DeadLetter => //log.info(d.message)
-  }
-}
-// testing!

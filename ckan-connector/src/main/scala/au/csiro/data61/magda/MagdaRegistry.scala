@@ -51,6 +51,8 @@ class MagdaRegistry(
   private implicit val badRequestFormat = jsonFormat1(BadRequest)
   private implicit val sectionDefinitionFormat = jsonFormat3(AspectDefinition)
 
+  private val registryBaseUri = Uri(config.getString("registry.url"))
+
   override def initialize(): Future[Any] = {
     val sections = List(
       AspectDefinition("source", "Source", JsObject()),
@@ -64,7 +66,7 @@ class MagdaRegistry(
         put <- http.singleRequest(HttpRequest(
           // TODO: get  the base URL from configuration
           // TODO: URI encode the ID
-          uri = "http://registry-api/api/0.1/aspects/" + section.id,
+          uri = Uri("0.1/aspects/" + section.id).resolvedAgainst(registryBaseUri),
           method = HttpMethods.PUT,
           entity = entity
         ))
@@ -101,7 +103,7 @@ class MagdaRegistry(
         http.singleRequest(HttpRequest(
           // TODO: get  the base URL from configuration
           // TODO: URI encode the ID
-          uri = "http://registry-api/api/0.1/records/" + dataset.identifier,
+          uri = Uri("0.1/records/" + dataset.identifier).resolvedAgainst(registryBaseUri),
           method = HttpMethods.PUT,
           entity = entity
         )).flatMap(response => {
