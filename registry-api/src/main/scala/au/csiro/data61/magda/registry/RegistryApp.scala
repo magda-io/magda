@@ -24,7 +24,7 @@ object RegistryApp extends App {
 
   val logger = Logging(system, getClass)
 
-  logger.info("Starting MAGDA Registry with env {}", AppConfig.getEnv)
+  logger.info("Starting MAGDA! Registry with env {}", AppConfig.getEnv)
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
