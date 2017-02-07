@@ -26,12 +26,12 @@ libraryDependencies ++= {
   )
 }
 
-unmanagedResourceDirectories in Compile ++= {  
-  if (Option(System.getProperty("includeMockData")).getOrElse("false").equals("true")) {
-    List(baseDirectory.value / "mock-data")
-  } else {
+unmanagedResourceDirectories in Compile ++= {
+  if (Option(System.getProperty("excludeMockData")).getOrElse("false").equals("true")) {
     Nil
-  }   
+  } else {
+    List(baseDirectory.value / "mock-data")
+  }
 }
 
 dockerfile in docker := {
