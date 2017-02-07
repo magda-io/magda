@@ -57,11 +57,14 @@ Then, to make PostgreSQL accessible on port 5432 on your development machine, ru
 kubectl port-forward $(kubectl get pods -l service=registry-datastore -o=custom-columns=NAME:.metadata.name --no-headers) 5432
 ```
 
+To make Elasticsearch accessible on port 9300 on your development machine, run
+```bash
+kubectl port-forward $(kubectl get pods -l component=elasticsearch -o=custom-columns=NAME:.metadata.name --no-headers) 9300
+```
+
 Note that if you want to use a different hostname or port for the database, you will need to change `db.default.url` in `registry-api/src/main/resources/env-specific-config/host.conf` accordingly.
 
 You may also run PostgreSQL locally on your development machine instead of in Kubernetes.  If you go this route, be sure to run `registry-data-store/scripts/init/evolveschema.sql` on your local PostgreSQL instance to set up the database.
-
-TODO: what do we need to do to get Elasticsearch running?
 
 Once the databases are out of the way, we set the environment variable indicating that we will be running directly on our development machine:
 
