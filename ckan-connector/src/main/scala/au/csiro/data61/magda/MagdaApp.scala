@@ -4,6 +4,7 @@ package au.csiro.data61.magda
 import scala.collection.JavaConversions._
 import scala.util.Failure
 import scala.util.Success
+import scala.concurrent.duration._
 
 import com.typesafe.config.ConfigObject
 import com.typesafe.config.ConfigValue
@@ -18,8 +19,15 @@ import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.crawler.Crawler
 import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
+import au.csiro.data61.magda.util.ErrorHandling.retry
 
 object MagdaApp extends App {
+  class Listener extends Actor with ActorLogging {
+    def receive = {
+      case d: DeadLetter => log.debug(d.message.toString())
+    }
+  }
+
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
@@ -28,8 +36,6 @@ object MagdaApp extends App {
   val logger = Logging(system, getClass)
 
   logger.info("Starting ckan-connector in env {}", AppConfig.getEnv)
-
-  logger.info("Starting again!!")
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
@@ -46,7 +52,8 @@ object MagdaApp extends App {
   val registry = Registry(new DefaultClientProvider, config)
   val crawler = Crawler(interfaceConfigs, registry)
 
-  registry.initialize().map { result =>
+  implicit val scheduler = system.scheduler
+  retry(() => registry.initialize(), 10 seconds, config.getInt("connector.registryConnectionRetries"), logger.warning("Failed to connect to registry, {} retries left", _)).map { result =>
     println("Initialized!")
     crawler.crawl() onComplete {
       case Success(_) =>
@@ -56,11 +63,5 @@ object MagdaApp extends App {
     }
   }.failed.map { exception =>
     println(exception)
-  }
-}
-
-class Listener extends Actor with ActorLogging {
-  def receive = {
-    case d: DeadLetter => log.debug(d.message.toString())
   }
 }

@@ -73,7 +73,7 @@ class MagdaRegistry(
         result <- put.status match {
           case StatusCodes.OK => Unmarshal(put.entity).to[AspectDefinition]
           case StatusCodes.BadRequest => Unmarshal(put.entity).to[BadRequest].map(badRequest => throw new RuntimeException(badRequest.message))
-          case anythingElse => {
+          case _ => {
             put.discardEntityBytes()
             throw new RuntimeException("Aspect definition creation failed.")
           }
