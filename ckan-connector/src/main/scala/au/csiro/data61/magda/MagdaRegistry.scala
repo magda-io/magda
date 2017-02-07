@@ -1,12 +1,13 @@
 package au.csiro.data61.magda
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
+import java.net.URLEncoder
+
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.{Marshal, PredefinedToEntityMarshallers}
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import au.csiro.data61.magda.model.misc.{DataSet, Protocols}
-import au.csiro.data61.magda.util.Http._
 import spray.json.JsObject
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.unmarshalling.Unmarshal
@@ -14,7 +15,6 @@ import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider
 import com.typesafe.config.Config
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
@@ -64,9 +64,7 @@ class MagdaRegistry(
       for {
         entity <- Marshal(section).to[MessageEntity]
         put <- http.singleRequest(HttpRequest(
-          // TODO: get  the base URL from configuration
-          // TODO: URI encode the ID
-          uri = Uri("0.1/aspects/" + section.id).resolvedAgainst(registryBaseUri),
+          uri = Uri("0.1/aspects/" + URLEncoder.encode(section.id, "UTF-8")).resolvedAgainst(registryBaseUri),
           method = HttpMethods.PUT,
           entity = entity
         ))
@@ -101,9 +99,7 @@ class MagdaRegistry(
 
       Marshal(record).to[MessageEntity].flatMap(entity => {
         http.singleRequest(HttpRequest(
-          // TODO: get  the base URL from configuration
-          // TODO: URI encode the ID
-          uri = Uri("0.1/records/" + dataset.identifier).resolvedAgainst(registryBaseUri),
+          uri = Uri("0.1/records/" + URLEncoder.encode(dataset.identifier, "UTF-8")).resolvedAgainst(registryBaseUri),
           method = HttpMethods.PUT,
           entity = entity
         )).flatMap(response => {
