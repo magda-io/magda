@@ -19,6 +19,7 @@ import au.csiro.data61.magda.crawler.Crawler
 import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
+import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
@@ -42,7 +43,8 @@ object MagdaApp extends App {
   //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
 
   logger.debug("Starting Crawler")
-  val indexer = SearchIndexer(new DefaultClientProvider, config)
+
+  val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
   val crawler = Crawler(interfaceConfigs, indexer)
 
   crawler.crawl() onComplete {

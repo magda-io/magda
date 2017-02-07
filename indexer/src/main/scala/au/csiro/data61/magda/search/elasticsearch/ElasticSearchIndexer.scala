@@ -31,7 +31,8 @@ import com.typesafe.config.Config
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
-    val config: Config)(
+    val indices: Indices)(
+        implicit val config: Config,
         implicit val system: ActorSystem,
         implicit val ec: ExecutionContext,
         implicit val materializer: Materializer) extends SearchIndexer {
@@ -182,7 +183,7 @@ class ElasticSearchIndexer(
       case RestoreFailure =>
         deleteIndex(client, definition)
           .flatMap { _ =>
-            client.execute(definition.definition(None))
+            client.execute(definition.definition(config, indices))
           } recover {
             case e: Throwable =>
               logger.error(e, "Failed to set up the index")
@@ -350,7 +351,7 @@ class ElasticSearchIndexer(
         val indexDataSet = ElasticDsl.index into IndexDefinition.datasets.indexName / IndexDefinition.datasets.name id dataSet.uniqueId source (
           dataSet.copy(
             catalog = source.name,
-            years = getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
+            years = ElasticSearchIndexer.getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
           ).toJson
         )
 
@@ -368,4 +369,16 @@ class ElasticSearchIndexer(
         indexDataSet :: indexPublisher.toList ++ indexFormats
       }.flatten)
 
+}
+
+object ElasticSearchIndexer {
+  def getYears(from: Option[OffsetDateTime], to: Option[OffsetDateTime]): Option[String] = {
+    val newFrom = from.orElse(to).map(_.getYear)
+    val newTo = to.orElse(from).map(_.getYear)
+
+    (newFrom, newTo) match {
+      case (Some(newFrom), Some(newTo)) => Some(s"$newFrom-$newTo")
+      case _                            => None
+    }
+  }
 }

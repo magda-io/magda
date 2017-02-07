@@ -46,15 +46,15 @@ package misc {
   case class FacetOption(
     value: String,
     hitCount: Long,
-    upperBound: Option[String] = None,
-    lowerBound: Option[String] = None,
-    matched: Option[Boolean] = None
+    upperBound: Option[Int] = None,
+    lowerBound: Option[Int] = None,
+    matched: Boolean = false
   )
 
   case class DataSet(
     identifier: String,
-    catalog: String,
     title: Option[String] = None,
+    catalog: String,
     description: Option[String] = None,
     issued: Option[OffsetDateTime] = None,
     modified: Option[OffsetDateTime] = None,
@@ -72,6 +72,8 @@ package misc {
   ) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
+    
+    override def toString: String = s"Dataset(identifier = $identifier, title=$title)" 
   }
 
   case class Agent(

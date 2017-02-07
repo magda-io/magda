@@ -5,7 +5,7 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
-import com.sksamuel.elastic4s.{ AbstractAggregationDefinition, QueryDefinition }
+import com.sksamuel.elastic4s.{AbstractAggregationDefinition, QueryDefinition}
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
@@ -33,7 +33,7 @@ trait FacetDefinition {
    * Determines whether the passed query has any relevance to this facet - e.g. a query is only relevant to Year if it
    * has some kind of date parameters specified.
    */
-  def relatedToQuery(query: Query): Boolean
+  def isRelevantToQuery(query: Query): Boolean
 
   /**
    * Returns a QueryDefinition for only the part of the query that's relevant for this facet... e.g. for Year it creates
@@ -89,7 +89,7 @@ trait FacetDefinition {
   def truncateFacets(query: Query, matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
     val combined = (exactMatch ++ matched ++ unmatched)
     val lookup = combined.groupBy(_.value)
-
+    
     // It's possible that some of the options will overlap, so make sure we're only showing the first occurence of each.
     combined.map(_.value)
       .distinct
@@ -115,7 +115,7 @@ object PublisherFacetDefinition extends FacetDefinition {
     agg
   }
 
-  def relatedToQuery(query: Query): Boolean = !query.publishers.isEmpty
+  def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
     should(
@@ -141,18 +141,20 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
     lazy val firstYear = query.dateFrom.map(_.getYear)
     lazy val lastYear = query.dateTo.map(_.getYear)
 
+    def makeMatchedBins() = makeBins(matched, limit, None, firstYear, lastYear).map(_.copy(matched = true))
+
     (matched, unmatched) match {
       case (Nil, Nil)       => Nil
-      case (matched, Nil)   => super.truncateFacets(query, makeBins(matched, limit, None, firstYear, lastYear), Nil, Nil, limit)
+      case (matched, Nil)   => super.truncateFacets(query, makeMatchedBins(), Nil, Nil, limit)
       case (Nil, unmatched) => super.truncateFacets(query, Nil, Nil, makeBins(unmatched, limit, None, None, None), limit)
       case (matched, unmatched) =>
-        val matchedBins = makeBins(matched, limit, None, firstYear, lastYear).map(_.copy(matched = Some(true)))
+        val matchedBins = makeMatchedBins()
 
         val hole = matchedBins match {
           case Nil => None
           case matchedBins =>
-            val lastYear = matchedBins.head.upperBound.get.toInt
-            val firstYear = matchedBins.last.lowerBound.get.toInt
+            val lastYear = matchedBins.head.upperBound.get
+            val firstYear = matchedBins.last.lowerBound.get
             Some(firstYear, lastYear)
         }
 
@@ -168,8 +170,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
   }
 
   val parseFacets = Memo.mutableHashMapMemo((facets: Seq[FacetOption]) => facets
-    .map(facet => (facet.value.split("-").map(_.toInt), facet.hitCount))
-  )
+    .map(facet => (facet.value.split("-").map(_.toInt), facet.hitCount)))
 
   def makeBins(facets: Seq[FacetOption], limit: Int, hole: Option[(Int, Int)], firstYearOpt: Option[Int], lastYearOpt: Option[Int]): Seq[FacetOption] = {
     lazy val yearsFromFacets = parseFacets(facets)
@@ -189,40 +190,55 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
     case (facets, _) =>
       val binSize = getBinSize(firstYear, lastYear, limit)
 
-      val binsRaw = (for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1))
+      val binsRaw = for (i <- roundDown(firstYear, binSize) to roundUp(lastYear, binSize) by binSize) yield (i, i + binSize - 1)
+
       val bins = hole.map {
         case (holeStart, holeEnd) =>
           binsRaw.flatMap {
             case (binStart, binEnd) =>
-              if (binStart > holeStart && binEnd < holeEnd)
+              if (binStart >= holeStart && binEnd <= holeEnd)
+                // If bin is entirely within the hole, remove it
                 Nil
-              else if (binStart < holeStart && binEnd > holeEnd)
+              else if (binEnd < holeStart || binStart > holeEnd) {
+                // If the bin and hole don't intersect at all, just leave the bin as is
+                Seq((binStart, binEnd))
+              } else if (holeStart > binStart && holeEnd < binEnd) {
+                // If hole is entirely within the bin, split it into two - one from the start of the bin to just before the start of the hole, and one from after the end of the hole to the end of the bin
                 Seq((binStart, holeStart - 1), (holeEnd + 1, binEnd))
-              else if (binStart <= holeStart && binEnd >= holeStart)
-                Seq((binStart, holeStart - 1))
-              else if (binStart <= holeEnd && binEnd >= holeEnd)
+              } else if (holeStart <= binStart && holeEnd <= binEnd) {
+                // If hole overlaps the start of the bin, move the bin to cover just after the hole to the end of the bin
                 Seq((holeEnd + 1, binEnd))
-              else Seq((binStart, binEnd))
+              } else if (holeStart <= binEnd && holeEnd >= binStart) {
+                // If hole overlaps the end of the bin, move the bin to cover the start of the bin to just before the hole starts
+                Seq((binStart, holeStart - 1))
+              } else {
+                throw new RuntimeException(s"Could not find a way to reconcile the bin ($binStart-$binEnd) with hole ($holeStart-$holeEnd)")
+              }
           }
-      } getOrElse (binsRaw) take limit
+      } getOrElse binsRaw take limit
 
       bins.reverse.map {
         case (bucketStart, bucketEnd) =>
-          val hitCount = parseFacets(facets).filter {
-            case (years, hitCount) =>
+          val parsedFacets = parseFacets(facets)
+
+          val hitCount = parsedFacets.filter {
+            case (years, count) =>
               val facetStart = years.head
               val facetEnd = years.last
 
-              (facetStart >= bucketStart && facetStart <= bucketEnd) ||
-                (facetEnd >= bucketStart && facetEnd <= bucketEnd) ||
-                (facetStart <= bucketStart && facetEnd >= bucketEnd)
+              (facetStart >= bucketStart && facetStart <= bucketEnd) || // facetStart is in the bucket bounds
+                (facetEnd >= bucketStart && facetEnd <= bucketEnd) || // facetEnd is in the bucket bounds
+                (facetStart <= bucketStart && facetEnd >= bucketEnd) // The facet completely overlaps the bucket
+          }.map {
+            case (array, integer) =>
+              (array, integer)
           }.foldLeft(0l)(_ + _._2)
 
           FacetOption(
             value = if (bucketStart != bucketEnd) s"$bucketStart - $bucketEnd" else bucketStart.toString,
             hitCount,
-            lowerBound = Some(bucketStart.toString),
-            upperBound = Some(bucketEnd.toString)
+            lowerBound = Some(bucketStart),
+            upperBound = Some(bucketEnd)
           )
       }.filter(_.hitCount > 0)
   }
@@ -230,7 +246,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
   def roundUp(num: Int, divisor: Int): Int = Math.ceil((num.toDouble / divisor)).toInt * divisor
   def roundDown(num: Int, divisor: Int): Int = Math.floor((num.toDouble / divisor)).toInt * divisor
 
-  override def relatedToQuery(query: Query): Boolean = query.dateFrom.isDefined || query.dateTo.isDefined
+  override def isRelevantToQuery(query: Query): Boolean = query.dateFrom.isDefined || query.dateTo.isDefined
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
     must {
@@ -304,7 +320,7 @@ object FormatFacetDefinition extends FacetDefinition {
     }
   }
 
-  override def relatedToQuery(query: Query): Boolean = !query.formats.isEmpty
+  override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
     should(query.formats.map(formatQuery(_)))
@@ -314,7 +330,8 @@ object FormatFacetDefinition extends FacetDefinition {
     format => WeightedLevenshteinMetric(10, 0.1, 1).compare(format.toLowerCase, filterOption.value.toLowerCase) match {
       case Some(distance) => distance < 1.5
       case None           => false
-    })
+    }
+  )
 
   override def removeFromQuery(query: Query): Query = query.copy(formats = Set())
   override def facetSearchQuery(textQuery: String) = Query(formats = Set(textQuery))

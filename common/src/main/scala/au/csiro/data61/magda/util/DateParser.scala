@@ -14,7 +14,10 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoField
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.Temporal
+
 import au.csiro.data61.magda.AppConfig
+
+import scala.util.matching.Regex
 
 object DateParser {
 
@@ -42,9 +45,13 @@ object DateParser {
 
   // TODO: push the strings into config.
   private val timeFormats = List(
+    OffsetDateTimeFormat("HH:mm:ss.SSSXXXXX", ChronoUnit.MILLIS),
+    OffsetDateTimeFormat("HH:mm:ssXXXXX", ChronoUnit.SECONDS),
+    OffsetDateTimeFormat("HH:mmXXXXX", ChronoUnit.MINUTES),
+    DateTimeFormat("HH:mm:ss.SSS", ChronoUnit.MILLIS),
     DateTimeFormat("HH:mm:ss", ChronoUnit.SECONDS),
-    OffsetDateTimeFormat("HH:mm:ss.SSSXXX", ChronoUnit.SECONDS),
-    DateTimeFormat("HH:mm", ChronoUnit.MINUTES))
+    DateTimeFormat("HH:mm", ChronoUnit.MINUTES)
+  )
   private val dateFormats = List(
     DateFormat("yyyy{sep}MM{sep}dd", ChronoUnit.DAYS),
     DateFormat("dd{sep}MM{sep}yyyy", ChronoUnit.DAYS),
@@ -52,7 +59,8 @@ object DateParser {
     DateFormat("MMMMM{sep}yyyy", ChronoUnit.MONTHS),
     DateFormat("MMMMM{sep}yy", ChronoUnit.MONTHS),
     DateFormat("yyyy", ChronoUnit.YEARS),
-    DateFormat("yy", ChronoUnit.YEARS))
+    DateFormat("yy", ChronoUnit.YEARS)
+  )
   private val dateTimeSeparators = List("'T'", " ", "")
   private val dateSeparators = List("-", "/", " ")
 
@@ -79,15 +87,17 @@ object DateParser {
     val replacedDateFormat = format.replace("{sep}", dateSeparator)
     val regex = replacedDateFormat
       .replaceAll("'", "")
-      .replaceAll("[E|M]{5}", "[A-Za-z]+")
-      .replaceAll("[E|M]{3}", "[A-Za-z]{3}")
-      .replaceAll("[H|m|s|S|X|d|M|y]", "\\\\d")
+      .replaceAll("[EM]{5}", "[A-Za-z]+")
+      .replaceAll("[EM]{3}", "[A-Za-z]{3}")
+      .replaceAll("\\.", "\\\\.")
+      .replaceAll("X+", "(([\\\\+\\-][\\d:]+)|Z)")
+      .replaceAll("[HmsSdMy]", "\\\\d")
       .replaceAll("/", "\\/")
       .r
     val javaFormat = new DateTimeFormatterBuilder()
       .parseLenient()
       .appendPattern(replacedDateFormat)
-      .parseDefaulting(ChronoField.MILLI_OF_SECOND, 0)
+      .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
       .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
       .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
       .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
@@ -103,6 +113,11 @@ object DateParser {
   case class ConstantResult(dateConstant: DateConstant) extends ParseResult
   case object ParseFailure extends ParseResult
 
+  class RichRegex(underlying: Regex) {
+    def matches(s: String) = underlying.pattern.matcher(s).matches
+  }
+  implicit def regexToRichRegex(r: Regex) = new RichRegex(r)
+
   private def roundUp[T <: Temporal](roundUp: Boolean, date: T, originalFormat: Format): T =
     if (roundUp) date.plus(1, originalFormat.precision).minus(1, ChronoUnit.MILLIS).asInstanceOf[T] else date
 
@@ -115,9 +130,9 @@ object DateParser {
         case None =>
           formats
             .view
-            .filter { case (regex, _, _) => regex.findFirstIn(raw).isDefined }
+            .filter { case (regex, _, _) => regex.matches(raw) }
             .map {
-              case (_, format, originalFormat) => {
+              case (regex, format, originalFormat) => {
                 catching(classOf[DateTimeParseException]) opt {
                   originalFormat match {
                     case OffsetDateTimeFormat(_, _) => roundUp(shouldRoundUp, OffsetDateTime.parse(raw, format), originalFormat)

@@ -44,3 +44,5 @@ imageNames in docker := Seq(
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
+
+testOptions in Test += Tests.Argument("-oF")
