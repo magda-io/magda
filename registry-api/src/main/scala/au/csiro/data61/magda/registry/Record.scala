@@ -5,7 +5,7 @@ import spray.json.{JsObject, JsValue}
 
 import scala.annotation.meta.field
 
-@ApiModel(description = "A record in the registry, usually including data for one or more sections.")
+@ApiModel(description = "A record in the registry, usually including data for one or more aspects.")
 case class Record(
   @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true)
   id: String,
@@ -13,6 +13,6 @@ case class Record(
   @(ApiModelProperty @field)(value = "The name of the record", required = true)
   name: String,
 
-  @(ApiModelProperty @field)(value = "The sections included in this record", required = true)
-  sections: Map[String, JsObject]
+  @(ApiModelProperty @field)(value = "The aspects included in this record", required = true)
+  aspects: Map[String, JsObject]
 )

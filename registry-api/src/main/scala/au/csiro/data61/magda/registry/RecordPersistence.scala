@@ -12,40 +12,40 @@ import gnieh.diffson.sprayJson._
 
 object RecordPersistence extends Protocols with DiffsonProtocol {
   def getAll(implicit session: DBSession): Iterable[RecordSummary] = {
-    tuplesToSummaryRecords(sql"""select recordID, Record.name as recordName, sectionID
-                                 from Record
-                                 left outer join RecordSection using (recordID)"""
+    tuplesToSummaryRecords(sql"""select recordId, Records.name as recordName, aspectId
+                                 from Records
+                                 left outer join RecordAspects using (recordId)"""
       .map(recordSummaryRowToTuple)
       .list.apply())
       
   }
 
-  def getAllWithSections(implicit session: DBSession, sectionIDs: Iterable[String]): Iterable[Record] = {
-    tuplesToRecords(sql"""select recordID, Record.name as recordName, sectionID, Section.name as sectionName, data
-                          from Record
-                          left outer join RecordSection using (recordID)
-                          left outer join Section using (sectionID)
-                          where sectionID in ($sectionIDs)"""
+  def getAllWithAspects(implicit session: DBSession, aspectIds: Iterable[String]): Iterable[Record] = {
+    tuplesToRecords(sql"""select recordId, Records.name as recordName, aspectId, Aspects.name as aspectName, data
+                          from Records
+                          left outer join RecordAspects using (recordId)
+                          left outer join Aspects using (aspectId)
+                          where aspectId in ($aspectIds)"""
       .map(recordRowWithDataToTuple)
       .list.apply())
   }
   
   def getById(implicit session: DBSession, id: String): Option[Record] = {
-    tuplesToRecords(sql"""select recordID, Record.name as recordName, sectionID, Section.name as sectionName, data
-                          from Record
-                          left outer join RecordSection using (recordID)
-                          left outer join Section using (sectionID)
-                          where recordID=$id"""
+    tuplesToRecords(sql"""select recordId, Records.name as recordName, aspectId, Aspects.name as aspectName, data
+                          from Records
+                          left outer join RecordAspects using (recordId)
+                          left outer join Aspects using (aspectId)
+                          where recordId=$id"""
       .map(recordRowWithDataToTuple)
       .list.apply()).headOption
   }
   
-  def getRecordSectionById(implicit session: DBSession, recordID: String, sectionID: String): Option[JsObject] = {
-    sql"""select RecordSection.sectionID as sectionID, name as sectionName, data from RecordSection
-          inner join Section using (sectionID)
-          where RecordSection.recordID=$recordID
-          and RecordSection.sectionID=$sectionID"""
-      .map(rowToSection)
+  def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
+    sql"""select RecordAspects.aspectId as aspectId, name as aspectName, data from RecordAspects
+          inner join Aspects using (aspectId)
+          where RecordAspects.recordId=$recordId
+          and RecordAspects.aspectId=$aspectId"""
+      .map(rowToAspect)
       .single.apply()
   }
   
@@ -70,17 +70,17 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   def patchRecordById(implicit session: DBSession, id: String, recordPatch: JsonPatch): Try[Record] = {
     for {
       record <- this.getById(session, id) match {
-        case Some(section) => Success(section)
+        case Some(record) => Success(record)
         case None => Failure(new RuntimeException("No record exists with that ID."))
       }
       recordOnlyPatch <- Success(recordPatch.filter(op => op.path match {
-        case "sections" / rest => false
-        case anythingElse => true
+        case "aspects" / _ => false
+        case _ => true
       }))
-      eventID <- Try {
+      eventId <- Try {
         if (recordOnlyPatch.ops.length > 0) {
           val event = PatchRecordEvent(id, recordOnlyPatch).toJson.compactPrint
-          sql"insert into Events (eventTypeID, userID, data) values (${PatchRecordEvent.ID}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
+          sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
         }
@@ -93,156 +93,156 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       _ <- if (id == patchedRecord.id) Success(patchedRecord) else Failure(new RuntimeException("The patch must not change the record's ID."))
       _ <- Try {
         if (recordOnlyPatch.ops.length > 0) {
-          sql"""update Record set name = ${patchedRecord.name}, lastUpdate = $eventID where recordID = $id""".update.apply()
+          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where recordId = $id""".update.apply()
         } else {
           0
         }
       }
-      sectionResults <- Try {
+      aspectResults <- Try {
         recordPatch.ops.groupBy(op => op.path match {
-          case "sections" / (name / rest) => Some(name)
-          case anythingElse => None
+          case "aspects" / (name / _) => Some(name)
+          case _ => None
         }).filterKeys(!_.isEmpty).map({
-          // Patch each section
-          case (Some(sectionID), operations) => (sectionID, patchRecordSectionById(session, id, sectionID, JsonPatch(operations.map({
-            // Make paths in operations relative to the section instead of the record
-            case Add("sections" / (name / rest), value) => Add(rest, value)
-            case Remove("sections" / (name / rest), old) => Remove(rest, old)
-            case Replace("sections" / (name / rest), value, old) => Replace(rest, value, old)
-            case Move("sections" / (sourceName / sourceRest), "sections" / (destName / destRest)) => Move(sourceRest, destRest)
-            case Copy("sections" / (sourceName / sourceRest), "sections" / (destName / destRest)) => Copy(sourceRest, destRest)
-            case Test("sections" / (name / rest), value) => Test(rest, value)
-            case anythingElse => throw new RuntimeException("The patch contains an unsupported operation for section " + sectionID)
+          // Patch each aspect
+          case (Some(aspectId), operations) => (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(operations.map({
+            // Make paths in operations relative to the aspect instead of the record
+            case Add("aspects" / (name / rest), value) => Add(rest, value)
+            case Remove("aspects" / (name / rest), old) => Remove(rest, old)
+            case Replace("aspects" / (name / rest), value, old) => Replace(rest, value, old)
+            case Move("aspects" / (sourceName / sourceRest), "aspects" / (destName / destRest)) => Move(sourceRest, destRest)
+            case Copy("aspects" / (sourceName / sourceRest), "aspects" / (destName / destRest)) => Copy(sourceRest, destRest)
+            case Test("aspects" / (name / rest), value) => Test(rest, value)
+            case _ => throw new RuntimeException("The patch contains an unsupported operation for aspect " + aspectId)
           }))))
-          case anythingElse => throw new RuntimeException("Section ID is missing (this shouldn't be possible).")
+          case _ => throw new RuntimeException("Aspect ID is missing (this shouldn't be possible).")
         })
       }
-      // Report the first failed section, if any
-      _ <- sectionResults.find(_._2.isFailure) match {
-        case Some((sectionID, failure)) => failure
-        case anythingElse => Success(record)
+      // Report the first failed aspect, if any
+      _ <- aspectResults.find(_._2.isFailure) match {
+        case Some((_, failure)) => failure
+        case _ => Success(record)
       }
-      // No failed sections, so unwrap the sections from the Success Trys.
-      sections <- Success(sectionResults.map(section => (section._1, section._2.get)))
-    } yield Record(patchedRecord.id, patchedRecord.name, sections)
+      // No failed aspects, so unwrap the aspects from the Success Trys.
+      aspects <- Success(aspectResults.map(aspect => (aspect._1, aspect._2.get)))
+    } yield Record(patchedRecord.id, patchedRecord.name, aspects)
   }
 
-  def patchRecordSectionById(implicit session: DBSession, recordID: String, sectionID: String, sectionPatch: JsonPatch): Try[JsObject] = {
+  def patchRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, aspectPatch: JsonPatch): Try[JsObject] = {
     for {
-      section <- this.getRecordSectionById(session, recordID, sectionID) match {
-        case Some(section) => Success(section)
-        case None => Failure(new RuntimeException("No section exists on that record with that ID."))
+      aspect <- this.getRecordAspectById(session, recordId, aspectId) match {
+        case Some(aspect) => Success(aspect)
+        case None => Failure(new RuntimeException("No aspect exists on that record with that ID."))
       }
-      eventID <- Try {
-        if (sectionPatch.ops.length > 0) {
-          val event = PatchRecordSectionEvent(recordID, sectionID, sectionPatch).toJson.compactPrint
-          sql"insert into Events (eventTypeID, userID, data) values (${PatchRecordSectionEvent.ID}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
+      eventId <- Try {
+        if (aspectPatch.ops.length > 0) {
+          val event = PatchRecordAspectEvent(recordId, aspectId, aspectPatch).toJson.compactPrint
+          sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordAspectEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
         }
       }
-      patchedSection <- Try {
-        sectionPatch(section).asJsObject
+      patchedAspect <- Try {
+        aspectPatch(aspect).asJsObject
       }
       _ <- Try {
-        if (sectionPatch.ops.length > 0) {
-          val jsonString = patchedSection.compactPrint
-          sql"""insert into RecordSection (recordID, sectionID, lastUpdate, data) values (${recordID}, ${sectionID}, $eventID, $jsonString::json)
-               on conflict (recordID, sectionID) do update
-               set lastUpdate = $eventID, data = $jsonString::json
+        if (aspectPatch.ops.length > 0) {
+          val jsonString = patchedAspect.compactPrint
+          sql"""insert into RecordAspects (recordId, aspectIds, lastUpdate, data) values (${recordId}, ${aspectId}, $eventId, $jsonString::json)
+               on conflict (recordId, aspectId) do update
+               set lastUpdate = $eventId, data = $jsonString::json
                """.update.apply()
         } else {
           0
         }
       }
-    } yield patchedSection
+    } yield patchedAspect
   }
 
-  def putRecordSectionById(implicit session: DBSession, recordID: String, sectionID: String, newSection: JsObject): Try[JsObject] = {
+  def putRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, newAspect: JsObject): Try[JsObject] = {
     for {
-      oldSection <- this.getRecordSectionById(session, recordID, sectionID) match {
+      oldAspect <- this.getRecordAspectById(session, recordId, aspectId) match {
         case Some(record) => Success(record)
-        case None => createRecordSection(session, recordID, sectionID, newSection)
+        case None => createRecordAspect(session, recordId, aspectId, newAspect)
       }
-      recordSectionPatch <- Try {
-        // Diff the old record section and the new one
-        val oldSectionJson = oldSection.toJson
-        val newSectionJson = newSection.toJson
+      recordAspectPatch <- Try {
+        // Diff the old record aspect and the new one
+        val oldAspectJson = oldAspect.toJson
+        val newAspectJson = newAspect.toJson
 
-        JsonDiff.diff(oldSectionJson, newSectionJson, false)
+        JsonDiff.diff(oldAspectJson, newAspectJson, false)
       }
-      result <- patchRecordSectionById(session, recordID, sectionID, recordSectionPatch)
+      result <- patchRecordAspectById(session, recordId, aspectId, recordAspectPatch)
     } yield result
   }
 
   def createRecord(implicit session: DBSession, record: Record): Try[Record] = {
     for {
-      eventID <- Try {
+      eventId <- Try {
           val eventJson = CreateRecordEvent(record.id, record.name).toJson.compactPrint
-          sql"insert into Events (eventTypeID, userID, data) values (${CreateRecordEvent.ID}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+          sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
-        sql"""insert into Record (recordID, name, lastUpdate) values (${record.id}, ${record.name}, $eventID)""".update.apply()
+        sql"""insert into Records (recordId, name, lastUpdate) values (${record.id}, ${record.name}, $eventId)""".update.apply()
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
           Failure(new RuntimeException(s"Cannot create record '${record.id}' because a record with that ID already exists."))
         case anythingElse => anythingElse
       }
-      hasSectionFailure <- record.sections.map(section => createRecordSection(session, record.id, section._1, section._2)).find(_.isFailure) match {
+      hasAspectFailure <- record.aspects.map(aspect => createRecordAspect(session, record.id, aspect._1, aspect._2)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case anythingElse => Success(record)
+        case _ => Success(record)
       }
-    } yield hasSectionFailure
+    } yield hasAspectFailure
   }
 
-  def createRecordSection(implicit session: DBSession, recordID: String, sectionID: String, section: JsObject): Try[JsObject] = {
+  def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject] = {
     for {
-      eventID <- Try {
-        val eventJson = CreateRecordSectionEvent(recordID, sectionID, section).toJson.compactPrint
-        sql"insert into Events (eventTypeID, userID, data) values (${CreateRecordSectionEvent.ID}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+      eventId <- Try {
+        val eventJson = CreateRecordAspectEvent(recordId, aspectId, aspect).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
-        val jsonData = section.compactPrint
-        sql"""insert into RecordSection (recordID, sectionID, lastUpdate, data) values ($recordID, ${sectionID}, $eventID, $jsonData::json)""".update.apply()
-        section
+        val jsonData = aspect.compactPrint
+        sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values ($recordId, ${aspectId}, $eventId, $jsonData::json)""".update.apply()
+        aspect
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
-          Failure(new RuntimeException(s"Cannot create section '${sectionID}' for record '${recordID}' because the record or section does not exist, or because data already exists for that combination of record and section."))
+          Failure(new RuntimeException(s"Cannot create aspect '${aspectId}' for record '${recordId}' because the record or aspect does not exist, or because data already exists for that combination of record and aspect."))
         case anythingElse => anythingElse
       }
     } yield insertResult
   }
 
-  private def recordSummaryRowToTuple(rs: WrappedResultSet) = (rs.string("recordID"), rs.string("recordName"), rs.string("sectionID"))
-  private def recordRowWithDataToTuple(rs: WrappedResultSet) = (rs.string("recordID"), rs.string("recordName"), rs.string("sectionID"), rs.string("sectionName"), rs.stringOpt("data"))
+  private def recordSummaryRowToTuple(rs: WrappedResultSet) = (rs.string("recordId"), rs.string("recordName"), rs.string("aspectId"))
+  private def recordRowWithDataToTuple(rs: WrappedResultSet) = (rs.string("recordId"), rs.string("recordName"), rs.string("aspectId"), rs.string("aspectName"), rs.stringOpt("data"))
 
   private def tuplesToSummaryRecords(tuples: List[(String, String, String)]): Iterable[RecordSummary] = {
-    tuples.groupBy({ case (recordID, recordName, _) => (recordID, recordName) })
+    tuples.groupBy({ case (recordId, recordName, _) => (recordId, recordName) })
       .map {
-        case ((recordID, recordName), value) =>
+        case ((recordId, recordName), value) =>
           RecordSummary(
-            id = recordID,
+            id = recordId,
             name = recordName,
-            sections = value.filter({ case (_, _, sectionID) => sectionID != null })
-              .map({ case (_, _, sectionID) => sectionID }))
+            aspects = value.filter({ case (_, _, aspectId) => aspectId != null })
+              .map({ case (_, _, aspectId) => aspectId }))
       }
   }
 
   private def tuplesToRecords(tuples: List[(String, String, String, String, Option[String])]): Iterable[Record] = {
-    tuples.groupBy({ case (recordID, recordName, _, _, _) => (recordID, recordName) })
+    tuples.groupBy({ case (recordId, recordName, _, _, _) => (recordId, recordName) })
           .map {
-            case ((recordID, recordName), value) =>
+            case ((recordId, recordName), value) =>
               Record(
-                id = recordID,
+                id = recordId,
                 name = recordName,
-                sections = value.filter({ case (_, _, sectionID, _, data) => sectionID != null && data.isDefined })
-                                .map({ case (_, _, sectionID, sectionName, data) =>
-                                  (sectionID, JsonParser(data.get).asJsObject)
+                aspects = value.filter({ case (_, _, aspectId, _, data) => aspectId != null && data.isDefined })
+                                .map({ case (_, _, aspectId, _, data) =>
+                                  (aspectId, JsonParser(data.get).asJsObject)
                                 }).toMap)
           }
   }
   
-  private def rowToSection(rs: WrappedResultSet): JsObject = {
+  private def rowToAspect(rs: WrappedResultSet): JsObject = {
     JsonParser(rs.string("data")).asJsObject
   }
 }
