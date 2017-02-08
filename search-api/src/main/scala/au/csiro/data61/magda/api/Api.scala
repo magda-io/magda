@@ -13,7 +13,7 @@ import akka.http.scaladsl.server.{ ExceptionHandler, MethodRejection, RejectionH
 import akka.stream.Materializer
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.api.{ Model => apimodel }
+import au.csiro.data61.magda.api.{ model => apimodel }
 import au.csiro.data61.magda.search.SearchQueryer
 import au.csiro.data61.magda.search.elasticsearch.{ ClientProvider, ElasticSearchQueryer }
 import ch.megard.akka.http.cors.{ CorsDirectives, CorsSettings }
@@ -76,7 +76,7 @@ class Api(val logger: LoggingAdapter, val searchQueryer: SearchQueryer)(implicit
             pathPrefix("search") {
               (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10, "facetSize" ? 10)) { (rawQuery, start, limit, facetSize) ⇒
                 val query = if (rawQuery.equals("")) "*" else rawQuery
-                
+
                 onSuccess(searchQueryer.search(queryCompiler.apply(query), start, limit, facetSize)) { result =>
                   val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
 

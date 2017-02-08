@@ -29,6 +29,7 @@ import au.csiro.data61.magda.api.Query
 import org.scalacheck.Shrink.shrink
 
 object Generators {
+  val LUCENE_CONTROL_CHARACTER_REGEX = "[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]\"'\\+]".r
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
   def noneBiasedOption[T](inner: Gen[T]) = Gen.frequency((1, Gen.some(inner)), (20, None))
 
@@ -233,7 +234,7 @@ object Generators {
     theme <- Gen.listOf(arbitrary[String])
     keyword <- Gen.listOf(arbitrary[String])
     contactPoint <- someBiasedOption(agentGen(arbitrary[String]))
-    distributions <- Gen.nonEmptyListOf(distGen)
+    distributions <- Gen.choose(1, 5).flatMap(size => Gen.listOfN(size, distGen))//.map(_.groupBy(_.format).mapValues(_.head).values.toList)//.map(distributions => distributions.map(_.copy(format = distributions.head.format)))
     landingPage <- someBiasedOption(arbitrary[String])
   } yield DataSet(
     identifier = identifier.toString,
@@ -261,7 +262,7 @@ object Generators {
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = probablyEmptySet(gen).flatMap(set => Gen.pick(set.size % 3, set)).map(_.toSet)
 
-  val queryGen = for {
+  val queryGen = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
     publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
@@ -275,9 +276,9 @@ object Generators {
     dateFrom = dateFrom.flatten,
     dateTo = dateTo.flatten,
     formats = formats
-  )
+  )).map(removeInvalid)
 
-  val specificBiasedQueryGen = for {
+  val specificBiasedQueryGen = (for {
     freeText <- someBiasedOption(queryTextGen)
     quotes <- set(queryTextGen)
     publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
@@ -291,7 +292,7 @@ object Generators {
     dateFrom = dateFrom,
     dateTo = dateTo,
     formats = formats
-  )
+  )).map(removeInvalid)
 
   val unspecificQueryGen = (for {
     freeText <- noneBiasedOption(queryTextGen)
@@ -307,7 +308,33 @@ object Generators {
     dateFrom = dateFrom.flatten,
     dateTo = dateTo.flatten,
     formats = formats
-  )).flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
+  ))
+    .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
+    .map(removeInvalid)
+
+  val suggestedFacetQueryGen = (for {
+    freeText <- noneBiasedOption(queryTextGen)
+    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
+    formats <- formatGen.map(_._2).flatMap(Gen.someOf(_)).map(_.toSet)
+  } yield Query(
+    //    freeText = freeText,
+    publishers = publishers,
+    formats = formats
+  ))
+    .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
+    .map(removeInvalid)
+    .flatMap(query => query.copy(
+      freeText = Some(query.freeText.getOrElse("") + " " + query.formats.map("-" + _).mkString(" "))
+    ))
+
+  def removeInvalid(objQuery: Query): Query = {
+    objQuery.copy(
+      freeText = objQuery.freeText.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+      quotes = objQuery.quotes.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+      formats = objQuery.formats.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+      publishers = objQuery.publishers.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, ""))
+    )
+  }
 
   def textQueryGen(queryGen: Gen[Query] = queryGen): Gen[(String, Query)] = queryGen.flatMap { query =>
     val textList = (Seq(query.freeText).flatten ++

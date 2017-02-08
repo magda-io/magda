@@ -32,7 +32,7 @@ import scala.util.Success
 import scala.concurrent.Promise
 import akka.stream.scaladsl.SourceQueue
 import scala.concurrent.Future
-import com.sksamuel.elastic4s.ElasticClient
+import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.ElasticDsl
 import spray.json.JsString
 import akka.stream.IOResult

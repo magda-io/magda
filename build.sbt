@@ -4,7 +4,7 @@ name := "magda-metadata"
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
   version := "0.0.12",
-  scalaVersion := "2.12.1"
+  scalaVersion := "2.11.8"
 )
 
 lazy val root = (project in file("."))
