@@ -1,5 +1,6 @@
 package au.csiro.data61.magda
 import java.net.URLEncoder
+import java.nio.file.{Files, Paths}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -57,7 +58,8 @@ class MagdaRegistry(
     val sections = List(
       AspectDefinition("source", "Source", JsObject()),
       AspectDefinition("dataset-summary", "Dataset Summary", JsObject()),
-      AspectDefinition("distribution-summary", "Distribution Summary", JsObject())
+      AspectDefinition("distribution-summary", "Distribution Summary", JsObject()),
+      AspectDefinition("basic", "Basic Information", getJsonSchemaResource("/basic.schema.json"))
     )
 
     Source(sections).mapAsync(6)(section => {
@@ -93,7 +95,11 @@ class MagdaRegistry(
         name = dataset.title.getOrElse(dataset.identifier),
         aspects = Map(
           "source" -> source.toJson.asJsObject(),
-          "dataset-summary" -> dataset.toJson.asJsObject()
+          "dataset-summary" -> dataset.toJson.asJsObject(),
+          "basic" -> JsObject(
+            "title" -> JsString(dataset.title.getOrElse("")),
+            "description" -> JsString(dataset.description.getOrElse(""))
+          )
         )
       )
 
@@ -120,5 +126,11 @@ class MagdaRegistry(
 
   override def needsReindexing(source: InterfaceConfig): Future[Boolean] = {
     Future(true)
+  }
+
+  private def getJsonSchemaResource(name: String): JsObject = {
+    val url = getClass.getResource(name)
+    val resPath = Paths.get(url.toURI())
+    JsonParser(new String(Files.readAllBytes(resPath), "UTF8")).asJsObject
   }
 }

@@ -147,7 +147,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       _ <- Try {
         if (aspectPatch.ops.length > 0) {
           val jsonString = patchedAspect.compactPrint
-          sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values (${recordId}, ${aspectId}, $eventId, $jsonString::json)
+          sql"""insert into RecordAspects (recordId, aspectIds, lastUpdate, data) values (${recordId}, ${aspectId}, $eventId, $jsonString::json)
                on conflict (recordId, aspectId) do update
                set lastUpdate = $eventId, data = $jsonString::json
                """.update.apply()

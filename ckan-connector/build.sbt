@@ -34,6 +34,8 @@ unmanagedResourceDirectories in Compile ++= {
   }
 }
 
+unmanagedResources in Compile += baseDirectory.value / ".." / "registry-aspects" / "basic.schema.json"
+
 dockerfile in docker := {
   val appDir: File = stage.value
   val targetDir = "/app"
