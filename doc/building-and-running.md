@@ -54,7 +54,8 @@ kubectl create -f elasticsearch.yml -f registry-datastore.yml
 Then, to make PostgreSQL accessible on port 5432 and Elasticsearch accessible on port 9300 on your development machine, run:
 
 ```bash
-kubectl port-forward -p $(kubectl get pods -l service=registry-datastore -o=custom-columns=NAME:.metadata.name --no-headers) 5432 -p $(kubectl get pods -l component=elasticsearch -o=custom-columns=NAME:.metadata.name --no-headers) 9300
+kubectl port-forward $(kubectl get pods -l service=registry-datastore -o=custom-columns=NAME:.metadata.name --no-headers) 5432 > /dev/null &
+kubectl port-forward $(kubectl get pods -l component=elasticsearch -o=custom-columns=NAME:.metadata.name --no-headers) 9300 > /dev/null &
 ```
 
 Note that if you want to use a different hostname or port for the database, you will need to change `db.default.url` in `registry-api/src/main/resources/env-specific-config/host.conf` accordingly.
