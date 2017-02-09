@@ -103,7 +103,10 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           case "aspects" / (name / _) => Some(name)
           case _ => None
         }).filterKeys(!_.isEmpty).map({
-          // Patch each aspect
+          // Create or patch each aspect.
+          // We create if there's exactly one ADD operation.
+          case (Some(aspectId), List(Add("aspects" / _, value))) => (aspectId, createRecordAspect(session, id, aspectId, value.asJsObject))
+          // We patch in all other scenarios.
           case (Some(aspectId), operations) => (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(operations.map({
             // Make paths in operations relative to the aspect instead of the record
             case Add("aspects" / (name / rest), value) => Add(rest, value)
