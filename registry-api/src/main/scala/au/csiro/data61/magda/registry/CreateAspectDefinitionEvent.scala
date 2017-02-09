@@ -5,3 +5,4 @@ case class CreateAspectDefinitionEvent(aspect: AspectDefinition)
 object CreateAspectDefinitionEvent {
   val Id = 1 // from EventTypes table
 }
+//testing

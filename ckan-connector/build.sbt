@@ -1,4 +1,4 @@
-name := "magda-metadata-indexer"
+name := "magda-ckan-connector"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -30,7 +30,7 @@ unmanagedResourceDirectories in Compile ++= {
   if (Option(System.getProperty("excludeMockData")).getOrElse("false").equals("true")) {
     Nil
   } else {
-    List(baseDirectory.value / "mock-data")
+    List(baseDirectory.value / ".." / "indexer" / "mock-data")
   }
 }
 

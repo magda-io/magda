@@ -18,29 +18,17 @@ spec:
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-sbt-local:latest"
-        command: ["sbt", "-Dproject=searchApi", "~searchApi/re-start"]
-        imagePullPolicy: Always
+        image: "localhost:5000/data61/magda-search-api:latest"
         ports:
         - containerPort: 80
         - containerPort: 8000
         volumeMounts:
         - mountPath: /usr/regions
           name: regions
-        - mountPath: /usr/src/app/
-          name: src
-        - mountPath: /root/.ivy2
-          name: ivy-cache
       volumes:
       - name: regions
         hostPath:
-          path: ${projectDir}/indexer/regions
-      - name: src
-        hostPath:
-          path: ${projectDir}
-      - hostPath:
-          path: ${projectDir}/search-api/target/.ivy2
-        name: ivy-cache
+          path: /tmp/regions
 ---
 apiVersion: v1
 kind: Service
@@ -80,24 +68,7 @@ spec:
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-sbt-local:latest"
-        command: ["sbt", "-Dproject=registryApi", "~registryApi/re-start"]
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-        - containerPort: 8000
-        volumeMounts:
-        - mountPath: /usr/src/app/
-          name: src
-        - mountPath: /root/.ivy2
-          name: ivy-cache
-      volumes:
-      - name: src
-        hostPath:
-          path: ${projectDir}
-      - hostPath:
-          path: ${projectDir}/registry-api/target/.ivy2
-        name: ivy-cache
+        image: "localhost:5000/data61/magda-registry-api:latest"
 ---
 apiVersion: v1
 kind: Service
@@ -117,6 +88,46 @@ spec:
     service: registry-api
   type: "NodePort"
 ---
+# CKAN Connector
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ckan-connector
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: ckan-connector
+    spec:
+      containers:
+      - name: ckan-connector
+        resources:
+          requests:
+            memory: 0
+        env:
+        - name: SCALA_ENV
+          value: local
+        image: "localhost:5000/data61/magda-ckan-connector:latest"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ckan-connector
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30011
+  - name: debug
+    port: 8000
+    targetPort: 8000
+    nodePort: 30110
+  selector:
+    service: ckan-connector
+  type: "NodePort"
+---
 # Indexer
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -130,35 +141,21 @@ spec:
         service: indexer
     spec:
       containers:
-      - name: search-api
+      - name: indexer
         resources:
           requests:
             memory: 0
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-sbt-local:latest"
-        command: ["sbt", "-Dproject=indexer", "-DincludeMockData=true", "~indexer/re-start"]
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8000
+        image: "localhost:5000/data61/magda-metadata-indexer:latest"
         volumeMounts:
         - mountPath: /usr/regions
           name: regions
-        - mountPath: /usr/src/app/
-          name: src
-        - mountPath: /root/.ivy2
-          name: ivy-cache
       volumes:
       - name: regions
         hostPath:
-          path: ${projectDir}/regions
-      - name: src
-        hostPath:
-          path: ${projectDir}
-      - hostPath:
-          path: ${projectDir}/indexer/target/.ivy2
-        name: ivy-cache
+          path: /tmp/regions
 ---
 apiVersion: v1
 kind: Service
@@ -173,179 +170,3 @@ spec:
   selector:
     service: indexer
   type: "NodePort"
----
-# ElasticSearch
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: es
-  labels:
-    component: elasticsearch
-spec:
-  template:
-    metadata:
-      labels:
-        component: elasticsearch
-    spec:
-      containers:
-      - name: es
-        resources:
-          requests:
-            memory: 1000Mi
-          limits:
-            memory: 2000Mi
-        securityContext:
-          privileged: true
-          capabilities:
-            add:
-              - IPC_LOCK
-        image: localhost:5000/data61/elasticsearch-kubernetes:2.4.1
-        env:
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: "CLUSTER_NAME"
-          value: "myesdb"
-        - name: NODE_MASTER
-          value: "true"
-        - name: NODE_DATA
-          value: "true"
-        - name: HTTP_ENABLE
-          value: "true"
-        - name: ES_HEAP_SIZE
-          value: "1000m"
-        - name: REPO
-          value: "/snapshots"
-        ports:
-        - containerPort: 9200
-          name: http
-          protocol: TCP
-        - containerPort: 9300
-          name: transport
-          protocol: TCP
-        volumeMounts:
-        - name: storage
-          mountPath: /data
-        - name: snapshots
-          mountPath: /snapshots
-      volumes:
-      - name: snapshots
-        hostPath:
-          path: /tmp/snapshots
-      - name: "storage"
-        emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: elasticsearch
-  labels:
-    component: elasticsearch
-spec:
-  ports:
-  - name: http
-    port: 9200
-    targetPort: 9200
-    nodePort: 30092
-  - name: java
-    port: 9300
-    targetPort: 9300
-    nodePort: 30093
-  selector:
-    component: elasticsearch
-  type: "NodePort"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: elasticsearch-discovery
-  labels:
-    component: elasticsearch
-spec:
-  selector:
-    component: elasticsearch
-  ports:
-  - name: transport
-    port: 9300
-    protocol: TCP
----
-# KIBANA
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: kibana
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        service: kibana
-    spec:
-      containers:
-      - env:
-        - name: ELASTICSEARCH_URL
-          value: http://elasticsearch:9200
-        image: seeruk/docker-kibana-sense
-        resources:
-          limits:
-            memory: 500Mi
-        name: kibana
-        ports:
-        - containerPort: 5601
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: kibana
-spec:
-  ports:
-  - name: main
-    port: 5601
-    targetPort: 5601
-    nodePort: 30056
-  selector:
-    service: kibana
-  type: "NodePort"
----
-# Postgres for the Registry
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: registry-datastore
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        service: registry-datastore
-    spec:
-      containers:
-      - name: registry-datastore
-        image: postgres
-        ports:
-        - containerPort: 5432
-        volumeMounts:
-        - mountPath: /var/lib/postgresql/data
-          name: registrydata
-        - mountPath: /docker-entrypoint-initdb.d
-          name: docker-entrypoint-initdb
-      volumes:
-      - name: docker-entrypoint-initdb
-        hostPath:
-          path: ${projectDir}/registry-api/postgres/scripts
-      - name: registrydata
-        hostPath:
-          path: /tmp/registrydata
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: registry-datastore
-spec:
-  ports:
-  - name: postgres
-    port: 5432
-    targetPort: 5432
-  selector:
-    service: registry-datastore

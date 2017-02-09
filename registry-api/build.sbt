@@ -22,7 +22,7 @@ libraryDependencies ++= {
     "io.circe" %% "circe-generic" % "0.5.3",
     "io.circe" %% "circe-java8" % "0.5.3",
     "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.7.2",
-    "org.gnieh" %% "diffson" % "2.0.2"
+    "org.gnieh" %% "diffson-spray-json" % "2.1.2"
   )
 }
 
@@ -41,19 +41,11 @@ dockerfile in docker := {
 
 imageNames in docker := Seq(
   ImageName(
-    namespace = Some("data61"),
+    namespace = Some("localhost:5000/data61"),
     repository = name.value,
-    tag = Some("v" + version.value)
+    tag = Some("latest") //Some("v" + version.value)
   )
 )
-
-watchSources <<= (watchSources) map { files =>
-  if (Option(System.getProperty("project")).getOrElse("none").equals("registryApi")) {
-    files
-  } else {
-    Nil
-  }
-}
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
