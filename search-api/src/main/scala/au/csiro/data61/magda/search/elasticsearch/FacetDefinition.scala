@@ -19,6 +19,7 @@ import scalaz.Memo
 import java.time.ZoneOffset
 import au.csiro.data61.magda.search.elasticsearch.YearFacetDefinition
 import com.typesafe.config.Config
+import com.sksamuel.elastic4s.ElasticDsl
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -320,8 +321,9 @@ object FormatFacetDefinition extends FacetDefinition {
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
+//    ElasticDsl.matchAllQuery()
     should(query.formats.map(exactFormatQuery(_)))
-//      .minimumShouldMatch(1)
+      .minimumShouldMatch(1)
 
   override def isFilterOptionRelevant(query: Query)(filterOption: FacetOption): Boolean = query.formats.exists(
     format => WeightedLevenshteinMetric(10, 0.1, 1).compare(format.toLowerCase, filterOption.value.toLowerCase) match {

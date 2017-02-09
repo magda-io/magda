@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.Query
+import au.csiro.data61.magda.util.Regex._
 import org.scalacheck.Shrink.shrink
 
 object Generators {
@@ -33,7 +34,7 @@ object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
   def noneBiasedOption[T](inner: Gen[T]) = Gen.frequency((1, Gen.some(inner)), (20, None))
 
-  val keyGen = arbitrary[String].suchThat(!_.contains("."))
+  //  val keyGen = arbitrary[String].suchThat(!_.contains("."))
 
   val defaultStartTime = ZonedDateTime.parse("1850-01-01T00:00:00Z").toInstant
   val defaultTightStartTime = ZonedDateTime.parse("2000-01-01T00:00:00Z").toInstant
@@ -148,6 +149,8 @@ object Generators {
     geoJson <- someBiasedOption(geometryGen)
   } yield new Location(text, geoJson)
 
+  val nonEmptyString = Gen.choose(1, 20).flatMap(Gen.listOfN(_, Gen.alphaNumChar).map(_.mkString))
+
   def wordsGen(size: Int) = {
     var wordCache: Option[List[String]] = None
 
@@ -156,7 +159,7 @@ object Generators {
         case Some(wordCache) =>
           Gen.const(wordCache)
         case None =>
-          Gen.listOfN(size, Gen.choose(1, 20).flatMap(Gen.listOfN(_, Gen.alphaNumChar).map(_.mkString))).map { words =>
+          Gen.listOfN(size, nonEmptyString).map { words =>
             wordCache = Some(words)
             words
           }
@@ -165,7 +168,7 @@ object Generators {
   }
 
   val descWordGen = wordsGen(1000)
-  val publisherGen = wordsGen(10)
+  val publisherGen = wordsGen(50)
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
@@ -173,7 +176,7 @@ object Generators {
     MediaTypes.`application/json`,
     MediaTypes.`application/octet-stream`
   ))
-  val randomFormatGen = wordsGen(10)
+  val randomFormatGen = wordsGen(50)
 
   def textGen(inner: Gen[List[String]]) = inner
     .flatMap(Gen.someOf(_))
@@ -189,8 +192,8 @@ object Generators {
 
   val formatGen = for {
     mediaType <- Gen.option(mediaTypeGen)
-    randomFormat <- someBiasedOption(randomFormatGen.flatMap(Gen.oneOf(_)))
-  } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).orElse(randomFormat))
+    randomFormat <- randomFormatGen.flatMap(Gen.oneOf(_))
+  } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).getOrElse(randomFormat))
 
   val distGen = for {
     title <- arbitrary[String]
@@ -201,7 +204,7 @@ object Generators {
     rights <- someBiasedOption(arbitrary[String])
     accessURL <- someBiasedOption(arbitrary[String])
     byteSize <- someBiasedOption(arbitrary[Int])
-    format <- formatGen
+    format <- someBiasedOption(formatGen)
   } yield Distribution(
     title = title,
     description = description,
@@ -211,8 +214,8 @@ object Generators {
     rights = rights,
     accessURL = accessURL,
     byteSize = byteSize,
-    mediaType = format._1,
-    format = format._2
+    mediaType = format.flatMap(_._1),
+    format = format.map(_._2)
   )
 
   val incrementer: AtomicInteger = new AtomicInteger(0)
@@ -234,7 +237,7 @@ object Generators {
     theme <- Gen.listOf(arbitrary[String])
     keyword <- Gen.listOf(arbitrary[String])
     contactPoint <- someBiasedOption(agentGen(arbitrary[String]))
-    distributions <- Gen.choose(1, 5).flatMap(size => Gen.listOfN(size, distGen))//.map(_.groupBy(_.format).mapValues(_.head).values.toList)//.map(distributions => distributions.map(_.copy(format = distributions.head.format)))
+    distributions <- Gen.choose(1, 5).flatMap(size => Gen.listOfN(size, distGen)) //.map(_.groupBy(_.format).mapValues(_.head).values.toList)//.map(distributions => distributions.map(_.copy(format = distributions.head.format)))
     landingPage <- someBiasedOption(arbitrary[String])
   } yield DataSet(
     identifier = identifier.toString,
@@ -256,19 +259,43 @@ object Generators {
     years = ElasticSearchIndexer.getYears(temporal.flatMap(_.start.flatMap(_.date)), temporal.flatMap(_.end.flatMap(_.date)))
   )
 
-  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" "))
+  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" ")).map(removeFilters)
 
   def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = probablyEmptySet(gen).flatMap(set => Gen.pick(set.size % 3, set)).map(_.toSet)
 
+  val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
+  val formatQueryGen = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString)).map(removeFilters)
+
+  val partialPublisherGen = publisherGen.flatMap(Gen.oneOf(_)).flatMap { publisher =>
+    Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)))
+  }
+  val publisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString)).map(removeFilters)
+
   val queryGen = (for {
+    freeText <- Gen.option(queryTextGen)
+    quotes <- probablyEmptySet(queryTextGen)
+    publishers <- probablyEmptySet(publisherQueryGen)
+    dateFrom <- Gen.option(periodOfTimeGen.map(_.start.flatMap(_.date)))
+    dateTo <- Gen.option(periodOfTimeGen.map(_.end.flatMap(_.date)))
+    formats <- probablyEmptySet(formatQueryGen)
+  } yield Query(
+    freeText = freeText,
+    quotes = quotes,
+    publishers = publishers,
+    dateFrom = dateFrom.flatten,
+    dateTo = dateTo.flatten,
+    formats = formats
+  )).map(removeInvalid)
+
+  val exactQueryGen = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
     publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
     dateFrom <- Gen.option(periodOfTimeGen.map(_.start.flatMap(_.date)))
     dateTo <- Gen.option(periodOfTimeGen.map(_.end.flatMap(_.date)))
-    formats <- probablyEmptySet(formatGen.map(_._2)).map(_.flatten)
+    formats <- probablyEmptySet(formatGen.map(_._2))
   } yield Query(
     freeText = freeText,
     quotes = quotes,
@@ -281,26 +308,26 @@ object Generators {
   val specificBiasedQueryGen = (for {
     freeText <- someBiasedOption(queryTextGen)
     quotes <- set(queryTextGen)
-    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
+    publishers <- Gen.nonEmptyContainerOf[Set, String](publisherQueryGen)
     dateFrom <- periodOfTimeGen.map(_.start.flatMap(_.date))
     dateTo <- periodOfTimeGen.map(_.end.flatMap(_.date))
-    formats <- set(formatGen.map(_._2)).map(_.flatten)
+    formats <- Gen.nonEmptyContainerOf[Set, String](formatQueryGen)
   } yield Query(
-    freeText = freeText,
-    quotes = quotes,
+    //    freeText = freeText,
+    //    quotes = quotes,
     publishers = publishers,
-    dateFrom = dateFrom,
-    dateTo = dateTo,
+    //    dateFrom = dateFrom,
+    //    dateTo = dateTo,
     formats = formats
   )).map(removeInvalid)
 
   val unspecificQueryGen = (for {
     freeText <- noneBiasedOption(queryTextGen)
     quotes <- smallSet(queryTextGen)
-    publishers <- Gen.frequency((4, Gen.const(Set[String]())), (1, publisherGen.flatMap(publishers => Gen.choose(0, 2).flatMap(size => Gen.pick(size, publishers))).map(_.toSet)))
+    publishers <- smallSet(publisherQueryGen)
     dateFrom <- noneBiasedOption(periodOfTimeGen.map(_.start.flatMap(_.date)))
     dateTo <- noneBiasedOption(periodOfTimeGen.map(_.end.flatMap(_.date)))
-    formats <- smallSet(mediaTypeGen.map(_.fileExtensions.headOption)).map(_.flatten)
+    formats <- smallSet(formatQueryGen)
   } yield Query(
     freeText = freeText,
     quotes = quotes,
@@ -315,7 +342,7 @@ object Generators {
   val suggestedFacetQueryGen = (for {
     freeText <- noneBiasedOption(queryTextGen)
     publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
-    formats <- formatGen.map(_._2).flatMap(Gen.someOf(_)).map(_.toSet)
+    formats <- smallSet(formatGen.map(_._2))
   } yield Query(
     //    freeText = freeText,
     publishers = publishers,
@@ -327,6 +354,20 @@ object Generators {
       freeText = Some(query.freeText.getOrElse("") + " " + query.formats.map("-" + _).mkString(" "))
     ))
 
+  val filterRegex = "(\"|by|to|from|as|in)".r
+
+  def removeFilters(string: String) = filterRegex.replaceAllIn(string, "a" + string)
+
+  def noFilters(string: String): Boolean = !filterRegex.matchesAny(string)
+
+  def noFiltersInFreeText(query: Query): Boolean = {
+    query.productIterator.forall {
+      case (x: String)    ⇒ noFilters(x)
+      case (Some(x))      ⇒ noFilters(x.toString)
+      case (xs: Set[Any]) ⇒ xs.forall(y ⇒ noFilters(y.toString))
+      case _              ⇒ true
+    }
+  }
   def removeInvalid(objQuery: Query): Query = {
     objQuery.copy(
       freeText = objQuery.freeText.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),

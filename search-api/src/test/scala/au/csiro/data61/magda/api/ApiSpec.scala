@@ -55,7 +55,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
   val processors = Math.max(Runtime.getRuntime().availableProcessors(), 4)
   //      val processors = 1
   logger.info("Running with {} processors", processors.toString)
-  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(200))
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(100))
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(5 seconds)
 
   val properties = new Properties()
@@ -90,7 +90,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       val status = client.execute {
         clusterHealth()
       }.await.getStatus
-      println(status)
       status == ClusterHealthStatus.YELLOW
     }
   }
@@ -135,35 +134,12 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
   implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
     case (indexName, dataSets, route) ⇒
-      logger.info("preshrink: {}", dataSets.size)
       Shrink.shrink(dataSets).map(shrunkDataSets ⇒ {
-        logger.info("postshrink: {}", shrunkDataSets.size)
+        logger.info("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
 
-        if (shrunkDataSets.forall(dataSets.contains(_)) && dataSets.forall(shrunkDataSets.contains(_))) {
-          println("shrunk datasets was the same")
-          (indexName, dataSets, route)
-        } else {
-          def insertNew() = {
-            val result = putDataSetsInIndex(shrunkDataSets).await(INSERTION_WAIT_TIME)
-            cleanUpQueue.add(result._1)
-            result
-          }
-
-          if (shrunkDataSets.forall(dataSets.contains(_))) {
-            println("shrunk datasets was a subset")
-            insertNew
-          } else {
-            getFromIndexCache(shrunkDataSets.size) match {
-              case (_, Some(result)) ⇒
-                val cachedResult = result.await(INSERTION_WAIT_TIME)
-                val cachedDataSets = cachedResult._2
-
-                if (cachedDataSets.equals(dataSets)) insertNew
-                else cachedResult
-              case (_, None) ⇒ insertNew
-            }
-          }
-        }
+        val result = putDataSetsInIndex(shrunkDataSets).await(INSERTION_WAIT_TIME)
+        cleanUpQueue.add(result._1)
+        result
       })
   }
 
@@ -301,7 +277,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       val filterQueryGen = queryGen
         .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
 
-      forAll(indexGen, textQueryGen(filterQueryGen)) { (indexTuple, queryTuple) ⇒
+      forAll(indexGen, textQueryGen(exactQueryGen)) { (indexTuple, queryTuple) ⇒
         val (_, dataSets, routes) = indexTuple
         val (textQuery, query) = queryTuple
         Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
@@ -399,18 +375,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
     }
   }
 
-  def noFiltersInFreeText(query: Query): Boolean = {
-    def validString(string: String): Boolean = !string.contains("by") && !string.contains("to") && !string.contains("from") &&
-      !string.contains(""""""") && !string.contains("as")
-
-    query.productIterator.forall {
-      case (x: String)    ⇒ validString(x)
-      case (Some(x))      ⇒ validString(x.toString)
-      case (xs: Set[Any]) ⇒ xs.forall(y ⇒ validString(y.toString))
-      case _              ⇒ true
-    }
-  }
-
   describe("query") {
     it("should always be parsed correctly") {
       forAll(smallIndexGen, textQueryGen()) { (indexTuple, queryTuple) ⇒
@@ -494,11 +458,11 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
     }
 
-    def genericFacetSpecs(facetType: FacetType, reducer: DataSet ⇒ Set[String], queryCounter: Query ⇒ Int, textTransformer: String => String = identity) = {
+    def genericFacetSpecs(facetType: FacetType, reducer: DataSet ⇒ Set[String], queryCounter: Query ⇒ Int, filterQueryGen: Gen[Query]) = {
       def filter(dataSet: DataSet, facetOption: FacetOption) = {
         val facetValue = reducer(dataSet)
 
-        def matches = facetValue.exists(textTransformer(_).equals(textTransformer(facetOption.value)))
+        def matches = facetValue.exists(_.equals(facetOption.value))
 
         if (facetOption.value.equals("Unspecified")) {
           facetValue.isEmpty || facetValue.forall(_.equals("")) || matches
@@ -562,13 +526,14 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
         describe("with query") {
           it("with matched facet options") {
-            checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(filterQueryGen), smallIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 
               val matched = facet.options.filter(_.matched)
-
-              whenever(matched.size > 0) {
+              println(matched.size + "/" + outerResult.strategy)
+              whenever(matched.size > 0 && outerResult.strategy.get == MatchAll) {
+                println("I'm in!")
                 matched.foreach { option ⇒
                   val facetDataSets = dataSets.filter(filter(_, option))
 
@@ -611,7 +576,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
               val facet = getFacet(outerResult)
 
               val exactMatchFacets = facet.options.filter(option => option.matched && option.hitCount == 0)
-
               println(exactMatchFacets.size)
               whenever(exactMatchFacets.size > 0) {
                 val grouped = groupResult(allDataSets)
@@ -725,15 +689,23 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       def reducer(dataSet: DataSet) = Set(dataSet.publisher.flatMap(_.name)).flatten
       def queryToInt(query: Query) = query.publishers.size
 
-      genericFacetSpecs(Publisher, reducer, queryToInt)
+      val queryGen = for {
+        publishers <- Gen.nonEmptyBuildableOf[Set[String], String](publisherQueryGen)
+      } yield new Query(publishers = publishers)
+
+      genericFacetSpecs(Publisher, reducer, queryToInt, queryGen)
     }
 
     describe("format") {
       def reducer(dataSet: DataSet) = dataSet.distributions.map(_.format.getOrElse("Unspecified")).toSet
-      def textTransformer(string: String) = string.toLowerCase
       def queryToInt(query: Query) = query.formats.size
 
-      genericFacetSpecs(Format, reducer, queryToInt)
+      val queryGen = for {
+        query <- unspecificQueryGen
+        formats <- Gen.nonEmptyBuildableOf[Set[String], String](formatQueryGen)
+      } yield query.copy(formats = formats, publishers = Set())
+
+      genericFacetSpecs(Format, reducer, queryToInt, queryGen)
     }
 
     describe("year") {
