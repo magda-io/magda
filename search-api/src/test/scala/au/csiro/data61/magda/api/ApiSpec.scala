@@ -413,9 +413,9 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
       }
     }
 
-    def checkFacetsWithQuery(queryGen: Gen[(String, Query)] = textQueryGen(), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen)(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit) = {
+    def checkFacetsWithQuery(queryGen: Gen[(String, Query)] = textQueryGen(), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit) = {
       try {
-        forAll(thisIndexGen, queryGen, Gen.posNum[Int]) { (tuple, query, rawFacetSize) ⇒
+        forAll(thisIndexGen, queryGen, facetSizeGen) { (tuple, query, rawFacetSize) ⇒
           val (indexName, dataSets, routes) = tuple
           val (textQuery, objQuery) = query
           val facetSize = Math.max(rawFacetSize, 1)
@@ -619,17 +619,15 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
         }
 
         describe("with query") {
-          def facetsCoverAllDataSets(facetSize: Int, groupedResult: Map[String, Set[DataSet]], result: SearchResult) = facetSize >= groupedResult.size + queryCounter(result.query)
-
           it("for matched facet options") {
-            checkFacetsWithQuery() { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(facetSizeGen = Gen.const(Int.MaxValue)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val outerDataSets = outerResult.dataSets
               val facet = getFacet(outerResult)
 
               val outerGroupedResults = groupResult(outerDataSets)
-              whenever(facetSize >= outerGroupedResults.size + queryCounter(outerResult.query)) {
-                withClue(s"With formats $outerGroupedResults") {
+              whenever(facetSize == Int.MaxValue && outerResult.strategy.get == MatchAll) {
+                withClue(s"With formats ${outerGroupedResults.mapValues(_.size)} and options ${facet.options}") {
                   outerGroupedResults.mapValues(_.size).foreach {
                     case (facetValue, hitCount) ⇒
                       val option = facet.options.find(_.value.equals(facetValue))
@@ -646,14 +644,14 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
           }
 
           it("for unmatched facet options") {
-            checkFacetsWithQuery(textQueryGen(unspecificQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(unspecificQueryGen), facetSizeGen = Gen.const(Int.MaxValue)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 
               searchWithoutFacetFilter(query, facetType, routes, outerResult, allDataSets) { (innerResult, innerDataSets) =>
                 val innerGroupedResult = groupResult(innerDataSets)
 
-                whenever(facetsCoverAllDataSets(facetSize, innerGroupedResult, outerResult)) {
+                whenever(facetSize == Int.MaxValue) {
                   withClue(s"With formats ${getFormats(innerDataSets)}") {
                     innerGroupedResult.mapValues(_.size).foreach {
                       case (facetValue, hitCount) ⇒
