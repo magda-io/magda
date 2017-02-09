@@ -20,17 +20,17 @@ import scala.util.Success
 class RecordsService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[RecordSummary], responseContainer = "List")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "section", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The sections for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have at least one of these sections will be included in the response."),
-    new ApiImplicitParam(name = "sections", required = false, dataType = "string", paramType = "query", value = "The sections for which to retrieve data, specified as a comma-separate list.  Only records that have at least one of these sections will be included in the response.")
+    new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have at least one of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "aspects", required = false, dataType = "string", paramType = "query", value = "The aspects for which to retrieve data, specified as a comma-separate list.  Only records that have at least one of these aspects will be included in the response.")
   ))
-  def getAll = get { pathEnd { parameters('section.*) { getAllWithSections } } }
+  def getAll = get { pathEnd { parameters('aspect.*) { getAllWithAspects } } }
 
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.registry.Record", paramType = "body", value = "The definition of the new record.")
   ))
   @ApiResponses(Array(
-    new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes a section that does not exist.", response = classOf[BadRequest])
+    new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])
   ))
   def create = post { pathEnd { entity(as[Record]) { record =>
     DB localTx { session =>
@@ -43,7 +43,7 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
 
   @Path("/{id}")
   @ApiOperation(value = "Get a record by ID", nickname = "getById", httpMethod = "GET", response = classOf[Record],
-    notes = "Gets a complete record, including data for all sections.")
+    notes = "Gets a complete record, including data for all aspects.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched.")
   ))
@@ -53,7 +53,7 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   def getById = get { path(Segment) { (id: String) => {
     DB readOnly { session =>
       RecordPersistence.getById(session, id) match {
-        case Some(section) => complete(section)
+        case Some(aspect) => complete(aspect)
         case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
       }
     }
@@ -61,7 +61,7 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
 
   @Path("/{id}")
   @ApiOperation(value = "Modify a record by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Record],
-    notes = "Modifies a record.  Sections included in the request are created or updated, but missing sections are not removed.")
+    notes = "Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
     new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.registry.Record", paramType = "body", value = "The record to save.")
@@ -70,7 +70,7 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
     entity(as[Record]) { record =>
       DB localTx { session =>
         RecordPersistence.putRecordById(session, id, record) match {
-          case Success(section) => complete(record)
+          case Success(aspect) => complete(record)
           case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
         }
       }
@@ -78,11 +78,11 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   } } }
 
   @Path("/{id}")
-  @ApiOperation(value = "Modify a record by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[Section],
+  @ApiOperation(value = "Modify a record by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the section to be saved."),
-    new ApiImplicitParam(name = "recordPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the section.")
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
+    new ApiImplicitParam(name = "recordPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect.")
   ))
   def patchById = patch { path(Segment) { (id: String) => {
     entity(as[JsonPatch]) { recordPatch =>
@@ -96,21 +96,21 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   } } }
 
   val route =
-    get { pathEnd { parameter('sections) { sections => getAllWithSections(sections.split(",").map(_.trim)) } } } ~
+    get { pathEnd { parameter('aspects) { aspects => getAllWithAspects(aspects.split(",").map(_.trim)) } } } ~
     getAll ~
     getById ~
     putById ~
     patchById ~
     create ~
-    new RecordSectionsService(system, materializer).route
+    new RecordAspectsService(system, materializer).route
 
-  private def getAllWithSections(sections: Iterable[String]) = {
+  private def getAllWithAspects(aspects: Iterable[String]) = {
     complete {
       DB readOnly { session =>
-        if (sections.isEmpty)
+        if (aspects.isEmpty)
           RecordPersistence.getAll(session)
         else
-          RecordPersistence.getAllWithSections(session, sections)
+          RecordPersistence.getAllWithAspects(session, aspects)
       }
     }
   }

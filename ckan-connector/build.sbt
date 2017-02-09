@@ -1,4 +1,4 @@
-name := "magda-metadata-indexer"
+name := "magda-ckan-connector"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -15,6 +15,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-xml-experimental" % akkaV,
     "com.typesafe.akka" %% "akka-contrib" % akkaV,
     "ch.megard" %% "akka-http-cors" % "0.1.5",
+    "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.3.0",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
     "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
@@ -29,7 +30,7 @@ unmanagedResourceDirectories in Compile ++= {
   if (Option(System.getProperty("excludeMockData")).getOrElse("false").equals("true")) {
     Nil
   } else {
-    List(baseDirectory.value / "mock-data")
+    List(baseDirectory.value / ".." / "indexer" / "mock-data")
   }
 }
 

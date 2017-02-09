@@ -7,7 +7,7 @@ node:
   master: ${NODE_MASTER}
   data: ${NODE_DATA}
 
-network.host: ${NETWORK_HOST}
+network.host: 0.0.0.0
 
 path:
   data: /data/data

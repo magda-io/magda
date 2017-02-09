@@ -46,6 +46,10 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
             s"HTTP method not allowed, supported methods: $names!")
       }
     }
+    .handleAll[MalformedRequestContentRejection] { rejections =>
+      val messages = ("The request content did not have the expected format:" +: rejections.map(_.message)).mkString("\n")
+      complete(StatusCodes.BadRequest, au.csiro.data61.magda.registry.BadRequest(messages))
+    }
     .result()
 
   val myExceptionHandler = ExceptionHandler {
@@ -64,14 +68,22 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
     logLevel = 'DEBUG
   )
 
-  DBs.setupAll()
+  case class DBsWithEnvSpecificConfig(configToUse: Config) extends DBs
+    with TypesafeConfigReader
+    with TypesafeConfig
+    with EnvPrefix {
+
+    override val config = configToUse
+  }
+
+  DBsWithEnvSpecificConfig(config).setupAll()
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
       pathPrefix("api" / "0.1") {
         path("ping") { complete("OK") } ~
-        pathPrefix("sections") { new SectionsService(system, materializer).route } ~
+        pathPrefix("aspects") { new AspectsService(system, materializer).route } ~
         pathPrefix("records") { new RecordsService(system, materializer).route } ~
         new SwaggerDocService("localhost", 9001, system).routes
       } ~
