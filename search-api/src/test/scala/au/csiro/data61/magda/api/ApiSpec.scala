@@ -52,10 +52,9 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
   override def testConfigSource = "akka.loglevel = WARN"
   val INSERTION_WAIT_TIME = 60 seconds
   val logger = Logging(system, getClass)
-  val processors = Math.max(Runtime.getRuntime().availableProcessors(), 4)
-  //      val processors = 1
+  val processors = Math.max(Runtime.getRuntime().availableProcessors(), 2)
   logger.info("Running with {} processors", processors.toString)
-  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(100))
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(20))
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(5 seconds)
 
   val properties = new Properties()
@@ -83,14 +82,13 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
   //      .put("index.refresh_interval", "-1")
   //      .build()
   //
-  //  override lazy val getNode = LocalNode(configureSettings)
 
-  override def blockUntilGreen(): Unit = {
+  def blockUntilNotRed(): Unit = {
     blockUntil("Expected cluster to have green status") { () =>
       val status = client.execute {
         clusterHealth()
       }.await.getStatus
-      status == ClusterHealthStatus.YELLOW
+      status != ClusterHealthStatus.RED
     }
   }
 
@@ -218,7 +216,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
 
     val indexName = fakeIndices.getIndex(config, Indices.DataSetsIndex)
     client.execute(IndexDefinition.datasets.definition(config, fakeIndices).singleReplica().singleShard()).await
-    blockUntilGreen()
+    blockUntilNotRed()
 
     //                implicit val thisConf = configWith(Map(s"elasticsearch.indexes.$rawIndexName.version" -> "1")).withFallback(config)
     val searchQueryer = new ElasticSearchQueryer(fakeIndices)
@@ -531,9 +529,7 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
               val facet = getFacet(outerResult)
 
               val matched = facet.options.filter(_.matched)
-              println(matched.size + "/" + outerResult.strategy)
               whenever(matched.size > 0 && outerResult.strategy.get == MatchAll) {
-                println("I'm in!")
                 matched.foreach { option ⇒
                   val facetDataSets = dataSets.filter(filter(_, option))
 
@@ -576,7 +572,6 @@ class ApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Elastic
               val facet = getFacet(outerResult)
 
               val exactMatchFacets = facet.options.filter(option => option.matched && option.hitCount == 0)
-              println(exactMatchFacets.size)
               whenever(exactMatchFacets.size > 0) {
                 val grouped = groupResult(allDataSets)
 

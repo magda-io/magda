@@ -17,7 +17,7 @@ object MagdaApp extends App {
 
   val logger = Logging(system, getClass)
 
-  logger.info("Starting API in env {}", AppConfig.getEnv)
+  logger.info("Starting API in env {} on port {}", AppConfig.getEnv, config.getString("http.port"))
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])

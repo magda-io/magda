@@ -8,12 +8,12 @@ import com.typesafe.config.ConfigObject
 import au.csiro.data61.magda.model.misc._
 
 trait Indices {
-  def indexVersions(config: Config) = config.getConfig("elasticsearch.indexes").root().map {
+  def indexVersions(config: Config) = config.getConfig("elasticSearch.indices").root().map {
     case (name: String, config: ConfigObject) => name -> config.toConfig.getInt("version")
   }
 
   def getIndex(config: Config, index: Indices.Index): String =
-    (index.name + indexVersions(config).get(index.name).get)
+    (index.name + indexVersions(config)(index.name))
 
   def getType(`type`: Indices.IndexType) = `type`.name
 

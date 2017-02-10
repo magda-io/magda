@@ -5,11 +5,25 @@ metadata:
   name: es
   labels:
     component: elasticsearch
+    role: data
 spec:
   template:
     metadata:
       labels:
         component: elasticsearch
+        role: data
+      annotations:
+        pod.beta.kubernetes.io/init-containers: '[
+          {
+          "name": "sysctl",
+            "image": "busybox",
+            "imagePullPolicy": "IfNotPresent",
+            "command": ["sysctl", "-w", "vm.max_map_count=262144"],
+            "securityContext": {
+              "privileged": true
+            }
+          }
+        ]'
     spec:
       containers:
       - name: es
@@ -23,7 +37,8 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: localhost:5000/data61/elasticsearch-kubernetes:2.4.1
+        image: localhost:5000/data61/elasticsearch-kubernetes:5.0.2
+        imagePullPolicy: Always
         env:
         - name: NAMESPACE
           valueFrom:
@@ -37,10 +52,12 @@ spec:
           value: "true"
         - name: HTTP_ENABLE
           value: "true"
-        - name: ES_HEAP_SIZE
-          value: "1000m"
+        - name: ES_JAVA_OPTS
+          value: "-Xms256m -Xmx256m"
         - name: REPO
           value: "/snapshots"
+        - name: NETWORK_HOST
+          value: 0.0.0.0
         ports:
         - containerPort: 9200
           name: http
