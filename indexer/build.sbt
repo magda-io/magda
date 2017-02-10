@@ -1,3 +1,5 @@
+import DockerSetup._
+
 name := "magda-metadata-indexer"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
@@ -33,23 +35,4 @@ unmanagedResourceDirectories in Compile ++= {
   }
 }
 
-dockerfile in docker := {
-  val appDir: File = stage.value
-  val targetDir = "/app"
-
-  new Dockerfile {
-    from("java")
-    entryPoint(s"$targetDir/bin/${executableScriptName.value}")
-    env("S3_SECRET_KEY", "DUMMY")
-    copy(appDir, targetDir)
-    expose(80)
-  }
-}
-
-imageNames in docker := Seq(
-  ImageName(
-    namespace = Some("localhost:5000/data61"),
-    repository = name.value,
-    tag = Some("latest")
-  )
-)
+setupDocker( stage)

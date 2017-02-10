@@ -1,4 +1,5 @@
 
+
 name := "magda-metadata"
 
 lazy val commonSettings = Seq(
