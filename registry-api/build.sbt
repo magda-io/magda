@@ -22,8 +22,7 @@ libraryDependencies ++= {
     "io.circe" %% "circe-generic" % "0.5.3",
     "io.circe" %% "circe-java8" % "0.5.3",
     "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.9.1",
-    "org.gnieh" %% "diffson-spray-json" % "2.1.2",
-    "org.json4s" % "json4s-jackson_2.11" % "3.5.0"
+    "org.gnieh" %% "diffson-spray-json" % "2.1.2"
   )
 }
 
@@ -50,12 +49,3 @@ imageNames in docker := Seq(
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
-
-val generateRegistryClient = taskKey[Seq[File]]("Generates a client for the registry API from its swagger definition.")
-
-generateRegistryClient in Compile := {
-  val baseDir = baseDirectory.value
-  SwaggerGenerator.generate(baseDir / ".." / "registry-aspects" / "swagger.json", baseDir / "swagger-generated" / "registry-api")
-}
-
-sourceGenerators in Compile += (generateRegistryClient in Compile).taskValue
