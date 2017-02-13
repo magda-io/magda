@@ -32,12 +32,13 @@ case class IndexDefinition(
 object IndexDefinition extends DefaultJsonProtocol {
   val DATASETS_TYPE_NAME = "datasets"
   val REGIONS_TYPE_NAME = "regions"
+ 
 
-  val datasets: IndexDefinition = new IndexDefinition(
+  val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 15,
     definition = (config, indices) =>
-    create.index(indices.getIndex(config, Indices.DataSetsIndex))
+    create.index(dataSets.indexName)
       .indexSetting("recovery.initial_shards", 1)
       .indexSetting("requests.cache.enable", true)
       .mappings(
@@ -81,7 +82,7 @@ object IndexDefinition extends DefaultJsonProtocol {
       name = "regions",
       version = 14,
       definition = (config, indices) =>
-      create.index(indices.getIndex(config, Indices.RegionsIndex))
+      create.index(regions.indexName)
         .indexSetting("recovery.initial_shards", 1)
         .mappings(
           mapping(REGIONS_TYPE_NAME).fields(
@@ -95,7 +96,7 @@ object IndexDefinition extends DefaultJsonProtocol {
       create = Some((client, config, materializer, actorSystem) => setupRegions(client)(config, materializer, actorSystem))
     )
 
-  val indices = Seq(datasets, regions)
+  val indices = Seq(dataSets, regions)
 
   def setupRegions(client: TcpClient)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     val logger = system.log

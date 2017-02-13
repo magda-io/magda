@@ -306,7 +306,7 @@ class ElasticSearchIndexer(
       Future(Unit)
     }
 
-  def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.datasets)).map(_ => Unit)
+  def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.dataSets)).map(_ => Unit)
 
   private def createSnapshot(client: TcpClient, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
     logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
@@ -329,7 +329,7 @@ class ElasticSearchIndexer(
     setupFuture.flatMap(client =>
       retry(() =>
         client.execute {
-          ElasticDsl.search in IndexDefinition.datasets.indexName / IndexDefinition.datasets.name query matchQuery("catalog", source.name) limit 0
+          ElasticDsl.search in IndexDefinition.dataSets.indexName / IndexDefinition.dataSets.name query matchQuery("catalog", source.name) limit 0
         }, 10 seconds, 10, logger.warning("Failed to get dataset count, {} retries left", _))
         .map { result =>
           logger.debug("{} reindex check hit count: {}", source.name, result.getHits.getTotalHits)
@@ -354,7 +354,7 @@ class ElasticSearchIndexer(
   private def buildDatasetIndexDefinition(source: InterfaceConfig, dataSets: Seq[DataSet]): BulkDefinition =
     bulk(
       dataSets.map { dataSet =>
-        val indexDataSet = ElasticDsl.index into IndexDefinition.datasets.indexName / IndexDefinition.datasets.name id dataSet.uniqueId source (
+        val indexDataSet = ElasticDsl.index into IndexDefinition.dataSets.indexName / IndexDefinition.dataSets.name id dataSet.uniqueId source (
           dataSet.copy(
             catalog = source.name,
             years = ElasticSearchIndexer.getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
@@ -362,14 +362,14 @@ class ElasticSearchIndexer(
         )
 
         val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-          ElasticDsl.index into IndexDefinition.datasets.indexName / Publisher.id
+          ElasticDsl.index into IndexDefinition.dataSets.indexName / Publisher.id
             id publisherName.toLowerCase
             source Map("value" -> publisherName).toJson))
 
         val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
           val format = distribution.format.get
 
-          ElasticDsl.index into IndexDefinition.datasets.indexName / Format.id id format.toLowerCase source Map("value" -> format).toJson
+          ElasticDsl.index into IndexDefinition.dataSets.indexName / Format.id id format.toLowerCase source Map("value" -> format).toJson
         }
 
         indexDataSet :: indexPublisher.toList ++ indexFormats
