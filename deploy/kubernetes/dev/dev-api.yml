@@ -62,9 +62,7 @@ spec:
         env:
         - name: SCALA_ENV
           value: dev
-        - name: MAGDA_SEARCH_ROLE
-          value: api
-        image: "data61/magda-metadata:v${version}"
+        image: "data61/magda-search-api:${version}"
         imagePullPolicy: Always
         ports:
         - containerPort: 80

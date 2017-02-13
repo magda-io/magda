@@ -10,17 +10,19 @@ import sbt.TaskKey
 
 object DockerSetup {
   def setupDocker(stage: TaskKey[File], dockerFileMod: Dockerfile => Dockerfile = identity) = {
-    val nameSpacePrefix = Option(System.getProperty("dockerHub")) match {
-      case Some("true") => ""
-      case _            => "localhost:5000/"
+    val dockerHub = Option(System.getProperty("dockerHub")) match {
+      case Some("true") => true
+      case _            => false
     }
+    
+    val nameSpacePrefix = if (dockerHub) "" else "localhost:5000/"
 
     Seq(
       imageNames in docker := Seq(
         ImageName(
           namespace = Some(s"${nameSpacePrefix}data61"),
           repository = name.value,
-          tag = Some("latest")
+          tag = Some(if (dockerHub) version.value else "latest")
         )
       ),
 

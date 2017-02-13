@@ -35,7 +35,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val datasets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 14,
+    version = 15,
     definition = (config, indices) =>
     create.index(indices.getIndex(config, Indices.DataSetsIndex))
       .indexSetting("recovery.initial_shards", 1)
@@ -79,7 +79,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 13,
+      version = 14,
       definition = (config, indices) =>
       create.index(indices.getIndex(config, Indices.RegionsIndex))
         .indexSetting("recovery.initial_shards", 1)

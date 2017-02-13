@@ -74,7 +74,7 @@ spec:
           value: api
         - name: S3_SECRET_KEY
           value: dummy
-        image: "data61/magda-metadata:v${version}"
+        image: "data61/magda-metadata:${version}"
         resources:
           requests:
             cpu: 450m

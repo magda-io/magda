@@ -5,13 +5,11 @@ metadata:
   name: es
   labels:
     component: elasticsearch
-    role: data
 spec:
   template:
     metadata:
       labels:
         component: elasticsearch
-        role: data
       annotations:
         pod.beta.kubernetes.io/init-containers: '[
           {
@@ -37,7 +35,7 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: localhost:5000/data61/elasticsearch-kubernetes:5.0.2
+        image: localhost:5000/data61/elasticsearch-kubernetes:5.2.0
         imagePullPolicy: Always
         env:
         - name: NAMESPACE
