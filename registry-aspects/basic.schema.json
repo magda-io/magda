@@ -8,10 +8,8 @@
       "type": "string"
     },
     "description": {
-      "title": {
-        "title": "Free-text account of the dataset.",
-        "type": "string"
-      }
+      "title": "Free-text account of the dataset.",
+      "type": "string"
     }
   }
 }

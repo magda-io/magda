@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "title": "Aspect for capturing the source of a dataset or distribution",
+  "type": "object",
+  "properties": {
+    "type": {
+      "title": "The type of the source.",
+      "type": "string"
+    },
+    "url": {
+      "title": "The source URL.",
+      "type": "string"
+    }
+  }
+}

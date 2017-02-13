@@ -1,0 +1,533 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "",
+    "version" : "0.1",
+    "title" : "",
+    "termsOfService" : ""
+  },
+  "basePath" : "/api/0.1/",
+  "tags" : [ {
+    "name" : "aspect definitions"
+  }, {
+    "name" : "record aspects"
+  }, {
+    "name" : "records"
+  } ],
+  "schemes" : [ "http" ],
+  "paths" : {
+    "/aspects" : {
+      "get" : {
+        "tags" : [ "aspect definitions" ],
+        "summary" : "Get a list of all aspects",
+        "description" : "",
+        "operationId" : "getAll",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/AspectDefinition"
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "aspect definitions" ],
+        "summary" : "Create a new aspect",
+        "description" : "",
+        "operationId" : "create",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "aspect",
+          "description" : "The definition of the new aspect.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/AspectDefinition"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/AspectDefinition"
+            }
+          }
+        }
+      }
+    },
+    "/aspects/{id}" : {
+      "get" : {
+        "tags" : [ "aspect definitions" ],
+        "summary" : "Get an aspect by ID",
+        "description" : "",
+        "operationId" : "getById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the aspect to be fetched.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/AspectDefinition"
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "aspect definitions" ],
+        "summary" : "Modify an aspect by ID",
+        "description" : "Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.",
+        "operationId" : "putById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the aspect to be saved.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "aspect",
+          "description" : "The aspect to save.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/AspectDefinition"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/AspectDefinition"
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "aspect definitions" ],
+        "summary" : "Modify an aspect by applying a JSON Patch",
+        "description" : "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).",
+        "operationId" : "patchById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the aspect to be saved.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "aspectPatch",
+          "description" : "The RFC 6902 patch to apply to the aspect.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/JsonPatch"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/AspectDefinition"
+            }
+          }
+        }
+      }
+    },
+    "/records/{recordId}/aspects" : {
+      "get" : {
+        "tags" : [ "record aspects" ],
+        "summary" : "Get a list of all aspects of a record",
+        "description" : "",
+        "operationId" : "getAll",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "recordId",
+          "in" : "path",
+          "description" : "ID of the record for which to fetch aspects.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "type" : "object",
+              "additionalProperties" : {
+                "$ref" : "#/definitions/Aspect"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{recordId}/aspects/{aspectId}" : {
+      "get" : {
+        "tags" : [ "record aspects" ],
+        "summary" : "Get a record aspect by ID",
+        "description" : "",
+        "operationId" : "getById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "recordId",
+          "in" : "path",
+          "description" : "ID of the record for which to fetch an aspect.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "aspectId",
+          "in" : "path",
+          "description" : "ID of the aspect to fetch.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Aspect"
+            }
+          },
+          "404" : {
+            "description" : "No record or aspect exists with the given IDs.",
+            "schema" : {
+              "$ref" : "#/definitions/BadRequest"
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "record aspects" ],
+        "summary" : "Modify a record aspect by ID",
+        "description" : "Modifies a record aspect.  If the aspect does not yet exist on this record, it is created.",
+        "operationId" : "putById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "recordId",
+          "in" : "path",
+          "description" : "ID of the record for which to fetch an aspect.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "aspectId",
+          "in" : "path",
+          "description" : "ID of the aspect to fetch.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "aspect",
+          "description" : "The record aspect to save.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Aspect"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Aspect"
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "record aspects" ],
+        "summary" : "Modify a record aspect by applying a JSON Patch",
+        "description" : "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).",
+        "operationId" : "patchById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "recordId",
+          "in" : "path",
+          "description" : "ID of the record for which to fetch an aspect.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "aspectId",
+          "in" : "path",
+          "description" : "ID of the aspect to fetch.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "aspectPatch",
+          "description" : "The RFC 6902 patch to apply to the aspect.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/JsonPatch"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Aspect"
+            }
+          }
+        }
+      }
+    },
+    "/records" : {
+      "get" : {
+        "tags" : [ "records" ],
+        "summary" : "Get a list of all records",
+        "description" : "",
+        "operationId" : "getAll",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "aspect",
+          "in" : "query",
+          "description" : "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have at least one of these aspects will be included in the response.",
+          "required" : false,
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "collectionFormat" : "multi"
+        }, {
+          "name" : "aspects",
+          "in" : "query",
+          "description" : "The aspects for which to retrieve data, specified as a comma-separate list.  Only records that have at least one of these aspects will be included in the response.",
+          "required" : false,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/RecordSummary"
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "records" ],
+        "summary" : "Create a new record",
+        "description" : "",
+        "operationId" : "create",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "record",
+          "description" : "The definition of the new record.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Record"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Record"
+            }
+          },
+          "400" : {
+            "description" : "A record already exists with the supplied ID, or the record includes an aspect that does not exist.",
+            "schema" : {
+              "$ref" : "#/definitions/BadRequest"
+            }
+          }
+        }
+      }
+    },
+    "/records/{id}" : {
+      "get" : {
+        "tags" : [ "records" ],
+        "summary" : "Get a record by ID",
+        "description" : "Gets a complete record, including data for all aspects.",
+        "operationId" : "getById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the record to be fetched.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Record"
+            }
+          },
+          "404" : {
+            "description" : "No record exists with that ID.",
+            "schema" : {
+              "$ref" : "#/definitions/BadRequest"
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "records" ],
+        "summary" : "Modify a record by ID",
+        "description" : "Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.",
+        "operationId" : "putById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the record to be fetched.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "record",
+          "description" : "The record to save.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Record"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/Record"
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "records" ],
+        "summary" : "Modify a record by applying a JSON Patch",
+        "description" : "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).",
+        "operationId" : "patchById",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the aspect to be saved.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "recordPatch",
+          "description" : "The RFC 6902 patch to apply to the aspect.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/JsonPatch"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/AspectDefinition"
+            }
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions" : { },
+  "definitions" : {
+    "AspectDefinition" : {
+      "type" : "object",
+      "required" : [ "id", "name" ],
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "description" : "The unique identifier for the aspect type."
+        },
+        "name" : {
+          "type" : "string",
+          "description" : "The name of the aspect."
+        },
+        "jsonSchema" : {
+          "type" : "object",
+          "description" : "The JSON Schema of this aspect."
+        }
+      },
+      "description" : "A type of aspect in the registry."
+    },
+    "JsonPatch" : {
+      "type" : "object",
+      "required" : [ "ops" ],
+      "properties" : {
+        "ops" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Operation"
+          }
+        }
+      }
+    },
+    "Operation" : {
+      "type" : "object"
+    },
+    "Aspect" : {
+      "type" : "object",
+      "description" : "The JSON data for an aspect of a record.",
+      "additionalProperties": true
+    },
+    "BadRequest" : {
+      "type" : "object",
+      "required" : [ "message" ],
+      "properties" : {
+        "message" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Record" : {
+      "type" : "object",
+      "required" : [ "aspects", "id", "name" ],
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "description" : "The unique identifier of the record"
+        },
+        "name" : {
+          "type" : "string",
+          "description" : "The name of the record"
+        },
+        "aspects" : {
+          "type" : "object",
+          "description" : "The aspects included in this record"
+        }
+      },
+      "description" : "A record in the registry, usually including data for one or more aspects."
+    },
+    "RecordSummary" : {
+      "type" : "object",
+      "required" : [ "aspects", "id", "name" ],
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "description" : "The unique identifier of the record"
+        },
+        "name" : {
+          "type" : "string",
+          "description" : "The name of the record"
+        },
+        "aspects" : {
+          "type" : "array",
+          "description" : "The list of aspect IDs for which this record has data",
+          "items" : {
+            "type" : "string"
+          }
+        }
+      },
+      "description" : "A summary of a record in the registry.  Summaries specify which aspects are available, but do not include data for any aspects."
+    }
+  }
+}
