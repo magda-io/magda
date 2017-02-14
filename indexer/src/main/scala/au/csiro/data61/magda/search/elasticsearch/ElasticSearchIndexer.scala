@@ -189,7 +189,7 @@ class ElasticSearchIndexer(
       case RestoreFailure =>
         deleteIndex(client, definition)
           .flatMap { _ =>
-            client.execute(definition.definition(config, indices))
+            client.execute(definition.definition(None))
           } recover {
             case e: Throwable =>
               logger.error(e, "Failed to set up the index")

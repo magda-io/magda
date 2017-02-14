@@ -40,7 +40,6 @@ import org.scalacheck.Arbitrary._
 import au.csiro.data61.magda.model.temporal.PeriodOfTime
 import au.csiro.data61.magda.search.{ MatchAll, MatchPart }
 import java.util.HashMap
-import au.csiro.data61.magda.test.util.IndexCache
 import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.ElasticDsl
 import org.elasticsearch.cluster.health.ClusterHealthStatus

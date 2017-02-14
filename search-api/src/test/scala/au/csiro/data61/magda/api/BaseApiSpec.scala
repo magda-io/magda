@@ -23,20 +23,31 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.DurationInt
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Consumer
-import au.csiro.data61.magda.test.util.IndexCache
 import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.ElasticDsl
 import org.elasticsearch.cluster.health.ClusterHealthStatus
 import au.csiro.data61.magda.api.model.Protocols
+import org.elasticsearch.index.cache.IndexCache
+import java.util.concurrent.ConcurrentHashMap
 
 class BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with GeneratorDrivenPropertyChecks {
   override def testConfigSource = "akka.loglevel = WARN"
+  val isCi = Option(System.getenv("CI")).map(_.equals("true")).getOrElse(false)
   val INSERTION_WAIT_TIME = 60 seconds
   val logger = Logging(system, getClass)
   val processors = Math.max(Runtime.getRuntime().availableProcessors(), 2)
-  logger.info("Running with {} processors", processors.toString)
-  implicit override val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(20))
+
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    if (isCi) {
+      logger.info("Running with {} processors with minSuccessful={}", processors.toString, 20)
+      PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(20))
+    } else {
+      logger.info("Running with {} processors with minSuccessful={}", processors.toString, 100)
+      PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(100))
+    }
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(5 seconds)
+
+  val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
 
   val properties = new Properties()
   properties.setProperty("regionLoading.cachePath", new File("./src/test/resources").getAbsolutePath())
@@ -169,7 +180,7 @@ class BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
           putDataSetsInIndex(dataSets).await(INSERTION_WAIT_TIME)
         }
 
-        IndexCache.genCache.put(cacheKey, future)
+        genCache.put(cacheKey, future)
         logger.info("Cache miss for {}", cacheKey)
         //        print(IndexCache.genCache.keys())
 
@@ -188,7 +199,7 @@ class BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     else if (size < 100) size - size % 10
     else size - size % 25
     //    val cacheKey = size
-    (cacheKey, Option(IndexCache.genCache.get(cacheKey)))
+    (cacheKey, Option(genCache.get(cacheKey)))
   }
 
   def putDataSetsInIndex(dataSets: List[DataSet]): Future[(String, List[DataSet], Route)] = {
@@ -196,7 +207,7 @@ class BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     val fakeIndices = FakeIndices(rawIndexName)
 
     val indexName = fakeIndices.getIndex(config, Indices.DataSetsIndex)
-    client.execute(IndexDefinition.dataSets.definition(config, fakeIndices).singleReplica().singleShard()).await
+    client.execute(IndexDefinition.dataSets.definition(Some(indexName)).singleReplica().singleShard()).await
     blockUntilNotRed()
 
     //                implicit val thisConf = configWith(Map(s"elasticsearch.indexes.$rawIndexName.version" -> "1")).withFallback(config)
