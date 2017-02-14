@@ -39,10 +39,10 @@ class BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     if (isCi) {
-      logger.info("Running with {} processors with minSuccessful={}", processors.toString, 20)
+      logger.info("Running with {} processors with minSuccessful={}", processors.toString, 100)
       PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(20))
     } else {
-      logger.info("Running with {} processors with minSuccessful={}", processors.toString, 100)
+      logger.info("Running with {} processors with minSuccessful={}", processors.toString, 20)
       PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(100))
     }
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
