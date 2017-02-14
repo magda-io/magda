@@ -1,8 +1,10 @@
+// @flow
+
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 
-export function requestPublishers(generalQuery, facetQuery){
+export function requestPublishers(generalQuery:string, facetQuery:string):Object{
   return {
     type: actionTypes.REQUEST_PUBLISHERS,
     generalQuery,
@@ -10,7 +12,7 @@ export function requestPublishers(generalQuery, facetQuery){
   }
 }
 
-export function receivePublishers(generalQuery, facetQuery, json){
+export function receivePublishers(generalQuery:string, facetQuery:string, json:Object):Object{
   return {
     type: actionTypes.RECEIVE_PUBLISHERS,
     json: json,
@@ -19,7 +21,7 @@ export function receivePublishers(generalQuery, facetQuery, json){
   }
 }
 
-export function fetchPublisherSearchResults(generalQuery, facetQuery) {
+export function fetchPublisherSearchResults(generalQuery:string, facetQuery:string) {
   return (dispatch)=>{
     dispatch(requestPublishers(generalQuery, facetQuery))
     return fetch(config.searchApiBaseUrl + `facets/publisher/options/search?generalQuery=${encodeURIComponent(generalQuery)}&facetQuery=${encodeURIComponent(facetQuery)}`)
