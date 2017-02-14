@@ -37,14 +37,10 @@ class BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   val logger = Logging(system, getClass)
   val processors = Math.max(Runtime.getRuntime().availableProcessors(), 2)
 
+  val minSuccessful = if (isCi) 100 else 20
+  logger.info("Running with {} processors with minSuccessful={}", processors.toString, minSuccessful)
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    if (isCi) {
-      logger.info("Running with {} processors with minSuccessful={}", processors.toString, 100)
-      PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(20))
-    } else {
-      logger.info("Running with {} processors with minSuccessful={}", processors.toString, 20)
-      PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(100))
-    }
+    PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
 
   val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
