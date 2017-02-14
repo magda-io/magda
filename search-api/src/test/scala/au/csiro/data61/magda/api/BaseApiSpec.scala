@@ -45,15 +45,12 @@ class BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
       logger.info("Running with {} processors with minSuccessful={}", processors.toString, 100)
       PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt(100))
     }
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(5 seconds)
+  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
 
   val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
-
-  val properties = new Properties()
-  properties.setProperty("regionLoading.cachePath", new File("./src/test/resources").getAbsolutePath())
-  val generatedConf = configWith(Map("regionLoading.cachePath" -> new File("./src/test/resources").getAbsolutePath()))
-  implicit val config = generatedConf.withFallback(AppConfig.conf(Some("test")))
-  override def testConfig = ConfigFactory.empty()
+  val generatedConf = ConfigFactory.empty() // Can add specific config here.
+  implicit val config = generatedConf.withFallback(AppConfig.conf(Some("local")))
+  override def testConfig = config
 
   implicit object MockClientProvider extends ClientProvider {
     override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient] = Future(client)
