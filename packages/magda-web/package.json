@@ -11,6 +11,7 @@
   "devDependencies": {
     "deep-freeze": "0.0.1",
     "expect": "^1.20.2",
+    "flow-bin": "^0.39.0",
     "npm-run-all": "^4.0.1",
     "react-scripts": "0.7.0",
     "redux-mock-store": "^1.2.1"
@@ -42,6 +43,7 @@
     "redux-thunk": "^2.1.0"
   },
   "scripts": {
+    "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "build-css": "node-sass src/ -o src/",
     "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
     "start": "npm-run-all -p watch-css && react-scripts start",

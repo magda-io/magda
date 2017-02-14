@@ -1,3 +1,4 @@
+// @flow
 // eslint-disable-next-line
 import createLogger from 'redux-logger'
 import './index.css';
@@ -11,10 +12,7 @@ import { Provider } from 'react-redux';
 import search from './reducers/index';
 import { createStore, applyMiddleware} from 'redux';
 
-
 let baseurl = location.pathname;
-
-
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
 
