@@ -11,6 +11,7 @@
   "devDependencies": {
     "deep-freeze": "0.0.1",
     "expect": "^1.20.2",
+    "npm-run-all": "^4.0.1",
     "react-scripts": "0.7.0",
     "redux-mock-store": "^1.2.1"
   },
@@ -30,6 +31,7 @@
     "lodash.min": "^4.0.1",
     "lodash.minby": "^4.6.0",
     "marked": "^0.3.6",
+    "node-sass": "^4.5.0",
     "react": "^15.3.1",
     "react-dom": "^15.3.1",
     "react-redux": "^4.4.6",
@@ -40,8 +42,10 @@
     "redux-thunk": "^2.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build-css": "node-sass src/ -o src/",
+    "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
+    "start": "npm-run-all -p watch-css && react-scripts start",
+    "build": "npm run build-css && react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "deploy": "rm -rf node_modules && npm install && npm run deploy-without-reinstall",

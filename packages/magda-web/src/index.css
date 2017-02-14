@@ -2,56 +2,43 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Source Sans Pro', sans-serif;
-  color: #333333;
-}
+  color: #333333; }
 
-.navbar-header{
-  background: #fff;
-}
+.navbar-header {
+  background: #fff; }
 
-.form-control{
+.form-control {
   border-radius: 2px;
-  box-shadow: none;
-}
+  box-shadow: none; }
 
-.btn-unstyled{
-  background: transparent;
-}
+.btn-unstyled {
+  background: transparent; }
 
-.navbar-brand{
+.navbar-brand {
   padding: 10px 0;
-  height: 80px;
-}
+  height: 80px; }
 
-.logo{
+.logo {
   max-width: 100%;
-  max-height: 100%;
-}
+  max-height: 100%; }
 
-.prototype-warning{
+.prototype-warning {
   background-color: #3498db;
   color: #fff;
   padding: 5px;
-  text-align: center;
-}
+  text-align: center; }
 
-input[type=text].form-control{
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.15)!important;
+input[type=text].form-control {
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.15) !important;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  padding: 10px 15px;
-}
+  padding: 10px 15px; }
 
 @media (max-width: 768px) {
-	body{
-		background: #dcdfe1;
-	}
+  body {
+    background: #dcdfe1; }
   .form-control:focus {
-    border: none;
-  }
-
-  .navbar-brand{
-    padding: 10px 15px;
-  }
-}
+    border: none; }
+  .navbar-brand {
+    padding: 10px 15px; } }
