@@ -4,7 +4,8 @@
   "description": "MAGDA CKAN Connector",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generateSwaggerApis": "bash -c \"rm -rf src/generated/registry && java -jar /c/Users/rin035/github/swagger-codegen/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate -l typescript-node -i http://localhost:6100/api/0.1/api-docs/swagger.json -o src/generated/registry --type-mappings Aspect=any,JsonPatch=any --import-mappings Aspect=none,JsonPatch=none,Operation=none\""
   },
   "author": "",
   "license": "Apache-2.0",
