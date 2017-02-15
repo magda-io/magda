@@ -30,7 +30,7 @@ import au.csiro.data61.magda.api.model.Protocols
 import org.elasticsearch.index.cache.IndexCache
 import java.util.concurrent.ConcurrentHashMap
 
-class BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with GeneratorDrivenPropertyChecks {
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with GeneratorDrivenPropertyChecks {
   override def testConfigSource = "akka.loglevel = WARN"
   val isCi = Option(System.getenv("CI")).map(_.equals("true")).getOrElse(false)
   val INSERTION_WAIT_TIME = 60 seconds

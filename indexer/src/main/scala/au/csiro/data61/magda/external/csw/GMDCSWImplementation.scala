@@ -35,7 +35,8 @@ import java.time.ZoneOffset
 
 class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config: Config, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   implicit val logger = Logging(system, getClass)
-  
+  override def typeName = "gmd:MD_Metadata"
+
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
   override def schema = "http://www.isotc211.org/2005/gmd"
@@ -86,7 +87,7 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config
           distNodes = summaryRecord \ "distributionInfo" \ "MD_Distribution" \ "transferOptions" \ "MD_DigitalTransferOptions"
             \ "onLine" \ "CI_OnlineResource"
         ),
-        landingPage = Some(interfaceConfig.landingPageUrl(identifier))
+        landingPage = interfaceConfig.landingPageUrl(identifier)
       )
     }, (e, input) => {
       logger.error("Failed to parse a dataset from {}", input.toString)
