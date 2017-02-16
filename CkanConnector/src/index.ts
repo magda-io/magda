@@ -1,53 +1,94 @@
-import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api'
-import { Observable } from 'rx'
-import retry from './retry'
+import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api';
+import { Observable } from 'rx';
+import retry from './retry';
+import Ckan from './Ckan';
+import CkanConnector from './CkanConnector';
+import Registry from './Registry';
 
-const aspectDefinitions = [
+const ckan = new Ckan({
+    baseUrl: 'https://data.gov.au/'
+});
+
+const registry = new Registry({
+    baseUrl: 'http://localhost:6100/'
+});
+
+const aspectBuilders = [
     {
-        id: 'basic',
-        name: 'Basic Information',
-        jsonSchema: require('../../registry-aspects/basic.schema.json')
+        aspectDefinition: {
+            id: 'basic',
+            name: 'Basic Information',
+            jsonSchema: require('../../registry-aspects/basic.schema.json')
+        },
+        template: ''
     },
     {
-        id: 'source',
-        name: 'Source',
-        jsonSchema: require('../../registry-aspects/source.schema.json')
+        aspectDefinition: {
+            id: 'source',
+            name: 'Source',
+            jsonSchema: require('../../registry-aspects/source.schema.json')
+        },
+        template: ''
     }
 ];
 
-function createAspectDefinitions(aspectDefinitions: AspectDefinition[]) {
-    const api = new AspectDefinitionsApi("http://localhost:6100/api/0.1");
+const connector = new CkanConnector({
+    ckan: ckan,
+    registry: registry,
+    aspectBuilders: aspectBuilders
+});
 
-    const aspectDefinitionSource = Observable.from(aspectDefinitions).controlled();
+connector.run();
 
-    const promise = aspectDefinitionSource.flatMap(aspectDefinition => {
-        return api.putById(aspectDefinition.id, aspectDefinition).then(result => {
-            aspectDefinitionSource.request(1);
-            return result;
-        }).catch(e => {
-            aspectDefinitionSource.request(1);
-            throw e;
-        });
-    }).toArray().toPromise();
+//const registry = new Registry();
+//ckan.packageSearch().forEach(dataset => { console.log(dataset.name); })
 
-    // Create up to 6 aspect definitions at a time.
-    aspectDefinitionSource.request(6);
+// const aspectDefinitions = [
+//     {
+//         id: 'basic',
+//         name: 'Basic Information',
+//         jsonSchema: require('../../registry-aspects/basic.schema.json')
+//     },
+//     {
+//         id: 'source',
+//         name: 'Source',
+//         jsonSchema: require('../../registry-aspects/source.schema.json')
+//     }
+// ];
 
-    return promise;
-}
+// function createAspectDefinitions(aspectDefinitions: AspectDefinition[]) {
+//     const api = new AspectDefinitionsApi("http://localhost:6100/api/0.1");
 
-retry(
-    () => createAspectDefinitions(aspectDefinitions),
-    2, 2,
-    (e, retriesLeft) => {
-        if (e.response && e.response.statusCode && e.body) {
-            console.log(`Failed to create aspect definition, ${retriesLeft} retries left.  Status code: ${e.response.statusCode}, body:\n${JSON.stringify(e.body, null, '  ')}`);
-        } else {
-            console.log(`Failed to create aspect definition, ${retriesLeft} retries left.  Exception:\n${e.toString()}`);
-        }        
-    }
-).then(createdAspects => {
-    console.log(createdAspects);
-}).catch(e => {
-    console.log('Failed to create ' + JSON.stringify(e));
-})
+//     const aspectDefinitionSource = Observable.from(aspectDefinitions).controlled();
+
+//     const promise = aspectDefinitionSource.flatMap(aspectDefinition => {
+//         return api.putById(aspectDefinition.id, aspectDefinition).then(result => {
+//             aspectDefinitionSource.request(1);
+//             return result;
+//         }).catch(e => {
+//             aspectDefinitionSource.request(1);
+//             throw e;
+//         });
+//     }).toArray().toPromise();
+
+//     // Create up to 6 aspect definitions at a time.
+//     aspectDefinitionSource.request(6);
+
+//     return promise;
+// }
+
+// retry(
+//     () => createAspectDefinitions(aspectDefinitions),
+//     2, 2,
+//     (e, retriesLeft) => {
+//         if (e.response && e.response.statusCode && e.body) {
+//             console.log(`Failed to create aspect definition, ${retriesLeft} retries left.  Status code: ${e.response.statusCode}, body:\n${JSON.stringify(e.body, null, '  ')}`);
+//         } else {
+//             console.log(`Failed to create aspect definition, ${retriesLeft} retries left.  Exception:\n${e.toString()}`);
+//         }        
+//     }
+// ).then(createdAspects => {
+//     console.log(createdAspects);
+// }).catch(e => {
+//     console.log('Failed to create ' + JSON.stringify(e));
+// })
