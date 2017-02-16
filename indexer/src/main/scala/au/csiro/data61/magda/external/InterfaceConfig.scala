@@ -7,6 +7,7 @@ import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType
 import au.csiro.data61.magda.external.ExternalInterface.ExternalInterfaceType._
 import com.typesafe.config.ConfigObject
 import com.typesafe.config.ConfigValue
+import com.typesafe.config.ConfigException
 
 case class InterfaceConfig(
   name: String,
@@ -49,6 +50,12 @@ object InterfaceConfig {
 
   def all(implicit config: Config) = config.getConfig("indexedServices").root().map {
     case (name: String, serviceConfig: ConfigValue) =>
-      InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)
+      try {
+        InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)
+      } catch {
+        case (e: ConfigException) =>
+          throw new RuntimeException(s"Problem with $name", e)
+      }
+
   }.toSeq
 }

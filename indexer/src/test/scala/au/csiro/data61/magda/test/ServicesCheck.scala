@@ -34,6 +34,8 @@ class ServicesCheck extends TestKit(ActorSystem("MySpec")) with FlatSpecLike wit
         val lastDataSet = interface.getDataSets(totalDataSetCount - 1, 1).await
 
         firstDataSet.head.title.isEmpty should not be true
+
+        println(firstDataSet.head.landingPage)
       }
   }
 

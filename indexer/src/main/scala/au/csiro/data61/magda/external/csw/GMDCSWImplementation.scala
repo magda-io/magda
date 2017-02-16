@@ -33,6 +33,8 @@ import java.time.OffsetDateTime
 import com.typesafe.config.Config
 import java.time.ZoneOffset
 
+import scala.util.control.Exception
+
 class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config: Config, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   implicit val logger = Logging(system, getClass)
   override def typeName = "gmd:MD_Metadata"
@@ -58,6 +60,7 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config
       val modifiedDate = parseDateFromNode(findDateWithType(dates, "revision") \ "date" \ "DateTime").orElse(publicationDate)
 
       val extent = identification \ "extent" \ "EX_Extent"
+      val distNodes = summaryRecord \ "distributionInfo" \ "MD_Distribution" \ "transferOptions" \ "MD_DigitalTransferOptions" \ "onLine" \ "CI_OnlineResource"
 
       DataSet(
         identifier = identifier,
@@ -84,10 +87,20 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config
           .map(nodeSeq => buildAgent(true)(nodeSeq.head)),
         distributions = buildDistributions(
           constraintNodes = identification \ "resourceConstraints",
-          distNodes = summaryRecord \ "distributionInfo" \ "MD_Distribution" \ "transferOptions" \ "MD_DigitalTransferOptions"
-            \ "onLine" \ "CI_OnlineResource"
+          distNodes = distNodes
         ),
-        landingPage = interfaceConfig.landingPageUrl(identifier)
+        landingPage = {
+          val onlineResources = distNodes.filter(distNode =>
+            nodeToStringOption(distNode \ "description" \ "CharacterString")
+              .map(_.equals("Point of truth URL of this metadata record"))
+              .getOrElse(false)
+          ).map(distNode => nodeToStringOption(distNode \ "linkage" \ "URL")).flatten
+
+          onlineResources match {
+            case Seq()     => interfaceConfig.landingPageUrl(identifier)
+            case populated => populated.headOption
+          }
+        }
       )
     }, (e, input) => {
       logger.error("Failed to parse a dataset from {}", input.toString)
@@ -189,13 +202,15 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config
       case boundingBoxList =>
         val geometry = Location.fromBoundingBox(boundingBoxList
           .map { boundingBox =>
-            val north = BigDecimal(boundingBox \ "northBoundLatitude" \ "Decimal" text)
-            val east = BigDecimal(boundingBox \ "eastBoundLongitude" \ "Decimal" text)
-            val south = BigDecimal(boundingBox \ "southBoundLatitude" \ "Decimal" text)
-            val west = BigDecimal(boundingBox \ "westBoundLongitude" \ "Decimal" text)
+            Exception.catching(classOf[NumberFormatException]).opt {
+              val north = BigDecimal(boundingBox \ "northBoundLatitude" \ "Decimal" text)
+              val east = BigDecimal(boundingBox \ "eastBoundLongitude" \ "Decimal" text)
+              val south = BigDecimal(boundingBox \ "southBoundLatitude" \ "Decimal" text)
+              val west = BigDecimal(boundingBox \ "westBoundLongitude" \ "Decimal" text)
 
-            BoundingBox(north, east, south, west)
-          }
+              BoundingBox(north, east, south, west)
+            }
+          }.flatten
         )
 
         Some(Location(

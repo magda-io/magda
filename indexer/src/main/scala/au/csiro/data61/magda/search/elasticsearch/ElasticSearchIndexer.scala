@@ -21,7 +21,7 @@ import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.snapshots.SnapshotInfo
 import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
-import org.elasticsearch.action.bulk.{BulkResponse}
+import org.elasticsearch.action.bulk.{ BulkResponse }
 import com.sksamuel.elastic4s.bulk.BulkDefinition
 import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.ElasticDsl
@@ -54,28 +54,35 @@ class ElasticSearchIndexer(
   implicit val scheduler = system.scheduler
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
-  private lazy val indexQueue: SourceQueue[(InterfaceConfig, Seq[DataSet], Promise[RichBulkResponse])] =
-    Source.queue[(InterfaceConfig, Seq[DataSet], Promise[RichBulkResponse])](Int.MaxValue, OverflowStrategy.backpressure)
+  private lazy val indexQueue: SourceQueue[(InterfaceConfig, Seq[DataSet], Promise[Unit])] =
+    Source.queue[(InterfaceConfig, Seq[DataSet], Promise[Unit])](Int.MaxValue, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (source, dataSets, promise) =>
-          bulkIndex(buildDatasetIndexDefinition(source, dataSets))
+          val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index from {}, retrying", source.name, e)
+
+          retry(() => bulkIndex(buildDatasetIndexDefinition(source, dataSets)), 30 seconds, 4, onRetry)
             .map((source, dataSets, promise, _))
+            .recover {
+              case e: Throwable =>
+                promise.failure(e)
+                throw e
+            }
       }
       .map {
         case (source, dataSets, promise, result) =>
           if (result.hasFailures) {
             logger.warning("Failure when indexing from {}: {}", source.name, result.failureMessage)
 
-            reindexSpatialFails(source, dataSets, result.failures)
+            reindexSpatialFails(source, dataSets, result.failures, promise)
           } else {
             logger.info("Indexed {} datasets from {}", dataSets.length, source.name)
+            promise.success(result)
           }
-
-          promise.success(result)
       }
       .recover {
         case e: Throwable =>
           logger.error(e, "Error when indexing: {}", e.getMessage)
+          throw e
       }
       .to(Sink.last)
       .run()
@@ -117,7 +124,7 @@ class ElasticSearchIndexer(
   /** Initialises an {@link TcpClient}, handling initial connection to the ElasticSearch server and creation of the indices */
   private def setup(): Future[TcpClient] = {
     clientProvider.getClient(system.scheduler, logger, ec).flatMap(client =>
-      retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.warning("Failed to get indexes, {} retries left", _))
+      retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.error("Failed to get indexes, {} retries left", _, _))
         .flatMap { indexPairs =>
           updateIndices(client, indexPairs)
             .map { _ =>
@@ -128,7 +135,7 @@ class ElasticSearchIndexer(
     )
   }
 
-  private def reindexSpatialFails(source: InterfaceConfig, dataSets: Seq[DataSet], failures: Seq[RichBulkItemResponse]) = {
+  private def reindexSpatialFails(source: InterfaceConfig, dataSets: Seq[DataSet], failures: Seq[RichBulkItemResponse], promise: Promise[Unit]) = {
     val dataSetLookup = dataSets.groupBy(_.identifier).mapValues(_.head)
     val geoFails = failures
       .filter(_.failureMessage.contains("failed to parse [spatial.geoJson]"))
@@ -138,7 +145,9 @@ class ElasticSearchIndexer(
 
     if (geoFails.length > 0) {
       logger.info("Determined that {} datasets were excluded due to bad geojson - trying these again with spatial.geoJson excluded", geoFails.length)
-      index(source, geoFails.toList)
+      index(source, geoFails.toList, promise)
+    } else {
+      promise.failure(new Exception(s"Had failures other than geoJson parse: ${failures.map(_.failureMessage).mkString("\n")}"))
     }
   }
 
@@ -288,11 +297,12 @@ class ElasticSearchIndexer(
     }
   }
 
-  override def index(source: InterfaceConfig, dataSets: List[DataSet]) =
+  override def index(source: InterfaceConfig, dataSets: List[DataSet]) = index(source, dataSets, Promise[Unit]())
+
+  def index(source: InterfaceConfig, dataSets: List[DataSet], promise: Promise[Unit]) = {
     // TODO: Check for empty identifier strings.
-    
+
     if (dataSets.length > 0) {
-      val promise = Promise[RichBulkResponse]()
       indexQueue.offer((source, dataSets, promise))
         .map {
           case QueueOfferResult.Enqueued    => QueueOfferResult.Enqueued
@@ -300,11 +310,12 @@ class ElasticSearchIndexer(
           case QueueOfferResult.QueueClosed => throw new Exception("Queue Closed")
           case QueueOfferResult.Failure(e)  => throw e
         }
-
-      promise.future
     } else {
-      Future(Unit)
+      promise.success(Unit)
     }
+
+    promise.future
+  }
 
   def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.dataSets)).map(_ => Unit)
 
@@ -330,7 +341,7 @@ class ElasticSearchIndexer(
       retry(() =>
         client.execute {
           ElasticDsl.search in IndexDefinition.dataSets.indexName / IndexDefinition.dataSets.name query matchQuery("catalog", source.name) limit 0
-        }, 10 seconds, 10, logger.warning("Failed to get dataset count, {} retries left", _))
+        }, 10 seconds, 10, logger.error("Failed to get dataset count, {} retries left", _, _))
         .map { result =>
           logger.debug("{} reindex check hit count: {}", source.name, result.getHits.getTotalHits)
           result.getHits.getTotalHits == 0

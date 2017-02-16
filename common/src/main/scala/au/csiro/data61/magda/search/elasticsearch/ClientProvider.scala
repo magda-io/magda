@@ -4,10 +4,10 @@ import akka.actor.Scheduler
 import akka.event.LoggingAdapter
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.util.ErrorHandling.retry
-import com.sksamuel.elastic4s.{TcpClient, ElasticsearchClientUri}
+import com.sksamuel.elastic4s.{ TcpClient, ElasticsearchClientUri }
 import org.elasticsearch.common.settings.Settings
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 
 trait ClientProvider {
@@ -25,7 +25,7 @@ class DefaultClientProvider extends ClientProvider {
           val uri = ElasticsearchClientUri(AppConfig.conf().getString("elasticSearch.serverUrl"))
           val settings = Settings.builder().put("cluster.name", "myesdb").build()
           TcpClient.transport(settings, uri)
-        }, 10 seconds, 10, onRetry(logger)(_))
+        }, 10 seconds, 10, onRetry(logger))
           .map { client =>
             logger.info("Successfully connected to elasticsearch client")
             client
@@ -39,5 +39,5 @@ class DefaultClientProvider extends ClientProvider {
     outerFuture
   }
 
-  private def onRetry(logger: LoggingAdapter)(retriesLeft: Int) = logger.warning("Failed to make initial contact with ES server, {} retries left", retriesLeft)
+  private def onRetry(logger: LoggingAdapter)(retriesLeft: Int, error: Throwable) = logger.error("Failed to make initial contact with ES server, {} retries left", retriesLeft, error)
 }

@@ -34,7 +34,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 15,
+    version = 16,
     definition = (overrideIndexName) =>
       create.index(overrideIndexName.getOrElse(dataSets.indexName))
         .indexSetting("recovery.initial_shards", 1)
