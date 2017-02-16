@@ -30,7 +30,7 @@ const aspectBuilders = [
             name: 'Source',
             jsonSchema: require('../../registry-aspects/source.schema.json')
         },
-        template: 'return {}'
+        template: fs.readFileSync('aspect-templates/source.js', 'utf8')
     }
 ];
 

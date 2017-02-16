@@ -43,7 +43,7 @@ export default class CkanConnector {
     run(): IPromise<any> {
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
-            template: new Function('dataset', builder.template)
+            template: new Function('dataset', 'source', builder.template)
         }));
 
         return this.createAspectDefinitions().then(() => this.createRecords(templates));
@@ -62,7 +62,7 @@ export default class CkanConnector {
     private datasetToRecord(templates: CompiledAspect[], dataset: CkanDataset): Record {
         const aspects = {};
         templates.forEach(aspect => {
-            aspects[aspect.id] = aspect.template(dataset);
+            aspects[aspect.id] = aspect.template(dataset, this.ckan);
         });
 
         return {

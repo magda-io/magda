@@ -22,8 +22,8 @@ export interface CkanPackageSearchResult {
 }
 
 export default class Ckan {
-    private baseUrl: uri.URI;
-    private pageSize: number;
+    public readonly baseUrl: uri.URI;
+    public readonly pageSize: number;
 
     constructor({
         baseUrl,
