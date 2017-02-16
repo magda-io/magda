@@ -1,6 +1,8 @@
-import { Observable } from 'rx'
-import * as URI from 'urijs'
-import * as request from 'request'
+import { Observable } from 'rx';
+import * as URI from 'urijs';
+import * as request from 'request';
+import retry from './retry';
+import formatServiceError from './formatServiceError';
 
 export interface CkanDataset {
     id: string;
@@ -63,7 +65,7 @@ export default class Ckan {
         pageUrl.addSearch('start', startIndex);
         pageUrl.addSearch('rows', this.pageSize);
 
-        const promise = new Promise<CkanPackageSearchResponse>((resolve, reject) => {
+        const operation = () => new Promise<CkanPackageSearchResponse>((resolve, reject) => {
             request(pageUrl.toString(), { json: true }, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -72,6 +74,8 @@ export default class Ckan {
                 resolve(body);
             });
         });
+
+        const promise = retry(operation, 10, 10, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
 
         return Observable.fromPromise(promise);
     }
