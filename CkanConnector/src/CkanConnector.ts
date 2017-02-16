@@ -2,7 +2,6 @@ import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/regi
 import { Observable, IPromise } from 'rx';
 import Ckan, { CkanDataset } from './Ckan';
 import Registry from './Registry';
-import * as Handlebars from 'handlebars';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
