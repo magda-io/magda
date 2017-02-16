@@ -47,7 +47,6 @@ const results = (state=initialData, action) => {
       })
 
     case 'FETCH_ERROR':
-      console.log(action);
       return Object.assign({}, state, {
         isFetching: false,
         hasError: true,

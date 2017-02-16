@@ -1,10 +1,13 @@
+// @flow 
+import type { Action, FacetSearchState } from '../types';
+
 const initialData = {
   isFetching: false,
   facetQuery: '',
   data: []
 }
 
-const facetRegionSearch = (state=initialData, action) => {
+const facetRegionSearch = (state: FacetSearchState =initialData, action: Action) => {
   switch (action.type) {
     case 'REQUEST_REGIONS':
       return Object.assign({}, state, {
@@ -13,8 +16,8 @@ const facetRegionSearch = (state=initialData, action) => {
     case 'RECEIVE_REGIONS':
       return Object.assign({}, state, {
         isFetching: false,
-        data: action.json.regions,
-        query: action.query
+        data: (action.json && action.json.options) && action.json.options,
+        facetQuery: action.facetQuery && action.facetQuery
       })
     default:
       return state

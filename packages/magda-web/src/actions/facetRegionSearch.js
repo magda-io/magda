@@ -1,29 +1,32 @@
+// @flow
+
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
+import type { Action, JsonData } from '../types';
 
-export function requestRegions(query){
+export function requestRegions(facetQuery: string ): Action{
   return {
     type: actionTypes.REQUEST_REGIONS,
-    query
+    facetQuery
   }
 }
 
-export function receiveRegions(query, json){
+export function receiveRegions(facetQuery: string , json: Object ): Action{
   return {
     type: actionTypes.RECEIVE_REGIONS,
     json: json,
-    query
+    facetQuery
   }
 }
 
-export function fetchRegionSearchResults(query) {
-  return (dispatch)=>{
-    dispatch(requestRegions(query))
-    return fetch(config.searchApiBaseUrl + `regions/search?query=${query}`)
+export function fetchRegionSearchResults(facetQuery: string ) {
+  return (dispatch: Function)=>{
+    dispatch(requestRegions(facetQuery))
+    return fetch(config.searchApiBaseUrl + `regions/search?query=${facetQuery}`)
     .then(response => response.json())
-    .then(json =>
-      dispatch(receiveRegions(query, json))
+    .then((json: JsonData) =>
+      dispatch(receiveRegions(facetQuery, json))
     )
   }
 }

@@ -3,8 +3,9 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
+import type { Action, JsonData } from '../types';
 
-export function requestFormats(generalQuery: string, facetQuery: string):Object {
+export function requestFormats(generalQuery: string, facetQuery: string):Action {
   return {
     type: actionTypes.REQUEST_FORMATS,
     generalQuery,
@@ -12,7 +13,7 @@ export function requestFormats(generalQuery: string, facetQuery: string):Object 
   }
 }
 
-export function receiveFormats(generalQuery: string, facetQuery: string, json: Object): Object {
+export function receiveFormats(generalQuery: string, facetQuery: string, json: Object): Action {
   return {
     type: actionTypes.RECEIVE_FORMATS,
     json: json,
@@ -22,12 +23,13 @@ export function receiveFormats(generalQuery: string, facetQuery: string, json: O
 }
 
 export function fetchFormatSearchResults(generalQuery: string, facetQuery: string):Object{
-  return (dispatch)=>{
+  return (dispatch: Function)=>{
     dispatch(requestFormats(generalQuery, facetQuery))
-    console.log(config.searchApiBaseUrl + `facets/format/options/search?generalQuery=${encodeURIComponent(generalQuery)}&facetQuery=${encodeURIComponent(facetQuery)}`);
-    return fetch(config.searchApiBaseUrl + `facets/format/options/search?generalQuery=${encodeURIComponent(generalQuery)}&facetQuery=${encodeURIComponent(facetQuery)}`)
+    let url : string = config.searchApiBaseUrl + `facets/format/options/search?generalQuery=${encodeURIComponent(generalQuery)}&facetQuery=${encodeURIComponent(facetQuery)}`
+    console.log(url);
+    return fetch(url)
     .then(response => response.json())
-    .then(json =>
+    .then((json: JsonData) =>
       dispatch(receiveFormats(generalQuery, facetQuery, json))
     )
   }

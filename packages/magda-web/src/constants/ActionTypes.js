@@ -25,6 +25,4 @@ const actionTypes = {
   RECEIVE_REGION_MAPPING : 'RECEIVE_REGION_MAPPING'
 }
 
-
-
  export{actionTypes}
