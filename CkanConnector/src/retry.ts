@@ -1,6 +1,6 @@
 import runLater from './runLater';
 
-export default function retry<T>(op: () => PromiseLike<T>, delaySeconds: number, retries: number, onRetry: (any, number) => any): Promise<T> {
+export default function retry<T>(op: () => PromiseLike<T>, delaySeconds: number, retries: number, onRetry: (e: any, retries: number) => any): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         resolve(op().then(result => result, e => {
             if (retries > 0) {

@@ -1,6 +1,8 @@
 import { AspectDefinition, AspectDefinitionsApi, Record, RecordsApi } from './generated/registry/api';
-import * as URI from 'urijs'
+import * as URI from 'urijs';
 import { Observable, IPromise } from 'rx';
+import retry from './retry';
+import formatServiceError from './formatServiceError';
 
 export default class Registry {
     private baseUrl: uri.URI;
@@ -17,18 +19,19 @@ export default class Registry {
         this.recordsApi = new RecordsApi(registryApiUrl);
     }
 
-    putAspectDefinitions(aspectDefinitions: AspectDefinition[]): IPromise<any> {
+    putAspectDefinitions(aspectDefinitions: AspectDefinition[]): Promise<any> {
         const aspectDefinitionSource = Observable.fromArray(aspectDefinitions).controlled();
 
         const promise = aspectDefinitionSource.flatMap(aspectDefinition => {
-            return this.aspectDefinitionsApi.putById(aspectDefinition.id, aspectDefinition).then(result => {
+            const operation = () => this.aspectDefinitionsApi.putById(aspectDefinition.id, aspectDefinition).then(result => {
                 aspectDefinitionSource.request(1);
                 return result;
             }).catch(e => {
                 aspectDefinitionSource.request(1);
                 throw e;
             });
-        }).toArray().toPromise();
+            return retry(operation, 10, 10, (e, retriesLeft) => console.log(formatServiceError(`Failed to create aspect definition "${aspectDefinition.id}".`, e, retriesLeft)));
+        }).toArray().toPromise(Promise);
 
         // Create up to 6 aspect definitions at a time.
         aspectDefinitionSource.request(6);
@@ -40,13 +43,14 @@ export default class Registry {
         const recordsSource = records.controlled();
 
         const promise = recordsSource.flatMap(record => {
-            return this.recordsApi.putById(record.id, record).then(result => {
+            const operation = () => this.recordsApi.putById(record.id, record).then(result => {
                 recordsSource.request(1);
                 return result;
             }).catch(e => {
                 recordsSource.request(1);
                 throw e;
-            })
+            });
+            return retry(operation, 10, 10, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry record with ID "${record.id}".`, e, retriesLeft)));
         }).toPromise();
 
         recordsSource.request(6);
