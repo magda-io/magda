@@ -7,5 +7,6 @@
         "allowJs": true,
         "alwaysStrict": true,
         "outDir": "bin"
-    }
+    },
+    "exclude": ["aspect-templates", "node_modules", "bin"]
 }

@@ -4,9 +4,11 @@ import retry from './retry';
 import Ckan from './Ckan';
 import CkanConnector from './CkanConnector';
 import Registry from './Registry';
+import * as fs from 'fs';
 
 const ckan = new Ckan({
-    baseUrl: 'https://data.gov.au/'
+    baseUrl: 'https://data.gov.au/',
+    pageSize: 10
 });
 
 const registry = new Registry({
@@ -20,7 +22,7 @@ const aspectBuilders = [
             name: 'Basic Information',
             jsonSchema: require('../../registry-aspects/basic.schema.json')
         },
-        template: ''
+        template: fs.readFileSync('aspect-templates/basic.js', 'utf8')
     },
     {
         aspectDefinition: {
@@ -28,7 +30,7 @@ const aspectBuilders = [
             name: 'Source',
             jsonSchema: require('../../registry-aspects/source.schema.json')
         },
-        template: ''
+        template: 'return {}'
     }
 ];
 

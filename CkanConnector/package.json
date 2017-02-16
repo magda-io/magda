@@ -11,6 +11,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/bluebird": "^3.0.37",
+    "@types/handlebars": "^4.0.31",
     "@types/node": "^7.0.5",
     "@types/request": "0.0.39",
     "typescript": "^2.1.6"

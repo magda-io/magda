@@ -2,6 +2,7 @@ import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/regi
 import { Observable, IPromise } from 'rx';
 import Ckan, { CkanDataset } from './Ckan';
 import Registry from './Registry';
+import * as Handlebars from 'handlebars';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
@@ -13,6 +14,11 @@ export interface CkanConnectorOptions {
     registry: Registry,
     aspectBuilders?: AspectBuilder[],
     ignoreHarvestSources?: string[]
+}
+
+interface CompiledAspect {
+    id: string,
+    template: Function
 }
 
 export default class CkanConnector {
@@ -35,24 +41,34 @@ export default class CkanConnector {
     }
 
     run(): IPromise<any> {
-        return this.createAspectDefinitions().then(() => this.createRecords());
+        const templates = this.aspectBuilders.map(builder => ({
+            id: builder.aspectDefinition.id,
+            template: new Function('dataset', builder.template)
+        }));
+
+        return this.createAspectDefinitions().then(() => this.createRecords(templates));
     }
 
     private createAspectDefinitions() {
         return this.registry.putAspectDefinitions(this.aspectBuilders.map(builder => builder.aspectDefinition));
     }
 
-    private createRecords() {
-        const datasets = this.ckan.packageSearch(this.ignoreHarvestSources);
-        const records = datasets.map(dataset => this.datasetToRecord(dataset));
+    private createRecords(templates: CompiledAspect[]) {
+        const datasets = this.ckan.packageSearch(this.ignoreHarvestSources).take(10);
+        const records = datasets.map(dataset => this.datasetToRecord(templates, dataset));
         return this.registry.putRecords(records);
     }
 
-    private datasetToRecord(dataset: CkanDataset): Record {
+    private datasetToRecord(templates: CompiledAspect[], dataset: CkanDataset): Record {
+        const aspects = {};
+        templates.forEach(aspect => {
+            aspects[aspect.id] = aspect.template(dataset);
+        });
+
         return {
             id: dataset.id,
             name: dataset.title || dataset.name,
-            aspects: {}
+            aspects: aspects
         };
     }
 }
