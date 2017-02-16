@@ -6,7 +6,7 @@ import * as Handlebars from 'handlebars';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
-    template: string
+    builderFunctionString: string
 }
 
 export interface CkanConnectorOptions {
@@ -18,7 +18,7 @@ export interface CkanConnectorOptions {
 
 interface CompiledAspect {
     id: string,
-    template: Function
+    builderFunction: Function
 }
 
 export default class CkanConnector {
@@ -43,7 +43,7 @@ export default class CkanConnector {
     run(): IPromise<any> {
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
-            template: new Function('dataset', 'source', builder.template)
+            builderFunction: new Function('dataset', 'source', builder.builderFunctionString)
         }));
 
         return this.createAspectDefinitions().then(() => this.createRecords(templates));
@@ -62,7 +62,7 @@ export default class CkanConnector {
     private datasetToRecord(templates: CompiledAspect[], dataset: CkanDataset): Record {
         const aspects = {};
         templates.forEach(aspect => {
-            aspects[aspect.id] = aspect.template(dataset, this.ckan);
+            aspects[aspect.id] = aspect.builderFunction(dataset, this.ckan);
         });
 
         return {

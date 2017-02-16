@@ -2,7 +2,7 @@ import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api
 import { Observable } from 'rx';
 import retry from './retry';
 import Ckan from './Ckan';
-import CkanConnector from './CkanConnector';
+import CkanConnector, { AspectBuilder } from './CkanConnector';
 import Registry from './Registry';
 import * as fs from 'fs';
 
@@ -15,14 +15,14 @@ const registry = new Registry({
     baseUrl: 'http://localhost:6100/'
 });
 
-const aspectBuilders = [
+const aspectBuilders: AspectBuilder[] = [
     {
         aspectDefinition: {
             id: 'basic',
             name: 'Basic Information',
             jsonSchema: require('../../registry-aspects/basic.schema.json')
         },
-        template: fs.readFileSync('aspect-templates/basic.js', 'utf8')
+        builderFunctionString: fs.readFileSync('aspect-templates/basic.js', 'utf8')
     },
     {
         aspectDefinition: {
@@ -30,7 +30,7 @@ const aspectBuilders = [
             name: 'Source',
             jsonSchema: require('../../registry-aspects/source.schema.json')
         },
-        template: fs.readFileSync('aspect-templates/source.js', 'utf8')
+        builderFunctionString: fs.readFileSync('aspect-templates/source.js', 'utf8')
     }
 ];
 
