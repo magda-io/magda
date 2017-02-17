@@ -1,5 +1,5 @@
 // @flow 
-import type { Action, JsonData, FacetSearchState } from '../types';
+import type { Action, FacetSearchJson, FacetSearchState } from '../types';
 
 const initialData = {
   isFetching: false,

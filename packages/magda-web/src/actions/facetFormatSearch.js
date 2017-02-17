@@ -3,7 +3,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Action, JsonData } from '../types';
+import type { Action, FacetSearchJson } from '../types';
 
 export function requestFormats(generalQuery: string, facetQuery: string):Action {
   return {
@@ -29,7 +29,7 @@ export function fetchFormatSearchResults(generalQuery: string, facetQuery: strin
     console.log(url);
     return fetch(url)
     .then(response => response.json())
-    .then((json: JsonData) =>
+    .then((json: FacetSearchJson) =>
       dispatch(receiveFormats(generalQuery, facetQuery, json))
     )
   }

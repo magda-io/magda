@@ -1,3 +1,6 @@
+// @flow 
+import type { Action, SearchState } from '../types';
+
 import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
 import findMatchingObjs from '../helpers/findMatchingObjs';
@@ -31,35 +34,35 @@ const initialData = {
   errorMessage: ''
 }
 
-const results = (state=initialData, action) => {
+const results = (state: SearchState= initialData, action: Action) => {
   switch (action.type) {
     case 'REQUEST_RESULTS':
       return Object.assign({}, state, {
         isFetching: true,
         hasError: false,
-        apiQuery: action.apiQuery
+        apiQuery: action.apiQuery && action.apiQuery
       })
 
     case 'UPDATE_PROGRESS':
       return Object.assign({}, state, {
         isFetching: true,
-        progress: action.progress
+        progress: action.progress && action.progress
       })
 
     case 'FETCH_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         hasError: true,
-        errorMessage: action.errorMessage
+        errorMessage: action.errorMessage && action.errorMessage
       })
 
     case 'RECEIVE_RESULTS':
       let data = action.json;
-      let query = data.query;
-      let datasets = data.dataSets;
-      let hitCount = data.hitCount;
+      let query = data && data.query && data.query;
+      let datasets = data && data.dataSets && data.dataSets;
+      let hitCount = data && data.hitCount && data.hitCount;
 
-      let publisherOptions = defined(data.facets[0]) ? data.facets[0].options : []
+      let publisherOptions = data && data.facets && data.facets[0] ? data.facets[0].options : []
       let temporalOptions = data.facets[1].options.sort((a, b)=>(b.lowerBound - a.lowerBound));
       let formatOptions = data.facets[2].options;
 
@@ -74,8 +77,8 @@ const results = (state=initialData, action) => {
 
       return Object.assign({}, state, {
         isFetching: false,
-        apiQuery: action.apiQuery,
-        strategy: data.strategy,
+        apiQuery: action.apiQuery && action.apiQuery,
+        strategy: data.strategy && data.strategy,
         datasets,
         hitCount,
         publisherOptions,

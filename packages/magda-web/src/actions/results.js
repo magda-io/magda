@@ -3,7 +3,7 @@ import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Action, JsonData } from '../types';
+import type { DataAction, Action, DataSearchJson } from '../types';
 
 
 export function requestResults(apiQuery: string ): Action{
@@ -13,7 +13,7 @@ export function requestResults(apiQuery: string ): Action{
   }
 }
 
-export function receiveResults(apiQuery: string, json: JsonData): Action{
+export function receiveResults(apiQuery: string, json: DataSearchJson): DataAction{
   return {
     type: actionTypes.RECEIVE_RESULTS,
     apiQuery,
@@ -39,7 +39,7 @@ export function fetchSearchResults(query: string) {
       }
       return response.json()}
     )
-    .then((json: JsonData) =>
+    .then((json: DataSearchJson) =>
       dispatch(receiveResults(query, json))
     )
   }

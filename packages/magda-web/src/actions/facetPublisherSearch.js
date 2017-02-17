@@ -3,7 +3,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Action, JsonData } from '../types';
+import type { Action, FacetSearchJson } from '../types';
 
 export function requestPublishers(generalQuery:string, facetQuery:string):Action{
   return {
@@ -27,7 +27,7 @@ export function fetchPublisherSearchResults(generalQuery:string, facetQuery:stri
     dispatch(requestPublishers(generalQuery, facetQuery))
     return fetch(config.searchApiBaseUrl + `facets/publisher/options/search?generalQuery=${encodeURIComponent(generalQuery)}&facetQuery=${encodeURIComponent(facetQuery)}`)
     .then(response => response.json())
-    .then((json: JsonData) =>
+    .then((json: FacetSearchJson) =>
       dispatch(receivePublishers(generalQuery, facetQuery, json))
     )
   }
