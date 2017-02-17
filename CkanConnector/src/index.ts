@@ -48,4 +48,10 @@ const connector = new CkanConnector({
     aspectBuilders: aspectBuilders
 });
 
-connector.run();
+connector.run().then(result => {
+    console.log('Datasets Connected: ' + result.datasetsConnected);
+
+    if (result.errors.length > 0) {
+        console.log('Errors: ' + result.errors);
+    }
+});

@@ -2,6 +2,7 @@ import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/regi
 import { Observable } from 'rx';
 import Ckan, { CkanDataset } from './Ckan';
 import Registry from './Registry';
+import createServiceError from './createServiceError';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
@@ -24,6 +25,11 @@ interface Aspects {
     [propName: string]: any;
 }
 
+export class CkanConnectionResult {
+    public datasetsConnected: number = 0;
+    public errors: Error[] = [];
+}
+
 export default class CkanConnector {
     private ckan: Ckan;
     private registry: Registry;
@@ -43,13 +49,32 @@ export default class CkanConnector {
         this.ignoreHarvestSources = ignoreHarvestSources.slice();
     }
 
-    run(): Promise<any> {
+    run(): Promise<CkanConnectionResult> {
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
             builderFunction: new Function('dataset', 'source', builder.builderFunctionString)
         }));
 
-        return this.createAspectDefinitions().then(() => this.createRecords(templates));
+        return this.createAspectDefinitions().reduce((connectionResult, value) => {
+            if (value instanceof Error) {
+                connectionResult.errors.push(value);
+            }
+            return connectionResult;
+        }, new CkanConnectionResult()).flatMap(connectionResult => {
+            // If there were errors creating the aspect definitions, don't try to create records.
+            if (connectionResult.errors.length > 0) {
+                return Observable.just(connectionResult);
+            }
+
+            return this.createRecords(templates).reduce((connectionResult, value) => {
+                if (value instanceof Error) {
+                    connectionResult.errors.push(value);
+                } else {
+                    ++connectionResult.datasetsConnected;
+                }
+                return connectionResult;
+            }, connectionResult);
+        }).toPromise<Promise<CkanConnectionResult>>(Promise);
     }
 
     private createAspectDefinitions() {
