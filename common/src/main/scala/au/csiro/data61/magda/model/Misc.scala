@@ -35,58 +35,52 @@ package misc {
 
   case class FacetSearchResult(
     hitCount: Long,
-    options: Seq[FacetOption]
-  )
+    options: Seq[FacetOption])
 
   case class Facet(
     id: String,
-    options: Seq[FacetOption]
-  )
+    options: Seq[FacetOption])
 
   case class FacetOption(
     value: String,
     hitCount: Long,
     upperBound: Option[Int] = None,
     lowerBound: Option[Int] = None,
-    matched: Boolean = false
-  )
+    matched: Boolean = false)
 
   case class DataSet(
-    identifier: String,
-    title: Option[String] = None,
-    catalog: String,
-    description: Option[String] = None,
-    issued: Option[OffsetDateTime] = None,
-    modified: Option[OffsetDateTime] = None,
-    language: Option[String] = None,
-    publisher: Option[Agent] = None,
-    accrualPeriodicity: Option[Periodicity] = None,
-    spatial: Option[Location] = None,
-    temporal: Option[PeriodOfTime] = None,
-    theme: Seq[String] = List(),
-    keyword: Seq[String] = List(),
-    contactPoint: Option[Agent] = None,
-    distributions: Seq[Distribution] = Seq(),
-    landingPage: Option[String] = None,
-    years: Option[String] = None
-  ) {
+      identifier: String,
+      title: Option[String] = None,
+      catalog: String,
+      description: Option[String] = None,
+      issued: Option[OffsetDateTime] = None,
+      modified: Option[OffsetDateTime] = None,
+      language: Option[String] = None,
+      publisher: Option[Agent] = None,
+      accrualPeriodicity: Option[Periodicity] = None,
+      spatial: Option[Location] = None,
+      temporal: Option[PeriodOfTime] = None,
+      theme: Seq[String] = List(),
+      keyword: Seq[String] = List(),
+      contactPoint: Option[Agent] = None,
+      distributions: Seq[Distribution] = Seq(),
+      landingPage: Option[String] = None,
+      years: Option[String] = None) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
-    
-    override def toString: String = s"Dataset(identifier = $identifier, title=$title)" 
+
+    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
   }
 
   case class Agent(
     name: Option[String] = None,
     homePage: Option[String] = None,
     email: Option[String] = None,
-    extraFields: Map[String, String] = Map()
-  )
+    extraFields: Map[String, String] = Map())
 
   case class Location(
     text: Option[String] = None,
-    geoJson: Option[Geometry] = None
-  )
+    geoJson: Option[Geometry] = None)
 
   object Location {
     val geoJsonPattern = "\\{\"type\": \".+\",.*\\}".r
@@ -134,7 +128,6 @@ package misc {
       })
     }
 
-
     def fromBoundingBox(boundingBoxList: Seq[BoundingBox]): Option[Geometry] = {
       val bBoxPoints = boundingBoxList
         .map { boundingBox =>
@@ -175,12 +168,14 @@ package misc {
 
   case class BoundingBox(north: BigDecimal, east: BigDecimal, south: BigDecimal, west: BigDecimal)
 
-  case class Region(
+  case class QueryRegion(
     regionType: String,
-    regionId: String,
+    regionId: String)
+
+  case class Region(
+    queryRegion: QueryRegion,
     regionName: String,
-    boundingBox: Option[BoundingBox]
-  )
+    boundingBox: Option[BoundingBox] = None)
 
   case class Distribution(
     title: String,
@@ -193,8 +188,7 @@ package misc {
     downloadURL: Option[String] = None,
     byteSize: Option[Int] = None,
     mediaType: Option[MediaType] = None,
-    format: Option[String] = None
-  )
+    format: Option[String] = None)
 
   object Distribution {
     private val extensionRegex = new scala.util.matching.Regex("\\.([^./]+)$", "extension")
@@ -318,7 +312,8 @@ package misc {
     }
 
     implicit val boundingBoxFormat = jsonFormat4(BoundingBox.apply)
-    implicit val regionFormat = jsonFormat4(Region.apply)
+    implicit val queryRegionFormat = jsonFormat2(QueryRegion.apply)
+    implicit val regionFormat = jsonFormat3(Region.apply)
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)

@@ -28,13 +28,16 @@ import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.util.Regex._
 import org.scalacheck.Shrink.shrink
+import au.csiro.data61.magda.spatial.RegionSource
+import spray.json.JsObject
+import java.net.URL
+import spray.json._
+import au.csiro.data61.magda.model.misc.Protocols._
 
 object Generators {
   val LUCENE_CONTROL_CHARACTER_REGEX = "[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]\"'\\+]".r
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
   def noneBiasedOption[T](inner: Gen[T]) = Gen.frequency((1, Gen.some(inner)), (20, None))
-
-  //  val keyGen = arbitrary[String].suchThat(!_.contains("."))
 
   val defaultStartTime = ZonedDateTime.parse("1850-01-01T00:00:00Z").toInstant
   val defaultTightStartTime = ZonedDateTime.parse("2000-01-01T00:00:00Z").toInstant
@@ -102,15 +105,41 @@ object Generators {
       case Seq(before, after) => !before.equals(after)
     })
 
-  //  val gf = new geom.GeometryFactory()
-  //  implicit def buildJTSPolygon(polygon: Polygon) = {
-  //    val coords = polygon.coordinates.flatten.map(x => new geom.Coordinate(x.x.toDouble, x.y.toDouble))
-  //    val lr = gf.createLinearRing(coords.toArray)
-  //    gf.createPolygon(lr, Array())
-  //  }
-  //  implicit def buildJTSMultiPolygon(multiPolygon: MultiPolygon) = {
-  //    gf.createMultiPolygon(multiPolygon.coordinates.map(x => buildJTSPolygon(Polygon(x))).toArray)
-  //  }
+  val regionSourceGenInner = for {
+    name <- Gen.alphaNumStr
+    idProperty <- Gen.alphaNumStr
+    nameProperty <- Gen.alphaNumStr
+    includeIdInName <- arbitrary[Boolean]
+    order <- Gen.posNum[Int]
+  } yield RegionSource(
+    name = name,
+    url = new URL("http://example.com"),
+    idProperty = idProperty,
+    nameProperty = nameProperty,
+    includeIdInName = includeIdInName,
+    disabled = false,
+    order = order
+  )
+
+  val regionSourceGen = cachedListGen(regionSourceGenInner, 1)
+
+  val regionGen = for {
+    regionSource <- regionSourceGen.flatMap(Gen.oneOf(_))
+    id <- Gen.alphaNumStr
+    name <- Gen.alphaNumStr
+    geometry <- geometryGen
+    order <- Gen.posNum[Int]
+  } yield (regionSource, JsObject(
+    "type" -> JsString("Feature"),
+    "geometry" -> GeometryFormat.write(geometry),
+    "order" -> JsNumber(order),
+    "properties" -> JsObject(
+      regionSource.idProperty -> JsString(id),
+      regionSource.nameProperty -> JsString(name)
+    )
+  ))
+
+  val indexedRegionsGen = cachedListGen(regionGen, 1)
 
   def listSizeBetween[T](min: Int, max: Int, gen: Gen[T]) = Gen.chooseNum(min, max)
     .flatMap(x => Gen.listOfN(x, gen))
@@ -145,30 +174,30 @@ object Generators {
   )
 
   val locationGen = for {
-    text <- someBiasedOption(arbitrary[String])
+    text <- someBiasedOption(Gen.alphaNumStr)
     geoJson <- someBiasedOption(geometryGen)
   } yield new Location(text, geoJson)
 
   val nonEmptyString = Gen.choose(1, 20).flatMap(Gen.listOfN(_, Gen.alphaNumChar).map(_.mkString))
 
-  def wordsGen(size: Int) = {
-    var wordCache: Option[List[String]] = None
+  def cachedListGen[T](gen: Gen[T], size: Int) = {
+    var cache: Option[List[T]] = None
 
     Gen.delay {
-      wordCache match {
-        case Some(wordCache) =>
-          Gen.const(wordCache)
+      cache match {
+        case Some(cacheInner) =>
+          Gen.const(cacheInner)
         case None =>
-          Gen.listOfN(size, nonEmptyString).map { words =>
-            wordCache = Some(words)
+          Gen.listOfN(size, gen).map { words =>
+            cache = Some(words)
             words
           }
       }
     }
   }
 
-  val descWordGen = wordsGen(1000)
-  val publisherGen = wordsGen(50)
+  val descWordGen = cachedListGen(nonEmptyString, 1000)
+  val publisherGen = cachedListGen(nonEmptyString, 50)
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
@@ -176,7 +205,7 @@ object Generators {
     MediaTypes.`application/json`,
     MediaTypes.`application/octet-stream`
   ))
-  val randomFormatGen = wordsGen(50)
+  val randomFormatGen = cachedListGen(nonEmptyString, 50)
 
   def textGen(inner: Gen[List[String]]) = inner
     .flatMap(Gen.someOf(_))
@@ -272,6 +301,12 @@ object Generators {
     Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)))
   }
   val publisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString)).map(removeFilters)
+  val regionQueryGen: Gen[QueryRegion] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
+    case (regionSource, regionObject) => QueryRegion(
+      regionType = regionSource.name,
+      regionId = regionObject.fields("properties").asJsObject.fields(regionSource.idProperty).asInstanceOf[JsString].value
+    )
+  }
 
   val queryGen = (for {
     freeText <- Gen.option(queryTextGen)
@@ -280,13 +315,15 @@ object Generators {
     dateFrom <- Gen.option(periodOfTimeGen.map(_.start.flatMap(_.date)))
     dateTo <- Gen.option(periodOfTimeGen.map(_.end.flatMap(_.date)))
     formats <- probablyEmptySet(formatQueryGen)
+    regions <- probablyEmptySet(regionQueryGen)
   } yield Query(
     freeText = freeText,
     quotes = quotes,
     publishers = publishers,
     dateFrom = dateFrom.flatten,
     dateTo = dateTo.flatten,
-    formats = formats
+    formats = formats,
+    regions = regions
   )).map(removeInvalid)
 
   val exactQueryGen = (for {
@@ -296,28 +333,22 @@ object Generators {
     dateFrom <- Gen.option(periodOfTimeGen.map(_.start.flatMap(_.date)))
     dateTo <- Gen.option(periodOfTimeGen.map(_.end.flatMap(_.date)))
     formats <- probablyEmptySet(formatGen.map(_._2))
+    regions <- probablyEmptySet(regionQueryGen)
   } yield Query(
     freeText = freeText,
     quotes = quotes,
     publishers = publishers,
     dateFrom = dateFrom.flatten,
     dateTo = dateTo.flatten,
-    formats = formats
+    formats = formats,
+    regions = regions
   )).map(removeInvalid)
 
   val specificBiasedQueryGen = (for {
-    freeText <- someBiasedOption(queryTextGen)
-    quotes <- set(queryTextGen)
     publishers <- Gen.nonEmptyContainerOf[Set, String](publisherQueryGen)
-    dateFrom <- periodOfTimeGen.map(_.start.flatMap(_.date))
-    dateTo <- periodOfTimeGen.map(_.end.flatMap(_.date))
     formats <- Gen.nonEmptyContainerOf[Set, String](formatQueryGen)
   } yield Query(
-    //    freeText = freeText,
-    //    quotes = quotes,
     publishers = publishers,
-    //    dateFrom = dateFrom,
-    //    dateTo = dateTo,
     formats = formats
   )).map(removeInvalid)
 
@@ -328,23 +359,23 @@ object Generators {
     dateFrom <- noneBiasedOption(periodOfTimeGen.map(_.start.flatMap(_.date)))
     dateTo <- noneBiasedOption(periodOfTimeGen.map(_.end.flatMap(_.date)))
     formats <- smallSet(formatQueryGen)
+    regions <- smallSet(regionQueryGen)
   } yield Query(
     freeText = freeText,
     quotes = quotes,
     publishers = publishers,
     dateFrom = dateFrom.flatten,
     dateTo = dateTo.flatten,
-    formats = formats
+    formats = formats,
+    regions = regions
   ))
     .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
     .map(removeInvalid)
 
   val suggestedFacetQueryGen = (for {
-    freeText <- noneBiasedOption(queryTextGen)
     publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
     formats <- smallSet(formatGen.map(_._2))
   } yield Query(
-    //    freeText = freeText,
     publishers = publishers,
     formats = formats
   ))
@@ -383,8 +414,12 @@ object Generators {
     val facetList = query.publishers.map(publisher => s"by $publisher") ++
       Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
       Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
-      query.formats.map(format => s"as $format")
+      query.formats.map(format => s"as $format") ++
+      query.regions.map(region => s"in ${region.regionType}:${region.regionId}")
 
-    Gen.pick(textList.size, textList).flatMap(existingList => Gen.pick(facetList.size, facetList).map(existingList ++ _)).map(queryStringList => (queryStringList.mkString(" "), query))
+    Gen.pick(textList.size, textList)
+      .flatMap(existingList => Gen.pick(facetList.size, facetList).map(existingList ++ _))
+      .map(queryStringList => (queryStringList.mkString(" "), query))
   }
+
 }

@@ -29,6 +29,8 @@ import org.elasticsearch.cluster.health.ClusterHealthStatus
 import au.csiro.data61.magda.api.model.Protocols
 import org.elasticsearch.index.cache.IndexCache
 import java.util.concurrent.ConcurrentHashMap
+import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.spatial.RegionSource
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with GeneratorDrivenPropertyChecks {
   override def testConfigSource = "akka.loglevel = WARN"
@@ -37,7 +39,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   val logger = Logging(system, getClass)
   val processors = Math.max(Runtime.getRuntime().availableProcessors(), 2)
 
-  val minSuccessful = if (isCi) 100 else 20
+  val minSuccessful = if (isCi) 100 else 100
   logger.info("Running with {} processors with minSuccessful={}", processors.toString, minSuccessful)
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)
@@ -53,6 +55,20 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   }
 
   val cleanUpQueue = new ConcurrentLinkedQueue[String]()
+
+  override def beforeAll() {
+    client.execute(
+      IndexDefinition.regions.definition(None)
+    ).await
+
+    val indexedRegions = indexedRegionsGen.retryUntil(_ => true).sample.get
+
+    val fakeRegionLoader = new RegionLoader {
+      override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => indexedRegions.toIterator)
+    }
+
+    IndexDefinition.setupRegions(client, fakeRegionLoader).await(60 seconds)
+  }
 
   //  def configureSettings() =
   //    Settings.builder()
@@ -112,7 +128,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   }
 
   case class FakeIndices(rawIndexName: String) extends Indices {
-    override def getIndex(config: Config, index: Indices.Index): String = rawIndexName
+    override def getIndex(config: Config, index: Indices.Index): String = index match {
+      case Indices.DataSetsIndex => rawIndexName
+      case Indices.RegionsIndex => "regions"
+    }
   }
 
   implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
@@ -127,14 +146,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   }
 
   def queryToText(query: Query): String = {
-    val list = Seq(query.freeText).flatten ++
-      query.quotes.map(""""""" + _ + """"""") ++
-      query.publishers.map(publisher ⇒ s"by $publisher") ++
-      Seq(query.dateFrom.map(dateFrom ⇒ s"from $dateFrom")).flatten ++
-      Seq(query.dateTo.map(dateTo ⇒ s"to $dateTo")).flatten ++
-      query.formats.map(format ⇒ s"as $format")
-
-    list.mkString(" ")
+    textQueryGen(Gen.const(query)).retryUntil(_ => true).sample.get._1
   }
 
   implicit def textQueryShrinker(implicit s: Shrink[String], s1: Shrink[Query]): Shrink[(String, Query)] = Shrink[(String, Query)] {

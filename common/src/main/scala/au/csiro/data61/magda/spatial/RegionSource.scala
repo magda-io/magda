@@ -13,7 +13,6 @@ case class RegionSource(
   idProperty: String,
   nameProperty: String,
   includeIdInName: Boolean,
-  shapePath: String,
   disabled: Boolean,
   order: Int)
 
@@ -38,7 +37,6 @@ class RegionSources(config: Config) {
           idProperty = regionSourceConfig.getString("idField"),
           nameProperty = regionSourceConfig.getString("nameField"),
           includeIdInName = if (regionSourceConfig.hasPath("includeIdInName")) regionSourceConfig.getBoolean("includeIdInName") else false,
-          shapePath = regionSourceConfig.getString("shapePath"),
           disabled = regionSourceConfig.hasPath("disabled") && regionSourceConfig.getBoolean("disabled"),
           order = regionSourceConfig.getInt("order"))
     }.toSeq.filterNot(_.disabled)

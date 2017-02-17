@@ -318,8 +318,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           start start.toInt
           limit limit
           sort (
-            field sort "order" order SortOrder.ASC,
-            field sort "_score" order SortOrder.DESC
+            fieldSort("order") order SortOrder.ASC,
+            scoreSort order SortOrder.DESC
           )
             sourceExclude "geometry"
       ).flatMap { response =>
@@ -331,14 +331,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
   }
 
-  def findRegion(regionType: String, regionId: String): Future[Region] = {
+  def findRegion(regionType: String, regionId: String): Future[QueryRegion] = {
     clientFuture.flatMap { client =>
-      client.execute(ElasticDsl.search in indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType)
+      client.execute(ElasticDsl.search in IndexDefinition.regions.indexName / IndexDefinition.REGIONS_TYPE_NAME
         query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry")
         .flatMap { response =>
           response.totalHits match {
-            case 0 => Future(Region(regionType, regionId, "[Unknown]", None))
-            case _ => Future(response.to[Region].head)
+            case 0 => Future(QueryRegion(regionType, regionId))
+            case _ => Future(response.to[Region].head.queryRegion)
           }
         }
     }

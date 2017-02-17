@@ -199,5 +199,6 @@ class SearchSpec extends BaseApiSpec {
         }
       }
     }
+
   }
 }

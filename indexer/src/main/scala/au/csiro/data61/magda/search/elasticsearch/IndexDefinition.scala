@@ -97,29 +97,35 @@ object IndexDefinition extends DefaultJsonProtocol {
   val indices = Seq(dataSets, regions)
 
   def setupRegions(client: TcpClient)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
-    val logger = system.log
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
 
-    val loader = new RegionLoader(regionSources.sources.toList)
-    implicit val ec = system.dispatcher
+    val loader = RegionLoader(regionSources.sources.toList)
 
+    setupRegions(client, loader)
+  }
+
+  def setupRegions(client: TcpClient, loader: RegionLoader)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+    implicit val ec = system.dispatcher
+    val logger = system.log
+    println("abc " + IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
     loader.setupRegions
       .map {
         case (regionSource, jsonRegion) =>
           val properties = jsonRegion.fields("properties").asJsObject
+          val id = properties.fields(regionSource.idProperty).convertTo[String]
           val name = if (regionSource.includeIdInName) {
-            JsString(properties.fields(regionSource.nameProperty).convertTo[String] + " - " + properties.fields(regionSource.idProperty).convertTo[String])
+            JsString(properties.fields(regionSource.nameProperty).convertTo[String] + " - " + id)
           } else {
             properties.fields(regionSource.nameProperty)
           }
 
           ElasticDsl.index
-            .into(IndexDefinition.regions.indexName / IndexDefinition.regions.name)
-            .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.fields(regionSource.idProperty).convertTo[String]))
+            .into(IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
+            .id(generateRegionId(regionSource.name, id))
             .source(JsObject(
               "type" -> JsString(regionSource.name),
-              "id" -> properties.fields(regionSource.idProperty),
+              "id" -> JsString(id),
               "name" -> name,
               "rectangle" -> createEnvelope(jsonRegion.fields("geometry")),
               "geometry" -> jsonRegion.fields("geometry"),
