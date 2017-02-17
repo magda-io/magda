@@ -7,7 +7,9 @@ import * as http from 'http';
 import createServiceError from './createServiceError';
 
 export interface RegistryOptions {
-    baseUrl: string
+    baseUrl: string,
+    maxRetries?: number,
+    secondsBetweenRetries?: number
 }
 
 export interface PutResult {
@@ -19,11 +21,17 @@ export default class Registry {
     private baseUrl: uri.URI;
     private aspectDefinitionsApi: AspectDefinitionsApi;
     private recordsApi: RecordsApi;
+    private maxRetries: number;
+    private secondsBetweenRetries: number;
 
     constructor({
-        baseUrl
+        baseUrl,
+        maxRetries = 10,
+        secondsBetweenRetries = 10
     }: RegistryOptions) {
         this.baseUrl = new URI(baseUrl);
+        this.maxRetries = maxRetries;
+        this.secondsBetweenRetries = secondsBetweenRetries;
 
         const registryApiUrl = this.baseUrl.clone().segment('api/0.1').toString();
         this.aspectDefinitionsApi = new AspectDefinitionsApi(registryApiUrl);
@@ -42,7 +50,7 @@ export default class Registry {
                 throw e;
             });
 
-            return retry(operation, 10, 10, (e, retriesLeft) => console.log(formatServiceError(`Failed to create aspect definition "${aspectDefinition.id}".`, e, retriesLeft)))
+            return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to create aspect definition "${aspectDefinition.id}".`, e, retriesLeft)))
                 .then(result => result.body)
                 .catch(createServiceError);
         });
@@ -64,7 +72,7 @@ export default class Registry {
                 recordsSource.request(1);
                 throw e;
             });
-            return retry(operation, 10, 10, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry record with ID "${record.id}".`, e, retriesLeft)))
+            return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry record with ID "${record.id}".`, e, retriesLeft)))
                 .then(result => result.body)
                 .catch(createServiceError);
         });

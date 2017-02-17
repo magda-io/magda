@@ -49,6 +49,16 @@ export default class CkanConnector {
         this.ignoreHarvestSources = ignoreHarvestSources.slice();
     }
 
+    /**
+     * Queries CKAN and pushes discovered datasets to the registry.  The necessary aspect definitions
+     * are first created in the registry.  If creation of an aspect definition fails (after all retries
+     * have been exhausted), no records will be created and the promise will resolve with a
+     * {@link CkanConnectionResult} containing the errors.
+     * 
+     * @returns {Promise<CkanConnectionResult>}
+     * 
+     * @memberOf CkanConnector
+     */
     run(): Promise<CkanConnectionResult> {
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,

@@ -52,6 +52,6 @@ connector.run().then(result => {
     console.log('Datasets Connected: ' + result.datasetsConnected);
 
     if (result.errors.length > 0) {
-        console.log('Errors: ' + result.errors);
+        console.log('Errors:\n' + result.errors.map(error => error.toString()).join('\n'));
     }
 });

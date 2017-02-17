@@ -26,22 +26,30 @@ export interface CkanPackageSearchResult {
 export interface CkanOptions {
     baseUrl: string,
     apiBaseUrl?: string,
-    pageSize?: number
+    pageSize?: number,
+    maxRetries?: number,
+    secondsBetweenRetries?: number
 }
 
 export default class Ckan {
     public readonly baseUrl: uri.URI;
     public readonly apiBaseUrl: uri.URI;
     public readonly pageSize: number;
+    public readonly maxRetries: number;
+    public readonly secondsBetweenRetries: number;
 
     constructor({
         baseUrl,
         apiBaseUrl = baseUrl,
-        pageSize = 1000
+        pageSize = 1000,
+        maxRetries = 10,
+        secondsBetweenRetries = 10
     }: CkanOptions) {
         this.baseUrl = new URI(baseUrl);
         this.apiBaseUrl = new URI(apiBaseUrl);
         this.pageSize = pageSize;
+        this.maxRetries = maxRetries;
+        this.secondsBetweenRetries = secondsBetweenRetries;
     }
 
     public packageSearch(options?: {
@@ -91,7 +99,7 @@ export default class Ckan {
             });
         });
 
-        const promise = retry(operation, 10, 10, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
+        const promise = retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
 
         return Observable.fromPromise(promise);
     }
