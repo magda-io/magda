@@ -1,5 +1,5 @@
 // @flow 
-import type { Action, SearchState } from '../types';
+import type { Action, SearchState, DataSearchJson, Dataset, DataAction, Query, FacetOption, Region } from '../types';
 
 import findIndex from 'lodash.findindex';
 import defined from '../helpers/defined';
@@ -34,7 +34,7 @@ const initialData = {
   errorMessage: ''
 }
 
-const results = (state: SearchState= initialData, action: Action) => {
+const results = (state: SearchState= initialData, action: DataAction) => {
   switch (action.type) {
     case 'REQUEST_RESULTS':
       return Object.assign({}, state, {
@@ -57,23 +57,24 @@ const results = (state: SearchState= initialData, action: Action) => {
       })
 
     case 'RECEIVE_RESULTS':
-      let data = action.json;
-      let query = data && data.query && data.query;
-      let datasets = data && data.dataSets && data.dataSets;
-      let hitCount = data && data.hitCount && data.hitCount;
+      let data: DataSearchJson  = action.json;
+      let query : Query = data && data.query && data.query;
+      let datasets : Array<Dataset> = data && data.dataSets && data.dataSets;
+      let hitCount : number = data && data.hitCount && data.hitCount;
 
-      let publisherOptions = data && data.facets && data.facets[0] ? data.facets[0].options : []
-      let temporalOptions = data.facets[1].options.sort((a, b)=>(b.lowerBound - a.lowerBound));
-      let formatOptions = data.facets[2].options;
+      let publisherOptions :Array<FacetOption> = (data && data.facets) ? data.facets[0].options : []
+      let temporalOptions :Array<FacetOption> = data.facets[1].options.sort((a, b)=>( + b.lowerBound - (+ a.lowerBound)));
+      let formatOptions :Array<FacetOption> = data.facets[2].options;
 
-      let freeText = query.freeText;
-      let activePublishers = findMatchingObjs(query.publishers, publisherOptions);
-      let activeDateFrom = defined(query.dateFrom) ? query.dateFrom.slice(0, 4): initialData.activeDateFrom;
-      let activeDateTo = defined(query.dateTo) ? query.dateTo.slice(0, 4) : initialData.activeDateTo;
+      let freeText: string = data.query.freeText;
 
-      let activeFormats = findMatchingObjs(query.formats, formatOptions);;
+      let activePublishers: Array<FacetOption> = findMatchingObjs(query.publishers, publisherOptions);
+      let activeDateFrom : ?string = query.dateFrom ? query.dateFrom.slice(0, 4): initialData.activeDateFrom;
+      let activeDateTo : ?string = query.dateTo ? query.dateTo.slice(0, 4) : initialData.activeDateTo;
 
-      let activeRegion = query.regions[0] || initialData.activeRegion;
+      let activeFormats: Array<FacetOption> = findMatchingObjs(query.formats, formatOptions);;
+
+      let activeRegion: Region = query.regions[0] || initialData.activeRegion;
 
       return Object.assign({}, state, {
         isFetching: false,
@@ -94,12 +95,13 @@ const results = (state: SearchState= initialData, action: Action) => {
 
 
     case 'ADD_PUBLISHER':
+      let updatedOptions = [...state.activePublishers, action.item];
       return Object.assign({}, state, {
-        activePublishers: [...state.activePublishers, action.item]
+        activePublishers: updatedOptions
       })
 
     case 'REMOVE_PUBLISHER':
-     let publisherIndex = findIndex(state.activePublishers, item=> item.value === action.item.value);
+     let publisherIndex = findIndex(state.activePublishers, item => item.value === action.item.value);
       return Object.assign({}, state, {
         activePublishers: [...state.activePublishers.slice(0, publisherIndex), ...state.activePublishers.slice(publisherIndex+1)]
       })
@@ -107,7 +109,6 @@ const results = (state: SearchState= initialData, action: Action) => {
     case 'RESET_PUBLISHER':
       return Object.assign({}, state,
         {activePublishers: initialData.activePublishers})
-
 
     case 'ADD_REGION':
       return Object.assign({}, state, {
