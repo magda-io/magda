@@ -23,22 +23,31 @@ export interface CkanPackageSearchResult {
     [propName: string]: any;
 }
 
+export interface CkanOptions {
+    baseUrl: string,
+    apiBaseUrl?: string,
+    pageSize?: number
+}
+
 export default class Ckan {
     public readonly baseUrl: uri.URI;
+    public readonly apiBaseUrl: uri.URI;
     public readonly pageSize: number;
 
     constructor({
         baseUrl,
+        apiBaseUrl = baseUrl,
         pageSize = 1000
-    }) {
+    }: CkanOptions) {
         this.baseUrl = new URI(baseUrl);
+        this.apiBaseUrl = new URI(apiBaseUrl);
         this.pageSize = pageSize;
     }
 
     public packageSearch(options?: {
         ignoreHarvestSources?: string[];
     }): Observable<CkanDataset> {
-        const url = this.baseUrl.clone().segment('api/3/action/package_search');
+        const url = this.apiBaseUrl.clone().segment('api/3/action/package_search');
         
         if (options && options.ignoreHarvestSources && options.ignoreHarvestSources.length > 0) {
             const solrQueries = options.ignoreHarvestSources.map(title => `-harvest_source_title:${encodeURIComponent(title)}`);
@@ -48,6 +57,13 @@ export default class Ckan {
         return this.fetchPackageSearch(url, 0);
     }
 
+    public getPackageShowUrl(id: string): string {
+        return this.apiBaseUrl.clone().segment('api/3/action/package_show').addSearch('id', id).toString();
+    }
+
+    public getDatasetLandingPageUrl(id: string): string {
+        return this.baseUrl.clone().segment('dataset').segment(id).toString();
+    }
 
     private fetchPackageSearch(url: uri.URI, startIndex: number): Observable<CkanDataset> {
         return this.requestPackageSearchPage(url, startIndex).flatMap(packageSearchResponse => {

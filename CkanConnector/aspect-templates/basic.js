@@ -1,4 +1,5 @@
 return {
     title: dataset.title || dataset.name,
-    description: dataset.notes
+    description: dataset.notes,
+    landingPageUrl: source.getDatasetLandingPageUrl(dataset.id)
 };

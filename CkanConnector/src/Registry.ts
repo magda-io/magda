@@ -1,8 +1,12 @@
 import { AspectDefinition, AspectDefinitionsApi, Record, RecordsApi } from './generated/registry/api';
 import * as URI from 'urijs';
-import { Observable, IPromise } from 'rx';
+import { Observable } from 'rx';
 import retry from './retry';
 import formatServiceError from './formatServiceError';
+
+export interface RegistryOptions {
+    baseUrl: string
+}
 
 export default class Registry {
     private baseUrl: uri.URI;
@@ -11,7 +15,7 @@ export default class Registry {
 
     constructor({
         baseUrl
-    }) {
+    }: RegistryOptions) {
         this.baseUrl = new URI(baseUrl);
 
         const registryApiUrl = this.baseUrl.clone().segment('api/0.1').toString();
@@ -39,7 +43,7 @@ export default class Registry {
         return Promise.resolve(promise);
     }
 
-    putRecords(records: Observable<Record>): IPromise<any> {
+    putRecords(records: Observable<Record>): Promise<any> {
         const recordsSource = records.controlled();
 
         const promise = recordsSource.flatMap(record => {

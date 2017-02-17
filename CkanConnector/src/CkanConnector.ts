@@ -1,5 +1,5 @@
 import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/registry/api';
-import { Observable, IPromise } from 'rx';
+import { Observable } from 'rx';
 import Ckan, { CkanDataset } from './Ckan';
 import Registry from './Registry';
 
@@ -18,6 +18,10 @@ export interface CkanConnectorOptions {
 interface CompiledAspect {
     id: string,
     builderFunction: Function
+}
+
+interface Aspects {
+    [propName: string]: any;
 }
 
 export default class CkanConnector {
@@ -39,7 +43,7 @@ export default class CkanConnector {
         this.ignoreHarvestSources = ignoreHarvestSources.slice();
     }
 
-    run(): IPromise<any> {
+    run(): Promise<any> {
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
             builderFunction: new Function('dataset', 'source', builder.builderFunctionString)
@@ -59,7 +63,7 @@ export default class CkanConnector {
     }
 
     private datasetToRecord(templates: CompiledAspect[], dataset: CkanDataset): Record {
-        const aspects = {};
+        const aspects: Aspects = {};
         templates.forEach(aspect => {
             aspects[aspect.id] = aspect.builderFunction(dataset, this.ckan);
         });
