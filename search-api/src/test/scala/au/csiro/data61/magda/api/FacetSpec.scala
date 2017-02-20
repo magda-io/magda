@@ -222,7 +222,7 @@ class FacetSpec extends BaseApiSpec {
           }
 
           it("should not show filters that do not have records") {
-            checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen), smallIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen), indexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 

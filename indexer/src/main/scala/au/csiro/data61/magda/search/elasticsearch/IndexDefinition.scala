@@ -19,6 +19,7 @@ import au.csiro.data61.magda.spatial.RegionSource
 import com.typesafe.config.Config
 import au.csiro.data61.magda.spatial.RegionSources
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
+import com.sksamuel.elastic4s.mappings.PrefixTree
 
 case class IndexDefinition(
     name: String,
@@ -108,7 +109,6 @@ object IndexDefinition extends DefaultJsonProtocol {
   def setupRegions(client: TcpClient, loader: RegionLoader)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     implicit val ec = system.dispatcher
     val logger = system.log
-    println("abc " + IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
     loader.setupRegions
       .map {
         case (regionSource, jsonRegion) =>

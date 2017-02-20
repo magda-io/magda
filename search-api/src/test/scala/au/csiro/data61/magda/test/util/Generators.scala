@@ -33,6 +33,9 @@ import spray.json.JsObject
 import java.net.URL
 import spray.json._
 import au.csiro.data61.magda.model.misc.Protocols._
+import com.vividsolutions.jts.geom.GeometryFactory
+import com.monsanto.labs.mwundo.GeoJson._
+import au.csiro.data61.magda.util.MwundoJTSConversions._
 
 object Generators {
   val LUCENE_CONTROL_CHARACTER_REGEX = "[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]\"'\\+]".r
@@ -106,9 +109,9 @@ object Generators {
     })
 
   val regionSourceGenInner = for {
-    name <- Gen.alphaNumStr
-    idProperty <- Gen.alphaNumStr
-    nameProperty <- Gen.alphaNumStr
+    name <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
+    idProperty <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
+    nameProperty <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
     includeIdInName <- arbitrary[Boolean]
     order <- Gen.posNum[Int]
   } yield RegionSource(
@@ -121,11 +124,11 @@ object Generators {
     order = order
   )
 
-  val regionSourceGen = cachedListGen(regionSourceGenInner, 1)
+  val regionSourceGen = cachedListGen(regionSourceGenInner, 3)
 
   val regionGen = for {
     regionSource <- regionSourceGen.flatMap(Gen.oneOf(_))
-    id <- Gen.alphaNumStr
+    id <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
     name <- Gen.alphaNumStr
     geometry <- geometryGen
     order <- Gen.posNum[Int]
@@ -139,31 +142,33 @@ object Generators {
     )
   ))
 
-  val indexedRegionsGen = cachedListGen(regionGen, 1)
+  val INDEXED_REGIONS_COUNT = 12
+  val indexedRegionsGen = cachedListGen(regionGen, INDEXED_REGIONS_COUNT)
 
   def listSizeBetween[T](min: Int, max: Int, gen: Gen[T]) = Gen.chooseNum(min, max)
     .flatMap(x => Gen.listOfN(x, gen))
 
   val pointGen = coordGen.map(Point.apply)
-  val multiPointGen = listSizeBetween(1, 10, coordGen).map(MultiPoint.apply)
+  val multiPointGen = listSizeBetween(1, 5, coordGen).map(MultiPoint.apply)
   val lineStringGenInner = nonConsecutiveDuplicates(2, 5, coordGen)
   val lineStringGen = lineStringGenInner.map(LineString.apply)
-  val multiLineStringGen = listSizeBetween(1, 10, lineStringGenInner)
+  val multiLineStringGen = listSizeBetween(1, 4, lineStringGenInner)
     .map(MultiLineString.apply)
-  val polygonGenInner = listSizeBetween(3, 10, Gen.zip(Gen.choose(1, 90)))
+  val polygonGenInner = listSizeBetween(3, 6, Gen.zip(Gen.choose(1, 90)))
     .map(_.sorted)
     .map(list => list.zipWithIndex.map {
       case (hypotenuse, index) =>
         val angle = (Math.PI / list.size) * (index + 1)
         Coordinate(hypotenuse * Math.cos(angle), hypotenuse * Math.sin(angle))
     })
-    .map(x => x :+ x.head)
+    .map(x => (x :+ x.head))
   val polygonStringGen = Gen.listOfN(1, polygonGenInner) // FIXME: Do we need a hole generator?
     .map(Polygon.apply)
   val multiPolygonStringGen =
-    Gen.chooseNum(1, 5).flatMap(Gen.listOfN(_, polygonStringGen.map(_.coordinates)))
+    Gen.chooseNum(1, 3).flatMap(Gen.listOfN(_, polygonStringGen.map(_.coordinates)))
       .map(MultiPolygon.apply)
 
+  val geoFactory = new GeometryFactory()
   val geometryGen = Gen.oneOf(
     pointGen,
     multiPointGen,
@@ -171,7 +176,7 @@ object Generators {
     multiLineStringGen,
     polygonStringGen,
     multiPolygonStringGen
-  )
+  ).suchThat(geometry => GeometryConverter.toJTSGeo(geometry, geoFactory).isValid)
 
   val locationGen = for {
     text <- someBiasedOption(Gen.alphaNumStr)
@@ -261,7 +266,7 @@ object Generators {
     language <- someBiasedOption(arbitrary[String])
     publisher <- someBiasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
     accrualPeriodicity <- someBiasedOption(periodicityGen)
-    spatial <- Gen.option(locationGen)
+    spatial <- noneBiasedOption(locationGen)
     temporal <- someBiasedOption(periodOfTimeGen)
     theme <- Gen.listOf(arbitrary[String])
     keyword <- Gen.listOf(arbitrary[String])
@@ -278,7 +283,7 @@ object Generators {
     language = language,
     publisher = publisher,
     accrualPeriodicity = accrualPeriodicity,
-    //    spatial = spatial,
+    spatial = spatial,
     temporal = temporal,
     theme = theme,
     keyword = keyword,
@@ -302,11 +307,13 @@ object Generators {
   }
   val publisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString)).map(removeFilters)
   val regionQueryGen: Gen[QueryRegion] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
-    case (regionSource, regionObject) => QueryRegion(
-      regionType = regionSource.name,
-      regionId = regionObject.fields("properties").asJsObject.fields(regionSource.idProperty).asInstanceOf[JsString].value
-    )
+    case (regionSource, regionObject) => regionJsonToQueryRegion(regionSource, regionObject)
   }
+
+  def regionJsonToQueryRegion(regionSource: RegionSource, regionObject: JsObject): QueryRegion = QueryRegion(
+    regionType = regionSource.name,
+    regionId = regionObject.fields("properties").asJsObject.fields(regionSource.idProperty).asInstanceOf[JsString].value
+  )
 
   val queryGen = (for {
     freeText <- Gen.option(queryTextGen)
@@ -348,6 +355,7 @@ object Generators {
     publishers <- Gen.nonEmptyContainerOf[Set, String](publisherQueryGen)
     formats <- Gen.nonEmptyContainerOf[Set, String](formatQueryGen)
   } yield Query(
+    freeText = Some("*"),
     publishers = publishers,
     formats = formats
   )).map(removeInvalid)

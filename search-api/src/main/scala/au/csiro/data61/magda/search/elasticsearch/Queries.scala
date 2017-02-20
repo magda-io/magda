@@ -22,7 +22,6 @@ object Queries {
     .query(matchQuery("distributions.format.untokenized", format))
     .scoreMode(ScoreMode.Avg)
   def regionIdQuery(region: QueryRegion, indices: Indices)(implicit config: Config): GeoShapeDefinition = {
-    println("def " + IndexDefinition.regions.indexName / IndexDefinition.REGIONS_TYPE_NAME)
     geoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), IndexDefinition.REGIONS_TYPE_NAME)
       .relation(ShapeRelation.INTERSECTS)
       .indexedShapeIndex(IndexDefinition.regions.indexName)

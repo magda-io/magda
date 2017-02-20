@@ -1,53 +1,43 @@
 package au.csiro.data61.magda.api
 
-import java.io.File
-import java.time.{ Instant, OffsetDateTime }
-import java.util.Properties
-import java.util.concurrent.ConcurrentHashMap
+import org.scalacheck._
+import org.scalacheck.Shrink
+import org.scalatest._
 
-import akka.actor.{ ActorSystem, Scheduler }
-import akka.event.{ Logging, LoggingAdapter }
+import com.vividsolutions.jts.geom.GeometryFactory
+
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
-import akka.http.scaladsl.model.StatusCodes.{ InternalServerError, OK }
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.{ RouteTestTimeout, ScalatestRouteTest }
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.api.model.{ Protocols, SearchResult }
-import au.csiro.data61.magda.model.misc.{ DataSet, _ }
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.elasticsearch._
-import au.csiro.data61.magda.test.util.Generators._
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.testkit.ElasticSugar
-import com.typesafe.config.{ Config, ConfigFactory }
-import org.elasticsearch.common.settings.Settings
-import org.scalacheck.Shrink
-import org.scalacheck._
-import org.scalactic.anyvals.PosInt
-import org.scalatest.{ BeforeAndAfter, Matchers, _ }
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import spray.json._
-
-import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration.DurationInt
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.Consumer
-import au.csiro.data61.magda.util.SetExtractor
-import org.scalacheck.Arbitrary._
-import au.csiro.data61.magda.model.temporal.PeriodOfTime
-import au.csiro.data61.magda.search.{ MatchAll, MatchPart }
-import java.util.HashMap
-import com.sksamuel.elastic4s.TcpClient
-import com.sksamuel.elastic4s.ElasticDsl
-import org.elasticsearch.cluster.health.ClusterHealthStatus
-import com.sksamuel.elastic4s.embedded.LocalNode
+import akka.http.scaladsl.model.StatusCodes.OK
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.api.model.Protocols
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.search.MatchAll
+import au.csiro.data61.magda.test.util.Generators._
+import com.monsanto.labs.mwundo.GeoJson.Polygon
+import com.monsanto.labs.mwundo.GeoJson._
+import au.csiro.data61.magda.util.MwundoJTSConversions._
 
 class SearchSpec extends BaseApiSpec {
+  describe("meta") {
+    it("Mwundo <--> JTS conversions should work") {
+      val geoFactory = new GeometryFactory()
+      try {
+        forAll(regionGen) { regionRaw =>
+          val preConversion = regionRaw._2.fields("geometry").convertTo[Geometry]
+
+          val jts = GeometryConverter.toJTSGeo(preConversion, geoFactory)
+          val postConversion = GeometryConverter.fromJTSGeo(jts)
+
+          preConversion should equal(postConversion)
+        }
+      } catch {
+        case e: Throwable =>
+          e.printStackTrace
+          throw e
+      }
+    }
+  }
+
   describe("searching") {
     describe("*") {
       it("should return all results") {
@@ -79,58 +69,92 @@ class SearchSpec extends BaseApiSpec {
     }
 
     it("should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart") {
-      val filterQueryGen = queryGen
-        .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
+      try {
+        val filterQueryGen = queryGen
+          .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
 
-      forAll(indexGen, textQueryGen(exactQueryGen)) { (indexTuple, queryTuple) ⇒
-        val (_, dataSets, routes) = indexTuple
-        val (textQuery, query) = queryTuple
-        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
-          status shouldBe OK
-          val response = responseAs[SearchResult]
+        forAll(indexGen, textQueryGen()) { (indexTuple, queryTuple) ⇒
+          val (_, dataSets, routes) = indexTuple
+          val (textQuery, query) = queryTuple
+          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
+            whenever(response.strategy.get == MatchAll) {
 
-          response.dataSets.foreach { dataSet =>
-            val temporal = dataSet.temporal
-            val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
-            val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
-              case (Some(innerQueryDateTo), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
-              case (Some(_), None) => false
-              case _ => true
-            }
+              response.dataSets.foreach { dataSet =>
+                val temporal = dataSet.temporal
+                val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
+                val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
+                  case (Some(innerQueryDateTo), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
+                  case (Some(_), None) => false
+                  case _ => true
+                }
 
-            val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
-            val dateToMatched = (query.dateFrom, dataSetDateTo) match {
-              case (Some(innerQueryDateFrom), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
-              case (Some(_), None) => false
-              case _ => true
-            }
+                val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
+                val dateToMatched = (query.dateFrom, dataSetDateTo) match {
+                  case (Some(innerQueryDateFrom), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
+                  case (Some(_), None) => false
+                  case _ => true
+                }
 
-            val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
-            val publisherMatched = if (!query.publishers.isEmpty) {
-              query.publishers.exists(queryPublisher =>
-                dataSetPublisherName.map(_.equals(queryPublisher)).getOrElse(false)
-              )
-            } else true
+                val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
+                val publisherMatched = if (!query.publishers.isEmpty) {
+                  query.publishers.exists(queryPublisher =>
+                    dataSetPublisherName.map(_.equals(queryPublisher)).getOrElse(false)
+                  )
+                } else true
 
-            val formatMatched = if (!query.formats.isEmpty) {
-              query.formats.exists(queryFormat =>
-                dataSet.distributions.exists(distribution =>
-                  distribution.format.map(_.equals(queryFormat)).getOrElse(false)
-                )
-              )
-            } else true
+                val formatMatched = if (!query.formats.isEmpty) {
+                  query.formats.exists(queryFormat =>
+                    dataSet.distributions.exists(distribution =>
+                      distribution.format.map(_.equals(queryFormat)).getOrElse(false)
+                    )
+                  )
+                } else true
 
-            val allValid = dateFromMatched && dateToMatched && publisherMatched && formatMatched
+                val geometryFactory: GeometryFactory = new GeometryFactory
 
-            withClue(s"with query $textQuery and dataSet dateTo $dataSetDateTo dateFrom $dataSetDateFrom publisher ${dataSet.publisher} formats ${dataSet.distributions.map(_.format).mkString(",")}") {
-              if (response.strategy.get == MatchAll) {
-                allValid should be(true)
-              } else if (query.quotes.isEmpty && query.freeText.isEmpty) {
-                allValid should be(false)
+                val queryRegions = query.regions.map { queryRegion =>
+                  val regionJsonOption = indexedRegions.find { innerRegion =>
+                    regionJsonToQueryRegion(innerRegion._1, innerRegion._2).equals(queryRegion)
+                  }
+
+                  val regionJson = regionJsonOption.get._2.getFields("geometry").head
+                  regionJson.convertTo[Geometry]
+                }
+
+                val distances = queryRegions.flatMap(queryRegion =>
+                  dataSet.spatial.flatMap(_.geoJson.map { geoJson =>
+                    val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
+                    val jtsRegion = GeometryConverter.toJTSGeo(queryRegion, geometryFactory)
+
+                    (jtsGeo.distance(jtsRegion), Math.max(jtsGeo.getLength, jtsRegion.getLength))
+                  }))
+
+                val geoMatched = if (!query.regions.isEmpty) {
+                  distances.exists { case (distance, length) => distance <= length * 0.05 }
+                } else true
+
+                val allValid = dateFromMatched && dateToMatched && publisherMatched && formatMatched && geoMatched
+
+                withClue(s"with query $textQuery \n and dataSet" +
+                  s"\n\tdateTo $dataSetDateTo $dateFromMatched" +
+                  s"\n\tdateFrom $dataSetDateFrom $dateToMatched" +
+                  s"\n\tpublisher ${dataSet.publisher} $publisherMatched" +
+                  s"\n\tformats ${dataSet.distributions.map(_.format).mkString(",")} $formatMatched" +
+                  s"\n\tdistances ${distances.map(_._1).mkString(",")} / ${distances.map(_._2).headOption}" +
+                  s"\n\t ${dataSet.spatial.map(_.geoJson).mkString(",")} $geoMatched" +
+                  s"\n\tqueryRegions $queryRegions\n") {
+                  allValid should be(true)
+                }
               }
             }
           }
         }
+      } catch {
+        case e: Throwable =>
+          e.printStackTrace
+          throw e
       }
     }
 
