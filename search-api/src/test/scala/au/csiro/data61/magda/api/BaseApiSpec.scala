@@ -162,6 +162,11 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
       }
     }
 
+  def emptyIndexGen: Gen[(String, List[DataSet], Route)] =
+    Gen.delay {
+      genIndexForSize(0)
+    }
+
   def smallIndexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
       Gen.size.flatMap { size ⇒

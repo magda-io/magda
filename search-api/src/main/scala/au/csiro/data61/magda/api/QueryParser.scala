@@ -119,11 +119,9 @@ private class QueryParser()(implicit val defaultOffset: ZoneOffset) extends Pars
   def queryAndFilters = (queryText ~ filters) ^^ { case a ~ b => AST.And(a, b) }
   def queryText = queryTextSep
   def queryTextSep = rep1(freeTextWord | quote) ^^ {
-    //    case Nil  => AST.Ignore
     case list => list reduceRight AST.And
   }
   def filters = rep1(region | filterStatement | emptyFilterStatement) ^^ {
-    //    case Nil  => AST.Ignore
     case list => list reduceRight AST.And
   }
   def filterStatement = filterType ~ filterBody ^^ {
@@ -132,10 +130,14 @@ private class QueryParser()(implicit val defaultOffset: ZoneOffset) extends Pars
     case AST.PublisherType ~ AST.FilterValue(filterValue) => AST.Publisher(filterValue)
     case AST.FormatType ~ AST.FilterValue(filterValue)    => AST.Format(filterValue)
     case AST.RegionType ~ AST.FilterValue(filterValue) =>
-      val split = filterValue.split(":")
-      val regionType = split(0)
-      val regionId = split(1)
-      AST.ASTRegion(QueryRegion(regionType, regionId))
+      if (filterValue.contains(":")) {
+        val split = filterValue.split(":")
+        val regionType = split(0)
+        val regionId = split(1)
+        AST.ASTRegion(QueryRegion(regionType, regionId))
+      } else {
+        AST.FreeTextWord("in " + filterValue)
+      }
   }
 
   def emptyFilterStatement = filterType ^^ {
@@ -210,13 +212,29 @@ class QueryCompiler()(implicit val config: Config) {
       ast <- parser.apply(tokens).right
     } yield ast
 
-    result match {
+    val query = result match {
       case Right(ast) =>
         val flat = flattenAST(ast)
         flat
       case Left(QueryCompilationError(error)) =>
         Query(freeText = Some(code), error = Some(error))
     }
+    
+    filterLucene(query)
+  }
+
+  val LUCENE_CONTROL_CHARACTER_REGEX = "[\\.,\\/#!\\$%\\^&;:\\{\\}=\\-_`~\\(\\)\\[\\]\"'\\+]".r
+  def filterLucene(query: Query): Query = {
+    query.copy(
+      freeText = query.freeText.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+      quotes = query.quotes.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+      formats = query.formats.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+      publishers = query.publishers.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+      regions = query.regions.map(queryRegion => queryRegion.copy(
+        regionType = LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(queryRegion.regionType, ""),
+        regionId = LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(queryRegion.regionId, "")
+      ))
+    )
   }
 
   def flattenAST(ast: AST.ReturnedAST): Query = {

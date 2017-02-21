@@ -38,7 +38,6 @@ import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 
 object Generators {
-  val LUCENE_CONTROL_CHARACTER_REGEX = "[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]\"'\\+]".r
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
   def noneBiasedOption[T](inner: Gen[T]) = Gen.frequency((1, Gen.some(inner)), (20, None))
 
@@ -293,19 +292,19 @@ object Generators {
     years = ElasticSearchIndexer.getYears(temporal.flatMap(_.start.flatMap(_.date)), temporal.flatMap(_.end.flatMap(_.date)))
   )
 
-  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" ")).map(removeFilters)
+  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" "))//.map(removeFilters)
 
   def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = probablyEmptySet(gen).flatMap(set => Gen.pick(set.size % 3, set)).map(_.toSet)
 
   val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
-  val formatQueryGen = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString)).map(removeFilters)
+  val formatQueryGen = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString))//.map(removeFilters)
 
   val partialPublisherGen = publisherGen.flatMap(Gen.oneOf(_)).flatMap { publisher =>
     Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)))
   }
-  val publisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString)).map(removeFilters)
+  val publisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString))//.map(removeFilters)
   val regionQueryGen: Gen[QueryRegion] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
     case (regionSource, regionObject) => regionJsonToQueryRegion(regionSource, regionObject)
   }
@@ -331,7 +330,7 @@ object Generators {
     dateTo = dateTo.flatten,
     formats = formats,
     regions = regions
-  )).map(removeInvalid)
+  ))//.map(removeInvalid)
 
   val exactQueryGen = (for {
     freeText <- Gen.option(queryTextGen)
@@ -349,7 +348,7 @@ object Generators {
     dateTo = dateTo.flatten,
     formats = formats,
     regions = regions
-  )).map(removeInvalid)
+  ))//.map(removeInvalid)
 
   val specificBiasedQueryGen = (for {
     publishers <- Gen.nonEmptyContainerOf[Set, String](publisherQueryGen)
@@ -358,7 +357,7 @@ object Generators {
     freeText = Some("*"),
     publishers = publishers,
     formats = formats
-  )).map(removeInvalid)
+  ))//.map(removeInvalid)
 
   val unspecificQueryGen = (for {
     freeText <- noneBiasedOption(queryTextGen)
@@ -378,7 +377,7 @@ object Generators {
     regions = regions
   ))
     .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
-    .map(removeInvalid)
+    //.map(removeInvalid)
 
   val suggestedFacetQueryGen = (for {
     publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
@@ -388,33 +387,33 @@ object Generators {
     formats = formats
   ))
     .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
-    .map(removeInvalid)
-    .flatMap(query => query.copy(
-      freeText = Some(query.freeText.getOrElse("") + " " + query.formats.map("-" + _).mkString(" "))
-    ))
+    //.map(removeInvalid)
+//    .flatMap(query => query.copy(
+//      freeText = Some(query.freeText.getOrElse("") + " " + query.formats.map("-" + _).mkString(" "))
+//    ))
 
-  val filterRegex = "(\"|by|to|from|as|in)".r
+//  val filterRegex = "(\"|by|to|from|as|in)".r
 
-  def removeFilters(string: String) = filterRegex.replaceAllIn(string, "a" + string)
+//  def removeFilters(string: String) = filterRegex.replaceAllIn(string, "a" + string)
 
-  def noFilters(string: String): Boolean = !filterRegex.matchesAny(string)
+//  def noFilters(string: String): Boolean = !filterRegex.matchesAny(string)
 
-  def noFiltersInFreeText(query: Query): Boolean = {
-    query.productIterator.forall {
-      case (x: String)    ⇒ noFilters(x)
-      case (Some(x))      ⇒ noFilters(x.toString)
-      case (xs: Set[Any]) ⇒ xs.forall(y ⇒ noFilters(y.toString))
-      case _              ⇒ true
-    }
-  }
-  def removeInvalid(objQuery: Query): Query = {
-    objQuery.copy(
-      freeText = objQuery.freeText.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
-      quotes = objQuery.quotes.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
-      formats = objQuery.formats.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
-      publishers = objQuery.publishers.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, ""))
-    )
-  }
+//  def noFiltersInFreeText(query: Query): Boolean = {
+//    query.productIterator.forall {
+//      case (x: String)    ⇒ noFilters(x)
+//      case (Some(x))      ⇒ noFilters(x.toString)
+//      case (xs: Set[Any]) ⇒ xs.forall(y ⇒ noFilters(y.toString))
+//      case _              ⇒ true
+//    }
+//  }
+//  def removeInvalid(objQuery: Query): Query = {
+//    objQuery.copy(
+//      freeText = objQuery.freeText.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+//      quotes = objQuery.quotes.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+//      formats = objQuery.formats.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
+//      publishers = objQuery.publishers.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, ""))
+//    )
+//  }
 
   def textQueryGen(queryGen: Gen[Query] = queryGen): Gen[(String, Query)] = queryGen.flatMap { query =>
     val textList = (Seq(query.freeText).flatten ++
