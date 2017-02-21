@@ -3,7 +3,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Action, JsonData } from '../types';
+import type { Action, FacetSearchJson } from '../types';
 
 
 
@@ -25,7 +25,7 @@ export function fetchRegionMapping() {
     dispatch(requestRegionMapping())
     return fetch(config.searchApiBaseUrl + 'region-types')
     .then(response => response.json())
-    .then((json: JsonData) =>
+    .then((json: FacetSearchJson) =>
       dispatch(receiveRegionMapping(json))
     )
   }

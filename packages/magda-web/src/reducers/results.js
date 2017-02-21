@@ -101,7 +101,7 @@ const results = (state: SearchState= initialData, action: DataAction) => {
       })
 
     case 'REMOVE_PUBLISHER':
-     let publisherIndex = findIndex(state.activePublishers, item => item.value === action.item.value);
+     let publisherIndex = findIndex(state.activePublishers, item => item.value === (action.item && action.item.value));
       return Object.assign({}, state, {
         activePublishers: [...state.activePublishers.slice(0, publisherIndex), ...state.activePublishers.slice(publisherIndex+1)]
       })
@@ -143,7 +143,7 @@ const results = (state: SearchState= initialData, action: DataAction) => {
       })
 
     case 'REMOVE_FORMAT':
-      let formatIndex = findIndex(state.activeFormats, item=> item.value === action.item.value);
+      let formatIndex = findIndex(state.activeFormats, item=> item.value === (action.item && action.item.value));
       return Object.assign({}, state, {
         activeFormats: [...state.activeFormats.slice(0, formatIndex), ...state.activeFormats.slice(formatIndex+1)]
       })

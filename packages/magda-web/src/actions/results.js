@@ -28,8 +28,8 @@ export function transferFailed(errorMessage: string): Action{
   }
 }
 
-export function fetchSearchResults(query: string) {
-  return (dispatch: Function)=>{
+export function fetchSearchResults(query: string): Store {
+  return (dispatch: Dispatch)=>{
     let url : string = config.searchApiBaseUrl + `datasets/search?query=${query}`;
     dispatch(requestResults(query))
     return fetch(url)
@@ -58,9 +58,9 @@ export function shouldFetchSearchResults(state: Object, query: string): boolean{
   }
 }
 
-export function fetchSearchResultsIfNeeded(urlQueryObject: Object){
+export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
   let apiQuery = parseQuery(urlQueryObject);
-  return (dispatch: Function, getState: Function )=>{
+  return (dispatch, getState)=>{
     if(shouldFetchSearchResults(getState(), apiQuery)){
       return dispatch(fetchSearchResults(apiQuery))
     }
