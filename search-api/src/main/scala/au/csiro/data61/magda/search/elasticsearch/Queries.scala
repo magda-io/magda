@@ -22,9 +22,9 @@ object Queries {
     .query(matchQuery("distributions.format.untokenized", format))
     .scoreMode(ScoreMode.Avg)
   def regionIdQuery(region: QueryRegion, indices: Indices)(implicit config: Config): GeoShapeDefinition = {
-    geoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), IndexDefinition.REGIONS_TYPE_NAME)
+    geoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), indices.getType(Indices.RegionsIndexType))
       .relation(ShapeRelation.INTERSECTS)
-      .indexedShapeIndex(IndexDefinition.regions.indexName)
+      .indexedShapeIndex(indices.getIndex(config, Indices.RegionsIndex))
       .indexedShapePath("geometry")
   }
   def dateFromQuery(dateFrom: OffsetDateTime) = filter(should(

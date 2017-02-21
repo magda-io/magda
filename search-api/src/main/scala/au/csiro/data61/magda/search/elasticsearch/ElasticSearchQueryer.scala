@@ -333,7 +333,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   def findRegion(regionType: String, regionId: String): Future[QueryRegion] = {
     clientFuture.flatMap { client =>
-      client.execute(ElasticDsl.search in IndexDefinition.regions.indexName / IndexDefinition.REGIONS_TYPE_NAME
+      client.execute(ElasticDsl.search in indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType)
         query { idsQuery((regionType + "/" + regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry")
         .flatMap { response =>
           response.totalHits match {

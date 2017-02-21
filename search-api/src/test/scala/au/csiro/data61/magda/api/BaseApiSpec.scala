@@ -129,7 +129,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   case class FakeIndices(rawIndexName: String) extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
       case Indices.DataSetsIndex => rawIndexName
-      case Indices.RegionsIndex  => "regions"
+      case Indices.RegionsIndex  => DefaultIndices.getIndex(config, index)
     }
   }
 
