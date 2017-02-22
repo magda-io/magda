@@ -1,4 +1,4 @@
-enablePlugins(JavaServerAppPackaging)
+import DockerSetup._
 
 name := "magda-search-api"
 
@@ -15,34 +15,13 @@ libraryDependencies ++= {
 
        "org.scalatest" %% "scalatest" % scalaTestV % "test",
        "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test",
-       "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "2.3.0" % "test",
+       "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "5.2.4" % "test",
        "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
        "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
      )
 }
 
-dockerfile in docker := {
-  val appDir: File = stage.value
-  val targetDir = "/app"
-
-  new Dockerfile {
-    from("java")
-    entryPoint(s"$targetDir/bin/${executableScriptName.value}")
-    env("S3_SECRET_KEY", "DUMMY")
-    copy(appDir, targetDir)
-    expose(80)
-  }
-}
-
-imageNames in docker := Seq(
-  ImageName(
-    namespace = Some("localhost:5000/data61"),
-    repository = name.value,
-    tag = Some("latest")
-  )
-)
-
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
 
-testOptions in Test += Tests.Argument("-oF")
+setupDocker(stage)

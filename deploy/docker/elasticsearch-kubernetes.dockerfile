@@ -1,4 +1,4 @@
-FROM quay.io/pires/docker-elasticsearch-kubernetes:2.4.1
+FROM quay.io/pires/docker-elasticsearch-kubernetes:5.2.0
 
 VOLUME /snapshots
 
@@ -7,7 +7,7 @@ RUN echo http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositorie
 	adduser -D -g '' elasticsearch && \
 	chown -R elasticsearch /snapshots && \
 	usermod -u 1000 elasticsearch && \
-	/elasticsearch/bin/plugin install cloud-aws
+	/elasticsearch/bin/elasticsearch-plugin install repository-s3
 	
 ENV REPO /snapshots
 

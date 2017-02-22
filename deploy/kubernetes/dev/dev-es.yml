@@ -10,18 +10,33 @@ spec:
     metadata:
       labels:
         component: elasticsearch
+      annotations:
+        pod.beta.kubernetes.io/init-containers: '[
+          {
+          "name": "sysctl",
+            "image": "busybox",
+            "imagePullPolicy": "IfNotPresent",
+            "command": ["sysctl", "-w", "vm.max_map_count=262144"],
+            "securityContext": {
+              "privileged": true
+            }
+          }
+        ]'
     spec:
       containers:
       - name: es
+        resources:
+          requests:
+            memory: 1000Mi
+          limits:
+            memory: 2000Mi
         securityContext:
           privileged: true
           capabilities:
             add:
               - IPC_LOCK
-        image: data61/elasticsearch-kubernetes:2.4.1
-        resources:
-          limits:
-            memory: 2000Mi
+        image: data61/elasticsearch-kubernetes:5.2.0
+        imagePullPolicy: Always
         env:
         - name: NAMESPACE
           valueFrom:
@@ -35,8 +50,10 @@ spec:
           value: "true"
         - name: HTTP_ENABLE
           value: "true"
-        - name: ES_HEAP_SIZE
-          value: "1000m"
+        - name: ES_JAVA_OPTS
+          value: "-Xms1024m -Xmx1024m"
+        - name: REPO
+          value: "/usr/snapshots"
         ports:
         - containerPort: 9200
           name: http
@@ -48,10 +65,11 @@ spec:
         - name: storage
           mountPath: /data
         - name: snapshots
-          mountPath: /snapshots
+          mountPath: ~/snapshots
       volumes:
       - name: snapshots
-        emptyDir: {}
+        hostPath:
+          path: /usr/snapshots
       - name: "storage"
         emptyDir: {}
 ---

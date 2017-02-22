@@ -5,7 +5,8 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
-import com.sksamuel.elastic4s.{AbstractAggregationDefinition, QueryDefinition}
+import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
+import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
@@ -18,6 +19,7 @@ import scalaz.Memo
 import java.time.ZoneOffset
 import au.csiro.data61.magda.search.elasticsearch.YearFacetDefinition
 import com.typesafe.config.Config
+import com.sksamuel.elastic4s.ElasticDsl
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -27,7 +29,7 @@ trait FacetDefinition {
   /**
    *  The elastic4s aggregation definition for this facet, given a max bucket size
    */
-  def aggregationDefinition(limit: Int): AbstractAggregationDefinition
+  def aggregationDefinition(limit: Int): AggregationDefinition
 
   /**
    * Determines whether the passed query has any relevance to this facet - e.g. a query is only relevant to Year if it
@@ -107,12 +109,8 @@ object FacetDefinition {
 }
 
 object PublisherFacetDefinition extends FacetDefinition {
-  override def aggregationDefinition(limit: Int): AbstractAggregationDefinition = {
-    val agg = aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit)
-
-    agg.aggregationBuilder.missing("Unspecified")
-
-    agg
+  override def aggregationDefinition(limit: Int): AggregationDefinition = {
+    aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit).missing("Unspecified")
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -134,7 +132,7 @@ object PublisherFacetDefinition extends FacetDefinition {
 class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
-  override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
+  override def aggregationDefinition(limit: Int): AggregationDefinition =
     aggregation.terms(Year.id).field("years").size(Int.MaxValue)
 
   override def truncateFacets(query: Query, matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
@@ -276,7 +274,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
     (parseDate(textQuery, false), parseDate(textQuery, true)) match {
       case (DateTimeResult(from), DateTimeResult(to)) => Query(dateFrom = Some(from), dateTo = Some(to))
       // The idea is that this will come from our own index so it shouldn't even be some weird wildcard thing
-      case _ => throw new RuntimeException("Date " + query + " not recognised")
+      case _ => throw new RuntimeException("Date " + textQuery + " not recognised")
     }
 
   override def exactMatchQuery(query: String): QueryDefinition = {
@@ -296,13 +294,13 @@ object YearFacetDefinition {
 }
 
 object FormatFacetDefinition extends FacetDefinition {
-  override def aggregationDefinition(limit: Int): AbstractAggregationDefinition =
-    aggregation nested Format.id path "distributions" aggregations {
-      val termsAgg = aggregation terms "nested" field "distributions.format.untokenized" size limit exclude "" aggs {
+  override def aggregationDefinition(limit: Int): AggregationDefinition =
+    aggregation nested Format.id path "distributions" aggs {
+      val termsAgg = aggregation terms "nested" field "distributions.format.untokenized" size limit includeExclude(Seq(), Seq("")) aggs {
         aggregation reverseNested "reverse"
       }
 
-      termsAgg.aggregationBuilder.missing("Unspecified")
+      termsAgg.builder.missing("Unspecified")
 
       termsAgg
     }
@@ -323,7 +321,8 @@ object FormatFacetDefinition extends FacetDefinition {
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
-    should(query.formats.map(formatQuery(_)))
+//    ElasticDsl.matchAllQuery()
+    should(query.formats.map(exactFormatQuery(_)))
       .minimumShouldMatch(1)
 
   override def isFilterOptionRelevant(query: Query)(filterOption: FacetOption): Boolean = query.formats.exists(

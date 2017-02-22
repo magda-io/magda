@@ -18,7 +18,7 @@ spec:
         image: "mobulum/varnish"
         resources:
           requests:
-            cpu: 200m
+            cpu: 100m
             memory: 1000Mi
         imagePullPolicy: Always
         env:
@@ -74,7 +74,7 @@ spec:
           value: api
         - name: S3_SECRET_KEY
           value: dummy
-        image: "data61/magda-metadata:v${version}"
+        image: "data61/magda-search-api:${version}"
         resources:
           requests:
             cpu: 450m

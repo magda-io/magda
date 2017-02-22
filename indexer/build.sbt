@@ -1,3 +1,5 @@
+import DockerSetup._
+
 name := "magda-metadata-indexer"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
@@ -15,7 +17,6 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-xml-experimental" % akkaV,
     "com.typesafe.akka" %% "akka-contrib" % akkaV,
     "ch.megard" %% "akka-http-cors" % "0.1.5",
-    "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.3.0",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
     "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
@@ -34,23 +35,4 @@ unmanagedResourceDirectories in Compile ++= {
   }
 }
 
-dockerfile in docker := {
-  val appDir: File = stage.value
-  val targetDir = "/app"
-
-  new Dockerfile {
-    from("java")
-    entryPoint(s"$targetDir/bin/${executableScriptName.value}")
-    env("S3_SECRET_KEY", "DUMMY")
-    copy(appDir, targetDir)
-    expose(80)
-  }
-}
-
-imageNames in docker := Seq(
-  ImageName(
-    namespace = Some("localhost:5000/data61"),
-    repository = name.value,
-    tag = Some("latest")
-  )
-)
+setupDocker( stage)

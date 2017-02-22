@@ -4,27 +4,27 @@ import akka.actor.Scheduler
 import akka.event.LoggingAdapter
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.util.ErrorHandling.retry
-import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
+import com.sksamuel.elastic4s.{TcpClient, ElasticsearchClientUri}
 import org.elasticsearch.common.settings.Settings
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
 trait ClientProvider {
-  def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[ElasticClientTrait]
+  def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient]
 }
 
 class DefaultClientProvider extends ClientProvider {
-  private var clientFuture: Option[Future[ElasticClient]] = None
+  private var clientFuture: Option[Future[TcpClient]] = None
 
-  override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[ElasticClientTrait] = {
+  override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient] = {
     val outerFuture = clientFuture match {
       case Some(future) => future
       case None =>
         val future = retry(() => Future {
           val uri = ElasticsearchClientUri(AppConfig.conf().getString("elasticSearch.serverUrl"))
-          val settings = Settings.settingsBuilder().put("cluster.name", "myesdb").build()
-          ElasticClient.transport(settings, uri)
+          val settings = Settings.builder().put("cluster.name", "myesdb").build()
+          TcpClient.transport(settings, uri)
         }, 10 seconds, 10, onRetry(logger)(_))
           .map { client =>
             logger.info("Successfully connected to elasticsearch client")
@@ -36,7 +36,7 @@ class DefaultClientProvider extends ClientProvider {
         future
     }
 
-    outerFuture.map(new ElasticClientAdapter(_))
+    outerFuture
   }
 
   private def onRetry(logger: LoggingAdapter)(retriesLeft: Int) = logger.warning("Failed to make initial contact with ES server, {} retries left", retriesLeft)

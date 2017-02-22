@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.search
 
 import au.csiro.data61.magda.api.Query
-import au.csiro.data61.magda.api.Model.{RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.api.model.{RegionSearchResult, SearchResult}
 import au.csiro.data61.magda.model.misc._
 
 import scala.concurrent.Future

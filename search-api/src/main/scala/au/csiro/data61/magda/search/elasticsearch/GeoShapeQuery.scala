@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import com.sksamuel.elastic4s.QueryDefinition
+import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import org.elasticsearch.common.geo.ShapeRelation
 import org.elasticsearch.index.query.QueryBuilders
 

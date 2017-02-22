@@ -16,9 +16,7 @@ spec:
         env:
         - name: SCALA_ENV
           value: dev
-        - name: MAGDA_SEARCH_ROLE
-          value: indexer
-        image: "data61/magda-metadata:v${version}"
+        image: "data61/magda-metadata-indexer:${version}"
         resources:
           requests:
             cpu: 0m

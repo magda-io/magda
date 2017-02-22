@@ -4,26 +4,27 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.model.misc.{Format, Publisher}
+import au.csiro.data61.magda.model.misc.{ Format, Publisher }
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter}
-import com.sksamuel.elastic4s.mappings.FieldType.{GeoShapeType, StringType}
-import com.sksamuel.elastic4s.{CreateIndexDefinition, ElasticClient, ElasticDsl}
+import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter }
+import com.sksamuel.elastic4s.mappings.FieldType._
+import com.sksamuel.elastic4s.{ TcpClient, ElasticDsl }
+import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
 import spray.json._
 
 import scala.concurrent.Future
 import au.csiro.data61.magda.spatial.RegionSource
 import com.typesafe.config.Config
 import au.csiro.data61.magda.spatial.RegionSources
+import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 
 case class IndexDefinition(
-  name: String,
-  version: Int,
-  definition: (Config, Indices) => CreateIndexDefinition,
-  create: Option[(ElasticClientTrait, Config, Materializer, ActorSystem) => Future[Any]] = None
-) {
+    name: String,
+    version: Int,
+    definition: (Option[String]) => CreateIndexDefinition,
+    create: Option[(TcpClient, Config, Materializer, ActorSystem) => Future[Any]] = None) {
   def indexName: String = this.name + this.version
 }
 
@@ -31,71 +32,71 @@ object IndexDefinition extends DefaultJsonProtocol {
   val DATASETS_TYPE_NAME = "datasets"
   val REGIONS_TYPE_NAME = "regions"
 
-  val datasets: IndexDefinition = new IndexDefinition(
+  val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 14,
-    definition = (config, indices) =>
-    create.index(indices.getIndex(config, Indices.DataSetsIndex))
-      .indexSetting("recovery.initial_shards", 1)
-      .indexSetting("requests.cache.enable", true)
-      .mappings(
-        mapping(DATASETS_TYPE_NAME).fields(
-          field("temporal").inner(
-            field("start").inner(
-              field("text").typed(StringType)
+    version = 15,
+    definition = (overrideIndexName) =>
+      create.index(overrideIndexName.getOrElse(dataSets.indexName))
+        .indexSetting("recovery.initial_shards", 1)
+        .indexSetting("requests.cache.enable", true)
+        .mappings(
+          mapping(DATASETS_TYPE_NAME).fields(
+            field("temporal").inner(
+              field("start").inner(
+                field("text", TextType)
+              ),
+              field("end").inner(
+                field("text").typed(TextType)
+              )
             ),
-            field("end").inner(
-              field("text").typed(StringType)
-            )
+            field("publisher").inner(
+              field("name").typed(TextType).analyzer("english").fields(
+                field("untouched").typed(KeywordType).index("not_analyzed")
+              )
+            ),
+            field("distributions").nested(
+              field("title").typed(TextType).analyzer("english"),
+              field("description").typed(TextType).analyzer("english"),
+              field("format").typed(TextType).fields(
+                field("untokenized").typed(KeywordType)
+              )
+            ),
+            field("spatial").inner(
+              field("geoJson").typed(GeoShapeType)
+            ),
+            field("title").typed(TextType).analyzer("english"),
+            field("description").typed(TextType).analyzer("english"),
+            field("keyword").typed(TextType).analyzer("english"),
+            field("theme").typed(TextType).analyzer("english"),
+            field("years").typed(KeywordType)
           ),
-          field("publisher").inner(
-            field("name").typed(StringType).analyzer("english").fields(
-              field("untouched").typed(StringType).index("not_analyzed")
-            )
-          ),
-          field("distributions").nested(
-            field("title").typed(StringType).analyzer("english"),
-            field("description").typed(StringType).analyzer("english"),
-            field("format").typed(StringType).fields(
-              field("untokenized").typed(StringType).analyzer("untokenized")
-            )
-          ),
-          field("spatial").inner(
-            field("geoJson").typed(GeoShapeType)
-          ),
-          field("title").typed(StringType).analyzer("english"),
-          field("description").typed(StringType).analyzer("english"),
-          field("keyword").typed(StringType).analyzer("english"),
-          field("theme").typed(StringType).analyzer("english"),
-          field("years").typed(StringType).analyzer("untokenized")
-        ),
-        mapping(Format.id),
-        mapping(Publisher.id)
-      ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+          mapping(Format.id),
+          mapping(Publisher.id)
+        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
   )
 
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 13,
-      definition = (config, indices) =>
-      create.index(indices.getIndex(config, Indices.RegionsIndex))
-        .indexSetting("recovery.initial_shards", 1)
-        .mappings(
-          mapping(REGIONS_TYPE_NAME).fields(
-            field("type").typed(StringType),
-            field("id").typed(StringType),
-            field("name").typed(StringType),
-            field("rectangle").typed(GeoShapeType),
-            field("geometry").typed(GeoShapeType)
-          )
-        ),
+      version = 14,
+      definition = (overrideIndexName) =>
+        create.index(overrideIndexName.getOrElse(regions.indexName))
+          .indexSetting("recovery.initial_shards", 1)
+          .mappings(
+            mapping(REGIONS_TYPE_NAME).fields(
+              field("type").typed(StringType),
+              field("id").typed(StringType),
+              field("name").typed(StringType),
+              field("rectangle").typed(GeoShapeType),
+              field("geometry").typed(GeoShapeType)
+            )
+          ),
       create = Some((client, config, materializer, actorSystem) => setupRegions(client)(config, materializer, actorSystem))
     )
 
-  val indices = Seq(datasets, regions)
+  val indices = Seq(dataSets, regions)
 
-  def setupRegions(client: ElasticClientTrait)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: TcpClient)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     val logger = system.log
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
@@ -126,7 +127,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             ).toJson)
       }
       // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request
-      .batchWeighted(config.getLong("regionLoading.regionBufferMb") * 1000000, defin => defin.build.source().length(), Seq(_))(_ :+ _)
+      .batchWeighted(config.getLong("regionLoading.regionBufferMb") * 1000000, defin => IndexContentBuilder(defin).string.length, Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
       // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
       // available to index them right away

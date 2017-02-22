@@ -26,7 +26,7 @@ class HttpFetcher(interfaceConfig: InterfaceConfig, implicit val system: ActorSy
   def request(path: String): Future[HttpResponse] =
     interfaceConfig.fakeConfig match {
       case Some(fakeConfig) => Future {
-        val file = io.Source.fromInputStream(getClass.getResourceAsStream(fakeConfig.datasetPath))
+        val file = scala.io.Source.fromInputStream(getClass.getResourceAsStream(fakeConfig.datasetPath))
         val contentType = fakeConfig.mimeType match {
           case "application/json" => ContentTypes.`application/json`
           case "text/xml"         => ContentTypes.`text/xml(UTF-8)`

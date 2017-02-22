@@ -1,4 +1,4 @@
-enablePlugins(JavaServerAppPackaging)
+import DockerSetup._
 
 name := "magda-registry-api"
 
@@ -25,27 +25,3 @@ libraryDependencies ++= {
     "org.gnieh" %% "diffson-spray-json" % "2.1.2"
   )
 }
-
-dockerfile in docker := {
-  val appDir: File = stage.value
-  val targetDir = "/app"
-
-  new Dockerfile {
-    from("java")
-    entryPoint(s"$targetDir/bin/${executableScriptName.value}")
-    env("S3_SECRET_KEY", "DUMMY")
-    copy(appDir, targetDir)
-    expose(80)
-  }
-}
-
-imageNames in docker := Seq(
-  ImageName(
-    namespace = Some("localhost:5000/data61"),
-    repository = name.value,
-    tag = Some("latest") //Some("v" + version.value)
-  )
-)
-
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true

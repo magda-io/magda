@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.Temporal
 
 import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.util.Regex._
 
 import scala.util.matching.Regex
 
@@ -113,10 +114,6 @@ object DateParser {
   case class ConstantResult(dateConstant: DateConstant) extends ParseResult
   case object ParseFailure extends ParseResult
 
-  class RichRegex(underlying: Regex) {
-    def matches(s: String) = underlying.pattern.matcher(s).matches
-  }
-  implicit def regexToRichRegex(r: Regex) = new RichRegex(r)
 
   private def roundUp[T <: Temporal](roundUp: Boolean, date: T, originalFormat: Format): T =
     if (roundUp) date.plus(1, originalFormat.precision).minus(1, ChronoUnit.MILLIS).asInstanceOf[T] else date

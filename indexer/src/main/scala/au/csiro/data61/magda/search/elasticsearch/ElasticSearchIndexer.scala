@@ -10,7 +10,6 @@ import au.csiro.data61.magda.model.misc.{ DataSet, Format, Publisher }
 import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.ErrorHandling.{ RootCause, retry }
-import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.GetMappingsResult
 import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryResponse
@@ -22,12 +21,19 @@ import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.snapshots.SnapshotInfo
 import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
+import org.elasticsearch.action.bulk.{BulkResponse}
+import com.sksamuel.elastic4s.bulk.BulkDefinition
+import com.sksamuel.elastic4s.TcpClient
+import com.sksamuel.elastic4s.ElasticDsl
 
 import scala.collection.JavaConversions._
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success }
 import com.typesafe.config.Config
+import com.sksamuel.elastic4s.bulk.RichBulkResponse
+import org.elasticsearch.action.bulk.BulkItemResponse
+import com.sksamuel.elastic4s.bulk.RichBulkItemResponse
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -40,7 +46,7 @@ class ElasticSearchIndexer(
   val SNAPSHOT_REPO_NAME = "snapshots"
 
   /**
-   * Returns an initialised {@link ElasticClientTrait} on completion. Using this to get the client rather than just keeping a reference to an initialised client
+   * Returns an initialised {@link TcpClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
    *  ensures that all queries will only complete after the client is initialised.
    */
   private val setupFuture = setup()
@@ -48,8 +54,8 @@ class ElasticSearchIndexer(
   implicit val scheduler = system.scheduler
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
-  private lazy val indexQueue: SourceQueue[(InterfaceConfig, Seq[DataSet], Promise[BulkResult])] =
-    Source.queue[(InterfaceConfig, Seq[DataSet], Promise[BulkResult])](Int.MaxValue, OverflowStrategy.backpressure)
+  private lazy val indexQueue: SourceQueue[(InterfaceConfig, Seq[DataSet], Promise[RichBulkResponse])] =
+    Source.queue[(InterfaceConfig, Seq[DataSet], Promise[RichBulkResponse])](Int.MaxValue, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (source, dataSets, promise) =>
           bulkIndex(buildDatasetIndexDefinition(source, dataSets))
@@ -74,11 +80,11 @@ class ElasticSearchIndexer(
       .to(Sink.last)
       .run()
 
-  private lazy val restoreQueue: SourceQueue[(ElasticClientTrait, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
-    Source.queue[(ElasticClientTrait, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
+  private lazy val restoreQueue: SourceQueue[(TcpClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
+    Source.queue[(TcpClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
-          logger.info("Restoring snapshot {} for {} version {}", snapshot.name, definition.name, definition.version)
+          logger.info("Restoring snapshot {} for {} version {}", snapshot.snapshotId.getName, definition.name, definition.version)
 
           logger.info("First deleting existing index if present...")
 
@@ -89,7 +95,7 @@ class ElasticSearchIndexer(
           logger.info("Restoring snapshot")
 
           client.execute {
-            restore snapshot snapshot.name from SNAPSHOT_REPO_NAME indexes definition.indexName waitForCompletion true
+            restore snapshot snapshot.snapshotId.getName from SNAPSHOT_REPO_NAME indexes definition.indexName waitForCompletion true
           } map { response =>
             response.status match {
               case RestStatus.OK =>
@@ -108,8 +114,8 @@ class ElasticSearchIndexer(
       .to(Sink.last)
       .run()
 
-  /** Initialises an {@link ElasticClientTrait}, handling initial connection to the ElasticSearch server and creation of the indices */
-  private def setup(): Future[ElasticClientTrait] = {
+  /** Initialises an {@link TcpClient}, handling initial connection to the ElasticSearch server and creation of the indices */
+  private def setup(): Future[TcpClient] = {
     clientProvider.getClient(system.scheduler, logger, ec).flatMap(client =>
       retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.warning("Failed to get indexes, {} retries left", _))
         .flatMap { indexPairs =>
@@ -122,7 +128,7 @@ class ElasticSearchIndexer(
     )
   }
 
-  private def reindexSpatialFails(source: InterfaceConfig, dataSets: Seq[DataSet], failures: Seq[BulkItemResult]) = {
+  private def reindexSpatialFails(source: InterfaceConfig, dataSets: Seq[DataSet], failures: Seq[RichBulkItemResponse]) = {
     val dataSetLookup = dataSets.groupBy(_.identifier).mapValues(_.head)
     val geoFails = failures
       .filter(_.failureMessage.contains("failed to parse [spatial.geoJson]"))
@@ -139,7 +145,7 @@ class ElasticSearchIndexer(
   /**
    * Returns a future that gets a seq of each index paired with its current ES definition.
    */
-  private def getIndexDefinitions(client: ElasticClientTrait) = {
+  private def getIndexDefinitions(client: TcpClient) = {
     def indexNotFound(indexDef: IndexDefinition, inner: IndexNotFoundException) = {
       logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
       None
@@ -156,7 +162,7 @@ class ElasticSearchIndexer(
       .map(esDefinitions => esDefinitions.zip(IndexDefinition.indices))
   }
 
-  private def updateIndices(client: ElasticClientTrait, definitionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
+  private def updateIndices(client: TcpClient, definitionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
     Future.sequence(definitionPairs.map {
       case (mapping, definition) =>
         // If no index, create it
@@ -170,7 +176,7 @@ class ElasticSearchIndexer(
         }
     })
 
-  private def buildIndex(client: ElasticClientTrait, definition: IndexDefinition): Future[Any] = {
+  private def buildIndex(client: TcpClient, definition: IndexDefinition): Future[Any] = {
     val snapshotFuture = if (config.getBoolean("indexer.readSnapshots"))
       restoreLatestSnapshot(client, definition)
     else {
@@ -183,7 +189,7 @@ class ElasticSearchIndexer(
       case RestoreFailure =>
         deleteIndex(client, definition)
           .flatMap { _ =>
-            client.execute(definition.definition(config, indices))
+            client.execute(definition.definition(None))
           } recover {
             case e: Throwable =>
               logger.error(e, "Failed to set up the index")
@@ -207,7 +213,7 @@ class ElasticSearchIndexer(
     }
   }
 
-  def deleteIndex(client: ElasticClientTrait, definition: IndexDefinition): Future[Unit] = client.execute {
+  def deleteIndex(client: TcpClient, definition: IndexDefinition): Future[Unit] = client.execute {
     delete index (definition.indexName)
   } recover {
     case RootCause(inner: IndexNotFoundException) => // Meh, we were trying to delete it anyway.
@@ -222,7 +228,7 @@ class ElasticSearchIndexer(
   case object RestoreSuccess extends RestoreResult
   case object RestoreFailure extends RestoreResult
 
-  private def restoreLatestSnapshot(client: ElasticClientTrait, index: IndexDefinition): Future[RestoreResult] = {
+  private def restoreLatestSnapshot(client: TcpClient, index: IndexDefinition): Future[RestoreResult] = {
     logger.info("Attempting to restore snapshot for {} version {}", index.name, index.version)
 
     getLatestSnapshot(client, index) flatMap {
@@ -230,14 +236,14 @@ class ElasticSearchIndexer(
         logger.info("Could not find a snapshot for {} version {}", index.name, index.version)
         Future.successful(RestoreFailure)
       case Some(snapshot) =>
-        logger.info("Found snapshot {} for {} version {}, queueing restore operation", snapshot.name, index.name, index.version)
+        logger.info("Found snapshot {} for {} version {}, queueing restore operation", snapshot.snapshotId.getName, index.name, index.version)
         val promise = Promise[RestoreResult]()
         restoreQueue.offer((client, index, snapshot, promise))
         promise.future
     }
   }
 
-  private def getLatestSnapshot(client: ElasticClientTrait, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
+  private def getLatestSnapshot(client: TcpClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
     def getSnapshot(): Future[GetSnapshotsResponse] = client.execute {
       get snapshot Seq() from SNAPSHOT_REPO_NAME
     }
@@ -253,14 +259,14 @@ class ElasticSearchIndexer(
       .map { response =>
         response.getSnapshots
           .view
-          .filter(_.name.startsWith(snapshotPrefix(index)))
+          .filter(_.snapshotId.getName.startsWith(snapshotPrefix(index)))
           .filter(_.failedShards() == 0)
           .sortBy(-_.endTime)
           .headOption
       }
   }
 
-  private def createSnapshotRepo(client: ElasticClientTrait, definition: IndexDefinition): Future[PutRepositoryResponse] = {
+  private def createSnapshotRepo(client: TcpClient, definition: IndexDefinition): Future[PutRepositoryResponse] = {
     val repoConfig = config.getConfig("elasticSearch.snapshotRepo")
     val repoType = repoConfig.getString("type")
     val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
@@ -286,7 +292,7 @@ class ElasticSearchIndexer(
     // TODO: Check for empty identifier strings.
     
     if (dataSets.length > 0) {
-      val promise = Promise[BulkResult]()
+      val promise = Promise[RichBulkResponse]()
       indexQueue.offer((source, dataSets, promise))
         .map {
           case QueueOfferResult.Enqueued    => QueueOfferResult.Enqueued
@@ -300,9 +306,9 @@ class ElasticSearchIndexer(
       Future(Unit)
     }
 
-  def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.datasets)).map(_ => Unit)
+  def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.dataSets)).map(_ => Unit)
 
-  private def createSnapshot(client: ElasticClientTrait, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
+  private def createSnapshot(client: TcpClient, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
     logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
 
     val future = client.execute {
@@ -323,7 +329,7 @@ class ElasticSearchIndexer(
     setupFuture.flatMap(client =>
       retry(() =>
         client.execute {
-          ElasticDsl.search in IndexDefinition.datasets.indexName / IndexDefinition.datasets.name query matchQuery("catalog", source.name) limit 0
+          ElasticDsl.search in IndexDefinition.dataSets.indexName / IndexDefinition.dataSets.name query matchQuery("catalog", source.name) limit 0
         }, 10 seconds, 10, logger.warning("Failed to get dataset count, {} retries left", _))
         .map { result =>
           logger.debug("{} reindex check hit count: {}", source.name, result.getHits.getTotalHits)
@@ -332,7 +338,7 @@ class ElasticSearchIndexer(
     )
   }
 
-  private def bulkIndex(definition: BulkDefinition): Future[BulkResult] =
+  private def bulkIndex(definition: BulkDefinition): Future[RichBulkResponse] =
     setupFuture.flatMap { client =>
       client.execute(definition)
         .recover {
@@ -348,7 +354,7 @@ class ElasticSearchIndexer(
   private def buildDatasetIndexDefinition(source: InterfaceConfig, dataSets: Seq[DataSet]): BulkDefinition =
     bulk(
       dataSets.map { dataSet =>
-        val indexDataSet = ElasticDsl.index into IndexDefinition.datasets.indexName / IndexDefinition.datasets.name id dataSet.uniqueId source (
+        val indexDataSet = ElasticDsl.index into IndexDefinition.dataSets.indexName / IndexDefinition.dataSets.name id dataSet.uniqueId source (
           dataSet.copy(
             catalog = source.name,
             years = ElasticSearchIndexer.getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
@@ -356,14 +362,14 @@ class ElasticSearchIndexer(
         )
 
         val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-          ElasticDsl.index into IndexDefinition.datasets.indexName / Publisher.id
+          ElasticDsl.index into IndexDefinition.dataSets.indexName / Publisher.id
             id publisherName.toLowerCase
             source Map("value" -> publisherName).toJson))
 
         val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
           val format = distribution.format.get
 
-          ElasticDsl.index into IndexDefinition.datasets.indexName / Format.id id format.toLowerCase source Map("value" -> format).toJson
+          ElasticDsl.index into IndexDefinition.dataSets.indexName / Format.id id format.toLowerCase source Map("value" -> format).toJson
         }
 
         indexDataSet :: indexPublisher.toList ++ indexFormats
