@@ -23,15 +23,17 @@ class RegionPopup extends Facet {
          this.state={
              _activeRegion: {
                regionId: undefined,
-               regionType: undefined
+               regionType: "LGA"
              }
          }
     }
 
     componentWillReceiveProps(nextProps){
+      if(defined(nextProps.regionType)){
         this.setState({
           _activeRegion: nextProps.activeRegion
         })
+      }
     }
 
     onToggleOption(option){
