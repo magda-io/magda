@@ -50,8 +50,9 @@ export type Dataset = {
 }
 
 export type FacetSearchJson = {
-  options: any[],
-  regionWmsMap: Object
+  options?: Array<Object>,
+  regions? : Array<Object>,
+  regionWmsMap?: Object
 };
 
 export type FacetOption = {
@@ -68,8 +69,9 @@ type Facet = {
 }
 
 export type Region = {
-    regionId: ?number,
+    regionId: ?string,
     regionType: ?string,
+    regionName?: string,
     boundingBox: {
       west: number,
       south: number,

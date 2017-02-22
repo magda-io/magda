@@ -6,6 +6,7 @@ import RegionMap from './RegionMap';
 import FacetSearchBox from './FacetSearchBox';
 import React from 'react'
 import RegionSummray from './RegionSummary';
+import {parseRegion} from '../helpers/api';
 
 
 class RegionPopup extends Facet {
@@ -35,7 +36,7 @@ class RegionPopup extends Facet {
 
     onToggleOption(option){
       this.setState({
-        _activeRegion: option,
+        _activeRegion: parseRegion(option),
       })
     }
 
@@ -75,9 +76,9 @@ class RegionPopup extends Facet {
 
     getActiveRegionType(){
       let region = this.state._activeRegion;
-      let regionType = '';
-      if(defined(region.regionType && this.props.regionMapping)){
-        if(defined(this.props.regionMapping[region.regionType]) && defined(this.props.regionMapping[region.regionType].description)){
+      let regionType = "";
+      if(this.props.regionMapping){
+        if(defined(region.regionType) && this.props.regionMapping[region.regionType] && this.props.regionMapping[region.regionType].description){
           regionType = this.props.regionMapping[region.regionType].description
         }
       }
@@ -86,7 +87,6 @@ class RegionPopup extends Facet {
 
     render(){
         let region = this.state._activeRegion;
-        console.log(this.getActiveRegionType());
         return (
             <div className='popup'>
               <div className='popup__inner'>
@@ -115,7 +115,8 @@ class RegionPopup extends Facet {
                       }
                     </div>
                   </div>
-                  <RegionSummray region={this.state._activeRegion}/>
+                  <RegionSummray regionMapping={this.props.regionMapping} 
+                                 region={this.state._activeRegion}/>
                   <div className='popup__map'>
                     <RegionMap title='region'
                                id='region'

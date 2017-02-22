@@ -16,7 +16,7 @@ const facetRegionSearch = (state: FacetSearchState =initialData, action: Action)
     case 'RECEIVE_REGIONS':
       return Object.assign({}, state, {
         isFetching: false,
-        data: (action.json && action.json.options) && action.json.options,
+        data: (action.json && action.json.regions) && action.json.regions,
         facetQuery: action.facetQuery && action.facetQuery
       })
     default:
