@@ -7,6 +7,7 @@ import RegionPopup from './RegionPopup';
 import FacetSearchBox from './FacetSearchBox';
 import RegionSummary from './RegionSummary';
 import defined from '../helpers/defined';
+import {parseRegion} from '../helpers/api';
 
 /*
 * the region (location) facet facet, extends Facet class
@@ -17,6 +18,7 @@ class FacetRegion extends Component {
         this.openPopup = this.openPopup.bind(this);
         this.closePopUp = this.closePopUp.bind(this);
         this.renderOption = this.renderOption.bind(this);
+        this.onToggleOption = this.onToggleOption.bind(this);
 
         /**
          * @type {object}
@@ -39,6 +41,9 @@ class FacetRegion extends Component {
         });
     }
 
+    onToggleOption(option){
+        this.props.onToggleOption(parseRegion(option));
+    }
 
     // see Facet.renderOption(option, optionMax, onFocus)
     // Here is only for mark up change
@@ -65,7 +70,7 @@ class FacetRegion extends Component {
                           activeRegion={[this.props.activeRegion.regionId, this.props.activeRegion.regionType]}
                           hasQuery={this.props.hasQuery}>
                <FacetSearchBox renderOption={this.renderOption}
-                               onToggleOption={this.props.onToggleOption}
+                               onToggleOption={this.onToggleOption}
                                options={this.props.facetSearchResults}
                                searchFacet={this.props.searchFacet}/>
                <RegionSummary region={this.props.activeRegion} regionMapping={this.props.regionMapping}/>
