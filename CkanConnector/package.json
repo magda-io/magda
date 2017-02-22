@@ -10,20 +10,13 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/bluebird": "^3.0.37",
-    "@types/isomorphic-fetch": "0.0.32",
     "@types/node": "^7.0.5",
     "@types/request": "0.0.39",
-    "@types/rx": "^4.1.1",
     "@types/urijs": "^1.15.31",
     "typescript": "^2.1.6"
   },
   "dependencies": {
-    "bluebird": "^3.4.7",
-    "core-js": "^2.4.1",
-    "isomorphic-fetch": "^2.2.1",
     "request": "^2.79.0",
-    "rx": "^4.1.0",
     "ts-node": "^2.1.0",
     "urijs": "^1.18.7"
   }

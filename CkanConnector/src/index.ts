@@ -1,10 +1,12 @@
 import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api';
-import { Observable } from 'rx';
 import retry from './retry';
 import Ckan from './Ckan';
 import CkanConnector, { AspectBuilder } from './CkanConnector';
 import Registry from './Registry';
 import * as fs from 'fs';
+import * as request from 'request';
+import formatServiceError from './formatServiceError';
+import * as URI from 'urijs';
 
 const ckan = new Ckan({
     baseUrl: 'https://data.gov.au/',
@@ -49,6 +51,7 @@ const connector = new CkanConnector({
 });
 
 connector.run().then(result => {
+    console.log('Aspect Definitions Connected: ' + result.aspectDefinitionsConnected);
     console.log('Datasets Connected: ' + result.datasetsConnected);
 
     if (result.errors.length > 0) {

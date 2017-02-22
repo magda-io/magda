@@ -1,8 +1,8 @@
-import { Observable } from 'rx';
 import * as URI from 'urijs';
 import * as request from 'request';
 import retry from './retry';
 import formatServiceError from './formatServiceError';
+import AsyncPage from './AsyncPage';
 
 export interface CkanDataset {
     id: string;
@@ -54,7 +54,7 @@ export default class Ckan {
 
     public packageSearch(options?: {
         ignoreHarvestSources?: string[];
-    }): Observable<CkanDataset> {
+    }): AsyncPage<CkanPackageSearchResponse> {
         const url = this.apiBaseUrl.clone().segment('api/3/action/package_search');
         
         if (options && options.ignoreHarvestSources && options.ignoreHarvestSources.length > 0) {
@@ -62,7 +62,18 @@ export default class Ckan {
             url.addSearch('fq', solrQueries.join('+'));
         }
 
-        return this.fetchPackageSearch(url, 0);
+        let startIndex = 0;
+
+        return AsyncPage.create<CkanPackageSearchResponse>(previous => {
+            if (previous) {
+                startIndex += previous.result.results.length;
+                if (startIndex >= 250 /*previous.result.count*/) {
+                    return undefined;
+                }
+            }
+
+            return this.requestPackageSearchPage(url, startIndex);
+        });
     }
 
     public getPackageShowUrl(id: string): string {
@@ -73,34 +84,23 @@ export default class Ckan {
         return this.baseUrl.clone().segment('dataset').segment(id).toString();
     }
 
-    private fetchPackageSearch(url: uri.URI, startIndex: number): Observable<CkanDataset> {
-        return this.requestPackageSearchPage(url, startIndex).flatMap(packageSearchResponse => {
-            const items = Observable.fromArray(packageSearchResponse.result.results);
-            const nextStartIndex = startIndex + this.pageSize;
-            const nextPage = packageSearchResponse.result.count > nextStartIndex
-                ? this.fetchPackageSearch(url, nextStartIndex)
-                : Observable.empty<CkanDataset>();
-            return Observable.concat(items, nextPage);
-        });
-    }
-
-    private requestPackageSearchPage(url: uri.URI, startIndex: number): Observable<CkanPackageSearchResponse> {
+    private requestPackageSearchPage(url: uri.URI, startIndex: number): Promise<CkanPackageSearchResponse> {
         const pageUrl = url.clone();
         pageUrl.addSearch('start', startIndex);
         pageUrl.addSearch('rows', this.pageSize);
 
         const operation = () => new Promise<CkanPackageSearchResponse>((resolve, reject) => {
+            console.log('Requesting ' + pageUrl.toString());
             request(pageUrl.toString(), { json: true }, (error, response, body) => {
                 if (error) {
                     reject(error);
                     return;
                 }
+                console.log('Received@' + startIndex);
                 resolve(body);
             });
         });
 
-        const promise = retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
-
-        return Observable.fromPromise(promise);
+        return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
     }
 }

@@ -1,6 +1,5 @@
 import { AspectDefinition, AspectDefinitionsApi, Record, RecordsApi } from './generated/registry/api';
 import * as URI from 'urijs';
-import { Observable } from 'rx';
 import retry from './retry';
 import formatServiceError from './formatServiceError';
 import * as http from 'http';
@@ -38,47 +37,17 @@ export default class Registry {
         this.recordsApi = new RecordsApi(registryApiUrl);
     }
 
-    putAspectDefinitions(aspectDefinitions: AspectDefinition[]): Observable<AspectDefinition | Error> {
-        const aspectDefinitionSource = Observable.fromArray(aspectDefinitions).controlled();
-
-        const observable = aspectDefinitionSource.flatMap(aspectDefinition => {
-            const operation = () => this.aspectDefinitionsApi.putById(aspectDefinition.id, aspectDefinition).then(result => {
-                aspectDefinitionSource.request(1);
-                return result;
-            }).catch(e => {
-                aspectDefinitionSource.request(1);
-                throw e;
-            });
-
-            return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to create aspect definition "${aspectDefinition.id}".`, e, retriesLeft)))
-                .then(result => result.body)
-                .catch(createServiceError);
-        });
-
-        // Create up to 6 aspect definitions at a time.
-        aspectDefinitionSource.request(6);
-
-        return observable;
+    putAspectDefinition(aspectDefinition: AspectDefinition): Promise<AspectDefinition | Error> {
+        const operation = () => this.aspectDefinitionsApi.putById(aspectDefinition.id, aspectDefinition);
+        return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to create aspect definition "${aspectDefinition.id}".`, e, retriesLeft)))
+            .then(result => result.body)
+            .catch(createServiceError);
     }
 
-    putRecords(records: Observable<Record>): Observable<Record | Error> {
-        const recordsSource = records.controlled();
-
-        const observable = recordsSource.flatMap(record => {
-            const operation = () => this.recordsApi.putById(record.id, record).then(result => {
-                recordsSource.request(1);
-                return result;
-            }).catch(e => {
-                recordsSource.request(1);
-                throw e;
-            });
-            return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry record with ID "${record.id}".`, e, retriesLeft)))
-                .then(result => result.body)
-                .catch(createServiceError);
-        });
-
-        recordsSource.request(6);
-
-        return observable;
+    putRecord(record: Record): Promise<Record | Error> {
+        const operation = () => this.recordsApi.putById(record.id, record);
+        return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry record with ID "${record.id}".`, e, retriesLeft)))
+            .then(result => result.body)
+            .catch(createServiceError);
     }
 }

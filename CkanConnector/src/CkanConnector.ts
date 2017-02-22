@@ -1,8 +1,7 @@
 import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/registry/api';
-import { Observable } from 'rx';
 import Ckan, { CkanDataset } from './Ckan';
 import Registry from './Registry';
-import createServiceError from './createServiceError';
+import AsyncPage, { forEachAsync } from './AsyncPage';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
@@ -13,7 +12,8 @@ export interface CkanConnectorOptions {
     ckan: Ckan,
     registry: Registry,
     aspectBuilders?: AspectBuilder[],
-    ignoreHarvestSources?: string[]
+    ignoreHarvestSources?: string[],
+    maxConcurrency?: number
 }
 
 interface CompiledAspect {
@@ -26,6 +26,7 @@ interface Aspects {
 }
 
 export class CkanConnectionResult {
+    public aspectDefinitionsConnected: number = 0;
     public datasetsConnected: number = 0;
     public errors: Error[] = [];
 }
@@ -34,6 +35,7 @@ export default class CkanConnector {
     private ckan: Ckan;
     private registry: Registry;
     private ignoreHarvestSources: string[];
+    private maxConcurrency: number;
 
     public aspectBuilders: AspectBuilder[]
 
@@ -41,12 +43,14 @@ export default class CkanConnector {
         ckan,
         registry,
         aspectBuilders = [],
-        ignoreHarvestSources = []
+        ignoreHarvestSources = [],
+        maxConcurrency = 6
     }: CkanConnectorOptions) {
         this.ckan = ckan;
         this.registry = registry;
         this.aspectBuilders = aspectBuilders.slice();
         this.ignoreHarvestSources = ignoreHarvestSources.slice();
+        this.maxConcurrency = maxConcurrency;
     }
 
     /**
@@ -59,42 +63,42 @@ export default class CkanConnector {
      * 
      * @memberOf CkanConnector
      */
-    run(): Promise<CkanConnectionResult> {
+    async run(): Promise<CkanConnectionResult> {
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
             builderFunction: new Function('dataset', 'source', builder.builderFunctionString)
         }));
 
-        return this.createAspectDefinitions().reduce((connectionResult, value) => {
-            if (value instanceof Error) {
-                connectionResult.errors.push(value);
+        const connectionResult = new CkanConnectionResult();
+
+        const aspectBuilderPage = AsyncPage.create<AspectBuilder[]>(current => current ? undefined : Promise.resolve(this.aspectBuilders));
+        await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectBuilder => {
+            const aspectDefinitionOrError = await this.registry.putAspectDefinition(aspectBuilder.aspectDefinition);
+            if (aspectDefinitionOrError instanceof Error) {
+                connectionResult.errors.push(aspectDefinitionOrError);
+            } else {
+                connectionResult.aspectDefinitionsConnected++;
             }
+        });
+
+        // If there were errors creating the aspect definitions, don't try to create records.
+        if (connectionResult.errors.length > 0) {
             return connectionResult;
-        }, new CkanConnectionResult()).flatMap(connectionResult => {
-            // If there were errors creating the aspect definitions, don't try to create records.
-            if (connectionResult.errors.length > 0) {
-                return Observable.just(connectionResult);
+        }
+
+        const packagePages = this.ckan.packageSearch(this.ignoreHarvestSources);
+        const datasets = packagePages.map(packagePage => packagePage.result.results);
+
+        await forEachAsync(datasets, this.maxConcurrency, async dataset => {
+            const recordOrError = await this.registry.putRecord(this.datasetToRecord(templates, dataset));
+            if (recordOrError instanceof Error) {
+                connectionResult.errors.push(recordOrError);
+            } else {
+                ++connectionResult.datasetsConnected;
             }
+        });
 
-            return this.createRecords(templates).reduce((connectionResult, value) => {
-                if (value instanceof Error) {
-                    connectionResult.errors.push(value);
-                } else {
-                    ++connectionResult.datasetsConnected;
-                }
-                return connectionResult;
-            }, connectionResult);
-        }).toPromise<Promise<CkanConnectionResult>>(Promise);
-    }
-
-    private createAspectDefinitions() {
-        return this.registry.putAspectDefinitions(this.aspectBuilders.map(builder => builder.aspectDefinition));
-    }
-
-    private createRecords(templates: CompiledAspect[]) {
-        const datasets = this.ckan.packageSearch(this.ignoreHarvestSources).take(10);
-        const records = datasets.map(dataset => this.datasetToRecord(templates, dataset));
-        return this.registry.putRecords(records);
+        return connectionResult;
     }
 
     private datasetToRecord(templates: CompiledAspect[], dataset: CkanDataset): Record {
