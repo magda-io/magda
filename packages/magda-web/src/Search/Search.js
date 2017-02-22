@@ -186,6 +186,10 @@ class Search extends Component {
                  !this.props.isFetching &&
                  !this.props.hasError &&
                  <div>
+                 <Publisher updateQuery={this.updateQuery}
+                            modifyUserSearchString={this.modifyUserSearchString}
+                            component={'recommendations'}
+                 />
                  
                  {defined(this.props.location.query.q) &&
                   this.props.location.query.q.length > 0 &&
@@ -194,11 +198,8 @@ class Search extends Component {
                     />
                   }
 
-                  <Publisher updateQuery={this.updateQuery}
-                            modifyUserSearchString={this.modifyUserSearchString}
-                            component={'recommendations'}
-                 />
-                 
+                  
+
                   <SearchResults
                       strategy ={this.props.strategy}
                       searchResults={this.props.datasets}
