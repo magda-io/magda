@@ -67,8 +67,8 @@ class FacetSpec extends BaseApiSpec {
       }
     }
 
-    def checkFacetsWithQuery(queryGen: Gen[(String, Query)] = textQueryGen(), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit) = {
-      forAll(thisIndexGen, queryGen, facetSizeGen) { (tuple, query, rawFacetSize) ⇒
+    def checkFacetsWithQuery(thisQueryGen: Gen[(String, Query)] = textQueryGen(queryGen), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit) = {
+      forAll(thisIndexGen, thisQueryGen, facetSizeGen) { (tuple, query, rawFacetSize) ⇒
         val (indexName, dataSets, routes) = tuple
         val (textQuery, objQuery) = query
         val facetSize = Math.max(rawFacetSize, 1)
@@ -112,7 +112,7 @@ class FacetSpec extends BaseApiSpec {
 
         def matches = facetValue.exists(_.equals(facetOption.value))
 
-        if (facetOption.value.equals("Unspecified")) {
+        if (facetOption.value.equals(config.getString("strings.unspecifiedWord"))) {
           facetValue.isEmpty || facetValue.forall(_.equals("")) || matches
         } else {
           matches
@@ -122,7 +122,7 @@ class FacetSpec extends BaseApiSpec {
       def groupResult(dataSets: Seq[DataSet]): Map[String, Set[DataSet]] = {
         dataSets.foldRight(Map[String, Set[DataSet]]()) { (currentDataSet, aggregator) ⇒
           val reducedRaw = reducer(currentDataSet)
-          val reduced = if (reducedRaw.isEmpty) Set("Unspecified") else reducedRaw
+          val reduced = if (reducedRaw.isEmpty) Set(config.getString("strings.unspecifiedWord")) else reducedRaw
 
           reduced.foldRight(aggregator) { (string, aggregator) ⇒
             aggregator + (string -> (aggregator.get(string) match {
@@ -239,7 +239,7 @@ class FacetSpec extends BaseApiSpec {
         }
       }
 
-      def getFormats(dataSets: List[DataSet]) = dataSets.map(_.distributions.map(_.format.getOrElse("Unspecified")).groupBy(identity).mapValues(_.size))
+      def getFormats(dataSets: List[DataSet]) = dataSets.map(_.distributions.map(_.format.getOrElse(config.getString("strings.unspecifiedWord"))).groupBy(identity).mapValues(_.size))
 
       describe("each dataset should be aggregated into a facet unless facet size was too small to accommodate it") {
         it("without query") {
@@ -341,7 +341,7 @@ class FacetSpec extends BaseApiSpec {
     }
 
     describe("format") {
-      def reducer(dataSet: DataSet) = dataSet.distributions.map(_.format.getOrElse("Unspecified")).toSet
+      def reducer(dataSet: DataSet) = dataSet.distributions.map(_.format.getOrElse(config.getString("strings.unspecifiedWord"))).toSet
       def queryToInt(query: Query) = query.formats.size
 
       val queryGen = for {
@@ -505,7 +505,7 @@ class FacetSpec extends BaseApiSpec {
       def filterDataSetsForDateRange(dataSets: List[DataSet], lowerBound: Option[FilterValue[OffsetDateTime]], upperBound: Option[FilterValue[OffsetDateTime]]) = dataSets
         .filter { dataSet ⇒
           (lowerBound, upperBound) match {
-            case (Some(Unspecified), Some(Unspecified)) | (Some(Unspecified), None) | (None, Some(Unspecified)) =>
+            case (Some(Unspecified()), Some(Unspecified())) | (Some(Unspecified()), None) | (None, Some(Unspecified())) =>
               dataSet.temporal.map(temporal => temporal.start.isEmpty && temporal.end.isEmpty).getOrElse(true)
             case _ =>
               val startOption = dataSet.temporal.flatMap(_.start).flatMap(_.date)

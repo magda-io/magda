@@ -106,7 +106,7 @@ object AST {
   case class ASTFilterValue(value: FilterValue[String]) extends QueryAST
 }
 
-private class QueryParser()(implicit val defaultOffset: ZoneOffset) extends Parsers {
+private class QueryParser()(implicit val defaultOffset: ZoneOffset, implicit val config: Config) extends Parsers {
   override type Elem = Tokens.QueryToken
 
   class QueryTokenReader(tokens: Seq[Tokens.QueryToken]) extends Reader[Tokens.QueryToken] {
@@ -141,7 +141,7 @@ private class QueryParser()(implicit val defaultOffset: ZoneOffset) extends Pars
         } else {
           AST.FreeTextWord("in " + filterValueString)
         }
-      case Unspecified => AST.ASTRegion(Unspecified)
+      case Unspecified() => AST.ASTRegion(Unspecified())
     }
     case _ ~ AST.Ignore => AST.Ignore
   }
@@ -171,7 +171,7 @@ private class QueryParser()(implicit val defaultOffset: ZoneOffset) extends Pars
   private def filterBodyWord: Parser[AST.ASTFilterValue] = {
     accept("filter body word", {
       case Tokens.FreeTextWord(wordString) => AST.ASTFilterValue(Specified(wordString))
-      case Tokens.Unspecified              => AST.ASTFilterValue(Unspecified)
+      case Tokens.Unspecified              => AST.ASTFilterValue(Unspecified())
     })
   }
 
@@ -196,7 +196,7 @@ private class QueryParser()(implicit val defaultOffset: ZoneOffset) extends Pars
           }
           case _ => AST.And(AST.FreeTextWord(filterWord), AST.FreeTextWord(dateString))
         }
-      case Unspecified => applyFn(Unspecified)
+      case Unspecified() => applyFn(Unspecified())
     }
   }
 
@@ -287,14 +287,14 @@ case class Specified[T](t: T) extends FilterValue[T] {
   override def map[A](a: T => A): FilterValue[A] = Specified(a(t))
   override def toString = t.toString
 }
-case object Unspecified extends FilterValue[Nothing] {
+case class Unspecified()(implicit config: Config) extends FilterValue[Nothing] {
   override def map[A](a: Nothing => A): FilterValue[Nothing] = this
-  override def toString = "Unspecified"
+  override def toString = config.getString("strings.unspecifiedWord")
 }
 object FilterValue {
   implicit def filterValueToOption[T](filterValue: FilterValue[T]): Option[T] = filterValue match {
     case Specified(inner) => Some(inner)
-    case Unspecified      => None
+    case Unspecified()    => None
   }
 }
 case class Query(

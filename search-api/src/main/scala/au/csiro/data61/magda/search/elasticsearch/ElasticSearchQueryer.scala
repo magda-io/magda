@@ -122,7 +122,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 .flatMap {
                   case (name, agg: InternalFilter) =>
                     if (agg.getDocCount > 0 && filteredExact.get(name).getOrElse(0l) == 0l) {
-                      Some(FacetOption(name.getOrElse("Unspecified"), 0, matched = true))
+                      Some(FacetOption(name.getOrElse(config.getString("strings.unspecifiedWord")), 0, matched = true))
                     } else None
                 }
                 .toSeq

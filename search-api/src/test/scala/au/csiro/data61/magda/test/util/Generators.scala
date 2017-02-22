@@ -39,6 +39,7 @@ import au.csiro.data61.magda.util.MwundoJTSConversions._
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.api.FilterValue
+import com.typesafe.config.Config
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -296,22 +297,22 @@ object Generators {
   )
 
   val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" "))
-  val unspecifiedGen = Gen.const(Unspecified)
-  def filterValueGen[T](innerGen: Gen[T]): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
+  def unspecifiedGen(implicit config: Config) = Gen.const(Unspecified())
+  def filterValueGen[T](innerGen: Gen[T])(implicit config: Config): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
 
   def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = probablyEmptySet(gen).flatMap(set => Gen.pick(set.size % 3, set)).map(_.toSet)
 
   val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
-  val formatQueryGen = filterValueGen(Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString)))
+  def formatQueryGen(implicit config: Config) = filterValueGen(Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString)))
 
   val partialPublisherGen = publisherGen.flatMap(Gen.oneOf(_)).flatMap { publisher =>
     Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)))
   }
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString))
-  val publisherQueryGen: Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
-  val regionQueryGen: Gen[FilterValue[QueryRegion]] = filterValueGen(indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
+  def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
+  def regionQueryGen(implicit config: Config): Gen[FilterValue[QueryRegion]] = filterValueGen(indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
     case (regionSource, regionObject) => regionJsonToQueryRegion(regionSource, regionObject)
   })
 
@@ -320,10 +321,10 @@ object Generators {
     regionId = regionObject.fields("properties").asJsObject.fields(regionSource.idProperty).asInstanceOf[JsString].value
   )
 
-  val dateFromGen = filterValueGen(periodOfTimeGen.map(_.start.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
-  val dateToGen = filterValueGen(periodOfTimeGen.map(_.end.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
+  def dateFromGen(implicit config: Config) = filterValueGen(periodOfTimeGen.map(_.start.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
+  def dateToGen(implicit config: Config) = filterValueGen(periodOfTimeGen.map(_.end.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
 
-  val queryGen = (for {
+  def queryGen(implicit config: Config) = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
     publishers <- probablyEmptySet(publisherQueryGen)
@@ -341,7 +342,7 @@ object Generators {
     regions = regions
   )) //.map(removeInvalid)
 
-  val exactQueryGen = (for {
+  def exactQueryGen(implicit config: Config) = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
     publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.map(Specified(_).asInstanceOf[FilterValue[String]]).toSet)
@@ -368,7 +369,7 @@ object Generators {
     formats = formats
   )) //.map(removeInvalid)
 
-  val unspecificQueryGen = (for {
+  def unspecificQueryGen(implicit config: Config) = (for {
     freeText <- noneBiasedOption(queryTextGen)
     quotes <- smallSet(queryTextGen)
     publishers <- smallSet(publisherQueryGen)
@@ -387,19 +388,39 @@ object Generators {
   ))
     .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
 
-  def textQueryGen(queryGen: Gen[Query] = queryGen): Gen[(String, Query)] = queryGen.flatMap { query =>
-    val textList = (Seq(query.freeText).flatten ++
-      query.quotes.map(""""""" + _ + """"""")).toSet 
-      
-    val facetList = query.publishers.map(publisher => s"by $publisher") ++
-      Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
-      Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
-      query.formats.map(format => s"as $format") ++
-      query.regions.map(region => s"in ${region}")
+  def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>
+    val textListComponents = (Seq(query.freeText).flatten ++
+      query.quotes.map(""""""" + _ + """"""")).toSet
 
-    Gen.pick(textList.size, textList)
-      .flatMap(existingList => Gen.pick(facetList.size, facetList).map(existingList ++ _))
-      .map(queryStringList => (queryStringList.mkString(" "), query))
+    val facetListGen = for {
+      by <- randomCaseGen("by")
+      from <- randomCaseGen("from")
+      to <- randomCaseGen("to")
+      as <- randomCaseGen("as")
+      in <- randomCaseGen("in")
+    } yield query.publishers.map(publisher => s"$by $publisher") ++
+      Seq(query.dateFrom.map(dateFrom => s"$from $dateFrom")).flatten ++
+      Seq(query.dateTo.map(dateTo => s"$to $dateTo")).flatten ++
+      query.formats.map(format => s"$as $format") ++
+      query.regions.map(region => s"$in ${region}")
+
+    val textQuery = for {
+      textList <- Gen.pick(textListComponents.size, textListComponents)
+      facetList <- facetListGen
+      randomFacetList <- Gen.pick(facetList.size, facetList)
+    } yield (textList ++ randomFacetList).mkString(" ")
+
+    textQuery.flatMap((_, query))
   }
+
+  def randomCaseGen(string: String) = for {
+    whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 2))
+  } yield string.zip(whatToDo).map {
+    case (char, charWhatToDo) => charWhatToDo match {
+      case 0 => char.toUpper
+      case 1 => char.toLower
+      case 2 => char
+    }
+  }.mkString
 
 }

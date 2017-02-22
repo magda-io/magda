@@ -25,7 +25,7 @@ object Queries {
   def formatQuery(field: String, formatValue: FilterValue[String]): QueryDefinition = {
     formatValue match {
       case Specified(inner) => baseFormatQuery(inner)
-      case Unspecified      => nestedQuery("distributions").query(boolQuery().not(existsQuery(field))).scoreMode(ScoreMode.Avg)
+      case Unspecified()    => nestedQuery("distributions").query(boolQuery().not(existsQuery(field))).scoreMode(ScoreMode.Avg)
     }
   }
 
@@ -48,9 +48,9 @@ object Queries {
   def dateQueries(dateFrom: Option[FilterValue[OffsetDateTime]], dateTo: Option[FilterValue[OffsetDateTime]]) = {
     Seq(
       (dateFrom, dateTo) match {
-        case (Some(Unspecified), Some(Unspecified)) |
-          (Some(Unspecified), None) |
-          (None, Some(Unspecified)) => Some(Queries.dateUnspecifiedQuery)
+        case (Some(Unspecified()), Some(Unspecified())) |
+          (Some(Unspecified()), None) |
+          (None, Some(Unspecified())) => Some(Queries.dateUnspecifiedQuery)
         case _ => None
       },
       dateFrom.flatMap(_.map(dateFromQuery)),
@@ -74,7 +74,7 @@ object Queries {
 
   def handleFilterValue[T](filterValue: FilterValue[T], converter: T => QueryDefinition, field: String) = filterValue match {
     case Specified(inner) => converter(inner)
-    case Unspecified      => boolQuery().not(existsQuery(field))
+    case Unspecified()      => boolQuery().not(existsQuery(field))
   }
 }
 

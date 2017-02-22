@@ -8,6 +8,7 @@ import spray.json.{ DefaultJsonProtocol, JsString, JsValue, JsonFormat }
 import au.csiro.data61.magda.api.{ Query, FilterValue, Specified, Unspecified }
 import au.csiro.data61.magda.model.misc.{ QueryRegion }
 import java.time.OffsetDateTime
+import com.typesafe.config.Config
 
 case class SearchResult(
   query: Query,
@@ -28,21 +29,23 @@ trait Protocols extends DefaultJsonProtocol with temporal.Protocols with misc.Pr
 
     override def read(json: JsValue): SearchStrategy = SearchStrategy.parse(json.convertTo[String])
   }
-  class FilterValueFormat[T](implicit t: JsonFormat[T]) extends JsonFormat[FilterValue[T]] {
+  class FilterValueFormat[T](implicit t: JsonFormat[T], implicit val config: Config) extends JsonFormat[FilterValue[T]] {
     override def write(filterValue: FilterValue[T]): JsValue = filterValue match {
       case Specified(inner) => t.write(inner)
-      case Unspecified      => JsString("Unspecified")
+      case Unspecified()    => JsString(filterValue.toString)
     }
 
     override def read(json: JsValue): FilterValue[T] = json match {
-      case JsString("Unspecified") => Unspecified
-      case other                   => Specified(t.read(other))
+      case JsString(string) =>
+        if (string.toLowerCase.equals(Unspecified().toString.toLowerCase()))
+          Unspecified() else Specified(t.read(json))
+      case other => Specified(t.read(other))
     }
   }
-  implicit val stringFilterValueFormat = new FilterValueFormat[String]
-  implicit val offsetDateFilterValueFormat = new FilterValueFormat[OffsetDateTime]
-  implicit val queryRegionFilterValueFormat = new FilterValueFormat[QueryRegion]
-  implicit val queryFormat = jsonFormat8(Query.apply)
-  implicit val searchResultFormat = jsonFormat6(SearchResult.apply)
+  implicit def stringFilterValueFormat(implicit config: Config) = new FilterValueFormat[String]
+  implicit def offsetDateFilterValueFormat(implicit config: Config) = new FilterValueFormat[OffsetDateTime]
+  implicit def queryRegionFilterValueFormat(implicit config: Config) = new FilterValueFormat[QueryRegion]
+  implicit def queryFormat(implicit config: Config) = jsonFormat8(Query.apply)
+  implicit def searchResultFormat(implicit config: Config) = jsonFormat6(SearchResult.apply)
   implicit val regionSearchResultFormat = jsonFormat3(RegionSearchResult.apply)
 }

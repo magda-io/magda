@@ -74,7 +74,7 @@ class SearchSpec extends BaseApiSpec {
         val filterQueryGen = queryGen
           .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
 
-        forAll(indexGen, textQueryGen()) { (indexTuple, queryTuple) ⇒
+        forAll(indexGen, textQueryGen(queryGen)) { (indexTuple, queryTuple) ⇒
           val (_, dataSets, routes) = indexTuple
           val (textQuery, query) = queryTuple
           Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
@@ -88,7 +88,7 @@ class SearchSpec extends BaseApiSpec {
                 val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
 
                 val dateUnspecified = (query.dateTo, query.dateFrom) match {
-                  case (Some(Unspecified), Some(Unspecified)) | (Some(Unspecified), None) | (None, Some(Unspecified)) => dataSetDateFrom.isEmpty && dataSetDateTo.isEmpty
+                  case (Some(Unspecified()), Some(Unspecified())) | (Some(Unspecified()), None) | (None, Some(Unspecified())) => dataSetDateFrom.isEmpty && dataSetDateTo.isEmpty
                   case _ => false
                 }
 
@@ -108,7 +108,7 @@ class SearchSpec extends BaseApiSpec {
                   query.publishers.exists(queryPublisher =>
                     queryPublisher match {
                       case Specified(specifiedPublisher) => dataSetPublisherName.map(_.contains(specifiedPublisher)).getOrElse(false)
-                      case Unspecified                   => dataSet.publisher.flatMap(_.name).isEmpty
+                      case Unspecified()                 => dataSet.publisher.flatMap(_.name).isEmpty
                     }
                   )
                 } else true
@@ -118,7 +118,7 @@ class SearchSpec extends BaseApiSpec {
                     dataSet.distributions.exists(distribution =>
                       queryFormat match {
                         case Specified(specifiedFormat) => distribution.format.map(_.contains(specifiedFormat)).getOrElse(false)
-                        case Unspecified                => distribution.format.isEmpty
+                        case Unspecified()              => distribution.format.isEmpty
                       }
                     )
                   )
@@ -224,7 +224,7 @@ class SearchSpec extends BaseApiSpec {
 
   describe("query") {
     it("should always be parsed correctly") {
-      forAll(emptyIndexGen, textQueryGen()) { (indexTuple, queryTuple) ⇒
+      forAll(emptyIndexGen, textQueryGen(queryGen)) { (indexTuple, queryTuple) ⇒
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
@@ -252,7 +252,7 @@ class SearchSpec extends BaseApiSpec {
 
     it("should not fail for arbitrary characters interspersed with control words") {
       val controlWords = Seq("in", "by", "to", "from", "as")
-      val controlWordGen = Gen.oneOf(controlWords)
+      val controlWordGen = Gen.oneOf(controlWords).flatMap(randomCaseGen)
       val queryWordGen = Gen.oneOf(controlWordGen, arbitrary[String])
       val queryTextGen = Gen.listOf(queryWordGen).map(_.mkString(" "))
 

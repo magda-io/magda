@@ -106,15 +106,15 @@ trait FacetDefinition {
 
 object FacetDefinition {
   def facetDefForType(facetType: FacetType)(implicit config: Config): FacetDefinition = facetType match {
-    case Format    => FormatFacetDefinition
+    case Format    => new FormatFacetDefinition
     case Year      => new YearFacetDefinition
-    case Publisher => PublisherFacetDefinition
+    case Publisher => new PublisherFacetDefinition
   }
 }
 
-object PublisherFacetDefinition extends FacetDefinition {
+class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition = {
-    aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit).missing("Unspecified")
+    aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit).missing(config.getString("strings.unspecifiedWord"))
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -276,8 +276,8 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
           // The idea is that this will come from our own index so it shouldn't ever be some weird wildcard thing
           case _ => throw new RuntimeException("Date " + textQuery + " not recognised")
         }
-      case Unspecified =>
-        Query(dateFrom = Unspecified, dateTo = Unspecified)
+      case Unspecified() =>
+        Query(dateFrom = Unspecified(), dateTo = Unspecified())
     }
 
   override def exactMatchQuery(queryValue: FilterValue[String]): QueryDefinition = {
@@ -289,7 +289,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
         (from, to) match {
           case (DateTimeResult(fromInstant), DateTimeResult(toInstant)) => exactDateQuery(fromInstant, toInstant)
         }
-      case Unspecified => Queries.dateUnspecifiedQuery
+      case Unspecified() => Queries.dateUnspecifiedQuery
     }
   }
 
@@ -300,14 +300,14 @@ object YearFacetDefinition {
   val YEAR_BIN_SIZES = List(1, 2, 5, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
 }
 
-object FormatFacetDefinition extends FacetDefinition {
+class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition =
     aggregation nested Format.id path "distributions" aggs {
       val termsAgg = aggregation terms "nested" field "distributions.format.untokenized" size limit includeExclude (Seq(), Seq("")) aggs {
         aggregation reverseNested "reverse"
       }
 
-      termsAgg.builder.missing("Unspecified")
+      termsAgg.builder.missing(config.getString("strings.unspecifiedWord"))
 
       termsAgg
     }
@@ -337,7 +337,7 @@ object FormatFacetDefinition extends FacetDefinition {
       case Some(distance) => distance < 1.5
       case None           => false
     }
-    case Unspecified => false
+    case Unspecified() => false
   }
 
   override def removeFromQuery(query: Query): Query = query.copy(formats = Set())
