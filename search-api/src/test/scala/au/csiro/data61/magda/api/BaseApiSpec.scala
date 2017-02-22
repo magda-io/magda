@@ -39,7 +39,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   val logger = Logging(system, getClass)
   val processors = Math.max(Runtime.getRuntime().availableProcessors(), 2)
 
-  val minSuccessful = if (isCi) 100 else 20
+  val minSuccessful = if (isCi) 100 else 100
   logger.info("Running with {} processors with minSuccessful={}", processors.toString, minSuccessful)
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)

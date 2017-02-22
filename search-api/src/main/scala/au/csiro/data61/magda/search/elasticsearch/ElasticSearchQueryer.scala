@@ -26,6 +26,8 @@ import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import com.typesafe.config.Config
+import au.csiro.data61.magda.api.Specified
+import au.csiro.data61.magda.api.Unspecified
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -38,26 +40,21 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   lazy val clientFuture: Future[TcpClient] = clientProvider.getClient(system.scheduler, logger, ec)
 
   override def search(query: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
-
-    Future.sequence(query.regions.map(region => findRegion(region.regionType, region.regionId))).flatMap { regions =>
-      val queryWithResolvedRegions = query.copy(regions = regions)
-
-      clientFuture.flatMap { client =>
-        client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchAll, requestedFacetSize)).flatMap(response =>
-          if (response.totalHits > 0)
-            Future.successful((response, MatchAll))
-          else
-            client.execute(buildQueryWithAggregations(queryWithResolvedRegions, start, limit, MatchPart, requestedFacetSize)).map((_, MatchPart)))
-      } map {
-        case (response, strategy) => buildSearchResult(queryWithResolvedRegions, response, strategy, requestedFacetSize)
-      } recover {
-        case RootCause(illegalArgument: IllegalArgumentException) =>
-          logger.error(illegalArgument, "Exception when searching")
-          failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
-        case e: Throwable =>
-          logger.error(e, "Exception when searching")
-          failureSearchResult(query, "Unknown error")
-      }
+    clientFuture.flatMap { client =>
+      client.execute(buildQueryWithAggregations(query, start, limit, MatchAll, requestedFacetSize)).flatMap(response =>
+        if (response.totalHits > 0)
+          Future.successful((response, MatchAll))
+        else
+          client.execute(buildQueryWithAggregations(query, start, limit, MatchPart, requestedFacetSize)).map((_, MatchPart)))
+    } map {
+      case (response, strategy) => buildSearchResult(query, response, strategy, requestedFacetSize)
+    } recover {
+      case RootCause(illegalArgument: IllegalArgumentException) =>
+        logger.error(illegalArgument, "Exception when searching")
+        failureSearchResult(query, "Bad argument: " + illegalArgument.getMessage)
+      case e: Throwable =>
+        logger.error(e, "Exception when searching")
+        failureSearchResult(query, "Unknown error")
     }
   }
 
@@ -125,7 +122,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 .flatMap {
                   case (name, agg: InternalFilter) =>
                     if (agg.getDocCount > 0 && filteredExact.get(name).getOrElse(0l) == 0l) {
-                      Some(FacetOption(name, 0, matched = true))
+                      Some(FacetOption(name.getOrElse("Unspecified"), 0, matched = true))
                     } else None
                 }
                 .toSeq
@@ -259,12 +256,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       case MatchPart => "or"
     }
 
-    val clauses: Seq[Option[QueryDefinition]] = Seq(
+    val clauses: Seq[Traversable[QueryDefinition]] = Seq(
       stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).operator(operator).boost(2)),
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
       setToOption(query.formats)(seq => should(seq.map(formatQuery))),
-      query.dateFrom.map(dateFromQuery),
-      query.dateTo.map(dateToQuery),
+      dateQueries(query.dateFrom, query.dateTo),
       setToOption(query.regions)(seq => should(seq.map(regionIdQuery(_, indices))))
     )
 
@@ -285,7 +281,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
               // Create a dataset filter aggregation for each hit in the initial query
               val filters = hitNames.map(name =>
-                aggregation.filter(name).filter(facetDef.exactMatchQuery(name)))
+                aggregation.filter(name).filter(facetDef.exactMatchQuery(Specified(name))))
 
               // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
               // got back on our keyword - this allows us to get an accurate count of dataset hits for each result

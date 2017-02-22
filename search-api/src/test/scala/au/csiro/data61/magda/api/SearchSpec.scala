@@ -70,88 +70,109 @@ class SearchSpec extends BaseApiSpec {
     }
 
     it("should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart") {
-      val filterQueryGen = queryGen
-        .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
+      try {
+        val filterQueryGen = queryGen
+          .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
 
-      forAll(indexGen, textQueryGen()) { (indexTuple, queryTuple) ⇒
-        val (_, dataSets, routes) = indexTuple
-        val (textQuery, query) = queryTuple
-        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
-          status shouldBe OK
-          val response = responseAs[SearchResult]
-          whenever(response.strategy.get == MatchAll) {
+        forAll(indexGen, textQueryGen()) { (indexTuple, queryTuple) ⇒
+          val (_, dataSets, routes) = indexTuple
+          val (textQuery, query) = queryTuple
+          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
+            whenever(response.strategy.get == MatchAll) {
 
-            response.dataSets.foreach { dataSet =>
-              val temporal = dataSet.temporal
-              val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
-              val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
-                case (Some(innerQueryDateTo), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
-                case (Some(_), None) => false
-                case _ => true
-              }
+              response.dataSets.foreach { dataSet =>
+                val temporal = dataSet.temporal
+                val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
+                val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
 
-              val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
-              val dateToMatched = (query.dateFrom, dataSetDateTo) match {
-                case (Some(innerQueryDateFrom), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
-                case (Some(_), None) => false
-                case _ => true
-              }
-
-              // TODO: The following are slightly flakey because they're imitating a keyword search with "contains"
-              val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
-              val publisherMatched = if (!query.publishers.isEmpty) {
-                query.publishers.exists(queryPublisher =>
-                  dataSetPublisherName.map(_.contains(queryPublisher)).getOrElse(false)
-                )
-              } else true
-
-              val formatMatched = if (!query.formats.isEmpty) {
-                query.formats.exists(queryFormat =>
-                  dataSet.distributions.exists(distribution =>
-                    distribution.format.map(_.contains(queryFormat)).getOrElse(false)
-                  )
-                )
-              } else true
-
-              val geometryFactory: GeometryFactory = new GeometryFactory
-
-              val queryRegions = query.regions.map { queryRegion =>
-                val regionJsonOption = indexedRegions.find { innerRegion =>
-                  regionJsonToQueryRegion(innerRegion._1, innerRegion._2).equals(queryRegion)
+                val dateUnspecified = (query.dateTo, query.dateFrom) match {
+                  case (Some(Unspecified), Some(Unspecified)) | (Some(Unspecified), None) | (None, Some(Unspecified)) => dataSetDateFrom.isEmpty && dataSetDateTo.isEmpty
+                  case _ => false
                 }
 
-                val regionJson = regionJsonOption.get._2.getFields("geometry").head
-                regionJson.convertTo[Geometry]
-              }
+                val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
+                  case (Some(Specified(innerQueryDateTo)), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
+                  case _ => true
+                }
 
-              // This one is trying to imitate an inaccurate ES query with JTS distance, which is also a bit flaky
-              val distances = queryRegions.flatMap(queryRegion =>
-                dataSet.spatial.flatMap(_.geoJson.map { geoJson =>
-                  val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
-                  val jtsRegion = GeometryConverter.toJTSGeo(queryRegion, geometryFactory)
+                val dateToMatched = (query.dateFrom, dataSetDateTo) match {
+                  case (Some(Specified(innerQueryDateFrom)), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
+                  case _ => true
+                }
 
-                  (jtsGeo.distance(jtsRegion), Math.max(jtsGeo.getLength, jtsRegion.getLength))
-                }))
+                // TODO: The following are slightly flakey because they're imitating a keyword search with "contains"
+                val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
+                val publisherMatched = if (!query.publishers.isEmpty) {
+                  query.publishers.exists(queryPublisher =>
+                    queryPublisher match {
+                      case Specified(specifiedPublisher) => dataSetPublisherName.map(_.contains(specifiedPublisher)).getOrElse(false)
+                      case Unspecified                   => dataSet.publisher.flatMap(_.name).isEmpty
+                    }
+                  )
+                } else true
 
-              val geoMatched = if (!query.regions.isEmpty) {
-                distances.exists { case (distance, length) => distance <= length * 0.05 }
-              } else true
+                val formatMatched = if (!query.formats.isEmpty) {
+                  query.formats.exists(queryFormat =>
+                    dataSet.distributions.exists(distribution =>
+                      queryFormat match {
+                        case Specified(specifiedFormat) => distribution.format.map(_.contains(specifiedFormat)).getOrElse(false)
+                        case Unspecified                => distribution.format.isEmpty
+                      }
+                    )
+                  )
+                } else true
 
-              val allValid = dateFromMatched && dateToMatched && publisherMatched && formatMatched && geoMatched
+                val geometryFactory: GeometryFactory = new GeometryFactory
 
-              withClue(s"with query $textQuery \n and dataSet" +
-                s"\n\tdateTo $dataSetDateTo $dateFromMatched" +
-                s"\n\tdateFrom $dataSetDateFrom $dateToMatched" +
-                s"\n\tpublisher ${dataSet.publisher} $publisherMatched" +
-                s"\n\tformats ${dataSet.distributions.map(_.format).mkString(",")} $formatMatched" +
-                s"\n\tdistances ${distances.map(t => t._1 + "/" + t._2).mkString(",")}" +
-                s"\n\t ${dataSet.spatial.map(_.geoJson).mkString(",")} $geoMatched" +
-                s"\n\tqueryRegions $queryRegions\n") {
-                allValid should be(true)
+                val queryRegions = query.regions.filter(_.isDefined).map { queryRegion =>
+                  val regionJsonOption = indexedRegions.find { innerRegion =>
+                    regionJsonToQueryRegion(innerRegion._1, innerRegion._2).equals(queryRegion.get)
+                  }
+
+                  withClue(s"for queryRegion $queryRegion and regions ${indexedRegions}") {
+                    regionJsonOption.isDefined should be(true)
+                  }
+                  val regionJson = regionJsonOption.get._2.getFields("geometry").head
+                  regionJson.convertTo[Geometry]
+                }
+
+                // This one is trying to imitate an inaccurate ES query with JTS distance, which is also a bit flaky
+                val distances = queryRegions.flatMap(queryRegion =>
+                  dataSet.spatial.flatMap(_.geoJson.map { geoJson =>
+                    val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
+                    val jtsRegion = GeometryConverter.toJTSGeo(queryRegion, geometryFactory)
+
+                    (jtsGeo.distance(jtsRegion), Math.max(jtsGeo.getLength, jtsRegion.getLength))
+                  }))
+
+                val unspecifiedRegion = query.regions.exists(_.isEmpty)
+                val geoMatched = if (!query.regions.isEmpty) {
+                  unspecifiedRegion || distances.exists { case (distance, length) => distance <= length * 0.05 }
+                } else true
+
+                val allValid = (dateUnspecified || (dateFromMatched && dateToMatched)) && publisherMatched && formatMatched && geoMatched
+
+                withClue(s"with query $textQuery \n and dataSet" +
+                  s"\n\tdateUnspecified $dateUnspecified" +
+                  s"\n\tdateTo $dataSetDateTo $dateFromMatched" +
+                  s"\n\tdateFrom $dataSetDateFrom $dateToMatched" +
+                  s"\n\tpublisher ${dataSet.publisher} $publisherMatched" +
+                  s"\n\tformats ${dataSet.distributions.map(_.format).mkString(",")} $formatMatched" +
+                  s"\n\tdistances ${distances.map(t => t._1 + "/" + t._2).mkString(",")}" +
+                  s"\n\tgeomatched ${dataSet.spatial.map(_.geoJson).mkString(",")} $geoMatched" +
+                  s"\n\tqueryRegions $queryRegions\n") {
+                  allValid should be(true)
+                }
               }
             }
           }
         }
+      } catch {
+        case e: Throwable =>
+          e.printStackTrace
+          throw e
       }
     }
 
@@ -228,13 +249,13 @@ class SearchSpec extends BaseApiSpec {
         }
       }
     }
-    
+
     it("should not fail for arbitrary characters interspersed with control words") {
       val controlWords = Seq("in", "by", "to", "from", "as")
       val controlWordGen = Gen.oneOf(controlWords)
       val queryWordGen = Gen.oneOf(controlWordGen, arbitrary[String])
       val queryTextGen = Gen.listOf(queryWordGen).map(_.mkString(" "))
-      
+
       forAll(emptyIndexGen, queryTextGen) { (indexTuple, textQuery) =>
         val (_, _, routes) = indexTuple
 

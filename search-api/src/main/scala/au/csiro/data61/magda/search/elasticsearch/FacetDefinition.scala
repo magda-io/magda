@@ -20,6 +20,10 @@ import java.time.ZoneOffset
 import au.csiro.data61.magda.search.elasticsearch.YearFacetDefinition
 import com.typesafe.config.Config
 import com.sksamuel.elastic4s.ElasticDsl
+import au.csiro.data61.magda.api.FilterValue
+import au.csiro.data61.magda.api.FilterValue._
+import au.csiro.data61.magda.api.Specified
+import au.csiro.data61.magda.api.Unspecified
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -69,12 +73,12 @@ trait FacetDefinition {
    * Builds a Query for datasets with facets that match the supplied string. E.g. for publisher "Ballarat Council", this
    * creates a query that matches datasets with publisher "Ballarat Council"
    */
-  def facetSearchQuery(textQuery: String): Query
+  def facetSearchQuery(textQuery: FilterValue[String]): Query
 
   /**
    * Creates an ES query that will match datasets where the value for this facet matches the exact string passed.
    */
-  def exactMatchQuery(query: String): QueryDefinition
+  def exactMatchQuery(query: FilterValue[String]): QueryDefinition
 
   /**
    * Creates zero or more es queries that will match datasets with the exact match of this facet. E.g. if a Query has
@@ -83,7 +87,7 @@ trait FacetDefinition {
    * return datasets that have the *exact* publisher value "Ballarat Council" but won't return anything for "City of ySdney"
    * because it's spelled wrong.
    */
-  def exactMatchQueries(query: Query): Set[(String, QueryDefinition)]
+  def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)]
 
   /**
    * Reduce a list of facets to fit under the limit
@@ -91,7 +95,7 @@ trait FacetDefinition {
   def truncateFacets(query: Query, matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
     val combined = (exactMatch ++ matched ++ unmatched)
     val lookup = combined.groupBy(_.value)
-    
+
     // It's possible that some of the options will overlap, so make sure we're only showing the first occurence of each.
     combined.map(_.value)
       .distinct
@@ -122,11 +126,11 @@ object PublisherFacetDefinition extends FacetDefinition {
 
   override def removeFromQuery(query: Query): Query = query.copy(publishers = Set())
 
-  override def facetSearchQuery(textQuery: String): Query = Query(publishers = Set(textQuery))
+  override def facetSearchQuery(textQuery: FilterValue[String]): Query = Query(publishers = Set(textQuery))
 
-  override def exactMatchQuery(query: String): QueryDefinition = exactPublisherQuery(query)
+  override def exactMatchQuery(query: FilterValue[String]): QueryDefinition = exactPublisherQuery(query)
 
-  override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
+  override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
 }
 
 class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
@@ -136,8 +140,8 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
     aggregation.terms(Year.id).field("years").size(Int.MaxValue)
 
   override def truncateFacets(query: Query, matched: Seq[FacetOption], exactMatch: Seq[FacetOption], unmatched: Seq[FacetOption], limit: Int): Seq[FacetOption] = {
-    lazy val firstYear = query.dateFrom.map(_.getYear)
-    lazy val lastYear = query.dateTo.map(_.getYear)
+    lazy val firstYear = query.dateFrom.flatMap(_.map(_.getYear))
+    lazy val lastYear = query.dateTo.flatMap(_.map(_.getYear))
 
     def makeMatchedBins() = makeBins(matched, limit, None, firstYear, lastYear).map(_.copy(matched = true))
 
@@ -246,13 +250,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
 
   override def isRelevantToQuery(query: Query): Boolean = query.dateFrom.isDefined || query.dateTo.isDefined
 
-  override def filterAggregationQuery(query: Query): QueryDefinition =
-    must {
-      val fromQuery = query.dateFrom.map(dateFromQuery(_))
-      val toQuery = query.dateTo.map(dateToQuery(_))
-
-      Seq(fromQuery, toQuery).flatten
-    }
+  override def filterAggregationQuery(query: Query): QueryDefinition = boolQuery().must(dateQueries(query.dateFrom, query.dateTo))
 
   override def removeFromQuery(query: Query): Query = query.copy(dateFrom = None, dateTo = None)
 
@@ -264,29 +262,38 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
     //FIXME: This is nah-stee
     (parseDate(rawFrom, false), parseDate(rawTo, true)) match {
       case (DateTimeResult(from), DateTimeResult(to)) =>
-        query.dateFrom.map(x => x.isBefore(to) || x.equals(to)).getOrElse(true) &&
-          query.dateTo.map(x => x.isAfter(from) || x.equals(from)).getOrElse(true)
+        query.dateFrom.flatMap(_.map(x => x.isBefore(to) || x.equals(to))).getOrElse(true) &&
+          query.dateTo.flatMap(_.map(x => x.isAfter(from) || x.equals(from))).getOrElse(true)
       case _ => false
     }
   }
 
-  override def facetSearchQuery(textQuery: String) =
-    (parseDate(textQuery, false), parseDate(textQuery, true)) match {
-      case (DateTimeResult(from), DateTimeResult(to)) => Query(dateFrom = Some(from), dateTo = Some(to))
-      // The idea is that this will come from our own index so it shouldn't even be some weird wildcard thing
-      case _ => throw new RuntimeException("Date " + textQuery + " not recognised")
+  override def facetSearchQuery(textQueryValue: FilterValue[String]) =
+    textQueryValue match {
+      case Specified(textQuery) =>
+        (parseDate(textQuery, false), parseDate(textQuery, true)) match {
+          case (DateTimeResult(from), DateTimeResult(to)) => Query(dateFrom = Some(Specified(from)), dateTo = Some(Specified(to)))
+          // The idea is that this will come from our own index so it shouldn't ever be some weird wildcard thing
+          case _ => throw new RuntimeException("Date " + textQuery + " not recognised")
+        }
+      case Unspecified =>
+        Query(dateFrom = Unspecified, dateTo = Unspecified)
     }
 
-  override def exactMatchQuery(query: String): QueryDefinition = {
-    val from = DateParser.parseDate(query, false)
-    val to = DateParser.parseDate(query, true)
+  override def exactMatchQuery(queryValue: FilterValue[String]): QueryDefinition = {
+    queryValue match {
+      case Specified(query) =>
+        val from = DateParser.parseDate(query, false)
+        val to = DateParser.parseDate(query, true)
 
-    (from, to) match {
-      case (DateTimeResult(fromInstant), DateTimeResult(toInstant)) => exactDateQuery(fromInstant, toInstant)
+        (from, to) match {
+          case (DateTimeResult(fromInstant), DateTimeResult(toInstant)) => exactDateQuery(fromInstant, toInstant)
+        }
+      case Unspecified => Queries.dateUnspecifiedQuery
     }
   }
 
-  override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = Set()
+  override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = Set()
 }
 
 object YearFacetDefinition {
@@ -296,7 +303,7 @@ object YearFacetDefinition {
 object FormatFacetDefinition extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition =
     aggregation nested Format.id path "distributions" aggs {
-      val termsAgg = aggregation terms "nested" field "distributions.format.untokenized" size limit includeExclude(Seq(), Seq("")) aggs {
+      val termsAgg = aggregation terms "nested" field "distributions.format.untokenized" size limit includeExclude (Seq(), Seq("")) aggs {
         aggregation reverseNested "reverse"
       }
 
@@ -321,21 +328,22 @@ object FormatFacetDefinition extends FacetDefinition {
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
-//    ElasticDsl.matchAllQuery()
+    //    ElasticDsl.matchAllQuery()
     should(query.formats.map(exactFormatQuery(_)))
       .minimumShouldMatch(1)
 
-  override def isFilterOptionRelevant(query: Query)(filterOption: FacetOption): Boolean = query.formats.exists(
-    format => WeightedLevenshteinMetric(10, 0.1, 1).compare(format.toLowerCase, filterOption.value.toLowerCase) match {
+  override def isFilterOptionRelevant(query: Query)(filterOption: FacetOption): Boolean = query.formats.exists {
+    case Specified(format) => WeightedLevenshteinMetric(10, 0.1, 1).compare(format.toLowerCase, filterOption.value.toLowerCase) match {
       case Some(distance) => distance < 1.5
       case None           => false
     }
-  )
+    case Unspecified => false
+  }
 
   override def removeFromQuery(query: Query): Query = query.copy(formats = Set())
-  override def facetSearchQuery(textQuery: String) = Query(formats = Set(textQuery))
+  override def facetSearchQuery(textQuery: FilterValue[String]) = Query(formats = Set(textQuery))
 
-  override def exactMatchQuery(query: String): QueryDefinition = exactFormatQuery(query)
+  override def exactMatchQuery(query: FilterValue[String]): QueryDefinition = exactFormatQuery(query)
 
-  override def exactMatchQueries(query: Query): Set[(String, QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
+  override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
 }

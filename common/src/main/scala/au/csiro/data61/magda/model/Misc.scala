@@ -169,8 +169,11 @@ package misc {
   case class BoundingBox(north: BigDecimal, east: BigDecimal, south: BigDecimal, west: BigDecimal)
 
   case class QueryRegion(
-    regionType: String,
-    regionId: String)
+      regionType: String,
+      regionId: String) {
+
+    override def toString = s"$regionType:$regionId"
+  }
 
   case class Region(
     queryRegion: QueryRegion,

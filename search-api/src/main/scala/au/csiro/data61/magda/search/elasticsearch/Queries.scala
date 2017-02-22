@@ -11,28 +11,70 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import com.sksamuel.elastic4s.searches.queries.geo.GeoShapeDefinition
+import au.csiro.data61.magda.api.FilterValue
+import com.sksamuel.elastic4s.searches.queries.QueryDefinition
+import au.csiro.data61.magda.api.Specified
+import au.csiro.data61.magda.api.Unspecified
 
 object Queries {
-  def publisherQuery(publisher: String) = matchPhraseQuery("publisher.name", publisher)
-  def exactPublisherQuery(publisher: String) = termQuery("publisher.name.untouched", publisher)
-  def formatQuery(format: String): NestedQueryDefinition = nestedQuery("distributions")
-    .query(matchQuery("distributions.format", format))
+  def publisherQuery(publisher: FilterValue[String]) = handleFilterValue(publisher, (p: String) => matchPhraseQuery("publisher.name", p), "publisher.name")
+  def exactPublisherQuery(publisher: FilterValue[String]) = handleFilterValue(publisher, (p: String) => termQuery("publisher.name.untouched", p), "publisher.name.untouched")
+  def baseFormatQuery(formatString: String) = nestedQuery("distributions")
+    .query(matchQuery("distributions.format", formatString))
     .scoreMode(ScoreMode.Avg)
-  def exactFormatQuery(format: String) = nestedQuery("distributions")
-    .query(matchQuery("distributions.format.untokenized", format))
-    .scoreMode(ScoreMode.Avg)
-  def regionIdQuery(region: QueryRegion, indices: Indices)(implicit config: Config): GeoShapeDefinition = {
-    geoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), indices.getType(Indices.RegionsIndexType))
+  def formatQuery(field: String, formatValue: FilterValue[String]): QueryDefinition = {
+    formatValue match {
+      case Specified(inner) => baseFormatQuery(inner)
+      case Unspecified      => nestedQuery("distributions").query(boolQuery().not(existsQuery(field))).scoreMode(ScoreMode.Avg)
+    }
+  }
+
+  def formatQuery(formatValue: FilterValue[String]): QueryDefinition = {
+    formatQuery("distributions.format", formatValue)
+  }
+
+  def exactFormatQuery(format: FilterValue[String]) = {
+    formatQuery("distributions.format.untokenized", format)
+  }
+
+  def regionIdQuery(regionValue: FilterValue[QueryRegion], indices: Indices)(implicit config: Config) = {
+    def normal(region: QueryRegion) = geoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), indices.getType(Indices.RegionsIndexType))
       .relation(ShapeRelation.INTERSECTS)
       .indexedShapeIndex(indices.getIndex(config, Indices.RegionsIndex))
       .indexedShapePath("geometry")
+
+    handleFilterValue(regionValue, normal, "spatial.geoJson")
   }
-  def dateFromQuery(dateFrom: OffsetDateTime) = filter(should(
-    rangeQuery("temporal.end.date").gte(dateFrom.toString),
-    rangeQuery("temporal.start.date").gte(dateFrom.toString)).minimumShouldMatch(1))
-  def dateToQuery(dateTo: OffsetDateTime) = filter(should(
-    rangeQuery("temporal.end.date").lte(dateTo.toString),
-    rangeQuery("temporal.start.date").lte(dateTo.toString)).minimumShouldMatch(1))
+  def dateQueries(dateFrom: Option[FilterValue[OffsetDateTime]], dateTo: Option[FilterValue[OffsetDateTime]]) = {
+    Seq(
+      (dateFrom, dateTo) match {
+        case (Some(Unspecified), Some(Unspecified)) |
+          (Some(Unspecified), None) |
+          (None, Some(Unspecified)) => Some(Queries.dateUnspecifiedQuery)
+        case _ => None
+      },
+      dateFrom.flatMap(_.map(dateFromQuery)),
+      dateTo.flatMap(_.map(dateToQuery))
+    ).flatten
+  }
+
+  def dateFromQuery(dateFrom: OffsetDateTime) = {
+    filter(should(
+      rangeQuery("temporal.end.date").gte(dateFrom.toString),
+      rangeQuery("temporal.start.date").gte(dateFrom.toString)).minimumShouldMatch(1))
+  }
+  def dateToQuery(dateTo: OffsetDateTime) = {
+    filter(should(
+      rangeQuery("temporal.end.date").lte(dateTo.toString),
+      rangeQuery("temporal.start.date").lte(dateTo.toString)).minimumShouldMatch(1))
+  }
+  val dateUnspecifiedQuery = boolQuery().not(existsQuery("temporal.end.date"), existsQuery("temporal.start.date"))
+
   def exactDateQuery(dateFrom: OffsetDateTime, dateTo: OffsetDateTime) = must(dateFromQuery(dateFrom), dateToQuery(dateTo))
+
+  def handleFilterValue[T](filterValue: FilterValue[T], converter: T => QueryDefinition, field: String) = filterValue match {
+    case Specified(inner) => converter(inner)
+    case Unspecified      => boolQuery().not(existsQuery(field))
+  }
 }
 

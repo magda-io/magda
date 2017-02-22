@@ -46,6 +46,7 @@ import org.elasticsearch.cluster.health.ClusterHealthStatus
 import com.sksamuel.elastic4s.embedded.LocalNode
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.api.model.Protocols
+import au.csiro.data61.magda.util.SetExtractor
 
 class FacetSpec extends BaseApiSpec {
 
@@ -67,21 +68,15 @@ class FacetSpec extends BaseApiSpec {
     }
 
     def checkFacetsWithQuery(queryGen: Gen[(String, Query)] = textQueryGen(), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit) = {
-      try {
-        forAll(thisIndexGen, queryGen, facetSizeGen) { (tuple, query, rawFacetSize) ⇒
-          val (indexName, dataSets, routes) = tuple
-          val (textQuery, objQuery) = query
-          val facetSize = Math.max(rawFacetSize, 1)
+      forAll(thisIndexGen, queryGen, facetSizeGen) { (tuple, query, rawFacetSize) ⇒
+        val (indexName, dataSets, routes) = tuple
+        val (textQuery, objQuery) = query
+        val facetSize = Math.max(rawFacetSize, 1)
 
-          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
-            status shouldBe OK
-            inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
-          }
+        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
+          status shouldBe OK
+          inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
         }
-      } catch {
-        case e: Throwable =>
-          e.printStackTrace
-          throw e
       }
     }
 
@@ -227,6 +222,7 @@ class FacetSpec extends BaseApiSpec {
               val facet = getFacet(outerResult)
 
               val exactMatchFacets = facet.options.filter(option => option.matched && option.hitCount == 0)
+
               whenever(exactMatchFacets.size > 0) {
                 val grouped = groupResult(allDataSets)
 
@@ -338,7 +334,7 @@ class FacetSpec extends BaseApiSpec {
       def queryToInt(query: Query) = query.publishers.size
 
       val queryGen = for {
-        publishers <- Gen.nonEmptyBuildableOf[Set[String], String](publisherQueryGen)
+        publishers <- Gen.nonEmptyBuildableOf[Set[FilterValue[String]], FilterValue[String]](publisherQueryGen)
       } yield new Query(publishers = publishers)
 
       genericFacetSpecs(Publisher, reducer, queryToInt, queryGen)
@@ -350,7 +346,7 @@ class FacetSpec extends BaseApiSpec {
 
       val queryGen = for {
         query <- unspecificQueryGen
-        formats <- Gen.nonEmptyBuildableOf[Set[String], String](formatQueryGen)
+        formats <- Gen.nonEmptyBuildableOf[Set[FilterValue[String]], FilterValue[String]](formatQueryGen)
       } yield query.copy(formats = formats, publishers = Set())
 
       genericFacetSpecs(Format, reducer, queryToInt, queryGen)
@@ -506,18 +502,23 @@ class FacetSpec extends BaseApiSpec {
           }
         }
 
-      def filterDataSetsForDateRange(dataSets: List[DataSet], lowerBound: Option[OffsetDateTime], upperBound: Option[OffsetDateTime]) = dataSets
+      def filterDataSetsForDateRange(dataSets: List[DataSet], lowerBound: Option[FilterValue[OffsetDateTime]], upperBound: Option[FilterValue[OffsetDateTime]]) = dataSets
         .filter { dataSet ⇒
-          val startOption = dataSet.temporal.flatMap(_.start).flatMap(_.date)
-          val endOption = dataSet.temporal.flatMap(_.end).flatMap(_.date)
+          (lowerBound, upperBound) match {
+            case (Some(Unspecified), Some(Unspecified)) | (Some(Unspecified), None) | (None, Some(Unspecified)) =>
+              dataSet.temporal.map(temporal => temporal.start.isEmpty && temporal.end.isEmpty).getOrElse(true)
+            case _ =>
+              val startOption = dataSet.temporal.flatMap(_.start).flatMap(_.date)
+              val endOption = dataSet.temporal.flatMap(_.end).flatMap(_.date)
 
-          val start = startOption.orElse(endOption).getOrElse(OffsetDateTime.MAX)
-          val end = endOption.orElse(startOption).getOrElse(OffsetDateTime.MIN)
+              val start = startOption.orElse(endOption).getOrElse(OffsetDateTime.MAX)
+              val end = endOption.orElse(startOption).getOrElse(OffsetDateTime.MIN)
 
-          val lower = lowerBound.getOrElse(OffsetDateTime.MIN)
-          val upper = upperBound.getOrElse(OffsetDateTime.MAX)
+              val lower = lowerBound.flatMap(a => a).getOrElse(OffsetDateTime.MIN)
+              val upper = upperBound.flatMap(a => a).getOrElse(OffsetDateTime.MAX)
 
-          !(start.isAfter(upper) || end.isBefore(lower))
+              !(start.isAfter(upper) || end.isBefore(lower))
+          }
         }
 
       def overlaps(tuple: ((Int, Int), (Int, Int))) = {

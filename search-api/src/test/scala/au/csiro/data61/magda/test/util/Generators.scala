@@ -36,6 +36,9 @@ import au.csiro.data61.magda.model.misc.Protocols._
 import com.vividsolutions.jts.geom.GeometryFactory
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.util.MwundoJTSConversions._
+import au.csiro.data61.magda.api.Specified
+import au.csiro.data61.magda.api.Unspecified
+import au.csiro.data61.magda.api.FilterValue
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -292,137 +295,107 @@ object Generators {
     years = ElasticSearchIndexer.getYears(temporal.flatMap(_.start.flatMap(_.date)), temporal.flatMap(_.end.flatMap(_.date)))
   )
 
-  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" "))//.map(removeFilters)
+  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" "))
+  val unspecifiedGen = Gen.const(Unspecified)
+  def filterValueGen[T](innerGen: Gen[T]): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
 
   def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, Gen.nonEmptyContainerOf[Set, T](gen)), (3, Gen.const(Set())))
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = probablyEmptySet(gen).flatMap(set => Gen.pick(set.size % 3, set)).map(_.toSet)
 
   val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
-  val formatQueryGen = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString))//.map(removeFilters)
+  val formatQueryGen = filterValueGen(Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString)))
 
   val partialPublisherGen = publisherGen.flatMap(Gen.oneOf(_)).flatMap { publisher =>
     Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)))
   }
-  val publisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString))//.map(removeFilters)
-  val regionQueryGen: Gen[QueryRegion] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
+  val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString))
+  val publisherQueryGen: Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
+  val regionQueryGen: Gen[FilterValue[QueryRegion]] = filterValueGen(indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
     case (regionSource, regionObject) => regionJsonToQueryRegion(regionSource, regionObject)
-  }
+  })
 
   def regionJsonToQueryRegion(regionSource: RegionSource, regionObject: JsObject): QueryRegion = QueryRegion(
     regionType = regionSource.name,
     regionId = regionObject.fields("properties").asJsObject.fields(regionSource.idProperty).asInstanceOf[JsString].value
   )
 
+  val dateFromGen = filterValueGen(periodOfTimeGen.map(_.start.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
+  val dateToGen = filterValueGen(periodOfTimeGen.map(_.end.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
+
   val queryGen = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
     publishers <- probablyEmptySet(publisherQueryGen)
-    dateFrom <- Gen.option(periodOfTimeGen.map(_.start.flatMap(_.date)))
-    dateTo <- Gen.option(periodOfTimeGen.map(_.end.flatMap(_.date)))
+    dateFrom <- Gen.option(dateToGen)
+    dateTo <- Gen.option(dateFromGen)
     formats <- probablyEmptySet(formatQueryGen)
     regions <- probablyEmptySet(regionQueryGen)
   } yield Query(
     freeText = freeText,
     quotes = quotes,
     publishers = publishers,
-    dateFrom = dateFrom.flatten,
-    dateTo = dateTo.flatten,
+    dateFrom = dateFrom,
+    dateTo = dateTo,
     formats = formats,
     regions = regions
-  ))//.map(removeInvalid)
+  )) //.map(removeInvalid)
 
   val exactQueryGen = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
-    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
-    dateFrom <- Gen.option(periodOfTimeGen.map(_.start.flatMap(_.date)))
-    dateTo <- Gen.option(periodOfTimeGen.map(_.end.flatMap(_.date)))
-    formats <- probablyEmptySet(formatGen.map(_._2))
+    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.map(Specified(_).asInstanceOf[FilterValue[String]]).toSet)
+    dateFrom <- Gen.option(dateFromGen)
+    dateTo <- Gen.option(dateToGen)
+    formats <- probablyEmptySet(formatGen.map(formatTuple => Specified(formatTuple._2).asInstanceOf[FilterValue[String]]))
     regions <- probablyEmptySet(regionQueryGen)
   } yield Query(
     freeText = freeText,
     quotes = quotes,
     publishers = publishers,
-    dateFrom = dateFrom.flatten,
-    dateTo = dateTo.flatten,
+    dateFrom = dateFrom,
+    dateTo = dateTo,
     formats = formats,
     regions = regions
-  ))//.map(removeInvalid)
+  )) //.map(removeInvalid)
 
   val specificBiasedQueryGen = (for {
-    publishers <- Gen.nonEmptyContainerOf[Set, String](publisherQueryGen)
-    formats <- Gen.nonEmptyContainerOf[Set, String](formatQueryGen)
+    publishers <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](publisherGen.flatMap(Gen.oneOf(_)).map(Specified.apply))
+    formats <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](formatGen.map(x => Specified(x._2)))
   } yield Query(
     freeText = Some("*"),
     publishers = publishers,
     formats = formats
-  ))//.map(removeInvalid)
+  )) //.map(removeInvalid)
 
   val unspecificQueryGen = (for {
     freeText <- noneBiasedOption(queryTextGen)
     quotes <- smallSet(queryTextGen)
     publishers <- smallSet(publisherQueryGen)
-    dateFrom <- noneBiasedOption(periodOfTimeGen.map(_.start.flatMap(_.date)))
-    dateTo <- noneBiasedOption(periodOfTimeGen.map(_.end.flatMap(_.date)))
+    dateFrom <- noneBiasedOption(dateFromGen)
+    dateTo <- noneBiasedOption(dateToGen)
     formats <- smallSet(formatQueryGen)
     regions <- smallSet(regionQueryGen)
   } yield Query(
     freeText = freeText,
     quotes = quotes,
     publishers = publishers,
-    dateFrom = dateFrom.flatten,
-    dateTo = dateTo.flatten,
+    dateFrom = dateFrom,
+    dateTo = dateTo,
     formats = formats,
     regions = regions
   ))
     .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
-    //.map(removeInvalid)
-
-  val suggestedFacetQueryGen = (for {
-    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.toSet)
-    formats <- smallSet(formatGen.map(_._2))
-  } yield Query(
-    publishers = publishers,
-    formats = formats
-  ))
-    .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
-    //.map(removeInvalid)
-//    .flatMap(query => query.copy(
-//      freeText = Some(query.freeText.getOrElse("") + " " + query.formats.map("-" + _).mkString(" "))
-//    ))
-
-//  val filterRegex = "(\"|by|to|from|as|in)".r
-
-//  def removeFilters(string: String) = filterRegex.replaceAllIn(string, "a" + string)
-
-//  def noFilters(string: String): Boolean = !filterRegex.matchesAny(string)
-
-//  def noFiltersInFreeText(query: Query): Boolean = {
-//    query.productIterator.forall {
-//      case (x: String)    ⇒ noFilters(x)
-//      case (Some(x))      ⇒ noFilters(x.toString)
-//      case (xs: Set[Any]) ⇒ xs.forall(y ⇒ noFilters(y.toString))
-//      case _              ⇒ true
-//    }
-//  }
-//  def removeInvalid(objQuery: Query): Query = {
-//    objQuery.copy(
-//      freeText = objQuery.freeText.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
-//      quotes = objQuery.quotes.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
-//      formats = objQuery.formats.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
-//      publishers = objQuery.publishers.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, ""))
-//    )
-//  }
 
   def textQueryGen(queryGen: Gen[Query] = queryGen): Gen[(String, Query)] = queryGen.flatMap { query =>
     val textList = (Seq(query.freeText).flatten ++
-      query.quotes.map(""""""" + _ + """"""")).toSet
+      query.quotes.map(""""""" + _ + """"""")).toSet 
+      
     val facetList = query.publishers.map(publisher => s"by $publisher") ++
       Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
       Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
       query.formats.map(format => s"as $format") ++
-      query.regions.map(region => s"in ${region.regionType}:${region.regionId}")
+      query.regions.map(region => s"in ${region}")
 
     Gen.pick(textList.size, textList)
       .flatMap(existingList => Gen.pick(facetList.size, facetList).map(existingList ++ _))
