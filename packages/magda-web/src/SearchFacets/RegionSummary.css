@@ -1,11 +1,20 @@
-.region-summary{
+.region-summary {
   background: #3498db;
   color: #fff;
-  padding: 5px;
-  margin-top: -8px;
+  padding: 5px; 
+  position: absolute;
+  text-align: left;
+  z-index: 999;
+  left: 0;
+  right: 0;
 }
 
-.region-summary__region-type{
-	font-size: small;
-	color: #ccc;
+.region-summary__region-type {
+  background: #3498DB;
+  color: #fff; }
+
+
+.popup_map .region-summary{
+  right: 20px;
+  left: 20px;
 }

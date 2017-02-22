@@ -1,5 +1,6 @@
 import defined from '../helpers/defined';
 import React from 'react';
+import './RegionSummary.css';
 
 function RegionSummary(props){
 	const name = props.region.regionName || '';

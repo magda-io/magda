@@ -11,11 +11,13 @@ const config = {
         descriptionLength: 50,
         downloadLinksSize: 3,
         exampleSearch: [
-          'mobile black spot',
-          'taxation from 2014 to 2016',
-          'water in Melbourne',
-          'health as CSV',
-          'advisers by Australian securities'
+          'Business Names by ASIC as CSV',
+          'Geocoded National Address File',
+          'By Australian Charities and Not-for-profits Commission',
+          'Taxation Statistics from 2016',
+          'Trees in Victoria',
+          'Budget from 2016 to 2017 by Department of Finance',
+          'Planning as WMS'
         ],
         facets: [{id: 'publisher', component: Publisher},
                  {id: 'region', component: Region},
