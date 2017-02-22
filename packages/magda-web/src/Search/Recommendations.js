@@ -36,8 +36,8 @@ class Recommendations extends Component {
     this.setState({
       isVisible: false
     })
-    // this.props.onClick(option);
-    this.props.modifyUserSearchString('by ' + option.value);
+    this.props.onClick(option);
+    // this.props.modifyUserSearchString('by ' + option.value);
   }
 
   onToggle(e){
