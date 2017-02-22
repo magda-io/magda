@@ -1,13 +1,15 @@
-.star {
-  position: relative; }
+.star{
+  position: relative;
+}
 
-.star__btn,
-.star__btn:focus {
-  background: rgba(255, 255, 255, 0);
-  vertical-align: text-top;
-  color: #bbb; }
+.star__btn, 
+.star__btn:focus{
+    background: rgba(255, 255, 255, 0);
+    vertical-align: text-top;
+    color: #bbb;
+}
 
-.star__info {
+.star__info{
   position: absolute;
   left: -20px;
   top: 37px;
@@ -15,9 +17,10 @@
   padding: 10px;
   border: 1px solid #ddd;
   background: #fff;
-  z-index: 9; }
+  z-index: 9;
+}
 
-.star__info:before {
+.star__info:before{
   content: '';
   width: 20px;
   height: 20px;
@@ -29,4 +32,5 @@
   border-right: 1px solid #ddd;
   top: -10.14px;
   transform: rotate(-45deg);
-  left: 28px; }
+  left: 28px;
+}
