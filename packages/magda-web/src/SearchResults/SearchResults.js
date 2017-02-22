@@ -30,10 +30,17 @@ class SearchResults extends Component {
 
   getSummaryText(){
     if(this.props.searchResults.length){
-      return (
-          <div className='search-results__count'>
-            {this.props.totalNumberOfResults} results found
+      if(this.props.strategy === 'match-part'){
+        return (
+          <div className='search-recomendations__count'>
+            You might find the following {this.props.totalNumberOfResults} related datasets useful
           </div>);
+      } else{
+        return (
+          <div className='search-results__count'>
+            {this.props.totalNumberOfResults} datasets found
+          </div>);
+      }
     }
     return null;
   }

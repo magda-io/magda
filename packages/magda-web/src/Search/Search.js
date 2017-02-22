@@ -186,17 +186,21 @@ class Search extends Component {
                  !this.props.isFetching &&
                  !this.props.hasError &&
                  <div>
-                 <Publisher updateQuery={this.updateQuery}
-                            modifyUserSearchString={this.modifyUserSearchString}
-                            component={'recommendations'}
-                 />
+                 
                  {defined(this.props.location.query.q) &&
                   this.props.location.query.q.length > 0 &&
                     <NoMatching datasets={this.props.datasets}
                                 strategy={this.props.strategy}
                     />
                   }
+
+                  <Publisher updateQuery={this.updateQuery}
+                            modifyUserSearchString={this.modifyUserSearchString}
+                            component={'recommendations'}
+                 />
+                 
                   <SearchResults
+                      strategy ={this.props.strategy}
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
                       onClickTag={this.onClickTag}
