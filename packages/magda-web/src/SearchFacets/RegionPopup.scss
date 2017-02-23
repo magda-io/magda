@@ -40,28 +40,17 @@
 
 .popup__done-btn,
 .popup__cancel-btn {
+  background: #3498db;
   color: #fff;
   border-radius: 1px; }
-  .popup__done-btn:hover, .popup__done-btn:focus,
-  .popup__cancel-btn:hover,
-  .popup__cancel-btn:focus {
-    color: #fff; }
 
 .popup__cancel-btn {
   background: #7f8c8d;
   margin-left: 10px; }
-  .popup__cancel-btn:hover, .popup__cancel-btn:focus {
-    background: #667273; }
-
-.popup__done-btn {
-  background: #3498db; }
-  .popup__done-btn:hover, .popup__done-btn:focus {
-    background: #217dbb; }
 
 .popup__close-btn {
   text-align: right;
   padding: 6px 6px;
-  color: #888;
   float: right;
   line-height: 2;
   background: rgba(255, 255, 255, 0); }
