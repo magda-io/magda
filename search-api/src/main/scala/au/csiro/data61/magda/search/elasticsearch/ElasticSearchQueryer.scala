@@ -39,7 +39,28 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   lazy val clientFuture: Future[TcpClient] = clientProvider.getClient(system.scheduler, logger, ec)
 
-  override def search(query: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
+  val ESCAPE_REGEX = "([\\+\\-=!\\(\\)\\{\\}\\[\\]\\^\"~\\?:/\\\\]|&&|\\|\\|)".r
+  val REMOVE_REGEX = "(?i)((^|\\s)(AND|OR)(\\s|$)|[<>])".r
+
+  def cleanStringForEs(string: String): String = {
+    val cleaned = REMOVE_REGEX.replaceAllIn(ESCAPE_REGEX.replaceAllIn(string, charMatch => s"\\\\\\${charMatch.matched}"), " ")
+
+    if (cleaned.replace("\\", "").equals(string.replace("\\", ""))) {
+      cleaned
+    } else {
+      cleanStringForEs(cleaned)
+    }
+  }
+
+  def filterForSyntax(query: Query): Query = {
+    query.copy(
+      freeText = query.freeText.map(cleanStringForEs),
+      quotes = query.quotes.map(cleanStringForEs)
+    )
+  }
+  override def search(rawQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
+    val query = filterForSyntax(rawQuery)
+
     clientFuture.flatMap { client =>
       client.execute(buildQueryWithAggregations(query, start, limit, MatchAll, requestedFacetSize)).flatMap(response =>
         if (response.totalHits > 0)
@@ -47,7 +68,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         else
           client.execute(buildQueryWithAggregations(query, start, limit, MatchPart, requestedFacetSize)).map((_, MatchPart)))
     } map {
-      case (response, strategy) => buildSearchResult(query, response, strategy, requestedFacetSize)
+      case (response, strategy) => buildSearchResult(query, rawQuery, response, strategy, requestedFacetSize)
     } recover {
       case RootCause(illegalArgument: IllegalArgumentException) =>
         logger.error(illegalArgument, "Exception when searching")
@@ -73,11 +94,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /**
    * Turns an ES response into a magda SearchResult.
    */
-  def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
+  def buildSearchResult(query: Query, rawQuery: Query, response: RichSearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
     val aggsMap = response.aggregations.map
     new SearchResult(
       strategy = Some(strategy),
-      query = query,
+      query = rawQuery,
       hitCount = response.getHits.totalHits().toInt,
       dataSets = response.to[DataSet].toList,
       facets = Some(FacetType.all.map { facetType =>

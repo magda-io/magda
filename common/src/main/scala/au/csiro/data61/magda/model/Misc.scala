@@ -16,9 +16,9 @@ package misc {
   object FacetType {
     val all = Seq(Publisher, Year, Format)
 
-    private val idToFacet = all.groupBy(_.id).mapValues(_.head)
+    private val idToFacet = all.groupBy(_.id.toLowerCase).mapValues(_.head)
 
-    def fromId(id: String): Option[FacetType] = idToFacet get id
+    def fromId(id: String): Option[FacetType] = idToFacet get id.toLowerCase
   }
 
   case object Publisher extends FacetType {

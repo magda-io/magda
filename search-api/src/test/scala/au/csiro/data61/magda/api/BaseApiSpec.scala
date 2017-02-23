@@ -69,20 +69,6 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     IndexDefinition.setupRegions(client, fakeRegionLoader).await(60 seconds)
   }
 
-  //  def configureSettings() =
-  //    Settings.builder()
-  //      .put("cluster.routing.allocation.disk.watermark.high", "100%")
-  //      .put("cluster.routing.allocation.disk.watermark.low", "100%")
-  //      .put("discovery.zen.ping.multicast", "false")
-  //      .put("index.store.fs.memory.enabled", "true")
-  //      .put("index.gateway.type", "none")
-  //      .put("index.store.throttle.type", "none")
-  //      .put("index.translog.disable_flush", "true")
-  //      .put("index.memory.index_buffer_size", "50%")
-  //      .put("index.refresh_interval", "-1")
-  //      .build()
-  //
-
   def blockUntilNotRed(): Unit = {
     blockUntil("Expected cluster to have green status") { () =>
       val status = client.execute {

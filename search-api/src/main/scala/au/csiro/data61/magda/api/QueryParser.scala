@@ -137,7 +137,12 @@ private class QueryParser()(implicit val defaultOffset: ZoneOffset, implicit val
           val split = filterValueString.split(":")
           val regionType = split(0)
           val regionId = split(1)
-          AST.ASTRegion(Specified(QueryRegion(regionType, regionId)))
+
+          if (!regionType.trim.isEmpty() && !regionId.trim.isEmpty) {
+            AST.ASTRegion(Specified(QueryRegion(regionType, regionId)))
+          } else {
+            AST.FreeTextWord("in " + filterValueString)
+          }
         } else {
           AST.FreeTextWord("in " + filterValueString)
         }
@@ -225,29 +230,13 @@ class QueryCompiler()(implicit val config: Config) {
       ast <- parser.apply(tokens).right
     } yield ast
 
-    val query = result match {
+    result match {
       case Right(ast) =>
         val flat = flattenAST(ast)
         flat
       case Left(QueryCompilationError(error)) =>
         Query(freeText = Some(code), error = Some(error))
     }
-
-    filterLucene(query)
-  }
-
-  val LUCENE_CONTROL_CHARACTER_REGEX = "[\\.,\\/#!\\$%\\^&;:\\{\\}=\\-_`~\\(\\)\\[\\]\"'\\+]".r
-  def filterLucene(query: Query): Query = {
-    query.copy(
-      freeText = query.freeText.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
-      quotes = query.quotes.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, "")),
-      formats = query.formats.map(_.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, ""))),
-      publishers = query.publishers.map(_.map(LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(_, ""))),
-      regions = query.regions.map(_.map(queryRegion => queryRegion.copy(
-        regionType = LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(queryRegion.regionType, ""),
-        regionId = LUCENE_CONTROL_CHARACTER_REGEX.replaceAllIn(queryRegion.regionId, "")
-      )))
-    )
   }
 
   def flattenAST(ast: AST.ReturnedAST): Query = {

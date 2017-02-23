@@ -305,12 +305,18 @@ object Generators {
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = probablyEmptySet(gen).flatMap(set => Gen.pick(set.size % 3, set)).map(_.toSet)
 
   val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
-  def formatQueryGen(implicit config: Config) = filterValueGen(Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString)))
+  val formatQueryGenInner = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString))
+    .suchThat(word => !filterWords.contains(word.toLowerCase))
+  def formatQueryGen(implicit config: Config) = filterValueGen(formatQueryGenInner)
 
   val partialPublisherGen = publisherGen.flatMap(Gen.oneOf(_)).flatMap { publisher =>
     Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)))
   }
+
+  val filterWords = Set("in", "to", "as", "by", "from")
+
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString))
+    .suchThat(word => !filterWords.contains(word.toLowerCase))
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
   def regionQueryGen(implicit config: Config): Gen[FilterValue[QueryRegion]] = filterValueGen(indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
     case (regionSource, regionObject) => regionJsonToQueryRegion(regionSource, regionObject)

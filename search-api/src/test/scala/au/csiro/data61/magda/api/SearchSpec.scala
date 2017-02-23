@@ -107,7 +107,7 @@ class SearchSpec extends BaseApiSpec {
                 val publisherMatched = if (!query.publishers.isEmpty) {
                   query.publishers.exists(queryPublisher =>
                     queryPublisher match {
-                      case Specified(specifiedPublisher) => dataSetPublisherName.map(_.contains(specifiedPublisher)).getOrElse(false)
+                      case Specified(specifiedPublisher) => dataSetPublisherName.map(_.toLowerCase.contains(specifiedPublisher.toLowerCase)).getOrElse(false)
                       case Unspecified()                 => dataSet.publisher.flatMap(_.name).isEmpty
                     }
                   )
@@ -117,7 +117,7 @@ class SearchSpec extends BaseApiSpec {
                   query.formats.exists(queryFormat =>
                     dataSet.distributions.exists(distribution =>
                       queryFormat match {
-                        case Specified(specifiedFormat) => distribution.format.map(_.contains(specifiedFormat)).getOrElse(false)
+                        case Specified(specifiedFormat) => distribution.format.map(_.toLowerCase.contains(specifiedFormat.toLowerCase)).getOrElse(false)
                         case Unspecified()              => distribution.format.isEmpty
                       }
                     )
@@ -223,23 +223,80 @@ class SearchSpec extends BaseApiSpec {
   }
 
   describe("query") {
-    it("should always be parsed correctly") {
+    it("should parse a randomly generated query correctly") {
       forAll(emptyIndexGen, textQueryGen(queryGen)) { (indexTuple, queryTuple) ⇒
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
-        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
-          status shouldBe OK
-          val response = responseAs[SearchResult]
-          if (textQuery.equals("")) {
-            response.query should equal(Query(freeText = Some("*")))
-          } else {
-            response.query should equal(query)
+        whenever(!textQuery.toLowerCase.contains("or") && !textQuery.toLowerCase.contains("and")) {
+          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
+            if (textQuery.equals("")) {
+              response.query should equal(Query(freeText = Some("*")))
+            } else {
+              response.query should equal(query)
+            }
           }
         }
       }
     }
 
+    it("should correctly escape control characters") {
+      val controlChars = "+ - = && || ! ( ) { } [ ] ^ ~ ? : \\ / and or > <".split(" ")
+
+      def controlCharGen(string: String): Gen[String] = {
+        (for {
+          whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 5))
+        } yield string.zip(whatToDo).map {
+          case (char, charWhatToDo) => charWhatToDo match {
+            case 0 => Gen.oneOf(controlChars)
+            case _ => Gen.const(char.toString)
+          }
+        }.reduce((accGen, currentGen) =>
+          accGen.flatMap { acc =>
+            currentGen.map { current =>
+              acc + current
+            }
+          }
+        )).flatMap(a => a)
+      }
+
+      val controlCharQueryGen = queryGen.suchThat(query =>
+        !Seq("and", "or").exists(reservedWord => query.freeText.exists(_.toLowerCase.contains(reservedWord.toLowerCase) ||
+          query.quotes.exists(_.toLowerCase.contains(reservedWord.toLowerCase))))
+      ).flatMap { query =>
+        val freeTextGen = query.freeText match {
+          case Some(freeTextInner) => controlCharGen(freeTextInner).map(Some.apply)
+          case None                => Gen.const(None)
+        }
+        val quotesGen = query.quotes
+          .map(controlCharGen)
+          .foldRight(Gen.const(Set.empty[String]))((i, acc) => acc.flatMap(set => i.map(set + _)))
+
+        for {
+          freeText <- freeTextGen
+          quotes <- quotesGen
+        } yield (query.copy(
+          freeText = freeText,
+          quotes = quotes
+        ))
+      }
+
+      forAll(emptyIndexGen, textQueryGen(controlCharQueryGen)) { (indexTuple, queryTuple) ⇒
+        val (textQuery, query) = queryTuple
+        val (_, _, routes) = indexTuple
+
+        whenever(!query.equals(Query())) {
+          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+            status shouldBe OK
+
+            val response = responseAs[SearchResult]
+            response.query should equal(query)
+          }
+        }
+      }
+    }
     it("should not fail for queries that are full of arbitrary characters") {
       forAll(emptyIndexGen, Gen.listOf(arbitrary[String]).map(_.mkString(" "))) { (indexTuple, textQuery) =>
         val (_, _, routes) = indexTuple
@@ -251,7 +308,7 @@ class SearchSpec extends BaseApiSpec {
     }
 
     it("should not fail for arbitrary characters interspersed with control words") {
-      val controlWords = Seq("in", "by", "to", "from", "as")
+      val controlWords = Seq("in", "by", "to", "from", "as", "and", "or")
       val controlWordGen = Gen.oneOf(controlWords).flatMap(randomCaseGen)
       val queryWordGen = Gen.oneOf(controlWordGen, arbitrary[String])
       val queryTextGen = Gen.listOf(queryWordGen).map(_.mkString(" "))

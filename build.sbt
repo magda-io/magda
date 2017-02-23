@@ -4,7 +4,7 @@ name := "magda-metadata"
 
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
-  version := "0.0.16",
+  version := "0.0.17",
   scalaVersion := "2.11.8"
 )
 
@@ -40,3 +40,5 @@ Revolver.enableDebugging(port = 8000, suspend = false)
 sources in EditSource <++= baseDirectory.map(d => (d / "deploy" / "kubernetes" ** "*.yml").get)
 targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
 variables in EditSource += ("version", version.value)
+
+parallelExecution in ThisBuild := false
