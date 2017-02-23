@@ -201,7 +201,7 @@ class Search extends Component {
                   
 
                   <SearchResults
-                      strategy ={this.props.strategy}
+                      strategy={this.props.strategy}
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
                       onClickTag={this.onClickTag}

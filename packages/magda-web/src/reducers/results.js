@@ -1,8 +1,7 @@
 // @flow 
-import type { Action, SearchState, DataSearchJson, Dataset, DataAction, Query, FacetOption, Region } from '../types';
+import type { SearchState, DataSearchJson, Dataset, DataAction, Query, FacetOption, Region } from '../types';
 
 import findIndex from 'lodash.findindex';
-import defined from '../helpers/defined';
 import findMatchingObjs from '../helpers/findMatchingObjs';
 
 const initialData = {

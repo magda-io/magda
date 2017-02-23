@@ -4,6 +4,7 @@ import {fetchFormatSearchResults} from '../actions/facetFormatSearch';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'
+import Recommendations from '../Search/Recommendations';
 
 class Format extends Component {
 
