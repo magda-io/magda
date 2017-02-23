@@ -51,12 +51,16 @@
   padding-left: 0;
 }
 
-.dataset-summary__btn-view-dataset{
+.btn.dataset-summary__btn-view-dataset{
   font-size: 16px;
   color: #FFFFFF;
   background: #3498DB;
   box-shadow: 0 1px 4px 0 rgba(38,38,38,0.15);
   border-radius: 1px;
+  &:hover{
+    color: #FFFFFF;
+    background: darken(#3498DB, 10%);
+  }
 }
 
 .dataset-summary__header-top .star{
