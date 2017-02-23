@@ -50,8 +50,8 @@ class Temporal extends Component {
 
 Temporal.propTypes = {
   temporalOptions: React.PropTypes.array,
-  activeDateFrom: React.PropTypes.string,
-  activeDateTo: React.PropTypes.string,
+  activeDateFrom: React.PropTypes.number,
+  activeDateTo: React.PropTypes.number,
   updateQuery: React.PropTypes.func.isRequired
 }
 

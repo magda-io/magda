@@ -31,7 +31,7 @@ browserHistory.listen (location=>{
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
-      <Route path={baseurl}>
+      <Route path={baseurl} ignoreScrollBehavior>
         <IndexRoute component={Search}/>
       </Route>
     </Router>

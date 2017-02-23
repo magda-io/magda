@@ -69,8 +69,8 @@ const results = (state: SearchState= initialData, action: DataAction) => {
       let freeText: string = data.query.freeText;
 
       let activePublishers: Array<FacetOption> = findMatchingObjs(query.publishers, publisherOptions);
-      let activeDateFrom : ?string = query.dateFrom ? query.dateFrom.slice(0, 4): initialData.activeDateFrom;
-      let activeDateTo : ?string = query.dateTo ? query.dateTo.slice(0, 4) : initialData.activeDateTo;
+      let activeDateFrom : ?number = query.dateFrom ? +query.dateFrom.slice(0, 4): initialData.activeDateFrom;
+      let activeDateTo : ?number = query.dateTo ? +query.dateTo.slice(0, 4) : initialData.activeDateTo;
 
       let activeFormats: Array<FacetOption> = findMatchingObjs(query.formats, formatOptions);;
 
@@ -121,12 +121,12 @@ const results = (state: SearchState= initialData, action: DataAction) => {
 
     case 'SET_DATE_FROM':
       return Object.assign({}, state, {
-        activeDateFrom: action.item
+        activeDateFrom: +action.item
       })
 
     case 'SET_DATE_TO':
       return Object.assign({}, state, {
-        activeDateTo: action.item
+        activeDateTo: +action.item
       })
 
     case 'RESET_DATE_FROM':
