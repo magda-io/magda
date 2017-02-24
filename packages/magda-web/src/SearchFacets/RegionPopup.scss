@@ -40,13 +40,28 @@
 
 .popup__done-btn,
 .popup__cancel-btn {
-  background: #3498db;
+ 
   color: #fff;
-  border-radius: 1px; }
+  border-radius: 1px;
+  &:hover, &:focus{
+    color: #fff;
+  }
+}
+
+.popup__done-btn{
+  background: #3498db;
+  &:hover, &:focus{
+    background: darken(#3498db, 10%);
+  }
+}
 
 .popup__cancel-btn {
   background: #7f8c8d;
-  margin-left: 10px; }
+  margin-left: 10px; 
+  &:hover, &:focus{
+    background: darken(#7f8c8d, 10%);
+  }
+}
 
 .popup__close-btn {
   text-align: right;
