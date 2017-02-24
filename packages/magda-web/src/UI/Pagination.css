@@ -1,46 +1,37 @@
-.pagination__group{
+.pagination__group {
   display: table;
   width: 100%;
-  margin-bottom: 30px;
-}
+  margin-bottom: 30px; }
 
-.pagination__group li{
-  display: table-cell;
-}
+.pagination__group li {
+  display: table-cell; }
 
-.pagination__next{
+.pagination__next {
   width: 60%;
-  text-align: right;
-}
+  text-align: right; }
 
-.pagination__start{
-  text-align: left;
-}
+.pagination__start {
+  text-align: left; }
 
-.pagination__secondary-info{
+.pagination__secondary-info {
   font-size: 13px;
-  color: #aaa;
-}
+  color: #aaa; }
 
-.pagination__btn{
+.pagination__btn {
   background: transparent;
   color: #2980b9;
   font-size: 1.2em;
   font-weight: bold;
   padding: 5px 0;
-  line-height: 1.6;
-}
+  line-height: 1.6; }
 
-.pagination__btn .fa{
+.pagination__btn .fa {
   font-size: 1.6em;
-  vertical-align: top;
-}
+  vertical-align: top; }
 
-.pagination__next .fa{
-  padding-left: 10px;
-}
+.pagination__next .fa {
+  padding-left: 10px; }
 
 .pagination__previous .fa,
-.pagination__start .fa{
-  padding-right: 10px;
-}
+.pagination__start .fa {
+  padding-right: 10px; }

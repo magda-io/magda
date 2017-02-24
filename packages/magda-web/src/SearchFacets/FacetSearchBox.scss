@@ -1,0 +1,47 @@
+.facet-search-box{
+  position: relative;
+}
+
+.facet-search-box input.form-control{
+  padding-left: 30px;
+}
+
+.facet-search-box form{
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.facet-search-box .btn-clear-search{
+    position: absolute;;
+    right: 1px;
+    top: 1px;
+    color: #777;
+    bottom: 1px;
+    background: rgba(255, 255, 255, 0);
+}
+
+.facet-search-box .search-icon{
+    position: absolute;
+    left: 10px;
+    top: 10px;
+}
+
+.facet-search-box .form-control{
+    padding-left: 25px;
+}
+
+
+.facet-search-box__options{
+  position: absolute;
+  background: #dcdfe1;
+  z-index: 9999;
+  right: 0;
+  left: 0;
+  border-radius: 1px;
+  min-height: 220px;
+  max-height: 300px;
+  overflow-y: auto;
+  /*border: 1px solid rgba(189, 195, 199, 0.15);*/
+  padding: 3px;
+  box-shadow: 0px 2px 1px 0px rgba(189, 195, 199, 0.3);
+}

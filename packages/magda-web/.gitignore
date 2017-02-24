@@ -9,3 +9,6 @@ build
 # misc
 .DS_Store
 npm-debug.log
+
+# compiled css files
+*.css
