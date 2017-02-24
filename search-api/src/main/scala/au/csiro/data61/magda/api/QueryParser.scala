@@ -10,7 +10,7 @@ import au.csiro.data61.magda.util.DateParser._
 import scala.util.matching.Regex
 import java.time.OffsetDateTime
 
-import au.csiro.data61.magda.model.misc.Region
+import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.spatial.RegionSources
 import java.time.ZoneOffset
 import com.typesafe.config.Config
@@ -21,16 +21,16 @@ private object Tokens {
   case class Filter(filterName: String) extends QueryToken
   case class FreeTextWord(general: String) extends QueryToken
   case class RegionFilter(regionType: String, regionId: String) extends QueryToken
-  case class WhiteSpace() extends QueryToken
+  case object Unspecified extends QueryToken
 }
 
 case class QueryCompilationError(error: String)
 
-private class QueryLexer(regionSources: RegionSources) extends RegexParsers {
+private class QueryLexer(implicit val config: Config) extends RegexParsers {
   override def skipWhitespace = true
-//  override val whiteSpace = "[\t\r\f\n]+".r
+  //  override val whiteSpace = "[\t\r\f\n]+".r
 
-  val filterWords = Seq("From", "To", "By", "As")
+  val filterWords = Seq("From", "To", "By", "As", "In")
 
   /** A parser that matches a regex string and returns the Match */
   def regexMatch(r: Regex): Parser[Regex.Match] = new Parser[Regex.Match] {
@@ -55,10 +55,6 @@ private class QueryLexer(regionSources: RegionSources) extends RegexParsers {
     }
   }
 
-//  def whiteSpaceParser: Parser[Tokens.WhiteSpace] = {
-//    "\\s+".r ^^ { _ => Tokens.WhiteSpace() }
-//  }
-
   def freeTextWord: Parser[Tokens.FreeTextWord] = {
     "[^\\s]+".r ^^ { str => Tokens.FreeTextWord(str.trim) }
   }
@@ -68,12 +64,12 @@ private class QueryLexer(regionSources: RegionSources) extends RegexParsers {
       Tokens.Filter(str.trim)
     }
   }
-  def region: Parser[Tokens.RegionFilter] = {
-    val regionTypesJoined = regionSources.sources.map(_.name).reduce { (left, right) => left + "|" + right }
-    regexMatch(s"(?i)in ($regionTypesJoined):([A-Za-z0-9]+)".r) ^^ { regexMatch => Tokens.RegionFilter(regexMatch.group(2), regexMatch.group(3)) }
+
+  def unspecified: Parser[Tokens.QueryToken] = {
+    s"(?i)${config.getString("strings.unspecifiedWord")}".r ^^ { _ => Tokens.Unspecified }
   }
 
-  def tokens: Parser[List[Tokens.QueryToken]] = phrase(rep1(quote | region | filterWord | freeTextWord))
+  def tokens: Parser[List[Tokens.QueryToken]] = phrase(rep1(quote | filterWord | unspecified | freeTextWord))
 
   def apply(code: String): Either[QueryCompilationError, List[Tokens.QueryToken]] = {
     parse(tokens, code) match {
@@ -91,14 +87,13 @@ object AST {
   case class And(left: ReturnedAST, right: ReturnedAST) extends ReturnedAST
   case class Quote(quote: String) extends ReturnedAST
   case class FreeTextWord(freeText: String) extends ReturnedAST
-//  case object WhiteSpace extends ReturnedAST
 
   sealed trait Filter extends ReturnedAST
-  case class DateFrom(value: OffsetDateTime) extends Filter
-  case class DateTo(value: OffsetDateTime) extends Filter
-  case class Publisher(value: String) extends Filter
-  case class Format(value: String) extends Filter
-  case class ASTRegion(region: Region) extends Filter
+  case class DateFrom(value: FilterValue[OffsetDateTime]) extends Filter
+  case class DateTo(value: FilterValue[OffsetDateTime]) extends Filter
+  case class Publisher(value: FilterValue[String]) extends Filter
+  case class Format(value: FilterValue[String]) extends Filter
+  case class ASTRegion(region: FilterValue[QueryRegion]) extends Filter
 
   sealed trait FilterType extends QueryAST
   case object FromType extends FilterType
@@ -108,11 +103,10 @@ object AST {
   case object RegionType extends FilterType
   case object Ignore extends ReturnedAST
 
-  case class FilterStatement(filterType: FilterType, value: FilterValue) extends QueryAST
-  case class FilterValue(value: String) extends QueryAST
+  case class ASTFilterValue(value: FilterValue[String]) extends QueryAST
 }
 
-private class QueryParser(regionSources: RegionSources)(implicit val defaultOffset: ZoneOffset) extends Parsers {
+private class QueryParser()(implicit val defaultOffset: ZoneOffset, implicit val config: Config) extends Parsers {
   override type Elem = Tokens.QueryToken
 
   class QueryTokenReader(tokens: Seq[Tokens.QueryToken]) extends Reader[Tokens.QueryToken] {
@@ -127,18 +121,34 @@ private class QueryParser(regionSources: RegionSources)(implicit val defaultOffs
   def queryAndFilters = (queryText ~ filters) ^^ { case a ~ b => AST.And(a, b) }
   def queryText = queryTextSep
   def queryTextSep = rep1(freeTextWord | quote) ^^ {
-    //    case Nil  => AST.Ignore
     case list => list reduceRight AST.And
   }
-  def filters = rep1(region | filterStatement | emptyFilterStatement) ^^ {
-    //    case Nil  => AST.Ignore
+  def filters = rep1(region | filterStatement) ^^ {
     case list => list reduceRight AST.And
   }
-  def filterStatement = filterType ~ filterBody ^^ {
-    case AST.FromType ~ AST.FilterValue(filterValue)      => parseDateFromRaw(filterValue, false, AST.DateFrom.apply, AST.And(AST.FreeTextWord("from"), AST.FreeTextWord(filterValue)))
-    case AST.ToType ~ AST.FilterValue(filterValue)        => parseDateFromRaw(filterValue, true, AST.DateTo.apply, AST.And(AST.FreeTextWord("to"), AST.FreeTextWord(filterValue)))
-    case AST.PublisherType ~ AST.FilterValue(filterValue) => AST.Publisher(filterValue)
-    case AST.FormatType ~ AST.FilterValue(filterValue)    => AST.Format(filterValue)
+  def filterStatement: Parser[AST.ReturnedAST] = filterType ~ (filterBody | emptyFilterStatement) ^^ {
+    case AST.FromType ~ AST.ASTFilterValue(filterValue)      => parseDateFromRaw(filterValue, false, AST.DateFrom.apply, "from")
+    case AST.ToType ~ AST.ASTFilterValue(filterValue)        => parseDateFromRaw(filterValue, true, AST.DateTo.apply, "to")
+    case AST.PublisherType ~ AST.ASTFilterValue(filterValue) => AST.Publisher(filterValue)
+    case AST.FormatType ~ AST.ASTFilterValue(filterValue)    => AST.Format(filterValue)
+    case AST.RegionType ~ AST.ASTFilterValue(filterValue) => filterValue match {
+      case Specified(filterValueString) =>
+        if (filterValueString.contains(":")) {
+          val split = filterValueString.split(":")
+          val regionType = split(0)
+          val regionId = split(1)
+
+          if (!regionType.trim.isEmpty() && !regionId.trim.isEmpty) {
+            AST.ASTRegion(Specified(QueryRegion(regionType, regionId)))
+          } else {
+            AST.FreeTextWord("in " + filterValueString)
+          }
+        } else {
+          AST.FreeTextWord("in " + filterValueString)
+        }
+      case Unspecified() => AST.ASTRegion(Unspecified())
+    }
+    case _ ~ AST.Ignore => AST.Ignore
   }
 
   def emptyFilterStatement = filterType ^^ {
@@ -152,22 +162,22 @@ private class QueryParser(regionSources: RegionSources)(implicit val defaultOffs
         case "to"   => AST.ToType
         case "by"   => AST.PublisherType
         case "as"   => AST.FormatType
+        case "in"   => AST.RegionType
       }
     })
 
-//  def whiteSpaceP = accept("whitespace", {
-//    case Tokens.WhiteSpace() => AST.Ignore
-//  })
-
-  private def filterBody: Parser[AST.FilterValue] =
+  private def filterBody: Parser[AST.ASTFilterValue] =
     rep1(filterBodyWord) ^^ {
       case list => list.reduce((a, b) => (a, b) match {
-        case (AST.FilterValue(a), AST.FilterValue(b)) => AST.FilterValue(a + " " + b)
+        case (AST.ASTFilterValue(a), AST.ASTFilterValue(b)) => AST.ASTFilterValue(Specified(a + " " + b))
       })
     }
 
-  private def filterBodyWord: Parser[AST.FilterValue] = {
-    accept("filter body word", { case Tokens.FreeTextWord(formatString) => AST.FilterValue(formatString) })
+  private def filterBodyWord: Parser[AST.ASTFilterValue] = {
+    accept("filter body word", {
+      case Tokens.FreeTextWord(wordString) => AST.ASTFilterValue(Specified(wordString))
+      case Tokens.Unspecified              => AST.ASTFilterValue(Unspecified())
+    })
   }
 
   private def quote: Parser[AST.Quote] = {
@@ -176,21 +186,22 @@ private class QueryParser(regionSources: RegionSources)(implicit val defaultOffs
 
   private def region: Parser[AST.ASTRegion] = {
     accept("region", {
-      case Tokens.RegionFilter(regionType, regionId) => regionSources.forName(regionType) match {
-        case Some(regionSource) => AST.ASTRegion(Region(regionType, regionId, "[Unknown]", None))
-        case None               => throw new RuntimeException("Could not find region for type " + regionType)
-      }
+      case Tokens.RegionFilter(regionType, regionId) => AST.ASTRegion(Specified(QueryRegion(regionType, regionId)))
     })
   }
 
-  private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: String, atEnd: Boolean, applyFn: OffsetDateTime => A, recoveryFn: => AST.ReturnedAST): A = {
-    val date = parseDate(rawDate, atEnd)
-    date match {
-      case DateTimeResult(instant) => applyFn(instant)
-      case ConstantResult(constant) => constant match {
-        case Now => applyFn(OffsetDateTime.now())
-      }
-      case _ => recoveryFn
+  private def parseDateFromRaw[A >: AST.ReturnedAST](rawDate: FilterValue[String], atEnd: Boolean, applyFn: FilterValue[OffsetDateTime] => A, filterWord: String): A = {
+    rawDate match {
+      case Specified(dateString) =>
+        val date = parseDate(dateString, atEnd)
+        date match {
+          case DateTimeResult(instant) => applyFn(Specified(instant))
+          case ConstantResult(constant) => constant match {
+            case Now => applyFn(Specified(OffsetDateTime.now()))
+          }
+          case _ => AST.And(AST.FreeTextWord(filterWord), AST.FreeTextWord(dateString))
+        }
+      case Unspecified() => applyFn(Unspecified())
     }
   }
 
@@ -208,10 +219,10 @@ private class QueryParser(regionSources: RegionSources)(implicit val defaultOffs
   }
 }
 
-class QueryCompiler(regionSources: RegionSources)(implicit val config: Config) {
+class QueryCompiler()(implicit val config: Config) {
   private implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
-  private val lexer = new QueryLexer(regionSources)
-  private val parser = new QueryParser(regionSources)
+  private val lexer = new QueryLexer()
+  private val parser = new QueryParser()
 
   def apply(code: String): Query = {
     val result = for {
@@ -258,12 +269,30 @@ class QueryCompiler(regionSources: RegionSources)(implicit val config: Config) {
   }
 }
 
+sealed trait FilterValue[+T] {
+  def map[A](a: T => A): FilterValue[A]
+}
+case class Specified[T](t: T) extends FilterValue[T] {
+  override def map[A](a: T => A): FilterValue[A] = Specified(a(t))
+  override def toString = t.toString
+}
+case class Unspecified()(implicit config: Config) extends FilterValue[Nothing] {
+  override def map[A](a: Nothing => A): FilterValue[Nothing] = this
+  override def toString = config.getString("strings.unspecifiedWord")
+}
+object FilterValue {
+  implicit def filterValueToOption[T](filterValue: FilterValue[T]): Option[T] = filterValue match {
+    case Specified(inner) => Some(inner)
+    case Unspecified()    => None
+  }
+}
 case class Query(
   freeText: Option[String] = None,
   quotes: Set[String] = Set(),
-  publishers: Set[String] = Set(),
-  dateFrom: Option[OffsetDateTime] = None,
-  dateTo: Option[OffsetDateTime] = None,
-  regions: Set[Region] = Set(),
-  formats: Set[String] = Set(),
+  publishers: Set[FilterValue[String]] = Set(),
+  dateFrom: Option[FilterValue[OffsetDateTime]] = None,
+  dateTo: Option[FilterValue[OffsetDateTime]] = None,
+  regions: Set[FilterValue[QueryRegion]] = Set(),
+  formats: Set[FilterValue[String]] = Set(),
   error: Option[String] = None)
+

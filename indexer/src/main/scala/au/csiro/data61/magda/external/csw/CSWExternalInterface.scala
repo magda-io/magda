@@ -29,6 +29,7 @@ import scala.BigDecimal
 import com.typesafe.config.Config
 
 trait CSWImplementation {
+  def typeName: String
   def schema: String
   def responseConv(res: NodeSeq): List[DataSet]
 }
@@ -49,7 +50,7 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implementation: CSW
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
 
   def getDataSets(start: Long = 0, number: Int = 10): Future[List[DataSet]] = {
-    val query = s"""csw?service=CSW&version=2.0.2&request=GetRecords&constraintlanguage=CQL_TEXT&resultType=results&elementsetname=full&outputschema=${implementation.schema}&startPosition=${start + 1}&maxRecords=$number""";
+    val query = s"""csw?service=CSW&version=2.0.2&request=GetRecords&constraintlanguage=FILTER&resultType=results&elementsetname=full&outputschema=${implementation.schema}&typeNames=${implementation.typeName}&startPosition=${start + 1}&maxRecords=$number""";
 
     fetcher.request(query).flatMap { response =>
       response.status match {
@@ -64,11 +65,22 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implementation: CSW
   }
 
   def getTotalDataSetCount(): Future[Long] = {
-    val query = s"""csw?service=CSW&version=2.0.2&request=GetRecords&constraintlanguage=CQL_TEXT&maxRecords=1""";
+    val query = s"""csw?service=CSW&version=2.0.2&request=GetRecords&constraintlanguage=FILTER&typeNames=${implementation.typeName}&maxRecords=1""";
 
     fetcher.request(query).flatMap { response =>
       response.status match {
-        case OK => Unmarshal(response.entity).to[NodeSeq].map(res => (res \ "SearchResults" \@ "numberOfRecordsMatched").toLong)
+        case OK =>
+          val future = Unmarshal(response.entity).to[NodeSeq]
+
+          future.map(res =>
+            try {
+              (res \ "SearchResults" \@ "numberOfRecordsMatched").toLong
+            } catch {
+              case e: Throwable =>
+                logger.error("Failed to parse data set count for {}", res.toString())
+                throw e
+            }
+          )
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
           val error = s"CSW request failed with status code ${response.status} and entity $entity"
           logger.error(error)

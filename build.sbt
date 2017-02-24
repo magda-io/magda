@@ -4,7 +4,7 @@ name := "magda-metadata"
 
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
-  version := "0.0.13",
+  version := "0.0.17",
   scalaVersion := "2.11.8"
 )
 
@@ -20,7 +20,7 @@ lazy val searchApi = (project in file("search-api"))
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 lazy val indexer = (project in file("indexer"))
   .settings(commonSettings: _*)
-  .dependsOn(common)
+  .dependsOn(common % "test->test;compile->compile")
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 lazy val registryApi = (project in file("registry-api"))
   .settings(commonSettings: _*)
@@ -40,3 +40,5 @@ Revolver.enableDebugging(port = 8000, suspend = false)
 sources in EditSource <++= baseDirectory.map(d => (d / "deploy" / "kubernetes" ** "*.yml").get)
 targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
 variables in EditSource += ("version", version.value)
+
+parallelExecution in ThisBuild := false

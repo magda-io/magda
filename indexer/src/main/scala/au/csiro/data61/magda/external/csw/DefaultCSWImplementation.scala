@@ -32,6 +32,8 @@ import java.time.ZoneOffset
 
 class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config: Config, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   val logger = Logging(system, getClass)
+  
+  override def typeName = "csw:Record"
 
   def schema = "http://www.opengis.net/cat/csw/2.0.2"
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
@@ -61,7 +63,7 @@ class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val co
         temporal = nodeToOption(summaryRecord \ "coverage", Some.apply).flatMap(temporalFromString(modified)),
         keyword = (summaryRecord \ "subject").map(_.text.trim),
         distributions = buildDistributions(summaryRecord \ "URI", summaryRecord \ "rights"),
-        landingPage = Some(interfaceConfig.landingPageUrl(identifier))
+        landingPage = interfaceConfig.landingPageUrl(identifier)
       )
     } toList
   //

@@ -19,6 +19,7 @@ spec:
         - name: SCALA_ENV
           value: local
         image: "localhost:5000/data61/magda-search-api:latest"
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         - containerPort: 8000
@@ -149,6 +150,7 @@ spec:
         - name: SCALA_ENV
           value: local
         image: "localhost:5000/data61/magda-metadata-indexer:latest"
+        imagePullPolicy: Always
         volumeMounts:
         - mountPath: /usr/regions
           name: regions

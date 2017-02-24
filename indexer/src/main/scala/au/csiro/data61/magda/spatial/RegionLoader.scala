@@ -39,7 +39,15 @@ import akka.stream.IOResult
 import au.csiro.data61.magda.spatial.RegionSources
 import com.typesafe.config.Config
 
-class RegionLoader(regionSources: List[RegionSource])(implicit val config: Config, implicit val system: ActorSystem, implicit val materializer: Materializer) {
+trait RegionLoader {
+  def setupRegions(): Source[(RegionSource, JsObject), _]
+}
+
+object RegionLoader {
+  def apply(regionSources: List[RegionSource])(implicit config: Config, system: ActorSystem, materializer: Materializer) = new FileRegionLoader(regionSources)
+}
+
+class FileRegionLoader(regionSources: List[RegionSource])(implicit val config: Config, implicit val system: ActorSystem, implicit val materializer: Materializer) extends RegionLoader {
   implicit val ec = system.dispatcher
   val pool = Http().superPool[Int]()
 
@@ -75,7 +83,7 @@ class RegionLoader(regionSources: List[RegionSource])(implicit val config: Confi
     }
   }
 
-  def setupRegions(): Source[(RegionSource, JsObject), _] = {
+  override def setupRegions(): Source[(RegionSource, JsObject), _] = {
     Source(regionSources)
       .mapAsync(4)(regionSource => loadABSRegions(regionSource).map((_, regionSource)))
       .flatMapConcat {

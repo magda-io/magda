@@ -19,6 +19,7 @@ import au.csiro.data61.magda.spatial.RegionSource
 import com.typesafe.config.Config
 import au.csiro.data61.magda.spatial.RegionSources
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
+import com.sksamuel.elastic4s.mappings.PrefixTree
 
 case class IndexDefinition(
     name: String,
@@ -34,7 +35,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 15,
+    version = 16,
     definition = (overrideIndexName) =>
       create.index(overrideIndexName.getOrElse(dataSets.indexName))
         .indexSetting("recovery.initial_shards", 1)
@@ -97,29 +98,34 @@ object IndexDefinition extends DefaultJsonProtocol {
   val indices = Seq(dataSets, regions)
 
   def setupRegions(client: TcpClient)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
-    val logger = system.log
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
 
-    val loader = new RegionLoader(regionSources.sources.toList)
-    implicit val ec = system.dispatcher
+    val loader = RegionLoader(regionSources.sources.toList)
 
+    setupRegions(client, loader)
+  }
+
+  def setupRegions(client: TcpClient, loader: RegionLoader)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+    implicit val ec = system.dispatcher
+    val logger = system.log
     loader.setupRegions
       .map {
         case (regionSource, jsonRegion) =>
           val properties = jsonRegion.fields("properties").asJsObject
+          val id = properties.fields(regionSource.idProperty).convertTo[String]
           val name = if (regionSource.includeIdInName) {
-            JsString(properties.fields(regionSource.nameProperty).convertTo[String] + " - " + properties.fields(regionSource.idProperty).convertTo[String])
+            JsString(properties.fields(regionSource.nameProperty).convertTo[String] + " - " + id)
           } else {
             properties.fields(regionSource.nameProperty)
           }
 
           ElasticDsl.index
-            .into(IndexDefinition.regions.indexName / IndexDefinition.regions.name)
-            .id(generateRegionId(regionSource.name, jsonRegion.getFields("properties").head.asJsObject.fields(regionSource.idProperty).convertTo[String]))
+            .into(IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
+            .id(generateRegionId(regionSource.name, id))
             .source(JsObject(
               "type" -> JsString(regionSource.name),
-              "id" -> properties.fields(regionSource.idProperty),
+              "id" -> JsString(id),
               "name" -> name,
               "rectangle" -> createEnvelope(jsonRegion.fields("geometry")),
               "geometry" -> jsonRegion.fields("geometry"),

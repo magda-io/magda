@@ -18,7 +18,7 @@ libraryDependencies ++= {
        "org.scalaz" %% "scalaz-core" % "7.2.8",
    		 "com.sksamuel.elastic4s" %% "elastic4s-core" % "5.2.4",
    		 "com.sksamuel.elastic4s" %% "elastic4s-tcp" % "5.2.4",
-   		 "com.sksamuel.elastic4s" %% "elastic4s-play-json" % "5.2.4",
+   		 "com.mchange" %% "leftright" % "0.0.1",
 
        "org.scalatest" %% "scalatest" % scalaTestV % "test",
        "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test",

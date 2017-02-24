@@ -164,7 +164,7 @@ trait CKANConverters {
         val email = if (hit.contact_point.isDefined) hit.contact_point else hit.author_email
         email.map(email => new Agent(email = Some(email), name = hit.author))
       },
-      landingPage = Some(interface.landingPageUrl(hit.name)), // FIXME!!!
+      landingPage = interface.landingPageUrl(hit.name),
       distributions = hit.resources.map(_.map(ckanDistributionConv(_, hit, defaultOffset))).getOrElse(Seq())
     )
   }

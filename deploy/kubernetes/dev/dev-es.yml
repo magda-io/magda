@@ -23,12 +23,12 @@ spec:
           }
         ]'
     spec:
+      securityContext:
+        fsGroup: 1001
       containers:
       - name: es
         resources:
           requests:
-            memory: 1000Mi
-          limits:
             memory: 2000Mi
         securityContext:
           privileged: true
@@ -51,9 +51,9 @@ spec:
         - name: HTTP_ENABLE
           value: "true"
         - name: ES_JAVA_OPTS
-          value: "-Xms1024m -Xmx1024m"
+          value: "-Xms1500m -Xmx1500m"
         - name: REPO
-          value: "/usr/snapshots"
+          value: /snapshots
         ports:
         - containerPort: 9200
           name: http
@@ -65,11 +65,11 @@ spec:
         - name: storage
           mountPath: /data
         - name: snapshots
-          mountPath: ~/snapshots
+          mountPath: /snapshots
       volumes:
       - name: snapshots
         hostPath:
-          path: /usr/snapshots
+          path: /var/snapshots
       - name: "storage"
         emptyDir: {}
 ---
@@ -104,7 +104,6 @@ spec:
     port: 9300
     protocol: TCP
 ---
-
 # KIBANA
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -121,13 +120,7 @@ spec:
       - env:
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
-        image: seeruk/docker-kibana-sense
-        resources:
-          limits:
-            memory: 500Mi
-          requests:
-            cpu: 0m
-            memory: 0Mi
+        image: kibana
         name: kibana
         ports:
         - containerPort: 5601

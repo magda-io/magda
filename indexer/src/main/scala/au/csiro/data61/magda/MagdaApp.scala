@@ -34,10 +34,7 @@ object MagdaApp extends App {
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
-  val interfaceConfigs = config.getConfig("indexedServices").root().map {
-    case (name: String, serviceConfig: ConfigValue) =>
-      InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)
-  }.toSeq
+  val interfaceConfigs = InterfaceConfig.all
 
   // Index erryday 
   //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))

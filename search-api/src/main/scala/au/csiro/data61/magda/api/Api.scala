@@ -57,7 +57,7 @@ class Api(val logger: LoggingAdapter, val searchQueryer: SearchQueryer)(implicit
     }
   }
 
-  val queryCompiler = new QueryCompiler(new RegionSources(config.getConfig("regionSources")))
+  val queryCompiler = new QueryCompiler()
 
   val routes =
     cors(corsSettings) {

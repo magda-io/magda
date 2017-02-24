@@ -12,8 +12,9 @@ trait Indices {
     case (name: String, config: ConfigObject) => name -> config.toConfig.getInt("version")
   }
 
-  def getIndex(config: Config, index: Indices.Index): String =
+  def getIndex(config: Config, index: Indices.Index): String = {
     (index.name + indexVersions(config)(index.name))
+  }
 
   def getType(`type`: Indices.IndexType) = `type`.name
 
@@ -27,19 +28,8 @@ trait Indices {
 
 object DefaultIndices extends Indices {}
 
-//case class IndicesBlah(datasetsIndexName: String, regionsIndexName: String) extends Indices {
-//  def indexVersions(config: Config) = config.getConfig("elasticsearch.indexes").root().map {
-//    case (name: String, config: ConfigObject) => name -> config.toConfig.getInt("version")
-//  }
-//
-//  def getIndex(config: Config, indexId: String, `type`: Indices.IndexType): IndexesAndTypes =
-//    (indexId + indexVersions(config).get(indexId).get) / `type`.name
-//
-//}
 
 object Indices {
-  //  val defaultIndices = new Indices("datasets", "regions")
-
   sealed trait Index {
     def name: String
   }

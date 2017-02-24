@@ -26,6 +26,7 @@ class Crawler(val externalInterfaces: Seq[InterfaceConfig], indexer: SearchIndex
 
   def crawl() = {
     externalInterfaces
+      .filter(!_.ignore)
       .map { interface =>
         val needsIndexingFuture = if (config.getBoolean("indexer.alwaysReindex")) {
           log.info("Indexing {} because indexer.alwaysReindex is true", interface.name)

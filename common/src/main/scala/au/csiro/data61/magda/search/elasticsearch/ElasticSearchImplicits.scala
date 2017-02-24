@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import au.csiro.data61.magda.model.misc.{ BoundingBox, DataSet, FacetOption, Region }
+import au.csiro.data61.magda.model.misc.{ BoundingBox, DataSet, FacetOption, Region, QueryRegion }
 import au.csiro.data61.magda.model.misc.Protocols
 import org.elasticsearch.search.aggregations.Aggregation
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
@@ -11,6 +11,7 @@ import com.sksamuel.elastic4s.searches.RichSearchHit
 import com.sksamuel.elastic4s.HitReader
 import com.sksamuel.elastic4s.Hit
 
+
 object ElasticSearchImplicits extends Protocols {
 
   implicit object SprayJsonIndexable extends Indexable[JsValue] {
@@ -18,7 +19,7 @@ object ElasticSearchImplicits extends Protocols {
   }
 
   implicit object SprayJsonHitAs extends HitReader[JsValue] {
-     override def read(hit: Hit): Either[Throwable, JsValue] = Right(hit.sourceAsString.parseJson)
+    override def read(hit: Hit): Either[Throwable, JsValue] = Right(hit.sourceAsString.parseJson)
   }
 
   implicit object DataSetHitAs extends HitReader[DataSet] {
@@ -43,8 +44,10 @@ object ElasticSearchImplicits extends Protocols {
       }
 
       Right(Region(
-        source.fields("type").convertTo[String],
-        source.fields("id").convertTo[String],
+        QueryRegion(
+          source.fields("type").convertTo[String],
+          source.fields("id").convertTo[String]
+        ),
         source.fields("name").convertTo[String],
         rectangle
       ))
