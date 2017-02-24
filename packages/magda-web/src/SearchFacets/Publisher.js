@@ -60,7 +60,6 @@ class Publisher extends Component {
                            onClick={this.onTogglePublisherOption}
                            activeOptions={this.props.activePublishers}
                            description={"Are you searching for items published by "}
-                           modifyUserSearchString={this.props.modifyUserSearchString}
           />
         );
       default:

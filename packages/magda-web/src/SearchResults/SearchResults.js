@@ -5,27 +5,13 @@ import './SearchResults.css';
 class SearchResults extends Component {
   constructor(props) {
     super(props);
-
     this.onToggleExpandDataset=this.onToggleExpandDataset.bind(this);
-    this.onCloseDataset = this.onCloseDataset.bind(this);
-
-    this.state={
-      expandedItem : null
-    }
   }
 
   onToggleExpandDataset(result, event){
     event.stopPropagation();
-    this.setState({
-      expandedItem: this.state.expandedItem === result ? null : result
-    });
-
-  }
-
-  onCloseDataset(){
-    this.setState({
-      expandedItem: null
-    });
+    let datasetIdentifider = result.identifier;
+    this.props.onToggleDataset(datasetIdentifider);
   }
 
   getSummaryText(){
@@ -55,7 +41,7 @@ class SearchResults extends Component {
             <li key={result.title + i}  className='search-results__result'>
               <DatasetSummary dataset={result}
                               onClickDataset={this.onToggleExpandDataset.bind(this, result)}
-                              isExpanded={this.state.expandedItem === result}
+                              isExpanded={this.props.openDataset === result.identifier}
                               onClickTag={this.props.onClickTag}/>
             </li>
           )

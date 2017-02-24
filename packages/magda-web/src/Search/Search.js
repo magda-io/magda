@@ -29,11 +29,11 @@ class Search extends Component {
     this.onClickTag = this.onClickTag.bind(this);
     this.updateQuery = this.updateQuery.bind(this);
     this.onDismissError = this.onDismissError.bind(this);
-    this.modifyUserSearchString = this.modifyUserSearchString.bind(this);
     this.updateSearchText = this.updateSearchText.bind(this);
     this.onClearSearch = this.onClearSearch.bind(this);
     this.onClickSearch = this.onClickSearch.bind(this);
     this.onSearchTextChange = this.onSearchTextChange.bind(this);
+    this.onToggleDataset = this.onToggleDataset.bind(this);
 
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
@@ -137,17 +137,15 @@ class Search extends Component {
     return '';
   }
 
-  // If a suer click on a recomendation, we want to modify their search text to reflect that
-  modifyUserSearchString(additionalString){
-    let base = this.props.freeText;
-    this.updateQuery({
-      q: `${base} ${additionalString}`
-    })
-  }
-
   onDismissError(){
     // remove all current configurations
     this.updateSearchText('');
+  }
+
+  onToggleDataset(datasetIdentifier){
+    this.updateQuery({
+      open: datasetIdentifier === this.props.location.query.open ? '' : datasetIdentifier
+    })
   }
 
   render() {
@@ -176,7 +174,6 @@ class Search extends Component {
             <div className='col-sm-4 hidden-xs'>
                 {this.getSearchBoxValue().length > 0 &&
                  <SearchFacets updateQuery={this.updateQuery}
-                               modifyUserSearchString={this.modifyUserSearchString}
                                location={this.props.location}
                  />
                 }
@@ -187,7 +184,6 @@ class Search extends Component {
                  !this.props.hasError &&
                  <div>
                  <Publisher updateQuery={this.updateQuery}
-                            modifyUserSearchString={this.modifyUserSearchString}
                             component={'recommendations'}
                  />
                  
@@ -205,6 +201,8 @@ class Search extends Component {
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
                       onClickTag={this.onClickTag}
+                      onToggleDataset ={this.onToggleDataset}
+                      openDataset={this.props.location.query.open}
                   />
                   {this.props.hitCount > 20 &&
                       <Pagination

@@ -60,7 +60,6 @@ class Format extends Component {
                            onClick={this.onToggleFormatOption}
                            activeOptions={this.props.activeFormats}
                            description={"Are you searching for items in the following format "}
-                           modifyUserSearchString={this.props.modifyUserSearchString}
           />
         );
       default:
