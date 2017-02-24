@@ -37,8 +37,19 @@ class SearchResults extends Component {
         {this.getSummaryText()}
         <ul className='list-unstyled'>
         {
-          this.props.searchResults.map((result, i)=>
-            <li key={result.title + i}  className='search-results__result'>
+          this.props.searchResults.filter(result=>this.props.openDataset === result.identifier).map((result, i)=>
+            <li key={result.identifier} className='search-results__result'>
+              <DatasetSummary dataset={result}
+                              onClickDataset={this.onToggleExpandDataset.bind(this, result)}
+                              isExpanded={true}
+                              onClickTag={this.props.onClickTag}/>
+            </li>
+          )
+        }
+
+        {
+          this.props.searchResults.filter(result=>this.props.openDataset !== result.identifier).map((result, i)=>
+            <li key={result.identifier} className='search-results__result'>
               <DatasetSummary dataset={result}
                               onClickDataset={this.onToggleExpandDataset.bind(this, result)}
                               isExpanded={this.props.openDataset === result.identifier}
