@@ -28,11 +28,11 @@ const aspectBuilders: AspectBuilder[] = [
     },
     {
         aspectDefinition: {
-            id: 'basic',
-            name: 'Basic Information',
-            jsonSchema: require('../../registry-aspects/basic.schema.json')
+            id: 'dcat-dataset-strings',
+            name: 'DCAT Dataset properties as strings',
+            jsonSchema: require('../../registry-aspects/dcat-dataset-strings.schema.json')
         },
-        builderFunctionString: fs.readFileSync('aspect-templates/basic.js', 'utf8')
+        builderFunctionString: fs.readFileSync('aspect-templates/dcat-dataset-strings.js', 'utf8')
     },
     {
         aspectDefinition: {

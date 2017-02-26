@@ -30,6 +30,9 @@ CREATE TABLE IF NOT EXISTS Events (
     data jsonb NOT NULL
 );
 
+CREATE INDEX ON Events((data->>'recordId'));
+CREATE INDEX ON Events((data->>'aspectId'));
+
 CREATE TABLE IF NOT EXISTS Records (
     recordId varchar(100) PRIMARY KEY,
     name varchar(1000) NOT NULL,
