@@ -145,7 +145,7 @@ export default class CkanConnector {
                 }
             } catch(e) {
                 const exception = createServiceError(e);
-                reportProblem('Exception while creating aspect ' + aspect.id, exception.message, e);
+                reportProblem('Exception while creating aspect ' + aspect.id, exception.toString());
             }
         });
 
