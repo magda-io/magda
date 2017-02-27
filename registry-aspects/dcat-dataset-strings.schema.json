@@ -34,7 +34,7 @@
       "type": "string"
     },
     "accrualPeriodicity": {
-      "title": "The frequency at which dataset is published.",
+      "title": "The frequency at which the dataset is published.",
       "type": "string"
     },
     "spatial": {

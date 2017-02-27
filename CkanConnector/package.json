@@ -16,6 +16,8 @@
     "typescript": "^2.1.6"
   },
   "dependencies": {
+    "moment": "^2.17.1",
+    "moment-timezone": "^0.5.11",
     "request": "^2.79.0",
     "ts-node": "^2.1.0",
     "urijs": "^1.18.7"

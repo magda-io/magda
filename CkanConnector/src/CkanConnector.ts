@@ -2,6 +2,7 @@ import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/regi
 import Ckan, { CkanDataset } from './Ckan';
 import Registry from './Registry';
 import AsyncPage, { forEachAsync } from './AsyncPage';
+import * as moment from 'moment';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
@@ -66,7 +67,7 @@ export default class CkanConnector {
     async run(): Promise<CkanConnectionResult> {
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
-            builderFunction: new Function('dataset', 'source', builder.builderFunctionString)
+            builderFunction: new Function('dataset', 'source', 'moment', builder.builderFunctionString)
         }));
 
         const connectionResult = new CkanConnectionResult();
@@ -104,7 +105,10 @@ export default class CkanConnector {
     private datasetToRecord(templates: CompiledAspect[], dataset: CkanDataset): Record {
         const aspects: Aspects = {};
         templates.forEach(aspect => {
-            aspects[aspect.id] = aspect.builderFunction(dataset, this.ckan);
+            const aspectValue = aspect.builderFunction(dataset, this.ckan, moment);
+            if (aspectValue !== undefined) {
+                aspects[aspect.id] = aspectValue;
+            }
         });
 
         return {
