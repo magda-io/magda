@@ -3,6 +3,7 @@ import Ckan, { CkanDataset } from './Ckan';
 import Registry from './Registry';
 import AsyncPage, { forEachAsync } from './AsyncPage';
 import * as moment from 'moment';
+import createServiceError from './createServiceError';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
@@ -26,6 +27,16 @@ interface CompiledAspect {
 
 interface Aspects {
     [propName: string]: any;
+}
+
+interface ProblemReport {
+    title: string,
+    message?: string,
+    additionalInfo?: any
+}
+
+interface ReportProblem {
+    (title: string, message?: string, additionalInfo?: any): void
 }
 
 export class CkanConnectionResult {
@@ -80,7 +91,7 @@ export default class CkanConnector {
 
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
-            builderFunction: tryit(() => new Function('setup', 'dataset', 'source', 'moment', builder.builderFunctionString)),
+            builderFunction: tryit(() => new Function('setup', 'dataset', 'source', 'moment', 'reportProblem', builder.builderFunctionString)),
             setupResult: builder.setupFunctionString ? tryit(() => new Function('moment', builder.setupFunctionString)(moment)) : undefined
         }));
 
@@ -120,17 +131,27 @@ export default class CkanConnector {
     }
 
     private datasetToRecord(connectionResult: CkanConnectionResult, templates: CompiledAspect[], dataset: CkanDataset): Record {
+        const problems: ProblemReport[] = [];
+        function reportProblem(title: string, message?: string, additionalInfo?: any) {
+            problems.push({ title, message, additionalInfo });
+        }
+
         const aspects: Aspects = {};
         templates.forEach(aspect => {
             try {
-                const aspectValue = aspect.builderFunction(aspect.setupResult, dataset, this.ckan, moment);
+                const aspectValue = aspect.builderFunction(aspect.setupResult, dataset, this.ckan, moment, reportProblem);
                 if (aspectValue !== undefined) {
                     aspects[aspect.id] = aspectValue;
                 }
             } catch(e) {
-                connectionResult.errors.push(e);
+                const exception = createServiceError(e);
+                reportProblem('Exception while creating aspect ' + aspect.id, exception.message, e);
             }
         });
+
+        if (aspects['source'] && problems.length > 0) {
+            aspects['source'].problems = problems;
+        }
 
         return {
             id: dataset.id,
