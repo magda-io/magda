@@ -6,7 +6,8 @@ import * as moment from 'moment';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
-    builderFunctionString: string
+    builderFunctionString: string,
+    setupFunctionString?: string
 }
 
 export interface CkanConnectorOptions {
@@ -19,7 +20,8 @@ export interface CkanConnectorOptions {
 
 interface CompiledAspect {
     id: string,
-    builderFunction: Function
+    builderFunction: Function,
+    setupResult: any
 }
 
 interface Aspects {
@@ -65,12 +67,27 @@ export default class CkanConnector {
      * @memberOf CkanConnector
      */
     async run(): Promise<CkanConnectionResult> {
+        const connectionResult = new CkanConnectionResult();
+
+        function tryit<T>(f: () => T): T {
+            try {
+                return f();
+            } catch (e) {
+                connectionResult.errors.push(e);
+                return undefined;
+            }
+        }
+
         const templates = this.aspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
-            builderFunction: new Function('dataset', 'source', 'moment', builder.builderFunctionString)
+            builderFunction: tryit(() => new Function('setup', 'dataset', 'source', 'moment', builder.builderFunctionString)),
+            setupResult: builder.setupFunctionString ? tryit(() => new Function('moment', builder.setupFunctionString)(moment)) : undefined
         }));
 
-        const connectionResult = new CkanConnectionResult();
+        // If there were errors initializing the aspect definitions, don't try to create records.
+        if (connectionResult.errors.length > 0) {
+            return connectionResult;
+        }
 
         const aspectBuilderPage = AsyncPage.create<AspectBuilder[]>(current => current ? undefined : Promise.resolve(this.aspectBuilders));
         await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectBuilder => {
@@ -91,7 +108,7 @@ export default class CkanConnector {
         const datasets = packagePages.map(packagePage => packagePage.result.results);
 
         await forEachAsync(datasets, this.maxConcurrency, async dataset => {
-            const recordOrError = await this.registry.putRecord(this.datasetToRecord(templates, dataset));
+            const recordOrError = await this.registry.putRecord(this.datasetToRecord(connectionResult, templates, dataset));
             if (recordOrError instanceof Error) {
                 connectionResult.errors.push(recordOrError);
             } else {
@@ -102,12 +119,16 @@ export default class CkanConnector {
         return connectionResult;
     }
 
-    private datasetToRecord(templates: CompiledAspect[], dataset: CkanDataset): Record {
+    private datasetToRecord(connectionResult: CkanConnectionResult, templates: CompiledAspect[], dataset: CkanDataset): Record {
         const aspects: Aspects = {};
         templates.forEach(aspect => {
-            const aspectValue = aspect.builderFunction(dataset, this.ckan, moment);
-            if (aspectValue !== undefined) {
-                aspects[aspect.id] = aspectValue;
+            try {
+                const aspectValue = aspect.builderFunction(aspect.setupResult, dataset, this.ckan, moment);
+                if (aspectValue !== undefined) {
+                    aspects[aspect.id] = aspectValue;
+                }
+            } catch(e) {
+                connectionResult.errors.push(e);
             }
         });
 
