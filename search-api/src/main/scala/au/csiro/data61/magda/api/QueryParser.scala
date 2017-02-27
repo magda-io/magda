@@ -14,6 +14,7 @@ import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.spatial.RegionSources
 import java.time.ZoneOffset
 import com.typesafe.config.Config
+import au.csiro.data61.magda.model.misc.Region
 
 private object Tokens {
   sealed trait QueryToken
@@ -256,15 +257,15 @@ class QueryCompiler()(implicit val config: Config) {
     )
 
     ast match {
-      case AST.And(left, right)   => merge(flattenAST(left), flattenAST(right))
-      case AST.DateFrom(instant)  => Query(dateFrom = Some(instant))
-      case AST.DateTo(instant)    => Query(dateTo = Some(instant))
-      case AST.Publisher(name)    => Query(publishers = Set(name))
-      case AST.Format(format)     => Query(formats = Set(format))
-      case AST.ASTRegion(region)  => Query(regions = Set(region))
-      case AST.FreeTextWord(word) => Query(freeText = Some(word))
-      case AST.Quote(quote)       => Query(quotes = Set(quote))
-      case AST.Ignore             => Query()
+      case AST.And(left, right)       => merge(flattenAST(left), flattenAST(right))
+      case AST.DateFrom(instant)      => Query(dateFrom = Some(instant))
+      case AST.DateTo(instant)        => Query(dateTo = Some(instant))
+      case AST.Publisher(name)        => Query(publishers = Set(name))
+      case AST.Format(format)         => Query(formats = Set(format))
+      case AST.ASTRegion(queryRegion) => Query(regions = Set(queryRegion.map(x => Region(x))))
+      case AST.FreeTextWord(word)     => Query(freeText = Some(word))
+      case AST.Quote(quote)           => Query(quotes = Set(quote))
+      case AST.Ignore                 => Query()
     }
   }
 }
@@ -292,7 +293,7 @@ case class Query(
   publishers: Set[FilterValue[String]] = Set(),
   dateFrom: Option[FilterValue[OffsetDateTime]] = None,
   dateTo: Option[FilterValue[OffsetDateTime]] = None,
-  regions: Set[FilterValue[QueryRegion]] = Set(),
+  regions: Set[FilterValue[Region]] = Set(),
   formats: Set[FilterValue[String]] = Set(),
   error: Option[String] = None)
 

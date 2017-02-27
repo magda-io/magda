@@ -15,6 +15,8 @@ import au.csiro.data61.magda.api.FilterValue
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
+import au.csiro.data61.magda.model.misc.Region
+
 
 object Queries {
   def publisherQuery(publisher: FilterValue[String]) = handleFilterValue(publisher, (p: String) => matchPhraseQuery("publisher.name", p), "publisher.name")
@@ -37,8 +39,8 @@ object Queries {
     formatQuery("distributions.format.untokenized", format)
   }
 
-  def regionIdQuery(regionValue: FilterValue[QueryRegion], indices: Indices)(implicit config: Config) = {
-    def normal(region: QueryRegion) = geoShapeQuery("spatial.geoJson", generateRegionId(region.regionType, region.regionId), indices.getType(Indices.RegionsIndexType))
+  def regionIdQuery(regionValue: FilterValue[Region], indices: Indices)(implicit config: Config) = {
+    def normal(region: Region) = geoShapeQuery("spatial.geoJson", generateRegionId(region.queryRegion.regionType, region.queryRegion.regionId), indices.getType(Indices.RegionsIndexType))
       .relation(ShapeRelation.INTERSECTS)
       .indexedShapeIndex(indices.getIndex(config, Indices.RegionsIndex))
       .indexedShapePath("geometry")

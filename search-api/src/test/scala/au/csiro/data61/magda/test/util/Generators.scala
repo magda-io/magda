@@ -318,9 +318,10 @@ object Generators {
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString))
     .suchThat(word => !filterWords.contains(word.toLowerCase))
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
-  def regionQueryGen(implicit config: Config): Gen[FilterValue[QueryRegion]] = filterValueGen(indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
-    case (regionSource, regionObject) => regionJsonToQueryRegion(regionSource, regionObject)
-  })
+  def innerRegionQueryGen(implicit config: Config): Gen[Region] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
+    case (regionSource, regionObject) => Region(regionJsonToQueryRegion(regionSource, regionObject))
+  }
+  def regionQueryGen(implicit config: Config) = filterValueGen(innerRegionQueryGen)
 
   def regionJsonToQueryRegion(regionSource: RegionSource, regionObject: JsObject): QueryRegion = QueryRegion(
     regionType = regionSource.name,
@@ -408,7 +409,7 @@ object Generators {
       Seq(query.dateFrom.map(dateFrom => s"$from $dateFrom")).flatten ++
       Seq(query.dateTo.map(dateTo => s"$to $dateTo")).flatten ++
       query.formats.map(format => s"$as $format") ++
-      query.regions.map(region => s"$in ${region}")
+      query.regions.map(region => s"$in ${region.map(_.queryRegion)}")
 
     val textQuery = for {
       textList <- Gen.pick(textListComponents.size, textListComponents)

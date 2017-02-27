@@ -20,6 +20,10 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.spatial.RegionSources
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.PrefixTree
+import com.monsanto.labs.mwundo.GeoJson.Geometry
+import au.csiro.data61.magda.model.misc.BoundingBox
+import com.vividsolutions.jts.geom.GeometryFactory
+import au.csiro.data61.magda.util.MwundoJTSConversions._
 
 case class IndexDefinition(
     name: String,
@@ -88,7 +92,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               field("type").typed(StringType),
               field("id").typed(StringType),
               field("name").typed(StringType),
-              field("rectangle").typed(GeoShapeType),
+              field("boundingBox").typed(GeoShapeType),
               field("geometry").typed(GeoShapeType)
             )
           ),
@@ -124,10 +128,10 @@ object IndexDefinition extends DefaultJsonProtocol {
             .into(IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
             .id(generateRegionId(regionSource.name, id))
             .source(JsObject(
-              "type" -> JsString(regionSource.name),
-              "id" -> JsString(id),
-              "name" -> name,
-              "rectangle" -> createEnvelope(jsonRegion.fields("geometry")),
+              "regionType" -> JsString(regionSource.name),
+              "regionId" -> JsString(id),
+              "regionName" -> name,
+              "boundingBox" -> createEnvelope(jsonRegion.fields("geometry").convertTo[Geometry]).toJson,
               "geometry" -> jsonRegion.fields("geometry"),
               "order" -> JsNumber(regionSource.order)
             ).toJson)
@@ -157,54 +161,10 @@ object IndexDefinition extends DefaultJsonProtocol {
       .map { count => logger.info("Successfully indexed {} regions", count) }
   }
 
-  def createEnvelope(geometry: JsValue): JsValue = geometry match {
-    case JsObject(fields) => {
-      var west = 180.0
-      var east = -180.0
-      var south = 90.0
-      var north = -90.0
+  val geoFactory = new GeometryFactory()
+  def createEnvelope(geometry: Geometry): BoundingBox = {
+    val indexedEnvelope = GeometryConverter.toJTSGeo(geometry, geoFactory).getEnvelopeInternal
 
-      val adjustEnvelopeWithLinearRing = (linearRing: Vector[JsValue]) => linearRing.foreach {
-        case JsArray(positions) => {
-          val longitude = positions(0).convertTo[Double]
-          val latitude = positions(1).convertTo[Double]
-          west = Math.min(west, longitude)
-          east = Math.max(east, longitude)
-          south = Math.min(south, latitude)
-          north = Math.max(north, latitude)
-        }
-        case _ => Unit
-      }
-
-      val adjustEnvelopeWithPolygon = (linearRings: Vector[JsValue]) => linearRings.foreach {
-        case JsArray(linearRing) => adjustEnvelopeWithLinearRing(linearRing)
-        case _                   => Unit
-      }
-
-      if (fields("type").convertTo[String] == "Polygon") {
-        fields.foreach {
-          case ("coordinates", JsArray(linearRings)) => adjustEnvelopeWithPolygon(linearRings)
-          case (others, value)                       => Unit
-        }
-      } else if (fields("type").convertTo[String] == "MultiPolygon") {
-        fields.foreach {
-          case ("coordinates", JsArray(polygons)) => polygons.foreach {
-            case JsArray(linearRings) => adjustEnvelopeWithPolygon(linearRings)
-            case _                    => Unit
-          }
-          case (others, value) => Unit
-        }
-      }
-
-      if (west == 180.0 && south == 90.0 && east == -180.0 && north == 90.0) JsNull
-      else JsObject(
-        "type" -> JsString("envelope"),
-        "coordinates" -> JsArray(
-          JsArray(JsNumber(west), JsNumber(north)),
-          JsArray(JsNumber(east), JsNumber(south))
-        )
-      )
-    }
-    case _ => JsNull
+    BoundingBox(indexedEnvelope.getMaxY, indexedEnvelope.getMinX, indexedEnvelope.getMinY, indexedEnvelope.getMaxX)
   }
 }

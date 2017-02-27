@@ -1,12 +1,14 @@
 package au.csiro.data61.magda.model
 
-import spray.json._
-import au.csiro.data61.magda.model.temporal._
-import akka.http.scaladsl.model.MediaType
-import akka.http.scaladsl.model.MediaTypes
+import java.time.OffsetDateTime
+
 import com.monsanto.labs.mwundo.GeoJson._
 import com.monsanto.labs.mwundo.GeoJsonFormats._
-import java.time.OffsetDateTime
+
+import akka.http.scaladsl.model.MediaType
+import akka.http.scaladsl.model.MediaTypes
+import au.csiro.data61.magda.model.temporal._
+import spray.json._
 
 package misc {
   sealed trait FacetType {
@@ -115,12 +117,8 @@ package misc {
         case polygonPattern(polygonCoords, _) =>
           val coords = polygonCoords.split(",")
             .map { stringCoords =>
-              try {
-                val Array(x, y) = stringCoords.trim.split("\\s").map(_.toDouble)
-                Coordinate(x, y)
-              } catch {
-                case e: Throwable => println(stringCoords); throw e
-              }
+              val Array(x, y) = stringCoords.trim.split("\\s").map(_.toDouble)
+              Coordinate(x, y)
             }.toSeq
 
           Some(Polygon(Seq(coords)))
@@ -165,7 +163,6 @@ package misc {
 
     }
   }
-
   case class BoundingBox(north: BigDecimal, east: BigDecimal, south: BigDecimal, west: BigDecimal)
 
   case class QueryRegion(
@@ -177,7 +174,7 @@ package misc {
 
   case class Region(
     queryRegion: QueryRegion,
-    regionName: String,
+    regionName: Option[String] = None,
     boundingBox: Option[BoundingBox] = None)
 
   case class Distribution(
@@ -314,9 +311,52 @@ package misc {
       }
     }
 
-    implicit val boundingBoxFormat = jsonFormat4(BoundingBox.apply)
+    implicit object BoundingBoxFormat extends JsonFormat[BoundingBox] {
+      override def write(region: BoundingBox): JsValue = {
+        JsObject(
+          "type" -> JsString("envelope"),
+          "coordinates" -> JsArray(Vector(
+            JsArray(Vector(JsNumber(region.west), JsNumber(region.north))),
+            JsArray(Vector(JsNumber(region.east), JsNumber(region.south)))
+          )))
+      }
+
+      override def read(jsonRaw: JsValue): BoundingBox = {
+        jsonRaw.asJsObject match {
+          case JsObject(fields) => (fields("type"), fields("coordinates")) match {
+            case (JsString("envelope"), JsArray(Vector(
+              JsArray(Vector(JsNumber(west), JsNumber(north))),
+              JsArray(Vector(JsNumber(east), JsNumber(south)))
+              ))) => BoundingBox(west, south, east, north)
+          }
+        }
+      }
+    }
+
     implicit val queryRegionFormat = jsonFormat2(QueryRegion.apply)
-    implicit val regionFormat = jsonFormat3(Region.apply)
+
+    implicit object RegionFormat extends JsonFormat[Region] {
+      override def write(region: Region): JsValue = JsObject(Map(
+        "regionId" -> region.queryRegion.regionId.toJson,
+        "regionType" -> region.queryRegion.regionType.toJson,
+        "regionName" -> region.regionName.toJson,
+        "boundingBox" -> region.boundingBox.toJson
+      ).filter(x => !x._2.equals(JsNull)))
+
+      override def read(jsonRaw: JsValue): Region = {
+        val json = jsonRaw.asJsObject
+
+        Region(
+          QueryRegion(
+            regionId = json.getFields("regionId").head.convertTo[String],
+            regionType = json.getFields("regionType").head.convertTo[String]
+          ),
+          regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
+          boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox])
+        )
+      }
+    }
+
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat4(Agent.apply)
