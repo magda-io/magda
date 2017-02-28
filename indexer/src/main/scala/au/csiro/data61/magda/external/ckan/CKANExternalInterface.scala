@@ -44,6 +44,8 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val confi
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
+  override def getInterfaceConfig = interfaceConfig
+
   val exclusionQueryString = {
     val excludedHarvesterTitles = interfaceConfig.raw.hasPath("ignoreHarvestSources") match {
       case true  => interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet

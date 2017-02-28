@@ -71,14 +71,13 @@ package misc {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
 
-    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
+//    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
   }
 
   case class Agent(
     name: Option[String] = None,
     homePage: Option[String] = None,
-    email: Option[String] = None,
-    extraFields: Map[String, String] = Map())
+    email: Option[String] = None)
 
   case class Location(
     text: Option[String] = None,
@@ -359,7 +358,7 @@ package misc {
 
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat4(Agent.apply)
+    implicit val agentFormat = jsonFormat3(Agent.apply)
     implicit val dataSetFormat = jsonFormat17(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)

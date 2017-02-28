@@ -13,6 +13,7 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.MatchAll
+import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.Generators._
 import com.monsanto.labs.mwundo.GeoJson.Polygon
 import com.monsanto.labs.mwundo.GeoJson._

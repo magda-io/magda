@@ -20,6 +20,7 @@ import au.csiro.data61.magda.external.InterfaceConfig
 import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
+import au.csiro.data61.magda.external.ExternalInterface
 
 object MagdaApp extends App {
   implicit val system = ActorSystem()
@@ -42,9 +43,9 @@ object MagdaApp extends App {
   logger.debug("Starting Crawler")
 
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
-  val crawler = Crawler(interfaceConfigs, indexer)
+  val crawler = Crawler(interfaceConfigs.map(ExternalInterface(_)))
 
-  crawler.crawl() onComplete {
+  crawler.crawl(indexer) onComplete {
     case Success(_) =>
       logger.info("Successfully completed crawl")
     case Failure(e) =>

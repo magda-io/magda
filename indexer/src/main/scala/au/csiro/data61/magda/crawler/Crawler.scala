@@ -13,30 +13,26 @@ import com.typesafe.config.Config
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import au.csiro.data61.magda.model.misc.Agent
 
-class Crawler(val externalInterfaces: Seq[InterfaceConfig], indexer: SearchIndexer)(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) {
+class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
 
-  val interfaces = externalInterfaces
-    .groupBy(_.baseUrl)
-    .mapValues(interfaceDef =>
-      ExternalInterface(interfaceDef.head)
-    )
-
-  def crawl() = {
+  def crawl(indexer: SearchIndexer) = {
     externalInterfaces
-      .filter(!_.ignore)
+      .filter(!_.getInterfaceConfig.ignore)
       .map { interface =>
+        val interfaceConfig = interface.getInterfaceConfig
         val needsIndexingFuture = if (config.getBoolean("indexer.alwaysReindex")) {
-          log.info("Indexing {} because indexer.alwaysReindex is true", interface.name)
+          log.info("Indexing {} because indexer.alwaysReindex is true", interfaceConfig.name)
           Future(true)
         } else {
-          indexer.needsReindexing(interface).map { needsReindexing =>
+          indexer.needsReindexing(interfaceConfig).map { needsReindexing =>
             if (needsReindexing) {
-              log.info("Indexing {} because it was determined to have zero records", interface.name)
+              log.info("Indexing {} because it was determined to have zero records", interfaceConfig.name)
             } else {
-              log.info("Not indexing {} because it already has records", interface.name)
+              log.info("Not indexing {} because it already has records", interfaceConfig.name)
             }
             needsReindexing
           }
@@ -48,7 +44,12 @@ class Crawler(val externalInterfaces: Seq[InterfaceConfig], indexer: SearchIndex
       .reduce((x, y) => Source.combine(x, y)(Merge(_)))
       .map {
         case (source, dataSets) =>
-          val filteredDataSets = dataSets.filterNot(_.distributions.isEmpty)
+          val filteredDataSets = dataSets
+            .filterNot(_.distributions.isEmpty)
+            .map(dataSet => dataSet.copy(publisher =
+              dataSet.publisher.orElse(
+                source.defaultPublisherName.map(defaultPublisher => Agent(name = Some(defaultPublisher)))
+              )))
 
           val ineligibleDataSetCount = dataSets.size - filteredDataSets.size
           if (ineligibleDataSetCount > 0) {
@@ -85,8 +86,8 @@ class Crawler(val externalInterfaces: Seq[InterfaceConfig], indexer: SearchIndex
       }
   }
 
-  def streamForInterface(interfaceDef: InterfaceConfig): Source[(InterfaceConfig, List[DataSet]), NotUsed] = {
-    val interface = interfaces.get(interfaceDef.baseUrl).get
+  def streamForInterface(interface: ExternalInterface): Source[(InterfaceConfig, List[DataSet]), NotUsed] = {
+    val interfaceDef = interface.getInterfaceConfig
 
     Source.fromFuture(interface.getTotalDataSetCount())
       .mapConcat { count =>
@@ -117,6 +118,6 @@ class Crawler(val externalInterfaces: Seq[InterfaceConfig], indexer: SearchIndex
 }
 
 object Crawler {
-  def apply(externalInterfaces: Seq[InterfaceConfig], indexer: SearchIndexer)(implicit system: ActorSystem, config: Config, materializer: Materializer) =
-    new Crawler(externalInterfaces, indexer)
+  def apply(externalInterfaces: Seq[ExternalInterface])(implicit system: ActorSystem, config: Config, materializer: Materializer) =
+    new Crawler(externalInterfaces)
 }

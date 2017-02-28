@@ -10,7 +10,7 @@ import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.model.misc.{ DataSet, _ }
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch._
-import au.csiro.data61.magda.test.util.Generators._
+import au.csiro.data61.magda.test.util.ApiGenerators._
 import com.sksamuel.elastic4s.testkit.ElasticSugar
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalacheck.Shrink
@@ -31,18 +31,12 @@ import org.elasticsearch.index.cache.IndexCache
 import java.util.concurrent.ConcurrentHashMap
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.spatial.RegionSource
+import au.csiro.data61.magda.test.util.MagdaGeneratorTest
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with GeneratorDrivenPropertyChecks {
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with MagdaGeneratorTest {
   override def testConfigSource = "akka.loglevel = WARN"
-  val isCi = Option(System.getenv("CI")).map(_.equals("true")).getOrElse(false)
   val INSERTION_WAIT_TIME = 60 seconds
   val logger = Logging(system, getClass)
-  val processors = Math.max(Runtime.getRuntime().availableProcessors(), 2)
-
-  val minSuccessful = if (isCi) 100 else 20
-  logger.info("Running with {} processors with minSuccessful={}", processors.toString, minSuccessful)
-  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
 
   val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
@@ -171,7 +165,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     getFromIndexCache(size) match {
       case (cacheKey, None) ⇒
         val future = Future {
-          val dataSets = Gen.listOfN(size, dataSetGen).retryUntil(_ => true).sample.get
+          val dataSets = Gen.listOfN(size, apiDataSetGen).retryUntil(_ => true).sample.get
           putDataSetsInIndex(dataSets).await(INSERTION_WAIT_TIME)
         }
 
