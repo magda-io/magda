@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "The distributions of a dataset",
+    "description": "Specifies the list of distributions of a dataset.",
+    "type": "object",
+    "properties": {
+        "distributions": {
+            "title": "The distributions of this dataset.",
+            "type": "array",
+            "items": {
+                "title": "A URI of a distribution of this dataset.",
+                "type": "string",
+                "format": "uri"
+            }
+        }
+    }
+}

@@ -4,12 +4,17 @@ import retry from './retry';
 import formatServiceError from './formatServiceError';
 import AsyncPage from './AsyncPage';
 
-export interface CkanDataset {
+export interface CkanThing {
     id: string;
     name: string;
-    title: string;
-    description: string;
     [propName: string]: any;
+}
+
+export interface CkanResource extends CkanThing {
+}
+
+export interface CkanDataset extends CkanThing {
+    resources: CkanResource[];
 }
 
 export interface CkanPackageSearchResponse {
@@ -78,6 +83,10 @@ export default class Ckan {
 
     public getPackageShowUrl(id: string): string {
         return this.apiBaseUrl.clone().segment('api/3/action/package_show').addSearch('id', id).toString();
+    }
+
+    public getResourceShowUrl(id: string): string {
+        return this.apiBaseUrl.clone().segment('api/3/action/resource_show').addSearch('id', id).toString();
     }
 
     public getDatasetLandingPageUrl(id: string): string {

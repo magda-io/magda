@@ -35,7 +35,7 @@ const registry = new Registry({
     baseUrl: 'http://localhost:6100/'
 });
 
-const aspectBuilders: AspectBuilder[] = [
+const datasetAspectBuilders: AspectBuilder[] = [
     {
         aspectDefinition: {
             id: 'ckan-dataset',
@@ -58,7 +58,7 @@ const aspectBuilders: AspectBuilder[] = [
             name: 'Source',
             jsonSchema: require('../../registry-aspects/source.schema.json')
         },
-        builderFunctionString: fs.readFileSync('aspect-templates/source.js', 'utf8')
+        builderFunctionString: fs.readFileSync('aspect-templates/dataset-source.js', 'utf8')
     },
     {
         aspectDefinition: {
@@ -68,18 +68,55 @@ const aspectBuilders: AspectBuilder[] = [
         },
         setupFunctionString: fs.readFileSync('aspect-templates/temporal-coverage-setup.js', 'utf8'),
         builderFunctionString: fs.readFileSync('aspect-templates/temporal-coverage.js', 'utf8')
+    },
+    {
+        aspectDefinition: {
+            id: 'dataset-distributions',
+            name: 'Dataset Distributions',
+            jsonSchema: require('../../registry-aspects/dataset-distributions.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/dataset-distributions.js', 'utf8')
+    }
+];
+
+const distributionAspectBuilders: AspectBuilder[] = [
+    {
+        aspectDefinition: {
+            id: 'ckan-resource',
+            name: 'CKAN Resource',
+            jsonSchema: require('../../registry-aspects/ckan-resource.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/ckan-resource.js', 'utf8')
+    },
+    {
+        aspectDefinition: {
+            id: 'dcat-distribution-strings',
+            name: 'DCAT Distribution properties as strings',
+            jsonSchema: require('../../registry-aspects/dcat-distribution-strings.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/dcat-distribution-strings.js', 'utf8')
+    },
+    {
+        aspectDefinition: {
+            id: 'source',
+            name: 'Source',
+            jsonSchema: require('../../registry-aspects/source.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/distribution-source.js', 'utf8')
     }
 ];
 
 const connector = new CkanConnector({
     ckan: ckan,
     registry: registry,
-    aspectBuilders: aspectBuilders
+    datasetAspectBuilders: datasetAspectBuilders,
+    distributionAspectBuilders: distributionAspectBuilders
 });
 
 connector.run().then(result => {
     console.log('Aspect Definitions Connected: ' + result.aspectDefinitionsConnected);
     console.log('Datasets Connected: ' + result.datasetsConnected);
+    console.log('Distributions Connected: ' + result.distributionsConnected);
 
     if (result.errors.length > 0) {
         console.log('Errors:\n' + result.errors.map(error => error.toString()).join('\n'));

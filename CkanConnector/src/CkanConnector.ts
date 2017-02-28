@@ -1,5 +1,5 @@
 import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/registry/api';
-import Ckan, { CkanDataset } from './Ckan';
+import Ckan, { CkanThing, CkanDataset, CkanResource } from './Ckan';
 import Registry from './Registry';
 import AsyncPage, { forEachAsync } from './AsyncPage';
 import * as moment from 'moment';
@@ -14,7 +14,8 @@ export interface AspectBuilder {
 export interface CkanConnectorOptions {
     ckan: Ckan,
     registry: Registry,
-    aspectBuilders?: AspectBuilder[],
+    datasetAspectBuilders?: AspectBuilder[],
+    distributionAspectBuilders?: AspectBuilder[],
     ignoreHarvestSources?: string[],
     maxConcurrency?: number
 }
@@ -42,6 +43,7 @@ interface ReportProblem {
 export class CkanConnectionResult {
     public aspectDefinitionsConnected: number = 0;
     public datasetsConnected: number = 0;
+    public distributionsConnected: number = 0;
     public errors: Error[] = [];
 }
 
@@ -51,18 +53,21 @@ export default class CkanConnector {
     private ignoreHarvestSources: string[];
     private maxConcurrency: number;
 
-    public aspectBuilders: AspectBuilder[]
+    public datasetAspectBuilders: AspectBuilder[]
+    public distributionAspectBuilders: AspectBuilder[]
 
     constructor({
         ckan,
         registry,
-        aspectBuilders = [],
+        datasetAspectBuilders = [],
+        distributionAspectBuilders = [],
         ignoreHarvestSources = [],
         maxConcurrency = 6
     }: CkanConnectorOptions) {
         this.ckan = ckan;
         this.registry = registry;
-        this.aspectBuilders = aspectBuilders.slice();
+        this.datasetAspectBuilders = datasetAspectBuilders.slice();
+        this.distributionAspectBuilders = distributionAspectBuilders.slice();
         this.ignoreHarvestSources = ignoreHarvestSources.slice();
         this.maxConcurrency = maxConcurrency;
     }
@@ -89,9 +94,15 @@ export default class CkanConnector {
             }
         }
 
-        const templates = this.aspectBuilders.map(builder => ({
+        const datasetTemplates = this.datasetAspectBuilders.map(builder => ({
             id: builder.aspectDefinition.id,
-            builderFunction: tryit(() => new Function('setup', 'dataset', 'source', 'moment', 'reportProblem', builder.builderFunctionString)),
+            builderFunction: tryit(() => new Function('setup', 'dataset', 'unused', 'source', 'moment', 'reportProblem', builder.builderFunctionString)),
+            setupResult: builder.setupFunctionString ? tryit(() => new Function('moment', builder.setupFunctionString)(moment)) : undefined
+        }));
+
+        const distributionTemplates = this.distributionAspectBuilders.map(builder => ({
+            id: builder.aspectDefinition.id,
+            builderFunction: tryit(() => new Function('setup', 'resource', 'dataset', 'source', 'moment', 'reportProblem', builder.builderFunctionString)),
             setupResult: builder.setupFunctionString ? tryit(() => new Function('moment', builder.setupFunctionString)(moment)) : undefined
         }));
 
@@ -100,7 +111,7 @@ export default class CkanConnector {
             return connectionResult;
         }
 
-        const aspectBuilderPage = AsyncPage.create<AspectBuilder[]>(current => current ? undefined : Promise.resolve(this.aspectBuilders));
+        const aspectBuilderPage = AsyncPage.create<AspectBuilder[]>(current => current ? undefined : Promise.resolve(this.datasetAspectBuilders.concat(this.distributionAspectBuilders)));
         await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectBuilder => {
             const aspectDefinitionOrError = await this.registry.putAspectDefinition(aspectBuilder.aspectDefinition);
             if (aspectDefinitionOrError instanceof Error) {
@@ -119,18 +130,28 @@ export default class CkanConnector {
         const datasets = packagePages.map(packagePage => packagePage.result.results);
 
         await forEachAsync(datasets, this.maxConcurrency, async dataset => {
-            const recordOrError = await this.registry.putRecord(this.datasetToRecord(connectionResult, templates, dataset));
+            const recordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, datasetTemplates, dataset, undefined));
             if (recordOrError instanceof Error) {
                 connectionResult.errors.push(recordOrError);
             } else {
                 ++connectionResult.datasetsConnected;
+
+                for (let i = 0; i < dataset.resources.length; ++i) {
+                    const resource = dataset.resources[i];
+                    const resourceRecordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, distributionTemplates, resource, dataset));
+                    if (resourceRecordOrError instanceof Error) {
+                        connectionResult.errors.push(resourceRecordOrError);
+                    } else {
+                        ++connectionResult.distributionsConnected;
+                    }
+                }
             }
         });
 
         return connectionResult;
     }
 
-    private datasetToRecord(connectionResult: CkanConnectionResult, templates: CompiledAspect[], dataset: CkanDataset): Record {
+    private ckanToRecord<T extends CkanThing, TParent extends CkanThing>(connectionResult: CkanConnectionResult, templates: CompiledAspect[], ckanRecord: T, ckanParent: TParent): Record {
         const problems: ProblemReport[] = [];
         function reportProblem(title: string, message?: string, additionalInfo?: any) {
             problems.push({ title, message, additionalInfo });
@@ -139,7 +160,7 @@ export default class CkanConnector {
         const aspects: Aspects = {};
         templates.forEach(aspect => {
             try {
-                const aspectValue = aspect.builderFunction(aspect.setupResult, dataset, this.ckan, moment, reportProblem);
+                const aspectValue = aspect.builderFunction(aspect.setupResult, ckanRecord, ckanParent, this.ckan, moment, reportProblem);
                 if (aspectValue !== undefined) {
                     aspects[aspect.id] = aspectValue;
                 }
@@ -149,13 +170,16 @@ export default class CkanConnector {
             }
         });
 
-        if (aspects['source'] && problems.length > 0) {
+        if (problems.length > 0) {
+            if (!aspects['source']) {
+                aspects['source'] = {};
+            }
             aspects['source'].problems = problems;
         }
 
         return {
-            id: dataset.id,
-            name: dataset.title || dataset.name,
+            id: ckanRecord.id,
+            name: ckanRecord['title'] || ckanRecord.name,
             aspects: aspects
         };
     }
