@@ -20,6 +20,12 @@ export interface CkanConnectorOptions {
     maxConcurrency?: number
 }
 
+interface CompiledAspects {
+    parameterNames: string[];
+    parameters: BuilderFunctionParameters;
+    aspects: CompiledAspect[];
+}
+
 interface CompiledAspect {
     id: string,
     builderFunction: Function,
@@ -38,6 +44,112 @@ interface ProblemReport {
 
 interface ReportProblem {
     (title: string, message?: string, additionalInfo?: any): void
+}
+
+class BuilderFunctionLibraries {
+    /**
+     * The [moment.js](https://momentjs.com) library.
+     *
+     * @type {moment.Moment}
+     * @memberOf BuilderFunctionLibraries
+     */
+    moment: typeof moment = undefined;
+}
+
+class BuilderSetupFunctionParameters {
+    /**
+     * The source of this item for which we are building aspects.
+     *
+     * @type {Ckan}
+     * @memberOf BuilderFunctionParameters
+     */
+    source: Ckan = undefined;
+
+    /**
+     * Provides access to utility libraries that may be helpful in setting up the builder.
+     *
+     * @type {BuilderFunctionLibraries}
+     * @memberOf BuilderFunctionParameters
+     */
+    libraries: BuilderFunctionLibraries = undefined;
+
+    [propName: string]: any;
+}
+
+abstract class BuilderFunctionParameters {
+    /**
+     * The result of invoking the {@link AspectBuilder#setupFunctionString}, or undefined if there is no
+     * {@link AspectBuilder#setupFunctionString} defined for this builder.
+     *
+     * @type {*}
+     * @memberOf BuilderFunctionParameters
+     */
+    setup: any = undefined;
+
+
+    /**
+     * The source of this item for which we are building aspects.
+     *
+     * @type {Ckan}
+     * @memberOf BuilderFunctionParameters
+     */
+    source: Ckan = undefined;
+
+    /**
+     * Reports a non-fatal problem creating an aspect.
+     *
+     * @type {ReportProblem}
+     * @memberOf BuilderFunctionParameters
+     */
+    reportProblem: ReportProblem = undefined;
+
+    /**
+     * Provides access to utility libraries that may be helpful in building aspects.
+     *
+     * @type {BuilderFunctionLibraries}
+     * @memberOf BuilderFunctionParameters
+     */
+    libraries: BuilderFunctionLibraries = undefined;
+
+    [propName: string]: any;
+
+    abstract getCkanThing(): CkanThing;
+}
+
+class DatasetBuilderFunctionParameters extends BuilderFunctionParameters {
+    /**
+     * The CKAN dataset from which to build aspects.
+     *
+     * @type {CkanDataset}
+     * @memberOf DatasetBuilderFunctionParameters
+     */
+    dataset: CkanDataset = undefined;
+
+    getCkanThing(): CkanDataset {
+        return this.dataset;
+    }
+}
+
+class DistributionBuilderFunctionParameters extends BuilderFunctionParameters {
+    /**
+     * The CKAN resource from which to build aspects.
+     *
+     * @type {CkanResource}
+     * @memberOf DistributionBuilderFunctionParameters
+     */
+    resource: CkanResource = undefined;
+
+    /**
+     * The CKAN dataset that owns the resource.
+     *
+     * @type {CkanDataset}
+     * @memberOf DatasetBuilderFunctionParameters
+     */
+    dataset: CkanDataset = undefined;
+
+    getCkanThing(): CkanResource {
+        return this.resource;
+    }
 }
 
 export class CkanConnectionResult {
@@ -77,34 +189,31 @@ export default class CkanConnector {
      * are first created in the registry.  If creation of an aspect definition fails (after all retries
      * have been exhausted), no records will be created and the promise will resolve with a
      * {@link CkanConnectionResult} containing the errors.
-     * 
+     *
      * @returns {Promise<CkanConnectionResult>}
-     * 
+     *
      * @memberOf CkanConnector
      */
     async run(): Promise<CkanConnectionResult> {
         const connectionResult = new CkanConnectionResult();
 
-        function tryit<T>(f: () => T): T {
-            try {
-                return f();
-            } catch (e) {
-                connectionResult.errors.push(e);
-                return undefined;
-            }
-        }
+        const libraries = new BuilderFunctionLibraries();
+        libraries.moment = moment;
 
-        const datasetTemplates = this.datasetAspectBuilders.map(builder => ({
-            id: builder.aspectDefinition.id,
-            builderFunction: tryit(() => new Function('setup', 'dataset', 'unused', 'source', 'moment', 'reportProblem', builder.builderFunctionString)),
-            setupResult: builder.setupFunctionString ? tryit(() => new Function('moment', builder.setupFunctionString)(moment)) : undefined
-        }));
+        const setupParameters = new BuilderSetupFunctionParameters();
+        setupParameters.libraries = libraries;
+        setupParameters.source = this.ckan;
 
-        const distributionTemplates = this.distributionAspectBuilders.map(builder => ({
-            id: builder.aspectDefinition.id,
-            builderFunction: tryit(() => new Function('setup', 'resource', 'dataset', 'source', 'moment', 'reportProblem', builder.builderFunctionString)),
-            setupResult: builder.setupFunctionString ? tryit(() => new Function('moment', builder.setupFunctionString)(moment)) : undefined
-        }));
+        const datasetParameters = new DatasetBuilderFunctionParameters();
+        datasetParameters.libraries = libraries;
+        datasetParameters.source = this.ckan;
+
+        const distributionParameters = new DistributionBuilderFunctionParameters();
+        distributionParameters.libraries = libraries;
+        distributionParameters.source = this.ckan;
+
+        const datasetAspects = buildersToCompiledAspects(connectionResult, this.datasetAspectBuilders, setupParameters, datasetParameters);
+        const distributionAspects = buildersToCompiledAspects(connectionResult, this.distributionAspectBuilders, setupParameters, distributionParameters);
 
         // If there were errors initializing the aspect definitions, don't try to create records.
         if (connectionResult.errors.length > 0) {
@@ -130,7 +239,8 @@ export default class CkanConnector {
         const datasets = packagePages.map(packagePage => packagePage.result.results);
 
         await forEachAsync(datasets, this.maxConcurrency, async dataset => {
-            const recordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, datasetTemplates, dataset, undefined));
+            datasetParameters.dataset = dataset;
+            const recordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, datasetAspects));
             if (recordOrError instanceof Error) {
                 connectionResult.errors.push(recordOrError);
             } else {
@@ -138,7 +248,9 @@ export default class CkanConnector {
 
                 for (let i = 0; i < dataset.resources.length; ++i) {
                     const resource = dataset.resources[i];
-                    const resourceRecordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, distributionTemplates, resource, dataset));
+                    distributionParameters.dataset = dataset;
+                    distributionParameters.resource = resource;
+                    const resourceRecordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, distributionAspects));
                     if (resourceRecordOrError instanceof Error) {
                         connectionResult.errors.push(resourceRecordOrError);
                     } else {
@@ -151,18 +263,22 @@ export default class CkanConnector {
         return connectionResult;
     }
 
-    private ckanToRecord<T extends CkanThing, TParent extends CkanThing>(connectionResult: CkanConnectionResult, templates: CompiledAspect[], ckanRecord: T, ckanParent: TParent): Record {
+    private ckanToRecord(connectionResult: CkanConnectionResult, aspects: CompiledAspects): Record {
         const problems: ProblemReport[] = [];
+
         function reportProblem(title: string, message?: string, additionalInfo?: any) {
             problems.push({ title, message, additionalInfo });
         }
 
-        const aspects: Aspects = {};
-        templates.forEach(aspect => {
+        aspects.parameters.reportProblem = reportProblem;
+
+        const generatedAspects: Aspects = {};
+        aspects.aspects.forEach(aspect => {
             try {
-                const aspectValue = aspect.builderFunction(aspect.setupResult, ckanRecord, ckanParent, this.ckan, moment, reportProblem);
+                aspects.parameters.setup = aspect.setupResult;
+                const aspectValue = aspect.builderFunction(...aspects.parameterNames.map(parameter => aspects.parameters[parameter]));
                 if (aspectValue !== undefined) {
-                    aspects[aspect.id] = aspectValue;
+                    generatedAspects[aspect.id] = aspectValue;
                 }
             } catch(e) {
                 const exception = createServiceError(e);
@@ -171,16 +287,48 @@ export default class CkanConnector {
         });
 
         if (problems.length > 0) {
-            if (!aspects['source']) {
-                aspects['source'] = {};
+            if (!generatedAspects['source']) {
+                generatedAspects['source'] = {};
             }
-            aspects['source'].problems = problems;
+            generatedAspects['source'].problems = problems;
         }
 
+        const ckanThing = aspects.parameters.getCkanThing();
+
         return {
-            id: ckanRecord.id,
-            name: ckanRecord['title'] || ckanRecord.name,
-            aspects: aspects
+            id: ckanThing.id,
+            name: ckanThing['title'] || ckanThing.name,
+            aspects: generatedAspects
         };
     }
+}
+
+function buildersToCompiledAspects(connectionResult: CkanConnectionResult, builders: AspectBuilder[], setupParameters: BuilderSetupFunctionParameters, buildParameters: BuilderFunctionParameters): CompiledAspects {
+    const setupParameterNames = Object.keys(setupParameters);
+    const buildParameterNames = Object.keys(buildParameters);
+
+    return {
+        parameterNames: buildParameterNames,
+        parameters: buildParameters,
+        aspects: builders.map(builder => {
+            try {
+                let setupResult = undefined;
+                if (builder.setupFunctionString) {
+                    const setupFunction = new Function(...setupParameterNames, builder.setupFunctionString);
+                    setupResult = setupFunction.apply(undefined, setupParameterNames.map(name => setupParameters[name]));
+                }
+
+                const builderFunction = new Function(...buildParameterNames, builder.builderFunctionString);
+
+                return {
+                    id: builder.aspectDefinition.id,
+                    builderFunction: builderFunction,
+                    setupResult: setupResult
+                };
+            } catch(e) {
+                connectionResult.errors.push(e);
+                return undefined;
+            }
+        })
+    };
 }

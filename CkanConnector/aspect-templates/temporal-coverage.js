@@ -1,3 +1,5 @@
+const moment = libraries.moment;
+
 if (!dataset.temporal_coverage_from && !dataset.temporal_coverage_to) {
     return undefined;
 }

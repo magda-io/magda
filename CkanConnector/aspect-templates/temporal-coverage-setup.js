@@ -1,3 +1,5 @@
+const moment = libraries.moment;
+
 // from moment.js, from-string.js
 var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
 var isoTimes = [
