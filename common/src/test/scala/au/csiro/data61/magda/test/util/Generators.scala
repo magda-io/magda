@@ -35,12 +35,14 @@ import spray.json.JsObject
 import java.net.URL
 import spray.json._
 import com.vividsolutions.jts.geom.GeometryFactory
+import com.vividsolutions.jts.geom
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import com.typesafe.config.Config
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc.Protocols._
+import scala.util.Try
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -96,21 +98,19 @@ object Generators {
     duration <- someBiasedOption(durationGen)
   } yield Periodicity(text, duration)
 
-  val xGen =
-    Gen.chooseNum(-180, 180).map(BigDecimal.apply)
+  def longGen(min: Double = -180, max: Double = 180) = Gen.chooseNum(min, max).map(BigDecimal.apply)
+  def latGen(min: Double = -90, max: Double = 90) = Gen.chooseNum(min, max).map(BigDecimal.apply)
 
-  val yGen =
-    Gen.chooseNum(-90, 90).map(BigDecimal.apply)
-
-  val coordGen = for {
+  def coordGen(xGen: Gen[BigDecimal] = longGen(), yGen: Gen[BigDecimal] = latGen()) = for {
     x <- xGen
     y <- yGen
   } yield Coordinate(x, y)
 
-  def nonConsecutiveDuplicates[T](min: Int, max: Int, gen: Gen[T]) = listSizeBetween(min, max, gen)
-    .suchThat(list => list.sliding(2).forall {
-      case Seq(before, after) => !before.equals(after)
-    })
+  def nonConsecutiveDuplicates[T](min: Int, max: Int, gen: Gen[T]) =
+    listSizeBetween(min, max, gen)
+      .suchThat(list => list.sliding(2).forall {
+        case Seq(before, after) => !before.equals(after)
+      })
 
   val regionSourceGenInner = for {
     name <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
@@ -128,13 +128,22 @@ object Generators {
     order = order
   )
 
+  def nonEmptyListOf[T](gen: Gen[T]) = Gen.size.flatMap { maybeZeroSize =>
+    val size = Math.max(maybeZeroSize, 1)
+    listSizeBetween(1, size, gen)
+  }
+
+  def listSizeBetween[T](min: Int, max: Int, gen: Gen[T]) = Gen.chooseNum(min, max).map { size =>
+    (for { i <- 1 to size } yield gen.sample).flatten
+  }.suchThat(_.size > min)
+
   val regionSourceGen = cachedListGen(regionSourceGenInner, 3)
 
-  val regionGen = for {
+  def regionGen(max: Int) = for {
     regionSource <- regionSourceGen.flatMap(Gen.oneOf(_))
-    id <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
+    id <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString.take(500))
     name <- Gen.alphaNumStr
-    geometry <- geometryGen
+    geometry <- geometryGen(max)
     order <- Gen.posNum[Int]
   } yield (regionSource, JsObject(
     "type" -> JsString("Feature"),
@@ -146,42 +155,61 @@ object Generators {
     )
   ))
 
-  def listSizeBetween[T](min: Int, max: Int, gen: Gen[T]) = Gen.chooseNum(min, max)
-    .flatMap(x => Gen.listOfN(x, gen))
-
-  val pointGen = coordGen.map(Point.apply)
-  val multiPointGen = listSizeBetween(1, 5, coordGen).map(MultiPoint.apply)
-  val lineStringGenInner = nonConsecutiveDuplicates(2, 5, coordGen)
-  val lineStringGen = lineStringGenInner.map(LineString.apply)
-  val multiLineStringGen = listSizeBetween(1, 4, lineStringGenInner)
+  def pointGen(thisCoordGen: Gen[Coordinate] = coordGen()) = thisCoordGen.map(Point.apply)
+  def multiPointGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = listSizeBetween(1, max, thisCoordGen).map(MultiPoint.apply)
+  def lineStringGenInner(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = nonConsecutiveDuplicates(2, max, thisCoordGen)
+  def lineStringGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = lineStringGenInner(max, thisCoordGen).map(LineString.apply)
+  def multiLineStringGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = listSizeBetween(1, max, lineStringGenInner(max, thisCoordGen))
     .map(MultiLineString.apply)
-  val polygonGenInner = listSizeBetween(3, 6, Gen.zip(Gen.choose(1, 90)))
-    .map(_.sorted)
-    .map(list => list.zipWithIndex.map {
-      case (hypotenuse, index) =>
-        val angle = (Math.PI / list.size) * (index + 1)
-        Coordinate(hypotenuse * Math.cos(angle), hypotenuse * Math.sin(angle))
-    })
-    .map(x => (x :+ x.head))
-  val polygonStringGen = Gen.listOfN(1, polygonGenInner) // FIXME: Do we need a hole generator?
-    .map(Polygon.apply)
-  val multiPolygonStringGen =
-    Gen.chooseNum(1, 3).flatMap(Gen.listOfN(_, polygonStringGen.map(_.coordinates)))
+  //  def polygonGenInner(thisCoordGen: Gen[Coordinate] = coordGen(), max: Int) =
+  //    listSizeBetween(3, max, Gen.zip(Gen.choose(1, 90)))
+  //      .map(_.sorted)
+  //      .map(list => list.zipWithIndex.map {
+  //        case (hypotenuse, index) =>
+  //          val angle = (Math.PI / list.size) * (index + 1)
+  //          Coordinate(hypotenuse * Math.cos(angle), hypotenuse * Math.sin(angle))
+  //      })
+  //      .map(x => (x :+ x.head))
+  def polygonGenInner(thisCoordGen: Gen[Coordinate] = coordGen(), max: Int) =
+    listSizeBetween(4, max, thisCoordGen)
+      .map { coords =>
+        LineString(coords).toJTSGeo().convexHull().fromJTSGeo() match {
+          case Polygon(Seq(innerSeq)) => innerSeq
+          case LineString(innerSeq)   => innerSeq :+ innerSeq.head
+        }
+      }
+
+  def polygonStringGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = polygonGenInner(thisCoordGen, max).flatMap { shell =>
+    val jts = Polygon(Seq(shell)).toJTSGeo
+    val envelope = jts.getEnvelopeInternal
+    val holeGen = listSizeBetween(0, 500,
+      polygonGenInner(
+        coordGen(longGen(envelope.getMinX, envelope.getMaxX), latGen(envelope.getMinY, envelope.getMaxY))
+          .suchThat(coord => jts.contains(Point(coord).toJTSGeo)), max).suchThat(hole => Polygon(Seq(hole)).toJTSGeo().coveredBy(jts))
+    )
+
+    holeGen.map { holes =>
+      //      println(holes)
+      Polygon(shell +: holes)
+    }
+  }
+
+  def multiPolygonStringGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) =
+    Gen.chooseNum(1, 3).flatMap(Gen.listOfN(_, polygonStringGen(max, thisCoordGen).map(_.coordinates)))
       .map(MultiPolygon.apply)
 
-  val geoFactory = new GeometryFactory()
-  val geometryGen = Gen.oneOf(
-    pointGen,
-    multiPointGen,
-    lineStringGen,
-    multiLineStringGen,
-    polygonStringGen,
-    multiPolygonStringGen
-  ).suchThat(geometry => GeometryConverter.toJTSGeo(geometry, geoFactory).isValid)
+  def geometryGen(max: Int) = Gen.oneOf(
+    pointGen(),
+    multiPointGen(max),
+    lineStringGen(max),
+    multiLineStringGen(max),
+    polygonStringGen(max),
+    multiPolygonStringGen(max)
+  ).suchThat(geometry => Try(geometry.toJTSGeo).map(_.isValid).getOrElse(false))
 
-  val locationGen = for {
+  def locationGen(max: Int) = for {
     text <- someBiasedOption(Gen.alphaNumStr)
-    geoJson <- someBiasedOption(geometryGen)
+    geoJson <- someBiasedOption(geometryGen(max))
   } yield new Location(text, geoJson)
 
   val nonEmptyString = Gen.choose(1, 20).flatMap(Gen.listOfN(_, Gen.alphaNumChar).map(_.mkString))
@@ -267,7 +295,7 @@ object Generators {
     language <- someBiasedOption(arbitrary[String])
     publisher <- someBiasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
     accrualPeriodicity <- someBiasedOption(periodicityGen)
-    spatial <- noneBiasedOption(locationGen)
+    spatial <- noneBiasedOption(locationGen(6))
     temporal <- someBiasedOption(periodOfTimeGen)
     theme <- Gen.listOf(arbitrary[String])
     keyword <- Gen.listOf(arbitrary[String])

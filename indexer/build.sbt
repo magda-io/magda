@@ -23,7 +23,8 @@ libraryDependencies ++= {
     "org.scalaz" %% "scalaz-core" % "7.2.8",
     
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
-    "org.scalatest"     %% "scalatest" % scalaTestV % "test"
+    "org.scalatest"     %% "scalatest" % scalaTestV % "test",
+    "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "5.2.4" % "test"
   )
 }
 

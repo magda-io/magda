@@ -183,5 +183,5 @@ object ApiGenerators {
   ))
 
   val INDEXED_REGIONS_COUNT = 12
-  val indexedRegionsGen = cachedListGen(regionGen, INDEXED_REGIONS_COUNT)
+  val indexedRegionsGen = cachedListGen(regionGen(5), INDEXED_REGIONS_COUNT)
 }
