@@ -29,7 +29,6 @@ import com.vividsolutions.jts.geom.Polygon
 import com.vividsolutions.jts.geom.MultiPolygon
 import au.csiro.data61.magda.search.elasticsearch.RegionLoader
 import com.vividsolutions.jts.geom.LinearRing
-import com.monsanto.labs.mwundo.GeoJson.Geometry
 
 case class IndexDefinition(
     name: String,
@@ -133,67 +132,56 @@ object IndexDefinition extends DefaultJsonProtocol {
             properties.fields(regionSource.nameProperty)
           }
 
-          ElasticDsl.index
-            .into(IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
-            .id(generateRegionId(regionSource.name, id))
-            .source(JsObject(
-              "regionType" -> JsString(regionSource.name),
-              "regionId" -> JsString(id),
-              "regionName" -> name,
-              "boundingBox" -> createEnvelope(jsonRegion.fields("geometry").convertTo[Geometry]).toJson,
-              "geometry" -> jsonRegion.fields("geometry"),
-              "order" -> JsNumber(regionSource.order)
-            ).toJson)
+          val geometryOpt = jsonRegion.fields("geometry") match {
+            case JsNull => None
+            case jsGeometry =>
+              val geometry = jsGeometry.convertTo[GeoJson.Geometry]
+              //              val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
+              //
+              //              geometry match {
+              //                case GeoJson.Polygon(inner) => println("Holes: " + inner.drop(1))
+              //                case _                      => //println("Not polygon: " + geometry)
+              //              }
+              //
+              //              val simplified = TopologyPreservingSimplifier.simplify(jtsGeo, 1)
+              //              println("Before: " + jtsGeo.getCoordinates.length + " After: " + simplified.getCoordinates.length)
+              //
+              //              def makePolygonValid(polygon: Polygon): Polygon = {
+              //                val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
+              //                val filteredHoles = holes.filter(_.coveredBy(simplified))
+              //                new Polygon(polygon.getExteriorRing.asInstanceOf[LinearRing], filteredHoles.toArray, geometryFactory)
+              //              }
+              //
+              //              val madeValid = simplified match {
+              //                case (polygon: Polygon) => makePolygonValid(polygon)
+              //                case (multiPolygon: MultiPolygon) =>
+              //                  val interiorPolygons = for { i <- 0 to multiPolygon.getNumGeometries - 1 } yield multiPolygon.getGeometryN(i).asInstanceOf[Polygon]
+              //                  val validPolygons = interiorPolygons.map(makePolygonValid)
+              //                  new MultiPolygon(validPolygons.toArray, geometryFactory)
+              //                case x => x
+              //              }
 
-        //          val geometryOpt = jsonRegion.fields("geometry") match {
-        //            case JsNull => None
-        //            case jsGeometry =>
-        //              val geometry = jsGeometry.convertTo[GeoJson.Geometry]
-        //              val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
-        //
-        //              geometry match {
-        //                case GeoJson.Polygon(inner) => println("Holes: " + inner.drop(1))
-        //                case _                      => //println("Not polygon: " + geometry)
-        //              }
-        //
-        //              val simplified = TopologyPreservingSimplifier.simplify(jtsGeo, 1)
-        //              println("Before: " + jtsGeo.getCoordinates.length + " After: " + simplified.getCoordinates.length)
-        //
-        //              def makePolygonValid(polygon: Polygon): Polygon = {
-        //                val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
-        //                val filteredHoles = holes.filter(_.coveredBy(simplified))
-        //                new Polygon(polygon.getExteriorRing.asInstanceOf[LinearRing], filteredHoles.toArray, geometryFactory)
-        //              }
-        //
-        //              val madeValid = simplified match {
-        //                case (polygon: Polygon) => makePolygonValid(polygon)
-        //                case (multiPolygon: MultiPolygon) =>
-        //                  val interiorPolygons = for { i <- 0 to multiPolygon.getNumGeometries - 1 } yield multiPolygon.getGeometryN(i).asInstanceOf[Polygon]
-        //                  val validPolygons = interiorPolygons.map(makePolygonValid)
-        //                  new MultiPolygon(validPolygons.toArray, geometryFactory)
-        //                case x => x
-        //              }
-        //
-        //              //              val simplifiedValidated = GeoValidator.validate(simplified)
-        //
-        //              Some(GeometryConverter.fromJTSGeo(simplified))
-        //          }
+              //              val simplifiedValidated = GeoValidator.validate(simplified)
 
-        //          geometryOpt.map(geometry =>
-        //            ElasticDsl.index
-        //              .into(IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
-        //              .id(generateRegionId(regionSource.name, id))
-        //              .source(JsObject(
-        //                "regionType" -> JsString(regionSource.name),
-        //                "regionId" -> JsString(id),
-        //                "regionName" -> name,
-        //                "boundingBox" -> createEnvelope(geometry).toJson,
-        //                "geometry" -> geometry.toJson,
-        //                "order" -> JsNumber(regionSource.order)
-        //              ).toJson))
+              //              Some(GeometryConverter.fromJTSGeo(simplified))
+              Some(geometry)
+          }
+
+          geometryOpt.map(geometry =>
+            ElasticDsl.index
+              .into(IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
+              .id(generateRegionId(regionSource.name, id))
+              .source(JsObject(
+                "regionType" -> JsString(regionSource.name),
+                "regionId" -> JsString(id),
+                "regionName" -> name,
+                "boundingBox" -> createEnvelope(geometry).toJson,
+                "geometry" -> geometry.toJson,
+                "order" -> JsNumber(regionSource.order)
+              ).toJson))
 
       }
-      //      .filter(_.isDefined).map(_.get)
+      .filter(_.isDefined).map(_.get)
       // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request
       .batchWeighted(config.getLong("regionLoading.regionBufferMb") * 1000000, defin => IndexContentBuilder(defin).string.length, Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
