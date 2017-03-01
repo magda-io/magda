@@ -25,7 +25,7 @@ class SearchSpec extends BaseApiSpec {
   val geoFactory = new GeometryFactory()
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {
-      forAll(regionGen) { regionRaw =>
+      forAll(regionGen(5)) { regionRaw =>
         val preConversion = regionRaw._2.fields("geometry").convertTo[Geometry]
 
         val jts = GeometryConverter.toJTSGeo(preConversion, geoFactory)
