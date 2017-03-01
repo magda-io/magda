@@ -20,10 +20,16 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.spatial.RegionSources
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.PrefixTree
-import com.monsanto.labs.mwundo.GeoJson.Geometry
+import com.monsanto.labs.mwundo.GeoJson
 import au.csiro.data61.magda.model.misc.BoundingBox
 import com.vividsolutions.jts.geom.GeometryFactory
 import au.csiro.data61.magda.util.MwundoJTSConversions._
+import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier
+import com.vividsolutions.jts.geom.Polygon
+import com.vividsolutions.jts.geom.MultiPolygon
+import au.csiro.data61.magda.search.elasticsearch.RegionLoader
+import com.vividsolutions.jts.geom.LinearRing
+import com.monsanto.labs.mwundo.GeoJson.Geometry
 
 case class IndexDefinition(
     name: String,
@@ -39,7 +45,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 16,
+    version = 17,
     definition = (overrideIndexName) =>
       create.index(overrideIndexName.getOrElse(dataSets.indexName))
         .indexSetting("recovery.initial_shards", 1)
@@ -83,17 +89,18 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 14,
+      version = 15,
       definition = (overrideIndexName) =>
         create.index(overrideIndexName.getOrElse(regions.indexName))
           .indexSetting("recovery.initial_shards", 1)
           .mappings(
             mapping(REGIONS_TYPE_NAME).fields(
-              field("type").typed(StringType),
-              field("id").typed(StringType),
-              field("name").typed(StringType),
+              field("regionType").typed(StringType),
+              field("regionId").typed(StringType),
+              field("regionName").typed(StringType),
               field("boundingBox").typed(GeoShapeType),
-              field("geometry").typed(GeoShapeType)
+              field("geometry").typed(GeoShapeType),
+              field("order").typed(IntegerType)
             )
           ),
       create = Some((client, config, materializer, actorSystem) => setupRegions(client)(config, materializer, actorSystem))
@@ -109,6 +116,8 @@ object IndexDefinition extends DefaultJsonProtocol {
 
     setupRegions(client, loader)
   }
+
+  implicit val geometryFactory = new GeometryFactory()
 
   def setupRegions(client: TcpClient, loader: RegionLoader)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     implicit val ec = system.dispatcher
@@ -135,7 +144,56 @@ object IndexDefinition extends DefaultJsonProtocol {
               "geometry" -> jsonRegion.fields("geometry"),
               "order" -> JsNumber(regionSource.order)
             ).toJson)
+
+        //          val geometryOpt = jsonRegion.fields("geometry") match {
+        //            case JsNull => None
+        //            case jsGeometry =>
+        //              val geometry = jsGeometry.convertTo[GeoJson.Geometry]
+        //              val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
+        //
+        //              geometry match {
+        //                case GeoJson.Polygon(inner) => println("Holes: " + inner.drop(1))
+        //                case _                      => //println("Not polygon: " + geometry)
+        //              }
+        //
+        //              val simplified = TopologyPreservingSimplifier.simplify(jtsGeo, 1)
+        //              println("Before: " + jtsGeo.getCoordinates.length + " After: " + simplified.getCoordinates.length)
+        //
+        //              def makePolygonValid(polygon: Polygon): Polygon = {
+        //                val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
+        //                val filteredHoles = holes.filter(_.coveredBy(simplified))
+        //                new Polygon(polygon.getExteriorRing.asInstanceOf[LinearRing], filteredHoles.toArray, geometryFactory)
+        //              }
+        //
+        //              val madeValid = simplified match {
+        //                case (polygon: Polygon) => makePolygonValid(polygon)
+        //                case (multiPolygon: MultiPolygon) =>
+        //                  val interiorPolygons = for { i <- 0 to multiPolygon.getNumGeometries - 1 } yield multiPolygon.getGeometryN(i).asInstanceOf[Polygon]
+        //                  val validPolygons = interiorPolygons.map(makePolygonValid)
+        //                  new MultiPolygon(validPolygons.toArray, geometryFactory)
+        //                case x => x
+        //              }
+        //
+        //              //              val simplifiedValidated = GeoValidator.validate(simplified)
+        //
+        //              Some(GeometryConverter.fromJTSGeo(simplified))
+        //          }
+
+        //          geometryOpt.map(geometry =>
+        //            ElasticDsl.index
+        //              .into(IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
+        //              .id(generateRegionId(regionSource.name, id))
+        //              .source(JsObject(
+        //                "regionType" -> JsString(regionSource.name),
+        //                "regionId" -> JsString(id),
+        //                "regionName" -> name,
+        //                "boundingBox" -> createEnvelope(geometry).toJson,
+        //                "geometry" -> geometry.toJson,
+        //                "order" -> JsNumber(regionSource.order)
+        //              ).toJson))
+
       }
+      //      .filter(_.isDefined).map(_.get)
       // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request
       .batchWeighted(config.getLong("regionLoading.regionBufferMb") * 1000000, defin => IndexContentBuilder(defin).string.length, Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
@@ -162,7 +220,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   }
 
   val geoFactory = new GeometryFactory()
-  def createEnvelope(geometry: Geometry): BoundingBox = {
+  def createEnvelope(geometry: GeoJson.Geometry): BoundingBox = {
     val indexedEnvelope = GeometryConverter.toJTSGeo(geometry, geoFactory).getEnvelopeInternal
 
     BoundingBox(indexedEnvelope.getMaxY, indexedEnvelope.getMinX, indexedEnvelope.getMinY, indexedEnvelope.getMaxX)

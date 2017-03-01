@@ -352,7 +352,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     clientFuture.flatMap { client =>
       client.execute(
         ElasticDsl.search in indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType)
-          query { matchPhrasePrefixQuery("name", query) }
+          query { matchPhrasePrefixQuery("regionName", query) }
           start start.toInt
           limit limit
           sort (
