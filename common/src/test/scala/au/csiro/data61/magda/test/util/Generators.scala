@@ -43,6 +43,8 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc.Protocols._
 import scala.util.Try
+import org.locationtech.spatial4j.shape.jts.JtsGeometry
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -98,7 +100,8 @@ object Generators {
     duration <- someBiasedOption(durationGen)
   } yield Periodicity(text, duration)
 
-  def longGen(min: Double = -180, max: Double = 180) = Gen.chooseNum(min, max).map(BigDecimal.apply)
+  // We don't want our shapes to overlap the dateline or ES fixes them
+  def longGen(min: Double = -89, max: Double = 89) = Gen.chooseNum(min, max).map(BigDecimal.apply)
   def latGen(min: Double = -90, max: Double = 90) = Gen.chooseNum(min, max).map(BigDecimal.apply)
 
   def coordGen(xGen: Gen[BigDecimal] = longGen(), yGen: Gen[BigDecimal] = latGen()) = for {
@@ -113,7 +116,7 @@ object Generators {
       })
 
   val regionSourceGenInner = for {
-    name <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
+    name <- Gen.uuid.map(_.toString)
     idProperty <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
     nameProperty <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
     includeIdInName <- arbitrary[Boolean]
@@ -139,11 +142,11 @@ object Generators {
 
   val regionSourceGen = cachedListGen(regionSourceGenInner, 3)
 
-  def regionGen(max: Int) = for {
+  def regionGen(thisGeometryGen: Gen[Geometry]) = for {
     regionSource <- regionSourceGen.flatMap(Gen.oneOf(_))
-    id <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString.take(500))
+    id <- Gen.uuid.map(_.toString)
     name <- Gen.alphaNumStr
-    geometry <- geometryGen(max)
+    geometry <- thisGeometryGen
     order <- Gen.posNum[Int]
   } yield (regionSource, JsObject(
     "type" -> JsString("Feature"),
@@ -161,19 +164,15 @@ object Generators {
   def lineStringGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = lineStringGenInner(max, thisCoordGen).map(LineString.apply)
   def multiLineStringGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = listSizeBetween(1, max, lineStringGenInner(max, thisCoordGen))
     .map(MultiLineString.apply)
-  //  def polygonGenInner(thisCoordGen: Gen[Coordinate] = coordGen(), max: Int) =
-  //    listSizeBetween(3, max, Gen.zip(Gen.choose(1, 90)))
-  //      .map(_.sorted)
-  //      .map(list => list.zipWithIndex.map {
-  //        case (hypotenuse, index) =>
-  //          val angle = (Math.PI / list.size) * (index + 1)
-  //          Coordinate(hypotenuse * Math.cos(angle), hypotenuse * Math.sin(angle))
-  //      })
-  //      .map(x => (x :+ x.head))
+
   def polygonGenInner(thisCoordGen: Gen[Coordinate] = coordGen(), max: Int) =
     listSizeBetween(4, max, thisCoordGen)
       .map { coords =>
-        LineString(coords).toJTSGeo().convexHull().fromJTSGeo() match {
+        LineString(coords).toJTSGeo().convexHull()
+      }
+      .suchThat(_.getCoordinates.length > 3)
+      .map {
+        _.fromJTSGeo() match {
           case Polygon(Seq(innerSeq)) => innerSeq
           case LineString(innerSeq)   => innerSeq :+ innerSeq.head
         }
@@ -185,11 +184,12 @@ object Generators {
     val holeGen = listSizeBetween(0, 500,
       polygonGenInner(
         coordGen(longGen(envelope.getMinX, envelope.getMaxX), latGen(envelope.getMinY, envelope.getMaxY))
-          .suchThat(coord => jts.contains(Point(coord).toJTSGeo)), max).suchThat(hole => Polygon(Seq(hole)).toJTSGeo().coveredBy(jts))
+          .suchThat(coord => jts.contains(Point(coord).toJTSGeo)),
+        max
+      ).suchThat(hole => jts.contains(Polygon(Seq(hole)).toJTSGeo()))
     )
 
     holeGen.map { holes =>
-      //      println(holes)
       Polygon(shell +: holes)
     }
   }
@@ -198,18 +198,26 @@ object Generators {
     Gen.chooseNum(1, 3).flatMap(Gen.listOfN(_, polygonStringGen(max, thisCoordGen).map(_.coordinates)))
       .map(MultiPolygon.apply)
 
-  def geometryGen(max: Int) = Gen.oneOf(
-    pointGen(),
-    multiPointGen(max),
-    lineStringGen(max),
-    multiLineStringGen(max),
-    polygonStringGen(max),
-    multiPolygonStringGen(max)
-  ).suchThat(geometry => Try(geometry.toJTSGeo).map(_.isValid).getOrElse(false))
+  def geometryGen(max: Int, thisCoordGen: Gen[Coordinate]) = Gen.oneOf(
+    pointGen(thisCoordGen),
+    multiPointGen(max, thisCoordGen),
+    lineStringGen(max, thisCoordGen),
+    multiLineStringGen(max, thisCoordGen),
+    polygonStringGen(max, thisCoordGen),
+    multiPolygonStringGen(max, thisCoordGen)
+  ).suchThat { geometry =>
+      // Validate the geometry using the same code that ES uses - this means that if ES rejects a geometry we know
+      // it's because we've done something stupid to it in our code before it got indexed, and it's not the generators'
+      // fault
 
-  def locationGen(max: Int) = for {
+      Try {
+        new JtsGeometry(geometry.toJTSGeo, JtsSpatialContext.GEO, false, false).validate()
+      }.isSuccess
+    }
+
+  def locationGen(geometryGen: Gen[Geometry]) = for {
     text <- someBiasedOption(Gen.alphaNumStr)
-    geoJson <- someBiasedOption(geometryGen(max))
+    geoJson <- someBiasedOption(geometryGen)
   } yield new Location(text, geoJson)
 
   val nonEmptyString = Gen.choose(1, 20).flatMap(Gen.listOfN(_, Gen.alphaNumChar).map(_.mkString))
@@ -295,7 +303,7 @@ object Generators {
     language <- someBiasedOption(arbitrary[String])
     publisher <- someBiasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
     accrualPeriodicity <- someBiasedOption(periodicityGen)
-    spatial <- noneBiasedOption(locationGen(6))
+    spatial <- noneBiasedOption(locationGen(geometryGen(6, coordGen())))
     temporal <- someBiasedOption(periodOfTimeGen)
     theme <- Gen.listOf(arbitrary[String])
     keyword <- Gen.listOf(arbitrary[String])

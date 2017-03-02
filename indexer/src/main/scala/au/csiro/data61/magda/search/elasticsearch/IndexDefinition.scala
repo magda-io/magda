@@ -29,6 +29,8 @@ import com.vividsolutions.jts.geom.Polygon
 import com.vividsolutions.jts.geom.MultiPolygon
 import au.csiro.data61.magda.search.elasticsearch.RegionLoader
 import com.vividsolutions.jts.geom.LinearRing
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
+import com.vividsolutions.jts.geom.Geometry
 
 case class IndexDefinition(
     name: String,
@@ -116,7 +118,7 @@ object IndexDefinition extends DefaultJsonProtocol {
     setupRegions(client, loader)
   }
 
-  implicit val geometryFactory = new GeometryFactory()
+  implicit val geometryFactory = JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
   def setupRegions(client: TcpClient, loader: RegionLoader)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     implicit val ec = system.dispatcher
@@ -136,35 +138,28 @@ object IndexDefinition extends DefaultJsonProtocol {
             case JsNull => None
             case jsGeometry =>
               val geometry = jsGeometry.convertTo[GeoJson.Geometry]
-              //              val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
-              //
-              //              geometry match {
-              //                case GeoJson.Polygon(inner) => println("Holes: " + inner.drop(1))
-              //                case _                      => //println("Not polygon: " + geometry)
-              //              }
-              //
-              //              val simplified = TopologyPreservingSimplifier.simplify(jtsGeo, 1)
-              //              println("Before: " + jtsGeo.getCoordinates.length + " After: " + simplified.getCoordinates.length)
-              //
-              //              def makePolygonValid(polygon: Polygon): Polygon = {
-              //                val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
-              //                val filteredHoles = holes.filter(_.coveredBy(simplified))
-              //                new Polygon(polygon.getExteriorRing.asInstanceOf[LinearRing], filteredHoles.toArray, geometryFactory)
-              //              }
-              //
-              //              val madeValid = simplified match {
-              //                case (polygon: Polygon) => makePolygonValid(polygon)
-              //                case (multiPolygon: MultiPolygon) =>
-              //                  val interiorPolygons = for { i <- 0 to multiPolygon.getNumGeometries - 1 } yield multiPolygon.getGeometryN(i).asInstanceOf[Polygon]
-              //                  val validPolygons = interiorPolygons.map(makePolygonValid)
-              //                  new MultiPolygon(validPolygons.toArray, geometryFactory)
-              //                case x => x
-              //              }
+              val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
 
-              //              val simplifiedValidated = GeoValidator.validate(simplified)
+              val simplified = TopologyPreservingSimplifier.simplify(jtsGeo, jtsGeo.getLength / 100)
 
-              //              Some(GeometryConverter.fromJTSGeo(simplified))
-              Some(geometry)
+              def makePolygonValid(polygon: Polygon): Polygon = {
+                val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
+                val filteredHoles = holes.filter(_.within(simplified))
+                new Polygon(polygon.getExteriorRing.asInstanceOf[LinearRing], filteredHoles.toArray, geometryFactory)
+              }
+
+              val simplifiedFixed: Geometry = simplified.getGeometryType match {
+                case "Polygon" =>
+                  val x = simplified.asInstanceOf[Polygon]
+                  makePolygonValid(x)
+                case "MultiPolygon" =>
+                  val x = simplified.asInstanceOf[MultiPolygon]
+                  val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield makePolygonValid(x.getGeometryN(i).asInstanceOf[Polygon])
+                  new MultiPolygon(geometries.toArray, geometryFactory)
+                case _ => simplified
+              }
+
+              Some(GeometryConverter.fromJTSGeo(simplifiedFixed))
           }
 
           geometryOpt.map(geometry =>

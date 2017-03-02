@@ -5,9 +5,10 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 import com.vividsolutions.jts.geom.LinearRing
 import com.vividsolutions.jts.geom._
 import com.monsanto.labs.mwundo._
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 
 object MwundoJTSConversions {
-  implicit val gf = new GeometryFactory()
+  implicit val gf = JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
   private def toGeoJsonCoord(c: Coordinate) = GeoJson.Coordinate(c.x, c.y)
   private def toRing(coords: Seq[GeoJson.Coordinate], gf: GeometryFactory) = {
     val uniqueCoords = coords.map(c => new Coordinate(c.x.toDouble, c.y.toDouble)).toArray
