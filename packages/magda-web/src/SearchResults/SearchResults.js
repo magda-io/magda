@@ -6,12 +6,21 @@ class SearchResults extends Component {
   constructor(props) {
     super(props);
     this.onToggleExpandDataset=this.onToggleExpandDataset.bind(this);
+    this.state = {
+      openDataset: null
+    };
   }
 
   onToggleExpandDataset(result, event){
     event.stopPropagation();
-    let datasetIdentifider = result.identifier;
-    this.props.onToggleDataset(datasetIdentifider);
+    let datasetIdentifier = result.identifier;
+    if (this.state.openDataset === datasetIdentifier) {
+      datasetIdentifier = null;
+    }
+    this.setState({
+      openDataset: datasetIdentifier
+    });
+    //this.props.onToggleDataset(datasetIdentifider);
   }
 
   getSummaryText(){
@@ -37,22 +46,11 @@ class SearchResults extends Component {
         {this.getSummaryText()}
         <ul className='list-unstyled'>
         {
-          this.props.searchResults.filter(result=>this.props.openDataset === result.identifier).map((result, i)=>
+          this.props.searchResults.map((result, i)=>
             <li key={result.identifier} className='search-results__result'>
               <DatasetSummary dataset={result}
                               onClickDataset={this.onToggleExpandDataset.bind(this, result)}
-                              isExpanded={true}
-                              onClickTag={this.props.onClickTag}/>
-            </li>
-          )
-        }
-
-        {
-          this.props.searchResults.filter(result=>this.props.openDataset !== result.identifier).map((result, i)=>
-            <li key={result.identifier} className='search-results__result'>
-              <DatasetSummary dataset={result}
-                              onClickDataset={this.onToggleExpandDataset.bind(this, result)}
-                              isExpanded={this.props.openDataset === result.identifier}
+                              isExpanded={this.state.openDataset === result.identifier}
                               onClickTag={this.props.onClickTag}/>
             </li>
           )
