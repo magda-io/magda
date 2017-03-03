@@ -21,9 +21,11 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[RecordSummary], responseContainer = "List")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have at least one of these aspects will be included in the response."),
-    new ApiImplicitParam(name = "aspects", required = false, dataType = "string", paramType = "query", value = "The aspects for which to retrieve data, specified as a comma-separate list.  Only records that have at least one of these aspects will be included in the response.")
+    new ApiImplicitParam(name = "aspects", required = false, dataType = "string", paramType = "query", value = "The aspects for which to retrieve data, specified as a comma-separate list.  Only records that have at least one of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "pageToken", required = false, dataType = "string", paramType = "query", value = "A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."),
+    new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.")
   ))
-  def getAll = get { pathEnd { parameters('aspect.*) { getAllWithAspects } } }
+  def getAll = get { pathEnd { parameters('aspect.*, "pageToken".?, "limit".as[Int].?) { getAllWithAspects } } }
 
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
@@ -96,7 +98,7 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   } } }
 
   val route =
-    get { pathEnd { parameter('aspects) { aspects => getAllWithAspects(aspects.split(",").map(_.trim)) } } } ~
+    get { pathEnd { parameters('aspects, "pageToken".?, "limit".as[Int].?) { (aspects, pageToken, limit) => getAllWithAspects(aspects.split(",").map(_.trim), pageToken, limit) } } } ~
     getAll ~
     getById ~
     putById ~
@@ -104,13 +106,13 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
     create ~
     new RecordAspectsService(system, materializer).route
 
-  private def getAllWithAspects(aspects: Iterable[String]) = {
+  private def getAllWithAspects(aspects: Iterable[String], pageToken: Option[String], limit: Option[Int]) = {
     complete {
       DB readOnly { session =>
         if (aspects.isEmpty)
-          RecordPersistence.getAll(session)
+          RecordPersistence.getAll(session, pageToken, limit)
         else
-          RecordPersistence.getAllWithAspects(session, aspects)
+          RecordPersistence.getAllWithAspects(session, aspects, pageToken, limit)
       }
     }
   }

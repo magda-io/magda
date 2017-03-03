@@ -57,5 +57,4 @@ CREATE TABLE IF NOT EXISTS RecordAspects (
 
 CREATE INDEX ON RecordAspects(aspectId);
 CREATE INDEX ON RecordAspects(recordId);
---CREATE INDEX ON RecordAspects USING gin ((data->'distributions') jsonb_path_ops);
 

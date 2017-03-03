@@ -11,25 +11,33 @@ import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 
 object RecordPersistence extends Protocols with DiffsonProtocol {
-  def getAll(implicit session: DBSession): Iterable[RecordSummary] = {
-    tuplesToSummaryRecords(sql"""select recordId, Records.name as recordName, aspectId
-                                 from Records
-                                 left outer join RecordAspects using (recordId)"""
-      .map(recordSummaryRowToTuple)
-      .list.apply())
-      
+  def getAll(implicit session: DBSession, pageToken: Option[String], limit: Option[Int]): Iterable[RecordSummary] = {
+    // How many records do we have total?
+    val count = sql"""select count(*) from Records""".map(_.int(1)).single.apply()
+    sql"""select Records.recordId as recordId,
+                 Records.name as recordName,
+                 (select to_jsonb(array_agg(aspectId)) from RecordAspects where recordId=Records.recordId) as aspects
+         from Records
+         offset ${pageToken.getOrElse(0)}
+         limit ${limit.getOrElse(100)}"""
+        .map(rowToRecordSummary)
+        .list.apply()
+
+    // TODO: would it be better to skip the to_jsonb and work with the array_agg directly?
   }
 
-  def getAllWithAspects(implicit session: DBSession, aspectIds: Iterable[String]): Iterable[Record] = {
+  def getAllWithAspects(implicit session: DBSession, aspectIds: Iterable[String], pageToken: Option[String], limit: Option[Int]): Iterable[Record] = {
     tuplesToRecords(sql"""select recordId, Records.name as recordName, aspectId, Aspects.name as aspectName, data
                           from Records
                           left outer join RecordAspects using (recordId)
                           left outer join Aspects using (aspectId)
-                          where aspectId in ($aspectIds)"""
+                          where aspectId in ($aspectIds)
+                          offset ${pageToken.getOrElse(0)}
+                          limit ${limit.getOrElse(100)}"""
       .map(recordRowWithDataToTuple)
       .list.apply())
   }
-  
+
   def getById(implicit session: DBSession, id: String): Option[Record] = {
     tuplesToRecords(sql"""select recordId, Records.name as recordName, aspectId, Aspects.name as aspectName, data
                           from Records
@@ -39,7 +47,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       .map(recordRowWithDataToTuple)
       .list.apply()).headOption
   }
-  
+
   def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
     sql"""select RecordAspects.aspectId as aspectId, name as aspectName, data from RecordAspects
           inner join Aspects using (aspectId)
@@ -48,7 +56,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       .map(rowToAspect)
       .single.apply()
   }
-  
+
   def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record] = {
     for {
       _ <- if (id == newRecord.id) Success(newRecord) else Failure(new RuntimeException("The provided ID does not match the record's ID."))
@@ -221,7 +229,6 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     } yield insertResult
   }
 
-  private def recordSummaryRowToTuple(rs: WrappedResultSet) = (rs.string("recordId"), rs.string("recordName"), rs.string("aspectId"))
   private def recordRowWithDataToTuple(rs: WrappedResultSet) = (rs.string("recordId"), rs.string("recordName"), rs.string("aspectId"), rs.string("aspectName"), rs.stringOpt("data"))
 
   private def tuplesToSummaryRecords(tuples: List[(String, String, String)]): Iterable[RecordSummary] = {
@@ -236,6 +243,8 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       }
   }
 
+  private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = RecordSummary(rs.string("recordId"), rs.string("recordName"), JsonParser(rs.string("aspects")).asInstanceOf[JsArray].elements.map(_.asInstanceOf[JsString].value).toList)
+
   private def tuplesToRecords(tuples: List[(String, String, String, String, Option[String])]): Iterable[Record] = {
     tuples.groupBy({ case (recordId, recordName, _, _, _) => (recordId, recordName) })
           .map {
@@ -249,8 +258,24 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                                 }).toMap)
           }
   }
-  
+
   private def rowToAspect(rs: WrappedResultSet): JsObject = {
     JsonParser(rs.string("data")).asJsObject
   }
 }
+
+// Example query joining on json
+// select ra.recordid, r.recordid from recordaspects ra inner join records as r on ra.data->'distributions' @> to_jsonb(r.recordid) where ra.aspectid='dataset-distributions';
+
+
+// select dataset.recordid, dcatdatasetstrings.aspectid, temporalcoverage.aspectid from records dataset left outer join recordaspects dcatdatasetstrings on dcatdatasetstrings.aspectid='dcat-dataset-strings' and dataset.recordid=dcatdatasetstrings.recordid left outer join recordaspects temporalcoverage on temporalcoverage.aspectid='temporal-coverage' and dataset.recordid=temporalcoverage.recordid;
+
+// select array_to_json(array_agg(row_to_json(row(records.recordid)))) from records;
+
+// select records.name, jsonb_object_agg(recordaspects.aspectid, recordaspects.data) from records left outer join recordaspects on records.recordid=recordaspects.recordid group by records.recordid;
+
+// select datasetaspects.recordid, array_to_json(array_agg(dcatdistributionstrings.data)) from recordaspects datasetaspects inner join records as distributions on datasetaspects.aspectid='dataset-distributions' and datasetaspects.data->'distributions' @> to_jsonb(distributions.recordid) left outer join recordaspects as dcatdistributionstrings on dcatdistributionstrings.aspectid='dcat-distribution-strings' and distributions.recordid=dcatdistributionstrings.recordid group by datasetaspects.recordid;
+
+// select dataset.recordid, dcatdatasetstrings.aspectid, temporalcoverage.aspectid, distributions.titles from records dataset left outer join recordaspects dcatdatasetstrings on dcatdatasetstrings.aspectid='dcat-dataset-strings' and dataset.recordid=dcatdatasetstrings.recordid left outer join recordaspects temporalcoverage on temporalcoverage.aspectid='temporal-coverage' and dataset.recordid=temporalcoverage.recordid left outer join (select datasetaspects.recordid as recordid, array_to_json(array_agg(dcatdistributionstrings.data->>'title')) as titles from recordaspects datasetaspects inner join records as distributions on datasetaspects.aspectid='dataset-distributions' and datasetaspects.data->'distributions' @> to_jsonb(distributions.recordid) left outer join recordaspects as dcatdistributionstrings on dcatdistributionstrings.aspectid='dcat-distribution-strings' and distributions.recordid=dcatdistributionstrings.recordid group by datasetaspects.recordid) as distributions on dataset.recordid=distributions.recordid;
+
+// select dataset.recordid, dcatdatasetstrings.data, temporalcoverage.data, distributions.data from records dataset left outer join recordaspects dcatdatasetstrings on dcatdatasetstrings.aspectid='dcat-dataset-strings' and dataset.recordid=dcatdatasetstrings.recordid left outer join recordaspects temporalcoverage on temporalcoverage.aspectid='temporal-coverage' and dataset.recordid=temporalcoverage.recordid left outer join (select datasetaspects.recordid as recordid, array_to_json(array_agg(dcatdistributionstrings.data)) as data from recordaspects datasetaspects inner join records as distributions on datasetaspects.aspectid='dataset-distributions' and datasetaspects.data->'distributions' @> to_jsonb(distributions.recordid) left outer join recordaspects as dcatdistributionstrings on dcatdistributionstrings.aspectid='dcat-distribution-strings' and distributions.recordid=dcatdistributionstrings.recordid group by datasetaspects.recordid) as distributions on dataset.recordid=distributions.recordid;
