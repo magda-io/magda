@@ -1,18 +1,18 @@
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: es-data
+  name: es-data2
   labels:
     component: elasticsearch
-    role: data
+    role: data2
 spec:
-  serviceName: "es-data"
+  serviceName: "es-data2"
   replicas: 2
   template:
     metadata:
       labels:
         component: elasticsearch
-        role: data
+        role: data2
       annotations:
         scheduler.alpha.kubernetes.io/affinity: >
           {
@@ -30,6 +30,24 @@ spec:
                         "key": "role",
                         "operator": "In",
                         "values": ["data"]
+                      }
+                    ]
+                  },
+                  "topologyKey": "kubernetes.io/hostname",
+                  "weight": 50
+               },
+                {
+                  "labelSelector": {
+                    "matchExpressions": [
+                      {
+                        "key": "component",
+                        "operator": "In",
+                        "values": ["elasticsearch"]
+                      },
+                      {
+                        "key": "role",
+                        "operator": "In",
+                        "values": ["data2"]
                       }
                     ]
                   },
@@ -53,7 +71,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: es-data
+      - name: es-data2
         securityContext:
           privileged: true
           capabilities:
@@ -92,7 +110,7 @@ spec:
   - metadata:
       name: storage
       annotations:
-        volume.beta.kubernetes.io/storage-class: fast
+        volume.beta.kubernetes.io/storage-class: fast2
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
