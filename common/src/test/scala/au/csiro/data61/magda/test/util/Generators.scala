@@ -278,8 +278,8 @@ object Generators {
   } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).getOrElse(randomFormat))
 
   val distGen = for {
-    title <- arbitrary[String]
-    description <- someBiasedOption(arbitrary[String])
+    title <- nonEmptyString
+    description <- someBiasedOption(nonEmptyString)
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
     license <- someBiasedOption(licenseGen)
@@ -316,10 +316,10 @@ object Generators {
     accrualPeriodicity <- someBiasedOption(periodicityGen)
     spatial <- noneBiasedOption(locationGen(geometryGen(6, coordGen())))
     temporal <- someBiasedOption(periodOfTimeGen)
-    theme <- Gen.listOf(arbitrary[String])
-    keyword <- Gen.listOf(arbitrary[String])
+    theme <- Gen.listOf(nonEmptyString)
+    keyword <- Gen.listOf(nonEmptyString)
     contactPoint <- someBiasedOption(agentGen(arbitrary[String]))
-    distributions <- Gen.choose(1, 5).flatMap(size => Gen.listOfN(size, distGen)) //.map(_.groupBy(_.format).mapValues(_.head).values.toList)//.map(distributions => distributions.map(_.copy(format = distributions.head.format)))
+    distributions <- listSizeBetween(1, 5, distGen)
     landingPage <- someBiasedOption(arbitrary[String])
   } yield DataSet(
     identifier = identifier.toString,

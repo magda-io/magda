@@ -159,24 +159,95 @@ class SearchSpec extends BaseApiSpec {
       }
     }
 
-    it("for a dataset's title should return that dataset (eventually)") {
-      forAll(indexGen) {
-        case (indexName, dataSetsRaw, routes) ⇒
-          val indexedDataSets = dataSetsRaw.filter(dataSet ⇒ dataSet.title.isDefined && !dataSet.title.get.isEmpty())
+    describe("should return the right dataset when searching for that dataset's") {
+      describe("title") {
+        testSearchForDataSetContents(dataSet => dataSet.title.toSeq)
+      }
 
-          whenever(!indexedDataSets.isEmpty) {
-            val dataSetsPicker = for (dataset ← Gen.oneOf(indexedDataSets)) yield dataset
+      describe("description") {
+        testSearchForDataSetContents(dataSet => dataSet.description.toSeq)
+      }
 
-            forAll(dataSetsPicker) { dataSet ⇒
-              Get(s"""/datasets/search?query=${encodeForUrl(dataSet.title.get)}&limit=${dataSetsRaw.size}""") ~> routes ~> check {
-                status shouldBe OK
-                val result = responseAs[SearchResult]
-                withClue(s"title: ${dataSet.title.get} and identifier: ${dataSet.identifier} in ${dataSetsRaw.map(_.title.getOrElse("(none)")).mkString(", ")}") {
-                  result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
+      describe("keywords") {
+        testSearchForDataSetContents(dataSet => dataSet.keyword)
+      }
+
+      describe("publisher name") {
+        testSearchForDataSetContents(dataSet => dataSet.publisher.toSeq.flatMap(_.name.toSeq))
+      }
+
+      describe("distribution title") {
+        testSearchForDataSetContents(dataSet => dataSet.distributions.map(_.title))
+      }
+
+      describe("distribution description") {
+        testSearchForDataSetContents(dataSet => dataSet.distributions.flatMap(_.description.toSeq))
+      }
+
+      describe("theme") {
+        testSearchForDataSetContents(dataSet => dataSet.theme)
+      }
+
+      def testSearchForDataSetContents(termExtractor: DataSet => Seq[String]) = {
+        it("when searching for it directly") {
+          doTest(termExtractor)
+        }
+
+        it(s"regardless of pluralization/depluralization") {
+          def innerTermExtractor(dataSet: DataSet) = termExtractor(dataSet)
+            .filter(_.length > 2)
+            .filterNot(_.matches("\\d+"))
+            .map {
+              case term if term.last.toLower.equals('s') => term.take(term.length - 1)
+              case term                                  => term + "s"
+            }
+
+          doTest(innerTermExtractor)
+        }
+
+        def doTest(innerTermExtractor: DataSet => Seq[String]) = {
+          def getIndividualTerms(terms: Seq[String]) = terms.flatMap(term => term +: term.split(" "))
+
+          val indexAndTermsGen = indexGen.flatMap {
+            case (indexName, dataSetsRaw, routes) ⇒
+              val indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ termExtractor(dataSet).isEmpty)
+
+              val tuples = indexedDataSets.flatMap { dataSet =>
+                val terms = getIndividualTerms(termExtractor(dataSet))
+                  .filterNot(term => Seq("and", "or", "").contains(term.trim))
+
+                if (!terms.isEmpty)
+                  Seq(Gen.oneOf(terms).map((dataSet, _)))
+                else
+                  Nil
+              }
+
+              val x = tuples.foldRight(Gen.const(List[(DataSet, String)]()))((soFar, current) =>
+                for {
+                  currentInner <- current
+                  list <- soFar
+                } yield currentInner :+ list
+              )
+
+              x.map((indexName, _, routes))
+          }
+
+          forAll(indexAndTermsGen) {
+            case (indexName, tuples, routes) =>
+              whenever(!tuples.isEmpty) {
+                tuples.foreach {
+                  case (dataSet, term) =>
+                    Get(s"""/datasets/search?query=${encodeForUrl(s""""$term"""")}&limit=${tuples.size}""") ~> routes ~> check {
+                      status shouldBe OK
+                      val result = responseAs[SearchResult]
+                      withClue(s"term: ${term} and identifier: ${dataSet.identifier} in ${tuples.map(_._1).map(termExtractor).mkString(", ")}") {
+                        result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
+                      }
+                    }
                 }
               }
-            }
           }
+        }
       }
     }
   }

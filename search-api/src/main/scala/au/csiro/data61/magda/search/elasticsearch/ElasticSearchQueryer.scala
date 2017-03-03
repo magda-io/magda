@@ -39,6 +39,8 @@ import au.csiro.data61.magda.util.SetExtractor
 import org.elasticsearch.search.aggregations.support.AggregationPath.PathElement
 import scala.collection.JavaConversions._
 import org.elasticsearch.search.aggregations.InternalAggregation
+import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
+import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -289,7 +291,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
-      stringQuery.map(innerQuery => new QueryStringQueryDefinition(innerQuery).operator(operator).boost(2)),
+      stringQuery.map { innerQuery =>
+        val queryDef = new SimpleStringQueryDefinition(innerQuery)
+          .defaultOperator(operator)
+
+        ("_all" +: IndexDefinition.DATASETS_LANGUAGE_FIELDS).foldRight(queryDef) { (field, queryDef) =>
+          queryDef.field(field)
+        }
+      },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
       setToOption(query.formats)(seq => should(seq.map(formatQuery))),
       dateQueries(query.dateFrom, query.dateTo),

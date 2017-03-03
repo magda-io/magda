@@ -8,7 +8,7 @@ import au.csiro.data61.magda.model.misc.{ Format, Publisher }
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter }
+import com.sksamuel.elastic4s.analyzers.{ StopTokenFilter, CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter, StandardTokenizer, PredefinedTokenFilter, TokenFilter, StemmerTokenFilter, NamedStopTokenFilter }
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.{ TcpClient, ElasticDsl }
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
@@ -44,49 +44,76 @@ object IndexDefinition extends DefaultJsonProtocol {
   val DATASETS_TYPE_NAME = "datasets"
   val REGIONS_TYPE_NAME = "regions"
 
+  val DATASETS_LANGUAGE_FIELDS = Seq("title", "description", "publisher.name", "distributions.title", "distributions.description", "keyword", "theme")
+  val ASPECT_LANGUAGE_FIELDS = Seq("value")
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 17,
+    version = 18,
     definition = (overrideIndexName) =>
       create.index(overrideIndexName.getOrElse(dataSets.indexName))
         .indexSetting("recovery.initial_shards", 1)
         .indexSetting("requests.cache.enable", true)
         .mappings(
           mapping(DATASETS_TYPE_NAME).fields(
-            field("temporal").inner(
-              field("start").inner(
+            field("temporal", ObjectType).inner(
+              field("start", ObjectType).inner(
+                field("date", DateType),
                 field("text", TextType)
               ),
-              field("end").inner(
-                field("text").typed(TextType)
+              field("end", ObjectType).inner(
+                field("date", DateType),
+                field("text", TextType)
               )
             ),
-            field("publisher").inner(
-              field("name").typed(TextType).analyzer("english").fields(
-                field("untouched").typed(KeywordType).index("not_analyzed")
+            field("publisher", ObjectType).inner(
+              field("name", TextType).analyzer("english").fields(
+                field("untouched", KeywordType).analyzer("not_analyzed"),
+                field("not_analyzed", TextType)
               )
             ),
-            field("distributions").nested(
-              field("title").typed(TextType).analyzer("english"),
-              field("description").typed(TextType).analyzer("english"),
-              field("format").typed(TextType).fields(
-                field("untokenized").typed(KeywordType)
+            field("distributions", ObjectType).nested(
+              field("title", TextType).analyzer("english").fields(
+                field("not_analyzed", TextType)
+              ),
+              field("description", TextType).analyzer("english").fields(
+                field("not_analyzed", TextType)
+              ),
+              field("format", TextType).fields(
+                field("untokenized", KeywordType)
               )
             ),
-            field("spatial").inner(
-              field("geoJson").typed(GeoShapeType)
+            field("spatial", ObjectType).inner(
+              field("geoJson", GeoShapeType)
             ),
-            field("title").typed(TextType).analyzer("english"),
-            field("description").typed(TextType).analyzer("english"),
-            field("keyword").typed(TextType).analyzer("english"),
-            field("theme").typed(TextType).analyzer("english"),
-            field("years").typed(KeywordType)
+            field("title", TextType).analyzer("english").fields(
+              field("not_analyzed", TextType)
+            ),
+            field("description", TextType).analyzer("english").fields(
+              field("not_analyzed", TextType)
+            ),
+            field("keyword", TextType).analyzer("english").fields(
+              field("not_analyzed", TextType)
+            ),
+            field("theme", TextType).analyzer("english").fields(
+              field("not_analyzed", TextType)
+            ),
+            field("years", KeywordType)
           ),
-          mapping(Format.id),
-          mapping(Publisher.id)
-        ).analysis(CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter))
+          mapping(Format.id).fields(
+            field("value", TextType).analyzer("english").fields(
+              field("not_analyzed", TextType)
+            )),
+          mapping(Publisher.id).fields(
+            field("value", TextType).analyzer("english").fields(
+              field("not_analyzed", TextType)
+            ))
+        ).analysis(
+            CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter)
+          )
+
   )
 
+  val REGION_LANGUAGE_FIELDS = Seq("regionName")
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
@@ -96,12 +123,14 @@ object IndexDefinition extends DefaultJsonProtocol {
           .indexSetting("recovery.initial_shards", 1)
           .mappings(
             mapping(REGIONS_TYPE_NAME).fields(
-              field("regionType").typed(StringType),
-              field("regionId").typed(StringType),
-              field("regionName").typed(StringType),
-              field("boundingBox").typed(GeoShapeType),
-              field("geometry").typed(GeoShapeType),
-              field("order").typed(IntegerType)
+              field("regionType", KeywordType),
+              field("regionId", KeywordType),
+              field("regionName", TextType).analyzer("english").fields(
+                field("not_analyzed", TextType)
+              ),
+              field("boundingBox", GeoShapeType),
+              field("geometry", GeoShapeType),
+              field("order", IntegerType)
             )
           ),
       create = Some((client, config, materializer, actorSystem) => setupRegions(client)(config, materializer, actorSystem))
