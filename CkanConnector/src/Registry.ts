@@ -37,6 +37,10 @@ export default class Registry {
         this.recordsApi = new RecordsApi(registryApiUrl);
     }
 
+    getRecordUrl(id: string): string {
+        return this.baseUrl.clone().segment('api/0.1/records').segment(id).toString();
+    }
+
     putAspectDefinition(aspectDefinition: AspectDefinition): Promise<AspectDefinition | Error> {
         const operation = () => this.aspectDefinitionsApi.putById(aspectDefinition.id, aspectDefinition);
         return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to create aspect definition "${aspectDefinition.id}".`, e, retriesLeft)))

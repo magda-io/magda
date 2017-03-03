@@ -28,7 +28,7 @@ process.exit();
 
 const ckan = new Ckan({
     baseUrl: 'https://data.gov.au/',
-    pageSize: 10
+    pageSize: 1000
 });
 
 const registry = new Registry({
@@ -119,6 +119,6 @@ connector.run().then(result => {
     console.log('Distributions Connected: ' + result.distributionsConnected);
 
     if (result.errors.length > 0) {
-        console.log('Errors:\n' + result.errors.map(error => error.toString()).join('\n'));
+        console.log('Errors:\n' + JSON.stringify(result.errors, undefined, '  '));
     }
 });

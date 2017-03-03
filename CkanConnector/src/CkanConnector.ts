@@ -4,6 +4,7 @@ import Registry from './Registry';
 import AsyncPage, { forEachAsync } from './AsyncPage';
 import * as moment from 'moment';
 import createServiceError from './createServiceError';
+import * as URI from 'urijs';
 
 export interface AspectBuilder {
     aspectDefinition: AspectDefinition,
@@ -54,6 +55,14 @@ class BuilderFunctionLibraries {
      * @memberOf BuilderFunctionLibraries
      */
     moment: typeof moment = undefined;
+
+    /**
+     * The [URI.js](https://medialize.github.io/URI.js/) library.
+     *
+     * @type {typeof URI}
+     * @memberOf BuilderFunctionLibraries
+     */
+    URI: typeof URI = undefined;
 }
 
 class BuilderSetupFunctionParameters {
@@ -64,6 +73,14 @@ class BuilderSetupFunctionParameters {
      * @memberOf BuilderFunctionParameters
      */
     source: Ckan = undefined;
+
+    /**
+     * The registry to be populated with records created from the CKAN datasets and resources.
+     *
+     * @type {Registry}
+     * @memberOf BuilderSetupFunctionParameters
+     */
+    registry: Registry = undefined;
 
     /**
      * Provides access to utility libraries that may be helpful in setting up the builder.
@@ -94,6 +111,14 @@ abstract class BuilderFunctionParameters {
      * @memberOf BuilderFunctionParameters
      */
     source: Ckan = undefined;
+
+    /**
+     * The registry to be populated with records created from the CKAN datasets and resources.
+     *
+     * @type {Registry}
+     * @memberOf BuilderSetupFunctionParameters
+     */
+    registry: Registry = undefined;
 
     /**
      * Reports a non-fatal problem creating an aspect.
@@ -156,7 +181,7 @@ export class CkanConnectionResult {
     public aspectDefinitionsConnected: number = 0;
     public datasetsConnected: number = 0;
     public distributionsConnected: number = 0;
-    public errors: Error[] = [];
+    public errors: { aspectDefinitionId?: string, datasetId?: string, resourceId?: string, error: Error }[] = [];
 }
 
 export default class CkanConnector {
@@ -199,6 +224,7 @@ export default class CkanConnector {
 
         const libraries = new BuilderFunctionLibraries();
         libraries.moment = moment;
+        libraries.URI = URI;
 
         const setupParameters = new BuilderSetupFunctionParameters();
         setupParameters.libraries = libraries;
@@ -207,10 +233,12 @@ export default class CkanConnector {
         const datasetParameters = new DatasetBuilderFunctionParameters();
         datasetParameters.libraries = libraries;
         datasetParameters.source = this.ckan;
+        datasetParameters.registry = this.registry;
 
         const distributionParameters = new DistributionBuilderFunctionParameters();
         distributionParameters.libraries = libraries;
         distributionParameters.source = this.ckan;
+        distributionParameters.registry = this.registry;
 
         const datasetAspects = buildersToCompiledAspects(connectionResult, this.datasetAspectBuilders, setupParameters, datasetParameters);
         const distributionAspects = buildersToCompiledAspects(connectionResult, this.distributionAspectBuilders, setupParameters, distributionParameters);
@@ -224,7 +252,10 @@ export default class CkanConnector {
         await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectBuilder => {
             const aspectDefinitionOrError = await this.registry.putAspectDefinition(aspectBuilder.aspectDefinition);
             if (aspectDefinitionOrError instanceof Error) {
-                connectionResult.errors.push(aspectDefinitionOrError);
+                connectionResult.errors.push({
+                    aspectDefinitionId: aspectBuilder.aspectDefinition.id,
+                    error: aspectDefinitionOrError
+                });
             } else {
                 connectionResult.aspectDefinitionsConnected++;
             }
@@ -242,7 +273,11 @@ export default class CkanConnector {
             datasetParameters.dataset = dataset;
             const recordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, datasetAspects));
             if (recordOrError instanceof Error) {
-                connectionResult.errors.push(recordOrError);
+                connectionResult.errors.push({
+                    datasetId: dataset.id,
+                    resourceId: null,
+                    error: recordOrError
+                });
             } else {
                 ++connectionResult.datasetsConnected;
 
@@ -252,7 +287,11 @@ export default class CkanConnector {
                     distributionParameters.resource = resource;
                     const resourceRecordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, distributionAspects));
                     if (resourceRecordOrError instanceof Error) {
-                        connectionResult.errors.push(resourceRecordOrError);
+                        connectionResult.errors.push({
+                            datasetId: dataset.id,
+                            resourceId: resource.id,
+                            error: resourceRecordOrError
+                        });
                     } else {
                         ++connectionResult.distributionsConnected;
                     }

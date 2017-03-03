@@ -61,7 +61,7 @@ export default class Ckan {
         ignoreHarvestSources?: string[];
     }): AsyncPage<CkanPackageSearchResponse> {
         const url = this.apiBaseUrl.clone().segment('api/3/action/package_search');
-        
+
         if (options && options.ignoreHarvestSources && options.ignoreHarvestSources.length > 0) {
             const solrQueries = options.ignoreHarvestSources.map(title => `-harvest_source_title:${encodeURIComponent(title)}`);
             url.addSearch('fq', solrQueries.join('+'));
@@ -72,7 +72,7 @@ export default class Ckan {
         return AsyncPage.create<CkanPackageSearchResponse>(previous => {
             if (previous) {
                 startIndex += previous.result.results.length;
-                if (startIndex >= 250 /*previous.result.count*/) {
+                if (startIndex >= previous.result.count) {
                     return undefined;
                 }
             }
