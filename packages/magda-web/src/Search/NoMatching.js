@@ -13,7 +13,7 @@ export default class NoMatching extends Component {
       }
     } else {
       return <div className='no-matching'>
-              Sorry we can not find what you were looking for. Please try modify your search
+              Sorry, we can not find what you were looking for. Please try modifying your search.
             </div>
     }
   }
