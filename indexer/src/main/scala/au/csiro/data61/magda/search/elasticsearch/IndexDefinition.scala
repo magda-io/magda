@@ -90,7 +90,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 15,
+      version = 16,
       definition = (overrideIndexName) =>
         create.index(overrideIndexName.getOrElse(regions.indexName))
           .indexSetting("recovery.initial_shards", 1)
