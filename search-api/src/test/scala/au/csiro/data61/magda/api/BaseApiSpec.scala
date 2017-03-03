@@ -59,8 +59,11 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     val fakeRegionLoader = new RegionLoader {
       override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => indexedRegions.toIterator)
     }
-
+    
+    
+    logger.info("Setting up regions")
     IndexDefinition.setupRegions(client, fakeRegionLoader).await(60 seconds)
+    logger.info("Finished setting up regions")
   }
 
   def blockUntilNotRed(): Unit = {

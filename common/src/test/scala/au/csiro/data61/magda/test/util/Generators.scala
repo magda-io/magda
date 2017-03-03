@@ -45,6 +45,7 @@ import au.csiro.data61.magda.model.misc.Protocols._
 import scala.util.Try
 import org.locationtech.spatial4j.shape.jts.JtsGeometry
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
+import scala.annotation.tailrec
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -137,8 +138,18 @@ object Generators {
   }
 
   def listSizeBetween[T](min: Int, max: Int, gen: Gen[T]) = Gen.chooseNum(min, max).map { size =>
-    (for { i <- 1 to size } yield gen.sample).flatten
-  }.suchThat(_.size > min)
+    @tailrec
+    def generate(list: List[T]): List[T] = {
+      //      println("size " + list.size + "/" + size)
+      if (list.size == size) {
+        list
+      } else {
+        generate(gen.sample.toList ++ list)
+      }
+    }
+
+    generate(Nil)
+  }
 
   val regionSourceGen = cachedListGen(regionSourceGenInner, 3)
 
@@ -230,7 +241,7 @@ object Generators {
         case Some(cacheInner) =>
           Gen.const(cacheInner)
         case None =>
-          Gen.listOfN(size, gen).map { words =>
+          listSizeBetween(size, size, gen).map { words =>
             cache = Some(words)
             words
           }

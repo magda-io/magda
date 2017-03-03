@@ -140,21 +140,26 @@ object IndexDefinition extends DefaultJsonProtocol {
               val geometry = jsGeometry.convertTo[GeoJson.Geometry]
               val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
 
-              val simplified = TopologyPreservingSimplifier.simplify(jtsGeo, jtsGeo.getLength / 100)
+              val shortestSide = {
+                val env = jtsGeo.getEnvelopeInternal
+                Math.min(env.getWidth, env.getHeight)
+              }
+              val simplified = TopologyPreservingSimplifier.simplify(jtsGeo, shortestSide / 100)
 
-              def makePolygonValid(polygon: Polygon): Polygon = {
+              def removeInvalidHoles(polygon: Polygon): Polygon = {
                 val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
                 val filteredHoles = holes.filter(_.within(simplified))
                 new Polygon(polygon.getExteriorRing.asInstanceOf[LinearRing], filteredHoles.toArray, geometryFactory)
               }
 
+              // Remove holes that intersect the edge of the shape - TODO: Can we do something clever like use an intersection to trim the hole?
               val simplifiedFixed: Geometry = simplified.getGeometryType match {
                 case "Polygon" =>
                   val x = simplified.asInstanceOf[Polygon]
-                  makePolygonValid(x)
+                  removeInvalidHoles(x)
                 case "MultiPolygon" =>
                   val x = simplified.asInstanceOf[MultiPolygon]
-                  val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield makePolygonValid(x.getGeometryN(i).asInstanceOf[Polygon])
+                  val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield removeInvalidHoles(x.getGeometryN(i).asInstanceOf[Polygon])
                   new MultiPolygon(geometries.toArray, geometryFactory)
                 case _ => simplified
               }
@@ -187,11 +192,11 @@ object IndexDefinition extends DefaultJsonProtocol {
         client.execute(bulk(values))
       }
       .map { result =>
-        if (result.hasFailures) {
-          logger.error("Failure: {}", result.failureMessage)
-        }
+        result.failures.foreach(failure =>
+          logger.error("Failure: {}", failure.failureMessage)
+        )
 
-        result.items.length
+        result.successes.length
       }
       .recover {
         case e: Throwable =>

@@ -36,8 +36,11 @@ import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import org.locationtech.spatial4j.shape.jts.JtsGeometry
 import scala.util.Try
 import com.typesafe.config.Config
+import com.sksamuel.elastic4s.ElasticDsl
+import au.csiro.data61.magda.model.misc.Region
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionHitAs
 
-class RegionLoaderTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with ElasticSugar {
+class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with ElasticSugar {
   implicit val ec = system.dispatcher
 
   implicit val materializer = ActorMaterializer()
@@ -49,23 +52,28 @@ class RegionLoaderTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike w
     client.execute(IndexDefinition.regions.definition(None)).await
   }
 
-  ignore("should load fake things good") {
-    val dir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "magda-test")
-    implicit val config = ConfigFactory.parseMap(Map(
-      "regionLoading.cachePath" -> dir.getFileName.toFile().toString()
-    )).withFallback(AppConfig.conf(None))
+  it("should load scalacheck-generated regions reasonably accurately") {
+    try {
+      val dir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "magda-test")
+      implicit val config = ConfigFactory.parseMap(Map(
+        "regionLoading.cachePath" -> dir.getFileName.toFile().toString()
+      )).withFallback(AppConfig.conf(None))
 
-    forAll(Generators.nonEmptyListOf(Generators.regionGen(Generators.geometryGen(5, Generators.coordGen(Generators.longGen(), Generators.latGen()))))) { regions =>
-      val regionLoader = new RegionLoader {
-        def setupRegions() = Source.fromIterator(() => regions.iterator)
+      forAll(Generators.nonEmptyListOf(Generators.regionGen(Generators.geometryGen(5, Generators.coordGen(Generators.longGen(), Generators.latGen()))))) { regions =>
+        val regionLoader = new RegionLoader {
+          def setupRegions() = Source.fromIterator(() => regions.iterator)
+        }
+
+        checkRegionLoading(regionLoader, regions)
       }
-
-      checkRegionLoading(regionLoader, regions)
+    } catch {
+      case (e: Throwable) =>
+        e.printStackTrace()
+        throw e
     }
   }
 
-  // ignored because it involves downloading a big old file
-  it("should load real things good") {
+  it("should load real regions reasonably accurately") {
     def getCurrentDirectory = new java.io.File("./../regions")
     implicit val config = ConfigFactory.parseMap(Map(
       "regionLoading.cachePath" -> getCurrentDirectory.toString()
@@ -74,7 +82,7 @@ class RegionLoaderTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike w
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
 
-    val regionLoader = RegionLoader(regionSources.sources.filter(_.name.equals("LGA")).toList)
+    val regionLoader = RegionLoader(regionSources.sources.toList)
 
     val regions = regionLoader.setupRegions().runWith(Sink.fold(List[(RegionSource, JsObject)]()) { case (agg, current) => current :: agg }).await(120 seconds)
       .filter(!_._2.fields("geometry").equals(JsNull))
@@ -88,6 +96,9 @@ class RegionLoaderTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike w
     checkRegionLoading(regionLoader, regions)
   }
 
+  /**
+   * Checks that all regions have been indexed correctly, and that their simplified representation is reasonably (within 1%) close to the real thing.
+   */
   def checkRegionLoading(regionLoader: RegionLoader, regions: Seq[(RegionSource, JsObject)])(implicit config: Config) = {
     IndexDefinition.setupRegions(client, regionLoader).await(120 seconds)
     val indexName = indices.getIndex(config, Indices.RegionsIndex)
@@ -96,11 +107,10 @@ class RegionLoaderTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike w
     Thread.sleep(2000)
 
     regions.foreach { region =>
-      val regionId = region._1.name + "/" + region._2.fields("properties").asJsObject.fields(region._1.idProperty).asInstanceOf[JsString].value
+      val regionId = region._1.name.toLowerCase + "/" + region._2.fields("properties").asJsObject.fields(region._1.idProperty).asInstanceOf[JsString].value
       val inputGeometry = region._2.fields("geometry").convertTo[Geometry]
       val inputGeometryJts = inputGeometry.toJTSGeo
 
-      blockUntilDocumentExists(regionId, indexName, typeName)
       val result = client.execute(get(regionId).from(indexName / typeName)).await(60 seconds)
 
       withClue("region " + regionId) {
@@ -109,7 +119,16 @@ class RegionLoaderTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike w
         val indexedGeometry = result.sourceAsString.parseJson.asJsObject.fields("geometry").convertTo[Geometry]
         val indexedGeometryJts = indexedGeometry.toJTSGeo
 
-        withinFraction(indexedGeometryJts.getArea, inputGeometryJts.getArea, inputGeometryJts.getArea, 0.1)
+        def holeCount(geometry: Geometry): Int = geometry match {
+          case polygon: Polygon       => polygon.coordinates.tail.size
+          case MultiPolygon(polygons) => polygons.map(_.tail.size).reduce(_ + _)
+          case _                      => 0
+        }
+
+        // Hole elimination means that areas can be wildly different even if the outside of the shape is the same.
+        if (holeCount(indexedGeometry) == holeCount(inputGeometry)) {
+          withinFraction(indexedGeometryJts.getArea, inputGeometryJts.getArea, inputGeometryJts.getArea, 0.1)
+        }
 
         val inputRectangle = inputGeometryJts.getEnvelopeInternal
         val indexedRectangle = indexedGeometryJts.getEnvelopeInternal
@@ -127,7 +146,7 @@ class RegionLoaderTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike w
     if (comparison == 0) {
       left should equal(right)
     } else {
-      left should be(right +- Math.abs(comparison * fraction))
+      left should be(right +- Math.max(Math.abs(comparison * fraction), 0.01))
     }
   )
 }
