@@ -82,10 +82,11 @@ class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike 
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
 
-    val regionLoader = RegionLoader(regionSources.sources.toList)
+    val regionLoader = RegionLoader(regionSources.sources.filter(_.name.equals("STE")).toList)
 
     val regions = regionLoader.setupRegions().runWith(Sink.fold(List[(RegionSource, JsObject)]()) { case (agg, current) => current :: agg }).await(120 seconds)
       .filter(!_._2.fields("geometry").equals(JsNull))
+      .filter(!_._2.fields("geometry").isInstanceOf[JsObject])
       .filter(region => Try {
         val jts = region._2.fields("geometry").convertTo[Geometry].toJTSGeo
         new JtsGeometry(jts, JtsSpatialContext.GEO, false, false).validate()

@@ -3,7 +3,7 @@ package au.csiro.data61.magda.model
 import java.time.OffsetDateTime
 
 import com.monsanto.labs.mwundo.GeoJson._
-import com.monsanto.labs.mwundo.GeoJsonFormats._
+import au.csiro.data61.magda.model.GeoJsonFormats._
 
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
@@ -71,7 +71,7 @@ package misc {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
 
-//    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
+    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
   }
 
   case class Agent(
@@ -288,7 +288,7 @@ package misc {
 
     implicit object GeometryFormat extends JsonFormat[Geometry] {
       override def write(geometry: Geometry): JsValue = geometry match {
-        case point: Point           => PointFormat.write(point)
+        case point: Point           => GeoJsonFormats.PointFormat.write(point)
         case point: MultiPoint      => MultiPointFormat.write(point)
         case point: LineString      => LineStringFormat.write(point)
         case point: MultiLineString => MultiLineStringFormat.write(point)
@@ -307,6 +307,18 @@ package misc {
           case _                                 => deserializationError(s"'$json' is not a valid geojson shape")
         }
         case _ => deserializationError(s"'$json' is not a valid geojson shape")
+      }
+    }
+
+    implicit object CoordinateFormat extends JsonFormat[Coordinate] {
+      def write(obj: Coordinate): JsValue = JsArray(
+        JsNumber(obj.x),
+        JsNumber(obj.y)
+      )
+
+      def read(json: JsValue): Coordinate = json match {
+        case JsArray(is) =>
+          Coordinate(is(0).convertTo[BigDecimal], is(1).convertTo[BigDecimal])
       }
     }
 

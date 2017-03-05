@@ -135,8 +135,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           }
 
           val geometryOpt = jsonRegion.fields("geometry") match {
-            case JsNull => None
-            case jsGeometry =>
+            case (jsGeometry: JsObject) =>
               val geometry = jsGeometry.convertTo[GeoJson.Geometry]
               val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
 
@@ -165,6 +164,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               }
 
               Some(GeometryConverter.fromJTSGeo(simplifiedFixed))
+            case _ => None
           }
 
           geometryOpt.map(geometry =>
