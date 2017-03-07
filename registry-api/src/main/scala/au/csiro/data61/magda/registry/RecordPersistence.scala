@@ -12,30 +12,59 @@ import gnieh.diffson.sprayJson._
 
 object RecordPersistence extends Protocols with DiffsonProtocol {
   def getAll(implicit session: DBSession, pageToken: Option[String], limit: Option[Int]): Iterable[RecordSummary] = {
-    // How many records do we have total?
-    val count = sql"""select count(*) from Records""".map(_.int(1)).single.apply()
-    sql"""select Records.recordId as recordId,
+    sql"""select Records.sequence as sequence,
+                 Records.recordId as recordId,
                  Records.name as recordName,
-                 (select to_jsonb(array_agg(aspectId)) from RecordAspects where recordId=Records.recordId) as aspects
-         from Records
-         offset ${pageToken.getOrElse(0)}
-         limit ${limit.getOrElse(100)}"""
-        .map(rowToRecordSummary)
-        .list.apply()
-
-    // TODO: would it be better to skip the to_jsonb and work with the array_agg directly?
+                 (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId) as aspects
+          from Records
+          offset ${pageToken.getOrElse("0").toInt}
+          limit ${limit.getOrElse(100)}"""
+      .map(rowToRecordSummary)
+      .list.apply()
   }
 
-  def getAllWithAspects(implicit session: DBSession, aspectIds: Iterable[String], pageToken: Option[String], limit: Option[Int]): Iterable[Record] = {
-    tuplesToRecords(sql"""select recordId, Records.name as recordName, aspectId, Aspects.name as aspectName, data
-                          from Records
-                          left outer join RecordAspects using (recordId)
-                          left outer join Aspects using (aspectId)
-                          where aspectId in ($aspectIds)
-                          offset ${pageToken.getOrElse(0)}
-                          limit ${limit.getOrElse(100)}"""
-      .map(recordRowWithDataToTuple)
-      .list.apply())
+  def getAllWithAspects(implicit session: DBSession, aspectIds: Iterable[String], pageToken: Option[String] = None, limit: Option[Int] = None): RecordsPage = {
+    val whereClause = aspectIdsToWhereClause(aspectIds)
+    val totalCount = sql"""select count(*) from Records ${whereClause}""".map(_.int(1)).single.apply().getOrElse(0)
+
+    val pageResults =
+      sql"""select Records.sequence as sequence,
+                   Records.recordId as recordId,
+                   Records.name as recordName,
+                   ${aspectIdsToSelectClauses(aspectIds)}
+            from Records
+            ${whereClause}
+            offset ${pageToken.getOrElse("0").toInt}
+            limit ${limit.getOrElse(100)}"""
+        .map(rowToRecord(aspectIds))
+        .list.apply()
+
+    //val nextPageToken = pageResults.lastOption
+
+    RecordsPage(
+      totalCount,
+      "0",
+      pageResults
+    )
+  }
+
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String]) = {
+    aspectIds.zipWithIndex.map { case(aspectId, index) =>
+      // Use a simple numbered columnn name rather than trying to make the aspect name safe.
+      val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
+      sqls"""(select data from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
+    }
+  }
+
+  private def aspectIdsToWhereClause(aspectIds: Iterable[String]) = {
+    if (aspectIds.isEmpty)
+      SQLSyntax.empty
+    else
+      SQLSyntax.where(SQLSyntax.join(aspectIds.map(aspectIdToWhereClause).toSeq, SQLSyntax.and))
+  }
+
+  private def aspectIdToWhereClause(aspectId: String) = {
+    sqls"exists (select 1 from RecordAspects where RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=${aspectId})"
   }
 
   def getById(implicit session: DBSession, id: String): Option[Record] = {
@@ -243,7 +272,21 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       }
   }
 
-  private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = RecordSummary(rs.string("recordId"), rs.string("recordName"), JsonParser(rs.string("aspects")).asInstanceOf[JsArray].elements.map(_.asInstanceOf[JsString].value).toList)
+  private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = {
+      RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.array("aspects").getArray().asInstanceOf[Array[String]].toList)
+  }
+
+  private def rowToRecord(aspectIds: Iterable[String])(rs: WrappedResultSet): Record = {
+    Record(rs.string("recordId"), rs.string("recordName"),
+      aspectIds.zipWithIndex
+        .filter {
+          case (_, index) => rs.stringOpt(s"aspect${index}").isDefined
+        }
+        .map {
+          case (aspectId, index) => (aspectId, JsonParser(rs.string(s"aspect${index}")).asJsObject)
+        }
+        .toMap)
+  }
 
   private def tuplesToRecords(tuples: List[(String, String, String, String, Option[String])]): Iterable[Record] = {
     tuples.groupBy({ case (recordId, recordName, _, _, _) => (recordId, recordName) })
