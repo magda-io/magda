@@ -14,21 +14,37 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   val maxResultCount = 1000
   val defaultResultCount = 100
 
-  def getAll(implicit session: DBSession, pageToken: Option[String], limit: Option[Int]): Iterable[RecordSummary] = {
-    sql"""select Records.sequence as sequence,
-                 Records.recordId as recordId,
-                 Records.name as recordName,
-                 (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId) as aspects
-          from Records
-          offset ${pageToken.getOrElse("0").toInt}
-          limit ${limit.getOrElse(defaultResultCount)}"""
-      .map(rowToRecordSummary)
+  def getAll(implicit session: DBSession, pageToken: Option[String], limit: Option[Int]): RecordSummariesPage = {
+    val totalCount = sql"select count(*) from Records".map(_.int(1)).single.apply().getOrElse(0)
+
+    var lastSequence: Option[Long] = None
+
+    val pageResults =
+      sql"""select Records.sequence as sequence,
+                   Records.recordId as recordId,
+                   Records.name as recordName,
+                   (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId) as aspects
+            from Records
+            where sequence > ${pageToken.getOrElse("0").toLong}
+            order by sequence
+            limit ${limit.getOrElse(defaultResultCount)}"""
+      .map(rs => {
+        // Side-effectily track the sequence number of the very last result.
+        lastSequence = Some(rs.long("sequence"))
+        rowToRecordSummary(rs)
+      })
       .list.apply()
+
+    RecordSummariesPage(
+      totalCount,
+      lastSequence.map(_.toString),
+      pageResults
+    )
   }
 
   def getAllWithAspects(implicit session: DBSession, aspectIds: Iterable[String], pageToken: Option[String] = None, limit: Option[Int] = None): RecordsPage = {
     val whereClause = aspectIdsToWhereClause(aspectIds)
-    val totalCount = sql"""select count(*) from Records ${whereClause}""".map(_.int(1)).single.apply().getOrElse(0)
+    val totalCount = sql"select count(*) from Records ${whereClause}".map(_.int(1)).single.apply().getOrElse(0)
 
     var lastSequence: Option[Long] = None
 
