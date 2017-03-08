@@ -11,6 +11,9 @@ import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 
 object RecordPersistence extends Protocols with DiffsonProtocol {
+  val maxResultCount = 1000
+  val defaultResultCount = 100
+
   def getAll(implicit session: DBSession, pageToken: Option[String], limit: Option[Int]): Iterable[RecordSummary] = {
     sql"""select Records.sequence as sequence,
                  Records.recordId as recordId,
@@ -18,7 +21,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                  (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId) as aspects
           from Records
           offset ${pageToken.getOrElse("0").toInt}
-          limit ${limit.getOrElse(100)}"""
+          limit ${limit.getOrElse(defaultResultCount)}"""
       .map(rowToRecordSummary)
       .list.apply()
   }
@@ -37,7 +40,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
             from Records
             ${whereClause.and(sqls"Records.sequence > ${pageToken.getOrElse("0").toLong}")}
             order by Records.sequence
-            limit ${limit.getOrElse(100)}"""
+            limit ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)}"""
         .map(rs => {
           // Side-effectily track the sequence number of the very last result.
           lastSequence = Some(rs.long("sequence"))
