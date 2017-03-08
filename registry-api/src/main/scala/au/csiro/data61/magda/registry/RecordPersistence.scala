@@ -27,23 +27,27 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     val whereClause = aspectIdsToWhereClause(aspectIds)
     val totalCount = sql"""select count(*) from Records ${whereClause}""".map(_.int(1)).single.apply().getOrElse(0)
 
+    var lastSequence: Option[Long] = None
+
     val pageResults =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
                    ${aspectIdsToSelectClauses(aspectIds)}
             from Records
-            ${whereClause}
-            offset ${pageToken.getOrElse("0").toInt}
+            ${whereClause.and(sqls"Records.sequence > ${pageToken.getOrElse("0").toLong}")}
+            order by Records.sequence
             limit ${limit.getOrElse(100)}"""
-        .map(rowToRecord(aspectIds))
+        .map(rs => {
+          // Side-effectily track the sequence number of the very last result.
+          lastSequence = Some(rs.long("sequence"))
+          rowToRecord(aspectIds)(rs)
+        })
         .list.apply()
-
-    //val nextPageToken = pageResults.lastOption
 
     RecordsPage(
       totalCount,
-      "0",
+      lastSequence.map(_.toString),
       pageResults
     )
   }

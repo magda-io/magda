@@ -10,7 +10,7 @@ case class RecordsPage(
   totalCount: Int,
 
   @(ApiModelProperty @field)(value = "A token to be used to get the next page of records.", required = true)
-  nextPageToken: String,
+  nextPageToken: Option[String],
 
   @(ApiModelProperty @field)(value = "The records in this page.", required = true)
   records: Iterable[Record]
