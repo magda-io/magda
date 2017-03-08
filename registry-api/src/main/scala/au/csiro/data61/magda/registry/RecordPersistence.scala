@@ -25,7 +25,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                    Records.name as recordName,
                    (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId) as aspects
             from Records
-            where sequence > ${pageToken.getOrElse("0").toLong}
+            ${addPageTokenSelector(SQLSyntax.empty, pageToken)}
             order by sequence
             limit ${limit.getOrElse(defaultResultCount)}"""
       .map(rs => {
@@ -42,7 +42,11 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     )
   }
 
-  def getAllWithAspects(implicit session: DBSession, aspectIds: Iterable[String], pageToken: Option[String] = None, limit: Option[Int] = None): RecordsPage = {
+  def getAllWithAspects(implicit session: DBSession,
+                        aspectIds: Iterable[String],
+                        optionalAspectIds: Iterable[String],
+                        pageToken: Option[String] = None,
+                        limit: Option[Int] = None): RecordsPage = {
     val whereClause = aspectIdsToWhereClause(aspectIds)
     val totalCount = sql"select count(*) from Records ${whereClause}".map(_.int(1)).single.apply().getOrElse(0)
 
@@ -52,15 +56,15 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   ${aspectIdsToSelectClauses(aspectIds)}
+                   ${aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds))}
             from Records
-            ${whereClause.and(sqls"Records.sequence > ${pageToken.getOrElse("0").toLong}")}
+            ${addPageTokenSelector(whereClause, pageToken)}
             order by Records.sequence
             limit ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)}"""
         .map(rs => {
           // Side-effectily track the sequence number of the very last result.
           lastSequence = Some(rs.long("sequence"))
-          rowToRecord(aspectIds)(rs)
+          rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
         })
         .list.apply()
 
@@ -69,6 +73,12 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       lastSequence.map(_.toString),
       pageResults
     )
+  }
+
+  private def addPageTokenSelector(existingWhereClause: SQLSyntax, pageToken: Option[String]): SQLSyntax = {
+    val selector = sqls"Records.sequence > ${pageToken.getOrElse("0").toLong}"
+    if (existingWhereClause.isEmpty()) SQLSyntax.where(selector)
+    else existingWhereClause.and(selector)
   }
 
   private def aspectIdsToSelectClauses(aspectIds: Iterable[String]) = {

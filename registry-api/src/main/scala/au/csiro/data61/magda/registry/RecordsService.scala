@@ -22,10 +22,12 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have at least one of these aspects will be included in the response."),
     new ApiImplicitParam(name = "aspects", required = false, dataType = "string", paramType = "query", value = "The aspects for which to retrieve data, specified as a comma-separate list.  Only records that have at least one of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "optionalAspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
+    new ApiImplicitParam(name = "optionalAspects", required = false, dataType = "string", paramType = "query", value = "The optional aspects for which to retrieve data, specified as a comma-separate list.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
     new ApiImplicitParam(name = "pageToken", required = false, dataType = "string", paramType = "query", value = "A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."),
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.")
   ))
-  def getAll = get { pathEnd { parameters('aspect.*, "pageToken".?, "limit".as[Int].?) { getAllWithAspects } } }
+  def getAll = get { pathEnd { parameters('aspect.*, 'optionalAspect.*, 'aspects.?, 'optionalAspects.?, 'pageToken.?, 'limit.as[Int].?) { getAllWithAspects } } }
 
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
@@ -98,7 +100,6 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   } } }
 
   val route =
-    get { pathEnd { parameters('aspects, "pageToken".?, "limit".as[Int].?) { (aspects, pageToken, limit) => getAllWithAspects(aspects.split(",").map(_.trim), pageToken, limit) } } } ~
     getAll ~
     getById ~
     putById ~
@@ -106,13 +107,21 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
     create ~
     new RecordAspectsService(system, materializer).route
 
-  private def getAllWithAspects(aspects: Iterable[String], pageToken: Option[String], limit: Option[Int]) = {
+  private def getAllWithAspects(aspect: Iterable[String],
+                                optionalAspect: Iterable[String],
+                                aspects: Option[String],
+                                optionalAspects: Option[String],
+                                pageToken: Option[String],
+                                limit: Option[Int]) = {
+    val allAspects = List.concat(aspect, aspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
+    val allOptionalAspects = List.concat(optionalAspect, optionalAspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
+
     complete {
       DB readOnly { session =>
-        if (aspects.isEmpty)
+        if (allAspects.isEmpty && allOptionalAspects.isEmpty)
           RecordPersistence.getAll(session, pageToken, limit)
         else
-          RecordPersistence.getAllWithAspects(session, aspects, pageToken, limit)
+          RecordPersistence.getAllWithAspects(session, allAspects, allOptionalAspects, pageToken, limit)
       }
     }
   }
