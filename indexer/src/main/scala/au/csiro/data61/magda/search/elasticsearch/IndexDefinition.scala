@@ -35,8 +35,8 @@ import com.vividsolutions.jts.geom.Geometry
 case class IndexDefinition(
     name: String,
     version: Int,
-    definition: (Option[String]) => CreateIndexDefinition,
-    create: Option[(TcpClient, Config, Materializer, ActorSystem) => Future[Any]] = None) {
+    definition: (Indices, Config) => CreateIndexDefinition,
+    create: Option[(TcpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
   def indexName: String = this.name + this.version
 }
 
@@ -44,13 +44,11 @@ object IndexDefinition extends DefaultJsonProtocol {
   val DATASETS_TYPE_NAME = "datasets"
   val REGIONS_TYPE_NAME = "regions"
 
-  val DATASETS_LANGUAGE_FIELDS = Seq("title", "description", "publisher.name", "distributions.title", "distributions.description", "keyword", "theme")
-  val ASPECT_LANGUAGE_FIELDS = Seq("value")
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 18,
-    definition = (overrideIndexName) =>
-      create.index(overrideIndexName.getOrElse(dataSets.indexName))
+    definition = (indices, config) =>
+      create.index(indices.getIndex(config, Indices.DataSetsIndex))
         .indexSetting("recovery.initial_shards", 1)
         .indexSetting("requests.cache.enable", true)
         .mappings(
@@ -118,8 +116,8 @@ object IndexDefinition extends DefaultJsonProtocol {
     new IndexDefinition(
       name = "regions",
       version = 16,
-      definition = (overrideIndexName) =>
-        create.index(overrideIndexName.getOrElse(regions.indexName))
+      definition = (indices, config) =>
+        create.index(indices.getIndex(config, Indices.RegionsIndex))
           .indexSetting("recovery.initial_shards", 1)
           .mappings(
             mapping(REGIONS_TYPE_NAME).fields(
@@ -133,23 +131,23 @@ object IndexDefinition extends DefaultJsonProtocol {
               field("order", IntegerType)
             )
           ),
-      create = Some((client, config, materializer, actorSystem) => setupRegions(client)(config, materializer, actorSystem))
+      create = Some((client, indices, config) => (materializer, actorSystem) => setupRegions(client, indices)(config, materializer, actorSystem))
     )
 
   val indices = Seq(dataSets, regions)
 
-  def setupRegions(client: TcpClient)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: TcpClient, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
 
     val loader = RegionLoader(regionSources.sources.toList)
 
-    setupRegions(client, loader)
+    setupRegions(client, loader, indices)
   }
 
   implicit val geometryFactory = JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
-  def setupRegions(client: TcpClient, loader: RegionLoader)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: TcpClient, loader: RegionLoader, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     implicit val ec = system.dispatcher
     val logger = system.log
     loader.setupRegions
@@ -198,7 +196,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
           geometryOpt.map(geometry =>
             ElasticDsl.index
-              .into(IndexDefinition.regions.indexName / REGIONS_TYPE_NAME)
+              .into(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
               .id(generateRegionId(regionSource.name, id))
               .source(JsObject(
                 "regionType" -> JsString(regionSource.name),

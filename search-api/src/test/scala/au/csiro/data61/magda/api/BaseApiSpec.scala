@@ -32,8 +32,9 @@ import java.util.concurrent.ConcurrentHashMap
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.test.util.MagdaGeneratorTest
+import com.sksamuel.elastic4s.testkit.SharedElasticSugar
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with MagdaGeneratorTest {
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with SharedElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with MagdaGeneratorTest {
   override def testConfigSource = "akka.loglevel = WARN"
   val INSERTION_WAIT_TIME = 60 seconds
   val logger = Logging(system, getClass)
@@ -50,19 +51,21 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
 
   val cleanUpQueue = new ConcurrentLinkedQueue[String]()
   val indexedRegions = indexedRegionsGen.retryUntil(_ => true).sample.get
+  val regionsIndexName = java.util.UUID.randomUUID().toString
 
   override def beforeAll() {
+    val regionsIndices = new FakeIndices("")
+
     client.execute(
-      IndexDefinition.regions.definition(None)
+      IndexDefinition.regions.definition(regionsIndices, config)
     ).await
 
     val fakeRegionLoader = new RegionLoader {
       override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => indexedRegions.toIterator)
     }
-    
-    
+
     logger.info("Setting up regions")
-    IndexDefinition.setupRegions(client, fakeRegionLoader).await(60 seconds)
+    IndexDefinition.setupRegions(client, fakeRegionLoader, regionsIndices).await(60 seconds)
     logger.info("Finished setting up regions")
   }
 
@@ -112,7 +115,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   case class FakeIndices(rawIndexName: String) extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
       case Indices.DataSetsIndex => rawIndexName
-      case Indices.RegionsIndex  => DefaultIndices.getIndex(config, index)
+      case Indices.RegionsIndex  => regionsIndexName
     }
   }
 
@@ -198,7 +201,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     val fakeIndices = FakeIndices(rawIndexName)
 
     val indexName = fakeIndices.getIndex(config, Indices.DataSetsIndex)
-    client.execute(IndexDefinition.dataSets.definition(Some(indexName)).singleReplica().singleShard()).await
+    client.execute(IndexDefinition.dataSets.definition(fakeIndices, config).singleReplica().singleShard()).await
     blockUntilNotRed()
 
     //                implicit val thisConf = configWith(Map(s"elasticsearch.indexes.$rawIndexName.version" -> "1")).withFallback(config)

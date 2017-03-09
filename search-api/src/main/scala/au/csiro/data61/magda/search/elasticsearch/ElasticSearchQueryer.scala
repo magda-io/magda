@@ -56,6 +56,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   val REMOVE_REGEX = "(?i)((^|\\s)(AND|OR)(\\s|$)|[<>])".r
   val ESCAPE_AGG_NAME_REGEX = "[\\[\\]\\.]".r
 
+  val DATASETS_LANGUAGE_FIELDS = Seq("title", "description", "publisher.name", "distributions.title", "distributions.description", "keyword", "theme")
+  val ASPECT_LANGUAGE_FIELDS = Seq("value")
+
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
     val inputRegionsList = inputQuery.regions.toList
 
@@ -295,7 +298,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         val queryDef = new SimpleStringQueryDefinition(innerQuery)
           .defaultOperator(operator)
 
-        ("_all" +: IndexDefinition.DATASETS_LANGUAGE_FIELDS).foldRight(queryDef) { (field, queryDef) =>
+        ("_all" +: DATASETS_LANGUAGE_FIELDS).foldRight(queryDef) { (field, queryDef) =>
           queryDef.field(field)
         }
       },
@@ -360,15 +363,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client.execute(
-        ElasticDsl.search in indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType)
+        ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
           query { matchPhrasePrefixQuery("regionName", query) }
           start start.toInt
           limit limit
-          sort (
+          sortBy (
             fieldSort("order") order SortOrder.ASC,
             scoreSort order SortOrder.DESC
           )
-            sourceExclude "geometry"
+          sourceExclude "geometry"
       ).flatMap { response =>
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
@@ -381,7 +384,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: TcpClient): Future[Option[Region]] = {
     queryRegionFV match {
       case Specified(region) =>
-        client.execute(ElasticDsl.search in indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType)
+        client.execute(ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
           query { idsQuery((region.queryRegion.regionType + "/" + region.queryRegion.regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry")
           .flatMap { response =>
             response.totalHits match {

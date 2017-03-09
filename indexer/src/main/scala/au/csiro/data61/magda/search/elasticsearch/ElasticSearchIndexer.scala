@@ -198,7 +198,7 @@ class ElasticSearchIndexer(
       case RestoreFailure =>
         deleteIndex(client, definition)
           .flatMap { _ =>
-            client.execute(definition.definition(None))
+            client.execute(definition.definition(indices, config))
           } recover {
             case e: Throwable =>
               logger.error(e, "Failed to set up the index")
@@ -207,7 +207,7 @@ class ElasticSearchIndexer(
             logger.info("Index {} version {} created", definition.name, definition.version)
 
             definition.create match {
-              case Some(createFunc) => createFunc(client, config, materializer, system)
+              case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
                 .flatMap(_ =>
                   if (config.getBoolean("indexer.makeSnapshots"))
                     createSnapshot(client, definition)

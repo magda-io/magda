@@ -20,6 +20,7 @@ import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json.JsString
 import au.csiro.data61.magda.spatial.RegionSource
+import akka.http.scaladsl.server.Route
 
 class SearchSpec extends BaseApiSpec {
   val geoFactory = new GeometryFactory()
@@ -195,7 +196,6 @@ class SearchSpec extends BaseApiSpec {
 
         it(s"regardless of pluralization/depluralization") {
           def innerTermExtractor(dataSet: DataSet) = termExtractor(dataSet)
-            .filter(_.length > 2)
             .filterNot(_.matches("\\d+"))
             .map {
               case term if term.last.toLower.equals('s') => term.take(term.length - 1)
@@ -214,6 +214,7 @@ class SearchSpec extends BaseApiSpec {
 
               val tuples = indexedDataSets.flatMap { dataSet =>
                 val terms = getIndividualTerms(termExtractor(dataSet))
+                  .filter(_.length > 2)
                   .filterNot(term => Seq("and", "or", "").contains(term.trim))
 
                 if (!terms.isEmpty)
@@ -230,6 +231,21 @@ class SearchSpec extends BaseApiSpec {
               )
 
               x.map((indexName, _, routes))
+          }
+
+          // We don't want to shrink this kind of tuple at all ever.
+          implicit def dataSetStringShrinker(implicit s: Shrink[DataSet], s1: Shrink[String]): Shrink[(DataSet, String)] = Shrink[(DataSet, String)] {
+            case (string, dataSet) => Stream((string, dataSet))
+          }
+
+          // Make sure a shrink for the indexAndTerms gen simply shrinks the list of datasets
+          implicit def indexAndTermsShrinker(implicit s: Shrink[String], s1: Shrink[List[(DataSet, String)]], s2: Shrink[Route]): Shrink[(String, List[(DataSet, String)], Route)] = Shrink[(String, List[(DataSet, String)], Route)] {
+            case (indexName, terms, route) ⇒
+              Shrink.shrink(terms).map { shrunkTerms ⇒
+                val x = putDataSetsInIndex(shrunkTerms.map(_._1)).await(INSERTION_WAIT_TIME)
+
+                (x._1, shrunkTerms, x._3)
+              }
           }
 
           forAll(indexAndTermsGen) {

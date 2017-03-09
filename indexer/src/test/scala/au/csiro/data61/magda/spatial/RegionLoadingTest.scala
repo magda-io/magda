@@ -23,7 +23,6 @@ import akka.stream.scaladsl.Source
 import akka.testkit.TestKit
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.model.misc.Protocols._
-import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.search.elasticsearch.RegionLoader
@@ -39,17 +38,30 @@ import com.typesafe.config.Config
 import com.sksamuel.elastic4s.ElasticDsl
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionHitAs
+import org.scalactic.anyvals.PosInt
+import com.sksamuel.elastic4s.testkit.SharedElasticSugar
 
-class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with ElasticSugar {
+class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with SharedElasticSugar {
   implicit val ec = system.dispatcher
 
   implicit val materializer = ActorMaterializer()
-  val indices = DefaultIndices
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    PropertyCheckConfiguration(workers = PosInt.from(1).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)
+
+  val generatedConf = ConfigFactory.empty() // Can add specific config here.
+  implicit val config = generatedConf.withFallback(AppConfig.conf(Some("local")))
+
+  object fakeIndices extends Indices {
+    override def getIndex(config: Config, index: Indices.Index): String = index match {
+      case Indices.DataSetsIndex => throw new RuntimeException("Why are we here this is the regions test?")
+      case Indices.RegionsIndex  => "regions"
+    }
+  }
 
   override def beforeAll {
     super.beforeAll
 
-    client.execute(IndexDefinition.regions.definition(None)).await
+    client.execute(IndexDefinition.regions.definition(fakeIndices, config)).await
   }
 
   it("should load scalacheck-generated regions reasonably accurately") {
@@ -60,11 +72,13 @@ class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike 
       )).withFallback(AppConfig.conf(None))
 
       forAll(Generators.nonEmptyListOf(Generators.regionGen(Generators.geometryGen(5, Generators.coordGen(Generators.longGen(), Generators.latGen()))))) { regions =>
-        val regionLoader = new RegionLoader {
-          def setupRegions() = Source.fromIterator(() => regions.iterator)
-        }
+        whenever(!regions.isEmpty) {
+          val regionLoader = new RegionLoader {
+            def setupRegions() = Source.fromIterator(() => regions.iterator)
+          }
 
-        checkRegionLoading(regionLoader, regions)
+          checkRegionLoading(regionLoader, regions)
+        }
       }
     } catch {
       case (e: Throwable) =>
@@ -73,7 +87,7 @@ class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike 
     }
   }
 
-  it("should load real regions reasonably accurately") {
+  ignore("should load real regions reasonably accurately") {
     def getCurrentDirectory = new java.io.File("./../regions")
     implicit val config = ConfigFactory.parseMap(Map(
       "regionLoading.cachePath" -> getCurrentDirectory.toString()
@@ -82,7 +96,7 @@ class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike 
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
 
-    val regionLoader = RegionLoader(regionSources.sources.filter(_.name.equals("STE")).toList)
+    val regionLoader = RegionLoader(regionSources.sources.filter(_.name.equals("LGA")).toList)
 
     val regions = regionLoader.setupRegions().runWith(Sink.fold(List[(RegionSource, JsObject)]()) { case (agg, current) => current :: agg }).await(120 seconds)
       .filter(!_._2.fields("geometry").equals(JsNull))
@@ -101,10 +115,10 @@ class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike 
    * Checks that all regions have been indexed correctly, and that their simplified representation is reasonably (within 1%) close to the real thing.
    */
   def checkRegionLoading(regionLoader: RegionLoader, regions: Seq[(RegionSource, JsObject)])(implicit config: Config) = {
-    IndexDefinition.setupRegions(client, regionLoader).await(120 seconds)
-    val indexName = indices.getIndex(config, Indices.RegionsIndex)
-    val typeName = indices.getType(Indices.RegionsIndexType)
-    refreshAll()
+    IndexDefinition.setupRegions(client, regionLoader, fakeIndices).await(120 seconds)
+    val indexName = fakeIndices.getIndex(config, Indices.RegionsIndex)
+    val typeName = fakeIndices.getType(Indices.RegionsIndexType)
+    refresh(indexName)
     Thread.sleep(2000)
 
     regions.foreach { region =>
@@ -112,7 +126,7 @@ class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike 
       val inputGeometry = region._2.fields("geometry").convertTo[Geometry]
       val inputGeometryJts = inputGeometry.toJTSGeo
 
-      val result = client.execute(get(regionId).from(indexName / typeName)).await(60 seconds)
+      val result = client.execute(get(regionId).from(fakeIndices.getIndex(config, Indices.RegionsIndex) / fakeIndices.getType(Indices.RegionsIndexType))).await(60 seconds)
 
       withClue("region " + regionId) {
         result.exists should be(true)
