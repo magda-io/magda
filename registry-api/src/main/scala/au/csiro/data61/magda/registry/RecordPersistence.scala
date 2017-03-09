@@ -46,9 +46,16 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                         aspectIds: Iterable[String],
                         optionalAspectIds: Iterable[String],
                         pageToken: Option[String] = None,
-                        limit: Option[Int] = None): RecordsPage = {
+                        limit: Option[Int] = None,
+                        dereference: Option[Boolean] = None): RecordsPage = {
     val whereClause = aspectIdsToWhereClause(aspectIds)
     val totalCount = sql"select count(*) from Records ${whereClause}".map(_.int(1)).single.apply().getOrElse(0)
+
+    // If we're dereferencing links, we'll need to determine which fields of the selected aspects are links.
+    val dereferenceLinks = dereference.getOrElse(false)
+    if (dereferenceLinks) {
+
+    }
 
     var lastSequence: Option[Long] = None
 
@@ -82,10 +89,33 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   }
 
   private def aspectIdsToSelectClauses(aspectIds: Iterable[String]) = {
-    aspectIds.zipWithIndex.map { case(aspectId, index) =>
-      // Use a simple numbered columnn name rather than trying to make the aspect name safe.
-      val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
-      sqls"""(select data from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
+    aspectIds.zipWithIndex.map {
+      case("dataset-distributions", index) => {
+        val aspectId = "dataset-distributions"
+        // Use a simple numbered columnn name rather than trying to make the aspect name safe.
+        val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
+
+//        sqls"""(select
+//                  (select jsonb_set(RecordAspects.data, '{distributions}', jsonb_agg(
+//                      (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId)))
+//                   from Records
+//                   inner join jsonb_array_elements_text(RecordAspects.data->'distributions') as distributionId on distributionId=Records.recordId)
+//                from RecordAspects
+//                where aspectId='dataset-distributions' and recordId=Records.recordId) as ${aspectColumnName}"""
+
+        sqls"""(select
+                  (select jsonb_set(RecordAspects.data, '{distributions}', jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+                      (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId))))
+                   from Records
+                   inner join jsonb_array_elements_text(RecordAspects.data->'distributions') as distributionId on distributionId=Records.recordId)
+                from RecordAspects
+                where aspectId='dataset-distributions' and recordId=Records.recordId) as ${aspectColumnName}"""
+      }
+      case(aspectId, index) => {
+        // Use a simple numbered columnn name rather than trying to make the aspect name safe.
+        val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
+        sqls"""(select data from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
+      }
     }
   }
 

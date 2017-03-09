@@ -25,9 +25,10 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
     new ApiImplicitParam(name = "optionalAspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
     new ApiImplicitParam(name = "optionalAspects", required = false, dataType = "string", paramType = "query", value = "The optional aspects for which to retrieve data, specified as a comma-separate list.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
     new ApiImplicitParam(name = "pageToken", required = false, dataType = "string", paramType = "query", value = "A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."),
-    new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.")
+    new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."),
+    new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.")
   ))
-  def getAll = get { pathEnd { parameters('aspect.*, 'optionalAspect.*, 'aspects.?, 'optionalAspects.?, 'pageToken.?, 'limit.as[Int].?) { getAllWithAspects } } }
+  def getAll = get { pathEnd { parameters('aspect.*, 'optionalAspect.*, 'aspects.?, 'optionalAspects.?, 'pageToken.?, 'limit.as[Int].?, 'dereference.as[Boolean].?) { getAllWithAspects } } }
 
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
@@ -112,7 +113,8 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
                                 aspects: Option[String],
                                 optionalAspects: Option[String],
                                 pageToken: Option[String],
-                                limit: Option[Int]) = {
+                                limit: Option[Int],
+                                dereference: Option[Boolean]) = {
     val allAspects = List.concat(aspect, aspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
     val allOptionalAspects = List.concat(optionalAspect, optionalAspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
 
@@ -121,7 +123,7 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
         if (allAspects.isEmpty && allOptionalAspects.isEmpty)
           RecordPersistence.getAll(session, pageToken, limit)
         else
-          RecordPersistence.getAllWithAspects(session, allAspects, allOptionalAspects, pageToken, limit)
+          RecordPersistence.getAllWithAspects(session, allAspects, allOptionalAspects, pageToken, limit, dereference)
       }
     }
   }
