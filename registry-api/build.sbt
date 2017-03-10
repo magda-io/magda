@@ -22,6 +22,7 @@ libraryDependencies ++= {
     "io.circe" %% "circe-generic" % "0.5.3",
     "io.circe" %% "circe-java8" % "0.5.3",
     "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.9.1",
-    "org.gnieh" %% "diffson-spray-json" % "2.1.2"
+    "org.gnieh" %% "diffson-spray-json" % "2.1.2",
+    "net.virtual-void" %%  "json-lenses" % "0.6.2"
   )
 }

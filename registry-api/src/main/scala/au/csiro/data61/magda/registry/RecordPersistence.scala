@@ -2,6 +2,7 @@ package au.csiro.data61.magda.registry
 
 import scalikejdbc._
 import spray.json._
+import spray.json.lenses.JsonLenses._
 
 import scala.util.Try
 import scala.util.{Failure, Success}
@@ -9,6 +10,7 @@ import java.sql.SQLException
 
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
+
 
 object RecordPersistence extends Protocols with DiffsonProtocol {
   val maxResultCount = 1000
@@ -53,8 +55,11 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
 
     // If we're dereferencing links, we'll need to determine which fields of the selected aspects are links.
     val dereferenceLinks = dereference.getOrElse(false)
-    if (dereferenceLinks) {
 
+    val dereferenceDetails = if (dereferenceLinks) {
+      buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
+    } else {
+      Map[String, String]()
     }
 
     var lastSequence: Option[Long] = None
@@ -63,7 +68,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   ${aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds))}
+                   ${aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)}
             from Records
             ${addPageTokenSelector(whereClause, pageToken)}
             order by Records.sequence
@@ -82,40 +87,54 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     )
   }
 
+  private def buildDereferenceMap(implicit session: DBSession, aspectIds: Iterable[String]) = {
+    val aspects = sql"""select aspectId, jsonSchema
+          from Aspects
+          where aspectId in (${aspectIds})"""
+      .map(rs => (rs.string("aspectId"), JsonParser(rs.string("jsonSchema")).asJsObject))
+      .list.apply()
+
+    aspects.map { case(aspectId, jsonSchema) =>
+        // This aspect can only have links if it uses hyper-schema
+        if (jsonSchema.fields.getOrElse("$schema", JsString("")).toString().contains("hyper-schema")) {
+          // TODO: support multiple linked properties in an aspect.
+
+          val properties = jsonSchema.fields.get("properties").map { case JsObject(properties) => properties }.getOrElse(Map())
+          val propertyWithLinks = properties.filter { case (_, property) =>
+            val matchingLinks = property.extract[JsValue]('items.? / 'links.? / filter { value =>
+              val relPredicate = 'rel.is[String](_ == "item")
+              val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
+              relPredicate(value) && hrefPredicate(value)
+            })
+            !matchingLinks.isEmpty
+          }.headOption
+
+          propertyWithLinks.map {
+            case (propertyName, _) => aspectId -> propertyName
+          }
+        } else {
+          None
+        }
+    }.filter(!_.isEmpty).map(_.get).toMap
+  }
+
   private def addPageTokenSelector(existingWhereClause: SQLSyntax, pageToken: Option[String]): SQLSyntax = {
     val selector = sqls"Records.sequence > ${pageToken.getOrElse("0").toLong}"
     if (existingWhereClause.isEmpty()) SQLSyntax.where(selector)
     else existingWhereClause.and(selector)
   }
 
-  private def aspectIdsToSelectClauses(aspectIds: Iterable[String]) = {
-    aspectIds.zipWithIndex.map {
-      case("dataset-distributions", index) => {
-        val aspectId = "dataset-distributions"
-        // Use a simple numbered columnn name rather than trying to make the aspect name safe.
-        val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
-
-//        sqls"""(select
-//                  (select jsonb_set(RecordAspects.data, '{distributions}', jsonb_agg(
-//                      (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId)))
-//                   from Records
-//                   inner join jsonb_array_elements_text(RecordAspects.data->'distributions') as distributionId on distributionId=Records.recordId)
-//                from RecordAspects
-//                where aspectId='dataset-distributions' and recordId=Records.recordId) as ${aspectColumnName}"""
-
-        sqls"""(select
-                  (select jsonb_set(RecordAspects.data, '{distributions}', jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
-                      (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId))))
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, String]) = {
+    aspectIds.zipWithIndex.map { case(aspectId, index) =>
+      // Use a simple numbered column name rather than trying to make the aspect name safe.
+      val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
+      val selection = dereferenceDetails.get(aspectId).map(propertyName => {
+        sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+                  (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId))))
                    from Records
-                   inner join jsonb_array_elements_text(RecordAspects.data->'distributions') as distributionId on distributionId=Records.recordId)
-                from RecordAspects
-                where aspectId='dataset-distributions' and recordId=Records.recordId) as ${aspectColumnName}"""
-      }
-      case(aspectId, index) => {
-        // Use a simple numbered columnn name rather than trying to make the aspect name safe.
-        val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
-        sqls"""(select data from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
-      }
+                   inner join jsonb_array_elements_text(RecordAspects.data->${propertyName}) as aggregatedId on aggregatedId=Records.recordId)"""
+      }).getOrElse(sqls"data")
+     sqls"""(select ${selection} from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
     }
   }
 
