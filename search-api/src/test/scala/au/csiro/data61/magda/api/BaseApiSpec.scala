@@ -50,27 +50,22 @@ import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.test.util.MagdaGeneratorTest
 import spray.json.JsObject
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
+import au.csiro.data61.magda.test.util.TestActorSystem
+
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with SharedElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with MagdaGeneratorTest {
   val INSERTION_WAIT_TIME = 90 seconds
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
   val indexedRegions = BaseApiSpec.indexedRegions
+  implicit val config = TestActorSystem.config
 
-  implicit val config = ConfigFactory.parseString("""
-    akka {
-      loglevel = "ERROR"
-    }
-  """).withFallback(AppConfig.conf(Some("local")))
-  override def createActorSystem(): ActorSystem =
-    ActorSystem(actorSystemNameFrom(getClass), config)
+  override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
 
   val logger = Logging(system, getClass)
 
   implicit object MockClientProvider extends ClientProvider {
     override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient] = Future(client)
   }
-
-  println("info: " + config.getString("akka.loglevel"))
 
   val cleanUpQueue = new ConcurrentLinkedQueue[String]()
 

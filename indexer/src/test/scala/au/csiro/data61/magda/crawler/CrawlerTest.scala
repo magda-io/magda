@@ -21,8 +21,9 @@ import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.test.util.IndexerGenerators
 import au.csiro.data61.magda.test.util.MagdaGeneratorTest
+import au.csiro.data61.magda.test.util.TestActorSystem
 
-class CrawlerTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest {
+class CrawlerTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest {
   implicit val ec = system.dispatcher
   implicit val config = AppConfig.conf(None)
   implicit val materializer = ActorMaterializer()

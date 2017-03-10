@@ -40,21 +40,16 @@ import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionHitAs
 import org.scalactic.anyvals.PosInt
 import com.sksamuel.elastic4s.testkit.SharedElasticSugar
+import au.csiro.data61.magda.test.util.TestActorSystem
 
-object RegionLoadingTest {
-  val config = ConfigFactory.parseMap(Map(
-    "akka.loglevel" -> "ERROR"
-  )).withFallback(AppConfig.conf(Some("local")))
-}
-
-class RegionLoadingTest extends TestKit(ActorSystem("RegionLoadingTest", RegionLoadingTest.config)) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with SharedElasticSugar {
+class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with SharedElasticSugar {
   implicit val ec = system.dispatcher
 
   implicit val materializer = ActorMaterializer()
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(workers = PosInt(1), sizeRange = PosInt(50), minSuccessful = PosInt(10)) // This is a super heavy test so do 10 only, one-at-a-time
 
-  implicit val config = RegionLoadingTest.config
+  implicit val config = TestActorSystem.config
 
   object fakeIndices extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
