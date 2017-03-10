@@ -22,10 +22,10 @@ import spray.json.JsString
 import au.csiro.data61.magda.spatial.RegionSource
 import akka.http.scaladsl.server.Route
 
-class SearchSpec extends BaseApiSpec {
-  val geoFactory = new GeometryFactory()
+class DataSetSearchSpec extends BaseApiSpec {
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {
+      val geoFactory = new GeometryFactory()
       forAll(regionGen(geometryGen(5, coordGen()))) { regionRaw =>
         val preConversion = regionRaw._2.fields("geometry").convertTo[Geometry]
 
@@ -155,113 +155,6 @@ class SearchSpec extends BaseApiSpec {
                 allValid should be(true)
               }
             }
-          }
-        }
-      }
-    }
-
-    describe("should return the right dataset when searching for that dataset's") {
-      describe("title") {
-        testSearchForDataSetContents(dataSet => dataSet.title.toSeq)
-      }
-
-      describe("description") {
-        testSearchForDataSetContents(dataSet => dataSet.description.toSeq)
-      }
-
-      describe("keywords") {
-        testSearchForDataSetContents(dataSet => dataSet.keyword)
-      }
-
-      describe("publisher name") {
-        testSearchForDataSetContents(dataSet => dataSet.publisher.toSeq.flatMap(_.name.toSeq))
-      }
-
-      describe("distribution title") {
-        testSearchForDataSetContents(dataSet => dataSet.distributions.map(_.title))
-      }
-
-      describe("distribution description") {
-        testSearchForDataSetContents(dataSet => dataSet.distributions.flatMap(_.description.toSeq))
-      }
-
-      describe("theme") {
-        testSearchForDataSetContents(dataSet => dataSet.theme)
-      }
-
-      def testSearchForDataSetContents(termExtractor: DataSet => Seq[String]) = {
-        it("when searching for it directly") {
-          doTest(termExtractor)
-        }
-
-        it(s"regardless of pluralization/depluralization") {
-          def innerTermExtractor(dataSet: DataSet) = termExtractor(dataSet)
-            .filterNot(_.matches("\\d+"))
-            .map {
-              case term if term.last.toLower.equals('s') => term.take(term.length - 1)
-              case term                                  => term + "s"
-            }
-
-          doTest(innerTermExtractor)
-        }
-
-        def doTest(innerTermExtractor: DataSet => Seq[String]) = {
-          def getIndividualTerms(terms: Seq[String]) = terms.flatMap(term => term +: term.split(" "))
-
-          val indexAndTermsGen = indexGen.flatMap {
-            case (indexName, dataSetsRaw, routes) ⇒
-              val indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ termExtractor(dataSet).isEmpty)
-
-              val tuples = indexedDataSets.flatMap { dataSet =>
-                val terms = getIndividualTerms(termExtractor(dataSet))
-                  .filter(_.length > 2)
-                  .filterNot(term => Seq("and", "or", "").contains(term.trim))
-
-                if (!terms.isEmpty)
-                  Seq(Gen.oneOf(terms).map((dataSet, _)))
-                else
-                  Nil
-              }
-
-              val x = tuples.foldRight(Gen.const(List[(DataSet, String)]()))((soFar, current) =>
-                for {
-                  currentInner <- current
-                  list <- soFar
-                } yield currentInner :+ list
-              )
-
-              x.map((indexName, _, routes))
-          }
-
-          // We don't want to shrink this kind of tuple at all ever.
-          implicit def dataSetStringShrinker(implicit s: Shrink[DataSet], s1: Shrink[String]): Shrink[(DataSet, String)] = Shrink[(DataSet, String)] {
-            case (string, dataSet) => Stream((string, dataSet))
-          }
-
-          // Make sure a shrink for the indexAndTerms gen simply shrinks the list of datasets
-          implicit def indexAndTermsShrinker(implicit s: Shrink[String], s1: Shrink[List[(DataSet, String)]], s2: Shrink[Route]): Shrink[(String, List[(DataSet, String)], Route)] = Shrink[(String, List[(DataSet, String)], Route)] {
-            case (indexName, terms, route) ⇒
-              Shrink.shrink(terms).map { shrunkTerms ⇒
-                val x = putDataSetsInIndex(shrunkTerms.map(_._1)).await(INSERTION_WAIT_TIME)
-
-                (x._1, shrunkTerms, x._3)
-              }
-          }
-
-          forAll(indexAndTermsGen) {
-            case (indexName, tuples, routes) =>
-              whenever(!tuples.isEmpty) {
-                tuples.foreach {
-                  case (dataSet, term) =>
-                    Get(s"""/datasets/search?query=${encodeForUrl(s""""$term"""")}&limit=${tuples.size}""") ~> routes ~> check {
-                      status shouldBe OK
-                      val result = responseAs[SearchResult]
-                      withClue(s"term: ${term} and identifier: ${dataSet.identifier} in ${tuples.map(_._1).map(termExtractor).mkString(", ")}") {
-                        result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
-                      }
-                    }
-                }
-              }
           }
         }
       }

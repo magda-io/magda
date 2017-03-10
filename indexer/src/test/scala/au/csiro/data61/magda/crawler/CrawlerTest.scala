@@ -51,6 +51,7 @@ class CrawlerTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike with B
           }
           def snapshot(): Future[Unit] = Future(Unit)
           def needsReindexing(source: InterfaceConfig): Future[Boolean] = Future(true)
+          def ready() = Future(Unit)
         }
 
         val crawler = Crawler(externalInterfaces)

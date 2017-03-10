@@ -115,7 +115,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       strategy = Some(strategy),
       query = query,
       hitCount = response.getHits.totalHits().toInt,
-      dataSets = response.to[DataSet].toList,
+      dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
       facets = Some(FacetType.all.map { facetType =>
         val definition = facetDefForType(facetType)
 
@@ -371,7 +371,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             fieldSort("order") order SortOrder.ASC,
             scoreSort order SortOrder.DESC
           )
-          sourceExclude "geometry"
+            sourceExclude "geometry"
       ).flatMap { response =>
           response.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more

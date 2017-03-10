@@ -178,10 +178,6 @@ object ApiGenerators {
     }
   }.mkString
 
-  val apiDataSetGen = dataSetGen.map(dataSet => dataSet.copy(
-    years = ElasticSearchIndexer.getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
-  ))
-
   val INDEXED_REGIONS_COUNT = 12
   val indexedRegionsGen = cachedListGen(regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)
 }

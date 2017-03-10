@@ -52,10 +52,6 @@ spec:
           value: "false"
         - name: HTTP_ENABLE
           value: "true"
-        - name: NUMBER_OF_SHARDS
-          value: "3"
-        - name: NUMBER_OF_REPLICAS
-          value: "4"
         - name: ES_JAVA_OPTS
           value: "-Xms900m -Xmx900m"
         ports:

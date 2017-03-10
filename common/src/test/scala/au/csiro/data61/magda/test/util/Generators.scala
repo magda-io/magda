@@ -140,8 +140,9 @@ object Generators {
   def listSizeBetween[T](min: Int, max: Int, gen: Gen[T]) = Gen.chooseNum(min, max).map { size =>
     @tailrec
     def generate(list: List[T]): List[T] = {
-      //      println("size " + list.size + "/" + size)
-      if (list.size == size) {
+
+      //      println("size " + list.size + "/" + max)
+      if (list.size >= size) {
         list
       } else {
         generate(gen.sample.toList ++ list)
@@ -307,7 +308,7 @@ object Generators {
       incrementer.incrementAndGet()
     }
     title <- someBiasedOption(Gen.alphaNumStr)
-    catalog <- arbitrary[String]
+//    catalog <- listSizeBetween(1, 100, Gen.alphaNumChar).map(_.mkString)
     description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
@@ -323,7 +324,7 @@ object Generators {
     landingPage <- someBiasedOption(arbitrary[String])
   } yield DataSet(
     identifier = identifier.toString,
-    catalog = catalog,
+    catalog = "test-catalog",
     title = title,
     description = description,
     issued = issued,

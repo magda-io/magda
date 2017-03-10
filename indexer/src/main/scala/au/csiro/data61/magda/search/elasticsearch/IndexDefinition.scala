@@ -35,9 +35,9 @@ import com.vividsolutions.jts.geom.Geometry
 case class IndexDefinition(
     name: String,
     version: Int,
+    indicesIndex: Indices.Index,
     definition: (Indices, Config) => CreateIndexDefinition,
     create: Option[(TcpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
-  def indexName: String = this.name + this.version
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
@@ -47,12 +47,13 @@ object IndexDefinition extends DefaultJsonProtocol {
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 18,
+    indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) =>
       create.index(indices.getIndex(config, Indices.DataSetsIndex))
-        .indexSetting("recovery.initial_shards", 1)
-        .indexSetting("requests.cache.enable", true)
+        .shards(config.getInt("elasticSearch.shardCount"))
+        .replicas(config.getInt("elasticSearch.replicaCount"))
         .mappings(
-          mapping(DATASETS_TYPE_NAME).fields(
+          mapping(indices.getType(Indices.DataSetsIndexType)).fields(
             field("temporal", ObjectType).inner(
               field("start", ObjectType).inner(
                 field("date", DateType),
@@ -116,9 +117,11 @@ object IndexDefinition extends DefaultJsonProtocol {
     new IndexDefinition(
       name = "regions",
       version = 16,
+      indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
         create.index(indices.getIndex(config, Indices.RegionsIndex))
-          .indexSetting("recovery.initial_shards", 1)
+          .shards(config.getInt("elasticSearch.shardCount"))
+          .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(
             mapping(REGIONS_TYPE_NAME).fields(
               field("regionType", KeywordType),

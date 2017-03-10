@@ -41,15 +41,20 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionH
 import org.scalactic.anyvals.PosInt
 import com.sksamuel.elastic4s.testkit.SharedElasticSugar
 
-class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with SharedElasticSugar {
+object RegionLoadingTest {
+  val config = ConfigFactory.parseMap(Map(
+    "akka.loglevel" -> "ERROR"
+  )).withFallback(AppConfig.conf(Some("local")))
+}
+
+class RegionLoadingTest extends TestKit(ActorSystem("RegionLoadingTest", RegionLoadingTest.config)) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with SharedElasticSugar {
   implicit val ec = system.dispatcher
 
   implicit val materializer = ActorMaterializer()
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    PropertyCheckConfiguration(workers = PosInt.from(1).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)
+    PropertyCheckConfiguration(workers = PosInt(1), sizeRange = PosInt(50), minSuccessful = PosInt(10)) // This is a super heavy test so do 10 only, one-at-a-time
 
-  val generatedConf = ConfigFactory.empty() // Can add specific config here.
-  implicit val config = generatedConf.withFallback(AppConfig.conf(Some("local")))
+  implicit val config = RegionLoadingTest.config
 
   object fakeIndices extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
@@ -65,25 +70,19 @@ class RegionLoadingTest extends TestKit(ActorSystem("MySpec")) with FunSpecLike 
   }
 
   it("should load scalacheck-generated regions reasonably accurately") {
-    try {
-      val dir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "magda-test")
-      implicit val config = ConfigFactory.parseMap(Map(
-        "regionLoading.cachePath" -> dir.getFileName.toFile().toString()
-      )).withFallback(AppConfig.conf(None))
+    val dir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "magda-test")
+    implicit val config = ConfigFactory.parseMap(Map(
+      "regionLoading.cachePath" -> dir.getFileName.toFile().toString()
+    )).withFallback(AppConfig.conf(None))
 
-      forAll(Generators.nonEmptyListOf(Generators.regionGen(Generators.geometryGen(5, Generators.coordGen(Generators.longGen(), Generators.latGen()))))) { regions =>
-        whenever(!regions.isEmpty) {
-          val regionLoader = new RegionLoader {
-            def setupRegions() = Source.fromIterator(() => regions.iterator)
-          }
-
-          checkRegionLoading(regionLoader, regions)
+    forAll(Generators.nonEmptyListOf(Generators.regionGen(Generators.geometryGen(5, Generators.coordGen(Generators.longGen(), Generators.latGen()))))) { regions =>
+      whenever(!regions.isEmpty) {
+        val regionLoader = new RegionLoader {
+          def setupRegions() = Source.fromIterator(() => regions.iterator)
         }
+
+        checkRegionLoading(regionLoader, regions)
       }
-    } catch {
-      case (e: Throwable) =>
-        e.printStackTrace()
-        throw e
     }
   }
 

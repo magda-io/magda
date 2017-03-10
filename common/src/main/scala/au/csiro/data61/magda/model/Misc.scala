@@ -3,10 +3,10 @@ package au.csiro.data61.magda.model
 import java.time.OffsetDateTime
 
 import com.monsanto.labs.mwundo.GeoJson._
-import au.csiro.data61.magda.model.GeoJsonFormats._
 
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
+import au.csiro.data61.magda.model.GeoJsonFormats._
 import au.csiro.data61.magda.model.temporal._
 import spray.json._
 
@@ -71,7 +71,7 @@ package misc {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
 
-    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
+    //    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
   }
 
   case class Agent(
@@ -378,7 +378,6 @@ package misc {
   }
 
   object Protocols extends Protocols {
-
   }
 
 }

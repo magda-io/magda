@@ -27,11 +27,12 @@ lazy val registryApi = (project in file("registry-api"))
   .dependsOn(common)
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
   
-// removing because it's not compiling and being redeveloped in node, if we need it again uncomment
-//lazy val ckanConnector = (project in file("ckan-connector"))
-//  .settings(commonSettings: _*)
-//  .dependsOn(common)
-//  .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
+// removing because it's not compiling and being redeveloped in node, if we need
+// it again uncomment
+// lazy val ckanConnector = (project in file("ckan-connector"))
+// .settings(commonSettings: _*)
+// .dependsOn(common)
+// .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
@@ -44,5 +45,5 @@ targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
 variables in EditSource += ("version", version.value)
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
-sbt.Keys.fork in Test := false
-javaOptions in (Test) ++= Seq("-Xms2048M", "-Xmx2048M", "-XX:+CMSClassUnloadingEnabled")
+// sbt.Keys.fork in Test := false
+javaOptions in (Test) ++= Seq("-Xms3500M", "-Xmx3500M", "-XX:+CMSClassUnloadingEnabled")
