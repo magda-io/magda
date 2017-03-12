@@ -59,7 +59,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     val dereferenceDetails = if (dereferenceLinks) {
       buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
     } else {
-      Map[String, String]()
+      Map[String, PropertyWithLink]()
     }
 
     var lastSequence: Option[Long] = None
@@ -99,19 +99,34 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         if (jsonSchema.fields.getOrElse("$schema", JsString("")).toString().contains("hyper-schema")) {
           // TODO: support multiple linked properties in an aspect.
 
-          val properties = jsonSchema.fields.get("properties").map { case JsObject(properties) => properties }.getOrElse(Map())
-          val propertyWithLinks = properties.filter { case (_, property) =>
-            val matchingLinks = property.extract[JsValue]('items.? / 'links.? / filter { value =>
+          val properties = jsonSchema.fields.get("properties").flatMap {
+            case JsObject(properties) => Some(properties)
+            case _ => None
+          }.getOrElse(Map())
+
+          val propertyWithLinks = properties.map { case (propertyName, property) =>
+            val linksInProperties = property.extract[JsValue]('links.? / filter { value =>
               val relPredicate = 'rel.is[String](_ == "item")
               val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
               relPredicate(value) && hrefPredicate(value)
             })
-            !matchingLinks.isEmpty
-          }.headOption
 
-          propertyWithLinks.map {
-            case (propertyName, _) => aspectId -> propertyName
-          }
+            val linksInItems = property.extract[JsValue]('items.? / 'links.? / filter { value =>
+              val relPredicate = 'rel.is[String](_ == "item")
+              val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
+              relPredicate(value) && hrefPredicate(value)
+            })
+
+            if (!linksInProperties.isEmpty) {
+              Some(PropertyWithLink(propertyName, false))
+            } else if (!linksInItems.isEmpty) {
+              Some(PropertyWithLink(propertyName, true))
+            } else {
+              None
+            }
+          }.filter(!_.isEmpty).map(_.get)
+
+          propertyWithLinks.map(property => (aspectId, property)).headOption
         } else {
           None
         }
@@ -124,17 +139,24 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     else existingWhereClause.and(selector)
   }
 
-  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, String]) = {
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink]) = {
     aspectIds.zipWithIndex.map { case(aspectId, index) =>
       // Use a simple numbered column name rather than trying to make the aspect name safe.
       val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
-      val selection = dereferenceDetails.get(aspectId).map(propertyName => {
-        sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+      val selection = dereferenceDetails.get(aspectId).map {
+        case PropertyWithLink(propertyName, true) => {
+          sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
                   (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId))))
                    from Records
                    inner join jsonb_array_elements_text(RecordAspects.data->${propertyName}) as aggregatedId on aggregatedId=Records.recordId)"""
-      }).getOrElse(sqls"data")
-     sqls"""(select ${selection} from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
+        }
+        case PropertyWithLink(propertyName, false) => {
+          sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+                  (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId)))
+                   from Records where Records.recordId=RecordAspects.data->>${propertyName})"""
+        }
+      }.getOrElse(sqls"data")
+      sqls"""(select ${selection} from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
     }
   }
 
