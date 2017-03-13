@@ -4,12 +4,12 @@ name := "magda-metadata"
 
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
-  version := "0.0.17",
+  version := "0.0.19",
   scalaVersion := "2.11.8"
 )
 
 lazy val root = (project in file("."))
-  .aggregate(common, searchApi, indexer, registryApi, ckanConnector)
+  .aggregate(common, searchApi, indexer, registryApi)
   .settings(commonSettings: _*)
 lazy val common = (project in file("common"))
   .settings(commonSettings: _*)
@@ -26,10 +26,13 @@ lazy val registryApi = (project in file("registry-api"))
   .settings(commonSettings: _*)
   .dependsOn(common)
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
-lazy val ckanConnector = (project in file("ckan-connector"))
-  .settings(commonSettings: _*)
-  .dependsOn(common)
-  .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
+  
+// removing because it's not compiling and being redeveloped in node, if we need
+// it again uncomment
+// lazy val ckanConnector = (project in file("ckan-connector"))
+// .settings(commonSettings: _*)
+// .dependsOn(common)
+// .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
@@ -41,4 +44,6 @@ sources in EditSource <++= baseDirectory.map(d => (d / "deploy" / "kubernetes" *
 targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
 variables in EditSource += ("version", version.value)
 
-parallelExecution in ThisBuild := false
+concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
+// sbt.Keys.fork in Test := false
+javaOptions in (Test) ++= Seq("-Xms3500M", "-Xmx3500M", "-XX:+CMSClassUnloadingEnabled")

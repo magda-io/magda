@@ -160,16 +160,7 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config
     new Agent(
       name = if (preferIndividual) individual.orElse(organisation) else organisation.orElse(individual),
       homePage = nodeToStringOption(contactInfo \ "onlineResource" \ "CI_OnlineResource" \ "linkage" \ "URL"),
-      email = nodeToStringOption(address \ "electronicMailAddress" \ "CharacterString"),
-      extraFields =
-        (
-          nodesToMap(address, "deliveryPoint", "city", "administrativeArea", "postalCode", "country") ++
-          Map(
-            "hoursOfService" -> nodeToStringOption(contactInfo \ "hoursOfService" \ "CharacterString"),
-            "phone" -> nodeToStringOption(contactInfo \ "phone" \ "CI_Telephone" \ "voice" \ "CharacterString"),
-            "fax" -> nodeToStringOption(contactInfo \ "phone" \ "CI_Telephone" \ "facsimile" \ "CharacterString")
-          ).filter { case (_, value) => value.isDefined }.mapValues(_.get)
-        ).filter(x => !x._2.isEmpty())
+      email = nodeToStringOption(address \ "electronicMailAddress" \ "CharacterString")
     )
   }
 

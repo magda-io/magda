@@ -1,72 +1,89 @@
 package au.csiro.data61.magda.api
 
-import java.io.File
+import java.net.URL
 import java.util.Properties
-import akka.actor.{ ActorSystem, Scheduler }
-import akka.event.{ Logging, LoggingAdapter }
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.{ RouteTestTimeout, ScalatestRouteTest }
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.model.misc.{ DataSet, _ }
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.elasticsearch._
-import au.csiro.data61.magda.test.util.Generators._
-import com.sksamuel.elastic4s.testkit.ElasticSugar
-import com.typesafe.config.{ Config, ConfigFactory }
-import org.scalacheck.Shrink
-import org.scalacheck._
-import org.scalactic.anyvals.PosInt
-import org.scalatest.{ BeforeAndAfter, Matchers, _ }
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import spray.json._
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration.DurationInt
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Consumer
-import com.sksamuel.elastic4s.TcpClient
-import com.sksamuel.elastic4s.ElasticDsl
+
+import scala.collection.JavaConversions.mapAsJavaMap
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
+
 import org.elasticsearch.cluster.health.ClusterHealthStatus
-import au.csiro.data61.magda.api.model.Protocols
-import org.elasticsearch.index.cache.IndexCache
-import java.util.concurrent.ConcurrentHashMap
+import org.scalacheck.Gen
+import org.scalacheck.Shrink
+import org.scalatest.BeforeAndAfter
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.FunSpec
+import org.scalatest.Matchers
+
+import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.TcpClient
+import com.sksamuel.elastic4s.testkit.SharedElasticSugar
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+
+import akka.actor.ActorSystem
+import akka.actor.Scheduler
+import akka.event.Logging
+import akka.event.LoggingAdapter
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.testkit.RouteTestTimeout
+import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.api.model.Protocols
+import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.search.elasticsearch.ClientProvider
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
+import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
+import au.csiro.data61.magda.search.elasticsearch.Indices
+import au.csiro.data61.magda.search.elasticsearch.RegionLoader
 import au.csiro.data61.magda.spatial.RegionSource
+import au.csiro.data61.magda.test.util.ApiGenerators.indexedRegionsGen
+import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
+import au.csiro.data61.magda.test.util.Generators
+import au.csiro.data61.magda.test.util.MagdaGeneratorTest
+import spray.json.JsObject
+import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
+import au.csiro.data61.magda.test.util.TestActorSystem
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with ElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with GeneratorDrivenPropertyChecks {
-  override def testConfigSource = "akka.loglevel = WARN"
-  val isCi = Option(System.getenv("CI")).map(_.equals("true")).getOrElse(false)
-  val INSERTION_WAIT_TIME = 60 seconds
-  val logger = Logging(system, getClass)
-  val processors = Math.max(Runtime.getRuntime().availableProcessors(), 2)
 
-  val minSuccessful = if (isCi) 100 else 100
-  logger.info("Running with {} processors with minSuccessful={}", processors.toString, minSuccessful)
-  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with SharedElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with MagdaGeneratorTest {
+  val INSERTION_WAIT_TIME = 90 seconds
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
+  val indexedRegions = BaseApiSpec.indexedRegions
+  implicit val config = TestActorSystem.config
 
-  val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
-  val generatedConf = ConfigFactory.empty() // Can add specific config here.
-  implicit val config = generatedConf.withFallback(AppConfig.conf(Some("local")))
-  override def testConfig = config
+  override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
+
+  val logger = Logging(system, getClass)
 
   implicit object MockClientProvider extends ClientProvider {
     override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient] = Future(client)
   }
 
   val cleanUpQueue = new ConcurrentLinkedQueue[String]()
-  val indexedRegions = indexedRegionsGen.retryUntil(_ => true).sample.get
 
   override def beforeAll() {
-    client.execute(
-      IndexDefinition.regions.definition(None)
-    ).await
+    if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
 
-    val fakeRegionLoader = new RegionLoader {
-      override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => indexedRegions.toIterator)
+      client.execute(
+        IndexDefinition.regions.definition(DefaultIndices, config)
+      ).await
+
+      val fakeRegionLoader = new RegionLoader {
+        override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => BaseApiSpec.indexedRegions.toIterator)
+      }
+
+      logger.info("Setting up regions")
+      IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
+      logger.info("Finished setting up regions")
     }
-
-    IndexDefinition.setupRegions(client, fakeRegionLoader).await(60 seconds)
   }
 
   def blockUntilNotRed(): Unit = {
@@ -115,7 +132,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   case class FakeIndices(rawIndexName: String) extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
       case Indices.DataSetsIndex => rawIndexName
-      case Indices.RegionsIndex  => DefaultIndices.getIndex(config, index)
+      case _                     => DefaultIndices.getIndex(config, index)
     }
   }
 
@@ -171,13 +188,12 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     getFromIndexCache(size) match {
       case (cacheKey, None) ⇒
         val future = Future {
-          val dataSets = Gen.listOfN(size, dataSetGen).retryUntil(_ => true).sample.get
+          val dataSets = Gen.listOfN(size, Generators.dataSetGen).retryUntil(_ => true).sample.get
           putDataSetsInIndex(dataSets).await(INSERTION_WAIT_TIME)
         }
 
-        genCache.put(cacheKey, future)
+        BaseApiSpec.genCache.put(cacheKey, future)
         logger.info("Cache miss for {}", cacheKey)
-        //        print(IndexCache.genCache.keys())
 
         future.await(INSERTION_WAIT_TIME)
       case (cacheKey, Some(cachedValue)) ⇒
@@ -194,7 +210,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     else if (size < 100) size - size % 10
     else size - size % 25
     //    val cacheKey = size
-    (cacheKey, Option(genCache.get(cacheKey)))
+    (cacheKey, Option(BaseApiSpec.genCache.get(cacheKey)))
   }
 
   def putDataSetsInIndex(dataSets: List[DataSet]): Future[(String, List[DataSet], Route)] = {
@@ -202,27 +218,23 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
     val fakeIndices = FakeIndices(rawIndexName)
 
     val indexName = fakeIndices.getIndex(config, Indices.DataSetsIndex)
-    client.execute(IndexDefinition.dataSets.definition(Some(indexName)).singleReplica().singleShard()).await
-    blockUntilNotRed()
-
-    //                implicit val thisConf = configWith(Map(s"elasticsearch.indexes.$rawIndexName.version" -> "1")).withFallback(config)
     val searchQueryer = new ElasticSearchQueryer(fakeIndices)
     val api = new Api(logger, searchQueryer)
+    val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
 
     if (!dataSets.isEmpty) {
-      client.execute(bulk(
-        dataSets.map(dataSet ⇒
-          index into indexName / fakeIndices.getType(Indices.DataSetsIndexType) id dataSet.identifier source dataSet.toJson)
-      )).flatMap { _ ⇒
-        client.execute(refreshIndex(indexName))
-      }.map { _ ⇒
-        blockUntilCount(dataSets.size, indexName)
-        (indexName, dataSets, api.routes)
-      } recover {
-        case e: Throwable ⇒
-          logger.error(e, "")
-          throw e
-      }
+      indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), dataSets)
+        .flatMap { _ ⇒
+          client.execute(refreshIndex(indexName))
+        }.map { _ ⇒
+          blockUntilNotRed()
+          blockUntilCount(dataSets.size, indexName)
+          (indexName, dataSets, api.routes)
+        } recover {
+          case e: Throwable ⇒
+            logger.error(e, "")
+            throw e
+        }
     } else Future.successful((indexName, List[DataSet](), api.routes))
   }
 
@@ -242,18 +254,9 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Ela
   after {
     cleanUpIndexes()
   }
+}
 
-  override def afterAll() = {
-    super.afterAll()
-
-    logger.info("cleaning up cache")
-
-    //    Future.sequence((IndexCache.genCache.values).asScala.map { future: Future[(String, List[DataSet], Route)] ⇒
-    //      future.flatMap {
-    //        case (indexName, _, _) ⇒
-    //          logger.debug("Deleting index {}", indexName)
-    //          client.execute(ElasticDsl.deleteIndex(indexName))
-    //      }
-    //    }).await(60 seconds)
-  }
+object BaseApiSpec {
+  val indexedRegions = indexedRegionsGen.retryUntil(_ => true).sample.get
+  val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
 }

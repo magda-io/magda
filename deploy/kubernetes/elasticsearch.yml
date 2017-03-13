@@ -125,10 +125,7 @@ spec:
       - env:
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
-        image: seeruk/docker-kibana-sense
-        resources:
-          limits:
-            memory: 500Mi
+        image: kibana:5.2.0
         name: kibana
         ports:
         - containerPort: 5601

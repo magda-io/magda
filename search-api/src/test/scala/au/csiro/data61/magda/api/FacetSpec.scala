@@ -17,7 +17,7 @@ import au.csiro.data61.magda.api.model.{ Protocols, SearchResult }
 import au.csiro.data61.magda.model.misc.{ DataSet, _ }
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch._
-import au.csiro.data61.magda.test.util.Generators._
+import au.csiro.data61.magda.test.util.ApiGenerators._
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.testkit.ElasticSugar
 import com.typesafe.config.{ Config, ConfigFactory }

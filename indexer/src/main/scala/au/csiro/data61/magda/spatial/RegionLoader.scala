@@ -38,6 +38,7 @@ import spray.json.JsString
 import akka.stream.IOResult
 import au.csiro.data61.magda.spatial.RegionSources
 import com.typesafe.config.Config
+import spray.json.JsValue
 
 trait RegionLoader {
   def setupRegions(): Source[(RegionSource, JsObject), _]

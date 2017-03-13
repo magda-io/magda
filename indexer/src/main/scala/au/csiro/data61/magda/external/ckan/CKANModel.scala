@@ -129,12 +129,8 @@ trait CKANConverters {
   val ckanDateTimeWithMsFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSSS")
   val ckanDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss")
 
-  implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = new Agent(
-    name = ckanOrg.title,
-    extraFields = Map(
-      "description" -> ckanOrg.description.getOrElse("")
-
-    ).filterNot(tuple => tuple._2 == "")
+  implicit def ckanOrgConv(ckanOrg: CKANOrganization): Agent = Agent(
+    name = ckanOrg.title
   )
   implicit def ckanOptionOrgConv(ckanOrg: Option[CKANOrganization]): Option[Agent] = ckanOrg map ckanOrgConv
 

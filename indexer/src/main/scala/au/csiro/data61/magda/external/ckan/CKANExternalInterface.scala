@@ -44,6 +44,8 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val confi
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
+  override def getInterfaceConfig = interfaceConfig
+
   val exclusionQueryString = {
     val excludedHarvesterTitles = interfaceConfig.raw.hasPath("ignoreHarvestSources") match {
       case true  => interfaceConfig.raw.getStringList("ignoreHarvestSources").toSet
@@ -54,7 +56,7 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val confi
 
     if (solrQueries.isEmpty) None else Some(solrQueries.reduce(_ + "+" + _))
   }
-  val baseUrl = s"api/3/action/package_search?${exclusionQueryString.map(q => s"fq=${q}").getOrElse("")}"
+  val baseUrl = s"api/3/action/package_search?${exclusionQueryString.map(q => s"fq=${q}").getOrElse("")}&sort=metadata_created%20asc"
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =
     fetcher.request(s"$baseUrl&start=$start&rows=$number").flatMap { response =>

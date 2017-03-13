@@ -49,6 +49,8 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implementation: CSW
   val logger = Logging(system, getClass)
   implicit val fetcher = new HttpFetcher(interfaceConfig, system, materializer, executor)
 
+  override def getInterfaceConfig = interfaceConfig
+
   def getDataSets(start: Long = 0, number: Int = 10): Future[List[DataSet]] = {
     val query = s"""csw?service=CSW&version=2.0.2&request=GetRecords&constraintlanguage=FILTER&resultType=results&elementsetname=full&outputschema=${implementation.schema}&typeNames=${implementation.typeName}&startPosition=${start + 1}&maxRecords=$number""";
 

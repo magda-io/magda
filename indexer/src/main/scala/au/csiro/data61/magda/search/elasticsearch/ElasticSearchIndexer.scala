@@ -53,6 +53,8 @@ class ElasticSearchIndexer(
 
   implicit val scheduler = system.scheduler
 
+  override def ready = setupFuture.map(_ => Unit)
+
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
   private lazy val indexQueue: SourceQueue[(InterfaceConfig, Seq[DataSet], Promise[Unit])] =
     Source.queue[(InterfaceConfig, Seq[DataSet], Promise[Unit])](Int.MaxValue, OverflowStrategy.backpressure)
@@ -102,7 +104,7 @@ class ElasticSearchIndexer(
           logger.info("Restoring snapshot")
 
           client.execute {
-            restore snapshot snapshot.snapshotId.getName from SNAPSHOT_REPO_NAME indexes definition.indexName waitForCompletion true
+            restore snapshot snapshot.snapshotId.getName from SNAPSHOT_REPO_NAME indexes indices.getIndex(config, Indices.DataSetsIndex) waitForCompletion true
           } map { response =>
             response.status match {
               case RestStatus.OK =>
@@ -162,7 +164,7 @@ class ElasticSearchIndexer(
 
     Future.sequence(
       IndexDefinition.indices.map(indexDef =>
-        client.execute(get.mapping(indexDef.indexName))
+        client.execute(getMapping(indices.getIndex(config, indexDef.indicesIndex)))
           .map(Some(_))
           .recover {
             // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
@@ -198,7 +200,7 @@ class ElasticSearchIndexer(
       case RestoreFailure =>
         deleteIndex(client, definition)
           .flatMap { _ =>
-            client.execute(definition.definition(None))
+            client.execute(definition.definition(indices, config))
           } recover {
             case e: Throwable =>
               logger.error(e, "Failed to set up the index")
@@ -207,7 +209,7 @@ class ElasticSearchIndexer(
             logger.info("Index {} version {} created", definition.name, definition.version)
 
             definition.create match {
-              case Some(createFunc) => createFunc(client, config, materializer, system)
+              case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
                 .flatMap(_ =>
                   if (config.getBoolean("indexer.makeSnapshots"))
                     createSnapshot(client, definition)
@@ -223,7 +225,7 @@ class ElasticSearchIndexer(
   }
 
   def deleteIndex(client: TcpClient, definition: IndexDefinition): Future[Unit] = client.execute {
-    delete index (definition.indexName)
+    ElasticDsl.deleteIndex(indices.getIndex(config, definition.indicesIndex))
   } recover {
     case RootCause(inner: IndexNotFoundException) => // Meh, we were trying to delete it anyway.
     case e =>
@@ -323,14 +325,14 @@ class ElasticSearchIndexer(
     logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
 
     val future = client.execute {
-      create snapshot snapshotPrefix(definition) + "-" + Instant.now().toString.toLowerCase in SNAPSHOT_REPO_NAME waitForCompletion true indexes definition.indexName
+      create snapshot snapshotPrefix(definition) + "-" + Instant.now().toString.toLowerCase in SNAPSHOT_REPO_NAME waitForCompletion true indexes indices.getIndex(config, definition.indicesIndex)
     }
 
     future.onComplete {
       case Success(result) =>
         val info = result.getSnapshotInfo
-        logger.info("Snapshotted {} shards of {} for {}", info.successfulShards(), info.totalShards(), definition.indexName)
-      case Failure(e) => logger.error(e, "Failed to snapshot {}", definition.indexName)
+        logger.info("Snapshotted {} shards of {} for {}", info.successfulShards(), info.totalShards(), indices.getIndex(config, definition.indicesIndex))
+      case Failure(e) => logger.error(e, "Failed to snapshot {}", indices.getIndex(config, definition.indicesIndex))
     }
 
     future
@@ -340,7 +342,7 @@ class ElasticSearchIndexer(
     setupFuture.flatMap(client =>
       retry(() =>
         client.execute {
-          ElasticDsl.search in IndexDefinition.dataSets.indexName / IndexDefinition.dataSets.name query matchQuery("catalog", source.name) limit 0
+          ElasticDsl.search in indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType) query matchQuery("catalog", source.name) limit 0
         }, 10 seconds, 10, logger.error("Failed to get dataset count, {} retries left", _, _))
         .map { result =>
           logger.debug("{} reindex check hit count: {}", source.name, result.getHits.getTotalHits)
@@ -365,7 +367,7 @@ class ElasticSearchIndexer(
   private def buildDatasetIndexDefinition(source: InterfaceConfig, dataSets: Seq[DataSet]): BulkDefinition =
     bulk(
       dataSets.map { dataSet =>
-        val indexDataSet = ElasticDsl.index into IndexDefinition.dataSets.indexName / IndexDefinition.dataSets.name id dataSet.uniqueId source (
+        val indexDataSet = ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType) id dataSet.uniqueId source (
           dataSet.copy(
             catalog = source.name,
             years = ElasticSearchIndexer.getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
@@ -373,14 +375,14 @@ class ElasticSearchIndexer(
         )
 
         val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-          ElasticDsl.index into IndexDefinition.dataSets.indexName / Publisher.id
+          ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / Publisher.id
             id publisherName.toLowerCase
             source Map("value" -> publisherName).toJson))
 
         val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
           val format = distribution.format.get
 
-          ElasticDsl.index into IndexDefinition.dataSets.indexName / Format.id id format.toLowerCase source Map("value" -> format).toJson
+          ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / Format.id id format.toLowerCase source Map("value" -> format).toJson
         }
 
         indexDataSet :: indexPublisher.toList ++ indexFormats

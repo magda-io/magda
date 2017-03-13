@@ -5,8 +5,10 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 import com.vividsolutions.jts.geom.LinearRing
 import com.vividsolutions.jts.geom._
 import com.monsanto.labs.mwundo._
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 
 object MwundoJTSConversions {
+  implicit val gf = JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
   private def toGeoJsonCoord(c: Coordinate) = GeoJson.Coordinate(c.x, c.y)
   private def toRing(coords: Seq[GeoJson.Coordinate], gf: GeometryFactory) = {
     val uniqueCoords = coords.map(c => new Coordinate(c.x.toDouble, c.y.toDouble)).toArray
@@ -35,6 +37,21 @@ object MwundoJTSConversions {
         case "MultiPolygon"    => MultiPolygonConverter.fromJTSGeo(geo)
       }
     }
+  }
+
+  trait MwundoGeometryConvertible {
+    def toJTSGeo(): Geometry
+  }
+
+  trait JTSGeometryConvertible {
+    def fromJTSGeo(): GeoJson.Geometry
+  }
+
+  implicit def mwundoToJTS(input: GeoJson.Geometry): MwundoGeometryConvertible = new MwundoGeometryConvertible {
+    override def toJTSGeo() = GeometryConverter.toJTSGeo(input, gf)
+  }
+  implicit def jtsToMwundo(input: Geometry): JTSGeometryConvertible = new JTSGeometryConvertible {
+    override def fromJTSGeo() = GeometryConverter.fromJTSGeo(input)
   }
 
   implicit object PointConverter extends JTSGeoFormat[GeoJson.Point] {

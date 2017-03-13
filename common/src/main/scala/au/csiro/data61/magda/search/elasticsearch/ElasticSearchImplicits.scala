@@ -11,7 +11,6 @@ import com.sksamuel.elastic4s.searches.RichSearchHit
 import com.sksamuel.elastic4s.HitReader
 import com.sksamuel.elastic4s.Hit
 
-
 object ElasticSearchImplicits extends Protocols {
 
   implicit object SprayJsonIndexable extends Indexable[JsValue] {
@@ -30,27 +29,7 @@ object ElasticSearchImplicits extends Protocols {
 
   implicit object RegionHitAs extends HitReader[Region] {
     override def read(hit: Hit): Either[Throwable, Region] = {
-      val source = hit.to[JsValue].asJsObject
-
-      val rectangle = source.fields("rectangle") match {
-        case JsObject(fields) => (fields("type"), fields("coordinates")) match {
-          case (JsString("envelope"), JsArray(Vector(
-            JsArray(Vector(JsNumber(west), JsNumber(north))),
-            JsArray(Vector(JsNumber(east), JsNumber(south)))
-            ))) => Some(BoundingBox(west, south, east, north))
-          case _ => None
-        }
-        case _ => None
-      }
-
-      Right(Region(
-        QueryRegion(
-          source.fields("type").convertTo[String],
-          source.fields("id").convertTo[String]
-        ),
-        source.fields("name").convertTo[String],
-        rectangle
-      ))
+      Right(hit.to[JsValue].asJsObject.convertTo[Region])
     }
   }
 

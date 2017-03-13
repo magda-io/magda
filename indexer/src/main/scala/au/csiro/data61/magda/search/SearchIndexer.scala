@@ -13,6 +13,7 @@ trait SearchIndexer {
   def index(source: InterfaceConfig, dataSets: List[DataSet]): Future[Any]
   def snapshot(): Future[Unit]
   def needsReindexing(source: InterfaceConfig): Future[Boolean]
+  def ready: Future[Unit]
 }
 
 object SearchIndexer {

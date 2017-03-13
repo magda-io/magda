@@ -9,20 +9,17 @@ object AppConfig {
 
   /** The global config, potentially including env-custom settings for libraries like akka */
   def conf(envOption: Option[String] = None) = {
-    val env = envOption match {
-      case Some(env) => env
-      case None      => getEnv
-    }
+    val env = envOption.getOrElse(getEnv)
 
     val parseOptionsAllowMissing = ConfigParseOptions.defaults().setAllowMissing(true)
     val parseOptionsForbidMissing = ConfigParseOptions.defaults().setAllowMissing(false)
     val resolveOptions = ConfigResolveOptions.defaults().setAllowUnresolved(false)
 
-    val commonGeneralConf = ConfigFactory.load("common.conf", parseOptionsForbidMissing, resolveOptions)
-    val commonEnvConf = ConfigFactory.load("common-env-specific-config/" + env, parseOptionsAllowMissing, resolveOptions)
-    val appConf = ConfigFactory.load("application.conf", parseOptionsForbidMissing, resolveOptions)
-    val envConf = ConfigFactory.load("env-specific-config/" + env, parseOptionsForbidMissing, resolveOptions)
+    val commonGeneralConf = ConfigFactory.parseResources("common.conf")
+    val commonEnvConf = ConfigFactory.parseResources("common-env-specific-config/" + env)
+    val appConf = ConfigFactory.parseResources("application.conf")
+    val envConf = ConfigFactory.parseResources("env-specific-config/" + env)
 
-    envConf.withFallback(appConf).withFallback(commonEnvConf).withFallback(commonGeneralConf)
+    envConf.withFallback(appConf).withFallback(commonEnvConf).withFallback(commonGeneralConf).resolve(resolveOptions)
   }
 }

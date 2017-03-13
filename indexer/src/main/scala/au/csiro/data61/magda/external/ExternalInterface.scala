@@ -14,19 +14,17 @@ import au.csiro.data61.magda.external.ckan.CKANExternalInterface
 import com.typesafe.config.Config
 
 object ExternalInterface {
-  object ExternalInterfaceType extends Enumeration {
-    type ExternalInterfaceType = Value
-    val CKAN, CSW = Value
-  }
-  import ExternalInterfaceType._
 
-  def apply(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): ExternalInterface = interfaceConfig.interfaceType match {
-    case CKAN => new CKANExternalInterface(interfaceConfig, config, system, executor, materializer)
-    case CSW  => CSWExternalInterface(interfaceConfig)
-  }
+  def apply(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): ExternalInterface =
+    interfaceConfig.interfaceType match {
+      case "CKAN" => new CKANExternalInterface(interfaceConfig, config, system, executor, materializer)
+      case "CSW"  => CSWExternalInterface(interfaceConfig)
+      case _      => throw new RuntimeException(s"Could not find interface implementation for ${interfaceConfig.interfaceType}")
+    }
 }
 
 trait ExternalInterface {
+  def getInterfaceConfig(): InterfaceConfig
   def getDataSets(start: Long = 0, number: Int = 10): Future[List[DataSet]]
   def getTotalDataSetCount(): Future[Long]
 }
