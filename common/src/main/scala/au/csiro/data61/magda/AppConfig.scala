@@ -16,9 +16,9 @@ object AppConfig {
     val resolveOptions = ConfigResolveOptions.defaults().setAllowUnresolved(false)
 
     val commonGeneralConf = ConfigFactory.parseResources("common.conf")
-    val commonEnvConf = ConfigFactory.parseResources("common-env-specific-config/" + env)
+    val commonEnvConf = ConfigFactory.parseResources("common-env-specific-config/" + env + ".conf")
     val appConf = ConfigFactory.parseResources("application.conf")
-    val envConf = ConfigFactory.parseResources("env-specific-config/" + env)
+    val envConf = ConfigFactory.parseResources("env-specific-config/" + env + ".conf")
 
     envConf.withFallback(appConf).withFallback(commonEnvConf).withFallback(commonGeneralConf).resolve(resolveOptions)
   }
