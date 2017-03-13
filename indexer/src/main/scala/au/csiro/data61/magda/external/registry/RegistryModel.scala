@@ -4,7 +4,7 @@ import spray.json.{DefaultJsonProtocol, JsObject}
 
 case class RegistryRecordsResponse(
   totalCount: Long,
-  nextPageToken: String,
+  nextPageToken: Option[String],
   records: List[RegistryRecord])
 
 case class RegistryRecord(
