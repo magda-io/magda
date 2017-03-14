@@ -41,9 +41,6 @@ case class IndexDefinition(
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
-  val DATASETS_TYPE_NAME = "datasets"
-  val REGIONS_TYPE_NAME = "regions"
-
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 19,
@@ -130,7 +127,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(
-            mapping(REGIONS_TYPE_NAME).fields(
+            mapping(indices.getType(Indices.RegionsIndexType)).fields(
               field("regionType", KeywordType),
               field("regionId", KeywordType),
               field("regionName", TextType).analyzer("english").fields(
