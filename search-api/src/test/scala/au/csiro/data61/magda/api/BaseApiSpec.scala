@@ -52,7 +52,6 @@ import spray.json.JsObject
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import au.csiro.data61.magda.test.util.TestActorSystem
 
-
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with SharedElasticSugar with BeforeAndAfter with BeforeAndAfterAll with Protocols with MagdaGeneratorTest {
   val INSERTION_WAIT_TIME = 90 seconds
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
@@ -141,7 +140,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Sha
       Shrink.shrink(dataSets).map(shrunkDataSets ⇒ {
         logger.info("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
 
-        val result = putDataSetsInIndex(shrunkDataSets).await(INSERTION_WAIT_TIME)
+        val result = putDataSetsInIndex(shrunkDataSets)
         cleanUpQueue.add(result._1)
         result
       })
@@ -189,7 +188,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Sha
       case (cacheKey, None) ⇒
         val future = Future {
           val dataSets = Gen.listOfN(size, Generators.dataSetGen).retryUntil(_ => true).sample.get
-          putDataSetsInIndex(dataSets).await(INSERTION_WAIT_TIME)
+          putDataSetsInIndex(dataSets)
         }
 
         BaseApiSpec.genCache.put(cacheKey, future)
@@ -213,7 +212,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Sha
     (cacheKey, Option(BaseApiSpec.genCache.get(cacheKey)))
   }
 
-  def putDataSetsInIndex(dataSets: List[DataSet]): Future[(String, List[DataSet], Route)] = {
+  def putDataSetsInIndex(dataSets: List[DataSet]) = {
     val rawIndexName = java.util.UUID.randomUUID.toString
     val fakeIndices = FakeIndices(rawIndexName)
 
@@ -222,20 +221,21 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Sha
     val api = new Api(logger, searchQueryer)
     val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
 
-    if (!dataSets.isEmpty) {
+    indexer.ready.map { _ =>
       indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), dataSets)
-        .flatMap { _ ⇒
-          client.execute(refreshIndex(indexName))
-        }.map { _ ⇒
-          blockUntilNotRed()
-          blockUntilCount(dataSets.size, indexName)
-          (indexName, dataSets, api.routes)
-        } recover {
-          case e: Throwable ⇒
-            logger.error(e, "")
-            throw e
-        }
-    } else Future.successful((indexName, List[DataSet](), api.routes))
+    }.flatMap { _ ⇒
+      client.execute(refreshIndex(indexName))
+    }.recover {
+      case e: Throwable ⇒
+        logger.error(e, "")
+        throw e
+    }.await(INSERTION_WAIT_TIME)
+
+    blockUntilCount(dataSets.size, indexName)
+
+    Thread.sleep(1000)
+
+    (indexName, dataSets, api.routes)
   }
 
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")

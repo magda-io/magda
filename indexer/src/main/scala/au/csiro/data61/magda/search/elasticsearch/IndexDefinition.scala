@@ -66,49 +66,56 @@ object IndexDefinition extends DefaultJsonProtocol {
             ),
             field("publisher", ObjectType).inner(
               field("name", TextType).analyzer("english").fields(
-                field("untouched", KeywordType).analyzer("not_analyzed"),
-                field("not_analyzed", TextType)
+                field("not_analyzed", KeywordType).analyzer("keyword"),
+                field("quote", TextType)
               )
             ),
             field("distributions", ObjectType).nested(
               field("title", TextType).analyzer("english").fields(
-                field("not_analyzed", TextType)
+                field("not_analyzed", KeywordType),
+                field("quote", TextType)
               ),
               field("description", TextType).analyzer("english").fields(
-                field("not_analyzed", TextType)
+                field("not_analyzed", KeywordType),
+                field("quote", TextType)
               ),
-              field("format", TextType).fields(
-                field("untokenized", KeywordType)
+              field("format", TextType).analyzer("english").fields(
+                field("not_analyzed", KeywordType),
+                field("quote", TextType)
               )
             ),
             field("spatial", ObjectType).inner(
               field("geoJson", GeoShapeType)
             ),
             field("title", TextType).analyzer("english").fields(
-              field("not_analyzed", TextType)
+              field("not_analyzed", KeywordType),
+              field("quote", TextType)
             ),
             field("description", TextType).analyzer("english").fields(
-              field("not_analyzed", TextType)
+              field("not_analyzed", KeywordType),
+              field("quote", TextType)
             ),
             field("keyword", TextType).analyzer("english").fields(
-              field("not_analyzed", TextType)
+              field("not_analyzed", KeywordType),
+              field("quote", TextType)
             ),
             field("theme", TextType).analyzer("english").fields(
-              field("not_analyzed", TextType)
+              field("not_analyzed", KeywordType),
+              field("quote", TextType)
             ),
             field("years", KeywordType)
           ),
           mapping(Format.id).fields(
             field("value", TextType).analyzer("english").fields(
-              field("not_analyzed", TextType)
+              field("not_analyzed", KeywordType),
+              field("quote", TextType)
             )),
           mapping(Publisher.id).fields(
             field("value", TextType).analyzer("english").fields(
-              field("not_analyzed", TextType)
+              field("not_analyzed", KeywordType),
+              field("quote", TextType)
             ))
-        ).analysis(
-            CustomAnalyzerDefinition("untokenized", KeywordTokenizer, LowercaseTokenFilter)
-          )
+        )
 
   )
 

@@ -22,7 +22,7 @@ trait MagdaElasticSugar extends SharedElasticSugar {
       val requiredSettings = LocalNode.requiredSettings("classloader-node", pathHome.toAbsolutePath.toString)
 
       val settings = requiredSettings ++ Map(
-        "index.number_of_replicas" -> "1",
+        "index.number_of_replicas" -> "0",
         "index.number_of_shards" -> "1"
       )
 

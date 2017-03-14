@@ -27,8 +27,7 @@ import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.api.model.RegionSearchResult
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.search.MatchAll
-import au.csiro.data61.magda.search.MatchPart
+import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.SearchQueryer
 import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
@@ -274,7 +273,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
   private def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
-    val processedQuote = query.quotes.map(cleanStringForEs).map(quote => s"""${quote}""") match {
+    val processedQuote = query.quotes.map(cleanStringForEs).map(quote => s""""${quote}"""") match {
       case SetExtractor() => None
       case xs             => Some(xs.reduce(_ + " " + _))
     }
@@ -297,12 +296,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       stringQuery.map { innerQuery =>
         val queryDef = new SimpleStringQueryDefinition(innerQuery)
           .defaultOperator(operator)
+          .quoteFieldSuffix(".quote")
+          .analyzeWildcard(true)
 
         ("_all" +: DATASETS_LANGUAGE_FIELDS).foldRight(queryDef) { (field, queryDef) =>
           queryDef.field(field)
         }
       },
-      setToOption(query.publishers)(seq => should(seq.map(publisherQuery))),
+      setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy)))),
       setToOption(query.formats)(seq => should(seq.map(formatQuery))),
       dateQueries(query.dateFrom, query.dateTo),
       setToOption(query.regions)(seq => should(seq.map(region => regionIdQuery(region, indices))))

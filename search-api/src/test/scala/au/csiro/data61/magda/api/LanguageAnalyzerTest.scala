@@ -11,7 +11,6 @@ import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.search.MatchAll
 import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.Generators._
 import com.monsanto.labs.mwundo.GeoJson.Polygon
@@ -57,7 +56,9 @@ class LanguageAnalyzerSpec extends BaseApiSpec {
         Get(s"""/datasets/search?query=${encodeForUrl(term)}&limit=${tuples.size}""") ~> routes ~> check {
           status shouldBe OK
           val result = responseAs[SearchResult]
-          withClue(s"term: ${term} and identifier: ${dataSet.identifier} in ${tuples.map(_._1).map(termExtractor).mkString(", ")}") {
+
+          withClue(s"term: ${term} and identifier ${dataSet.identifier} in ${result.dataSets.map(dataSet => dataSet.identifier + ": " + termExtractor(dataSet)).mkString(", ")}") {
+            result.dataSets.size should be > 0
             result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
           }
         }
@@ -73,7 +74,7 @@ class LanguageAnalyzerSpec extends BaseApiSpec {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
         withClue(s"publisher: ${publisherName} options ${result.options} publishers ${tuples.map(_._1).flatMap(_.publisher).map(_.name)}") {
-          result.options.exists(_.value.equals(publisherName)) should be(true)
+          result.options.exists(_.value.contains(publisherName)) should be(true)
         }
       }
     }
@@ -148,7 +149,7 @@ class LanguageAnalyzerSpec extends BaseApiSpec {
       implicit def indexAndTermsShrinker(implicit s: Shrink[String], s1: Shrink[List[(DataSet, String)]], s2: Shrink[Route]): Shrink[(String, List[(DataSet, String)], Route)] = Shrink[(String, List[(DataSet, String)], Route)] {
         case (indexName, terms, route) ⇒
           Shrink.shrink(terms).map { shrunkTerms ⇒
-            val x = putDataSetsInIndex(shrunkTerms.map(_._1)).await(INSERTION_WAIT_TIME)
+            val x = putDataSetsInIndex(shrunkTerms.map(_._1))
 
             (x._1, shrunkTerms, x._3)
           }

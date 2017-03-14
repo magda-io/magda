@@ -38,7 +38,7 @@ import java.util.function.Consumer
 import au.csiro.data61.magda.util.SetExtractor
 import org.scalacheck.Arbitrary._
 import au.csiro.data61.magda.model.temporal.PeriodOfTime
-import au.csiro.data61.magda.search.{ MatchAll, MatchPart }
+import au.csiro.data61.magda.search.SearchStrategy.{ MatchAll, MatchPart }
 import java.util.HashMap
 import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.ElasticDsl
@@ -47,6 +47,7 @@ import com.sksamuel.elastic4s.embedded.LocalNode
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.util.SetExtractor
+import au.csiro.data61.magda.test.util.Generators
 
 class FacetSpec extends BaseApiSpec {
 
@@ -54,7 +55,7 @@ class FacetSpec extends BaseApiSpec {
     val facetSizes = for (n ← Gen.choose(0, 10)) yield n
 
     def checkFacetsNoQuery(inner: (List[DataSet], Int) ⇒ Unit) = {
-      forAll(indexGen, Gen.posNum[Int], Gen.posNum[Int], Gen.posNum[Int]) { (tuple, rawFacetSize, start, limit) ⇒
+      forAll(mediumIndexGen, Gen.posNum[Int], Gen.posNum[Int], Gen.posNum[Int]) { (tuple, rawFacetSize, start, limit) ⇒
         val (indexName, dataSets, routes) = tuple
         val facetSize = Math.max(rawFacetSize, 1)
 
@@ -67,7 +68,7 @@ class FacetSpec extends BaseApiSpec {
       }
     }
 
-    def checkFacetsWithQuery(thisQueryGen: Gen[(String, Query)] = textQueryGen(queryGen), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit) = {
+    def checkFacetsWithQuery(thisQueryGen: Gen[(String, Query)] = textQueryGen(queryGen), thisIndexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit) = {
       forAll(thisIndexGen, thisQueryGen, facetSizeGen) { (tuple, query, rawFacetSize) ⇒
         val (indexName, dataSets, routes) = tuple
         val (textQuery, objQuery) = query
@@ -138,13 +139,16 @@ class FacetSpec extends BaseApiSpec {
       it("(meta) filter and groupResult should line up") {
         checkFacetsNoQuery { (dataSets: List[DataSet], facetSize: Int) ⇒
           val grouped = groupResult(dataSets)
-          val reduced = dataSets.map(reducer)
-          reduced.flatten.foreach { value =>
-            val filtered = dataSets.filter(filter(_, FacetOption(value = value, hitCount = 0))).toSet
-            withClue(s"with option $key, grouped grouped and datasets ${dataSets.map(reducer)}") {
-              grouped.get(value) match {
-                case Some(group) => group should equal(filtered)
-                case None        => filtered.size should equal(0)
+          val reduced = dataSets.map(reducer).flatten
+
+          whenever(!reduced.isEmpty) {
+            reduced.foreach { value =>
+              val filtered = dataSets.filter(filter(_, FacetOption(value = value, hitCount = 0))).toSet
+              withClue(s"with option $key, grouped grouped and datasets ${dataSets.map(reducer)}") {
+                grouped.get(value) match {
+                  case Some(group) => group should equal(filtered)
+                  case None        => filtered.size should equal(0)
+                }
               }
             }
           }
@@ -159,13 +163,15 @@ class FacetSpec extends BaseApiSpec {
             val groupedResult = groupResult(dataSets)
             val facet = getFacet(result)
 
-            facet.options.foreach { facetOption ⇒
-              withClue(s"With reduced values (${groupedResult.mapValues(_.size)}) and facetOption ${facetOption}: ") {
-                if (facetOption.hitCount != 0) {
-                  groupedResult.contains(facetOption.value) should be(true)
-                  facetOption.hitCount should be(groupedResult(facetOption.value).size)
-                } else {
-                  groupedResult.contains(facetOption.value) should be(false)
+            whenever(!facet.options.isEmpty) {
+              facet.options.foreach { facetOption ⇒
+                withClue(s"With reduced values (${groupedResult.mapValues(_.size)}) and facetOption ${facetOption}: ") {
+                  if (facetOption.hitCount != 0) {
+                    groupedResult.contains(facetOption.value) should be(true)
+                    facetOption.hitCount should be(groupedResult(facetOption.value).size)
+                  } else {
+                    groupedResult.contains(facetOption.value) should be(false)
+                  }
                 }
               }
             }
@@ -174,7 +180,7 @@ class FacetSpec extends BaseApiSpec {
 
         describe("with query") {
           it("with matched facet options") {
-            checkFacetsWithQuery(textQueryGen(filterQueryGen), smallIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(filterQueryGen), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 
@@ -184,8 +190,6 @@ class FacetSpec extends BaseApiSpec {
                   val facetDataSets = dataSets.filter(filter(_, option))
 
                   withClue(s"For option ${option} and grouped datasets ${groupResult(dataSets).mapValues(_.size)} and all options ${facet.options}") {
-                    // (Sometimes when ES gets super-stressed the hitCounts can be off by one - at least I think that's the
-                    // problem here, because it's off by one extremely rarely)
                     facetDataSets.size.toLong should equal(option.hitCount)
                   }
                 }
@@ -194,16 +198,20 @@ class FacetSpec extends BaseApiSpec {
           }
 
           it("with unmatched facet options") {
-            checkFacetsWithQuery(textQueryGen(unspecificQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 
               searchWithoutFacetFilter(query, facetType, routes, outerResult, allDataSets) { (innerResult, innerDataSets) =>
-                facet.options.filter(!_.matched).foreach { option ⇒
-                  val facetDataSets = innerDataSets.filter(filter(_, option))
+                val unmatched = facet.options.filter(!_.matched)
 
-                  withClue(s"For option ${option} and grouped datasets ${groupResult(innerDataSets).mapValues(_.size)}") {
-                    facetDataSets.size shouldEqual option.hitCount
+                whenever(!unmatched.isEmpty) {
+                  unmatched.foreach { option ⇒
+                    val facetDataSets = innerDataSets.filter(filter(_, option))
+
+                    withClue(s"For option ${option} and grouped datasets ${groupResult(innerDataSets).mapValues(_.size)}") {
+                      facetDataSets.size shouldEqual option.hitCount
+                    }
                   }
                 }
               }
@@ -213,11 +221,11 @@ class FacetSpec extends BaseApiSpec {
 
         describe("exact match facets") {
           it("should show filters that have records but not in this search as facet options with 0 results") {
-
+            //TODO
           }
 
           it("should not show filters that do not have records") {
-            checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen), indexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 
@@ -290,7 +298,7 @@ class FacetSpec extends BaseApiSpec {
           }
 
           it("for unmatched facet options") {
-            checkFacetsWithQuery(textQueryGen(unspecificQueryGen), facetSizeGen = Gen.const(Int.MaxValue)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(queryGen), facetSizeGen = Gen.const(Int.MaxValue)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 
@@ -321,10 +329,12 @@ class FacetSpec extends BaseApiSpec {
     describe("should never generate a facet size bigger than what was asked for") {
       checkFacetsBoth { (dataSets: List[DataSet], facetSize: Int) ⇒
         val result = responseAs[SearchResult]
-        val facets = FacetType.all.flatMap(facetType ⇒ result.facets.get.find(facetType.id.equals(_)))
+        val facets = FacetType.all.flatMap(facetType ⇒ result.facets.get.find(facet => facetType.id.equals(facet.id)))
 
-        facets.foreach { facet ⇒
-          facet.options.size should be <= facetSize
+        whenever(!facets.isEmpty) {
+          facets.foreach { facet ⇒
+            facet.options.size should be <= facetSize
+          }
         }
       }
     }
@@ -334,7 +344,7 @@ class FacetSpec extends BaseApiSpec {
       def queryToInt(query: Query) = query.publishers.size
 
       val queryGen = for {
-        publishers <- Gen.nonEmptyBuildableOf[Set[FilterValue[String]], FilterValue[String]](publisherQueryGen)
+        publishers <- smallSet(publisherQueryGen)
       } yield new Query(publishers = publishers)
 
       genericFacetSpecs(Publisher, reducer, queryToInt, queryGen)
@@ -345,9 +355,8 @@ class FacetSpec extends BaseApiSpec {
       def queryToInt(query: Query) = query.formats.size
 
       val queryGen = for {
-        query <- unspecificQueryGen
-        formats <- Gen.nonEmptyBuildableOf[Set[FilterValue[String]], FilterValue[String]](formatQueryGen)
-      } yield query.copy(formats = formats, publishers = Set())
+        formats <- smallSet(formatQueryGen)
+      } yield Query(formats = formats)
 
       genericFacetSpecs(Format, reducer, queryToInt, queryGen)
     }
@@ -365,11 +374,13 @@ class FacetSpec extends BaseApiSpec {
             facet2 ← options.filterNot(_ == facet1)
           } yield ((facet1.lowerBound.get, facet1.upperBound.get), (facet2.lowerBound.get, facet2.upperBound.get))
 
-          allFacetPairings.foreach { pair ⇒
-            val optionValues = options.map(_.value)
-            val dataSetYears = dataSets.map(_.temporal.getOrElse("(no temporal)"))
-            withClue(s"for options $optionValues and dataSet years $dataSetYears") {
-              overlaps(pair) should be(false)
+          whenever(!allFacetPairings.isEmpty) {
+            allFacetPairings.foreach { pair ⇒
+              val optionValues = options.map(_.value)
+              val dataSetYears = dataSets.map(_.temporal.getOrElse("(no temporal)"))
+              withClue(s"for options $optionValues and dataSet years $dataSetYears") {
+                overlaps(pair) should be(false)
+              }
             }
           }
         }
@@ -378,12 +389,12 @@ class FacetSpec extends BaseApiSpec {
       describe("should be consistent with grouping all the facet results by temporal coverage year") {
         def getDataSetYears(dataSets: List[DataSet]) = dataSets.map(_.temporal.map(temporal ⇒ temporal.start.flatMap(_.date.map(_.getYear)) + "-" + temporal.end.flatMap(_.date.map(_.getYear))).getOrElse("(no temporal)"))
 
-        describe("for unmatched facets") {
-          it("with no query") {
-            checkFacetsNoQuery { (dataSets, facetSize) ⇒
-              val result = responseAs[SearchResult]
-              val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+        it("with no query") {
+          checkFacetsNoQuery { (dataSets, facetSize) ⇒
+            val result = responseAs[SearchResult]
+            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
+            whenever(!yearFacet.options.isEmpty) {
               yearFacet.options.foreach { option ⇒
                 val matchingDataSets = filterDataSetsForYearRange(dataSets, option.lowerBound.get, option.upperBound.get)
 
@@ -393,14 +404,24 @@ class FacetSpec extends BaseApiSpec {
               }
             }
           }
+        }
 
-          describe("with a query") {
-            it("for matched facet options") {
-              checkFacetsWithQuery(textQueryGen(unspecificQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
-                val outerResult = responseAs[SearchResult]
-                val yearFacet = outerResult.facets.get.find(_.id.equals(Year.id)).get
+        describe("with a query") {
+          it("for matched facet options") {
+            val queryGen = (for {
+              dateFrom <- Generators.someBiasedOption(dateFromGen)
+              dateTo <- Generators.someBiasedOption(dateToGen)
+            } yield Query(dateFrom = dateFrom, dateTo = dateTo))
+              .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined)
 
-                yearFacet.options.filter(_.matched).foreach { option ⇒
+            checkFacetsWithQuery(textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+              val outerResult = responseAs[SearchResult]
+              val yearFacet = outerResult.facets.get.find(_.id.equals(Year.id)).get
+
+              val matched = yearFacet.options.filter(_.matched)
+
+              whenever(!matched.isEmpty && outerResult.strategy.get == MatchAll) {
+                matched.foreach { option ⇒
                   val facetDataSets = filterDataSetsForYearRange(dataSets, option.lowerBound.get, option.upperBound.get)
 
                   withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
@@ -409,14 +430,18 @@ class FacetSpec extends BaseApiSpec {
                 }
               }
             }
+          }
 
-            it("for unmatched facet options") {
-              checkFacetsWithQuery(textQueryGen(unspecificQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
-                val outerResult = responseAs[SearchResult]
-                val yearFacet = outerResult.facets.get.find(_.id.equals(Year.id)).get
+          it("for unmatched facet options") {
+            checkFacetsWithQuery(textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+              val outerResult = responseAs[SearchResult]
+              val yearFacet = outerResult.facets.get.find(_.id.equals(Year.id)).get
 
-                searchWithoutFacetFilter(query, Year, routes, outerResult, allDataSets) { (innerResult, innerDataSets) =>
-                  yearFacet.options.filter(!_.matched).foreach { option ⇒
+              searchWithoutFacetFilter(query, Year, routes, outerResult, allDataSets) { (innerResult, innerDataSets) =>
+                val unmatched = yearFacet.options.filter(!_.matched)
+
+                whenever(!unmatched.isEmpty) {
+                  unmatched.foreach { option ⇒
                     val facetDataSets = filterDataSetsForYearRange(innerDataSets, option.lowerBound.get, option.upperBound.get)
 
                     withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
@@ -428,42 +453,28 @@ class FacetSpec extends BaseApiSpec {
             }
           }
         }
-
-        it("for matched facets") {
-          checkFacetsWithQuery() { (dataSets, facetSize, query, allDataSets, routes) ⇒
-            val result = responseAs[SearchResult]
-            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-            yearFacet.options.filter(_.matched).foreach { option ⇒
-              val queryFilteredDataSets = filterDataSetsForDateRange(dataSets, query.dateFrom, query.dateTo)
-              val facetDataSets = filterDataSetsForYearRange(queryFilteredDataSets, option.lowerBound.get, option.upperBound.get)
-
-              withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
-                facetDataSets.size shouldEqual option.hitCount
-              }
-            }
-          }
-        }
       }
 
-      describe("when no query") {
+      describe("with no query") {
         it("should generate even facets") {
           checkFacetsNoQuery { (dataSets, facetSize) ⇒
             val result = responseAs[SearchResult]
             val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
-            yearFacet.options.foreach { option ⇒
-              val upperBound = option.upperBound.get.toInt
-              val lowerBound = option.lowerBound.get.toInt
-              val size = upperBound - lowerBound + 1
+            whenever(!yearFacet.options.isEmpty) {
+              yearFacet.options.foreach { option ⇒
+                val upperBound = option.upperBound.get.toInt
+                val lowerBound = option.lowerBound.get.toInt
+                val size = upperBound - lowerBound + 1
 
-              option.value should equal(
-                if (lowerBound == upperBound) lowerBound.toString
-                else s"$lowerBound - " + s"$upperBound"
-              )
-              YearFacetDefinition.YEAR_BIN_SIZES should contain(size)
-              if (facetSize > 1) withClue(s"[$lowerBound-$upperBound with size $size]") {
-                lowerBound % size shouldEqual 0
+                option.value should equal(
+                  if (lowerBound == upperBound) lowerBound.toString
+                  else s"$lowerBound - " + s"$upperBound"
+                )
+                YearFacetDefinition.YEAR_BIN_SIZES should contain(size)
+                if (facetSize > 1) withClue(s"[$lowerBound-$upperBound with size $size]") {
+                  lowerBound % size shouldEqual 0
+                }
               }
             }
           }

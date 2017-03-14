@@ -46,4 +46,4 @@ variables in EditSource += ("version", version.value)
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 // sbt.Keys.fork in Test := false
-javaOptions in (Test) ++= Seq("-Xms3500M", "-Xmx3500M", "-XX:+CMSClassUnloadingEnabled")
+javaOptions in (Test) ++= Seq("-Xms3500M", "-Xmx3500M", "-XX:+CMSClassUnloadingEnabled", "-XX:-UseGCOverheadLimit")
