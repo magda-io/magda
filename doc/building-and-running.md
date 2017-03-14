@@ -46,8 +46,8 @@ The easiest way to run these databases is with Minikube.
 First, build and push the Docker containers:
 
 ```bash
-docker build -t localhost:5000/data61/elasticsearch-kubernetes:2.4.1 -f deploy/docker/elasticsearch-kubernetes.dockerfile deploy/docker
-docker push localhost:5000/data61/elasticsearch-kubernetes:2.4.1
+docker build -t localhost:5000/data61/elasticsearch-kubernetes:latest -f deploy/docker/elasticsearch-kubernetes.dockerfile deploy/docker
+docker push localhost:5000/data61/elasticsearch-kubernetes:latest
 
 docker build -t localhost:5000/data61/registry-datastore:latest registry-datastore
 docker push localhost:5000/data61/registry-datastore:latest
