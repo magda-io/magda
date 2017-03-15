@@ -108,6 +108,7 @@ class LanguageAnalyzerSpec extends BaseApiSpec {
           case term if term.last.toLower.equals('s') => term.take(term.length - 1)
           case term                                  => term + "s"
         }
+        .filter(_.matches(".*[A-Za-z].*"))
 
       doTest(innerTermExtractor)
     }

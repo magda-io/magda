@@ -68,18 +68,24 @@ object Generators {
   } yield dateTime.atOffset(
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds)
   )
-  
-  
-//  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf("-", ".", " ", "'")))
-//  val textGen = Gen.frequency((1, Gen.const("")), (9, nonEmptyTextGen))
-//  val nonEmptyTextGen = for {
-//    firstChar <- Gen.alphaNumChar
-//    rest <- Gen.listOf(textCharGen).map(_.mkString)
-//  } yield (firstChar.toString + rest)
 
-  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf("-", ".", " ", "'")))
-  val textGen = Gen.listOf(textCharGen).map(_.mkString)
-  val nonEmptyTextGen = Gen.nonEmptyListOf(textCharGen).map(_.mkString)
+
+  val filterWords = Set("in", "to", "as", "by", "from")
+  val filterWordsWithSpace = filterWords.map(_ + " ")
+
+  val alphaNumRegex = ".*[a-zA-Z0-9].*".r
+  
+  // TODO: It'd be really cool to have arbitrary characters in here but some of them mess up ES for some
+  // reason - if there's time later on it'd be good to find out exactly what ES can accept because
+  // right now we're only testing english characters.
+  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf('-', '.', ' ', ''')))
+
+  val nonEmptyTextGen = for {
+    before <- listSizeBetween(0, 50, textCharGen).map(_.mkString)
+    middle <- Gen.alphaNumChar
+    after <- listSizeBetween(0, 50, textCharGen).map(_.mkString)
+  } yield (before + middle.toString + after)
+  val textGen = Gen.frequency((15, nonEmptyTextGen), (1, Gen.const("")))
 
   def apiDateGen(start: Instant, end: Instant) = for {
     date <- someBiasedOption(offsetDateTimeGen(start, end))
