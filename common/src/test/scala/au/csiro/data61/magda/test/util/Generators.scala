@@ -68,6 +68,18 @@ object Generators {
   } yield dateTime.atOffset(
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds)
   )
+  
+  
+//  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf("-", ".", " ", "'")))
+//  val textGen = Gen.frequency((1, Gen.const("")), (9, nonEmptyTextGen))
+//  val nonEmptyTextGen = for {
+//    firstChar <- Gen.alphaNumChar
+//    rest <- Gen.listOf(textCharGen).map(_.mkString)
+//  } yield (firstChar.toString + rest)
+
+  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf("-", ".", " ", "'")))
+  val textGen = Gen.listOf(textCharGen).map(_.mkString)
+  val nonEmptyTextGen = Gen.nonEmptyListOf(textCharGen).map(_.mkString)
 
   def apiDateGen(start: Instant, end: Instant) = for {
     date <- someBiasedOption(offsetDateTimeGen(start, end))
@@ -88,7 +100,6 @@ object Generators {
     name <- someBiasedOption(nameGen)
     homePage <- someBiasedOption(arbitrary[String].map(_.take(50)))
     email <- someBiasedOption(arbitrary[String].map(_.take(50)))
-    //    extraFields <- Gen.mapOf(Gen.zip(keyGen, arbitrary[String]))
   } yield new Agent(name, homePage, email)
 
   val durationGen = for {
@@ -118,8 +129,8 @@ object Generators {
 
   val regionSourceGenInner = for {
     name <- Gen.uuid.map(_.toString)
-    idProperty <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
-    nameProperty <- Gen.nonEmptyListOf(Gen.alphaNumChar).map(_.mkString)
+    idProperty <- nonEmptyTextGen
+    nameProperty <- nonEmptyTextGen
     includeIdInName <- arbitrary[Boolean]
     order <- Gen.posNum[Int]
   } yield RegionSource(
@@ -157,7 +168,7 @@ object Generators {
   def regionGen(thisGeometryGen: Gen[Geometry]) = for {
     regionSource <- regionSourceGen.flatMap(Gen.oneOf(_))
     id <- Gen.uuid.map(_.toString)
-    name <- Gen.alphaNumStr
+    name <- textGen
     geometry <- thisGeometryGen
     order <- Gen.posNum[Int]
   } yield (regionSource, JsObject(
@@ -228,11 +239,9 @@ object Generators {
     }
 
   def locationGen(geometryGen: Gen[Geometry]) = for {
-    text <- someBiasedOption(Gen.alphaNumStr)
+    text <- someBiasedOption(textGen)
     geoJson <- someBiasedOption(geometryGen)
   } yield new Location(text, geoJson)
-
-  val nonEmptyString = Gen.choose(1, 20).flatMap(Gen.listOfN(_, Gen.alphaNumChar).map(_.mkString))
 
   def cachedListGen[T](gen: Gen[T], size: Int) = {
     var cache: Option[List[T]] = None
@@ -250,8 +259,8 @@ object Generators {
     }
   }
 
-  val descWordGen = cachedListGen(nonEmptyString.map(_.take(50)), 1000)
-  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyString.map(_.take(50))).map(_.mkString(" ")), 50)
+  val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50)), 1000)
+  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextGen.map(_.take(50))).map(_.mkString(" ")), 50)
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
@@ -259,7 +268,7 @@ object Generators {
     MediaTypes.`application/json`,
     MediaTypes.`application/octet-stream`
   ))
-  val randomFormatGen = cachedListGen(nonEmptyString, 50)
+  val randomFormatGen = cachedListGen(nonEmptyTextGen, 50)
 
   def textGen(inner: Gen[List[String]]) = inner
     .flatMap(list => Gen.choose(0, Math.min(100, list.length)).map((_, list)))
@@ -280,8 +289,8 @@ object Generators {
   } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).getOrElse(randomFormat))
 
   val distGen = for {
-    title <- nonEmptyString
-    description <- someBiasedOption(nonEmptyString)
+    title <- nonEmptyTextGen
+    description <- someBiasedOption(nonEmptyTextGen)
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
     license <- someBiasedOption(licenseGen)
@@ -308,7 +317,7 @@ object Generators {
     identifier <- Gen.delay {
       incrementer.incrementAndGet()
     }
-    title <- someBiasedOption(Gen.alphaNumStr.map(_.take(100)))
+    title <- someBiasedOption(textGen.map(_.take(100)))
     description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
@@ -317,8 +326,8 @@ object Generators {
     accrualPeriodicity <- someBiasedOption(periodicityGen)
     spatial <- noneBiasedOption(locationGen(geometryGen(6, coordGen())))
     temporal <- someBiasedOption(periodOfTimeGen)
-    theme <- Gen.listOf(nonEmptyString)
-    keyword <- Gen.listOf(nonEmptyString)
+    theme <- Gen.listOf(nonEmptyTextGen)
+    keyword <- Gen.listOf(nonEmptyTextGen)
     contactPoint <- someBiasedOption(agentGen(arbitrary[String].map(_.take(50))))
     distributions <- listSizeBetween(1, 5, distGen)
     landingPage <- someBiasedOption(arbitrary[String].map(_.take(50)))

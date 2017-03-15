@@ -304,7 +304,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         }
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy)))),
-      setToOption(query.formats)(seq => should(seq.map(formatQuery))),
+      setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy)))),
       dateQueries(query.dateFrom, query.dateTo),
       setToOption(query.regions)(seq => should(seq.map(region => regionIdQuery(region, indices))))
     )
@@ -327,7 +327,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
-      client.execute(ElasticDsl.search in indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)) query facetQuery start start.toInt limit limit)
+      client.execute(ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)))
+        .query(new SimpleStringQueryDefinition(cleanStringForEs(facetQuery)))
+        .start(start.toInt)
+        .limit(limit))
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more

@@ -73,7 +73,7 @@ class LanguageAnalyzerSpec extends BaseApiSpec {
       Get(s"""/facets/publisher/options/search?facetQuery=${encodeForUrl(publisherName)}&limit=${tuples.size}""") ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
-        withClue(s"publisher: ${publisherName} options ${result.options} publishers ${tuples.map(_._1).flatMap(_.publisher).map(_.name)}") {
+        withClue(s"publisher: ${publisherName} options ${result.options}") {
           result.options.exists(_.value.contains(publisherName)) should be(true)
         }
       }
@@ -87,8 +87,8 @@ class LanguageAnalyzerSpec extends BaseApiSpec {
       Get(s"""/facets/format/options/search?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
-        withClue(s"format: ${formatName} options ${result.options} formats ${tuples.map(_._1).flatMap(_.distributions).flatMap(_.format)}") {
-          result.options.exists(_.value.equals(formatName)) should be(true)
+        withClue(s"format: ${formatName} options ${result.options}") {
+          result.options.exists(_.value.contains(formatName)) should be(true)
         }
       }
     }

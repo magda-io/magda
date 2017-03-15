@@ -53,7 +53,7 @@ object ApiGenerators {
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = listSizeBetween(1, 3, gen).map(_.toSet)
 
   val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
-  val formatQueryGenInner = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyString))
+  val formatQueryGenInner = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyTextGen))
     .suchThat(word => !filterWords.contains(word.toLowerCase))
   def formatQueryGen(implicit config: Config) = filterValueGen(formatQueryGenInner)
 
@@ -63,7 +63,7 @@ object ApiGenerators {
 
   val filterWords = Set("in", "to", "as", "by", "from")
 
-  val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyString))
+  val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
     .suchThat(word => !filterWords.contains(word.toLowerCase))
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
   def innerRegionQueryGen(implicit config: Config): Gen[Region] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {

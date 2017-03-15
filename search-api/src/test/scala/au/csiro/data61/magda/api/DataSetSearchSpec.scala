@@ -90,9 +90,6 @@ class DataSetSearchSpec extends BaseApiSpec {
               whenever(response.strategy.get == MatchAll && !response.dataSets.isEmpty) {
                 response.dataSets.foreach { dataSet =>
                   withClue(s"dataSet term $quote") {
-//                    def launder(string: String) = string.toLowerCase.replaceAll("\\s", "")
-
-//                    launder(dataSet.toString).contains(launder(quote))
                     dataSet.toString.contains(quote)
                   }
                 }
@@ -136,12 +133,11 @@ class DataSetSearchSpec extends BaseApiSpec {
                   case _ => true
                 }
 
-                // TODO: The following are slightly flakey because they're imitating a keyword search with "contains"
                 val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
                 val publisherMatched = if (!query.publishers.isEmpty) {
                   query.publishers.exists { queryPublisher =>
                     queryPublisher match {
-                      case Specified(specifiedPublisher) => dataSetPublisherName.map(_.toLowerCase.contains(specifiedPublisher.toLowerCase)).getOrElse(false)
+                      case Specified(specifiedPublisher) => dataSetPublisherName.map(_.toLowerCase.equals(specifiedPublisher.toLowerCase)).getOrElse(false)
                       case Unspecified()                 => dataSet.publisher.flatMap(_.name).isEmpty
                     }
                   }
@@ -151,7 +147,7 @@ class DataSetSearchSpec extends BaseApiSpec {
                   query.formats.exists(queryFormat =>
                     dataSet.distributions.exists(distribution =>
                       queryFormat match {
-                        case Specified(specifiedFormat) => distribution.format.map(_.toLowerCase.contains(specifiedFormat.toLowerCase)).getOrElse(false)
+                        case Specified(specifiedFormat) => distribution.format.map(_.toLowerCase.equals(specifiedFormat.toLowerCase)).getOrElse(false)
                         case Unspecified()              => distribution.format.isEmpty
                       }
                     )
@@ -223,14 +219,18 @@ class DataSetSearchSpec extends BaseApiSpec {
 
         def doFormatTest(queryGen: Gen[Query]) = {
           doFilterTest(queryGen) { (query, response) =>
+
             response.dataSets.foreach { dataSet =>
               val dataSetFormats = dataSet.distributions.flatMap(_.format).distinct
               val queryFormats = query.formats.filter(_.isDefined)
               whenever(!queryFormats.isEmpty) {
                 withClue(s"query formats $queryFormats and dataset formats $dataSetFormats") {
                   queryFormats.exists { queryFormat =>
+
                     queryFormat match {
-                      case Specified(specifiedFormat) => queryFormat.map(_.toLowerCase.equals(specifiedFormat.toLowerCase)).getOrElse(false)
+                      case Specified(specifiedFormat) =>
+                        //                        println(queryFormat + " " + specifiedFormat)
+                        dataSetFormats.exists(_.toLowerCase.equals(specifiedFormat.toLowerCase))
                     }
                   } should be(true)
                 }
@@ -287,6 +287,7 @@ class DataSetSearchSpec extends BaseApiSpec {
         forAll(mediumIndexGen, textQueryGen(queryGen)) { (indexTuple, queryTuple) ⇒
           val (_, dataSets, routes) = indexTuple
           val (textQuery, query) = queryTuple
+
           Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
@@ -356,7 +357,9 @@ class DataSetSearchSpec extends BaseApiSpec {
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
-        whenever(!textQuery.toLowerCase.contains("or") && !textQuery.toLowerCase.contains("and")) {
+        whenever(textQuery.trim.equals(textQuery) && !textQuery.contains("  ") &&
+          !textQuery.toLowerCase.contains("or") && !textQuery.toLowerCase.contains("and")) {
+
           Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
@@ -465,7 +468,7 @@ class DataSetSearchSpec extends BaseApiSpec {
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
-        whenever(!query.equals(Query())) {
+        whenever(!textQuery.contains("  ") && !query.equals(Query())) {
           Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
             status shouldBe OK
 

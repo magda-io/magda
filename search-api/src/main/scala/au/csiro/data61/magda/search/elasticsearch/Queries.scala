@@ -28,23 +28,18 @@ object Queries {
     )
   }
 
-  def exactPublisherQuery(publisher: FilterValue[String]) = handleFilterValue(publisher, (p: String) => termQuery("publisher.name.not_analyzed", p), "publisher.name.not_analyzed")
-  def baseFormatQuery(formatString: String) = nestedQuery("distributions")
-    .query(matchQuery("distributions.format", formatString))
+  def exactPublisherQuery(publisher: FilterValue[String]) = publisherQuery(SearchStrategy.MatchAll)(publisher)
+  def baseFormatQuery(strategy: SearchStrategy, formatString: String) = nestedQuery("distributions")
+    .query(strategy match {
+      case SearchStrategy.MatchAll  => termQuery("distributions.format.not_analyzed", formatString)
+      case SearchStrategy.MatchPart => matchQuery("distributions.format", formatString)
+    })
     .scoreMode(ScoreMode.Avg)
-  def formatQuery(field: String, formatValue: FilterValue[String]): QueryDefinition = {
+  def formatQuery(strategy: SearchStrategy)(formatValue: FilterValue[String]): QueryDefinition = {
     formatValue match {
-      case Specified(inner) => baseFormatQuery(inner)
-      case Unspecified()    => nestedQuery("distributions").query(boolQuery().not(existsQuery(field))).scoreMode(ScoreMode.Avg)
+      case Specified(inner) => baseFormatQuery(strategy, inner)
+      case Unspecified()    => nestedQuery("distributions").query(boolQuery().not(existsQuery("distributions.format"))).scoreMode(ScoreMode.Avg)
     }
-  }
-
-  def formatQuery(formatValue: FilterValue[String]): QueryDefinition = {
-    formatQuery("distributions.format", formatValue)
-  }
-
-  def exactFormatQuery(format: FilterValue[String]) = {
-    formatQuery("distributions.format.not_analyzed", format)
   }
 
   def regionIdQuery(regionValue: FilterValue[Region], indices: Indices)(implicit config: Config) = {
