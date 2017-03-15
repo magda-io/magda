@@ -56,15 +56,27 @@ trait RegistryConverters extends RegistryProtocols {
       theme = dcatStrings.extract[String]('themes.? / *),
       keyword = dcatStrings.extract[String]('keywords.? / *),
       contactPoint = None, // TODO
-      distributions = distributions.extract[JsObject]('distributions.? / *).map(convertDistribution(_, hit)), // TODO
+      distributions = distributions.extract[JsObject]('distributions.? / *).map(convertDistribution(_, hit)),
       landingPage = dcatStrings.extract[String]('landingPage.?)
     )
   }
 
   private def convertDistribution(distribution: JsObject, hit: RegistryRecord): Distribution = {
     val distributionRecord = distribution.convertTo[RegistryRecord]
+    val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
+
     Distribution(
-      title = distributionRecord.name
+      title = dcatStrings.extract[String]('title.?).getOrElse(distributionRecord.name),
+      description = dcatStrings.extract[String]('description.?),
+      issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
+      modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
+      license = None, //TODO dcatStrings.extract[String]('license.?),
+      rights = dcatStrings.extract[String]('rights.?),
+      accessURL = dcatStrings.extract[String]('accessURL.?),
+      downloadURL = dcatStrings.extract[String]('downloadURL.?),
+      byteSize = None, // TODO: dcatStrings.extract[String]('byteSize.?),
+      mediaType = None, // TODO
+      format = dcatStrings.extract[String]('format.?)
     )
   }
 
