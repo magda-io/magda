@@ -81,9 +81,9 @@ object Generators {
   val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf('-', '.', ' ', ''')))
 
   val nonEmptyTextGen = for {
-    before <- listSizeBetween(0, 50, textCharGen).map(_.mkString)
+    before <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
     middle <- Gen.alphaNumChar
-    after <- listSizeBetween(0, 50, textCharGen).map(_.mkString)
+    after <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
   } yield (before + middle.toString + after)
   val textGen = Gen.frequency((15, nonEmptyTextGen), (1, Gen.const("")))
 
