@@ -4,8 +4,8 @@ import java.time.format.DateTimeParseException
 import java.time.{OffsetDateTime, ZoneOffset}
 
 import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.model.misc.{DataSet, Distribution}
-import au.csiro.data61.magda.model.temporal.{ApiDate, PeriodOfTime}
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.temporal.{ApiDate, PeriodOfTime, Periodicity}
 import spray.json.{DefaultJsonProtocol, JsArray, JsObject}
 import spray.json.lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._
@@ -50,14 +50,14 @@ trait RegistryConverters extends RegistryProtocols {
       description = dcatStrings.extract[String]('description.?),
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
       modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
-      language = None, // TODO: dcatStrings.extract[String]('languages.? / element(0)),
-      publisher = None, //dcatStrings.extract[String]('publisher.?),
-      accrualPeriodicity = None, // dcatStrings.extract[String]('accrualPeriodicity.?),
-      spatial = None, // TODO
+      language = dcatStrings.extract[String]('languages.? / find(_ => true)),
+      publisher = Some(Agent(dcatStrings.extract[String]('publisher.?))),
+      accrualPeriodicity = dcatStrings.extract[String]('accrualPeriodicity.?).map(Periodicity.fromString(_)),
+      spatial = dcatStrings.extract[String]('spatial.?).map(Location(_)), // TODO: move this to the CKAN Connector
       temporal = temporal,
       theme = dcatStrings.extract[String]('themes.? / *),
       keyword = dcatStrings.extract[String]('keywords.? / *),
-      contactPoint = None, // TODO
+      contactPoint = dcatStrings.extract[String]('contactPoint.?).map(cp => new Agent(Some(cp))),
       distributions = distributions.extract[JsObject]('distributions.? / *).map(convertDistribution(_, hit)),
       landingPage = dcatStrings.extract[String]('landingPage.?)
     )
@@ -67,18 +67,27 @@ trait RegistryConverters extends RegistryProtocols {
     val distributionRecord = distribution.convertTo[RegistryRecord]
     val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
 
+    val mediaTypeString = dcatStrings.extract[String]('mediaType.?)
+    val formatString = dcatStrings.extract[String]('format.?)
+    val urlString = dcatStrings.extract[String]('downloadURL.?)
+    val descriptionString = dcatStrings.extract[String]('description.?)
+
+    // Get the mediatype first because we'll need it to determine the format if none is provided.
+    val mediaType = Distribution.parseMediaType(mediaTypeString, formatString, urlString)
+    val format = Distribution.parseFormat(formatString, urlString, mediaType, descriptionString)
+
     Distribution(
       title = dcatStrings.extract[String]('title.?).getOrElse(distributionRecord.name),
-      description = dcatStrings.extract[String]('description.?),
+      description = descriptionString,
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
       modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
-      license = None, //TODO dcatStrings.extract[String]('license.?),
+      license = dcatStrings.extract[String]('license.?).map(name => new License(Some(name))),
       rights = dcatStrings.extract[String]('rights.?),
       accessURL = dcatStrings.extract[String]('accessURL.?),
-      downloadURL = dcatStrings.extract[String]('downloadURL.?),
+      downloadURL = urlString,
       byteSize = dcatStrings.extract[String]('byteSize.?).flatMap(bs => Try(bs.toInt).toOption),
-      mediaType = None, // TODO
-      format = dcatStrings.extract[String]('format.?)
+      mediaType = mediaType,
+      format = format
     )
   }
 

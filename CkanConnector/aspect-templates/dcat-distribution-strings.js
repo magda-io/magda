@@ -6,6 +6,6 @@ return {
     license: dataset.license_title || undefined,
     accessURL: resource.webstore_url || undefined,
     downloadURL: resource.url || undefined,
-    mediaType: resource.mimetype || undefined,
+    mediaType: resource.mimetype || resource.mimetype_inner || undefined,
     format: resource.format || undefined
 };
