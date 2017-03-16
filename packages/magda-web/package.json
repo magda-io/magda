@@ -53,7 +53,7 @@
     "eject": "react-scripts eject",
     "deploy": "rm -rf node_modules && npm install && npm run deploy-without-reinstall",
     "deploy-without-reinstall": "npm run build && npm run deploy-current",
-    "deploy-current": "bash -c \"aws --profile $npm_package_config_awsProfile s3 sync --delete ./build/ $npm_package_config_awsS3BasePath/$(eval echo $npm_package_config_awsS3Dir)\""
+    "deploy-current": "bash -c \"aws $([ -n \"$npm_package_config_awsProfile\" ] && expr $npm_package_config_awsProfile) s3 sync --delete ./build/ $npm_package_config_awsS3BasePath/$(eval echo $npm_package_config_awsS3Dir)\""
   },
   "eslintConfig": {
     "extends": "./node_modules/react-scripts/config/eslint.js"
