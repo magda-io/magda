@@ -3,7 +3,7 @@ node_js:
 - '6'
 script:
 - pip install --user --upgrade awscli
-- npm test
+#- npm test
 - npm run deploy-without-reinstall
 env:
   global:
