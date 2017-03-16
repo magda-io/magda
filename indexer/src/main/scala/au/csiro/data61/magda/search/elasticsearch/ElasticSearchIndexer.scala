@@ -338,19 +338,6 @@ class ElasticSearchIndexer(
     future
   }
 
-  override def needsReindexing(source: InterfaceConfig): Future[Boolean] = {
-    setupFuture.flatMap(client =>
-      retry(() =>
-        client.execute {
-          ElasticDsl.search in indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType) query matchQuery("catalog", source.name) limit 0
-        }, 10 seconds, 10, logger.error("Failed to get dataset count, {} retries left", _, _))
-        .map { result =>
-          logger.debug("{} reindex check hit count: {}", source.name, result.getHits.getTotalHits)
-          result.getHits.getTotalHits == 0
-        }
-    )
-  }
-
   private def bulkIndex(definition: BulkDefinition): Future[RichBulkResponse] =
     setupFuture.flatMap { client =>
       client.execute(definition)

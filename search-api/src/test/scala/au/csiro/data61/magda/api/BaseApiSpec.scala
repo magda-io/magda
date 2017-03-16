@@ -218,7 +218,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Sha
 
     val indexName = fakeIndices.getIndex(config, Indices.DataSetsIndex)
     val searchQueryer = new ElasticSearchQueryer(fakeIndices)
-    val api = new Api(logger, searchQueryer)
+    val api = new SearchApi(searchQueryer)(config, logger)
     val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
 
     indexer.ready.map { _ =>

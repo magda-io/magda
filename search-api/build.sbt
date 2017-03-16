@@ -7,7 +7,6 @@ libraryDependencies ++= {
   val scalaTestV  = "3.0.1"
   Seq(
        "com.typesafe.akka" %% "akka-http-xml-experimental" % akkaV,
-       "ch.megard" %% "akka-http-cors" % "0.1.5",
        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
        "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
        "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),

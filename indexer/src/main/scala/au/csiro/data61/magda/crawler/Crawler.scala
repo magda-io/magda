@@ -22,26 +22,8 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
   def crawl(indexer: SearchIndexer) = {
     externalInterfaces
       .filter(!_.getInterfaceConfig.ignore)
-      .map { interface =>
-        val interfaceConfig = interface.getInterfaceConfig
-        val needsIndexingFuture = if (config.getBoolean("indexer.alwaysReindex")) {
-          log.info("Indexing {} because indexer.alwaysReindex is true", interfaceConfig.name)
-          Future(true)
-        } else {
-          indexer.needsReindexing(interfaceConfig).map { needsReindexing =>
-            if (needsReindexing) {
-              log.info("Indexing {} because it was determined to have zero records", interfaceConfig.name)
-            } else {
-              log.info("Not indexing {} because it already has records", interfaceConfig.name)
-            }
-            needsReindexing
-          }
-        }
-
-        Source.fromFuture(needsIndexingFuture)
-          .flatMapConcat { needsReindexing => if (needsReindexing) streamForInterface(interface) else Source.empty[(InterfaceConfig, List[DataSet])] }
-      }
-      .reduce((x, y) => Source.combine(x, y)(Merge(_)))
+      .map(streamForInterface)
+      .reduce(Source.combine(_, _)(Merge(_)))
       .map {
         case (source, dataSets) =>
           val filteredDataSets = dataSets
@@ -68,7 +50,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
                 (source, Nil)
             }
       }
-      .runWith(Sink.fold(0)((a, b) => a + b._2.size))
+      .runWith(Sink.fold(0)((countSoFar, thisResult) => countSoFar + thisResult._2.size))
       .map { size =>
         if (size > 0) {
           log.info("Indexed {} datasets", size)
@@ -96,9 +78,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
         createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
       }
       .throttle(1, 1 second, 1, ThrottleMode.Shaping)
-      .mapAsync(1) {
-        case (start, size) => interface.getDataSets(start, size).map((interfaceDef, _))
-      }
+      .mapAsync(1) { batch => interface.getDataSets(batch.start, batch.size).map((interfaceDef, _)) }
       .recover {
         case e: Throwable =>
           log.error(e, "Failed while fetching from {}", interfaceDef.name)
@@ -106,13 +86,15 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
       }
   }
 
-  def createBatches(interfaceDef: InterfaceConfig, start: Long, end: Long): List[(Long, Int)] = {
+  case class Batch(start: Long, size: Int, last: Boolean)
+
+  def createBatches(interfaceDef: InterfaceConfig, start: Long, end: Long): List[Batch] = {
     val length = end - start
     if (length <= 0) {
       Nil
     } else {
       val nextPageSize = math.min(interfaceDef.pageSize, length).toInt
-      (start, nextPageSize) :: createBatches(interfaceDef, start + nextPageSize, end)
+      Batch(start, nextPageSize, false) :: createBatches(interfaceDef, start + nextPageSize, end)
     }
   }
 }
