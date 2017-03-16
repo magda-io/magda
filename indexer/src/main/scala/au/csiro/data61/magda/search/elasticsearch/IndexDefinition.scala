@@ -209,7 +209,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 "regionType" -> JsString(regionSource.name),
                 "regionId" -> JsString(id),
                 "regionName" -> name,
-                "boundingBox" -> createEnvelope(geometry).toJson,
+                "boundingBox" -> createEnvelope(geometry).toJson(EsBoundingBoxFormat),
                 "geometry" -> geometry.toJson,
                 "order" -> JsNumber(regionSource.order)
               ).toJson))

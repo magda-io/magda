@@ -29,7 +29,7 @@ object ElasticSearchImplicits extends Protocols {
 
   implicit object RegionHitAs extends HitReader[Region] {
     override def read(hit: Hit): Either[Throwable, Region] = {
-      Right(hit.to[JsValue].asJsObject.convertTo[Region])
+      Right(hit.to[JsValue].asJsObject.convertTo[Region](esRegionFormat))
     }
   }
 

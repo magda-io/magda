@@ -322,7 +322,7 @@ package misc {
       }
     }
 
-    implicit object BoundingBoxFormat extends JsonFormat[BoundingBox] {
+    object EsBoundingBoxFormat extends JsonFormat[BoundingBox] {
       override def write(region: BoundingBox): JsValue = {
         JsObject(
           "type" -> JsString("envelope"),
@@ -338,20 +338,22 @@ package misc {
             case (JsString("envelope"), JsArray(Vector(
               JsArray(Vector(JsNumber(west), JsNumber(north))),
               JsArray(Vector(JsNumber(east), JsNumber(south)))
-              ))) => BoundingBox(west, south, east, north)
+              ))) => BoundingBox(north, east, south, west)
           }
         }
       }
     }
 
+    val apiBoundingBoxFormat = jsonFormat4(BoundingBox)
+
     implicit val queryRegionFormat = jsonFormat2(QueryRegion.apply)
 
-    implicit object RegionFormat extends JsonFormat[Region] {
+    class RegionFormat(bbFormat: JsonFormat[BoundingBox]) extends JsonFormat[Region] {
       override def write(region: Region): JsValue = JsObject(Map(
         "regionId" -> region.queryRegion.regionId.toJson,
         "regionType" -> region.queryRegion.regionType.toJson,
         "regionName" -> region.regionName.toJson,
-        "boundingBox" -> region.boundingBox.toJson
+        "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson
       ).filter(x => !x._2.equals(JsNull)))
 
       override def read(jsonRaw: JsValue): Region = {
@@ -363,10 +365,13 @@ package misc {
             regionType = json.getFields("regionType").head.convertTo[String]
           ),
           regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
-          boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox])
+          boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat))
         )
       }
     }
+
+    val apiRegionFormat = new RegionFormat(apiBoundingBoxFormat)
+    val esRegionFormat = new RegionFormat(EsBoundingBoxFormat)
 
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
