@@ -3,7 +3,8 @@ node_js:
 - '6'
 script:
 - pip install --user --upgrade awscli
-#- npm test
+- npm test
+- npm config set magda-web:awsProfile ""
 - npm run deploy-without-reinstall
 env:
   global:
