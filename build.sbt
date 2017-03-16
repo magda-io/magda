@@ -4,7 +4,7 @@ name := "magda-metadata"
 
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
-  version := "0.0.19",
+  version := "0.0.20",
   scalaVersion := "2.11.8"
 )
 
@@ -45,5 +45,5 @@ targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
 variables in EditSource += ("version", version.value)
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
-// sbt.Keys.fork in Test := false
-javaOptions in (Test) ++= Seq("-Xms3500M", "-Xmx3500M", "-XX:+CMSClassUnloadingEnabled")
+sbt.Keys.fork in Test := false
+javaOptions in (Test) ++= Seq("-Xms3500M", "-Xmx3500M", "-XX:+CMSClassUnloadingEnabled", "-XX:-UseGCOverheadLimit")

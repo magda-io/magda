@@ -16,27 +16,30 @@ import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.model.misc.Region
-
+import au.csiro.data61.magda.search.SearchStrategy
 
 object Queries {
-  def publisherQuery(publisher: FilterValue[String]) = handleFilterValue(publisher, (p: String) => matchPhraseQuery("publisher.name", p), "publisher.name")
-  def exactPublisherQuery(publisher: FilterValue[String]) = handleFilterValue(publisher, (p: String) => termQuery("publisher.name.untouched", p), "publisher.name.untouched")
-  def baseFormatQuery(formatString: String) = nestedQuery("distributions")
-    .query(matchQuery("distributions.format", formatString))
+  def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String]) = {
+    handleFilterValue(publisher, (p: String) =>
+      strategy match {
+        case SearchStrategy.MatchAll  => termQuery("publisher.name.not_analyzed", p)
+        case SearchStrategy.MatchPart => matchQuery("publisher.name", p)
+      }, "publisher.name"
+    )
+  }
+
+  def exactPublisherQuery(publisher: FilterValue[String]) = publisherQuery(SearchStrategy.MatchAll)(publisher)
+  def baseFormatQuery(strategy: SearchStrategy, formatString: String) = nestedQuery("distributions")
+    .query(strategy match {
+      case SearchStrategy.MatchAll  => termQuery("distributions.format.not_analyzed", formatString)
+      case SearchStrategy.MatchPart => matchQuery("distributions.format", formatString)
+    })
     .scoreMode(ScoreMode.Avg)
-  def formatQuery(field: String, formatValue: FilterValue[String]): QueryDefinition = {
+  def formatQuery(strategy: SearchStrategy)(formatValue: FilterValue[String]): QueryDefinition = {
     formatValue match {
-      case Specified(inner) => baseFormatQuery(inner)
-      case Unspecified()    => nestedQuery("distributions").query(boolQuery().not(existsQuery(field))).scoreMode(ScoreMode.Avg)
+      case Specified(inner) => baseFormatQuery(strategy, inner)
+      case Unspecified()    => nestedQuery("distributions").query(boolQuery().not(existsQuery("distributions.format"))).scoreMode(ScoreMode.Avg)
     }
-  }
-
-  def formatQuery(formatValue: FilterValue[String]): QueryDefinition = {
-    formatQuery("distributions.format", formatValue)
-  }
-
-  def exactFormatQuery(format: FilterValue[String]) = {
-    formatQuery("distributions.format.untokenized", format)
   }
 
   def regionIdQuery(regionValue: FilterValue[Region], indices: Indices)(implicit config: Config) = {
@@ -76,7 +79,7 @@ object Queries {
 
   def handleFilterValue[T](filterValue: FilterValue[T], converter: T => QueryDefinition, field: String) = filterValue match {
     case Specified(inner) => converter(inner)
-    case Unspecified()      => boolQuery().not(existsQuery(field))
+    case Unspecified()    => boolQuery().not(existsQuery(field))
   }
 }
 

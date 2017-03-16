@@ -24,6 +24,7 @@ import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.FilterValue._
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
+import au.csiro.data61.magda.search.SearchStrategy
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -114,14 +115,14 @@ object FacetDefinition {
 
 class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition = {
-    aggregation.terms(Publisher.id).field("publisher.name.untouched").size(limit).missing(config.getString("strings.unspecifiedWord"))
+    aggregation.terms(Publisher.id).field("publisher.name.not_analyzed").size(limit).missing(config.getString("strings.unspecifiedWord"))
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
     should(
-      query.publishers.map(publisherQuery(_))
+      query.publishers.map(publisherQuery(SearchStrategy.MatchPart))
     ).minimumShouldMatch(1)
 
   override def removeFromQuery(query: Query): Query = query.copy(publishers = Set())
@@ -303,7 +304,7 @@ object YearFacetDefinition {
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition =
     aggregation nested Format.id path "distributions" aggs {
-      val termsAgg = aggregation terms "nested" field "distributions.format.untokenized" size limit includeExclude (Seq(), Seq("")) aggs {
+      val termsAgg = aggregation terms "nested" field "distributions.format.not_analyzed" size limit includeExclude (Seq(), Seq("")) aggs {
         aggregation reverseNested "reverse"
       }
 
@@ -328,8 +329,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
-    //    ElasticDsl.matchAllQuery()
-    should(query.formats.map(exactFormatQuery(_)))
+    should(query.formats.map(formatQuery(SearchStrategy.MatchAll)(_)))
       .minimumShouldMatch(1)
 
   override def isFilterOptionRelevant(query: Query)(filterOption: FacetOption): Boolean = query.formats.exists {
@@ -343,7 +343,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def removeFromQuery(query: Query): Query = query.copy(formats = Set())
   override def facetSearchQuery(textQuery: FilterValue[String]) = Query(formats = Set(textQuery))
 
-  override def exactMatchQuery(query: FilterValue[String]): QueryDefinition = exactFormatQuery(query)
+  override def exactMatchQuery(query: FilterValue[String]): QueryDefinition = Queries.formatQuery(SearchStrategy.MatchAll)(query)
 
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
 }

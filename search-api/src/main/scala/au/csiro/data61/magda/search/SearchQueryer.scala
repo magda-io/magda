@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.search
 
 import au.csiro.data61.magda.api.Query
-import au.csiro.data61.magda.api.model.{RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.api.model.{ RegionSearchResult, SearchResult }
 import au.csiro.data61.magda.model.misc._
 
 import scala.concurrent.Future
@@ -20,10 +20,10 @@ object SearchStrategy {
     case MatchPart.name => MatchPart
     case MatchAll.name  => MatchAll
   }
-}
-case object MatchPart extends SearchStrategy {
-  override val name = "match-part"
-}
-case object MatchAll extends SearchStrategy {
-  override val name = "match-all"
+  case object MatchPart extends SearchStrategy {
+    override val name = "match-part"
+  }
+  case object MatchAll extends SearchStrategy {
+    override val name = "match-all"
+  }
 }
