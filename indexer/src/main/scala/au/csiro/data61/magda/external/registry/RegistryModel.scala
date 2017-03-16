@@ -10,6 +10,8 @@ import spray.json.{DefaultJsonProtocol, JsArray, JsObject}
 import spray.json.lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._
 
+import scala.util.Try
+
 case class RegistryRecordsResponse(
   totalCount: Long,
   nextPageToken: Option[String],
@@ -32,14 +34,14 @@ trait RegistryConverters extends RegistryProtocols {
     val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
     val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
 
-//    val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String](element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
-//    val coverageEnd = ApiDate(tryParseDate(temporalCoverage.extract[String](element(0) / 'end.?)), dcatStrings.extract[String]('temporal.? / 'end.?).getOrElse(""))
-//    val temporal = (coverageStart, coverageEnd) match {
-//      case (ApiDate(None, ""), ApiDate(None, "")) => None
-//      case (ApiDate(None, ""), end) => Some(PeriodOfTime(None, Some(end)))
-//      case (start, ApiDate(None, "")) => Some(PeriodOfTime(Some(start), None))
-//      case (start, end) => Some(PeriodOfTime(Some(start), Some(end)))
-//    }
+    val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
+    val coverageEnd = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'end.?)), dcatStrings.extract[String]('temporal.? / 'end.?).getOrElse(""))
+    val temporal = (coverageStart, coverageEnd) match {
+      case (ApiDate(None, ""), ApiDate(None, "")) => None
+      case (ApiDate(None, ""), end) => Some(PeriodOfTime(None, Some(end)))
+      case (start, ApiDate(None, "")) => Some(PeriodOfTime(Some(start), None))
+      case (start, end) => Some(PeriodOfTime(Some(start), Some(end)))
+    }
 
     DataSet(
       identifier = hit.id,
@@ -52,7 +54,7 @@ trait RegistryConverters extends RegistryProtocols {
       publisher = None, //dcatStrings.extract[String]('publisher.?),
       accrualPeriodicity = None, // dcatStrings.extract[String]('accrualPeriodicity.?),
       spatial = None, // TODO
-      temporal = None, // TODO: temporal,
+      temporal = temporal,
       theme = dcatStrings.extract[String]('themes.? / *),
       keyword = dcatStrings.extract[String]('keywords.? / *),
       contactPoint = None, // TODO
@@ -74,7 +76,7 @@ trait RegistryConverters extends RegistryProtocols {
       rights = dcatStrings.extract[String]('rights.?),
       accessURL = dcatStrings.extract[String]('accessURL.?),
       downloadURL = dcatStrings.extract[String]('downloadURL.?),
-      byteSize = None, // TODO: dcatStrings.extract[String]('byteSize.?),
+      byteSize = dcatStrings.extract[String]('byteSize.?).flatMap(bs => Try(bs.toInt).toOption),
       mediaType = None, // TODO
       format = dcatStrings.extract[String]('format.?)
     )
