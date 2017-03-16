@@ -201,7 +201,7 @@ class Search extends Component {
                       searchResults={this.props.datasets}
                       totalNumberOfResults={this.props.hitCount}
                       onClickTag={this.onClickTag}
-                      onToggleDataset ={this.onToggleDataset}
+                      onToggleDataset={this.onToggleDataset}
                       openDataset={this.props.location.query.open}
                   />
                   {this.props.hitCount > 20 &&

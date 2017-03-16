@@ -13,8 +13,8 @@ type RegionRaw = {
 
 export function parseRegion(regionRaw : RegionRaw) : Region {
     let region = {
-        regionId: regionRaw.queryRegion.regionId,
-        regionType: regionRaw.queryRegion.regionType,
+        regionId: regionRaw.regionId,
+        regionType: regionRaw.regionType,
         regionName: regionRaw.regionName,
         boundingBox: regionRaw.boundingBox
     }
