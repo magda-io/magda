@@ -1,7 +1,7 @@
 cluster:
   name: ${CLUSTER_NAME}
   routing.rebalance.enable: replicas
-  routing.allocation.allow_rebalance: always
+  routing.allocation.allow_rebalance: indices_primaries_active
 
 node:
   master: ${NODE_MASTER}
