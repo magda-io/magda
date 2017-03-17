@@ -69,12 +69,11 @@ object Generators {
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds)
   )
 
-
   val filterWords = Set("in", "to", "as", "by", "from")
   val filterWordsWithSpace = filterWords.map(_ + " ")
 
   val alphaNumRegex = ".*[a-zA-Z0-9].*".r
-  
+
   // TODO: It'd be really cool to have arbitrary characters in here but some of them mess up ES for some
   // reason - if there's time later on it'd be good to find out exactly what ES can accept because
   // right now we're only testing english characters.
@@ -355,4 +354,7 @@ object Generators {
     distributions = distributions,
     landingPage = landingPage
   )
+
+  val INDEXED_REGIONS_COUNT = 12
+  val indexedRegionsGen = cachedListGen(regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)
 }

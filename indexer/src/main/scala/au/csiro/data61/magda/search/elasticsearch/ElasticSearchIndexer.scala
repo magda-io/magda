@@ -37,6 +37,7 @@ import com.sksamuel.elastic4s.bulk.RichBulkItemResponse
 import akka.NotUsed
 import com.sksamuel.elastic4s.indexes.{ IndexDefinition => ESIndexDefinition }
 import scala.util.Try
+import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,

@@ -3,23 +3,18 @@ package au.csiro.data61.magda.search.elasticsearch
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.model.misc.{ Format, Publisher }
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.analyzers.{ StopTokenFilter, CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter, StandardTokenizer, PredefinedTokenFilter, TokenFilter, StemmerTokenFilter, NamedStopTokenFilter }
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.{ TcpClient, ElasticDsl }
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
 import spray.json._
-
 import scala.concurrent.Future
-import au.csiro.data61.magda.spatial.RegionSource
 import com.typesafe.config.Config
 import au.csiro.data61.magda.spatial.RegionSources
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
-import com.sksamuel.elastic4s.mappings.PrefixTree
 import com.monsanto.labs.mwundo.GeoJson
 import au.csiro.data61.magda.model.misc.BoundingBox
 import com.vividsolutions.jts.geom.GeometryFactory
@@ -27,10 +22,12 @@ import au.csiro.data61.magda.util.MwundoJTSConversions._
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier
 import com.vividsolutions.jts.geom.Polygon
 import com.vividsolutions.jts.geom.MultiPolygon
-import au.csiro.data61.magda.search.elasticsearch.RegionLoader
 import com.vividsolutions.jts.geom.LinearRing
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import com.vividsolutions.jts.geom.Geometry
+import com.sksamuel.elastic4s.IndexAndTypes.apply
+import scala.math.BigDecimal.double2bigDecimal
+import au.csiro.data61.magda.spatial.RegionLoader
 
 case class IndexDefinition(
     name: String,

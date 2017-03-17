@@ -22,7 +22,7 @@ import spray.json.JsString
 import au.csiro.data61.magda.spatial.RegionSource
 import akka.http.scaladsl.server.Route
 
-class DataSetSearchSpec extends BaseApiSpec {
+class DataSetSearchSpec extends BaseSearchApiSpec {
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {
       val geoFactory = new GeometryFactory()

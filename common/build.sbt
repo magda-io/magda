@@ -25,6 +25,7 @@ libraryDependencies ++= {
        "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test",
        "com.fortysevendeg" %% "scalacheck-datetime" % "0.2.0" % "test",
        "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "5.2.4" % "test",
-       "com.sun.jna" % "jna" % "3.0.9"
+       "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
+       "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
      )
 }

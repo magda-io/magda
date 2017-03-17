@@ -1,44 +1,17 @@
-package au.csiro.data61.magda.search.elasticsearch
+package au.csiro.data61.magda.spatial
 
 import java.io.File
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.settings.ClientConnectionSettings
 import akka.stream.Materializer
 import akka.stream.scaladsl.FileIO
-import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.JsonFraming
 import akka.stream.scaladsl.Source
-import akka.util.ByteString
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.spatial.RegionSource
-import au.csiro.data61.magda.util.Http.getPort
 import spray.json.JsObject
 import spray.json.pimpString
-import akka.http.scaladsl.settings.ConnectionPoolSettings
-import scala.util.Try
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.Keep
-import scala.util.Failure
-import akka.stream.scaladsl.Sink
-import scala.util.Success
-import scala.concurrent.Promise
-import akka.stream.scaladsl.SourceQueue
 import scala.concurrent.Future
-import com.sksamuel.elastic4s.TcpClient
-import com.sksamuel.elastic4s.ElasticDsl
-import spray.json.JsString
-import akka.stream.IOResult
-import au.csiro.data61.magda.spatial.RegionSources
 import com.typesafe.config.Config
-import spray.json.JsValue
 
 trait RegionLoader {
   def setupRegions(): Source[(RegionSource, JsObject), _]

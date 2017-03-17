@@ -49,7 +49,7 @@ import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.util.SetExtractor
 import au.csiro.data61.magda.test.util.Generators
 
-class FacetSpec extends BaseApiSpec {
+class FacetSpec extends BaseSearchApiSpec {
 
   describe("facets") {
     val facetSizes = for (n ← Gen.choose(0, 10)) yield n

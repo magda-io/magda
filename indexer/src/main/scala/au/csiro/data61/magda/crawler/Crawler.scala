@@ -19,7 +19,7 @@ import java.time.Instant
 class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
-
+  
   def crawl(indexer: SearchIndexer) = {
     val crawlFutures = externalInterfaces
       .filter(!_.getInterfaceConfig.ignore)

@@ -20,7 +20,7 @@ import spray.json.JsString
 import au.csiro.data61.magda.spatial.RegionSource
 import akka.http.scaladsl.server.Route
 
-class LanguageAnalyzerSpec extends BaseApiSpec {
+class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
   describe("should return the right dataset when searching for that dataset's") {
     describe("title") {

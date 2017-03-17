@@ -2,21 +2,17 @@ package au.csiro.data61.magda.spatial
 
 import java.nio.file.FileSystems
 import java.nio.file.Files
-
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
-
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.FunSpecLike
 import org.scalatest.Matchers
 import org.scalatest.matchers.BeMatcher
 import org.scalatest.matchers.MatchResult
-
 import com.monsanto.labs.mwundo.GeoJson._
 import com.sksamuel.elastic4s.testkit.ElasticSugar
 import com.typesafe.config.ConfigFactory
 import com.vividsolutions.jts.geom.Envelope
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
@@ -25,7 +21,6 @@ import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
 import au.csiro.data61.magda.search.elasticsearch.Indices
-import au.csiro.data61.magda.search.elasticsearch.RegionLoader
 import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.test.util.MagdaGeneratorTest
 import au.csiro.data61.magda.util.MwundoJTSConversions._

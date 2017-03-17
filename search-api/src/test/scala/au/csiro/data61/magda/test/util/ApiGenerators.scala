@@ -20,8 +20,6 @@ import com.vividsolutions.jts.operation.valid.IsValidOp
 import java.time.Instant
 
 import akka.http.scaladsl.model.MediaTypes
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.http.scaladsl.server.Route
@@ -176,7 +174,4 @@ object ApiGenerators {
       case 2 => char
     }
   }.mkString
-
-  val INDEXED_REGIONS_COUNT = 12
-  val indexedRegionsGen = cachedListGen(regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)
 }
