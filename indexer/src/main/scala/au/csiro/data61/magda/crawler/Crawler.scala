@@ -14,53 +14,59 @@ import com.typesafe.config.Config
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import au.csiro.data61.magda.model.misc.Agent
+import java.time.Instant
 
 class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
 
   def crawl(indexer: SearchIndexer) = {
-    externalInterfaces
+    val crawlFutures = externalInterfaces
       .filter(!_.getInterfaceConfig.ignore)
-      .map(streamForInterface)
-      .reduce(Source.combine(_, _)(Merge(_)))
-      .map {
-        case (source, dataSets) =>
-          val filteredDataSets = dataSets
-            .filterNot(_.distributions.isEmpty)
-            .map(dataSet => dataSet.copy(publisher =
-              dataSet.publisher.orElse(
-                source.defaultPublisherName.map(defaultPublisher => Agent(name = Some(defaultPublisher)))
-              )))
+      .map { interface =>
+        val interfaceSource = streamForInterface(interface)
+        val startInstant = Instant.now
 
-          val ineligibleDataSetCount = dataSets.size - filteredDataSets.size
-          if (ineligibleDataSetCount > 0) {
-            log.info("Filtering out {} datasets from {} because they have no distributions", ineligibleDataSetCount, source.name)
-          }
+        indexer.index(interface.getInterfaceConfig, interfaceSource)
+          .flatMap { result =>
+            log.info("Indexed {} datasets from {} with {} failures", result.successes, interface.getInterfaceConfig.name, result.failures.length)
 
-          (source, filteredDataSets)
-      }
-      .mapAsync(1) {
-        case (source, dataSets) =>
-          indexer.index(source, dataSets)
-            .map(_ => (source, dataSets))
-            .recover {
-              case e: Throwable =>
-                log.error(e, "Failed while indexing")
-                (source, Nil)
+            val futureOpt = if (result.successes > result.failures.length) { // does this need to be tunable?
+              Some(indexer.trim(interface.getInterfaceConfig, startInstant))
+            } else {
+              log.warning("Encountered too many failures to trim old datasets from {}", interface.getInterfaceConfig.name)
+              None
             }
-      }
-      .runWith(Sink.fold(0)((countSoFar, thisResult) => countSoFar + thisResult._2.size))
-      .map { size =>
-        if (size > 0) {
-          log.info("Indexed {} datasets", size)
-          if (config.getBoolean("indexer.makeSnapshots")) {
-            log.info("Snapshotting...")
-            indexer.snapshot()
+
+            futureOpt.map(_.map(_ => result)).getOrElse(Future(result))
           }
-        } else {
-          log.info("Did not need to index anything, no need to snapshot either.")
-        }
+          .recover {
+            case e: Throwable =>
+              log.error(e, "Failed while indexing {}")
+              SearchIndexer.IndexResult(0, Seq())
+          }
+      }
+
+    Future.sequence(crawlFutures)
+      .map(results => results.foldLeft((0l, 0l)) { (soFar, result) =>
+        val (prevSuccesses, prevFailures) = soFar
+        (prevSuccesses + result.successes, prevFailures + result.failures.length)
+      })
+      .map {
+        case (successCount, failureCount) =>
+          if (successCount > 0) {
+            log.info("Indexed {} datasets", successCount)
+            if (config.getBoolean("indexer.makeSnapshots")) {
+              log.info("Snapshotting...")
+              indexer.snapshot()
+            }
+          } else {
+            log.info("Did not successfully index anything, no need to snapshot either.")
+          }
+
+          if (failureCount > 0) {
+            log.warning("Failed to index {} datasets", failureCount)
+          }
       }
       .recover {
         case e: Throwable =>
@@ -68,7 +74,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
       }
   }
 
-  def streamForInterface(interface: ExternalInterface): Source[(InterfaceConfig, List[DataSet]), NotUsed] = {
+  def streamForInterface(interface: ExternalInterface): Source[DataSet, NotUsed] = {
     val interfaceDef = interface.getInterfaceConfig
 
     Source.fromFuture(interface.getTotalDataSetCount())
@@ -78,12 +84,30 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
         createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
       }
       .throttle(1, 1 second, 1, ThrottleMode.Shaping)
-      .mapAsync(1) { batch => interface.getDataSets(batch.start, batch.size).map((interfaceDef, _)) }
+      .mapAsync(1) { batch => interface.getDataSets(batch.start, batch.size) }
+      .map { dataSets =>
+        //        println(dataSets)
+
+        val filteredDataSets = dataSets
+          .filterNot(_.distributions.isEmpty)
+          .map(dataSet => dataSet.copy(publisher =
+            dataSet.publisher.orElse(
+              interfaceDef.defaultPublisherName.map(defaultPublisher => Agent(name = Some(defaultPublisher)))
+            )))
+
+        val ineligibleDataSetCount = dataSets.size - filteredDataSets.size
+        if (ineligibleDataSetCount > 0) {
+          log.info("Filtering out {} datasets from {} because they have no distributions", ineligibleDataSetCount, interfaceDef.name)
+        }
+
+        filteredDataSets
+      }
       .recover {
         case e: Throwable =>
           log.error(e, "Failed while fetching from {}", interfaceDef.name)
-          (interfaceDef, Nil)
+          Nil
       }
+      .mapConcat(identity)
   }
 
   case class Batch(start: Long, size: Int, last: Boolean)

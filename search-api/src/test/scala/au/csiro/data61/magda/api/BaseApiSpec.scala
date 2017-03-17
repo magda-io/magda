@@ -221,8 +221,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Sha
     val api = new SearchApi(searchQueryer)(config, logger)
     val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
 
+    val stream = Source.fromIterator[DataSet](() => dataSets.iterator)
+
     indexer.ready.map { _ =>
-      indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), dataSets)
+      indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), stream)
     }.flatMap { _ ⇒
       client.execute(refreshIndex(indexName))
     }.recover {

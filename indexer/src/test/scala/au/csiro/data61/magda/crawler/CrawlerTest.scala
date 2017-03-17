@@ -22,6 +22,10 @@ import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.test.util.IndexerGenerators
 import au.csiro.data61.magda.test.util.MagdaGeneratorTest
 import au.csiro.data61.magda.test.util.TestActorSystem
+import java.time.Instant
+import akka.stream.scaladsl.Source
+import akka.NotUsed
+import akka.stream.scaladsl.Sink
 
 class CrawlerTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest {
   implicit val ec = system.dispatcher
@@ -46,12 +50,16 @@ class CrawlerTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike 
         val indexer = new SearchIndexer {
           var list: List[DataSet] = List()
 
-          def index(source: InterfaceConfig, dataSets: List[DataSet]): Future[Any] = {
-            list = list ++ dataSets
-            Future(Unit)
+          override def index(source: InterfaceConfig, dataSetStream: Source[DataSet, NotUsed]) = {
+            dataSetStream
+              .map(dataSet => list :+ dataSet)
+              .runWith(Sink.seq)
+              .map(seq => new SearchIndexer.IndexResult(seq.length, Seq()))
           }
-          def snapshot(): Future[Unit] = Future(Unit)
-          def needsReindexing(source: InterfaceConfig): Future[Boolean] = Future(true)
+          override def snapshot(): Future[Unit] = Future(Unit)
+
+          override def trim(source: InterfaceConfig, before: Instant): Future[Unit] = Future(Unit)
+          //          def needsReindexing(source: InterfaceConfig): Future[Boolean] = Future(true)
           def ready() = Future(Unit)
         }
 
