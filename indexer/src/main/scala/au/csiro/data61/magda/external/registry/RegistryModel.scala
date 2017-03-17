@@ -57,7 +57,7 @@ trait RegistryConverters extends RegistryProtocols {
       temporal = temporal,
       theme = dcatStrings.extract[String]('themes.? / *),
       keyword = dcatStrings.extract[String]('keywords.? / *),
-      contactPoint = dcatStrings.extract[String]('contactPoint.?).map(cp => new Agent(Some(cp))),
+      contactPoint = dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
       distributions = distributions.extract[JsObject]('distributions.? / *).map(convertDistribution(_, hit)),
       landingPage = dcatStrings.extract[String]('landingPage.?)
     )
@@ -81,7 +81,7 @@ trait RegistryConverters extends RegistryProtocols {
       description = descriptionString,
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
       modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
-      license = dcatStrings.extract[String]('license.?).map(name => new License(Some(name))),
+      license = dcatStrings.extract[String]('license.?).map(name => License(Some(name))),
       rights = dcatStrings.extract[String]('rights.?),
       accessURL = dcatStrings.extract[String]('accessURL.?),
       downloadURL = urlString,
@@ -92,10 +92,6 @@ trait RegistryConverters extends RegistryProtocols {
   }
 
   private def tryParseDate(dateString: Option[String]): Option[OffsetDateTime] = {
-    try {
-      dateString.map(OffsetDateTime.parse(_))
-    } catch {
-      case _: DateTimeParseException => None
-    }
+    dateString.flatMap(s => Try(OffsetDateTime.parse(s)).toOption)
   }
 }
