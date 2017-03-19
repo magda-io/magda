@@ -59,7 +59,7 @@ function parseDateTimeString(s) {
     }
 
     // First try parsing this as an ISO8601 date/time
-    const iso = moment(s, moment.ISO_8601, true);
+    const iso = moment.utc(s, moment.ISO_8601, true);
     if (iso.isValid()) {
         return iso;
     }
@@ -89,7 +89,7 @@ function parseDateTimeString(s) {
         });
     });
 
-    return moment(s, formats, true);
+    return moment.utc(s, formats, true);
 }
 
 const oneMillisecond = moment.duration(1);
@@ -123,7 +123,7 @@ function getPrecisionFromMoment(m) {
 
 function roundUp(date) {
     const precision = getPrecisionFromMoment(date);
-    return moment(date).add(precision).subtract(oneMillisecond);
+    return moment.utc(date).add(precision).subtract(oneMillisecond);
 }
 
 const nowRegExp = /^(Current|Now|Ongoing)$/i;
