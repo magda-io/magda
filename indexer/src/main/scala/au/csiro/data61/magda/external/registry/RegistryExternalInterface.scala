@@ -25,8 +25,7 @@ class RegistryExternalInterface(interfaceConfig: InterfaceConfig, implicit val c
   val baseUrl = s"api/0.1/records?aspect=dcat-dataset-strings"
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =
-    // TODO: start as pageToken is not right.
-    fetcher.request(s"$baseUrl&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&pageToken=$start&limit=$number").flatMap { response =>
+    fetcher.request(s"$baseUrl&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&start=$start&limit=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           mapCatching[RegistryRecord, DataSet](registryResponse.records,

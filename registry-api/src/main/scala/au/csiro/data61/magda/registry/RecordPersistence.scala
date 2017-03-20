@@ -16,7 +16,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   val maxResultCount = 1000
   val defaultResultCount = 100
 
-  def getAll(implicit session: DBSession, pageToken: Option[String], limit: Option[Int]): RecordSummariesPage = {
+  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordSummariesPage = {
     val totalCount = sql"select count(*) from Records".map(_.int(1)).single.apply().getOrElse(0)
 
     var lastSequence: Option[Long] = None
@@ -29,6 +29,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
             from Records
             ${addPageTokenSelector(SQLSyntax.empty, pageToken)}
             order by sequence
+            offset ${start.getOrElse(0)}
             limit ${limit.getOrElse(defaultResultCount)}"""
       .map(rs => {
         // Side-effectily track the sequence number of the very last result.
@@ -48,6 +49,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                         aspectIds: Iterable[String],
                         optionalAspectIds: Iterable[String],
                         pageToken: Option[String] = None,
+                        start: Option[Int] = None,
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None): RecordsPage = {
     val whereClause = aspectIdsToWhereClause(aspectIds)
@@ -72,6 +74,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
             from Records
             ${addPageTokenSelector(whereClause, pageToken)}
             order by Records.sequence
+            offset ${start.getOrElse(0)}
             limit ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)}"""
         .map(rs => {
           // Side-effectily track the sequence number of the very last result.
