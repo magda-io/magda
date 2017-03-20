@@ -58,7 +58,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       _ <- if (id == newRecord.id) Success(newRecord) else Failure(new RuntimeException("The provided ID does not match the record's ID."))
       oldRecordWithoutAspects <- this.getByIdWithAspects(session, id) match {
         case Some(record) => Success(record)
-        case None => createRecord(session, newRecord)
+        case None => createRecord(session, newRecord).map(_.copy(aspects = Map()))
       }
       recordPatch <- Try {
         // Diff the old record and the new one, ignoring aspects
