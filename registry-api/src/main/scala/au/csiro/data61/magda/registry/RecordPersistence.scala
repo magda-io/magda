@@ -30,53 +30,6 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference)
   }
 
-  def getRecords(implicit session: DBSession,
-                 aspectIds: Iterable[String],
-                 optionalAspectIds: Iterable[String],
-                 pageToken: Option[String] = None,
-                 start: Option[Int] = None,
-                 limit: Option[Int] = None,
-                 dereference: Option[Boolean] = None,
-                 recordId: Option[String] = None): RecordsPage = {
-    val countWhereClauseParts = aspectIdsToWhereClause(aspectIds) :+ recordId.map(id => sqls"recordId=${id}")
-    val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
-
-    // If we're dereferencing links, we'll need to determine which fields of the selected aspects are links.
-    val dereferenceLinks = dereference.getOrElse(false)
-
-    val dereferenceDetails = if (dereferenceLinks) {
-      buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
-    } else {
-      Map[String, PropertyWithLink]()
-    }
-
-    var lastSequence: Option[Long] = None
-    val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
-
-    val pageResults =
-      sql"""select Records.sequence as sequence,
-                   Records.recordId as recordId,
-                   Records.name as recordName,
-                   ${aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)}
-            from Records
-            ${makeWhereClause(whereClauseParts)}
-            order by Records.sequence
-            offset ${start.getOrElse(0)}
-            limit ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)}"""
-        .map(rs => {
-          // Side-effectily track the sequence number of the very last result.
-          lastSequence = Some(rs.long("sequence"))
-          rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
-        })
-        .list.apply()
-
-    RecordsPage(
-      totalCount,
-      lastSequence.map(_.toString),
-      pageResults
-    )
-  }
-
   def getById(implicit session: DBSession, id: String): Option[RecordSummary] = {
     this.getSummaries(session, None, None, None, Some(id)).records.headOption
   }
@@ -85,7 +38,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                          id: String,
                          aspectIds: Iterable[String] = Seq(),
                          optionalAspectIds: Iterable[String] = Seq(),
-                         dereference: Option[Boolean] = None) = {
+                         dereference: Option[Boolean] = None): Option[Record] = {
     this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, Some(id)).records.headOption
   }
 
@@ -295,6 +248,53 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         .list.apply()
 
     RecordSummariesPage(
+      totalCount,
+      lastSequence.map(_.toString),
+      pageResults
+    )
+  }
+
+  private def getRecords(implicit session: DBSession,
+                         aspectIds: Iterable[String],
+                         optionalAspectIds: Iterable[String],
+                         pageToken: Option[String] = None,
+                         start: Option[Int] = None,
+                         limit: Option[Int] = None,
+                         dereference: Option[Boolean] = None,
+                         recordId: Option[String] = None): RecordsPage = {
+    val countWhereClauseParts = aspectIdsToWhereClause(aspectIds) :+ recordId.map(id => sqls"recordId=${id}")
+    val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
+
+    // If we're dereferencing links, we'll need to determine which fields of the selected aspects are links.
+    val dereferenceLinks = dereference.getOrElse(false)
+
+    val dereferenceDetails = if (dereferenceLinks) {
+      buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
+    } else {
+      Map[String, PropertyWithLink]()
+    }
+
+    var lastSequence: Option[Long] = None
+    val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
+
+    val pageResults =
+      sql"""select Records.sequence as sequence,
+                   Records.recordId as recordId,
+                   Records.name as recordName,
+                   ${aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)}
+            from Records
+            ${makeWhereClause(whereClauseParts)}
+            order by Records.sequence
+            offset ${start.getOrElse(0)}
+            limit ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)}"""
+        .map(rs => {
+          // Side-effectily track the sequence number of the very last result.
+          lastSequence = Some(rs.long("sequence"))
+          rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
+        })
+        .list.apply()
+
+    RecordsPage(
       totalCount,
       lastSequence.map(_.toString),
       pageResults

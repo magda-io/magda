@@ -20,10 +20,10 @@ import scala.util.Success
 class RecordsService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[RecordSummary], responseContainer = "List")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have at least one of these aspects will be included in the response."),
-    new ApiImplicitParam(name = "aspects", required = false, dataType = "string", paramType = "query", value = "The aspects for which to retrieve data, specified as a comma-separate list.  Only records that have at least one of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "aspects", required = false, dataType = "string", paramType = "query", value = "The aspects for which to retrieve data, specified as a comma-separated list.  Only records that have all of these aspects will be included in the response."),
     new ApiImplicitParam(name = "optionalAspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
-    new ApiImplicitParam(name = "optionalAspects", required = false, dataType = "string", paramType = "query", value = "The optional aspects for which to retrieve data, specified as a comma-separate list.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
+    new ApiImplicitParam(name = "optionalAspects", required = false, dataType = "string", paramType = "query", value = "The optional aspects for which to retrieve data, specified as a comma-separated list.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
     new ApiImplicitParam(name = "pageToken", required = false, dataType = "string", paramType = "query", value = "A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."),
     new ApiImplicitParam(name = "start", required = false, dataType = "number", paramType = "query", value = "The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve."),
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."),
@@ -52,6 +52,10 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
     notes = "Gets a complete record, including data for all aspects.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
+    new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "aspects", required = false, dataType = "string", paramType = "query", value = "The aspects for which to retrieve data, specified as a comma-separated list.  Only records that have all of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "optionalAspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
+    new ApiImplicitParam(name = "optionalAspects", required = false, dataType = "string", paramType = "query", value = "The optional aspects for which to retrieve data, specified as a comma-separated list.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
     new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.")
   ))
   @ApiResponses(Array(
@@ -133,13 +137,17 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
     val allAspects = List.concat(aspect, aspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
     val allOptionalAspects = List.concat(optionalAspect, optionalAspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
 
-    complete {
-      DB readOnly { session =>
-        if (allAspects.isEmpty && allOptionalAspects.isEmpty)
-          RecordPersistence.getById(session, id)
-        else
-          RecordPersistence.getByIdWithAspects(session, id, allAspects, allOptionalAspects, dereference)
-      }
+    DB readOnly { session =>
+      if (allAspects.isEmpty && allOptionalAspects.isEmpty)
+        RecordPersistence.getById(session, id) match {
+          case Some(record) => complete(record)
+          case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
+        }
+      else
+        RecordPersistence.getByIdWithAspects(session, id, allAspects, allOptionalAspects, dereference) match {
+          case Some(record) => complete(record)
+          case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
+        }
     }
   }
 }
