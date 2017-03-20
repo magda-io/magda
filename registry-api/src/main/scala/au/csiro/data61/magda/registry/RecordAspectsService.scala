@@ -24,7 +24,7 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
   ))
   def getAll = get { path(Segment / "aspects") { (recordId: String) =>
     DB readOnly { session =>
-      RecordPersistence.getById(session, recordId) match {
+      RecordPersistence.getByIdWithAspects(session, recordId) match {
         case Some(result) => complete(result.aspects)
         case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
       }

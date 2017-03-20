@@ -11,7 +11,6 @@ import au.csiro.data61.magda.external.{ExternalInterface, HttpFetcher, Interface
 import au.csiro.data61.magda.model.misc.DataSet
 import com.typesafe.config.Config
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import au.csiro.data61.magda.external.ckan.{CKANDataSet, CKANSearchResponse}
 import au.csiro.data61.magda.util.Collections.mapCatching
 
 import scala.concurrent.{ExecutionContext, Future}
