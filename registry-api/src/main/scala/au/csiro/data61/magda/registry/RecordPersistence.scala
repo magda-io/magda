@@ -52,21 +52,33 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   }
 
   def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record] = {
+    val newRecordWithoutAspects = newRecord.copy(aspects = Map())
+
     for {
       _ <- if (id == newRecord.id) Success(newRecord) else Failure(new RuntimeException("The provided ID does not match the record's ID."))
-      oldRecord <- this.getByIdWithAspects(session, id) match {
+      oldRecordWithoutAspects <- this.getByIdWithAspects(session, id) match {
         case Some(record) => Success(record)
         case None => createRecord(session, newRecord)
       }
       recordPatch <- Try {
-        // Diff the old record and the new one
-        val oldRecordJson = oldRecord.toJson
-        val newRecordJson = newRecord.toJson
+        // Diff the old record and the new one, ignoring aspects
+        val oldRecordJson = oldRecordWithoutAspects.toJson
+        val newRecordJson = newRecordWithoutAspects.toJson
 
         JsonDiff.diff(oldRecordJson, newRecordJson, false)
       }
       result <- patchRecordById(session, id, recordPatch)
-    } yield result
+      patchedAspects <- Try { newRecord.aspects.map { case (aspectId, data) =>
+          (aspectId, this.putRecordAspectById(session, id, aspectId, data))
+      } }
+      // Report the first failed aspect, if any
+      _ <- patchedAspects.find(_._2.isFailure) match {
+        case Some((_, Failure(failure))) => Failure[Record](failure)
+        case _ => Success(result)
+      }
+      // No failed aspects, so unwrap the aspects from the Success Trys.
+      resultAspects <- Try { patchedAspects.mapValues(_.get) }
+    } yield result.copy(aspects = resultAspects)
   }
 
   def patchRecordById(implicit session: DBSession, id: String, recordPatch: JsonPatch): Try[Record] = {
@@ -276,12 +288,13 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
 
     var lastSequence: Option[Long] = None
     val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
+    val aspectSelectors = aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
 
     val pageResults =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
-                   Records.name as recordName,
-                   ${aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)}
+                   Records.name as recordName
+                   ${if (aspectSelectors.nonEmpty) sqls", ${aspectSelectors}" else SQLSyntax.empty}
             from Records
             ${makeWhereClause(whereClauseParts)}
             order by Records.sequence
