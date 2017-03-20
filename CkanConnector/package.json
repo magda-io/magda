@@ -1,0 +1,24 @@
+{
+  "name": "ckan-connector",
+  "version": "0.0.1",
+  "description": "MAGDA CKAN Connector",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generateSwaggerApis": "bash -c \"rm -rf src/generated/registry && java -jar ../tools/swagger-codegen-cli.jar generate -l typescript-node -i http://localhost:6100/api/0.1/api-docs/swagger.json -o src/generated/registry --type-mappings Aspect=any,JsonPatch=any --import-mappings Aspect=none,JsonPatch=none,Operation=none -DsupportsES6=true\""
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^7.0.5",
+    "@types/request": "0.0.39",
+    "@types/urijs": "^1.15.31",
+    "typescript": "^2.1.6"
+  },
+  "dependencies": {
+    "moment": "^2.17.1",
+    "request": "^2.79.0",
+    "ts-node": "^2.1.0",
+    "urijs": "^1.18.7"
+  }
+}

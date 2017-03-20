@@ -2,6 +2,7 @@ package au.csiro.data61.magda.registry
 
 import scalikejdbc._
 import spray.json._
+import spray.json.lenses.JsonLenses._
 
 import scala.util.Try
 import scala.util.{Failure, Success}
@@ -10,26 +11,169 @@ import java.sql.SQLException
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 
+
 object RecordPersistence extends Protocols with DiffsonProtocol {
-  def getAll(implicit session: DBSession): Iterable[RecordSummary] = {
-    tuplesToSummaryRecords(sql"""select recordId, Records.name as recordName, aspectId
-                                 from Records
-                                 left outer join RecordAspects using (recordId)"""
-      .map(recordSummaryRowToTuple)
-      .list.apply())
-      
+  val maxResultCount = 1000
+  val defaultResultCount = 100
+
+  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordSummariesPage = {
+    val totalCount = sql"select count(*) from Records".map(_.int(1)).single.apply().getOrElse(0)
+
+    var lastSequence: Option[Long] = None
+
+    val pageResults =
+      sql"""select Records.sequence as sequence,
+                   Records.recordId as recordId,
+                   Records.name as recordName,
+                   (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId) as aspects
+            from Records
+            ${addPageTokenSelector(SQLSyntax.empty, pageToken)}
+            order by sequence
+            offset ${start.getOrElse(0)}
+            limit ${limit.getOrElse(defaultResultCount)}"""
+      .map(rs => {
+        // Side-effectily track the sequence number of the very last result.
+        lastSequence = Some(rs.long("sequence"))
+        rowToRecordSummary(rs)
+      })
+      .list.apply()
+
+    RecordSummariesPage(
+      totalCount,
+      lastSequence.map(_.toString),
+      pageResults
+    )
   }
 
-  def getAllWithAspects(implicit session: DBSession, aspectIds: Iterable[String]): Iterable[Record] = {
-    tuplesToRecords(sql"""select recordId, Records.name as recordName, aspectId, Aspects.name as aspectName, data
-                          from Records
-                          left outer join RecordAspects using (recordId)
-                          left outer join Aspects using (aspectId)
-                          where aspectId in ($aspectIds)"""
-      .map(recordRowWithDataToTuple)
-      .list.apply())
+  def getAllWithAspects(implicit session: DBSession,
+                        aspectIds: Iterable[String],
+                        optionalAspectIds: Iterable[String],
+                        pageToken: Option[String] = None,
+                        start: Option[Int] = None,
+                        limit: Option[Int] = None,
+                        dereference: Option[Boolean] = None): RecordsPage = {
+    val whereClause = aspectIdsToWhereClause(aspectIds)
+    val totalCount = sql"select count(*) from Records ${whereClause}".map(_.int(1)).single.apply().getOrElse(0)
+
+    // If we're dereferencing links, we'll need to determine which fields of the selected aspects are links.
+    val dereferenceLinks = dereference.getOrElse(false)
+
+    val dereferenceDetails = if (dereferenceLinks) {
+      buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
+    } else {
+      Map[String, PropertyWithLink]()
+    }
+
+    var lastSequence: Option[Long] = None
+
+    val pageResults =
+      sql"""select Records.sequence as sequence,
+                   Records.recordId as recordId,
+                   Records.name as recordName,
+                   ${aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)}
+            from Records
+            ${addPageTokenSelector(whereClause, pageToken)}
+            order by Records.sequence
+            offset ${start.getOrElse(0)}
+            limit ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)}"""
+        .map(rs => {
+          // Side-effectily track the sequence number of the very last result.
+          lastSequence = Some(rs.long("sequence"))
+          rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
+        })
+        .list.apply()
+
+    RecordsPage(
+      totalCount,
+      lastSequence.map(_.toString),
+      pageResults
+    )
   }
-  
+
+  private def buildDereferenceMap(implicit session: DBSession, aspectIds: Iterable[String]) = {
+    val aspects = sql"""select aspectId, jsonSchema
+          from Aspects
+          where aspectId in (${aspectIds})"""
+      .map(rs => (rs.string("aspectId"), JsonParser(rs.string("jsonSchema")).asJsObject))
+      .list.apply()
+
+    aspects.map { case(aspectId, jsonSchema) =>
+        // This aspect can only have links if it uses hyper-schema
+        if (jsonSchema.fields.getOrElse("$schema", JsString("")).toString().contains("hyper-schema")) {
+          // TODO: support multiple linked properties in an aspect.
+
+          val properties = jsonSchema.fields.get("properties").flatMap {
+            case JsObject(properties) => Some(properties)
+            case _ => None
+          }.getOrElse(Map())
+
+          val propertyWithLinks = properties.map { case (propertyName, property) =>
+            val linksInProperties = property.extract[JsValue]('links.? / filter { value =>
+              val relPredicate = 'rel.is[String](_ == "item")
+              val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
+              relPredicate(value) && hrefPredicate(value)
+            })
+
+            val linksInItems = property.extract[JsValue]('items.? / 'links.? / filter { value =>
+              val relPredicate = 'rel.is[String](_ == "item")
+              val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
+              relPredicate(value) && hrefPredicate(value)
+            })
+
+            if (!linksInProperties.isEmpty) {
+              Some(PropertyWithLink(propertyName, false))
+            } else if (!linksInItems.isEmpty) {
+              Some(PropertyWithLink(propertyName, true))
+            } else {
+              None
+            }
+          }.filter(!_.isEmpty).map(_.get)
+
+          propertyWithLinks.map(property => (aspectId, property)).headOption
+        } else {
+          None
+        }
+    }.filter(!_.isEmpty).map(_.get).toMap
+  }
+
+  private def addPageTokenSelector(existingWhereClause: SQLSyntax, pageToken: Option[String]): SQLSyntax = {
+    val selector = sqls"Records.sequence > ${pageToken.getOrElse("0").toLong}"
+    if (existingWhereClause.isEmpty()) SQLSyntax.where(selector)
+    else existingWhereClause.and(selector)
+  }
+
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink]) = {
+    aspectIds.zipWithIndex.map { case(aspectId, index) =>
+      // Use a simple numbered column name rather than trying to make the aspect name safe.
+      val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
+      val selection = dereferenceDetails.get(aspectId).map {
+        case PropertyWithLink(propertyName, true) => {
+          sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+                  (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId))))
+                   from Records
+                   inner join jsonb_array_elements_text(RecordAspects.data->${propertyName}) as aggregatedId on aggregatedId=Records.recordId)"""
+        }
+        case PropertyWithLink(propertyName, false) => {
+          sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+                  (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId)))
+                   from Records where Records.recordId=RecordAspects.data->>${propertyName})"""
+        }
+      }.getOrElse(sqls"data")
+      sqls"""(select ${selection} from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
+    }
+  }
+
+  private def aspectIdsToWhereClause(aspectIds: Iterable[String]) = {
+    if (aspectIds.isEmpty)
+      SQLSyntax.empty
+    else
+      SQLSyntax.where(SQLSyntax.join(aspectIds.map(aspectIdToWhereClause).toSeq, SQLSyntax.and))
+  }
+
+  private def aspectIdToWhereClause(aspectId: String) = {
+    sqls"exists (select 1 from RecordAspects where RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=${aspectId})"
+  }
+
   def getById(implicit session: DBSession, id: String): Option[Record] = {
     tuplesToRecords(sql"""select recordId, Records.name as recordName, aspectId, Aspects.name as aspectName, data
                           from Records
@@ -39,7 +183,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       .map(recordRowWithDataToTuple)
       .list.apply()).headOption
   }
-  
+
   def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
     sql"""select RecordAspects.aspectId as aspectId, name as aspectName, data from RecordAspects
           inner join Aspects using (aspectId)
@@ -48,7 +192,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       .map(rowToAspect)
       .single.apply()
   }
-  
+
   def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record] = {
     for {
       _ <- if (id == newRecord.id) Success(newRecord) else Failure(new RuntimeException("The provided ID does not match the record's ID."))
@@ -103,7 +247,15 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           case "aspects" / (name / _) => Some(name)
           case _ => None
         }).filterKeys(!_.isEmpty).map({
-          // Patch each aspect
+          // Create or patch each aspect.
+          // We create if there's exactly one ADD operation and it's adding an entire aspect.
+          case (Some(aspectId), List(Add("aspects" / (name / rest), value))) => {
+            if (rest == Pointer.Empty)
+              (aspectId, createRecordAspect(session, id, aspectId, value.asJsObject))
+            else
+              (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(Add(rest, value))))
+          }
+          // We patch in all other scenarios.
           case (Some(aspectId), operations) => (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(operations.map({
             // Make paths in operations relative to the aspect instead of the record
             case Add("aspects" / (name / rest), value) => Add(rest, value)
@@ -213,7 +365,6 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     } yield insertResult
   }
 
-  private def recordSummaryRowToTuple(rs: WrappedResultSet) = (rs.string("recordId"), rs.string("recordName"), rs.string("aspectId"))
   private def recordRowWithDataToTuple(rs: WrappedResultSet) = (rs.string("recordId"), rs.string("recordName"), rs.string("aspectId"), rs.string("aspectName"), rs.stringOpt("data"))
 
   private def tuplesToSummaryRecords(tuples: List[(String, String, String)]): Iterable[RecordSummary] = {
@@ -226,6 +377,22 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
             aspects = value.filter({ case (_, _, aspectId) => aspectId != null })
               .map({ case (_, _, aspectId) => aspectId }))
       }
+  }
+
+  private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = {
+      RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.array("aspects").getArray().asInstanceOf[Array[String]].toList)
+  }
+
+  private def rowToRecord(aspectIds: Iterable[String])(rs: WrappedResultSet): Record = {
+    Record(rs.string("recordId"), rs.string("recordName"),
+      aspectIds.zipWithIndex
+        .filter {
+          case (_, index) => rs.stringOpt(s"aspect${index}").isDefined
+        }
+        .map {
+          case (aspectId, index) => (aspectId, JsonParser(rs.string(s"aspect${index}")).asJsObject)
+        }
+        .toMap)
   }
 
   private def tuplesToRecords(tuples: List[(String, String, String, String, Option[String])]): Iterable[Record] = {
@@ -241,8 +408,24 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                                 }).toMap)
           }
   }
-  
+
   private def rowToAspect(rs: WrappedResultSet): JsObject = {
     JsonParser(rs.string("data")).asJsObject
   }
 }
+
+// Example query joining on json
+// select ra.recordid, r.recordid from recordaspects ra inner join records as r on ra.data->'distributions' @> to_jsonb(r.recordid) where ra.aspectid='dataset-distributions';
+
+
+// select dataset.recordid, dcatdatasetstrings.aspectid, temporalcoverage.aspectid from records dataset left outer join recordaspects dcatdatasetstrings on dcatdatasetstrings.aspectid='dcat-dataset-strings' and dataset.recordid=dcatdatasetstrings.recordid left outer join recordaspects temporalcoverage on temporalcoverage.aspectid='temporal-coverage' and dataset.recordid=temporalcoverage.recordid;
+
+// select array_to_json(array_agg(row_to_json(row(records.recordid)))) from records;
+
+// select records.name, jsonb_object_agg(recordaspects.aspectid, recordaspects.data) from records left outer join recordaspects on records.recordid=recordaspects.recordid group by records.recordid;
+
+// select datasetaspects.recordid, array_to_json(array_agg(dcatdistributionstrings.data)) from recordaspects datasetaspects inner join records as distributions on datasetaspects.aspectid='dataset-distributions' and datasetaspects.data->'distributions' @> to_jsonb(distributions.recordid) left outer join recordaspects as dcatdistributionstrings on dcatdistributionstrings.aspectid='dcat-distribution-strings' and distributions.recordid=dcatdistributionstrings.recordid group by datasetaspects.recordid;
+
+// select dataset.recordid, dcatdatasetstrings.aspectid, temporalcoverage.aspectid, distributions.titles from records dataset left outer join recordaspects dcatdatasetstrings on dcatdatasetstrings.aspectid='dcat-dataset-strings' and dataset.recordid=dcatdatasetstrings.recordid left outer join recordaspects temporalcoverage on temporalcoverage.aspectid='temporal-coverage' and dataset.recordid=temporalcoverage.recordid left outer join (select datasetaspects.recordid as recordid, array_to_json(array_agg(dcatdistributionstrings.data->>'title')) as titles from recordaspects datasetaspects inner join records as distributions on datasetaspects.aspectid='dataset-distributions' and datasetaspects.data->'distributions' @> to_jsonb(distributions.recordid) left outer join recordaspects as dcatdistributionstrings on dcatdistributionstrings.aspectid='dcat-distribution-strings' and distributions.recordid=dcatdistributionstrings.recordid group by datasetaspects.recordid) as distributions on dataset.recordid=distributions.recordid;
+
+// select dataset.recordid, dcatdatasetstrings.data, temporalcoverage.data, distributions.data from records dataset left outer join recordaspects dcatdatasetstrings on dcatdatasetstrings.aspectid='dcat-dataset-strings' and dataset.recordid=dcatdatasetstrings.recordid left outer join recordaspects temporalcoverage on temporalcoverage.aspectid='temporal-coverage' and dataset.recordid=temporalcoverage.recordid left outer join (select datasetaspects.recordid as recordid, array_to_json(array_agg(dcatdistributionstrings.data)) as data from recordaspects datasetaspects inner join records as distributions on datasetaspects.aspectid='dataset-distributions' and datasetaspects.data->'distributions' @> to_jsonb(distributions.recordid) left outer join recordaspects as dcatdistributionstrings on dcatdistributionstrings.aspectid='dcat-distribution-strings' and distributions.recordid=dcatdistributionstrings.recordid group by datasetaspects.recordid) as distributions on dataset.recordid=distributions.recordid;

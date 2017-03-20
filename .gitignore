@@ -27,3 +27,4 @@ bin
 regions
 snapshots
 .cache-tests
+node_modules/

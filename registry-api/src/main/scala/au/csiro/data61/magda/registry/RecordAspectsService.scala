@@ -18,7 +18,7 @@ import scala.util.Success
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(value = "record aspects", produces = "application/json")
 class RecordAspectsService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
-  @ApiOperation(value = "Get a list of all aspects of a record", nickname = "getAll", httpMethod = "GET", response = classOf[JsObject], responseContainer = "Map")
+  @ApiOperation(value = "Get a list of all aspects of a record", nickname = "getAll", httpMethod = "GET", response = classOf[Aspect], responseContainer = "Map")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch aspects.")
   ))
@@ -32,7 +32,7 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
   } }
 
   @Path("/{aspectId}")
-  @ApiOperation(value = "Get a record aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[JsObject])
+  @ApiOperation(value = "Get a record aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[Aspect])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to fetch.")
@@ -50,12 +50,12 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
   } } }
 
   @Path("/{aspectId}")
-  @ApiOperation(value = "Modify a record aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[JsObject],
+  @ApiOperation(value = "Modify a record aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Aspect],
     notes = "Modifies a record aspect.  If the aspect does not yet exist on this record, it is created.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to fetch."),
-    new ApiImplicitParam(name = "aspect", required = true, dataType = "spray.json.JsObject", paramType = "body", value = "The record aspect to save.")
+    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.registry.Aspect", paramType = "body", value = "The record aspect to save.")
   ))
   def putById = put { path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) => {
     entity(as[JsObject]) { aspect =>
@@ -69,7 +69,7 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
   } } }
 
   @Path("/{aspectId}")
-  @ApiOperation(value = "Modify a record aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[JsObject],
+  @ApiOperation(value = "Modify a record aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[Aspect],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch an aspect."),

@@ -11,6 +11,7 @@ import au.csiro.data61.magda.model.misc._
 import java.net.URL
 import au.csiro.data61.magda.external.csw.CSWExternalInterface
 import au.csiro.data61.magda.external.ckan.CKANExternalInterface
+import au.csiro.data61.magda.external.registry.RegistryExternalInterface
 import com.typesafe.config.Config
 
 object ExternalInterface {
@@ -19,6 +20,7 @@ object ExternalInterface {
     interfaceConfig.interfaceType match {
       case "CKAN" => new CKANExternalInterface(interfaceConfig, config, system, executor, materializer)
       case "CSW"  => CSWExternalInterface(interfaceConfig)
+      case "MAGDA"  => new RegistryExternalInterface(interfaceConfig, config, system, executor, materializer)
       case _      => throw new RuntimeException(s"Could not find interface implementation for ${interfaceConfig.interfaceType}")
     }
 }
