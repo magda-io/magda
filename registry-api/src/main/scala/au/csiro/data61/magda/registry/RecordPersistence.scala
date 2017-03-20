@@ -73,7 +73,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       } }
       // Report the first failed aspect, if any
       _ <- patchedAspects.find(_._2.isFailure) match {
-        case Some((_, Failure(failure))) => Failure[Record](failure)
+        case Some((_, Failure(failure))) => Failure(failure)
         case _ => Success(result)
       }
       // No failed aspects, so unwrap the aspects from the Success Trys.
