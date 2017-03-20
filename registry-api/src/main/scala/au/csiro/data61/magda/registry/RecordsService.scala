@@ -51,19 +51,13 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   @ApiOperation(value = "Get a record by ID", nickname = "getById", httpMethod = "GET", response = classOf[Record],
     notes = "Gets a complete record, including data for all aspects.")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched.")
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
+    new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.")
   ))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])
   ))
-  def getById = get { path(Segment) { (id: String) => {
-    DB readOnly { session =>
-      RecordPersistence.getById(session, id) match {
-        case Some(aspect) => complete(aspect)
-        case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
-      }
-    }
-  } } }
+  def getById = get { path(Segment) { id => { parameters('aspect.*, 'optionalAspect.*, 'aspects.?, 'optionalAspects.?, 'dereference.as[Boolean].?) { getByIdWithAspects(id) } } } }
 
   @Path("/{id}")
   @ApiOperation(value = "Modify a record by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Record],
@@ -126,6 +120,25 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
           RecordPersistence.getAll(session, pageToken, start, limit)
         else
           RecordPersistence.getAllWithAspects(session, allAspects, allOptionalAspects, pageToken, start, limit, dereference)
+      }
+    }
+  }
+
+  private def getByIdWithAspects(id: String)(
+                                 aspect: Iterable[String],
+                                 optionalAspect: Iterable[String],
+                                 aspects: Option[String],
+                                 optionalAspects: Option[String],
+                                 dereference: Option[Boolean]) = {
+    val allAspects = List.concat(aspect, aspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
+    val allOptionalAspects = List.concat(optionalAspect, optionalAspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
+
+    complete {
+      DB readOnly { session =>
+        if (allAspects.isEmpty && allOptionalAspects.isEmpty)
+          RecordPersistence.getById(session, id)
+        else
+          RecordPersistence.getByIdWithAspects(session, id, allAspects, allOptionalAspects, dereference)
       }
     }
   }
