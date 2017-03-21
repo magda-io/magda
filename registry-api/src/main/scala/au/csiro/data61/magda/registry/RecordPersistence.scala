@@ -125,6 +125,15 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
             else
               (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(Add(rest, value))))
           }
+          // We delete if there's exactly one REMOVE operation and it's removing an entire aspect.
+          case (Some(aspectId), List(Remove("aspects" / (name / rest), old))) => {
+            if (rest == Pointer.Empty) {
+              deleteRecordAspect(session, id, aspectId)
+              (aspectId, Success(JsObject()))
+            } else {
+              (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(Remove(rest, old))))
+            }
+          }
           // We patch in all other scenarios.
           case (Some(aspectId), operations) => (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(operations.map({
             // Make paths in operations relative to the aspect instead of the record
