@@ -25,6 +25,8 @@ const store = createStore(
 )
 
 browserHistory.listen (location=>{
+  window.ga('set', 'location', document.location);
+  window.ga('send', 'pageview');
   store.dispatch(fetchSearchResultsIfNeeded(location.query));
 })
 
