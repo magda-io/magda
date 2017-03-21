@@ -1,13 +1,12 @@
 package au.csiro.data61.magda.test.util
 
-import com.sksamuel.elastic4s.testkit.LocalNodeProvider
-import org.scalatest.Suite
-import com.sksamuel.elastic4s.testkit.SharedElasticSugar
-import com.sksamuel.elastic4s.embedded.LocalNode
-import com.sksamuel.elastic4s.testkit.ClassloaderLocalNodeProvider
 import java.nio.file.Paths
 import java.nio.file.Path
 import java.util.UUID
+import com.sksamuel.elastic4s.embedded.LocalNode
+import com.sksamuel.elastic4s.testkit.LocalNodeProvider
+import com.sksamuel.elastic4s.testkit.SharedElasticSugar
+import org.scalatest.Suite
 
 trait MagdaElasticSugar extends SharedElasticSugar {
   this: Suite with LocalNodeProvider =>

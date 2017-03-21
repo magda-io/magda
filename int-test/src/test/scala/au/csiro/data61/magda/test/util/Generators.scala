@@ -1,44 +1,30 @@
 package au.csiro.data61.magda.test.util
 
 import java.util.concurrent.atomic.AtomicInteger
-
 import org.scalacheck.Gen
 import au.csiro.data61.magda.model.misc.DataSet
 import org.scalacheck.Arbitrary._
 import java.time.Duration
 import java.time.temporal.ChronoUnit
-
-import org.scalacheck.{ Gen, Shrink }
+import org.scalacheck.Gen
 import org.scalacheck.Gen.Choose._
 import org.scalacheck.Arbitrary._
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.temporal._
 import java.time.ZonedDateTime
-
 import com.fortysevendeg.scalacheck.datetime.instances.jdk8._
-import com.fortysevendeg.scalacheck.datetime.GenDateTime.genDateTimeWithinRange
 import java.time.ZoneOffset
-
-import com.vividsolutions.jts.geom
-import com.vividsolutions.jts.operation.valid.IsValidOp
 import java.time.Instant
-
 import akka.http.scaladsl.model.MediaTypes
 import java.util.concurrent.atomic.AtomicInteger
-
-import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.util.Regex._
-import org.scalacheck.Shrink.shrink
 import au.csiro.data61.magda.spatial.RegionSource
 import spray.json.JsObject
 import java.net.URL
 import spray.json._
-import com.vividsolutions.jts.geom.GeometryFactory
-import com.vividsolutions.jts.geom
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.util.MwundoJTSConversions._
-import com.typesafe.config.Config
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.temporal._
 import au.csiro.data61.magda.model.misc.Protocols._
@@ -46,6 +32,9 @@ import scala.util.Try
 import org.locationtech.spatial4j.shape.jts.JtsGeometry
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import scala.annotation.tailrec
+import org.scalacheck.Gen.const
+import org.scalacheck.Gen.freqTuple
+import scala.BigDecimal
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))

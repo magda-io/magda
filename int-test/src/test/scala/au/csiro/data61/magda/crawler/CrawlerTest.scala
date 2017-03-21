@@ -26,6 +26,7 @@ import java.time.Instant
 import akka.stream.scaladsl.Source
 import akka.NotUsed
 import akka.stream.scaladsl.Sink
+import java.time.OffsetDateTime
 
 class CrawlerTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest {
   implicit val ec = system.dispatcher
@@ -58,7 +59,7 @@ class CrawlerTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike 
           }
           override def snapshot(): Future[Unit] = Future(Unit)
 
-          override def trim(source: InterfaceConfig, before: Instant): Future[Unit] = Future(Unit)
+          override def trim(source: InterfaceConfig, before: OffsetDateTime): Future[Unit] = Future(Unit)
           //          def needsReindexing(source: InterfaceConfig): Future[Boolean] = Future(true)
           def ready() = Future(Unit)
         }

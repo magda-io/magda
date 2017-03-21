@@ -67,7 +67,8 @@ package misc {
       contactPoint: Option[Agent] = None,
       distributions: Seq[Distribution] = Seq(),
       landingPage: Option[String] = None,
-      years: Option[String] = None) {
+      years: Option[String] = None,
+      indexed: Option[OffsetDateTime] = None) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
 
@@ -376,7 +377,7 @@ package misc {
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat3(Agent.apply)
-    implicit val dataSetFormat = jsonFormat17(DataSet.apply)
+    implicit val dataSetFormat = jsonFormat18(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)

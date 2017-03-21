@@ -38,6 +38,8 @@ import akka.NotUsed
 import com.sksamuel.elastic4s.indexes.{ IndexDefinition => ESIndexDefinition }
 import scala.util.Try
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
+import org.elasticsearch.index.query.QueryBuilders
+import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -346,7 +348,17 @@ class ElasticSearchIndexer(
 
   def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.dataSets)).map(_ => Unit)
 
-  def trim(source: InterfaceConfig, before: Instant): Future[Unit] = Future(Unit) // TODO
+  def trim(source: InterfaceConfig, before: OffsetDateTime): Future[Unit] =
+    setupFuture.flatMap { client =>
+      client.execute(
+        deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
+          filter(must(
+            rangeQuery("indexed").to(before.toString),
+            matchQuery("catalog", source.name)
+          ))
+        )
+      )
+    }.map(_ => Unit)
 
   private def createSnapshot(client: TcpClient, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
     logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
@@ -382,7 +394,8 @@ class ElasticSearchIndexer(
     val indexDataSet = ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType) id dataSet.uniqueId source (
       dataSet.copy(
         catalog = source.name,
-        years = ElasticSearchIndexer.getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date)))
+        years = ElasticSearchIndexer.getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))),
+        indexed = Some(OffsetDateTime.now)
       ).toJson
     )
 

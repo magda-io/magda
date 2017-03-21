@@ -97,7 +97,8 @@ object IndexDefinition extends DefaultJsonProtocol {
               field("not_analyzed", KeywordType),
               field("quote", TextType)
             ),
-            field("years", KeywordType)
+            field("years", KeywordType),
+            field("indexed", DateType)
           ),
           mapping(Format.id).fields(
             field("value", TextType).analyzer("english").fields(

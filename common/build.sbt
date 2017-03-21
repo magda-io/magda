@@ -19,13 +19,6 @@ libraryDependencies ++= {
        "org.scalaz" %% "scalaz-core" % "7.2.8",
    		 "com.sksamuel.elastic4s" %% "elastic4s-core" % "5.2.4",
    		 "com.sksamuel.elastic4s" %% "elastic4s-tcp" % "5.2.4",
-   		 "com.mchange" %% "leftright" % "0.0.1",
-
-       "org.scalatest" %% "scalatest" % scalaTestV % "test",
-       "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test",
-       "com.fortysevendeg" %% "scalacheck-datetime" % "0.2.0" % "test",
-       "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "5.2.4" % "test",
-       "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
-       "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+   		 "com.mchange" %% "leftright" % "0.0.1"
      )
 }

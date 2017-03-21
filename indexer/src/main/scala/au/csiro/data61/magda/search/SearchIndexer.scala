@@ -11,12 +11,13 @@ import com.typesafe.config.Config
 import java.time.Instant
 import akka.stream.scaladsl.Source
 import akka.NotUsed
+import java.time.OffsetDateTime
 
 trait SearchIndexer {
   def index(source: InterfaceConfig, dataSetStream: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult]
   def snapshot(): Future[Unit]
   def ready: Future[Unit]
-  def trim(source: InterfaceConfig, before: Instant): Future[Unit]
+  def trim(source: InterfaceConfig, before: OffsetDateTime): Future[Unit]
 
 }
 

@@ -15,16 +15,16 @@ object IndexerGenerators {
   } yield new URL(s"$scheme://$host.$tld/$path")
 
   val interfaceConfGen = for {
-    name <- arbitrary[String]
+    name <- arbitrary[String].suchThat(!_.isEmpty)
     interfaceType <- arbitrary[String]
     baseUrl <- urlGen
-    pageSize <- arbitrary[Int]
+    pageSize <- Gen.choose(1, 30)
     defaultPublisherName <- Gen.option(arbitrary[String])
   } yield InterfaceConfig(
-    name = "Blah",
-    interfaceType = "test",
-    baseUrl = new URL("http://example.com"),
-    pageSize = 50,
-    defaultPublisherName = Some("blah")
+    name = name,
+    interfaceType = interfaceType,
+    baseUrl = baseUrl,
+    pageSize = pageSize,
+    defaultPublisherName = defaultPublisherName
   )
 }

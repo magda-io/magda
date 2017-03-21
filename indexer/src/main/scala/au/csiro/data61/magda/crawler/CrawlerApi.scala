@@ -17,30 +17,33 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
 
   var lastCrawl: Option[Future[Unit]] = None
 
-  def crawlInProgress: Boolean = lastCrawl.map(_.isCompleted).getOrElse(true)
+  def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
 
   val routes =
     magdaRoute {
-      path("reindex") {
-        get {
-          complete(OK, crawlInProgress.toString)
-        } ~ post {
-          if (crawlInProgress) {
-            lastCrawl = Some(crawler.crawl(indexer))
-            val future = lastCrawl.get
-
-            future.onComplete {
-              case Success(_) =>
-                getLogger.info("Successfully completed crawl")
-              case Failure(e) =>
-                getLogger.error(e, "Crawl failed")
-            }
-
-            complete(Accepted)
-          } else {
-            complete(Conflict, "Reindex in progress")
+      pathPrefix("reindex") {
+        path("in-progress") {
+          get {
+            complete(OK, (!crawlInProgress).toString)
           }
-        }
+        } ~
+          post {
+            if (!crawlInProgress) {
+              lastCrawl = Some(crawler.crawl(indexer))
+              val future = lastCrawl.get
+
+              future.onComplete {
+                case Success(_) =>
+                  getLogger.info("Successfully completed crawl")
+                case Failure(e) =>
+                  getLogger.error(e, "Crawl failed")
+              }
+
+              complete(Accepted)
+            } else {
+              complete(Conflict, "Reindex in progress")
+            }
+          }
       }
     }
 }

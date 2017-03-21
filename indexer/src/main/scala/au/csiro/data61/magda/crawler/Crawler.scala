@@ -15,23 +15,25 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import au.csiro.data61.magda.model.misc.Agent
 import java.time.Instant
+import java.time.OffsetDateTime
 
 class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
-  
+
   def crawl(indexer: SearchIndexer) = {
+    val startInstant = OffsetDateTime.now
+    
     val crawlFutures = externalInterfaces
       .filter(!_.getInterfaceConfig.ignore)
       .map { interface =>
         val interfaceSource = streamForInterface(interface)
-        val startInstant = Instant.now
 
         indexer.index(interface.getInterfaceConfig, interfaceSource)
           .flatMap { result =>
             log.info("Indexed {} datasets from {} with {} failures", result.successes, interface.getInterfaceConfig.name, result.failures.length)
 
-            val futureOpt = if (result.successes > result.failures.length) { // does this need to be tunable?
+            val futureOpt = if (result.successes >= result.failures.length) { // does this need to be tunable?
               Some(indexer.trim(interface.getInterfaceConfig, startInstant))
             } else {
               log.warning("Encountered too many failures to trim old datasets from {}", interface.getInterfaceConfig.name)
@@ -81,13 +83,15 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
       .mapConcat { count =>
         log.info("{} has {} datasets", interfaceDef.baseUrl, count)
         val maxFromConfig = if (config.hasPath("indexer.maxResults")) config.getLong("indexer.maxResults") else Long.MaxValue
-        createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
+        val batches = createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
+
+        log.debug(batches.toString)
+
+        batches
       }
       .throttle(1, 1 second, 1, ThrottleMode.Shaping)
       .mapAsync(1) { batch => interface.getDataSets(batch.start, batch.size) }
       .map { dataSets =>
-        //        println(dataSets)
-
         val filteredDataSets = dataSets
           .filterNot(_.distributions.isEmpty)
           .map(dataSet => dataSet.copy(publisher =
@@ -110,7 +114,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
       .mapConcat(identity)
   }
 
-  case class Batch(start: Long, size: Int, last: Boolean)
+  case class Batch(start: Long, size: Int)
 
   def createBatches(interfaceDef: InterfaceConfig, start: Long, end: Long): List[Batch] = {
     val length = end - start
@@ -118,7 +122,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
       Nil
     } else {
       val nextPageSize = math.min(interfaceDef.pageSize, length).toInt
-      Batch(start, nextPageSize, false) :: createBatches(interfaceDef, start + nextPageSize, end)
+      Batch(start, nextPageSize) :: createBatches(interfaceDef, start + nextPageSize, end)
     }
   }
 }
