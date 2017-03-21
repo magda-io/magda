@@ -235,6 +235,18 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     } yield insertResult
   }
 
+  def deleteRecordAspect(implicit session: DBSession, recordId: String, aspectId: String): Try[Boolean] = {
+    for {
+      _ <- Try {
+        val eventJson = DeleteRecordAspectEvent(recordId, aspectId).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+      }
+      rowsDeleted <- Try {
+        sql"""delete from RecordAspects where recordId=$recordId and aspectId=$aspectId""".update.apply()
+      }
+    } yield rowsDeleted > 0
+  }
+
   private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int], recordId: Option[String] = None): RecordSummariesPage = {
     val countWhereClauseParts = Seq(recordId.map(id => sqls"recordId=${id}"))
     val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)

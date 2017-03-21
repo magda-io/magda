@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
-import scalikejdbc._
+import scalikejdbc.DB
 import akka.http.scaladsl.model.StatusCodes
 import io.swagger.annotations._
 import gnieh.diffson.sprayJson._
@@ -53,8 +53,8 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
   @ApiOperation(value = "Modify a record aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Aspect],
     notes = "Modifies a record aspect.  If the aspect does not yet exist on this record, it is created.")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch an aspect."),
-    new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to fetch."),
+    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to update an aspect."),
+    new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to update."),
     new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.registry.Aspect", paramType = "body", value = "The record aspect to save.")
   ))
   def putById = put { path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) => {
@@ -64,6 +64,22 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
           case Success(result) => complete(result)
           case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
         }
+      }
+    }
+  } } }
+
+  @Path("/{aspectId}")
+  @ApiOperation(value = "Delete a record aspect by ID", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult],
+    notes = "Deletes a record aspect.")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to delete an aspect."),
+    new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to delete.")
+  ))
+  def deleteById = delete { path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) => {
+    DB localTx { session =>
+      RecordPersistence.deleteRecordAspect(session, recordId, aspectId) match {
+        case Success(result) => complete(DeleteResult(result))
+        case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
       }
     }
   } } }
@@ -91,5 +107,6 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
       getAll ~
       getById ~
       putById ~
+      deleteById ~
       patchById
 }
