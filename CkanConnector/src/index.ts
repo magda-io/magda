@@ -9,23 +9,6 @@ import formatServiceError from './formatServiceError';
 import * as URI from 'urijs';
 import * as moment from 'moment';
 
-/*
-const start = Date.now();
-for (var i = 0; i < 10000; ++i) {
-    const d = parseDateTimeString('2016-01-12T12:00');
-    const foo = getPrecisionFromMoment(d);
-    // console.log(d.format());
-    // console.log(foo.toJSON());
-}
-const end = Date.now();
-console.log(end - start);
-// console.log(d.format());
-// console.log(d.creationData().format);
-// console.log(moment.ISO_8601);
-
-process.exit();
-*/
-
 const ckan = new Ckan({
     baseUrl: 'https://data.gov.au/',
     pageSize: 1000
