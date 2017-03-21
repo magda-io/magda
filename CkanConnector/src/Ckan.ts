@@ -67,6 +67,8 @@ export default class Ckan {
             url.addSearch('fq', solrQueries.join('+'));
         }
 
+        url.addSearch('sort', 'metadata_created asc');
+
         let startIndex = 0;
 
         return AsyncPage.create<CkanPackageSearchResponse>(previous => {
