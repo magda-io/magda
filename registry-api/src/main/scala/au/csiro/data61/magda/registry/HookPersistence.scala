@@ -7,6 +7,41 @@ import scalikejdbc._
 import scala.util.{Success, Try}
 
 object HookPersistence extends Protocols with DiffsonProtocol {
+  def getAll(implicit session: DBSession): List[WebHook] = {
+    sql"""select
+            webhookId,
+            userId,
+            name,
+            active,
+            url,
+            (
+              select array_agg(eventTypeId)
+              from WebHookEvents
+              where WebHookEvents.webHookId=WebHooks.webHookId
+            ) as eventTypes,
+            config
+          from WebHooks"""
+      .map(rowToAspect).list.apply()
+  }
+
+  def getById(implicit session: DBSession, id: Int): Option[WebHook] = {
+    sql"""select
+            webhookId,
+            userId,
+            name,
+            active,
+            url,
+            (
+              select array_agg(eventTypeId)
+              from WebHookEvents
+              where WebHookEvents.webHookId=WebHooks.webHookId
+            ) as eventTypes,
+            config
+          from WebHooks
+          where webHookId=$id"""
+      .map(rowToAspect).single.apply()
+  }
+
   def create(implicit session: DBSession, hook: WebHook): Try[WebHook] = {
     val id =
       sql"""insert into WebHooks (userId, name, active, lastEvent, url, config)
@@ -26,4 +61,13 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       config = WebHookConfig()
     ))
   }
+
+  private def rowToAspect(rs: WrappedResultSet): WebHook = WebHook(
+    id = Some(rs.int("webhookId")),
+    userId = Some(rs.int("userId")),
+    name = rs.string("name"),
+    active = rs.boolean("active"),
+    url = rs.string("url"),
+    eventTypes = rs.arrayOpt("eventTypes").map(a => a.getArray().asInstanceOf[Array[Integer]].map(EventType.withValue(_)).toSet).getOrElse(Set()),
+    config = JsonParser(rs.string("config")).convertTo[WebHookConfig])
 }

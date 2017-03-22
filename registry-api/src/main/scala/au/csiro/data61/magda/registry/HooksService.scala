@@ -17,14 +17,14 @@ import scala.util.{Failure, Success}
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
 class HooksService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
-//  @ApiOperation(value = "Get a list of all web hooks", nickname = "getAll", httpMethod = "GET", response = classOf[WebHook], responseContainer = "List")
-//  def getAll = get { pathEnd {
-//    complete {
-//      DB readOnly { session =>
-//        AspectPersistence.getAll(session)
-//      }
-//    }
-//  } }
+  @ApiOperation(value = "Get a list of all web hooks", nickname = "getAll", httpMethod = "GET", response = classOf[WebHook], responseContainer = "List")
+  def getAll = get { pathEnd {
+    complete {
+      DB readOnly { session =>
+        HookPersistence.getAll(session)
+      }
+    }
+  } }
 
   @ApiOperation(value = "Create a new web hook", nickname = "create", httpMethod = "POST", response = classOf[WebHook])
   @ApiImplicitParams(Array(
@@ -39,20 +39,20 @@ class HooksService(system: ActorSystem, materializer: Materializer) extends Prot
     }
   } } }
 
-//  @Path("/{id}")
-//  @ApiOperation(value = "Get an aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[AspectDefinition])
-//  @ApiImplicitParams(Array(
-//    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be fetched.")
-//  ))
-//  def getById = get { path(Segment) { (id: String) => {
-//    DB readOnly { session =>
-//      AspectPersistence.getById(session, id) match {
-//        case Some(aspect) => complete(aspect)
-//        case None => complete(StatusCodes.NotFound, BadRequest("No aspect exists with that ID."))
-//      }
-//    }
-//  } } }
-//
+  @Path("/{id}")
+  @ApiOperation(value = "Get a web hook by ID", nickname = "getById", httpMethod = "GET", response = classOf[WebHook])
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to be fetched.")
+  ))
+  def getById = get { path(Segment) { (id: String) => {
+    DB readOnly { session =>
+      HookPersistence.getById(session, id.toInt) match {
+        case Some(hook) => complete(hook)
+        case None => complete(StatusCodes.NotFound, BadRequest("No web hook exists with that ID."))
+      }
+    }
+  } } }
+
 //  @Path("/{id}")
 //  @ApiOperation(value = "Modify an aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[AspectDefinition],
 //    notes = "Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.")
@@ -90,9 +90,9 @@ class HooksService(system: ActorSystem, materializer: Materializer) extends Prot
 //  } } }
 
   def route =
-//    getAll ~
-      create
-//      getById ~
+    getAll ~
+    create ~
+    getById
 //      putById ~
 //      patchById
 }

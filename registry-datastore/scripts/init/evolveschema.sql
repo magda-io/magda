@@ -59,7 +59,7 @@ CREATE INDEX ON RecordAspects(aspectId);
 CREATE INDEX ON RecordAspects(recordId);
 
 CREATE TABLE IF NOT EXISTS WebHooks (
-    webhookId bigserial PRIMARY KEY,
+    webHookId bigserial PRIMARY KEY,
     userId int REFERENCES Users NOT NULL,
     name varchar(100) NOT NULL,
     active boolean NOT NULL,
@@ -69,6 +69,6 @@ CREATE TABLE IF NOT EXISTS WebHooks (
 );
 
 CREATE TABLE IF NOT EXISTS WebHookEvents (
-    webhookId bigserial REFERENCES Events NOT NULL,
+    webHookId bigserial REFERENCES Events NOT NULL,
     eventTypeId int REFERENCES EventTypes NOT NULL
 );
