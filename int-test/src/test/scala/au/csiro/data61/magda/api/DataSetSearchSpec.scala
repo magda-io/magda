@@ -21,6 +21,7 @@ import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json.JsString
 import au.csiro.data61.magda.spatial.RegionSource
 import akka.http.scaladsl.server.Route
+import au.csiro.data61.magda.test.util.MagdaMatchers
 
 class DataSetSearchSpec extends BaseSearchApiSpec {
   describe("meta") {
@@ -48,7 +49,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               val response = responseAs[SearchResult]
 
               response.hitCount shouldEqual dataSets.length
-              response.dataSets shouldEqual dataSets
+              MagdaMatchers.dataSetsEqual(response.dataSets, dataSets)
             }
         }
       }
@@ -61,7 +62,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               val response = responseAs[SearchResult]
 
               response.hitCount shouldEqual dataSets.length
-              response.dataSets should equal(dataSets.take(dataSets.length / 2))
+              MagdaMatchers.dataSetsEqual(response.dataSets, dataSets.take(dataSets.length / 2))
             }
         }
       }

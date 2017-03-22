@@ -21,6 +21,9 @@ import au.csiro.data61.magda.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import au.csiro.data61.magda.external.ExternalInterface
+import au.csiro.data61.magda.crawler.CrawlerApi
+import akka.http.scaladsl.Http
+import scala.concurrent.duration._
 
 object IndexerApp extends App {
   implicit val system = ActorSystem()
@@ -37,13 +40,21 @@ object IndexerApp extends App {
 
   val interfaceConfigs = InterfaceConfig.all
 
-  // Index erryday 
-  //  system.scheduler.schedule(0 millis, 1 days, supervisor, Start(List((ExternalInterfaceType.CKAN, new URL(config.getString("services.dga-api.baseUrl"))))))
-
   logger.debug("Starting Crawler")
 
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
   val crawler = Crawler(interfaceConfigs.map(ExternalInterface(_)))
+
+  val api = new CrawlerApi(crawler, indexer)
+
+  // Index every 3 days 
+  system.scheduler.schedule(0 millis, 3 days, new Runnable {
+    def run = {
+      api.crawl
+    }
+  })
+
+  Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
 }
 
 class Listener extends Actor with ActorLogging {

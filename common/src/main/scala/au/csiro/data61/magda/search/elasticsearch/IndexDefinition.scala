@@ -40,7 +40,7 @@ case class IndexDefinition(
 object IndexDefinition extends DefaultJsonProtocol {
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 19,
+    version = 20,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) =>
       create.index(indices.getIndex(config, Indices.DataSetsIndex))

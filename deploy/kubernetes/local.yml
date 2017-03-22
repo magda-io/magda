@@ -165,6 +165,10 @@ metadata:
   name: indexer
 spec:
   ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30012
   - name: debug
     port: 8000
     targetPort: 8000

@@ -24,21 +24,11 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
       pathPrefix("reindex") {
         path("in-progress") {
           get {
-            complete(OK, (!crawlInProgress).toString)
+            complete(OK, (crawlInProgress).toString)
           }
         } ~
           post {
-            if (!crawlInProgress) {
-              lastCrawl = Some(crawler.crawl(indexer))
-              val future = lastCrawl.get
-
-              future.onComplete {
-                case Success(_) =>
-                  getLogger.info("Successfully completed crawl")
-                case Failure(e) =>
-                  getLogger.error(e, "Crawl failed")
-              }
-
+            if (crawl) {
               complete(Accepted)
             } else {
               complete(Conflict, "Reindex in progress")
@@ -46,4 +36,22 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
           }
       }
     }
+
+  def crawl(): Boolean = {
+    if (!crawlInProgress) {
+      lastCrawl = Some(crawler.crawl(indexer))
+      val future = lastCrawl.get
+
+      future.onComplete {
+        case Success(_) =>
+          getLogger.info("Successfully completed crawl")
+        case Failure(e) =>
+          getLogger.error(e, "Crawl failed")
+      }
+
+      true
+    } else {
+      false
+    }
+  }
 }

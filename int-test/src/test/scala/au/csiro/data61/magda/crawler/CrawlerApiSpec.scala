@@ -87,6 +87,10 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
     indexer.ready.await
 
+    Get("/reindex/in-progress") ~> routes ~> check {
+      
+    }
+    
     Post("/reindex") ~> routes ~> check {
       status shouldBe Accepted
     }
@@ -96,9 +100,9 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     blockUntil("Reindex is finished") { () =>
       val reindexCheck = Get("/reindex/in-progress") ~> routes ~> runRoute
 
-      val reindexStatus = reindexCheck.entity.toStrict(30 seconds).await.data.decodeString("UTF-8")
+      val inProgress = reindexCheck.entity.toStrict(30 seconds).await.data.decodeString("UTF-8")
 
-      reindexStatus == "true"
+      inProgress == "false"
     }
 
     // Combine all the datasets but keep what interface they come from

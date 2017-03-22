@@ -353,7 +353,7 @@ class ElasticSearchIndexer(
       client.execute(
         deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
           filter(must(
-            rangeQuery("indexed").lte(before.toString),
+            rangeQuery("indexed").to(before.toString),
             termQuery("catalog", source.name)
           ))
         )
