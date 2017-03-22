@@ -86,7 +86,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
         val maxFromConfig = if (config.hasPath("indexer.maxResults")) config.getLong("indexer.maxResults") else Long.MaxValue
         createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
       }
-      .throttle(1, 1 second, 1, ThrottleMode.Shaping)
+      .throttle(1, config.getInt("indexer.requestThrottleMs") millisecond, 1, ThrottleMode.Shaping)
       .mapAsync(1) { batch => interface.getDataSets(batch.start, batch.size) }
       .map { dataSets =>
         val filteredDataSets = dataSets
@@ -98,7 +98,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
 
         val ineligibleDataSetCount = dataSets.size - filteredDataSets.size
         if (ineligibleDataSetCount > 0) {
-          log.info("Filtering out {} datasets from {} because they have no distributions", ineligibleDataSetCount, interfaceDef.name)
+          log.debug("Filtering out {} datasets from {} because they have no distributions", ineligibleDataSetCount, interfaceDef.name)
         }
 
         filteredDataSets

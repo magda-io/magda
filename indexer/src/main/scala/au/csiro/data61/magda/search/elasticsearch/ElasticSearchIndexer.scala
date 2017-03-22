@@ -40,6 +40,7 @@ import scala.util.Try
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
 import org.elasticsearch.index.query.QueryBuilders
 import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
+import com.sksamuel.elastic4s.index.RichIndexResponse
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -68,10 +69,14 @@ class ElasticSearchIndexer(
         case (source, dataSet, promise) => (buildDatasetIndexDefinition(source, dataSet), (source, dataSet, promise))
       }
       .batch(1000, Seq(_))(_ :+ _)
-      .mapAsync(1) { tuples =>
-        val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index {} records, retrying", tuples.length, e)
-        val bulkDef = bulk(tuples.flatMap(_._1))
-        val sources = tuples.map(_._2)
+      .mapAsync(1) { batch =>
+        val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index {} records, retrying", batch.length, e)
+
+        // Combine all the ES inserts into one bulk statement
+        val bulkDef = bulk(batch.flatMap { case (esIndexDefs, _) => esIndexDefs })
+
+        // Get out the source of each ES insert along with how many inserts it made (for publishers/formats etc)
+        val sources = batch.map { case (indexDefs, (interfaceDef, dataSet, promise)) => (interfaceDef, dataSet, promise, indexDefs.size) }
 
         retry(() => bulkIndex(bulkDef), 30 seconds, 4, onRetry)
           .map(result => (result, sources))
@@ -83,23 +88,35 @@ class ElasticSearchIndexer(
           }
       }
       .map {
-        case (result, sources) =>
-          val resultTuples = result.items.zip(sources)
+        case (result: RichBulkResponse, sources) =>
+          val groupedResults = sources.map(_._4).foldLeft((0, Seq[Seq[RichBulkItemResponse]]())) {
+            case ((currentIndex, listSoFar), current) =>
+              val group = result.items.drop(currentIndex).take(current)
+              (currentIndex + group.size, listSoFar :+ group)
+          }._2
 
-          val failures = resultTuples.filter(_._1.isFailure)
-          val successes = resultTuples.filterNot(_._1.isFailure)
+          val resultTuples = groupedResults.zip(sources)
+
+          val failures = resultTuples.filter(_._1.exists(_.isFailure))
+          val successes = resultTuples.filter(_._1.forall(!_.isFailure))
 
           failures.foreach {
-            case (result, (source, dataSet, promise)) =>
+            case (results, (source, dataSet, promise, _)) =>
               logger.warning("Failure when indexing {}: {}", dataSet.identifier, result.failureMessage)
-              tryReindexSpatialFail(source, dataSet, result, promise)
+
+              // The dataset result is always the first
+              if (results.head.isFailure) {
+                tryReindexSpatialFail(source, dataSet, results.head, promise)
+              } else {
+                promise.failure(new Exception("Failed to index supplementary field"))
+              }
           }
 
           if (!successes.isEmpty) {
-            logger.debug("Successfully indexed {} datasets", successes.size)
+            logger.info("Successfully indexed {} datasets from {}", successes.size, sources.map(_._1.name).distinct.mkString(", "))
           }
 
-          successes.map(_._2).foreach { case (_, dataSet, promise) => promise.success(Success(dataSet.identifier)) }
+          successes.map(_._2).foreach { case (_, dataSet, promise, _) => promise.success(Success(dataSet.identifier)) }
       }
       .recover {
         case e: Throwable =>
@@ -317,23 +334,29 @@ class ElasticSearchIndexer(
   }
 
   override def index(source: InterfaceConfig, dataSetStream: Source[DataSet, NotUsed]) = {
-    val fullStream = dataSetStream
+    val indexResults = dataSetStream
+      // Queue every dataSet for indexing and keep the future along with the dataset's identifier
       .map(dataSet => (dataSet.identifier, index(source, dataSet)))
+      // Combine all of these operations into one future
       .runWith(Sink.seq)
 
-    fullStream
+    indexResults
       .flatMap { result =>
+        // When every dataSet in the stream has been queued, create a future that will resolved when everything
+        // has finished being indexed
         val (identifiers, futures) = result.unzip
         val combinedFuture = Future.sequence(futures)
 
+        // When indexing has finished, join every result to its identifier.
         combinedFuture.map(identifiers.zip(_))
       }
-      .map(_.foldLeft(new SearchIndexer.IndexResult(0, Seq())) { (combinedResult, thisResult) =>
-        thisResult._2 match {
-          case Success(_) => combinedResult.copy(successes = combinedResult.successes + 1)
-          case Failure(e) => combinedResult.copy(failures = combinedResult.failures :+ thisResult._1)
-        }
-      })
+      .map(identifiersWithResults =>
+        identifiersWithResults.foldLeft(new SearchIndexer.IndexResult(0, Seq())) { (combinedResult, thisResult) =>
+          thisResult._2 match {
+            case Success(_) => combinedResult.copy(successes = combinedResult.successes + 1)
+            case Failure(e) => combinedResult.copy(failures = combinedResult.failures :+ thisResult._1)
+          }
+        })
   }
 
   def index(source: InterfaceConfig, dataSet: DataSet, promise: Promise[Try[Unit]] = Promise[Try[Unit]]): Future[Try[Unit]] = {

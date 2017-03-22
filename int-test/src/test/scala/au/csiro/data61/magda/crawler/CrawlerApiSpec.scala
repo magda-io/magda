@@ -24,14 +24,17 @@ import akka.http.scaladsl.server.Route
 import java.util.UUID
 import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
+import com.typesafe.config.ConfigFactory
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
+
+  override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
 
   // When shrinking, shrink the datasets only and put them in a new index.
   implicit def shrinker2(implicit s: Shrink[List[DataSet]], s3: Shrink[InterfaceConfig]): Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] =
     Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] {
       case (beforeDataSets, afterDataSets, interfaceConfig) ⇒
-        logger.debug("Shrinking")
+        logger.info("Shrinking")
         Shrink.shrink(beforeDataSets).flatMap(shrunkBefore => Shrink.shrink(afterDataSets).map(shrunkAfter => (shrunkBefore, shrunkAfter))).map {
           case (beforeDataSets, afterDataSets) => (beforeDataSets, afterDataSets, interfaceConfig)
         }
@@ -88,9 +91,9 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     indexer.ready.await
 
     Get("/reindex/in-progress") ~> routes ~> check {
-      
+
     }
-    
+
     Post("/reindex") ~> routes ~> check {
       status shouldBe Accepted
     }

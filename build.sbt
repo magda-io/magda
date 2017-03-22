@@ -4,7 +4,7 @@ name := "magda-metadata"
 
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
-  version := "0.0.23",
+  version := "0.0.23-SNAPSHOT",
   scalaVersion := "2.11.8"
 )
 
@@ -50,4 +50,4 @@ variables in EditSource += ("version", version.value)
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 sbt.Keys.fork in Test := false
-javaOptions in (Test) ++= Seq("-Xms3500M", "-Xmx3500M", "-XX:+CMSClassUnloadingEnabled", "-XX:-UseGCOverheadLimit")
+
