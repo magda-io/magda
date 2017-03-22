@@ -85,6 +85,7 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
         path("ping") { complete("OK") } ~
         pathPrefix("aspects") { new AspectsService(system, materializer).route } ~
         pathPrefix("records") { new RecordsService(system, materializer).route } ~
+        pathPrefix("hooks") { new HooksService(system, materializer).route } ~
         new SwaggerDocService("localhost", 9001, system).routes
       } ~
       pathPrefix("swagger") {

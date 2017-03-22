@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import gnieh.diffson.FormatException
-import spray.json.{DefaultJsonProtocol, JsArray, JsValue, RootJsonFormat}
+import spray.json.{DefaultJsonProtocol, JsArray, JsNumber, JsValue, RootJsonFormat}
 import gnieh.diffson.sprayJson._
 
 trait Protocols extends DefaultJsonProtocol with DiffsonProtocol {
@@ -19,4 +19,11 @@ trait Protocols extends DefaultJsonProtocol with DiffsonProtocol {
   implicit val recordsPageFormat = jsonFormat3(RecordsPage.apply)
   implicit val recordSummariesPageFormat = jsonFormat3(RecordSummariesPage.apply)
   implicit val deleteResultFormat = jsonFormat1(DeleteResult.apply)
+  implicit val webHookConfig = jsonFormat1(WebHookConfig.apply)
+  implicit val webHookFormat = jsonFormat7(WebHook.apply)
+
+  implicit object EventTypeFormat extends RootJsonFormat[EventType] {
+    def write(e: EventType) = JsNumber(e.value)
+    def read(value: JsValue) = EventType.withValue(value.asInstanceOf[JsNumber].value.toInt)
+  }
 }
