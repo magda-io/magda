@@ -1,7 +1,5 @@
 package au.csiro.data61.magda.registry
 
-import spray.json.JsObject
-
 case class WebHook (
   id: Option[Int],
   userId: Option[Int],
