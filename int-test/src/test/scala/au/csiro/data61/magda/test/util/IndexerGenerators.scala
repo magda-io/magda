@@ -15,7 +15,7 @@ object IndexerGenerators {
   } yield new URL(s"$scheme://$host.$tld/$path")
 
   val interfaceConfGen = for {
-    name <- arbitrary[String].suchThat(!_.isEmpty)
+    name <- Generators.listSizeBetween(1, 50, arbitrary[Char]).map(_.mkString).suchThat(!_.isEmpty)
     interfaceType <- arbitrary[String]
     baseUrl <- urlGen
     pageSize <- Gen.choose(1, 30)

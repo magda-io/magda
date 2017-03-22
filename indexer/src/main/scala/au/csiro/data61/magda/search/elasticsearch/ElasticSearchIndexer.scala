@@ -353,12 +353,16 @@ class ElasticSearchIndexer(
       client.execute(
         deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
           filter(must(
-            rangeQuery("indexed").to(before.toString),
-            matchQuery("catalog", source.name)
+            rangeQuery("indexed").lte(before.toString),
+            termQuery("catalog", source.name)
           ))
         )
       )
-    }.map(_ => Unit)
+    }.map { response =>
+      logger.info("Trimmed {} old datasets from {}", response.getDeleted, source.name)
+
+      Unit
+    }
 
   private def createSnapshot(client: TcpClient, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
     logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
@@ -390,13 +394,15 @@ class ElasticSearchIndexer(
   /**
    * Indexes a number of datasets into ES using a bulk insert.
    */
-  private def buildDatasetIndexDefinition(source: InterfaceConfig, dataSet: DataSet): Seq[ESIndexDefinition] = {
+  private def buildDatasetIndexDefinition(source: InterfaceConfig, rawDataSet: DataSet): Seq[ESIndexDefinition] = {
+    val dataSet = rawDataSet.copy(
+      catalog = source.name,
+      years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
+      indexed = Some(OffsetDateTime.now)
+    )
+
     val indexDataSet = ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType) id dataSet.uniqueId source (
-      dataSet.copy(
-        catalog = source.name,
-        years = ElasticSearchIndexer.getYears(dataSet.temporal.flatMap(_.start.flatMap(_.date)), dataSet.temporal.flatMap(_.end.flatMap(_.date))),
-        indexed = Some(OffsetDateTime.now)
-      ).toJson
+      dataSet.toJson
     )
 
     val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>

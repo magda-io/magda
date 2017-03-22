@@ -97,6 +97,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               field("not_analyzed", KeywordType),
               field("quote", TextType)
             ),
+            field("catalog", KeywordType),
             field("years", KeywordType),
             field("indexed", DateType)
           ),

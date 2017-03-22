@@ -28,18 +28,17 @@ import au.csiro.data61.magda.search.elasticsearch.Indices
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
   // When shrinking, shrink the datasets only and put them in a new index.
-  implicit def shrinker(implicit s: Shrink[UUID], s1: Shrink[List[(List[DataSet], List[DataSet], InterfaceConfig)]]): Shrink[(UUID, (List[(List[DataSet], List[DataSet], InterfaceConfig)]))] =
-    Shrink[(UUID, (List[(List[DataSet], List[DataSet], InterfaceConfig)]))] {
-      case (indexId, sources) ⇒
-        Shrink.shrink(sources).map { shrunkSources ⇒
-          logger.info("Shrinking from {} to {}", sources.length, shrunkSources.length)
-          (UUID.randomUUID(), shrunkSources)
+  implicit def shrinker2(implicit s: Shrink[List[DataSet]], s3: Shrink[InterfaceConfig]): Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] =
+    Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] {
+      case (beforeDataSets, afterDataSets, interfaceConfig) ⇒
+        logger.debug("Shrinking")
+        Shrink.shrink(beforeDataSets).flatMap(shrunkBefore => Shrink.shrink(afterDataSets).map(shrunkAfter => (shrunkBefore, shrunkAfter))).map {
+          case (beforeDataSets, afterDataSets) => (beforeDataSets, afterDataSets, interfaceConfig)
         }
     }
 
   // Gen these as a tuple so that they're shrunk together instead of separately
   val gen = for {
-    uuid <- Gen.uuid
     dataSetsInitial <- Generators.listSizeBetween(0, 20, Generators.dataSetGen)
     dataSetsRemaining <- Gen.someOf(dataSetsInitial)
     dataSetsNew <- Generators.listSizeBetween(0, 20, Generators.dataSetGen)
@@ -49,21 +48,20 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       val interfaceConfs = tuples.map(_._2)
       interfaceConfs.distinct == interfaceConfs
     }
-  } yield (uuid, sources)
+  } yield sources
 
   it("should correctly store new datasets when reindexed") {
 
     forAll(gen) {
-      case (indexId, sources) =>
+      case (sources) =>
+        val indexId = UUID.randomUUID().toString
+
         doTest(indexId, sources, true)
-        
-        Thread.sleep(2000)
-        
         doTest(indexId, sources, false)
     }
   }
 
-  def doTest(indexId: UUID, sources: List[(List[DataSet], List[DataSet], InterfaceConfig)], firstIndex: Boolean) = {
+  def doTest(indexId: String, sources: List[(List[DataSet], List[DataSet], InterfaceConfig)], firstIndex: Boolean) = {
     val filteredSources = sources.map {
       case (initialDataSets, afterDataSets, interfaceConfig) =>
         (if (firstIndex) initialDataSets else afterDataSets, interfaceConfig)
@@ -93,6 +91,8 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       status shouldBe Accepted
     }
 
+    Thread.sleep(2000)
+
     blockUntil("Reindex is finished") { () =>
       val reindexCheck = Get("/reindex/in-progress") ~> routes ~> runRoute
 
@@ -104,10 +104,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     // Combine all the datasets but keep what interface they come from
     val allDataSets = filteredSources.flatMap { case (dataSets, interfaceConfig) => dataSets.map((_, interfaceConfig)) }
 
-    Thread.sleep(1000) // Count-intuitively this makes the test go faster because it stops us from hammering ES asking if its done indexing yet.
-    
-    // it might take a bit longer for ES to finish refreshing its index
-    blockUntilCount(allDataSets.size, indexId.toString, indices.getType(Indices.DataSetsIndexType))
+    refresh(indexId.toString)
 
     Get(s"/datasets/search?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
       status shouldBe OK
@@ -121,7 +118,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
         }))
         .map {
           case (resDataSet, Some((inputDataSet, interfaceConfig))) => (resDataSet, inputDataSet, interfaceConfig)
-          case (resDataSet, _) => withClue(s"${resDataSet.identifier} could not be found in ${allDataSets.map(_._1.identifier)}") {
+          case (resDataSet, _) => withClue(s"${resDataSet.identifier} indexed at ${resDataSet.indexed} could not be found in ${allDataSets.map(_._1.identifier)}") {
             fail
           }
         }

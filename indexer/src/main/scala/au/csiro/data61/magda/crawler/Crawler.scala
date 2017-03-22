@@ -23,7 +23,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
 
   def crawl(indexer: SearchIndexer) = {
     val startInstant = OffsetDateTime.now
-    
+
     val crawlFutures = externalInterfaces
       .filter(!_.getInterfaceConfig.ignore)
       .map { interface =>
@@ -34,6 +34,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
             log.info("Indexed {} datasets from {} with {} failures", result.successes, interface.getInterfaceConfig.name, result.failures.length)
 
             val futureOpt = if (result.successes >= result.failures.length) { // does this need to be tunable?
+              log.info("Trimming datasets from {} indexed before {}", interface.getInterfaceConfig.name, startInstant)
               Some(indexer.trim(interface.getInterfaceConfig, startInstant))
             } else {
               log.warning("Encountered too many failures to trim old datasets from {}", interface.getInterfaceConfig.name)
@@ -83,11 +84,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
       .mapConcat { count =>
         log.info("{} has {} datasets", interfaceDef.baseUrl, count)
         val maxFromConfig = if (config.hasPath("indexer.maxResults")) config.getLong("indexer.maxResults") else Long.MaxValue
-        val batches = createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
-
-        log.debug(batches.toString)
-
-        batches
+        createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
       }
       .throttle(1, 1 second, 1, ThrottleMode.Shaping)
       .mapAsync(1) { batch => interface.getDataSets(batch.start, batch.size) }
