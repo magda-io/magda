@@ -87,11 +87,11 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
         }
 
         BaseSearchApiSpec.genCache.put(cacheKey, future)
-        logger.info("Cache miss for {}", cacheKey)
+        logger.debug("Cache miss for {}", cacheKey)
 
         future.await(INSERTION_WAIT_TIME)
       case (cacheKey, Some(cachedValue)) ⇒
-        logger.info("Cache hit for {}", cacheKey)
+        logger.debug("Cache hit for {}", cacheKey)
 
         val value = cachedValue.await(INSERTION_WAIT_TIME)
 

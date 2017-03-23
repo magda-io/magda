@@ -113,7 +113,12 @@ class ElasticSearchIndexer(
           }
 
           if (!successes.isEmpty) {
-            logger.info("Successfully indexed {} datasets from {}", successes.size, sources.map(_._1.name).distinct.mkString(", "))
+            val groupedByInterface = successes.groupBy(_._2._1.name)
+
+            groupedByInterface.foreach {
+              case (interfaceName, responses) =>
+                logger.info("Successfully indexed {} datasets from {}", responses.size, interfaceName)
+            }
           }
 
           successes.map(_._2).foreach { case (_, dataSet, promise, _) => promise.success(Success(dataSet.identifier)) }
@@ -178,7 +183,7 @@ class ElasticSearchIndexer(
     val geoFail = result.isFailure && result.failureMessage.contains("failed to parse [spatial.geoJson]")
 
     if (geoFail) {
-      logger.debug("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.identifier)
+      logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.identifier)
       val dataSetWithoutSpatial = dataSet.copy(spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None)))
       index(source, dataSetWithoutSpatial, promise)
     } else {
