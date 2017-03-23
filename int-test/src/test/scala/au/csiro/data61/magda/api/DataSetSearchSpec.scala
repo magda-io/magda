@@ -5,6 +5,8 @@ import org.scalacheck.Arbitrary._
 import org.scalacheck.Shrink
 import org.scalatest._
 
+import com.monsanto.labs.mwundo.GeoJson._
+import com.monsanto.labs.mwundo.GeoJson.Polygon
 import com.vividsolutions.jts.geom.GeometryFactory
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -13,15 +15,16 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy.MatchAll
+import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.Generators._
-import com.monsanto.labs.mwundo.GeoJson.Polygon
-import com.monsanto.labs.mwundo.GeoJson._
-import au.csiro.data61.magda.util.MwundoJTSConversions._
-import spray.json.JsString
-import au.csiro.data61.magda.spatial.RegionSource
-import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.test.util.MagdaMatchers
+import au.csiro.data61.magda.util.MwundoJTSConversions._
+import java.time.temporal.ChronoField
+import java.time.temporal.TemporalField
+import java.util.Calendar
+import java.time.OffsetDateTime
+import java.util.GregorianCalendar
 
 class DataSetSearchSpec extends BaseSearchApiSpec {
   describe("meta") {
@@ -347,10 +350,37 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
   }
 
   describe("query") {
-    def removeResolvedRegions(query: Query): Query = {
-      query.copy(
-        regions = query.regions.map(_.map(_.copy(regionName = None, boundingBox = None)))
+    def queryEquals(outputQuery: Query, inputQuery: Query) = {
+      def removeDynamics(query: Query): Query = query.copy(
+        regions = query.regions.map(_.map(_.copy(regionName = None, boundingBox = None))),
+        dateTo = None
       )
+
+      removeDynamics(outputQuery) shouldEqual (removeDynamics(inputQuery))
+
+      (outputQuery.dateTo, inputQuery.dateTo) match {
+        case (Some(Specified(output)), Some(Specified(input))) =>
+
+          def checkWithRounding(field: TemporalField, maxFunc: OffsetDateTime => Int) = {
+            val max = maxFunc(input)
+            
+            if (output.get(field) == max) {
+              input.get(field) should (equal(0) or equal(max))
+            } else {
+              input.get(field) should equal(output.get(field))
+            }
+          }
+
+          def getMax(date: OffsetDateTime, period: Int) = new GregorianCalendar(date.getYear, date.getMonthValue, date.getDayOfMonth).getActualMaximum(period)
+
+          checkWithRounding(ChronoField.MILLI_OF_SECOND, _ => 999)
+          checkWithRounding(ChronoField.SECOND_OF_MINUTE, _ => 59)
+          checkWithRounding(ChronoField.MINUTE_OF_HOUR, _ => 59)
+          checkWithRounding(ChronoField.HOUR_OF_DAY, _ => 23)
+          checkWithRounding(ChronoField.DAY_OF_MONTH, date => getMax(date, Calendar.DAY_OF_MONTH))
+          checkWithRounding(ChronoField.MONTH_OF_YEAR, date => getMax(date, Calendar.MONTH))
+        case (a, b) => a.equals(b)
+      }
     }
 
     it("should parse a randomly generated query correctly") {
@@ -367,7 +397,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             if (textQuery.equals("")) {
               response.query should equal(Query(freeText = Some("*")))
             } else {
-              removeResolvedRegions(response.query) should equal(query)
+              queryEquals(response.query, query)
             }
           }
         }
@@ -474,7 +504,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             status shouldBe OK
 
             val response = responseAs[SearchResult]
-            removeResolvedRegions(response.query) should equal(query)
+            queryEquals(response.query, query)
           }
         }
       }

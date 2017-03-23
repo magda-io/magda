@@ -136,13 +136,13 @@ private class QueryParser()(implicit val defaultOffset: ZoneOffset, implicit val
       case Specified(filterValueString) =>
         if (filterValueString.contains(":")) {
           val split = filterValueString.split(":")
-          val regionType = split(0)
-          val regionId = split(1)
 
-          if (!regionType.trim.isEmpty() && !regionId.trim.isEmpty) {
-            AST.ASTRegion(Specified(QueryRegion(regionType, regionId)))
-          } else {
+          if (split.size < 2) {
             AST.FreeTextWord("in " + filterValueString)
+          } else {
+            val regionType = split(0)
+            val regionId = split(1)
+            AST.ASTRegion(Specified(QueryRegion(regionType, regionId)))
           }
         } else {
           AST.FreeTextWord("in " + filterValueString)
