@@ -13,6 +13,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             userId,
             name,
             active,
+            lastEvent,
             url,
             (
               select array_agg(eventTypeId)
@@ -21,7 +22,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             ) as eventTypes,
             config
           from WebHooks"""
-      .map(rowToAspect).list.apply()
+      .map(rowToHook).list.apply()
   }
 
   def getById(implicit session: DBSession, id: Int): Option[WebHook] = {
@@ -30,6 +31,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             userId,
             name,
             active,
+            lastEvent,
             url,
             (
               select array_agg(eventTypeId)
@@ -39,7 +41,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             config
           from WebHooks
           where webHookId=$id"""
-      .map(rowToAspect).single.apply()
+      .map(rowToHook).single.apply()
   }
 
   def create(implicit session: DBSession, hook: WebHook): Try[WebHook] = {
@@ -56,17 +58,19 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       userId = Some(0),
       name = hook.name,
       active = hook.active,
+      lastEvent = None, // TODO: include real lastEvent
       url = hook.url,
       eventTypes = Set[EventType](),
       config = WebHookConfig()
     ))
   }
 
-  private def rowToAspect(rs: WrappedResultSet): WebHook = WebHook(
+  private def rowToHook(rs: WrappedResultSet): WebHook = WebHook(
     id = Some(rs.int("webhookId")),
     userId = Some(rs.int("userId")),
     name = rs.string("name"),
     active = rs.boolean("active"),
+    lastEvent = rs.longOpt("lastEvent"),
     url = rs.string("url"),
     eventTypes = rs.arrayOpt("eventTypes").map(a => a.getArray().asInstanceOf[Array[Integer]].map(EventType.withValue(_)).toSet).getOrElse(Set()),
     config = JsonParser(rs.string("config")).convertTo[WebHookConfig])

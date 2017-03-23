@@ -5,6 +5,7 @@ case class WebHook (
   userId: Option[Int],
   name: String,
   active: Boolean,
+  lastEvent: Option[Long],
   url: String,
   eventTypes: Set[EventType],
   config: WebHookConfig
