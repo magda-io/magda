@@ -63,8 +63,8 @@ class ElasticSearchIndexer(
   override def ready = setupFuture.map(_ => Unit)
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
-  private lazy val indexQueue: SourceQueue[(InterfaceConfig, DataSet, Promise[Try[Unit]])] =
-    Source.queue[(InterfaceConfig, DataSet, Promise[Try[Unit]])](Int.MaxValue, OverflowStrategy.backpressure)
+  private lazy val indexQueue: SourceQueue[(InterfaceConfig, DataSet, Promise[Unit])] =
+    Source.queue[(InterfaceConfig, DataSet, Promise[Unit])](Int.MaxValue, OverflowStrategy.backpressure)
       .map {
         case (source, dataSet, promise) => (buildDatasetIndexDefinition(source, dataSet), (source, dataSet, promise))
       }
@@ -102,7 +102,9 @@ class ElasticSearchIndexer(
 
           failures.foreach {
             case (results, (source, dataSet, promise, _)) =>
-              logger.warning("Failure when indexing {}: {}", dataSet.identifier, result.failureMessage)
+              results.filter(_.isFailure).foreach { failure =>
+                logger.warning("Failure when indexing {}: {}", dataSet.uniqueId, failure.failureMessage)
+              }
 
               // The dataset result is always the first
               if (results.head.isFailure) {
@@ -117,11 +119,11 @@ class ElasticSearchIndexer(
 
             groupedByInterface.foreach {
               case (interfaceName, responses) =>
-                logger.info("Successfully indexed {} datasets from {}", responses.size, interfaceName)
+                logger.debug("Successfully indexed {} datasets from {}", responses.size, interfaceName)
             }
           }
 
-          successes.map(_._2).foreach { case (_, dataSet, promise, _) => promise.success(Success(dataSet.identifier)) }
+          successes.map(_._2).foreach { case (_, dataSet, promise, _) => promise.success(dataSet.uniqueId) }
       }
       .recover {
         case e: Throwable =>
@@ -179,11 +181,11 @@ class ElasticSearchIndexer(
     )
   }
 
-  private def tryReindexSpatialFail(source: InterfaceConfig, dataSet: DataSet, result: RichBulkItemResponse, promise: Promise[Try[Unit]]) = {
+  private def tryReindexSpatialFail(source: InterfaceConfig, dataSet: DataSet, result: RichBulkItemResponse, promise: Promise[Unit]) = {
     val geoFail = result.isFailure && result.failureMessage.contains("failed to parse [spatial.geoJson]")
 
     if (geoFail) {
-      logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.identifier)
+      logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.uniqueId)
       val dataSetWithoutSpatial = dataSet.copy(spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None)))
       index(source, dataSetWithoutSpatial, promise)
     } else {
@@ -341,30 +343,24 @@ class ElasticSearchIndexer(
   override def index(source: InterfaceConfig, dataSetStream: Source[DataSet, NotUsed]) = {
     val indexResults = dataSetStream
       // Queue every dataSet for indexing and keep the future along with the dataset's identifier
-      .map(dataSet => (dataSet.identifier, index(source, dataSet)))
+      .map(dataSet => (dataSet.uniqueId, index(source, dataSet)))
       // Combine all of these operations into one future
-      .runWith(Sink.seq)
-
-    indexResults
-      .flatMap { result =>
-        // When every dataSet in the stream has been queued, create a future that will resolved when everything
-        // has finished being indexed
-        val (identifiers, futures) = result.unzip
-        val combinedFuture = Future.sequence(futures)
-
-        // When indexing has finished, join every result to its identifier.
-        combinedFuture.map(identifiers.zip(_))
-      }
-      .map(identifiersWithResults =>
-        identifiersWithResults.foldLeft(new SearchIndexer.IndexResult(0, Seq())) { (combinedResult, thisResult) =>
-          thisResult._2 match {
-            case Success(_) => combinedResult.copy(successes = combinedResult.successes + 1)
-            case Failure(e) => combinedResult.copy(failures = combinedResult.failures :+ thisResult._1)
+      .runWith(Sink.fold(Future(new SearchIndexer.IndexResult(0, Seq()))) {
+        case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>
+          combinedResultFuture.flatMap { combinedResult =>
+            thisResultFuture.map { _ =>
+              combinedResult.copy(successes = combinedResult.successes + 1)
+            }.recover {
+              case (e: Throwable) =>
+                combinedResult.copy(failures = combinedResult.failures :+ thisResultIdentifier)
+            }
           }
-        })
+      })
+
+    indexResults.flatMap(identity)
   }
 
-  def index(source: InterfaceConfig, dataSet: DataSet, promise: Promise[Try[Unit]] = Promise[Try[Unit]]): Future[Try[Unit]] = {
+  def index(source: InterfaceConfig, dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
     indexQueue.offer((source, dataSet, promise))
       .flatMap {
         case QueueOfferResult.Enqueued    => promise.future

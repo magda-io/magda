@@ -58,8 +58,7 @@ object Generators {
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds)
   )
 
-  val filterWords = Set("in", "to", "as", "by", "from")
-  val filterWordsWithSpace = filterWords.map(_ + " ")
+  
 
   val alphaNumRegex = ".*[a-zA-Z0-9].*".r
 

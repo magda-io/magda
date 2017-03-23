@@ -68,7 +68,8 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val confi
           )
         }
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-          val error = s"CKAN request failed with status code ${response.status} and entity $entity"
+          val url = s"${interfaceConfig.baseUrl}$baseUrl&start=$start&rows=$number"
+          val error = s"CKAN request for $url failed with status code ${response.status} and entity $entity"
           Future.failed(new IOException(error))
         }
       }
@@ -79,7 +80,8 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val confi
       response.status match {
         case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.count)
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-          val error = s"CKAN request failed with status code ${response.status} and entity $entity"
+          val url = s"${interfaceConfig.baseUrl}$baseUrl&rows=0"
+          val error = s"CKAN request for $url failed with status code ${response.status} and entity $entity"
           logger.error(error)
           Future.failed(new IOException(error))
         }

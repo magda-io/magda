@@ -58,7 +58,7 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
       .map {
         case (successCount, failureCount) =>
           if (successCount > 0) {
-            log.info("Indexed {} datasets", successCount)
+            log.info("Indexed {} datasets with {} failures", successCount, failureCount)
             if (config.getBoolean("indexer.makeSnapshots")) {
               log.info("Snapshotting...")
               indexer.snapshot()

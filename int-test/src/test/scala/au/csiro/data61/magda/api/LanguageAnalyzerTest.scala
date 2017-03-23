@@ -19,6 +19,7 @@ import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json.JsString
 import au.csiro.data61.magda.spatial.RegionSource
 import akka.http.scaladsl.server.Route
+import org.tartarus.snowball.ext.PorterStemmer
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
@@ -51,9 +52,13 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
       testDataSetSearch(dataSet => dataSet.theme)
     }
 
-    def testDataSetSearch(termExtractor: DataSet => Seq[String]) = {
+    def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
+      def termExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
+        .filter(term => filterWordsWithSpace.forall(filterWord => !term.toLowerCase.contains(filterWord)))
+        .filter(term => term.matches(".*[A-Z][a-z].*"))
+
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
-        Get(s"""/datasets/search?query=${encodeForUrl(term)}&limit=${tuples.size}""") ~> routes ~> check {
+        Get(s"""/datasets/search?query=${encodeForUrl(term)}&limit=10000""") ~> routes ~> check {
           status shouldBe OK
           val result = responseAs[SearchResult]
 
@@ -102,13 +107,27 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     it(s"regardless of pluralization/depluralization") {
+      def stem(string: String) = {
+        val stemmer = new PorterStemmer()
+        stemmer.setCurrent(string)
+
+        if (stemmer.stem) stemmer.getCurrent else string
+      }
+
       def innerTermExtractor(dataSet: DataSet) = termExtractor(dataSet)
-        .filterNot(_.matches("\\d+"))
         .map {
-          case term if term.last.toLower.equals('s') => term.take(term.length - 1)
-          case term                                  => term + "s"
+          case term if term.last.toLower.equals('s') =>
+            val depluralized = term.take(term.length - 1)
+            if (stem(term) == depluralized) {
+              Some(depluralized)
+            } else None
+          case term =>
+            val pluralized = term + "s"
+            if (stem(pluralized) == term) {
+              Some(pluralized)
+            } else None
         }
-        .filter(_.matches(".*[A-Za-z].*"))
+        .flatten
 
       doTest(innerTermExtractor)
     }

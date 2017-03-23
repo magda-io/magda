@@ -117,11 +117,15 @@ spec:
         service: kibana
     spec:
       containers:
-      - env:
+      - name: kibana
+        env:
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
+        resources:
+          requests:
+            memory: 0Mi
+            cpu: 0
         image: kibana
-        name: kibana
         ports:
         - containerPort: 5601
 ---

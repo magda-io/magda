@@ -59,7 +59,6 @@ object ApiGenerators {
     Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)).trim)
   }
 
-
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
     .suchThat(word => !filterWords.contains(word.toLowerCase))
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
@@ -174,4 +173,7 @@ object ApiGenerators {
       case 2 => char
     }
   }.mkString
+
+  val filterWords = Set("in", "to", "as", "by", "from")
+  val filterWordsWithSpace = filterWords.map(_ + " ")
 }
