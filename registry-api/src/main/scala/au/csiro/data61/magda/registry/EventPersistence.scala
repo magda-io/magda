@@ -10,9 +10,9 @@ import scalikejdbc._
 object EventPersistence extends Protocols with DiffsonProtocol {
   val eventPageSize = 1000
 
-  def streamEventsSince(implicit session: DBSession, lastEventId: Long) = {
+  def streamEventsSince(lastEventId: Long) = {
     Source.unfold(lastEventId)(offset => {
-      val events =
+      val events = DB readOnly { implicit session =>
         sql"""select
                 eventId,
                 eventTime,
@@ -24,6 +24,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
               order by eventId asc
               limit ${eventPageSize}"""
           .map(rowToEvent).list.apply()
+      }
       events.lastOption.map(last => (last.id.get, events))
     }).mapConcat(page => page)
   }
