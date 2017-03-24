@@ -60,9 +60,13 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       active = hook.active,
       lastEvent = None, // TODO: include real lastEvent
       url = hook.url,
-      eventTypes = Set[EventType](),
-      config = WebHookConfig()
+      eventTypes = Set[EventType](), // TODO
+      config = WebHookConfig() // TODO
     ))
+  }
+
+  def setLastEvent(implicit session: DBSession, id: Int, lastEventId: Long) = {
+    sql"update WebHooks set lastEvent=$lastEventId where webHookId=$id".update.apply()
   }
 
   private def rowToHook(rs: WrappedResultSet): WebHook = WebHook(

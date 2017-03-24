@@ -69,6 +69,6 @@ CREATE TABLE IF NOT EXISTS WebHooks (
 );
 
 CREATE TABLE IF NOT EXISTS WebHookEvents (
-    webHookId bigserial REFERENCES Events NOT NULL,
+    webHookId bigserial REFERENCES WebHooks NOT NULL,
     eventTypeId int REFERENCES EventTypes NOT NULL
 );

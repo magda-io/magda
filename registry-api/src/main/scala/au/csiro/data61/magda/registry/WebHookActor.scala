@@ -1,19 +1,22 @@
 package au.csiro.data61.magda.registry
 
-import akka.Done
 import akka.actor.Actor
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MessageEntity, Uri}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import scalikejdbc._
-import spray.json.JsonParser
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
 import scala.concurrent.Future
 
-class WebHookActor extends Actor {
+class WebHookActor extends Actor with Protocols {
   import context.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()(context)
 
-  var sendNotificationsFuture: Option[Future[Boolean]] = None
+  private var sendNotificationsFuture: Option[Future[Boolean]] = None
+  private val http = Http(context.system)
 
   def receive = {
     case "process" => sendNotifications()
@@ -40,6 +43,8 @@ class WebHookActor extends Actor {
         // If we actually did anything, immediately start processing again.
         if (result) {
           this.self ! "process"
+        } else {
+          println("Nothing to do")
         }
 
         result
@@ -61,21 +66,33 @@ class WebHookActor extends Actor {
           val relevantEvents: Set[EventType] = Set(EventType.CreateRecord, EventType.CreateRecordAspect, EventType.DeleteRecord, EventType.PatchRecord, EventType.PatchRecordAspect)
           val changeEvents = events.filter(event => relevantEvents.contains(event.eventType))
           val recordIds = changeEvents.map(event => event.eventType match {
-            case EventType.CreateRecord => event.data.fields("id").toString()
-            case EventType.CreateRecordAspect => event.data.fields("recordId").toString()
-            case EventType.DeleteRecord => event.data.fields("id").toString()
-            case EventType.PatchRecord => event.data.fields("id").toString()
-            case EventType.PatchRecordAspect => event.data.fields("recordId").toString()
+            case EventType.CreateRecord | EventType.DeleteRecord | EventType.PatchRecord => event.data.fields("id").toString()
+            case _ => event.data.fields("recordId").toString()
           }).toSet
           RecordsChangedWebHookPayload(
             action = "records.changed",
+            lastEventId = events.last.id.get,
             events = changeEvents.toList,
             records = recordIds.map(id => Record(id, id, Map())).toList
           )
-        }).runForeach(payload => {
-          println(payload)
-        })
+        }).mapAsync(1)(payload => {
+          Marshal(payload).to[MessageEntity].flatMap(entity => {
+            println("Posting to " + webHook.url)
+            http.singleRequest(HttpRequest(
+              uri = Uri(webHook.url),
+              method = HttpMethods.POST,
+              entity = entity
+            )).map(response => {
+              response.discardEntityBytes()
+              DB localTx { localSession =>
+                HookPersistence.setLastEvent(localSession, webHook.id.get, payload.lastEventId)
+              }
+              true
+            })
+          })
+        }).runForeach(done => { println("Done with webhook")})
+
       }
-    }).runForeach(done => {}).map(done => true)
+    }).runForeach(done => {println("Done Notifying")}).map(done => true)
   }
 }
