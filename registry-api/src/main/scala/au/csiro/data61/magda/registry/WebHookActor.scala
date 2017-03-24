@@ -23,39 +23,50 @@ class WebHookActor extends Actor {
     case Some(future) => future
     case None => {
       println("Sending Notifications")
-      val future = Future[Boolean] {
-        val webhooksToProcess = DB readOnly { implicit session =>
+      val future = Future[List[WebHook]] {
+        DB readOnly { implicit session =>
           val latestEventId = sql"select eventId from Events order by eventId desc limit 1".map(rs => rs.long("eventId")).single.apply().getOrElse(0l)
           HookPersistence.getAll(session).filter(hook => hook.lastEvent.getOrElse(0l) < latestEventId)
         }
-
-        val processAgain = webhooksToProcess.length > 0 && doSend(webhooksToProcess)
-
+      }.flatMap(webhooksToProcess => {
+        if (webhooksToProcess.length > 0) {
+          doSend(webhooksToProcess)
+        } else {
+          Future(false)
+        }
+      }).map(result => {
         this.sendNotificationsFuture = None
 
         // If we actually did anything, immediately start processing again.
-        if (processAgain) {
+        if (result) {
           this.self ! "process"
         }
 
-        processAgain
-      }
+        result
+      })
+
       this.sendNotificationsFuture = Some(future)
       future
     }
   }
 
-  private def doSend(webHooks: List[WebHook]): Boolean = {
+  private def doSend(webHooks: List[WebHook]): Future[Boolean] = {
     val maxEvents = 100
     val simultaneousInvocations = 6
 
-    DB readOnly { implicit session =>
-      Source(webHooks).mapAsync(simultaneousInvocations)(webHook => {
+    Source(webHooks).mapAsync(simultaneousInvocations)(webHook => {
+      DB futureLocalTx { implicit session =>
         val events = EventPersistence.streamEventsSince(session, webHook.lastEvent.get)
         events.grouped(maxEvents).map(events => {
           val relevantEvents: Set[EventType] = Set(EventType.CreateRecord, EventType.CreateRecordAspect, EventType.DeleteRecord, EventType.PatchRecord, EventType.PatchRecordAspect)
           val changeEvents = events.filter(event => relevantEvents.contains(event.eventType))
-          val recordIds = changeEvents.map(event => event.data.fields("recordId").toString()).toSet
+          val recordIds = changeEvents.map(event => event.eventType match {
+            case EventType.CreateRecord => event.data.fields("id").toString()
+            case EventType.CreateRecordAspect => event.data.fields("recordId").toString()
+            case EventType.DeleteRecord => event.data.fields("id").toString()
+            case EventType.PatchRecord => event.data.fields("id").toString()
+            case EventType.PatchRecordAspect => event.data.fields("recordId").toString()
+          }).toSet
           RecordsChangedWebHookPayload(
             action = "records.changed",
             events = changeEvents.toList,
@@ -64,13 +75,7 @@ class WebHookActor extends Actor {
         }).runForeach(payload => {
           println(payload)
         })
-      })
-    }
-
-    true
-  }
-
-  private def rowToEvent(rs: WrappedResultSet) = {
-    (rs.long("eventId"), rs.int("eventTypeId"), JsonParser(rs.string("data")).asJsObject())
+      }
+    }).runForeach(done => {}).map(done => true)
   }
 }

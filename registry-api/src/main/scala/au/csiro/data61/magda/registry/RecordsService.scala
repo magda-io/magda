@@ -2,7 +2,7 @@ package au.csiro.data61.magda.registry
 
 import javax.ws.rs.Path
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
@@ -17,7 +17,7 @@ import scala.util.Success
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
-class RecordsService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[RecordSummary], responseContainer = "List")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
@@ -39,12 +39,14 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])
   ))
   def create = post { pathEnd { entity(as[Record]) { record =>
-    DB localTx { session =>
+    val result = DB localTx { session =>
       RecordPersistence.createRecord(session, record) match {
         case Success(result) => complete(result)
         case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
       }
     }
+    webHookActor ! "process"
+    result
   } } }
 
   @Path("/{id}")
@@ -72,12 +74,14 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   ))
   def putById = put { path(Segment) { (id: String) => {
     entity(as[Record]) { record =>
-      DB localTx { session =>
+      val result = DB localTx { session =>
         RecordPersistence.putRecordById(session, id, record) match {
           case Success(aspect) => complete(record)
           case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
         }
       }
+      webHookActor ! "process"
+      result
     }
   } } }
 
@@ -90,12 +94,14 @@ class RecordsService(system: ActorSystem, materializer: Materializer) extends Pr
   ))
   def patchById = patch { path(Segment) { (id: String) => {
     entity(as[JsonPatch]) { recordPatch =>
-      DB localTx { session =>
+      val result = DB localTx { session =>
         RecordPersistence.patchRecordById(session, id, recordPatch) match {
           case Success(result) => complete(result)
           case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
         }
       }
+      webHookActor ! "process"
+      result
     }
   } } }
 

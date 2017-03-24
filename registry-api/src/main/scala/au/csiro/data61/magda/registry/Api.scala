@@ -30,7 +30,7 @@ import scalikejdbc.config._
 import spray.json._
 import scalikejdbc._
 
-class Api(implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends CorsDirectives with Protocols {
+class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends CorsDirectives with Protocols {
   val logger = Logging(system, getClass)
 
   implicit def rejectionHandler = RejectionHandler.newBuilder()
@@ -78,13 +78,15 @@ class Api(implicit val config: Config, implicit val system: ActorSystem, implici
 
   DBsWithEnvSpecificConfig(config).setupAll()
 
+  webHookActor ! "process"
+
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
       pathPrefix("api" / "0.1") {
         path("ping") { complete("OK") } ~
         pathPrefix("aspects") { new AspectsService(system, materializer).route } ~
-        pathPrefix("records") { new RecordsService(system, materializer).route } ~
+        pathPrefix("records") { new RecordsService(webHookActor, system, materializer).route } ~
         pathPrefix("hooks") { new HooksService(system, materializer).route } ~
         new SwaggerDocService("localhost", 9001, system).routes
       } ~
