@@ -31,7 +31,7 @@ private class QueryLexer(implicit val config: Config) extends RegexParsers {
   override def skipWhitespace = true
   //  override val whiteSpace = "[\t\r\f\n]+".r
 
-  val filterWords = Seq("From", "To", "By", "As", "In")
+  val filterWords = Seq("from", "to", "by", "as", "in")
 
   /** A parser that matches a regex string and returns the Match */
   def regexMatch(r: Regex): Parser[Regex.Match] = new Parser[Regex.Match] {
@@ -200,7 +200,8 @@ private class QueryParser()(implicit val defaultOffset: ZoneOffset, implicit val
           case ConstantResult(constant) => constant match {
             case Now => applyFn(Specified(OffsetDateTime.now()))
           }
-          case _ => AST.And(AST.FreeTextWord(filterWord), AST.FreeTextWord(dateString))
+          case _ =>
+            AST.And(AST.FreeTextWord(filterWord), AST.FreeTextWord(dateString))
         }
       case Unspecified() => applyFn(Unspecified())
     }

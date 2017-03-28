@@ -143,36 +143,35 @@ object ApiGenerators {
     val textListComponents = (Seq(query.freeText).flatten ++
       query.quotes.map(""""""" + _ + """"""")).toSet
 
-    val facetListGen = for {
-      by <- randomCaseGen("by")
-      from <- randomCaseGen("from")
-      to <- randomCaseGen("to")
-      as <- randomCaseGen("as")
-      in <- randomCaseGen("in")
-    } yield query.publishers.map(publisher => s"$by $publisher") ++
-      Seq(query.dateFrom.map(dateFrom => s"$from $dateFrom")).flatten ++
-      Seq(query.dateTo.map(dateTo => s"$to $dateTo")).flatten ++
-      query.formats.map(format => s"$as $format") ++
-      query.regions.map(region => s"$in ${region.map(_.queryRegion)}")
+    val facetList = query.publishers.map(publisher => s"by $publisher") ++
+      Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
+      Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
+      query.formats.map(format => s"as $format") ++
+      query.regions.map(region => s"in ${region.map(_.queryRegion)}")
 
     val textQuery = for {
       textList <- Gen.pick(textListComponents.size, textListComponents)
-      facetList <- facetListGen
       randomFacetList <- Gen.pick(facetList.size, facetList)
-    } yield (textList ++ randomFacetList).mkString(" ")
+      rawQuery = (textList ++ randomFacetList).mkString(" ")
+      query <- randomCaseGen(rawQuery)
+    } yield query
 
     textQuery.flatMap((_, query))
   }
 
-  def randomCaseGen(string: String) = for {
-    whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 2))
-  } yield string.zip(whatToDo).map {
-    case (char, charWhatToDo) => charWhatToDo match {
-      case 0 => char.toUpper
-      case 1 => char.toLower
-      case 2 => char
-    }
-  }.mkString
+  def randomCaseGen(string: String) = {
+    for {
+      whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 2))
+    } yield string.zip(whatToDo).map {
+      case (char, charWhatToDo) =>
+        if (char.isLetter) charWhatToDo match {
+          case 0 => char.toUpper
+          case 1 => char.toLower
+          case 2 => char
+        }
+        else char
+    }.mkString
+  }
 
   val filterWords = Set("in", "to", "as", "by", "from")
   val filterWordsWithSpace = filterWords.map(_ + " ")

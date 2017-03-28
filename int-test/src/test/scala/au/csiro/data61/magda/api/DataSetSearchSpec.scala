@@ -1,30 +1,51 @@
 package au.csiro.data61.magda.api
 
-import org.scalacheck._
-import org.scalacheck.Arbitrary._
-import org.scalacheck.Shrink
-import org.scalatest._
+import java.time.OffsetDateTime
+import java.time.temporal.ChronoField
+import java.time.temporal.TemporalField
+import java.util.Calendar
+import java.util.GregorianCalendar
 
-import com.monsanto.labs.mwundo.GeoJson._
+import org.scalacheck.Arbitrary.arbString
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
+import org.scalacheck.Shrink
+
+import com.monsanto.labs.mwundo.GeoJson.Coordinate
+import com.monsanto.labs.mwundo.GeoJson.Geometry
+import com.monsanto.labs.mwundo.GeoJson.LineString
+import com.monsanto.labs.mwundo.GeoJson.MultiLineString
+import com.monsanto.labs.mwundo.GeoJson.MultiPoint
+import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
+import com.monsanto.labs.mwundo.GeoJson.Point
 import com.monsanto.labs.mwundo.GeoJson.Polygon
 import com.vividsolutions.jts.geom.GeometryFactory
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
+import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.BoundingBox
+import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.model.misc.QueryRegion
+import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.SearchStrategy.MatchAll
 import au.csiro.data61.magda.spatial.RegionSource
-import au.csiro.data61.magda.test.util.ApiGenerators._
-import au.csiro.data61.magda.test.util.Generators._
+import au.csiro.data61.magda.test.util.ApiGenerators.innerRegionQueryGen
+import au.csiro.data61.magda.test.util.ApiGenerators.queryGen
+import au.csiro.data61.magda.test.util.ApiGenerators.randomCaseGen
+import au.csiro.data61.magda.test.util.ApiGenerators.regionJsonToQueryRegion
+import au.csiro.data61.magda.test.util.ApiGenerators.set
+import au.csiro.data61.magda.test.util.ApiGenerators.smallSet
+import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
+import au.csiro.data61.magda.test.util.Generators
+import au.csiro.data61.magda.test.util.Generators.coordGen
+import au.csiro.data61.magda.test.util.Generators.geometryGen
+import au.csiro.data61.magda.test.util.Generators.publisherGen
+import au.csiro.data61.magda.test.util.Generators.regionGen
 import au.csiro.data61.magda.test.util.MagdaMatchers
-import au.csiro.data61.magda.util.MwundoJTSConversions._
-import java.time.temporal.ChronoField
-import java.time.temporal.TemporalField
-import java.util.Calendar
-import java.time.OffsetDateTime
-import java.util.GregorianCalendar
+import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
 
 class DataSetSearchSpec extends BaseSearchApiSpec {
   describe("meta") {
@@ -70,9 +91,11 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         }
       }
     }
+  }
 
-    it("quotes should be able to be found verbatim somewhere in a dataset") {
-      forAll(smallIndexGen) { (indexTuple) ⇒
+  describe("quotes") {
+    it("should be able to be found verbatim somewhere in a dataset") {
+      forAll(indexGen) { (indexTuple) ⇒
         val (_, dataSets, routes) = indexTuple
 
         val dataSetsWithDesc = dataSets.filter(_.description.isDefined)
@@ -83,22 +106,34 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             description = dataSet.description.get
             descWords = description.split(" ")
             start <- Gen.choose(0, descWords.length - 1)
-            end <- Gen.choose(start, descWords.length - 1)
-          } yield descWords.slice(start, end).mkString(" ")
+            end <- Gen.choose(start + 1, descWords.length)
+            fml <- randomCaseGen(descWords.slice(start, end).mkString(" "))
+            //            fml = descWords.slice(start, end).mkString(" ")
+          } yield (fml, dataSet)
 
-          forAll(quoteGen) { quote =>
-            Get(s"/datasets/search?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}") ~> routes ~> check {
-              status shouldBe OK
-              val response = responseAs[SearchResult]
+          implicit val stringShrink: Shrink[String] = Shrink { string =>
+            Stream.empty
+          }
 
-              whenever(response.strategy.get == MatchAll && !response.dataSets.isEmpty) {
-                response.dataSets.foreach { dataSet =>
-                  withClue(s"dataSet term $quote") {
-                    dataSet.toString.contains(quote)
+          forAll(quoteGen) {
+            case (quote, sourceDataSet) =>
+              whenever(quote.forall(_.toInt >= 32) && !quote.isEmpty && quote.exists(_.isLetterOrDigit)) {
+                Get(s"""/datasets/search?query="${encodeForUrl(quote)}"&limit=${dataSets.length}""") ~> routes ~> check {
+                  status shouldBe OK
+                  val response = responseAs[SearchResult]
+
+                  response.strategy.get should equal(MatchAll)
+                  response.dataSets.isEmpty should be(false)
+
+                  response.dataSets.exists(_.identifier == sourceDataSet.identifier)
+
+                  response.dataSets.foreach { dataSet =>
+                    withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.toString.toLowerCase}") {
+                      dataSet.toString.toLowerCase.filter(_.isLetterOrDigit).contains(quote.toLowerCase.filter(_.isLetterOrDigit)) should be(true)
+                    }
                   }
                 }
               }
-            }
           }
         }
       }
@@ -199,45 +234,43 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
       describe("format") {
         it("specified") {
-          doFormatTest(formatQueryGenInner.map(format => Query(formats = Set(Specified(format)))))
-        }
+          def dataSetToQuery(dataSet: DataSet) = {
+            val formats = dataSet.distributions.map(_.format.map(Specified.apply).getOrElse(Unspecified()))
 
-        it("multiple specified") {
-          doFormatTest(smallSet(formatQueryGenInner).map(formats => Query(formats = formats.map(Specified.apply))))
-        }
+            for {
+              formatsReduced <- Gen.someOf(formats)
+              query = Query(formats = formatsReduced.toSet)
+            } yield query
+          }
 
-        it("unspecified") {
-          val pubQueryGen = Gen.const(Query(formats = Set(Unspecified())))
+          doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+            whenever(query != Query() && query.formats.filter(_.isDefined).forall(!_.get.contains("  "))) {
+              response.strategy.get should be(MatchAll)
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
 
-          doFilterTest(pubQueryGen) { (query, response) =>
-            whenever(!response.dataSets.isEmpty) {
               response.dataSets.foreach { dataSet =>
-                val dataSetFormats = dataSet.distributions.map(_.format)
-                withClue(s"dataSetFormats $dataSetFormats") {
-                  dataSetFormats.exists(_.isEmpty) should be(true)
-                }
+                val queryFormats = query.formats
+
+                val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
+                  case Some(format) => queryFormats.contains(Specified(format))
+                  case None         => queryFormats.contains(Unspecified())
+                })
+
+                matchesQuery should be(true)
               }
             }
           }
         }
 
-        def doFormatTest(queryGen: Gen[Query]) = {
-          doFilterTest(queryGen) { (query, response) =>
+        it("unspecified") {
+          val pubQueryGen = Gen.const(Query(formats = Set(Unspecified())))
 
+          doUnspecifiedTest(pubQueryGen) { response =>
             response.dataSets.foreach { dataSet =>
-              val dataSetFormats = dataSet.distributions.flatMap(_.format).distinct
-              val queryFormats = query.formats.filter(_.isDefined)
-              whenever(!queryFormats.isEmpty) {
-                withClue(s"query formats $queryFormats and dataset formats $dataSetFormats") {
-                  queryFormats.exists { queryFormat =>
-
-                    queryFormat match {
-                      case Specified(specifiedFormat) =>
-                        //                        println(queryFormat + " " + specifiedFormat)
-                        dataSetFormats.exists(_.toLowerCase.equals(specifiedFormat.toLowerCase))
-                    }
-                  } should be(true)
-                }
+              val dataSetFormats = dataSet.distributions.map(_.format)
+              withClue(s"dataSetFormats $dataSetFormats") {
+                dataSetFormats.exists(_.isEmpty) should be(true)
               }
             }
           }
@@ -246,17 +279,36 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
       describe("publisher") {
         it("specified") {
-          doPublishersTest(specifiedPublisherQueryGen.map(publisher => Query(publishers = Set(Specified(publisher)))))
-        }
 
-        it("multiple specified") {
-          doPublishersTest(smallSet(specifiedPublisherQueryGen).map(publishers => Query(publishers = publishers.map(Specified.apply))))
+          def dataSetToQuery(dataSet: DataSet) = {
+            Gen.const(Query(publishers = Set(dataSet.publisher.flatMap(_.name).map(Specified.apply).getOrElse(Unspecified()))))
+          }
+
+          doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+            whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
+
+              response.strategy.get should be(MatchAll)
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+
+              response.dataSets.foreach { dataSet =>
+                val queryPublishers = query.publishers
+
+                val matchesQuery = dataSet.publisher.flatMap(_.name) match {
+                  case Some(publisher) => queryPublishers.contains(Specified(publisher))
+                  case None            => queryPublishers.contains(Unspecified())
+                }
+
+                matchesQuery should be(true)
+              }
+            }
+          }
         }
 
         it("unspecified") {
           val pubQueryGen = Gen.const(Query(publishers = Set(Unspecified())))
 
-          doFilterTest(pubQueryGen) { (query, response) =>
+          doUnspecifiedTest(pubQueryGen) { response =>
             whenever(!response.dataSets.isEmpty) {
               response.dataSets.foreach { dataSet =>
                 val dataSetPublisher = dataSet.publisher.flatMap(_.name)
@@ -267,38 +319,43 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             }
           }
         }
+      }
 
-        def doPublishersTest(queryGen: Gen[Query]) = {
-          doFilterTest(queryGen) { (query, response) =>
-            response.dataSets.foreach { dataSet =>
-              val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
-              val publishers = query.publishers.filter(_.isDefined)
-              whenever(!publishers.isEmpty) {
-                withClue(s"query publishers $publishers and dataset publisher $dataSetPublisherName") {
-                  publishers.exists { queryPublisher =>
-                    queryPublisher match {
-                      case Specified(specifiedPublisher) => dataSetPublisherName.map(_.toLowerCase.equals(specifiedPublisher.toLowerCase)).getOrElse(false)
-                    }
-                  } should be(true)
-                }
+      def doUnspecifiedTest(queryGen: Gen[Query])(test: SearchResult => Unit) = {
+        forAll(indexGen, textQueryGen(queryGen)) {
+          case ((_, dataSets, routes), (textQuery, query)) =>
+            doFilterTest(textQuery, dataSets, routes) { (response) =>
+              whenever(!response.dataSets.isEmpty) {
+                test(response)
               }
             }
-          }
         }
       }
 
-      def doFilterTest(queryGen: Gen[Query])(test: (Query, SearchResult) => Unit) {
-        forAll(mediumIndexGen, textQueryGen(queryGen)) { (indexTuple, queryTuple) ⇒
-          val (_, dataSets, routes) = indexTuple
-          val (textQuery, query) = queryTuple
+      def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
+        val gen = for {
+          index <- indexGen.suchThat(!_._2.isEmpty)
+          dataSet <- Gen.oneOf(index._2)
+          query = buildQuery(dataSet)
+          textQuery <- textQueryGen(query)
+        } yield (index, dataSet, textQuery)
 
-          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
-            status shouldBe OK
-            val response = responseAs[SearchResult]
-            whenever(response.strategy.get == MatchAll) {
-              test(query, response)
+        forAll(gen) {
+          case ((indexName, dataSets, routes), dataSet, (textQuery, query)) ⇒
+            doFilterTest(textQuery, dataSets, routes) { response =>
+              println(response.strategy.get)
+
+              test(query, response, dataSet)
             }
-          }
+        }
+      }
+
+      def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
+        Get(s"/datasets/search?query=${encodeForUrl(query)}&limit=${dataSets.length}") ~> routes ~> check {
+          status shouldBe OK
+          val response = responseAs[SearchResult]
+
+          test(response)
         }
       }
     }
@@ -351,19 +408,22 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
   describe("query") {
     def queryEquals(outputQuery: Query, inputQuery: Query) = {
-      def removeDynamics(query: Query): Query = query.copy(
-        regions = query.regions.map(_.map(_.copy(regionName = None, boundingBox = None))),
-        dateTo = None
-      )
+      def caseInsensitiveMatch(input: Traversable[String], output: Traversable[String]) = output.map(_.trim.toLowerCase) should equal(input.map(_.trim.toLowerCase))
+      def caseInsensitiveMatchFv(input: Traversable[FilterValue[String]], output: Traversable[FilterValue[String]]) = output.map(_.map(_.toLowerCase)) should equal(input.map(_.map(_.toLowerCase)))
 
-      removeDynamics(outputQuery) shouldEqual (removeDynamics(inputQuery))
+      caseInsensitiveMatch(outputQuery.freeText, inputQuery.freeText)
+      caseInsensitiveMatch(outputQuery.quotes, inputQuery.quotes)
+      caseInsensitiveMatchFv(outputQuery.formats, inputQuery.formats)
+      caseInsensitiveMatchFv(outputQuery.publishers, inputQuery.publishers)
+      outputQuery.dateFrom should equal(inputQuery.dateFrom)
+      outputQuery.regions.map(_.map(_.copy(regionName = None, boundingBox = None))) should equal(inputQuery.regions)
 
       (outputQuery.dateTo, inputQuery.dateTo) match {
         case (Some(Specified(output)), Some(Specified(input))) =>
 
           def checkWithRounding(field: TemporalField, maxFunc: OffsetDateTime => Int) = {
             val max = maxFunc(input)
-            
+
             if (output.get(field) == max) {
               input.get(field) should (equal(0) or equal(max))
             } else {

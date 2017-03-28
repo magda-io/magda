@@ -1,33 +1,60 @@
 package au.csiro.data61.magda.search.elasticsearch
 
+import scala.concurrent.Future
+import scala.math.BigDecimal.double2bigDecimal
+
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
+
+import com.monsanto.labs.mwundo.GeoJson
+import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.IndexAndTypes.apply
+import com.sksamuel.elastic4s.TcpClient
+import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
+import com.sksamuel.elastic4s.indexes.IndexContentBuilder
+import com.sksamuel.elastic4s.mappings.FieldType._
+import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, LowercaseTokenFilter, KeywordTokenizer, StandardTokenizer }
+import com.typesafe.config.Config
+import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.geom.GeometryFactory
+import com.vividsolutions.jts.geom.LinearRing
+import com.vividsolutions.jts.geom.MultiPolygon
+import com.vividsolutions.jts.geom.Polygon
+import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import au.csiro.data61.magda.model.misc.{ Format, Publisher }
-import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.{ TcpClient, ElasticDsl }
-import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
-import spray.json._
-import scala.concurrent.Future
-import com.typesafe.config.Config
-import au.csiro.data61.magda.spatial.RegionSources
-import com.sksamuel.elastic4s.indexes.IndexContentBuilder
-import com.monsanto.labs.mwundo.GeoJson
 import au.csiro.data61.magda.model.misc.BoundingBox
-import com.vividsolutions.jts.geom.GeometryFactory
-import au.csiro.data61.magda.util.MwundoJTSConversions._
-import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier
-import com.vividsolutions.jts.geom.Polygon
-import com.vividsolutions.jts.geom.MultiPolygon
-import com.vividsolutions.jts.geom.LinearRing
-import org.locationtech.spatial4j.context.jts.JtsSpatialContext
-import com.vividsolutions.jts.geom.Geometry
-import com.sksamuel.elastic4s.IndexAndTypes.apply
-import scala.math.BigDecimal.double2bigDecimal
+import au.csiro.data61.magda.model.misc.Format
+import au.csiro.data61.magda.model.misc.Publisher
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.spatial.RegionLoader
+import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
+import au.csiro.data61.magda.spatial.RegionSources
+import au.csiro.data61.magda.util.MwundoJTSConversions._
+import spray.json._
+import com.sksamuel.elastic4s.mappings.TypedFieldDefinition
+import org.elasticsearch.common.xcontent.XContentBuilder
+import com.sksamuel.elastic4s.analyzers.Analyzer
+import com.sksamuel.elastic4s.mappings.attributes.Attribute
+import com.sksamuel.elastic4s.mappings.attributes.AttributeOmitNorms
+import com.sksamuel.elastic4s.mappings.attributes.AttributeIndex
+import com.sksamuel.elastic4s.mappings.attributes.AttributeSearchAnalyzer
+import com.sksamuel.elastic4s.mappings.attributes.AttributePostingsFormat
+import com.sksamuel.elastic4s.mappings.attributes.AttributeAnalyzer
+import com.sksamuel.elastic4s.mappings.attributes.AttributeIndexOptions
+import com.sksamuel.elastic4s.mappings.attributes.AttributePositionOffsetGap
+import com.sksamuel.elastic4s.mappings.attributes.AttributeTermVector
+import com.sksamuel.elastic4s.mappings.attributes.AttributeIgnoreAbove
+import com.sksamuel.elastic4s.mappings.attributes.AttributeIndexName
+import com.sksamuel.elastic4s.mappings.attributes.AttributeDocValues
+import com.sksamuel.elastic4s.mappings.attributes.AttributeIncludeInAll
+import com.sksamuel.elastic4s.mappings.attributes.AttributeSimilarity
+import com.sksamuel.elastic4s.mappings.attributes.AttributeStore
+import com.sksamuel.elastic4s.mappings.attributes.AttributeNullValue
+import com.sksamuel.elastic4s.mappings.attributes.AttributeFields
+import com.sksamuel.elastic4s.mappings.attributes.AttributeCopyTo
 
 case class IndexDefinition(
     name: String,
@@ -38,6 +65,12 @@ case class IndexDefinition(
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
+  def magdaTextField(name: String): MagdaTextFieldDefinition =
+    new MagdaTextFieldDefinition(name)
+      .analyzer("keyword")
+      .searchAnalyzer("english")
+      .quoteSearchAnalyzer("quote")
+
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 21,
@@ -59,58 +92,41 @@ object IndexDefinition extends DefaultJsonProtocol {
               )
             ),
             field("publisher", ObjectType).inner(
-              field("name", TextType).analyzer("english").fields(
-                field("not_analyzed", KeywordType).analyzer("keyword"),
-                field("quote", TextType)
+              magdaTextField("name").fields(
+                field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),
             field("distributions", ObjectType).nested(
-              field("title", TextType).analyzer("english").fields(
-                field("not_analyzed", KeywordType),
-                field("quote", TextType)
-              ),
-              field("description", TextType).analyzer("english").fields(
-                field("not_analyzed", KeywordType),
-                field("quote", TextType)
-              ),
-              field("format", TextType).analyzer("english").fields(
-                field("not_analyzed", KeywordType),
-                field("quote", TextType)
+              magdaTextField("title"),
+              magdaTextField("description"),
+              magdaTextField("format").fields(
+                field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),
             field("spatial", ObjectType).inner(
               field("geoJson", GeoShapeType)
             ),
-            field("title", TextType).analyzer("english").fields(
-              field("not_analyzed", KeywordType),
-              field("quote", TextType)
-            ),
-            field("description", TextType).analyzer("english").fields(
-              field("not_analyzed", TextType).analyzer("keyword"),
-              field("quote", TextType)
-            ),
-            field("keyword", TextType).analyzer("english").fields(
-              field("not_analyzed", KeywordType),
-              field("quote", TextType)
-            ),
-            field("theme", TextType).analyzer("english").fields(
-              field("not_analyzed", KeywordType),
-              field("quote", TextType)
-            ),
+            magdaTextField("title"),
+            magdaTextField("description"),
+            magdaTextField("keyword"),
+            magdaTextField("theme"),
             field("catalog", KeywordType),
             field("years", KeywordType),
             field("indexed", DateType)
           ),
           mapping(Format.id).fields(
-            field("value", TextType).analyzer("english").fields(
-              field("not_analyzed", KeywordType),
-              field("quote", TextType)
-            )),
+            magdaTextField("value")
+          ),
           mapping(Publisher.id).fields(
-            field("value", TextType).analyzer("english").fields(
-              field("not_analyzed", KeywordType),
-              field("quote", TextType)
-            ))
+            magdaTextField("value")
+          )
+        )
+        .analysis(
+          CustomAnalyzerDefinition(
+            "quote",
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          )
         )
 
   )
@@ -129,12 +145,17 @@ object IndexDefinition extends DefaultJsonProtocol {
             mapping(indices.getType(Indices.RegionsIndexType)).fields(
               field("regionType", KeywordType),
               field("regionId", KeywordType),
-              field("regionName", TextType).analyzer("english").fields(
-                field("not_analyzed", TextType)
-              ),
+              magdaTextField("regionName"),
               field("boundingBox", GeoShapeType),
               field("geometry", GeoShapeType),
               field("order", IntegerType)
+            )
+          )
+          .analysis(
+            CustomAnalyzerDefinition(
+              "quote",
+              KeywordTokenizer,
+              LowercaseTokenFilter
             )
           ),
       create = Some((client, indices, config) => (materializer, actorSystem) => setupRegions(client, indices)(config, materializer, actorSystem))
@@ -245,5 +266,83 @@ object IndexDefinition extends DefaultJsonProtocol {
     val indexedEnvelope = GeometryConverter.toJTSGeo(geometry, geoFactory).getEnvelopeInternal
 
     BoundingBox(indexedEnvelope.getMaxY, indexedEnvelope.getMinX, indexedEnvelope.getMinY, indexedEnvelope.getMaxX)
+  }
+}
+
+trait AttributeQuoteSearchAnalyzer { self: TypedFieldDefinition =>
+
+  private[this] var _quoteSearchAnalyzer: Option[String] = None
+
+  def quoteSearchAnalyzer(analyzer: String): this.type = {
+    _quoteSearchAnalyzer = Some(analyzer)
+    this
+  }
+
+  def quoteSearchAnalyzer(analyzer: Analyzer): this.type = {
+    _quoteSearchAnalyzer = Some(analyzer.name)
+    this
+  }
+
+  protected override def insert(source: XContentBuilder): Unit = {
+    _quoteSearchAnalyzer.foreach(source.field("search_quote_analyzer", _))
+  }
+}
+
+final class MagdaTextFieldDefinition(name: String)
+    extends TypedFieldDefinition(TextType, name)
+    with AttributeIndexName
+    with AttributeStore
+    with AttributeIndex
+    with AttributeTermVector
+    with AttributeNullValue[String]
+    with AttributeOmitNorms
+    with AttributeIndexOptions
+    with AttributeAnalyzer
+    with AttributeSearchAnalyzer
+    with AttributeIncludeInAll
+    with AttributeIgnoreAbove
+    with AttributePositionOffsetGap
+    with AttributePostingsFormat
+    with AttributeDocValues
+    with AttributeSimilarity
+    with AttributeCopyTo
+    with AttributeFields
+    with AttributeQuoteSearchAnalyzer {
+
+  private var fielddata: Option[Boolean] = None
+
+  def fielddata(b: Boolean): MagdaTextFieldDefinition = {
+    this.fielddata = Option(b)
+    this
+  }
+
+  def build(source: XContentBuilder, startObject: Boolean = true): Unit = {
+    if (startObject)
+      source.startObject(name)
+
+    insertType(source)
+    super[AttributeAnalyzer].insert(source)
+    super[AttributeDocValues].insert(source)
+    super[AttributeIncludeInAll].insert(source)
+    super[AttributeIndex].insert(source)
+    super[AttributeIndexName].insert(source)
+    super[AttributeIndexOptions].insert(source)
+    super[AttributeIgnoreAbove].insert(source)
+    super[AttributeNullValue].insert(source)
+    super[AttributeOmitNorms].insert(source)
+    super[AttributePositionOffsetGap].insert(source)
+    super[AttributePostingsFormat].insert(source)
+    super[AttributeSearchAnalyzer].insert(source)
+    super[AttributeSimilarity].insert(source)
+    super[AttributeStore].insert(source)
+    super[AttributeTermVector].insert(source)
+    super[AttributeCopyTo].insert(source)
+    super[AttributeFields].insert(source)
+    super[AttributeQuoteSearchAnalyzer].insert(source)
+
+    fielddata.foreach(source.field("fielddata", _))
+
+    if (startObject)
+      source.endObject()
   }
 }

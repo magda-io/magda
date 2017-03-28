@@ -9,4 +9,16 @@ trait MagdaGeneratorTest extends GeneratorDrivenPropertyChecks {
   val minSuccessful = if (ContinuousIntegration.isCi) 100 else 20
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)
+    
+    
+//  implicit def indexShrinker(implicit s: Shrink[String]): Shrink[String] = Shrink[String] {
+//    case (indexName, dataSets, route) ⇒
+//      Shrink.shrink(dataSets).map(shrunkDataSets ⇒ {
+//        logger.info("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
+//
+//        val result = putDataSetsInIndex(shrunkDataSets)
+//        cleanUpQueue.add(result._1)
+//        result
+//      })
+//  }
 }
