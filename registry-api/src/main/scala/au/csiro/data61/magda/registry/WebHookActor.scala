@@ -9,6 +9,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import scalikejdbc._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import spray.json.JsString
 
 import scala.concurrent.Future
 
@@ -68,15 +69,22 @@ object WebHookActor {
           events.grouped(maxEvents).map(events => {
             val relevantEvents: Set[EventType] = Set(EventType.CreateRecord, EventType.CreateRecordAspect, EventType.DeleteRecord, EventType.PatchRecord, EventType.PatchRecordAspect)
             val changeEvents = events.filter(event => relevantEvents.contains(event.eventType))
+
             val recordIds = changeEvents.map(event => event.eventType match {
               case EventType.CreateRecord | EventType.DeleteRecord | EventType.PatchRecord => event.data.fields("id").toString()
-              case _ => event.data.fields("recordId").toString()
+              case _ => event.data.fields("recordId").asInstanceOf[JsString].value
             }).toSet
+
+            // Get a complete record with aspects for each record ID
+            val records = DB readOnly { implicit session =>
+              RecordPersistence.getByIdsWithAspects(session, recordIds, Seq(), webHook.config.aspects.getOrElse(List()), Some(true))
+            }
+
             RecordsChangedWebHookPayload(
               action = "records.changed",
               lastEventId = events.last.id.get,
               events = changeEvents.toList,
-              records = recordIds.map(id => Record(id, id, Map())).toList
+              records = records.records.toList
             )
           }).mapAsync(1)(payload => {
             // Send one payload at a time
