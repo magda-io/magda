@@ -78,7 +78,7 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
 
   DBsWithEnvSpecificConfig(config).setupAll()
 
-  webHookActor ! "process"
+  webHookActor ! WebHookActor.Process
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {
