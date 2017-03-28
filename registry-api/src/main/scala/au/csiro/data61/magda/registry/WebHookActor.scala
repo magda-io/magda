@@ -75,16 +75,24 @@ object WebHookActor {
               case _ => event.data.fields("recordId").asInstanceOf[JsString].value
             }).toSet
 
-            // Get a complete record with aspects for each record ID
-            val records = DB readOnly { implicit session =>
-              RecordPersistence.getByIdsWithAspects(session, recordIds, Seq(), webHook.config.aspects.getOrElse(List()), Some(true))
+            // If we're including records, get a complete record with aspects for each record ID
+            val records = webHook.config.includeRecords match {
+              case Some(true) | None => DB readOnly { implicit session =>
+                Some(RecordPersistence.getByIdsWithAspects(
+                  session,
+                  recordIds,
+                  webHook.config.aspects.getOrElse(List()),
+                  webHook.config.optionalAspects.getOrElse(List()),
+                  webHook.config.dereference))
+              }
+              case Some(false) => None
             }
 
             RecordsChangedWebHookPayload(
               action = "records.changed",
               lastEventId = events.last.id.get,
-              events = changeEvents.toList,
-              records = records.records.toList
+              events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents.toList) else None,
+              records = records.map(_.records.toList)
             )
           }).mapAsync(1)(payload => {
             // Send one payload at a time
