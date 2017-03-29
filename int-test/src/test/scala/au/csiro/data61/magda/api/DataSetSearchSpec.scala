@@ -118,8 +118,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
           forAll(quoteGen) {
             case (quote, sourceDataSet) =>
-              whenever(quote.forall(_.toInt >= 32) && !quote.isEmpty && quote.exists(_.isLetterOrDigit)) {
-                Get(s"""/datasets/search?query="${encodeForUrl(quote)}"&limit=${dataSets.length}""") ~> routes ~> check {
+              whenever(quote.forall(_.toInt >= 32) && quote.length < 500 && quote.exists(_.isLetterOrDigit)) {
+                Get(s"""/datasets/search?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
                   status shouldBe OK
                   val response = responseAs[SearchResult]
 
@@ -130,7 +130,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
                   response.dataSets.foreach { dataSet =>
                     withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.toString.toLowerCase}") {
-                      dataSet.toString.toLowerCase.filter(_.isLetterOrDigit).contains(quote.toLowerCase.filter(_.isLetterOrDigit)) should be(true)
+                      dataSet.toString.toLowerCase.filter(_.isLetterOrDigit).mkString.contains(
+                        quote.toLowerCase.filter(_.isLetterOrDigit).mkString
+                      ) should be(true)
                     }
                   }
                 }
@@ -291,8 +293,10 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
               val queryToDataSetComparison = for {
                 queryFormat <- queryFormats
+                queryWord <- queryFormat.get.split("[\\s-]+")
                 dataSetFormat <- dataSetFormats
-              } yield (dataSetFormat.contains(dataSetFormat))
+                dataSetWord <- dataSetFormat.split("[\\s-]+")
+              } yield (dataSetWord.toLowerCase.contains(queryWord.toLowerCase))
 
               queryToDataSetComparison.exists(identity) should be(true)
             }
@@ -364,10 +368,14 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               val queryPublishers = query.publishers
               val dataSetPublisher = dataSet.publisher.get.name
 
-              withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSet.publisher.get.name}") {
-                queryPublishers.exists(queryPublisher =>
-                  dataSetPublisher.get.contains(queryPublisher.get)
-                ) should be(true)
+              withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSetPublisher}") {
+                val queryToDataSetComparison = for {
+                  queryPublisher <- queryPublishers
+                  queryWord <- queryPublisher.get.split("[\\s-]+").toSeq
+                  dataSetWord <- dataSetPublisher.get.split("[\\s-]+").toSeq
+                } yield (dataSetWord.toLowerCase.contains(queryWord.toLowerCase))
+
+                queryToDataSetComparison.exists(identity) should be(true)
               }
             }
           }
