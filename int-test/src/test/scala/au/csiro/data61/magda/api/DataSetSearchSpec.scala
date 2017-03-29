@@ -117,7 +117,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
           forAll(quoteGen) {
             case (quote, sourceDataSet) =>
-              whenever(quote.forall(_.toInt >= 32) && quote.length < 500 && quote.exists(_.isLetterOrDigit)) {
+              whenever(quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
                 Get(s"""/datasets/search?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
                   status shouldBe OK
                   val response = responseAs[SearchResult]
@@ -208,7 +208,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                   val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
                   val jtsRegion = GeometryConverter.toJTSGeo(queryRegion._3, geometryFactory)
 
-                  (jtsGeo.distance(jtsRegion), Math.max(jtsGeo.getLength, jtsRegion.getLength))
+                  val length = Math.max(jtsGeo.getLength, jtsRegion.getLength)
+
+                  (jtsGeo.distance(jtsRegion), if (length > 0) length else 1)
                 }))
 
               val unspecifiedRegion = query.regions.exists(_.isEmpty)
