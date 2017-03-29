@@ -253,10 +253,10 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
 
             response.dataSets.foreach { dataSet =>
-              val queryFormats = query.formats
+              val queryFormats = query.formats.map(_.map(_.toLowerCase()))
 
               val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
-                case Some(format) => queryFormats.contains(Specified(format))
+                case Some(format) => queryFormats.contains(Specified(format.toLowerCase))
                 case None         => queryFormats.contains(Unspecified())
               })
 
