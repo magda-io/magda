@@ -108,9 +108,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             descWords = description.split(" ")
             start <- Gen.choose(0, descWords.length - 1)
             end <- Gen.choose(start + 1, descWords.length)
-            fml <- randomCaseGen(descWords.slice(start, end).mkString(" "))
-            //            fml = descWords.slice(start, end).mkString(" ")
-          } yield (fml, dataSet)
+            quote <- randomCaseGen(descWords.slice(start, end).mkString(" "))
+          } yield (quote, dataSet)
 
           implicit val stringShrink: Shrink[String] = Shrink { string =>
             Stream.empty
@@ -296,9 +295,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                 queryWord <- queryFormat.get.split("[\\s-]+")
                 dataSetFormat <- dataSetFormats
                 dataSetWord <- dataSetFormat.split("[\\s-]+")
-              } yield (dataSetWord.toLowerCase.contains(queryWord.toLowerCase))
+              } yield (MagdaMatchers.toEnglishToken(dataSetWord), MagdaMatchers.toEnglishToken(queryWord))
 
-              queryToDataSetComparison.exists(identity) should be(true)
+              queryToDataSetComparison.exists(x => x._1 == x._2) should be(true)
             }
           }
         }
@@ -373,9 +372,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                   queryPublisher <- queryPublishers
                   queryWord <- queryPublisher.get.split("[\\s-]+").toSeq
                   dataSetWord <- dataSetPublisher.get.split("[\\s-]+").toSeq
-                } yield (dataSetWord.toLowerCase.contains(queryWord.toLowerCase))
+                } yield (MagdaMatchers.toEnglishToken(dataSetWord), MagdaMatchers.toEnglishToken(queryWord))
 
-                queryToDataSetComparison.exists(identity) should be(true)
+                queryToDataSetComparison.exists(x => x._1 == x._2) should be(true)
               }
             }
           }

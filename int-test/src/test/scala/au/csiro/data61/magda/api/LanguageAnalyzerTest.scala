@@ -20,6 +20,7 @@ import spray.json.JsString
 import au.csiro.data61.magda.spatial.RegionSource
 import akka.http.scaladsl.server.Route
 import org.tartarus.snowball.ext.PorterStemmer
+import au.csiro.data61.magda.test.util.MagdaMatchers
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
@@ -107,23 +108,17 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     it(s"regardless of pluralization/depluralization") {
-      def stem(string: String) = {
-        val stemmer = new PorterStemmer()
-        stemmer.setCurrent(string)
-
-        if (stemmer.stem) stemmer.getCurrent else string
-      }
 
       def innerTermExtractor(dataSet: DataSet) = termExtractor(dataSet)
         .map {
           case term if term.last.toLower.equals('s') =>
             val depluralized = term.take(term.length - 1)
-            if (stem(term) == depluralized) {
+            if (MagdaMatchers.porterStem(term) == depluralized) {
               Some(depluralized)
             } else None
           case term =>
             val pluralized = term + "s"
-            if (stem(pluralized) == term) {
+            if (MagdaMatchers.porterStem(pluralized) == term) {
               Some(pluralized)
             } else None
         }

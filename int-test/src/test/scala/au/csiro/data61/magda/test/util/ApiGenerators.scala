@@ -153,10 +153,13 @@ object ApiGenerators {
     val textListComponents = (Seq(query.freeText).flatten ++
       query.quotes.map(""""""" + _ + """"""")).toSet
 
-    val facetList = query.publishers.map(publisher => s"by $publisher") ++
+    val publishers = query.publishers.filter(containsNoFilterWord)
+    val formats = query.formats.filter(containsNoFilterWord)
+
+    val facetList = publishers.map(publisher => s"by $publisher") ++
       Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
       Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
-      query.formats.map(format => s"as $format") ++
+      formats.map(format => s"as $format") ++
       query.regions.map(region => s"in ${region.map(_.queryRegion)}")
 
     val textQuery = for {
@@ -166,7 +169,7 @@ object ApiGenerators {
       query <- randomCaseGen(rawQuery)
     } yield query
 
-    textQuery.flatMap((_, query))
+    textQuery.flatMap((_, query.copy(publishers = publishers, formats = formats)))
   }
 
   def randomCaseGen(string: String) = {
@@ -185,4 +188,8 @@ object ApiGenerators {
 
   val filterWords = Set("in", "to", "as", "by", "from")
   val filterWordsWithSpace = filterWords.map(_ + " ")
+
+  def containsNoFilterWord(word: FilterValue[String]): Boolean = {
+    !filterWords.exists(filterWord => word.map(_.toLowerCase.contains(" " + filterWord.toLowerCase + " ")).getOrElse(false))
+  }
 }
