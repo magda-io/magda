@@ -46,6 +46,7 @@ import au.csiro.data61.magda.test.util.Generators.publisherGen
 import au.csiro.data61.magda.test.util.Generators.regionGen
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
+import au.csiro.data61.magda.test.util.ApiGenerators
 
 class DataSetSearchSpec extends BaseSearchApiSpec {
   describe("meta") {
@@ -138,225 +139,292 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         }
       }
     }
+  }
 
-    describe("filtering") {
-      it("should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart") {
-        val filterQueryGen = queryGen
-          .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
+  describe("filtering") {
+    it("should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart") {
+      val filterQueryGen = queryGen
+        .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
 
-        forAll(mediumIndexGen, textQueryGen(queryGen)) { (indexTuple, queryTuple) ⇒
-          val (_, dataSets, routes) = indexTuple
-          val (textQuery, query) = queryTuple
-          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
-            status shouldBe OK
-            val response = responseAs[SearchResult]
-            whenever(response.strategy.get == MatchAll) {
-
-              response.dataSets.foreach { dataSet =>
-                val temporal = dataSet.temporal
-                val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
-                val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
-
-                val dateUnspecified = (query.dateTo, query.dateFrom) match {
-                  case (Some(Unspecified()), Some(Unspecified())) | (Some(Unspecified()), None) | (None, Some(Unspecified())) => dataSetDateFrom.isEmpty && dataSetDateTo.isEmpty
-                  case _ => false
-                }
-
-                val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
-                  case (Some(Specified(innerQueryDateTo)), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
-                  case _ => true
-                }
-
-                val dateToMatched = (query.dateFrom, dataSetDateTo) match {
-                  case (Some(Specified(innerQueryDateFrom)), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
-                  case _ => true
-                }
-
-                val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
-                val publisherMatched = if (!query.publishers.isEmpty) {
-                  query.publishers.exists { queryPublisher =>
-                    queryPublisher match {
-                      case Specified(specifiedPublisher) => dataSetPublisherName.map(_.toLowerCase.equals(specifiedPublisher.toLowerCase)).getOrElse(false)
-                      case Unspecified()                 => dataSet.publisher.flatMap(_.name).isEmpty
-                    }
-                  }
-                } else true
-
-                val formatMatched = if (!query.formats.isEmpty) {
-                  query.formats.exists(queryFormat =>
-                    dataSet.distributions.exists(distribution =>
-                      queryFormat match {
-                        case Specified(specifiedFormat) => distribution.format.map(_.toLowerCase.equals(specifiedFormat.toLowerCase)).getOrElse(false)
-                        case Unspecified()              => distribution.format.isEmpty
-                      }
-                    )
-                  )
-                } else true
-
-                val geometryFactory: GeometryFactory = new GeometryFactory
-
-                val queryRegions = query.regions.filter(_.isDefined).map { region =>
-                  findIndexedRegion(region.get.queryRegion)
-                }
-
-                // This one is trying to imitate an inaccurate ES query with JTS distance, which is also a bit flaky
-                val distances = queryRegions.flatMap(queryRegion =>
-                  dataSet.spatial.flatMap(_.geoJson.map { geoJson =>
-                    val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
-                    val jtsRegion = GeometryConverter.toJTSGeo(queryRegion._3, geometryFactory)
-
-                    (jtsGeo.distance(jtsRegion), Math.max(jtsGeo.getLength, jtsRegion.getLength))
-                  }))
-
-                val unspecifiedRegion = query.regions.exists(_.isEmpty)
-                val geoMatched = if (!query.regions.isEmpty) {
-                  unspecifiedRegion || distances.exists { case (distance, length) => distance <= length * 0.05 }
-                } else true
-
-                val allValid = (dateUnspecified || (dateFromMatched && dateToMatched)) && publisherMatched && formatMatched && geoMatched
-
-                withClue(s"with query $textQuery \n and dataSet" +
-                  s"\n\tdateUnspecified $dateUnspecified" +
-                  s"\n\tdateTo $dataSetDateTo $dateFromMatched" +
-                  s"\n\tdateFrom $dataSetDateFrom $dateToMatched" +
-                  s"\n\tpublisher ${dataSet.publisher} $publisherMatched" +
-                  s"\n\tformats ${dataSet.distributions.map(_.format).mkString(",")} $formatMatched" +
-                  s"\n\tdistances ${distances.map(t => t._1 + "/" + t._2).mkString(",")}" +
-                  s"\n\tgeomatched ${dataSet.spatial.map(_.geoJson).mkString(",")} $geoMatched" +
-                  s"\n\tqueryRegions $queryRegions\n") {
-                  allValid should be(true)
-                }
-              }
-            }
-          }
-        }
-      }
-
-      describe("format") {
-        it("specified") {
-          def dataSetToQuery(dataSet: DataSet) = {
-            val formats = dataSet.distributions.map(_.format.map(Specified.apply).getOrElse(Unspecified()))
-
-            for {
-              formatsReduced <- Gen.someOf(formats)
-              query = Query(formats = formatsReduced.toSet)
-            } yield query
-          }
-
-          doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
-            whenever(query != Query() && query.formats.filter(_.isDefined).forall(!_.get.contains("  "))) {
-              response.strategy.get should be(MatchAll)
-              response.dataSets.isEmpty should be(false)
-              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
-
-              response.dataSets.foreach { dataSet =>
-                val queryFormats = query.formats
-
-                val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
-                  case Some(format) => queryFormats.contains(Specified(format))
-                  case None         => queryFormats.contains(Unspecified())
-                })
-
-                matchesQuery should be(true)
-              }
-            }
-          }
-        }
-
-        it("unspecified") {
-          val pubQueryGen = Gen.const(Query(formats = Set(Unspecified())))
-
-          doUnspecifiedTest(pubQueryGen) { response =>
-            response.dataSets.foreach { dataSet =>
-              val dataSetFormats = dataSet.distributions.map(_.format)
-              withClue(s"dataSetFormats $dataSetFormats") {
-                dataSetFormats.exists(_.isEmpty) should be(true)
-              }
-            }
-          }
-        }
-      }
-
-      describe("publisher") {
-        it("specified") {
-
-          def dataSetToQuery(dataSet: DataSet) = {
-            Gen.const(Query(publishers = Set(dataSet.publisher.flatMap(_.name).map(Specified.apply).getOrElse(Unspecified()))))
-          }
-
-          doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
-            whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
-
-              response.strategy.get should be(MatchAll)
-              response.dataSets.isEmpty should be(false)
-              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
-
-              response.dataSets.foreach { dataSet =>
-                val queryPublishers = query.publishers
-
-                val matchesQuery = dataSet.publisher.flatMap(_.name) match {
-                  case Some(publisher) => queryPublishers.contains(Specified(publisher))
-                  case None            => queryPublishers.contains(Unspecified())
-                }
-
-                matchesQuery should be(true)
-              }
-            }
-          }
-        }
-
-        it("unspecified") {
-          val pubQueryGen = Gen.const(Query(publishers = Set(Unspecified())))
-
-          doUnspecifiedTest(pubQueryGen) { response =>
-            whenever(!response.dataSets.isEmpty) {
-              response.dataSets.foreach { dataSet =>
-                val dataSetPublisher = dataSet.publisher.flatMap(_.name)
-                withClue(s"dataSetPublisher $dataSetPublisher") {
-                  dataSetPublisher.isEmpty should be(true)
-                }
-              }
-            }
-          }
-        }
-      }
-
-      def doUnspecifiedTest(queryGen: Gen[Query])(test: SearchResult => Unit) = {
-        forAll(indexGen, textQueryGen(queryGen)) {
-          case ((_, dataSets, routes), (textQuery, query)) =>
-            doFilterTest(textQuery, dataSets, routes) { (response) =>
-              whenever(!response.dataSets.isEmpty) {
-                test(response)
-              }
-            }
-        }
-      }
-
-      def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
-        val gen = for {
-          index <- indexGen.suchThat(!_._2.isEmpty)
-          dataSet <- Gen.oneOf(index._2)
-          query = buildQuery(dataSet)
-          textQuery <- textQueryGen(query)
-        } yield (index, dataSet, textQuery)
-
-        forAll(gen) {
-          case ((indexName, dataSets, routes), dataSet, (textQuery, query)) ⇒
-            doFilterTest(textQuery, dataSets, routes) { response =>
-              println(response.strategy.get)
-
-              test(query, response, dataSet)
-            }
-        }
-      }
-
-      def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
-        Get(s"/datasets/search?query=${encodeForUrl(query)}&limit=${dataSets.length}") ~> routes ~> check {
+      forAll(mediumIndexGen, textQueryGen(queryGen)) { (indexTuple, queryTuple) ⇒
+        val (_, dataSets, routes) = indexTuple
+        val (textQuery, query) = queryTuple
+        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
           status shouldBe OK
           val response = responseAs[SearchResult]
+          whenever(response.strategy.get == MatchAll) {
 
-          test(response)
+            response.dataSets.foreach { dataSet =>
+              val temporal = dataSet.temporal
+              val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
+              val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
+
+              val dateUnspecified = (query.dateTo, query.dateFrom) match {
+                case (Some(Unspecified()), Some(Unspecified())) | (Some(Unspecified()), None) | (None, Some(Unspecified())) => dataSetDateFrom.isEmpty && dataSetDateTo.isEmpty
+                case _ => false
+              }
+
+              val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
+                case (Some(Specified(innerQueryDateTo)), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
+                case _ => true
+              }
+
+              val dateToMatched = (query.dateFrom, dataSetDateTo) match {
+                case (Some(Specified(innerQueryDateFrom)), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
+                case _ => true
+              }
+
+              val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
+              val publisherMatched = if (!query.publishers.isEmpty) {
+                query.publishers.exists { queryPublisher =>
+                  queryPublisher match {
+                    case Specified(specifiedPublisher) => dataSetPublisherName.map(_.toLowerCase.equals(specifiedPublisher.toLowerCase)).getOrElse(false)
+                    case Unspecified()                 => dataSet.publisher.flatMap(_.name).isEmpty
+                  }
+                }
+              } else true
+
+              val formatMatched = if (!query.formats.isEmpty) {
+                query.formats.exists(queryFormat =>
+                  dataSet.distributions.exists(distribution =>
+                    queryFormat match {
+                      case Specified(specifiedFormat) => distribution.format.map(_.toLowerCase.equals(specifiedFormat.toLowerCase)).getOrElse(false)
+                      case Unspecified()              => distribution.format.isEmpty
+                    }
+                  )
+                )
+              } else true
+
+              val geometryFactory: GeometryFactory = new GeometryFactory
+
+              val queryRegions = query.regions.filter(_.isDefined).map { region =>
+                findIndexedRegion(region.get.queryRegion)
+              }
+
+              // This one is trying to imitate an inaccurate ES query with JTS distance, which is also a bit flaky
+              val distances = queryRegions.flatMap(queryRegion =>
+                dataSet.spatial.flatMap(_.geoJson.map { geoJson =>
+                  val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
+                  val jtsRegion = GeometryConverter.toJTSGeo(queryRegion._3, geometryFactory)
+
+                  (jtsGeo.distance(jtsRegion), Math.max(jtsGeo.getLength, jtsRegion.getLength))
+                }))
+
+              val unspecifiedRegion = query.regions.exists(_.isEmpty)
+              val geoMatched = if (!query.regions.isEmpty) {
+                unspecifiedRegion || distances.exists { case (distance, length) => distance <= length * 0.05 }
+              } else true
+
+              val allValid = (dateUnspecified || (dateFromMatched && dateToMatched)) && publisherMatched && formatMatched && geoMatched
+
+              withClue(s"with query $textQuery \n and dataSet" +
+                s"\n\tdateUnspecified $dateUnspecified" +
+                s"\n\tdateTo $dataSetDateTo $dateFromMatched" +
+                s"\n\tdateFrom $dataSetDateFrom $dateToMatched" +
+                s"\n\tpublisher ${dataSet.publisher} $publisherMatched" +
+                s"\n\tformats ${dataSet.distributions.map(_.format).mkString(",")} $formatMatched" +
+                s"\n\tdistances ${distances.map(t => t._1 + "/" + t._2).mkString(",")}" +
+                s"\n\tgeomatched ${dataSet.spatial.map(_.geoJson).mkString(",")} $geoMatched" +
+                s"\n\tqueryRegions $queryRegions\n") {
+                allValid should be(true)
+              }
+            }
+          }
         }
+      }
+    }
+
+    describe("format") {
+      it("exact") {
+        def dataSetToQuery(dataSet: DataSet) = {
+          val formats = dataSet.distributions.map(_.format.map(Specified.apply).getOrElse(Unspecified()))
+
+          for {
+            formatsReduced <- Gen.someOf(formats)
+            query = Query(formats = formatsReduced.toSet)
+          } yield query
+        }
+
+        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+          whenever(query != Query() && query.formats.filter(_.isDefined).forall(!_.get.contains("  "))) {
+            response.strategy.get should be(MatchAll)
+            response.dataSets.isEmpty should be(false)
+            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+
+            response.dataSets.foreach { dataSet =>
+              val queryFormats = query.formats
+
+              val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
+                case Some(format) => queryFormats.contains(Specified(format))
+                case None         => queryFormats.contains(Unspecified())
+              })
+
+              matchesQuery should be(true)
+            }
+          }
+        }
+      }
+
+      it("inexact") {
+        def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
+          val formats = dataSet.distributions.map(_.format.map(Specified.apply).flatMap(x => x)).flatten
+
+          if (formats.isEmpty)
+            Gen.const(Query())
+          else {
+            for {
+              format <- Gen.oneOf(formats)
+              reducedFormat <- ApiGenerators.partialStringGen(format)
+              query = Query(formats = Set(Specified(reducedFormat)))
+            } yield query
+          }
+        }
+
+        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+          whenever(query != Query() && query.formats.exists(!_.get.trim.isEmpty)) {
+            response.dataSets.isEmpty should be(false)
+            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+
+            response.dataSets.foreach { dataSet =>
+              val queryFormats = query.formats
+              val dataSetFormats = dataSet.distributions.flatMap(_.format)
+
+              val queryToDataSetComparison = for {
+                queryFormat <- queryFormats
+                dataSetFormat <- dataSetFormats
+              } yield (dataSetFormat.contains(dataSetFormat))
+
+              queryToDataSetComparison.exists(identity) should be(true)
+            }
+          }
+        }
+      }
+
+      it("unspecified") {
+        val pubQueryGen = Gen.const(Query(formats = Set(Unspecified())))
+
+        doUnspecifiedTest(pubQueryGen) { response =>
+          response.dataSets.foreach { dataSet =>
+            val dataSetFormats = dataSet.distributions.map(_.format)
+            withClue(s"dataSetFormats $dataSetFormats") {
+              dataSetFormats.exists(_.isEmpty) should be(true)
+            }
+          }
+        }
+      }
+    }
+
+    describe("publisher") {
+      it("exact") {
+        def dataSetToQuery(dataSet: DataSet) = {
+          Gen.const(Query(publishers = Set(dataSet.publisher.flatMap(_.name).map(Specified.apply).getOrElse(Unspecified()))))
+        }
+
+        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+          whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
+
+            response.strategy.get should be(MatchAll)
+            response.dataSets.isEmpty should be(false)
+            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+
+            response.dataSets.foreach { dataSet =>
+              val queryPublishers = query.publishers
+
+              val matchesQuery = dataSet.publisher.flatMap(_.name) match {
+                case Some(publisher) => queryPublishers.contains(Specified(publisher))
+                case None            => queryPublishers.contains(Unspecified())
+              }
+
+              matchesQuery should be(true)
+            }
+          }
+        }
+      }
+
+      it("inexact") {
+        def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
+          val publisher = dataSet.publisher.flatMap(_.name)
+
+          publisher match {
+            case None => Gen.const(Query())
+            case Some(innerPublisher) =>
+              for {
+                reducedPublisher <- ApiGenerators.partialStringGen(innerPublisher)
+                query = Query(publishers = Set(Specified(innerPublisher)))
+              } yield query
+          }
+        }
+
+        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+          whenever(query != Query() && query.publishers.exists(!_.get.trim.isEmpty)) {
+            response.dataSets.isEmpty should be(false)
+            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+
+            response.dataSets.foreach { dataSet =>
+              val queryPublishers = query.publishers
+              val dataSetPublisher = dataSet.publisher.get.name
+
+              withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSet.publisher.get.name}") {
+                queryPublishers.exists(queryPublisher =>
+                  dataSetPublisher.get.contains(queryPublisher.get)
+                ) should be(true)
+              }
+            }
+          }
+        }
+      }
+
+      it("unspecified") {
+        val pubQueryGen = Gen.const(Query(publishers = Set(Unspecified())))
+
+        doUnspecifiedTest(pubQueryGen) { response =>
+          whenever(!response.dataSets.isEmpty) {
+            response.dataSets.foreach { dataSet =>
+              val dataSetPublisher = dataSet.publisher.flatMap(_.name)
+              withClue(s"dataSetPublisher $dataSetPublisher") {
+                dataSetPublisher.isEmpty should be(true)
+              }
+            }
+          }
+        }
+      }
+    }
+
+    def doUnspecifiedTest(queryGen: Gen[Query])(test: SearchResult => Unit) = {
+      forAll(indexGen, textQueryGen(queryGen)) {
+        case ((_, dataSets, routes), (textQuery, query)) =>
+          doFilterTest(textQuery, dataSets, routes) { (response) =>
+            whenever(!response.dataSets.isEmpty) {
+              test(response)
+            }
+          }
+      }
+    }
+
+    def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
+      val gen = for {
+        index <- indexGen.suchThat(!_._2.isEmpty)
+        dataSet <- Gen.oneOf(index._2)
+        query = buildQuery(dataSet)
+        textQuery <- textQueryGen(query)
+      } yield (index, dataSet, textQuery)
+
+      forAll(gen) {
+        case ((indexName, dataSets, routes), dataSet, (textQuery, query)) =>
+          whenever(!dataSets.isEmpty && dataSets.contains(dataSet)) {
+            doFilterTest(textQuery, dataSets, routes) { response =>
+              test(query, response, dataSet)
+            }
+          }
+      }
+    }
+
+    def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
+      Get(s"/datasets/search?query=${encodeForUrl(query)}&limit=${dataSets.length}") ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+
+        test(response)
       }
     }
   }

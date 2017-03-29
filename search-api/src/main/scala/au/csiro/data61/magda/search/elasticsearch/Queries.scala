@@ -20,10 +20,10 @@ import au.csiro.data61.magda.search.SearchStrategy
 
 object Queries {
   def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String]) = {
-    handleFilterValue(publisher, (p: String) =>
+    handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
-        case SearchStrategy.MatchAll  => termQuery("publisher.name.keyword_lowercase", p.toLowerCase)
-        case SearchStrategy.MatchPart => matchQuery("publisher.name", p)
+        case SearchStrategy.MatchAll  => termQuery("publisher.name.keyword_lowercase", publisherString.toLowerCase)
+        case SearchStrategy.MatchPart => matchQuery("publisher.name.english", publisherString)
       }, "publisher.name"
     )
   }
@@ -32,7 +32,7 @@ object Queries {
   def baseFormatQuery(strategy: SearchStrategy, formatString: String) = nestedQuery("distributions")
     .query(strategy match {
       case SearchStrategy.MatchAll  => termQuery("distributions.format.keyword_lowercase", formatString.toLowerCase)
-      case SearchStrategy.MatchPart => matchQuery("distributions.format", formatString)
+      case SearchStrategy.MatchPart => matchQuery("distributions.format.english", formatString)
     })
     .scoreMode(ScoreMode.Avg)
   def formatQuery(strategy: SearchStrategy)(formatValue: FilterValue[String]): QueryDefinition = {

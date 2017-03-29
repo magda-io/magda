@@ -65,7 +65,7 @@ object Generators {
   // TODO: It'd be really cool to have arbitrary characters in here but some of them mess up ES for some
   // reason - if there's time later on it'd be good to find out exactly what ES can accept because
   // right now we're only testing english characters.
-  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf('-', '.', ' ', ''')))
+  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf('-', '.', ''', ' ')))
 
   val nonEmptyTextGen = for {
     before <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)

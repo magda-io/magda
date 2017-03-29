@@ -295,7 +295,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
       stringQuery.map { innerQuery =>                
         val queryDef = new SimpleStringQueryDefinition(innerQuery)
-//          .quoteFieldSuffix(".quote")
           .defaultOperator(operator)
           .analyzeWildcard(true)
 

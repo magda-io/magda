@@ -59,6 +59,16 @@ object ApiGenerators {
     Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)).trim)
   }
 
+  def partialStringGen(string: String): Gen[String] = {
+    val split = string.split("[\\s-]+")
+
+    for {
+      start <- Gen.choose(0, split.length - 1)
+      end <- Gen.choose(start + 1, split.length)
+      delimiter <- Gen.oneOf("-", " ")
+    } yield split.slice(start, Math.max(split.length - 1, 1)).mkString(delimiter)
+  }
+
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
     .suchThat(word => !filterWords.contains(word.toLowerCase))
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
