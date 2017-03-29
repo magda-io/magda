@@ -93,6 +93,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             ),
             field("publisher", ObjectType).inner(
               magdaTextField("name").fields(
+                field("keyword", KeywordType),
                 field("keyword_lowercase", TextType).analyzer("quote"),
                 field("english", TextType)
               )
@@ -101,6 +102,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("title"),
               magdaTextField("description"),
               magdaTextField("format").fields(
+                field("keyword", KeywordType).analyzer("quote"),
                 field("keyword_lowercase", TextType).analyzer("quote"),
                 field("english", TextType).analyzer("english")
               )

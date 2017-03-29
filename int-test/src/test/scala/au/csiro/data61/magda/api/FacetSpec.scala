@@ -111,7 +111,7 @@ class FacetSpec extends BaseSearchApiSpec {
       def filter(dataSet: DataSet, facetOption: FacetOption) = {
         val facetValue = reducer(dataSet)
 
-        def matches = facetValue.exists(_.equals(facetOption.value))
+        def matches = facetValue.exists(_.equalsIgnoreCase(facetOption.value))
 
         if (facetOption.value.equals(config.getString("strings.unspecifiedWord"))) {
           facetValue.isEmpty || facetValue.forall(_.equals("")) || matches
@@ -220,9 +220,9 @@ class FacetSpec extends BaseSearchApiSpec {
         }
 
         describe("exact match facets") {
-          it("should show filters that have records but not in this search as facet options with 0 results") {
+//          it("should show filters that have records but not in this search as facet options with 0 results") {
             //TODO
-          }
+//          }
 
           it("should not show filters that do not have records") {
             checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒

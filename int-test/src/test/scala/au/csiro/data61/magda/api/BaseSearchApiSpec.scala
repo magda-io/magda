@@ -34,7 +34,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
     case (indexName, dataSets, route) ⇒
       Shrink.shrink(dataSets).map(shrunkDataSets ⇒ {
         // Have this on warn level so it keeps travis entertained in long shrinks.
-        logger.warning("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
+        logger.error("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
 
         val result = putDataSetsInIndex(shrunkDataSets)
         cleanUpQueue.add(result._1)
