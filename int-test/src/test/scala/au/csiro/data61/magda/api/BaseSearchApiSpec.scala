@@ -33,7 +33,8 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
   implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
     case (indexName, dataSets, route) ⇒
       Shrink.shrink(dataSets).map(shrunkDataSets ⇒ {
-        logger.info("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
+        // Have this on warn level so it keeps travis entertained in long shrinks.
+        logger.warning("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
 
         val result = putDataSetsInIndex(shrunkDataSets)
         cleanUpQueue.add(result._1)
