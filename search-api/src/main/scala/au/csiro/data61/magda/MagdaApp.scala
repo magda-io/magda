@@ -5,7 +5,7 @@ import akka.actor.{ Actor, ActorLogging, ActorSystem, DeadLetter, Props }
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import au.csiro.data61.magda.api.Api
+import au.csiro.data61.magda.api.SearchApi
 import au.csiro.data61.magda.search.elasticsearch.{ DefaultClientProvider, ElasticSearchQueryer }
 
 object MagdaApp extends App {
@@ -15,7 +15,7 @@ object MagdaApp extends App {
   implicit val config = AppConfig.conf()
   implicit val clientProvider = new DefaultClientProvider
 
-  val logger = Logging(system, getClass)
+  implicit val logger = Logging(system, getClass)
 
   logger.info("Starting API in env {} on port {}", AppConfig.getEnv, config.getString("http.port"))
 
@@ -24,7 +24,7 @@ object MagdaApp extends App {
 
   logger.debug("Starting API")
   val searchQueryer = ElasticSearchQueryer.apply
-  val api = new Api(logger, searchQueryer)
+  val api = new SearchApi(searchQueryer)
 
   Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
 }

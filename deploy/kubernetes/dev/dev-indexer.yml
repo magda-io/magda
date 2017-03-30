@@ -29,3 +29,16 @@ spec:
       - name: regions
         hostPath:
           path: /var/regions
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: indexer
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: indexer
+  type: "NodePort"

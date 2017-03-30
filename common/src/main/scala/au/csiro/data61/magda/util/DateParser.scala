@@ -114,11 +114,12 @@ object DateParser {
   case class ConstantResult(dateConstant: DateConstant) extends ParseResult
   case object ParseFailure extends ParseResult
 
-
   private def roundUp[T <: Temporal](roundUp: Boolean, date: T, originalFormat: Format): T =
     if (roundUp) date.plus(1, originalFormat.precision).minus(1, ChronoUnit.MILLIS).asInstanceOf[T] else date
 
-  def parseDate(raw: String, shouldRoundUp: Boolean)(implicit defaultOffset: ZoneOffset): ParseResult =
+  def parseDate(input: String, shouldRoundUp: Boolean)(implicit defaultOffset: ZoneOffset): ParseResult = {
+    val raw = input.toUpperCase
+
     if (raw.isEmpty())
       ParseFailure
     else
@@ -147,6 +148,7 @@ object DateParser {
             .map(date => DateTimeResult(date))
             .getOrElse(ParseFailure)
       }
+  }
 
   def parseDateDefault(raw: String, shouldRoundUp: Boolean)(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] =
     parseDate(raw, shouldRoundUp) match {

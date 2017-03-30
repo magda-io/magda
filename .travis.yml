@@ -5,5 +5,5 @@ jdk:
   - oraclejdk8
 env:
   global:
-    - SBT_OPTS="-Xms3500M -Xmx3500M -XX:+CMSClassUnloadingEnabled -XX:-UseGCOverheadLimit"
+    - SBT_OPTS="-Xms4000M -Xmx4000M -XX:+CMSClassUnloadingEnabled"
     - CI=true

@@ -4,19 +4,18 @@ name := "magda-metadata"
 
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
-  version := "0.0.22",
+  version := "0.0.23",
   scalaVersion := "2.11.8"
 )
 
 lazy val root = (project in file("."))
-  .aggregate(common, searchApi, indexer, registryApi)
+  .aggregate(common, searchApi, indexer, registryApi, intTest)
   .settings(commonSettings: _*)
 lazy val common = (project in file("common"))
   .settings(commonSettings: _*)
 lazy val searchApi = (project in file("search-api"))
   .settings(commonSettings: _*)
   .dependsOn(common % "test->test;compile->compile")
-  .dependsOn(indexer % "test->test")
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 lazy val indexer = (project in file("indexer"))
   .settings(commonSettings: _*)
@@ -26,6 +25,11 @@ lazy val registryApi = (project in file("registry-api"))
   .settings(commonSettings: _*)
   .dependsOn(common)
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
+lazy val intTest = (project in file("int-test"))
+  .settings(commonSettings: _*)
+  .dependsOn(indexer)
+  .dependsOn(searchApi)
+  
   
 // removing because it's not compiling and being redeveloped in node, if we need
 // it again uncomment
@@ -46,4 +50,4 @@ variables in EditSource += ("version", version.value)
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 sbt.Keys.fork in Test := false
-javaOptions in (Test) ++= Seq("-Xms3500M", "-Xmx3500M", "-XX:+CMSClassUnloadingEnabled", "-XX:-UseGCOverheadLimit")
+

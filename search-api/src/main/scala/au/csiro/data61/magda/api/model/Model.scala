@@ -51,5 +51,8 @@ trait Protocols extends DefaultJsonProtocol with temporal.Protocols with misc.Pr
     implicit val regionFormat = apiRegionFormat
     jsonFormat3(RegionSearchResult.apply)
   }
+}
 
+object Protocols extends Protocols {
+  
 }

@@ -115,7 +115,7 @@ object FacetDefinition {
 
 class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition = {
-    aggregation.terms(Publisher.id).field("publisher.name.not_analyzed").size(limit).missing(config.getString("strings.unspecifiedWord"))
+    aggregation.terms(Publisher.id).field("publisher.name.keyword").size(limit).missing(config.getString("strings.unspecifiedWord"))
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -304,7 +304,7 @@ object YearFacetDefinition {
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition =
     aggregation nested Format.id path "distributions" aggs {
-      val termsAgg = aggregation terms "nested" field "distributions.format.not_analyzed" size limit includeExclude (Seq(), Seq("")) aggs {
+      val termsAgg = aggregation terms "nested" field "distributions.format.keyword" size limit includeExclude (Seq(), Seq("")) aggs {
         aggregation reverseNested "reverse"
       }
 
