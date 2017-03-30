@@ -29,5 +29,7 @@ object RegistryApp extends App {
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
-  val api = new Api()
+  val webHookActor = system.actorOf(WebHookActor.props, name = "WebHookActor")
+
+  val api = new Api(webHookActor, config, system, executor, materializer)
 }
