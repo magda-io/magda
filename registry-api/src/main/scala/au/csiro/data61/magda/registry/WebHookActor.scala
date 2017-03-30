@@ -71,19 +71,34 @@ object WebHookActor {
             val changeEvents = events.filter(event => relevantEvents.contains(event.eventType))
 
             val recordIds = changeEvents.map(event => event.eventType match {
-              case EventType.CreateRecord | EventType.DeleteRecord | EventType.PatchRecord => event.data.fields("id").toString()
+              case EventType.CreateRecord | EventType.DeleteRecord | EventType.PatchRecord => event.data.fields("id").asInstanceOf[JsString].value
               case _ => event.data.fields("recordId").asInstanceOf[JsString].value
             }).toSet
 
             // If we're including records, get a complete record with aspects for each record ID
             val records = webHook.config.includeRecords match {
               case Some(true) | None => DB readOnly { implicit session =>
-                Some(RecordPersistence.getByIdsWithAspects(
+                // Get records directly modified by these events.
+                val directRecords = RecordPersistence.getByIdsWithAspects(
                   session,
                   recordIds,
                   webHook.config.aspects.getOrElse(List()),
                   webHook.config.optionalAspects.getOrElse(List()),
-                  webHook.config.dereference))
+                  webHook.config.dereference)
+
+                // If we're dereferencing, we also need to include any records that link to
+                // changed records from aspects that we're including.
+                val recordsFromDereference = webHook.config.dereference match {
+                  case Some(false) | None => List[Record]()
+                  case Some(true) => RecordPersistence.getRecordsLinkingToRecordIds(
+                    session,
+                    recordIds,
+                    webHook.config.aspects.getOrElse(List()),
+                    webHook.config.optionalAspects.getOrElse(List()),
+                    webHook.config.dereference).records
+                }
+
+                Some(directRecords.records ++ recordsFromDereference)
               }
               case Some(false) => None
             }
@@ -92,7 +107,7 @@ object WebHookActor {
               action = "records.changed",
               lastEventId = events.last.id.get,
               events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents.toList) else None,
-              records = records.map(_.records.toList)
+              records = records.map(_.toList)
             )
           }).mapAsync(1)(payload => {
             // Send one payload at a time

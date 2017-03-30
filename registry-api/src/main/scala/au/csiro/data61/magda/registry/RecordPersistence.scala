@@ -39,7 +39,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                          aspectIds: Iterable[String] = Seq(),
                          optionalAspectIds: Iterable[String] = Seq(),
                          dereference: Option[Boolean] = None): Option[Record] = {
-    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, Some(sqls"recordId=${id}")).records.headOption
+    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId=${id}"))).records.headOption
   }
 
   def getByIdsWithAspects(implicit session: DBSession,
@@ -47,7 +47,24 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                           aspectIds: Iterable[String] = Seq(),
                           optionalAspectIds: Iterable[String] = Seq(),
                           dereference: Option[Boolean] = None): RecordsPage = {
-    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, Some(sqls"recordId in (${ids})"))
+    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId in (${ids})")))
+  }
+
+  def getRecordsLinkingToRecordIds(implicit session: DBSession,
+                                   ids: Iterable[String],
+                                   aspectIds: Iterable[String] = Seq(),
+                                   optionalAspectIds: Iterable[String] = Seq(),
+                                   dereference: Option[Boolean] = None): RecordsPage = {
+    val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
+    val selectors = linkAspects.map {
+      case (aspectId, propertyWithLink) =>
+        Some(sqls"""exists (select 1
+                            from RecordAspects
+                            where RecordAspects.recordId=Records.recordId
+                            and aspectId=$aspectId
+                            and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])""")
+    }
+    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
   }
 
   def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
@@ -302,8 +319,8 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                          start: Option[Int] = None,
                          limit: Option[Int] = None,
                          dereference: Option[Boolean] = None,
-                         recordSelector: Option[SQLSyntax] = None): RecordsPage = {
-    val countWhereClauseParts = aspectIdsToWhereClause(aspectIds) :+ recordSelector
+                         recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): RecordsPage = {
+    val countWhereClauseParts = aspectIdsToWhereClause(aspectIds) ++ recordSelector
     val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
 
     // If we're dereferencing links, we'll need to determine which fields of the selected aspects are links.
