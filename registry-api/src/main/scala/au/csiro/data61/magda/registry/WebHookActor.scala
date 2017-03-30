@@ -93,6 +93,7 @@ object WebHookActor {
                   case Some(true) => RecordPersistence.getRecordsLinkingToRecordIds(
                     session,
                     recordIds,
+                    directRecords.records.map(_.id),
                     webHook.config.aspects.getOrElse(List()),
                     webHook.config.optionalAspects.getOrElse(List()),
                     webHook.config.dereference).records

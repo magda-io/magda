@@ -52,11 +52,12 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
 
   def getRecordsLinkingToRecordIds(implicit session: DBSession,
                                    ids: Iterable[String],
+                                   idsToExclude: Iterable[String] = Seq(),
                                    aspectIds: Iterable[String] = Seq(),
                                    optionalAspectIds: Iterable[String] = Seq(),
                                    dereference: Option[Boolean] = None): RecordsPage = {
     val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
-    val selectors = linkAspects.map {
+    val dereferenceSelectors = linkAspects.map {
       case (aspectId, propertyWithLink) =>
         Some(sqls"""exists (select 1
                             from RecordAspects
@@ -64,6 +65,11 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                             and aspectId=$aspectId
                             and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])""")
     }
+
+    val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
+
+    val selectors = dereferenceSelectors ++ Seq(excludeSelector)
+
     this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
   }
 
