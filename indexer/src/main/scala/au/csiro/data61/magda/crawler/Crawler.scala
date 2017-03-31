@@ -16,10 +16,12 @@ import scala.concurrent.duration._
 import au.csiro.data61.magda.model.misc.Agent
 import java.time.Instant
 import java.time.OffsetDateTime
+import au.csiro.data61.magda.util.ErrorHandling
 
 class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
+  implicit val scheduler = system.scheduler
 
   def crawl(indexer: SearchIndexer) = {
     val startInstant = OffsetDateTime.now
@@ -87,7 +89,16 @@ class Crawler(val externalInterfaces: Seq[ExternalInterface])(implicit val syste
         createBatches(interfaceDef, 0, Math.min(maxFromConfig, count))
       }
       .throttle(1, config.getInt("indexer.requestThrottleMs") millisecond, 1, ThrottleMode.Shaping)
-      .mapAsync(1) { batch => interface.getDataSets(batch.start, batch.size) }
+      .mapAsync(1) { batch =>
+        val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching {} to {} from {}, retries left: {}", batch.start, batch.size, interfaceDef.name, retryCount + 1)
+
+        ErrorHandling.retry(() => interface.getDataSets(batch.start, batch.size), 30 seconds, 3, onRetry)
+          .recover {
+            case e: Throwable =>
+              log.error(e, "Failed completely while fetching {} to {} from {}", batch.start, batch.size, interfaceDef.name)
+              Nil
+          }
+      }
       .map { dataSets =>
         val filteredDataSets = dataSets
           .filterNot(_.distributions.isEmpty)

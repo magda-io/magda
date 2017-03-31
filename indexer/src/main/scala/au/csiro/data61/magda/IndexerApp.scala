@@ -34,6 +34,7 @@ object IndexerApp extends App {
   val logger = Logging(system, getClass)
 
   logger.info("Starting Indexer in env {}", AppConfig.getEnv)
+  logger.info("Log level is {}", config.getString("akka.loglevel"))
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])

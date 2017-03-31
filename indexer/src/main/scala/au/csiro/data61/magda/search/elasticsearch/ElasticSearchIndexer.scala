@@ -70,7 +70,7 @@ class ElasticSearchIndexer(
       }
       .batch(1000, Seq(_))(_ :+ _)
       .mapAsync(1) { batch =>
-        val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index {} records, retrying", batch.length, e)
+        val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index {} records with {}, retrying", batch.length, e.getMessage)
 
         // Combine all the ES inserts into one bulk statement
         val bulkDef = bulk(batch.flatMap { case (esIndexDefs, _) => esIndexDefs })
