@@ -40,6 +40,7 @@ import scala.collection.JavaConversions._
 import org.elasticsearch.search.aggregations.InternalAggregation
 import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
 import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
+import org.apache.lucene.search.join.ScoreMode
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -55,8 +56,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   val REMOVE_REGEX = "(?i)((^|\\s)(AND|OR)(\\s|$)|[<>])".r
   val ESCAPE_AGG_NAME_REGEX = "[\\[\\]\\.]".r
 
-  val DATASETS_LANGUAGE_FIELDS = Seq("title", "description", "publisher.name", "distributions.title", "distributions.description", "keyword", "theme")
-  val ASPECT_LANGUAGE_FIELDS = Seq("value")
+  val DATASETS_LANGUAGE_FIELDS = Seq("title", "description", "publisher.name", "keyword", "theme")
 
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
     val inputRegionsList = inputQuery.regions.toList
@@ -180,7 +180,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /** Converts from a general search strategy to the actual elastic4s method that will combine a number of queries using that strategy.*/
-  implicit def strategyToCombiner(strat: SearchStrategy): Iterable[QueryDefinition] => QueryDefinition = strat match {
+  def strategyToCombiner(strat: SearchStrategy): Iterable[QueryDefinition] => QueryDefinition = strat match {
     case MatchAll  => must
     case MatchPart => should
   }
@@ -287,20 +287,33 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       }
     }
 
-    val operator = strategy match {
-      case MatchAll  => "and"
-      case MatchPart => "or"
-    }
-
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
-      stringQuery.map { innerQuery =>                
+      stringQuery.map { innerQuery =>
+        val operator = strategy match {
+          case MatchAll  => "and"
+          case MatchPart => "or"
+        }
+
         val queryDef = new SimpleStringQueryDefinition(innerQuery)
           .defaultOperator(operator)
           .analyzeWildcard(true)
 
-        ("_all" +: DATASETS_LANGUAGE_FIELDS).foldRight(queryDef) { (field, queryDef) =>
+        val nonNestedQueries = ("_all" +: DATASETS_LANGUAGE_FIELDS.map(_ + ".english")).foldRight(queryDef) { (field, queryDef) =>
           queryDef.field(field)
         }
+
+        val distributionsEnglishQueries = nestedQuery("distributions")
+          .query(
+            queryDef
+              .defaultOperator("or")
+              //              .field("distributions.title")
+              //              .field("distributions.description")
+              .field("distributions.title.english")
+              .field("distributions.description.english")
+          )
+          .scoreMode(ScoreMode.Avg)
+
+        should(nonNestedQueries, distributionsEnglishQueries).minimumShouldMatch(1)
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy)))),
       setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy)))),
@@ -308,7 +321,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       setToOption(query.regions)(seq => should(seq.map(region => regionIdQuery(region, indices))))
     )
 
-    strategy(clauses.flatten)
+    strategyToCombiner(strategy)(clauses.flatten)
   }
 
   def cleanStringForEs(string: String): String = {
@@ -327,7 +340,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
       client.execute(ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)))
-        .query(new SimpleStringQueryDefinition(cleanStringForEs(facetQuery)))
+        .query(new SimpleStringQueryDefinition(cleanStringForEs(facetQuery))
+          .defaultOperator("or")
+          .analyzeWildcard(true)
+          .field("_all")
+          .field("value.english")
+        )
         .start(start.toInt)
         .limit(limit))
         .flatMap { response =>

@@ -431,14 +431,16 @@ class ElasticSearchIndexer(
     )
 
     val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
-      ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / Publisher.id
-        id publisherName.toLowerCase
-        source Map("value" -> publisherName).toJson))
+      ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(Publisher)))
+        .id(publisherName.toLowerCase)
+        .source(Map("value" -> publisherName).toJson)))
 
     val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
       val format = distribution.format.get
 
-      ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / Format.id id format.toLowerCase source Map("value" -> format).toJson
+      ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(Format)))
+        .id(format.toLowerCase)
+        .source(Map("value" -> format).toJson)
     }
 
     indexDataSet :: indexPublisher.toList ++ indexFormats

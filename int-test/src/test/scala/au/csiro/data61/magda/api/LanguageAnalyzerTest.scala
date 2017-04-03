@@ -1,26 +1,19 @@
 package au.csiro.data61.magda.api
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.scalacheck._
-import org.scalacheck.Arbitrary._
 import org.scalacheck.Shrink
 import org.scalatest._
 
-import com.vividsolutions.jts.geom.GeometryFactory
-
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
+import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.test.util.ApiGenerators._
-import au.csiro.data61.magda.test.util.Generators._
-import com.monsanto.labs.mwundo.GeoJson.Polygon
-import com.monsanto.labs.mwundo.GeoJson._
-import au.csiro.data61.magda.util.MwundoJTSConversions._
-import spray.json.JsString
-import au.csiro.data61.magda.spatial.RegionSource
-import akka.http.scaladsl.server.Route
-import org.tartarus.snowball.ext.PorterStemmer
 import au.csiro.data61.magda.test.util.MagdaMatchers
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
@@ -54,7 +47,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
-      def termExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
+      def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
         .filter(term => filterWordsWithSpace.forall(filterWord => !term.toLowerCase.contains(filterWord)))
         .filter(term => term.matches(".*[A-Z][a-z].*"))
 
@@ -63,54 +56,81 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
           status shouldBe OK
           val result = responseAs[SearchResult]
 
-          withClue(s"term: ${term} and identifier ${dataSet.identifier} in ${result.dataSets.map(dataSet => dataSet.identifier + ": " + termExtractor(dataSet)).mkString(", ")}") {
+          withClue(s"term: ${term} for ${outerTermExtractor(dataSet)} in ${result.dataSets.map(dataSet => dataSet.identifier + ": " + outerTermExtractor(dataSet)).mkString(", ")}") {
+            result.strategy.get should equal(SearchStrategy.MatchAll)
             result.dataSets.size should be > 0
             result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
           }
         }
       }
 
-      testLanguageFieldSearch(termExtractor, test)
+      testLanguageFieldSearch(outerTermExtractor, test)
     }
   }
 
   describe("should return the right publisher when searching by publisher name") {
+    def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
+
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
-      Get(s"""/facets/publisher/options/search?facetQuery=${encodeForUrl(publisherName)}&limit=${tuples.size}""") ~> routes ~> check {
+      Get(s"""/facets/publisher/options/search?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
-        withClue(s"publisher: ${publisherName} options ${result.options}") {
-          result.options.exists(_.value.contains(publisherName)) should be(true)
+
+        val publisher = termExtractor(dataSet).head
+
+        withClue(s"term: ${publisherName}, publisher: ${dataSet.publisher.map(_.name)} options ${result.options}") {
+          result.options.exists(value =>
+            publisher == value.value
+          ) should be(true)
         }
       }
     }
 
-    testLanguageFieldSearch(dataSet => dataSet.publisher.toSeq.flatMap(_.name.toSeq), test)
+    testLanguageFieldSearch(termExtractor, test)
   }
 
   describe("should return the right format when searching by format value") {
+    def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format)
+
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
       Get(s"""/facets/format/options/search?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
+        val formats = termExtractor(dataSet)
+
         withClue(s"format: ${formatName} options ${result.options}") {
-          result.options.exists(_.value.contains(formatName)) should be(true)
+          result.options.exists(value =>
+            formats.exists(format =>
+              value.value == format
+            )
+          ) should be(true)
         }
       }
     }
 
-    testLanguageFieldSearch(dataSet => dataSet.distributions.flatMap(_.format), test)
+    testLanguageFieldSearch(termExtractor, test)
   }
 
-  def testLanguageFieldSearch(termExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit) = {
+  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit) = {
     it("when searching for it directly") {
-      doTest(termExtractor)
+      doTest(outerTermExtractor)
     }
 
     it(s"regardless of pluralization/depluralization") {
 
-      def innerTermExtractor(dataSet: DataSet) = termExtractor(dataSet)
-        .map {
+      def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
+        .flatMap(tokenize)
+        .map(_.trim)
+        .filterNot(_.contains("."))
+        .filterNot(_.contains("'"))
+        .filterNot(_.toLowerCase.endsWith("ss"))
+        .filterNot(term => StandardAnalyzer.ENGLISH_STOP_WORDS_SET.contains(term.toLowerCase))
+        .filterNot(_.isEmpty)
+        .filterNot(term => term.toLowerCase.endsWith("e") ||
+          term.toLowerCase.endsWith("ies") ||
+          term.toLowerCase.endsWith("es") ||
+          term.toLowerCase.endsWith("y")) // This plays havoc with pluralization because when you add "s" to it, ES chops off the "es at the end
+        .flatMap {
           case term if term.last.toLower.equals('s') =>
             val depluralized = term.take(term.length - 1)
             if (MagdaMatchers.porterStem(term) == depluralized) {
@@ -122,42 +142,67 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
               Some(pluralized)
             } else None
         }
-        .flatten
+        .filterNot(term => StandardAnalyzer.ENGLISH_STOP_WORDS_SET.contains(term.toLowerCase))
 
       doTest(innerTermExtractor)
     }
 
+    def tokenize(input: String) = {
+      val st = new StandardTokenizer()
+      val reader = new java.io.StringReader(input)
+      st.setReader(reader)
+      st.reset
+      val attr = st.addAttribute(classOf[CharTermAttribute])
+      var list = Seq[String]()
+
+      while (st.incrementToken) {
+        list = list :+ attr.toString()
+      }
+
+      list
+    }
+
     def doTest(innerTermExtractor: DataSet => Seq[String]) = {
-      def getIndividualTerms(terms: Seq[String]) = terms.flatMap(term => term +: term.split(" "))
+      def getIndividualTerms(terms: Seq[String]) = terms.flatMap(tokenize)
 
       val indexAndTermsGen = indexGen.flatMap {
         case (indexName, dataSetsRaw, routes) ⇒
-          val indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ termExtractor(dataSet).isEmpty)
+          val indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ innerTermExtractor(dataSet).isEmpty)
 
-          val tuples = indexedDataSets.flatMap { dataSet =>
-            val terms = getIndividualTerms(termExtractor(dataSet))
+          val dataSetAndTermGens = indexedDataSets.flatMap { dataSet =>
+            val terms = getIndividualTerms(innerTermExtractor(dataSet))
               .filter(_.length > 2)
               .filterNot(term => Seq("and", "or", "").contains(term.trim))
 
-            if (!terms.isEmpty)
-              Seq(Gen.oneOf(terms).map((dataSet, _)))
-            else
+            if (!terms.isEmpty) {
+              val termGen = for {
+                noOfTerms <- Gen.choose(1, terms.length)
+                selectedTerms <- Gen.pick(noOfTerms, terms)
+              } yield selectedTerms.mkString(" ")
+
+              Seq(termGen.map((dataSet, _)))
+            } else
               Nil
           }
 
-          val x = tuples.foldRight(Gen.const(List[(DataSet, String)]()))((soFar, current) =>
+          val combinedDataSetAndTermGen = dataSetAndTermGens.foldRight(Gen.const(List[(DataSet, String)]()))((soFar, current) =>
             for {
               currentInner <- current
               list <- soFar
             } yield currentInner :+ list
           )
 
-          x.map((indexName, _, routes))
+          combinedDataSetAndTermGen.map((indexName, _, routes))
       }
 
       // We don't want to shrink this kind of tuple at all ever.
-      implicit def dataSetStringShrinker(implicit s: Shrink[DataSet], s1: Shrink[String]): Shrink[(DataSet, String)] = Shrink[(DataSet, String)] {
-        case (string, dataSet) => Stream.empty
+      implicit def dataSetStringShrinker(implicit s: Shrink[DataSet], s1: Shrink[Seq[String]]): Shrink[(DataSet, String)] = Shrink[(DataSet, String)] {
+        case (dataSet, string) =>
+          val shrunk = string.split("\\s").filter(_ != string)
+
+          logger.warning("Shrinking " + string + " to " + shrunk)
+
+          shrunk.map((dataSet, _)).toStream
       }
 
       // Make sure a shrink for the indexAndTerms gen simply shrinks the list of datasets

@@ -65,18 +65,22 @@ case class IndexDefinition(
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
-  def magdaTextField(name: String): MagdaTextFieldDefinition =
+  def magdaTextField(name: String, extraFields: TypedFieldDefinition*): MagdaTextFieldDefinition = {
+    val fields = extraFields :+ field("english", TextType).analyzer("english")
+
     new MagdaTextFieldDefinition(name)
       .analyzer("keyword")
-      .searchAnalyzer("english")
+      .searchAnalyzer("standard")
       .quoteSearchAnalyzer("quote")
+      .fields(fields: _*)
+  }
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 22,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) =>
-      create.index(indices.getIndex(config, Indices.DataSetsIndex))
+      createIndex(indices.getIndex(config, Indices.DataSetsIndex))
         .shards(config.getInt("elasticSearch.shardCount"))
         .replicas(config.getInt("elasticSearch.replicaCount"))
         .mappings(
@@ -92,19 +96,17 @@ object IndexDefinition extends DefaultJsonProtocol {
               )
             ),
             field("publisher", ObjectType).inner(
-              magdaTextField("name").fields(
+              magdaTextField("name",
                 field("keyword", KeywordType),
-                field("keyword_lowercase", TextType).analyzer("quote"),
-                field("english", TextType).analyzer("english")
+                field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),
-            field("distributions", ObjectType).nested(
+            nestedField("distributions").nested(
               magdaTextField("title"),
               magdaTextField("description"),
-              magdaTextField("format").fields(
+              magdaTextField("format",
                 field("keyword", KeywordType).analyzer("quote"),
-                field("keyword_lowercase", TextType).analyzer("quote"),
-                field("english", TextType).analyzer("english")
+                field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),
             field("spatial", ObjectType).inner(
@@ -118,10 +120,10 @@ object IndexDefinition extends DefaultJsonProtocol {
             field("years", KeywordType),
             field("indexed", DateType)
           ),
-          mapping(Format.id).fields(
+          mapping(indices.getType(indices.typeForFacet(Format))).fields(
             magdaTextField("value")
           ),
-          mapping(Publisher.id).fields(
+          mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             magdaTextField("value")
           )
         )
