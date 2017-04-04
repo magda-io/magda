@@ -285,7 +285,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                 case None         => queryFormats.contains(Unspecified())
               })
 
-              matchesQuery should be(true)
+              withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
+                matchesQuery should be(true)
+              }
             }
           }
         }
