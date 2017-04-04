@@ -22,8 +22,8 @@ object Queries {
   def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String]) = {
     handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
-        case SearchStrategy.MatchAll  => termQuery("publisher.name.keyword_lowercase", publisherString.toLowerCase)
-        case SearchStrategy.MatchPart => matchQuery("publisher.name.english", publisherString)
+        case SearchStrategy.MatchAll  => matchPhraseQuery("publisher.name", publisherString)
+        case SearchStrategy.MatchPart => multiMatchQuery(publisherString).fields(Seq("publisher.name", "publisher.name.english"))
       }, "publisher.name"
     )
   }
@@ -31,8 +31,8 @@ object Queries {
   def exactPublisherQuery(publisher: FilterValue[String]) = publisherQuery(SearchStrategy.MatchAll)(publisher)
   def baseFormatQuery(strategy: SearchStrategy, formatString: String) = nestedQuery("distributions")
     .query(strategy match {
-      case SearchStrategy.MatchAll  => termQuery("distributions.format.keyword_lowercase", formatString.toLowerCase)
-      case SearchStrategy.MatchPart => matchQuery("distributions.format.english", formatString)
+      case SearchStrategy.MatchAll  => matchPhraseQuery("distributions.format", formatString)
+      case SearchStrategy.MatchPart => multiMatchQuery(formatString).fields(Seq("distributions.format", "distributions.format.english"))
     })
     .scoreMode(ScoreMode.Avg)
   def formatQuery(strategy: SearchStrategy)(formatValue: FilterValue[String]): QueryDefinition = {

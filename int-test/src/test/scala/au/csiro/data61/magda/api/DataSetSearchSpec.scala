@@ -132,8 +132,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
                   response.dataSets.foreach { dataSet =>
                     withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.toString.toLowerCase}") {
-                      dataSet.toString.toLowerCase.filter(_.isLetterOrDigit).mkString.contains(
-                        quote.toLowerCase.filter(_.isLetterOrDigit).mkString
+                      MagdaMatchers.extractAlphaNum(dataSet.toString).contains(
+                        MagdaMatchers.extractAlphaNum(quote)
                       ) should be(true)
                     }
                   }
@@ -147,8 +147,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                   if (response.strategy.get == MatchAll) {
                     response.dataSets.foreach { dataSet =>
                       withClue(s"dataSet term ${reverseOrderQuote.toLowerCase} and dataSet ${dataSet.toString.toLowerCase}") {
-                        dataSet.toString.toLowerCase.filter(_.isLetterOrDigit).mkString.contains(
-                          reverseOrderQuote.toLowerCase.filter(_.isLetterOrDigit).mkString
+                        MagdaMatchers.extractAlphaNum(dataSet.toString).contains(
+                          MagdaMatchers.extractAlphaNum(reverseOrderQuote)
                         ) should be(true)
                       }
                     }
@@ -198,8 +198,10 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               val publisherMatched = if (!query.publishers.isEmpty) {
                 query.publishers.exists { queryPublisher =>
                   queryPublisher match {
-                    case Specified(specifiedPublisher) => dataSetPublisherName.map(_.toLowerCase.equals(specifiedPublisher.toLowerCase)).getOrElse(false)
-                    case Unspecified()                 => dataSet.publisher.flatMap(_.name).isEmpty
+                    case Specified(specifiedPublisher) => dataSetPublisherName.exists(innerDataSetPublisher =>
+                      MagdaMatchers.extractAlphaNum(innerDataSetPublisher).contains(MagdaMatchers.extractAlphaNum(specifiedPublisher))
+                    )
+                    case Unspecified() => dataSet.publisher.flatMap(_.name).isEmpty
                   }
                 }
               } else true
@@ -208,8 +210,10 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                 query.formats.exists(queryFormat =>
                   dataSet.distributions.exists(distribution =>
                     queryFormat match {
-                      case Specified(specifiedFormat) => distribution.format.map(_.toLowerCase.equals(specifiedFormat.toLowerCase)).getOrElse(false)
-                      case Unspecified()              => distribution.format.isEmpty
+                      case Specified(specifiedFormat) => distribution.format.exists(dataSetFormat =>
+                        MagdaMatchers.extractAlphaNum(dataSetFormat).contains(MagdaMatchers.extractAlphaNum(specifiedFormat))
+                      )
+                      case Unspecified() => distribution.format.isEmpty
                     }
                   )
                 )
@@ -274,10 +278,10 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
 
             response.dataSets.foreach { dataSet =>
-              val queryFormats = query.formats.map(_.map(_.toLowerCase()))
+              val queryFormats = query.formats.map(_.map(MagdaMatchers.extractAlphaNum))
 
               val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
-                case Some(format) => queryFormats.contains(Specified(format.toLowerCase))
+                case Some(format) => queryFormats.contains(Specified(MagdaMatchers.extractAlphaNum(format)))
                 case None         => queryFormats.contains(Unspecified())
               })
 
@@ -313,12 +317,18 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
               val queryToDataSetComparison = for {
                 queryFormat <- queryFormats
-                queryWord <- queryFormat.get.split("[\\s-]+")
+                queryWord <- MagdaMatchers.tokenize(queryFormat.get)
                 dataSetFormat <- dataSetFormats
-                dataSetWord <- dataSetFormat.split("[\\s-]+")
-              } yield (MagdaMatchers.toEnglishToken(dataSetWord), MagdaMatchers.toEnglishToken(queryWord))
+                dataSetWord <- MagdaMatchers.tokenize(dataSetFormat)
+              } yield (dataSetWord, queryWord)
 
-              queryToDataSetComparison.exists(x => x._1 == x._2) should be(true)
+              withClue("with dataSet->query: " + queryToDataSetComparison) {
+                queryToDataSetComparison.exists {
+                  case (dataSetWord, queryWord) =>
+                    MagdaMatchers.extractAlphaNum(dataSetWord) == MagdaMatchers.extractAlphaNum(queryWord) ||
+                      MagdaMatchers.toEnglishToken(dataSetWord) == MagdaMatchers.toEnglishToken(queryWord)
+                } should be(true)
+              }
             }
           }
         }
@@ -352,14 +362,16 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
 
               response.dataSets.foreach { dataSet =>
-                val queryPublishers = query.publishers
+                val queryPublishers = query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))
 
                 val matchesQuery = dataSet.publisher.flatMap(_.name) match {
-                  case Some(publisher) => queryPublishers.contains(Specified(publisher))
+                  case Some(publisher) => queryPublishers.contains(Specified(MagdaMatchers.extractAlphaNum(publisher)))
                   case None            => queryPublishers.contains(Unspecified())
                 }
 
-                matchesQuery should be(true)
+                withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
+                  matchesQuery should be(true)
+                }
               }
             }
           }

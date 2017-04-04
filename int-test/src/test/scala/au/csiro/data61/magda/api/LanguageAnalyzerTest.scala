@@ -1,6 +1,4 @@
 package au.csiro.data61.magda.api
-import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.scalacheck._
 import org.scalacheck.Shrink
 import org.scalatest._
@@ -14,6 +12,7 @@ import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
+import org.apache.lucene.analysis.standard.StandardAnalyzer
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
@@ -119,7 +118,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     it(s"regardless of pluralization/depluralization") {
 
       def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
-        .flatMap(tokenize)
+        .flatMap(MagdaMatchers.tokenize)
         .map(_.trim)
         .filterNot(_.contains("."))
         .filterNot(_.contains("'"))
@@ -147,23 +146,8 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
       doTest(innerTermExtractor)
     }
 
-    def tokenize(input: String) = {
-      val st = new StandardTokenizer()
-      val reader = new java.io.StringReader(input)
-      st.setReader(reader)
-      st.reset
-      val attr = st.addAttribute(classOf[CharTermAttribute])
-      var list = Seq[String]()
-
-      while (st.incrementToken) {
-        list = list :+ attr.toString()
-      }
-
-      list
-    }
-
     def doTest(innerTermExtractor: DataSet => Seq[String]) = {
-      def getIndividualTerms(terms: Seq[String]) = terms.flatMap(tokenize)
+      def getIndividualTerms(terms: Seq[String]) = terms.flatMap(MagdaMatchers.tokenize)
 
       val indexAndTermsGen = indexGen.flatMap {
         case (indexName, dataSetsRaw, routes) ⇒

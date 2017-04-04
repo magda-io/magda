@@ -2,6 +2,8 @@ package au.csiro.data61.magda.test.util
 
 import au.csiro.data61.magda.model.misc.DataSet
 import org.tartarus.snowball.ext.PorterStemmer
+import org.apache.lucene.analysis.standard.StandardTokenizer
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 
 object MagdaMatchers extends org.scalatest.Matchers {
   def dataSetEqual(ds1: DataSet, ds2: DataSet) = ds1.copy(indexed = None) should equal(ds2.copy(indexed = None))
@@ -13,6 +15,27 @@ object MagdaMatchers extends org.scalatest.Matchers {
 
     if (stemmer.stem) stemmer.getCurrent else string
   }
-  
+
   def toEnglishToken(string: String) = porterStem(string.toLowerCase)
+
+  def extractAlphaNum(string: String) = string.filter(_.isLetterOrDigit).toLowerCase
+
+  def matchPhrases(phrase1: String, phrase2: String) = {
+    extractAlphaNum(phrase1) == extractAlphaNum(phrase2)
+  }
+
+  def tokenize(input: String) = {
+    val st = new StandardTokenizer()
+    val reader = new java.io.StringReader(input)
+    st.setReader(reader)
+    st.reset
+    val attr = st.addAttribute(classOf[CharTermAttribute])
+    var list = Seq[String]()
+
+    while (st.incrementToken) {
+      list = list :+ attr.toString()
+    }
+
+    list
+  }
 }

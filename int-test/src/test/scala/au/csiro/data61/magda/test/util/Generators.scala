@@ -76,7 +76,7 @@ object Generators {
 
   def apiDateGen(start: Instant, end: Instant) = for {
     date <- someBiasedOption(offsetDateTimeGen(start, end))
-    text <- if (date.isDefined) Gen.const(date.get.toString) else arbitrary[String].map(_.take(50))
+    text <- if (date.isDefined) Gen.const(date.get.toString) else arbitrary[String].map(_.take(50).trim)
   } yield ApiDate(date, text)
 
   val periodOfTimeGen = (for {
@@ -91,8 +91,8 @@ object Generators {
 
   def agentGen(nameGen: Gen[String]) = for {
     name <- someBiasedOption(nameGen)
-    homePage <- someBiasedOption(arbitrary[String].map(_.take(50)))
-    email <- someBiasedOption(arbitrary[String].map(_.take(50)))
+    homePage <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    email <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
   } yield new Agent(name, homePage, email)
 
   val durationGen = for {
@@ -101,7 +101,7 @@ object Generators {
   } yield Duration.of(number, unit)
 
   val periodicityGen = for {
-    text <- someBiasedOption(arbitrary[String].map(_.take(50)))
+    text <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     duration <- someBiasedOption(durationGen)
   } yield Periodicity(text, duration)
 
@@ -252,8 +252,8 @@ object Generators {
     }
   }
 
-  val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50)), 1000)
-  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextGen.map(_.take(50))).map(_.mkString(" ")), 50)
+  val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50).trim), 1000)
+  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextGen.map(_.take(50).trim)).map(_.mkString(" ")), 50)
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
@@ -272,8 +272,8 @@ object Generators {
     }
 
   val licenseGen = for {
-    name <- someBiasedOption(arbitrary[String].map(_.take(50)))
-    url <- someBiasedOption(arbitrary[String].map(_.take(50)))
+    name <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    url <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
   } yield License(name, url)
 
   val formatGen = for {
@@ -287,8 +287,8 @@ object Generators {
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
     license <- someBiasedOption(licenseGen)
-    rights <- someBiasedOption(arbitrary[String].map(_.take(50)))
-    accessURL <- someBiasedOption(arbitrary[String].map(_.take(50)))
+    rights <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    accessURL <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     byteSize <- someBiasedOption(arbitrary[Int])
     format <- someBiasedOption(formatGen)
   } yield Distribution(
@@ -310,20 +310,20 @@ object Generators {
     identifier <- Gen.delay {
       incrementer.incrementAndGet()
     }
-    title <- someBiasedOption(textGen.map(_.take(100)))
+    title <- someBiasedOption(textGen.map(_.take(100).trim))
     description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
-    language <- someBiasedOption(arbitrary[String].map(_.take(50)))
+    language <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     publisher <- someBiasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
     accrualPeriodicity <- someBiasedOption(periodicityGen)
     spatial <- noneBiasedOption(locationGen(geometryGen(6, coordGen())))
     temporal <- someBiasedOption(periodOfTimeGen)
     theme <- Gen.listOf(nonEmptyTextGen)
     keyword <- Gen.listOf(nonEmptyTextGen)
-    contactPoint <- someBiasedOption(agentGen(arbitrary[String].map(_.take(50))))
+    contactPoint <- someBiasedOption(agentGen(arbitrary[String].map(_.take(50).trim)))
     distributions <- listSizeBetween(1, 5, distGen)
-    landingPage <- someBiasedOption(arbitrary[String].map(_.take(50)))
+    landingPage <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
   } yield DataSet(
     identifier = identifier.toString,
     catalog = "test-catalog",

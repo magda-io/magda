@@ -315,9 +315,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
         // Theoretically we should be able to just put the quotes inside the simplequerystring above but it doesn't work
         // in some cases for some reason, so we do this instead.
-        strategyToCombiner(strategy)(quotes.map(quote =>
-          ElasticDsl.matchPhraseQuery("_all", quote)
-        ))
+        strategyToCombiner(strategy)(quotes.flatMap { quote =>
+          val matchPhraseQuery = ElasticDsl.matchPhraseQuery("_all", quote)
+
+          if (strategy == MatchAll) {
+            Seq(matchPhraseQuery)
+          } else {
+            val matchQuery = ElasticDsl.matchQuery("_all", quote)
+            Seq(matchPhraseQuery, matchQuery)
+          }
+        })
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy)))),
       setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy)))),

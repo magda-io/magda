@@ -258,7 +258,7 @@ class FacetSpec extends BaseSearchApiSpec {
             whenever(facetSize >= groupedResult.size + queryCounter(result.query)) {
               val facet = getFacet(result)
 
-              withClue(s"With formats ${getFormats(dataSets)}") {
+              withClue(s"With grouped result ${groupedResult}") {
                 groupedResult.mapValues(_.size).foreach {
                   case (facetValue, hitCount) ⇒
                     val option = facet.options.find(_.value.equals(facetValue))
@@ -281,7 +281,7 @@ class FacetSpec extends BaseSearchApiSpec {
 
               val outerGroupedResults = groupResult(outerDataSets)
               whenever(facetSize == Int.MaxValue && outerResult.strategy.get == MatchAll) {
-                withClue(s"With formats ${outerGroupedResults.mapValues(_.size)} and options ${facet.options}") {
+                withClue(s"With grouped results ${outerGroupedResults.mapValues(_.size)} and options ${facet.options}") {
                   outerGroupedResults.mapValues(_.size).foreach {
                     case (facetValue, hitCount) ⇒
                       val option = facet.options.find(_.value.equals(facetValue))
@@ -306,7 +306,7 @@ class FacetSpec extends BaseSearchApiSpec {
                 val innerGroupedResult = groupResult(innerDataSets)
 
                 whenever(facetSize == Int.MaxValue) {
-                  withClue(s"With formats ${getFormats(innerDataSets)}") {
+                  withClue(s"With grouped results ${innerGroupedResult.mapValues(_.size)} ") {
                     innerGroupedResult.mapValues(_.size).foreach {
                       case (facetValue, hitCount) ⇒
                         val option = facet.options.find(_.value.equals(facetValue))
