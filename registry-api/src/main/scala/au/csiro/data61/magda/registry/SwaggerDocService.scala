@@ -10,7 +10,7 @@ import com.github.swagger.akka._
 class SwaggerDocService(address: String, port: Int, system: ActorSystem) extends SwaggerHttpService with HasActorSystem {
   override implicit val actorSystem: ActorSystem = system
   override implicit val materializer: ActorMaterializer = ActorMaterializer()
-  override val apiTypes = Seq(ru.typeOf[AspectsService], ru.typeOf[RecordsService], ru.typeOf[RecordAspectsService])
+  override val apiTypes = Seq(ru.typeOf[AspectsService], ru.typeOf[RecordsService], ru.typeOf[RecordAspectsService], ru.typeOf[HooksService])
   override val host = ""
   override val info = Info(version = "0.1")
   override val basePath = "/api/0.1/"

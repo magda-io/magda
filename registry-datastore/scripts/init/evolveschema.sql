@@ -21,6 +21,7 @@ INSERT INTO EventTypes (eventTypeId, name) VALUES (5, 'Patch Record Aspect');
 INSERT INTO EventTypes (eventTypeId, name) VALUES (6, 'Delete Record');
 INSERT INTO EventTypes (eventTypeId, name) VALUES (7, 'Delete Aspect Definition');
 INSERT INTO EventTypes (eventTypeId, name) VALUES (8, 'Delete Record Aspect');
+INSERT INTO EventTypes (eventTypeId, name) VALUES (9, 'Create Database');
 
 CREATE TABLE IF NOT EXISTS Events (
     eventId bigserial PRIMARY KEY,
@@ -29,6 +30,8 @@ CREATE TABLE IF NOT EXISTS Events (
     userId int REFERENCES Users NOT NULL,
     data jsonb NOT NULL
 );
+
+INSERT INTO Events (eventTypeId, userId, data) VALUES (9, 0, '{}'::jsonb);
 
 CREATE INDEX ON Events((data->>'recordId'));
 CREATE INDEX ON Events((data->>'aspectId'));
@@ -58,3 +61,17 @@ CREATE TABLE IF NOT EXISTS RecordAspects (
 CREATE INDEX ON RecordAspects(aspectId);
 CREATE INDEX ON RecordAspects(recordId);
 
+CREATE TABLE IF NOT EXISTS WebHooks (
+    webHookId bigserial PRIMARY KEY,
+    userId int REFERENCES Users NOT NULL,
+    name varchar(100) NOT NULL,
+    active boolean NOT NULL,
+    lastEvent bigserial REFERENCES Events NOT NULL,
+    url text NOT NULL,
+    config jsonb NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS WebHookEvents (
+    webHookId bigserial REFERENCES WebHooks NOT NULL,
+    eventTypeId int REFERENCES EventTypes NOT NULL
+);
