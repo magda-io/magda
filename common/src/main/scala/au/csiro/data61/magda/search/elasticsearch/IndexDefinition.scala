@@ -67,8 +67,7 @@ case class IndexDefinition(
 object IndexDefinition extends DefaultJsonProtocol {
   def magdaTextField(name: String, extraFields: TypedFieldDefinition*): MagdaTextFieldDefinition = {
     val fields = extraFields ++ Seq(
-      field("english", TextType).analyzer("english"),
-      field("quote", TextType).analyzer("quote")
+      field("english", TextType).analyzer("english")
     )
 
     new MagdaTextFieldDefinition(name)
@@ -105,7 +104,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("title"),
               magdaTextField("description"),
               magdaTextField("format",
-                field("keyword", KeywordType).analyzer("quote"),
+                field("keyword", KeywordType),
                 field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),

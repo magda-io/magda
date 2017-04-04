@@ -280,13 +280,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
       query.freeText.map { rawQuery =>
-        val innerQuery = cleanStringForEs(rawQuery)
+        val innerQuery = strategy match {
+          case MatchAll  => cleanStringForEs(rawQuery)
+          case MatchPart => (cleanStringForEs(rawQuery) :+ query.quotes.map(quote => s""""$quote"""")).mkString(" ")
+        }
 
         val queryDef = new SimpleStringQueryDefinition(innerQuery)
           .defaultOperator(operator)
           .analyzeWildcard(true)
 
-        // For some reason to make english analysis work properly you need to specifically hit the snglish fields.
+        // For some reason to make english analysis work properly you need to specifically hit the english fields.
         val fields = Seq("_all") ++ DATASETS_LANGUAGE_FIELDS.map(_ + ".english")
 
         val nonNestedQueries = fields.foldRight(queryDef) { (field, queryDef) =>
@@ -315,15 +318,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
         // Theoretically we should be able to just put the quotes inside the simplequerystring above but it doesn't work
         // in some cases for some reason, so we do this instead.
-        strategyToCombiner(strategy)(quotes.flatMap { quote =>
-          val matchPhraseQuery = ElasticDsl.matchPhraseQuery("_all", quote)
-
-          if (strategy == MatchAll) {
-            Seq(matchPhraseQuery)
-          } else {
-            val matchQuery = ElasticDsl.matchQuery("_all", quote)
-            Seq(matchPhraseQuery, matchQuery)
-          }
+        strategyToCombiner(strategy)(quotes.map { quote =>
+          ElasticDsl.matchPhraseQuery("_all", quote)
         })
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy)))),
