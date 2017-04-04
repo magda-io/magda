@@ -66,18 +66,18 @@ case class IndexDefinition(
 
 object IndexDefinition extends DefaultJsonProtocol {
   def magdaTextField(name: String, extraFields: TypedFieldDefinition*): MagdaTextFieldDefinition = {
-    val fields = extraFields :+ field("english", TextType).analyzer("english")
+    val fields = extraFields ++ Seq(
+      field("english", TextType).analyzer("english"),
+      field("quote", TextType).analyzer("quote")
+    )
 
     new MagdaTextFieldDefinition(name)
-      .analyzer("keyword")
-      .searchAnalyzer("standard")
-      .quoteSearchAnalyzer("quote")
       .fields(fields: _*)
   }
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 22,
+    version = 23,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) =>
       createIndex(indices.getIndex(config, Indices.DataSetsIndex))

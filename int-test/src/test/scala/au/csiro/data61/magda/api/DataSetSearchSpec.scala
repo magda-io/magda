@@ -108,15 +108,18 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             descWords = description.split(" ")
             start <- Gen.choose(0, descWords.length - 1)
             end <- Gen.choose(start + 1, descWords.length)
-            quote <- randomCaseGen(descWords.slice(start, end).mkString(" "))
-          } yield (quote, dataSet)
+            quoteWords = descWords.slice(start, end)
+            quote <- randomCaseGen(quoteWords.mkString(" ").trim)
+            reverseOrderWords = quoteWords.reverse
+            reverseOrderQuote <- randomCaseGen(reverseOrderWords.mkString(" ").trim)
+          } yield (quote, reverseOrderQuote, dataSet)
 
           implicit val stringShrink: Shrink[String] = Shrink { string =>
             Stream.empty
           }
 
           forAll(quoteGen) {
-            case (quote, sourceDataSet) =>
+            case (quote, reverseOrderQuote, sourceDataSet) =>
               whenever(quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
                 Get(s"""/datasets/search?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
                   status shouldBe OK
@@ -132,6 +135,22 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                       dataSet.toString.toLowerCase.filter(_.isLetterOrDigit).mkString.contains(
                         quote.toLowerCase.filter(_.isLetterOrDigit).mkString
                       ) should be(true)
+                    }
+                  }
+                }
+
+                // Just to make sure we're matching on the quote in order, run it backwards.
+                Get(s"""/datasets/search?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
+                  status shouldBe OK
+                  val response = responseAs[SearchResult]
+
+                  if (response.strategy.get == MatchAll) {
+                    response.dataSets.foreach { dataSet =>
+                      withClue(s"dataSet term ${reverseOrderQuote.toLowerCase} and dataSet ${dataSet.toString.toLowerCase}") {
+                        dataSet.toString.toLowerCase.filter(_.isLetterOrDigit).mkString.contains(
+                          reverseOrderQuote.toLowerCase.filter(_.isLetterOrDigit).mkString
+                        ) should be(true)
+                      }
                     }
                   }
                 }
@@ -327,20 +346,21 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
+            withClue("query " + query.publishers) {
+              response.strategy.get should be(MatchAll)
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
 
-            response.strategy.get should be(MatchAll)
-            response.dataSets.isEmpty should be(false)
-            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+              response.dataSets.foreach { dataSet =>
+                val queryPublishers = query.publishers
 
-            response.dataSets.foreach { dataSet =>
-              val queryPublishers = query.publishers
+                val matchesQuery = dataSet.publisher.flatMap(_.name) match {
+                  case Some(publisher) => queryPublishers.contains(Specified(publisher))
+                  case None            => queryPublishers.contains(Unspecified())
+                }
 
-              val matchesQuery = dataSet.publisher.flatMap(_.name) match {
-                case Some(publisher) => queryPublishers.contains(Specified(publisher))
-                case None            => queryPublishers.contains(Unspecified())
+                matchesQuery should be(true)
               }
-
-              matchesQuery should be(true)
             }
           }
         }

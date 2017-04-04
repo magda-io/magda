@@ -273,47 +273,51 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
   private def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
-    val processedQuote = query.quotes.map(cleanStringForEs).map(quote => s""""${quote}"""") match {
-      case SetExtractor() => None
-      case xs             => Some(xs.reduce(_ + " " + _))
-    }
-
-    val stringQuery: Option[String] = {
-      (query.freeText.map(cleanStringForEs), processedQuote) match {
-        case (None, None)                   => None
-        case (None, some)                   => some
-        case (some, None)                   => some
-        case (Some(freeText), Some(quotes)) => Some(freeText + " " + quotes)
-      }
+    val operator = strategy match {
+      case MatchAll  => "and"
+      case MatchPart => "or"
     }
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
-      stringQuery.map { innerQuery =>
-        val operator = strategy match {
-          case MatchAll  => "and"
-          case MatchPart => "or"
-        }
+      query.freeText.map { rawQuery =>
+        val innerQuery = cleanStringForEs(rawQuery)
 
         val queryDef = new SimpleStringQueryDefinition(innerQuery)
           .defaultOperator(operator)
           .analyzeWildcard(true)
 
-        val nonNestedQueries = ("_all" +: DATASETS_LANGUAGE_FIELDS.map(_ + ".english")).foldRight(queryDef) { (field, queryDef) =>
+        // For some reason to make english analysis work properly you need to specifically hit the snglish fields.
+        val fields = Seq("_all") ++ DATASETS_LANGUAGE_FIELDS.map(_ + ".english")
+
+        val nonNestedQueries = fields.foldRight(queryDef) { (field, queryDef) =>
           queryDef.field(field)
         }
 
+        // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
+        // other analysis does. So we do this silliness
         val distributionsEnglishQueries = nestedQuery("distributions")
           .query(
             queryDef
+              // If this was AND then a single distribution would have to match the entire query, this way you can
+              // have multiple dists partially match
               .defaultOperator("or")
-              //              .field("distributions.title")
-              //              .field("distributions.description")
+              .field("distributions.title")
               .field("distributions.title.english")
+              .field("distributions.description")
               .field("distributions.description.english")
           )
           .scoreMode(ScoreMode.Avg)
 
         should(nonNestedQueries, distributionsEnglishQueries).minimumShouldMatch(1)
+      },
+      setToOption(query.quotes) { seq =>
+        val quotes = seq.map(cleanStringForEs)
+
+        // Theoretically we should be able to just put the quotes inside the simplequerystring above but it doesn't work
+        // in some cases for some reason, so we do this instead.
+        strategyToCombiner(strategy)(quotes.map(quote =>
+          ElasticDsl.matchPhraseQuery("_all", quote)
+        ))
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy)))),
       setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy)))),
