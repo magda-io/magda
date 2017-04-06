@@ -315,6 +315,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               // If this was AND then a single distribution would have to match the entire query, this way you can
               // have multiple dists partially match
               .fields("distributions.title.english", "distributions.description.english")
+              .operator("or")
 
           )
           .scoreMode(ScoreMode.Max)
