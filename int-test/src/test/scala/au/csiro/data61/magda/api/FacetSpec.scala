@@ -197,6 +197,18 @@ class FacetSpec extends BaseSearchApiSpec {
             }
           }
 
+          it("matched facets should come above unmatched") {
+            checkFacetsWithQuery(textQueryGen(filterQueryGen), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+              val outerResult = responseAs[SearchResult]
+              val facet = getFacet(outerResult)
+
+              val (matched, unmatched) = facet.options.partition(_.matched)
+              whenever(matched.size > 0 && unmatched.size > 0) {
+                facet.options should equal(matched ++ unmatched)
+              }
+            }
+          }
+
           it("with unmatched facet options") {
             checkFacetsWithQuery(textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
@@ -220,9 +232,9 @@ class FacetSpec extends BaseSearchApiSpec {
         }
 
         describe("exact match facets") {
-//          it("should show filters that have records but not in this search as facet options with 0 results") {
-            //TODO
-//          }
+          //          it("should show filters that have records but not in this search as facet options with 0 results") {
+          //TODO
+          //          }
 
           it("should not show filters that do not have records") {
             checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒

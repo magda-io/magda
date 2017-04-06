@@ -41,6 +41,8 @@ import org.elasticsearch.search.aggregations.InternalAggregation
 import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
 import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
 import org.apache.lucene.search.join.ScoreMode
+import com.sksamuel.elastic4s.searches.queries.BoolQueryDefinition
+import org.elasticsearch.index.query.MultiMatchQueryBuilder
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -56,7 +58,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   val REMOVE_REGEX = "(?i)((^|\\s)(AND|OR)(\\s|$)|[<>])".r
   val ESCAPE_AGG_NAME_REGEX = "[\\[\\]\\.]".r
 
-  val DATASETS_LANGUAGE_FIELDS = Seq("title", "description", "publisher.name", "keyword", "theme")
+  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 2f), ("description", 1.5f), "publisher.name", "keyword", "theme")
+  val NON_LANGUAGE_FIELDS = Seq("identifier", "catalog", "accrualPeriodicity", "contactPoint.name")
 
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
     val inputRegionsList = inputQuery.regions.toList
@@ -110,6 +113,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
    */
   def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
     val aggsMap = response.aggregations.map
+
     new SearchResult(
       strategy = Some(strategy),
       query = query,
@@ -182,7 +186,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /** Converts from a general search strategy to the actual elastic4s method that will combine a number of queries using that strategy.*/
   def strategyToCombiner(strat: SearchStrategy): Iterable[QueryDefinition] => QueryDefinition = strat match {
     case MatchAll  => must
-    case MatchPart => should
+    //    case MatchPart => x => dismax(x).tieBreaker(0.3)
+    case MatchPart => x => should(x).minimumShouldMatch("-49%")
   }
 
   /** Builds an elastic search query out of the passed general magda Query */
@@ -281,19 +286,25 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
       query.freeText.map { rawQuery =>
         val innerQuery = strategy match {
-          case MatchAll  => cleanStringForEs(rawQuery)
-          case MatchPart => (cleanStringForEs(rawQuery) :+ query.quotes.map(quote => s""""$quote"""")).mkString(" ")
+          case MatchAll => cleanStringForEs(rawQuery)
+          case MatchPart =>
+            val cleanedQuery = cleanStringForEs(rawQuery)
+            query.quotes match {
+              case Seq()  => cleanedQuery
+              case quotes => (Seq(cleanedQuery) ++ quotes).mkString(" ")
+            }
         }
 
-        val queryDef = new SimpleStringQueryDefinition(innerQuery)
-          .defaultOperator(operator)
-          .analyzeWildcard(true)
+        val queryDef = multiMatchQuery(innerQuery)
+          .matchType(MultiMatchQueryBuilder.Type.CROSS_FIELDS)
+          .operator(operator)
 
         // For some reason to make english analysis work properly you need to specifically hit the english fields.
-        val fields = Seq("_all") ++ DATASETS_LANGUAGE_FIELDS.map(_ + ".english")
+        val fields = DATASETS_LANGUAGE_FIELDS
 
-        val nonNestedQueries = fields.foldRight(queryDef) { (field, queryDef) =>
-          queryDef.field(field)
+        def foldFields(fields: Seq[Any]) = fields.foldRight(queryDef) {
+          case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
+          case (field: String, queryDef)                     => queryDef.field(field, 1)
         }
 
         // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
@@ -303,15 +314,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             queryDef
               // If this was AND then a single distribution would have to match the entire query, this way you can
               // have multiple dists partially match
-              .defaultOperator("or")
-              .field("distributions.title")
-              .field("distributions.title.english")
-              .field("distributions.description")
-              .field("distributions.description.english")
-          )
-          .scoreMode(ScoreMode.Avg)
+              .fields("distributions.title.english", "distributions.description.english")
 
-        should(nonNestedQueries, distributionsEnglishQueries).minimumShouldMatch(1)
+          )
+          .scoreMode(ScoreMode.Max)
+
+        val queryString = new SimpleStringQueryDefinition(innerQuery).defaultOperator(operator)
+        val queries = Seq(foldFields(DATASETS_LANGUAGE_FIELDS ++ NON_LANGUAGE_FIELDS).field("*.english", 1.2f), distributionsEnglishQueries, queryString)
+
+        dismax(queries).tieBreaker(0.3)
       },
       setToOption(query.quotes) { seq =>
         val quotes = seq.map(cleanStringForEs)
@@ -322,10 +333,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           ElasticDsl.matchPhraseQuery("_all", quote)
         })
       },
-      setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy)))),
-      setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy)))),
-      dateQueries(query.dateFrom, query.dateTo),
-      setToOption(query.regions)(seq => should(seq.map(region => regionIdQuery(region, indices))))
+      setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy))).boost(2)),
+      setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy))).boost(2)),
+      dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)),
+      setToOption(query.regions)(seq => should(seq.map(region => regionIdQuery(region, indices))).boost(2))
     )
 
     strategyToCombiner(strategy)(clauses.flatten)

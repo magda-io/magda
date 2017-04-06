@@ -63,8 +63,8 @@ object ApiGenerators {
     val split = string.split("[\\s-]+")
 
     for {
-      start <- Gen.choose(0, split.length - 1)
-      end <- Gen.choose(start + 1, split.length)
+      start <- Gen.choose(0, split.length / 2)
+      end <- Gen.choose(start + (split.length / 2), split.length)
       delimiter <- Gen.oneOf("-", " ")
     } yield split.slice(start, Math.max(split.length - 1, 1)).mkString(delimiter)
   }

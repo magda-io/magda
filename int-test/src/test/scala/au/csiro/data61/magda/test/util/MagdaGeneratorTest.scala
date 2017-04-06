@@ -6,7 +6,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 trait MagdaGeneratorTest extends GeneratorDrivenPropertyChecks {
   val processors = Math.max(2, if (ContinuousIntegration.isCi) Runtime.getRuntime.availableProcessors / 3 - 1 else Runtime.getRuntime.availableProcessors - 1)
-  val minSuccessful = if (ContinuousIntegration.isCi) 100 else 20
+  val minSuccessful = if (ContinuousIntegration.isCi) 100 else 100
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(workers = PosInt.from(processors).get, sizeRange = PosInt(50), minSuccessful = PosInt.from(minSuccessful).get)
 }
