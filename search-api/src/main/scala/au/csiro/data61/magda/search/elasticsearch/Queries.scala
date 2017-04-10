@@ -23,7 +23,7 @@ object Queries {
     handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
         case SearchStrategy.MatchAll  => matchQuery("publisher.name.keyword_lowercase", publisherString)
-        case SearchStrategy.MatchPart => multiMatchQuery(publisherString).fields(Seq("publisher.name", "publisher.name.english"))
+        case SearchStrategy.MatchPart => matchQuery("publisher.name.english", publisherString).minimumShouldMatch("-50%")
       }, "publisher.name"
     )
   }
@@ -32,13 +32,13 @@ object Queries {
   def baseFormatQuery(strategy: SearchStrategy, formatString: String) = nestedQuery("distributions")
     .query(strategy match {
       case SearchStrategy.MatchAll  => matchQuery("distributions.format.keyword_lowercase", formatString)
-      case SearchStrategy.MatchPart => multiMatchQuery(formatString).fields(Seq("distributions.format", "distributions.format.english"))
+      case SearchStrategy.MatchPart => matchQuery("distributions.format.english", formatString).minimumShouldMatch("-50%")
     })
     .scoreMode(ScoreMode.Avg)
   def formatQuery(strategy: SearchStrategy)(formatValue: FilterValue[String]): QueryDefinition = {
     formatValue match {
       case Specified(inner) => baseFormatQuery(strategy, inner)
-      case Unspecified()    => nestedQuery("distributions").query(boolQuery().not(existsQuery("distributions.format"))).scoreMode(ScoreMode.Avg)
+      case Unspecified()    => nestedQuery("distributions").query(boolQuery().not(existsQuery("distributions.format"))).scoreMode(ScoreMode.Max)
     }
   }
 
