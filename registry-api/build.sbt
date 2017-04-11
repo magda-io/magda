@@ -27,3 +27,8 @@ libraryDependencies ++= {
     "com.beachape" %% "enumeratum" % "1.5.10"
   )
 }
+
+EclipseKeys.withJavadoc := true
+EclipseKeys.withSource := true
+
+setupDocker(stage)
