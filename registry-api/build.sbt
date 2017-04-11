@@ -1,4 +1,4 @@
-import DockerSetup._
+import java.io.File
 
 name := "magda-registry-api"
 
@@ -14,7 +14,8 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "ch.megard" %% "akka-http-cors" % "0.1.5",
     "org.scalikejdbc" %% "scalikejdbc" % "3.0.0-RC3",
-    "org.scalikejdbc" %% "scalikejdbc-config"  % "3.0.0-RC3",
+    "org.scalikejdbc" %% "scalikejdbc-config" % "3.0.0-RC3",
+    "org.scalikejdbc" %% "scalikejdbc-test" % "3.0.0-RC3" % "test",
     "ch.qos.logback"  %  "logback-classic" % "1.1.7",
     "org.postgresql"  %  "postgresql" % "9.4.1212",
     "org.scalatest" %% "scalatest" % scalaTestV % "test",
@@ -27,3 +28,5 @@ libraryDependencies ++= {
     "com.beachape" %% "enumeratum" % "1.5.10"
   )
 }
+
+unmanagedResources in Test += baseDirectory.value.getParentFile / "registry-datastore" / "scripts" / "init" / "evolveschema.sql"

@@ -95,6 +95,4 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
       }
     }
   }
-
-  Http().bindAndHandle(routes, config.getString("http.interface"), config.getInt("http.port"))
 }
