@@ -163,7 +163,7 @@ class RecordsServiceSpec extends ApiSpec {
       }
     }
 
-    it("supports a mix aspects and optionalAspects") { api =>
+    it("supports a mix of aspects and optionalAspects") { api =>
       val fooAspect = AspectDefinition("foo", "foo", None)
       Post("/api/0.1/aspects", fooAspect) ~> api.routes ~> check {
         status shouldEqual StatusCodes.OK
@@ -295,6 +295,92 @@ class RecordsServiceSpec extends ApiSpec {
             "aspects" -> JsObject(
               "withLink" -> JsObject(
                 "someLink" -> JsString("source")
+              )
+            )
+          )
+        )
+      }
+    }
+
+    it("dereferences an array of links if requested") { api =>
+      val jsonSchema =
+        """
+          |{
+          |    "$schema": "http://json-schema.org/hyper-schema#",
+          |    "title": "An aspect with an array of links",
+          |    "type": "object",
+          |    "properties": {
+          |        "someLinks": {
+          |            "title": "Link to other records.",
+          |            "type": "array",
+          |            "items": {
+          |                "title": "A link",
+          |                "type": "string",
+          |                "links": [
+          |                    {
+          |                        "href": "/api/0.1/records/{$}",
+          |                        "rel": "item"
+          |                    }
+          |                ]
+          |            }
+          |        }
+          |    }
+          |}
+        """.stripMargin
+      val aspect = AspectDefinition("withLinks", "with links", Some(JsonParser(jsonSchema).asJsObject))
+      Post("/api/0.1/aspects", aspect) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val source = Record("source", "source", Map("withLinks" -> JsObject("someLinks" -> JsArray(JsString("target"), JsString("anotherTarget")))))
+      Post("/api/0.1/records", source) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val target = Record("target", "target", Map("withLinks" -> JsObject("someLinks" -> JsArray(JsString("source")))))
+      Post("/api/0.1/records", target) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val anotherTarget = Record("anotherTarget", "anotherTarget", Map("withLinks" -> JsObject("someLinks" -> JsArray(JsString("source")))))
+      Post("/api/0.1/records", anotherTarget) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      Get("/api/0.1/records/source?aspect=withLinks") ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record].aspects("withLinks") shouldBe JsObject(
+          "someLinks" -> JsArray(JsString("target"), JsString("anotherTarget"))
+        )
+      }
+
+      Get("/api/0.1/records/source?aspect=withLinks&dereference=false") ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record].aspects("withLinks") shouldBe JsObject(
+          "someLinks" -> JsArray(JsString("target"), JsString("anotherTarget"))
+        )
+      }
+
+      Get("/api/0.1/records/source?aspect=withLinks&dereference=true") ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record].aspects("withLinks") shouldBe JsObject(
+          "someLinks" -> JsArray(
+            JsObject(
+              "id" -> JsString("target"),
+              "name" -> JsString("target"),
+              "aspects" -> JsObject(
+                "withLinks" -> JsObject(
+                  "someLinks" -> JsArray(JsString("source"))
+                )
+              )
+            ),
+            JsObject(
+              "id" -> JsString("anotherTarget"),
+              "name" -> JsString("anotherTarget"),
+              "aspects" -> JsObject(
+                "withLinks" -> JsObject(
+                  "someLinks" -> JsArray(JsString("source"))
+                )
               )
             )
           )
