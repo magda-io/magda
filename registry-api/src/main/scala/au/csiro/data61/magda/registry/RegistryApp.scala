@@ -7,6 +7,7 @@ import akka.actor.ActorSystem
 import akka.actor.DeadLetter
 import akka.actor.Props
 import akka.event.Logging
+import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
 
@@ -32,4 +33,5 @@ object RegistryApp extends App {
   val webHookActor = system.actorOf(WebHookActor.props, name = "WebHookActor")
 
   val api = new Api(webHookActor, config, system, executor, materializer)
+  Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
 }

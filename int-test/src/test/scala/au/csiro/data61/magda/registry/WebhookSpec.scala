@@ -74,7 +74,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
 
             val cleanedInputDataSets = dataSets.map(dataSet => dataSet.copy(
               publisher = dataSet.publisher.map(publisher => Agent(name = publisher.name)),
-              accrualPeriodicity = dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => Periodicity(duration = Some(duration))),
+              accrualPeriodicity = dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => Periodicity(text = Some(duration.get(ChronoUnit.SECONDS) * 1000 + " ms"))),
               distributions = dataSet.distributions.map(distribution => distribution.copy(
                 license = distribution.license.map(license => License(license.name))
               )),
@@ -137,16 +137,16 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
         "temporal-coverage" -> dataSet.temporal
           .map(temporal => (temporal.start.flatMap(_.date), temporal.end.flatMap(_.date)))
           .flatMap {
-            case (Some(from), Some(to)) =>
+            case (None, None) => None
+            case (from, to) =>
               Some(JsObject(
                 "intervals" -> Seq(
-                  JsObject(
+                  removeNulls(JsObject(
                     "start" -> from.toJson,
                     "end" -> to.toJson
-                  )
+                  ))
                 ).toJson
               ))
-            case _ => None
           }.map(_.toJson.asJsObject)
           .getOrElse(JsObject())
 
