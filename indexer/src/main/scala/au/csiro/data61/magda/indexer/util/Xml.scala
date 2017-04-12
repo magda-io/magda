@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.util
+package au.csiro.data61.magda.indexer.util
 
 import java.time.OffsetDateTime
 

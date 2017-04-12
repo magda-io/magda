@@ -26,7 +26,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     describe("keywords") {
-      testDataSetSearch(dataSet => dataSet.keyword)
+      testDataSetSearch(dataSet => dataSet.keywords)
     }
 
     describe("publisher name") {
@@ -42,7 +42,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     describe("theme") {
-      testDataSetSearch(dataSet => dataSet.theme)
+      testDataSetSearch(dataSet => dataSet.themes)
     }
 
     def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {

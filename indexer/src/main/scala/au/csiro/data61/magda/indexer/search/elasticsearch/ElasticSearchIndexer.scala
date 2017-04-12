@@ -1,13 +1,13 @@
-package au.csiro.data61.magda.search.elasticsearch
+package au.csiro.data61.magda.indexer.search.elasticsearch
 
 import java.time.{ Instant, OffsetDateTime }
 
 import akka.actor.ActorSystem
 import akka.stream.{ Materializer, OverflowStrategy, QueueOfferResult }
 import akka.stream.scaladsl.{ Sink, Source, SourceQueue }
-import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import au.csiro.data61.magda.model.misc.{ DataSet, Format, Publisher }
-import au.csiro.data61.magda.search.SearchIndexer
+import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.ErrorHandling.{ RootCause, retry }
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -38,9 +38,12 @@ import akka.NotUsed
 import com.sksamuel.elastic4s.indexes.{ IndexDefinition => ESIndexDefinition }
 import scala.util.Try
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
+import au.csiro.data61.magda.search.elasticsearch.Indices;
+
 import org.elasticsearch.index.query.QueryBuilders
 import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 import com.sksamuel.elastic4s.index.RichIndexResponse
+import au.csiro.data61.magda.search.elasticsearch.ClientProvider
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,

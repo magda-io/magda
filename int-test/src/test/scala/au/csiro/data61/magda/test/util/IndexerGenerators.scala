@@ -2,7 +2,7 @@ package au.csiro.data61.magda.test.util
 
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.Gen
-import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import java.net.URL
 import org.scalacheck.Arbitrary._
 

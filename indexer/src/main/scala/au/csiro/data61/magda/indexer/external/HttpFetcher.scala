@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.external
+package au.csiro.data61.magda.indexer.external
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http

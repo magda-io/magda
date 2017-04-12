@@ -45,6 +45,8 @@ object Generators {
   val defaultEndTime = ZonedDateTime.parse("2020-01-01T00:00:00Z").toInstant
   val defaultTightEndTime = ZonedDateTime.parse("2015-01-01T00:00:00Z").toInstant
 
+  def smallSet[T](gen: Gen[T]): Gen[Set[T]] = listSizeBetween(1, 3, gen).map(_.toSet)
+  
   def genInstant(start: Instant, end: Instant) =
     Gen.choose(start.toEpochMilli(), end.toEpochMilli())
       .flatMap(Instant.ofEpochMilli(_))
@@ -314,7 +316,7 @@ object Generators {
     description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
-    language <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    languages <- Generators.smallSet(arbitrary[String].map(_.take(50).trim))
     publisher <- someBiasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
     accrualPeriodicity <- someBiasedOption(periodicityGen)
     spatial <- noneBiasedOption(locationGen(geometryGen(6, coordGen())))
@@ -331,13 +333,13 @@ object Generators {
     description = description,
     issued = issued,
     modified = modified,
-    language = language,
+    languages = languages,
     publisher = publisher,
     accrualPeriodicity = accrualPeriodicity,
     spatial = spatial,
     temporal = temporal,
-    theme = theme,
-    keyword = keyword,
+    themes = theme,
+    keywords = keyword,
     contactPoint = contactPoint,
     distributions = distributions,
     landingPage = landingPage

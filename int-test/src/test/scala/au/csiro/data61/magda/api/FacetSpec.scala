@@ -356,7 +356,7 @@ class FacetSpec extends BaseSearchApiSpec {
       def queryToInt(query: Query) = query.publishers.size
 
       val queryGen = for {
-        publishers <- smallSet(publisherQueryGen)
+        publishers <- Generators.smallSet(publisherQueryGen)
       } yield new Query(publishers = publishers)
 
       genericFacetSpecs(Publisher, reducer, queryToInt, queryGen)
@@ -367,7 +367,7 @@ class FacetSpec extends BaseSearchApiSpec {
       def queryToInt(query: Query) = query.formats.size
 
       val queryGen = for {
-        formats <- smallSet(formatQueryGen)
+        formats <- Generators.smallSet(formatQueryGen)
       } yield Query(formats = formats)
 
       genericFacetSpecs(Format, reducer, queryToInt, queryGen)

@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.external
+package au.csiro.data61.magda.indexer.external
 
 import com.typesafe.config.Config
 import scala.collection.JavaConversions._
@@ -50,14 +50,14 @@ object InterfaceConfig {
     )
   }
 
-  def all(implicit config: Config) = config.getConfig("indexedServices").root().map {
-    case (name: String, serviceConfig: ConfigValue) =>
+  def all(implicit config: Config): Map[String, InterfaceConfig] = config.getConfig("indexedServices").root().foldRight(Map[String, InterfaceConfig]()) {
+    case ((id: String, serviceConfig: ConfigValue), soFar) =>
       try {
-        InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)
+        soFar + ((id, InterfaceConfig(serviceConfig.asInstanceOf[ConfigObject].toConfig)))
       } catch {
         case (e: ConfigException) =>
-          throw new RuntimeException(s"Problem with $name", e)
+          throw new RuntimeException(s"Problem with $id", e)
       }
 
-  }.toSeq
+  }
 }

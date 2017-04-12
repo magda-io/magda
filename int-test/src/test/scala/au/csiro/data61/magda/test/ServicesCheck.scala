@@ -8,8 +8,8 @@ import org.scalatest.BeforeAndAfterAll
 import com.typesafe.config.Config
 import akka.testkit.TestKit
 import org.scalatest.FlatSpecLike
-import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.external.ExternalInterface
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.ExternalInterface
 import au.csiro.data61.magda.test.util.ConcurrentUtil.RichFuture
 import org.scalatest.Matchers
 import org.scalatest.DoNotDiscover
@@ -23,7 +23,7 @@ class ServicesCheck extends TestKit(ActorSystem("MySpec")) with FlatSpecLike wit
   implicit val config: Config = AppConfig.conf(Some("dev"))
 
   val configs = InterfaceConfig.all
-  val interfaces = configs.map(thisConfig => (thisConfig, ExternalInterface(thisConfig)))
+  val interfaces = configs.values.map(thisConfig => (thisConfig, ExternalInterface(thisConfig)))
 
   interfaces.foreach {
     case (thisConfig, interface) =>

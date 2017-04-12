@@ -3,6 +3,7 @@ package au.csiro.data61.magda.registry
 import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
+import au.csiro.data61.magda.model.Registry._
 
 import scala.util.{Success, Try}
 

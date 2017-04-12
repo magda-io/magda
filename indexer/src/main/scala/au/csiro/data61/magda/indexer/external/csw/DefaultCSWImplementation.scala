@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.external.csw
+package au.csiro.data61.magda.indexer.external.csw
 
 import java.io.IOException
 import scala.concurrent.Future
@@ -21,11 +21,11 @@ import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
 import com.monsanto.labs.mwundo.GeoJson.Point
 import com.monsanto.labs.mwundo.GeoJson.MultiPoint
 import scala.xml.Node
-import au.csiro.data61.magda.external.ExternalInterface
-import au.csiro.data61.magda.external.HttpFetcher
-import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.ExternalInterface
+import au.csiro.data61.magda.indexer.external.HttpFetcher
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import scala.BigDecimal
-import au.csiro.data61.magda.util.Xml._
+import au.csiro.data61.magda.indexer.util.Xml._
 import java.time.OffsetDateTime
 import com.typesafe.config.Config
 import java.time.ZoneOffset
@@ -55,13 +55,13 @@ class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val co
         description = nodeToStringOption(summaryRecord \ "description")
           .orElse(nodeToStringOption(summaryRecord \ "abstract")),
         modified = modified,
-        language = nodeToStringOption(summaryRecord \ "language"),
+        languages = nodeToStringOption(summaryRecord \ "language").toSet,
         publisher = nodeToStringOption(summaryRecord \ "publisher")
           .orElse(nodeToStringOption(summaryRecord \ "custodian"))
           .map(name => Agent(name = Some(name))),
         spatial = nodeToOption(summaryRecord \ "BoundingBox", Some.apply).flatMap(locationFromBoundingBox),
         temporal = nodeToOption(summaryRecord \ "coverage", Some.apply).flatMap(temporalFromString(modified)),
-        keyword = (summaryRecord \ "subject").map(_.text.trim),
+        keywords = (summaryRecord \ "subject").map(_.text.trim),
         distributions = buildDistributions(summaryRecord \ "URI", summaryRecord \ "rights"),
         landingPage = interfaceConfig.landingPageUrl(identifier)
       )

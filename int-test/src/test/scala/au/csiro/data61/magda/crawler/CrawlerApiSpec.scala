@@ -1,15 +1,15 @@
 package au.csiro.data61.magda.crawler
 
 import au.csiro.data61.magda.test.api.BaseApiSpec
-import au.csiro.data61.magda.crawler.CrawlerApi
-import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.crawler.CrawlerApi;
 import au.csiro.data61.magda.test.util.IndexerGenerators
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.Gen
-import au.csiro.data61.magda.external.ExternalInterface
+import au.csiro.data61.magda.indexer.external.ExternalInterface
 import scala.concurrent.Future
 import au.csiro.data61.magda.model.misc.DataSet
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
+import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import akka.http.scaladsl.model.StatusCodes.{ OK, Accepted }
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import scala.concurrent.duration._
@@ -25,6 +25,7 @@ import java.util.UUID
 import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.ConfigFactory
+import au.csiro.data61.magda.indexer.crawler.Crawler
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
@@ -111,7 +112,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     // Combine all the datasets but keep what interface they come from
     val allDataSets = filteredSources.flatMap { case (dataSets, interfaceConfig) => dataSets.map((_, interfaceConfig)) }
 
-    refresh(indexId.toString)
+    refresh(indexId)
 
     Get(s"/datasets/search?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
       status shouldBe OK

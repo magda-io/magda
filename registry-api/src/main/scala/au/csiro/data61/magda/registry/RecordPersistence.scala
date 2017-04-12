@@ -10,6 +10,7 @@ import java.sql.SQLException
 
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
+import au.csiro.data61.magda.model.Registry._
 
 
 object RecordPersistence extends Protocols with DiffsonProtocol {
