@@ -13,5 +13,5 @@ case class RecordSummariesPage(
   nextPageToken: Option[String],
 
   @(ApiModelProperty @field)(value = "The record summaries in this page.", required = true)
-  records: Iterable[RecordSummary]
+  records: List[RecordSummary]
 )

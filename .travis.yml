@@ -1,9 +1,15 @@
+dist: trusty
+sudo: false
 language: scala
 scala:
   - 2.11.8
 jdk:
   - oraclejdk8
+services:
+  - postgresql
 env:
   global:
     - SBT_OPTS="-Xms4000M -Xmx4000M -XX:+CMSClassUnloadingEnabled"
     - CI=true
+addons:
+    postgresql: "9.6"
