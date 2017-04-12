@@ -113,6 +113,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     val allDataSets = filteredSources.flatMap { case (dataSets, interfaceConfig) => dataSets.map((_, interfaceConfig)) }
 
     refresh(indexId)
+    blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
 
     Get(s"/datasets/search?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
       status shouldBe OK

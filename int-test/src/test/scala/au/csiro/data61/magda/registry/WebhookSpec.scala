@@ -21,7 +21,8 @@ import au.csiro.data61.magda.test.api.BaseApiSpec
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.test.util.Generators
 import java.util.UUID
-import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
+import au.csiro.data61.magda.indexer.search.elasticsearch.{ElasticSearchIndexer}
+import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.indexer.external.registry.RegistryIndexerApi
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.api.SearchApi
@@ -65,8 +66,8 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
             status shouldBe Accepted
           }
 
-          Thread.sleep(2000)
           refresh(indexId)
+          blockUntilExactCount(dataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
 
           Get(s"/datasets/search?query=*&limit=${dataSets.size}") ~> searchApi.routes ~> check {
             status shouldBe OK
