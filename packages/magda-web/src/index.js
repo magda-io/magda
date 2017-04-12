@@ -8,8 +8,8 @@ import thunkMiddleware from 'redux-thunk'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Home from './Components/Home';
-import Search from './Components/Search';
 import DatasetDetails from './Components/DatasetDetails';
+import AppContainer from './Components/AppContainer';
 import { Provider } from 'react-redux';
 import reducer from './reducers/index';
 import { createStore, applyMiddleware} from 'redux';
@@ -35,7 +35,7 @@ browserHistory.listen (location=>{
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
-      <Route path={baseurl} ignoreScrollBehavior>
+      <Route path={baseurl} component={AppContainer}>
         <IndexRoute component={Home}/>
         <Route path="dataset/:dataset/" component={DatasetDetails} />
       </Route>

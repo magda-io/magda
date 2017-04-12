@@ -1,26 +1,14 @@
 import React from 'react';
-import logo from '../assets/logo.svg';
 
-class Home extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+export default class Home extends React.Component {
   render() {
     return (
       <div>
-          <nav>
-            <div className="container">
-                <div className="navbar-header">
-                <a className="navbar-brand" href="%PUBLIC_URL%"><img className='logo' alt='data.gov.au-alpha' src={logo}/></a>
-                </div>
-            </div>
-            </nav>
+          <h1> Homepage</h1>
       </div>
     );
   }
 }
-
-export default Home;
 
 
 
