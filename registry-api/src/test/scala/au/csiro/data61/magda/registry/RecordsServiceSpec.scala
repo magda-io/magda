@@ -218,6 +218,72 @@ class RecordsServiceSpec extends ApiSpec {
         page.records(0) shouldBe record
       }
     }
+
+    it("dereferences a single link if requested") { api =>
+      val jsonSchema =
+        """
+          |{
+          |    "$schema": "http://json-schema.org/hyper-schema#",
+          |    "title": "An aspect with a single link",
+          |    "type": "object",
+          |    "properties": {
+          |        "someLink": {
+          |            "title": "A link to another record.",
+          |            "type": "string",
+          |            "links": [
+          |                {
+          |                    "href": "/api/0.1/records/{$}",
+          |                    "rel": "item"
+          |                }
+          |            ]
+          |        }
+          |    }
+          |}
+        """.stripMargin
+      val aspect = AspectDefinition("withLink", "with link", Some(JsonParser(jsonSchema).asJsObject))
+      Post("/api/0.1/aspects", aspect) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val source = Record("source", "source", Map("withLink" -> JsObject("someLink" -> JsString("target"))))
+      Post("/api/0.1/records", source) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val target = Record("target", "target", Map("withLink" -> JsObject("someLink" -> JsString("source"))))
+      Post("/api/0.1/records", target) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      Get("/api/0.1/records/source?aspect=withLink") ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record].aspects("withLink") shouldBe JsObject(
+          "someLink" -> JsString("target")
+        )
+      }
+
+      Get("/api/0.1/records/source?aspect=withLink&dereference=false") ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record].aspects("withLink") shouldBe JsObject(
+          "someLink" -> JsString("target")
+        )
+      }
+
+      Get("/api/0.1/records/source?aspect=withLink&dereference=true") ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record].aspects("withLink") shouldBe JsObject(
+          "someLink" -> JsObject(
+            "id" -> JsString("target"),
+            "name" -> JsString("target"),
+            "aspects" -> JsObject(
+              "withLink" -> JsObject(
+                "someLink" -> JsString("source")
+              )
+            )
+          )
+        )
+      }
+    }
   }
 
   describe("POST") {
