@@ -8,13 +8,14 @@ import thunkMiddleware from 'redux-thunk'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Home from './Components/Home';
+import Search from './Search/Search';
 import DatasetDetails from './Components/DatasetDetails';
 import AppContainer from './Components/AppContainer';
 import { Provider } from 'react-redux';
 import reducer from './reducers/index';
 import { createStore, applyMiddleware} from 'redux';
 
-let baseurl = location.pathname;
+let baseurl = "/";
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
 
@@ -37,6 +38,7 @@ ReactDOM.render(
     <Router history={browserHistory}>
       <Route path={baseurl} component={AppContainer}>
         <IndexRoute component={Home}/>
+        <Route path="search" component={Search} />
         <Route path="dataset/:dataset/" component={DatasetDetails} />
       </Route>
     </Router>

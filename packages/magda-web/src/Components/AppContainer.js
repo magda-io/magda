@@ -14,6 +14,7 @@ class AppContainer extends React.Component {
                     </div>
                 </div>
                 </nav>
+                <div id="content" className="container" tabIndex="-1">{ this.props.children }</div>
         </div>
       </ReactDocumentTitle>
     );

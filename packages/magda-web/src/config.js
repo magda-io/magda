@@ -3,7 +3,6 @@ import Format from './SearchFacets/Format';
 import Region from './SearchFacets/Region';
 import Temporal from './SearchFacets/Temporal';
 
-
 const config = {
         searchApiBaseUrl: 'http://magda-search-api-dev.terria.io/',
         facetListSize: 5,
@@ -23,7 +22,8 @@ const config = {
                  {id: 'region', component: Region},
                  {id: 'temporal', component: Temporal},
                  {id: 'format', component: Format}
-               ]
+               ],
+        headerNavigation: ["search", "projects", "publishers", "about"]
         }
 
  export{config}
