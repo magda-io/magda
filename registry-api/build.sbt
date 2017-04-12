@@ -1,4 +1,5 @@
 import java.io.File
+import DockerSetup._
 
 name := "magda-registry-api"
 

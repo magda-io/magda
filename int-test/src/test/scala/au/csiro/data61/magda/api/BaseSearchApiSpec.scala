@@ -129,9 +129,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
         throw e
     }.await(INSERTION_WAIT_TIME)
 
-    blockUntilCount(dataSets.size, indexName)
-
-    Thread.sleep(1000)
+    blockUntilExactCount(dataSets.size, indexName, fakeIndices.getType(Indices.DataSetsIndexType))
 
     (indexName, dataSets, api.routes)
   }
