@@ -7,9 +7,11 @@ import {fetchSearchResultsIfNeeded} from './actions/results';
 import thunkMiddleware from 'redux-thunk'
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Search from './Search/Search';
+import Home from './Components/Home';
+import Search from './Components/Search';
+import DatasetDetails from './Components/DatasetDetails';
 import { Provider } from 'react-redux';
-import search from './reducers/index';
+import reducer from './reducers/index';
 import { createStore, applyMiddleware} from 'redux';
 
 let baseurl = location.pathname;
@@ -17,7 +19,7 @@ let baseurl = location.pathname;
 const loggerMiddleware = createLogger();
 
 const store = createStore(
-   search,
+   reducer,
    applyMiddleware(
      thunkMiddleware, // lets us dispatch() functions
      // loggerMiddleware // neat middleware that logs actions
@@ -34,7 +36,8 @@ ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
       <Route path={baseurl} ignoreScrollBehavior>
-        <IndexRoute component={Search}/>
+        <IndexRoute component={Home}/>
+        <Route path="dataset/:dataset/" component={DatasetDetails} />
       </Route>
     </Router>
   </Provider>,
