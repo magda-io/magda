@@ -160,7 +160,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           case (Some(aspectId), List(Remove("aspects" / (name / rest), old))) => {
             if (rest == Pointer.Empty) {
               deleteRecordAspect(session, id, aspectId)
-              (aspectId, Success(JsObject()))
+              (aspectId, Success(JsNull))
             } else {
               (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(Remove(rest, old))))
             }
@@ -185,7 +185,10 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         case _ => Success(record)
       }
       // No failed aspects, so unwrap the aspects from the Success Trys.
-      aspects <- Success(aspectResults.map(aspect => (aspect._1, aspect._2.get)))
+      aspects <- Success(aspectResults.filter({
+        case (_, Success(JsNull)) => false // aspect was deleted
+        case _ => true
+      }).map(aspect => (aspect._1, aspect._2.get.asJsObject)))
     } yield Record(patchedRecord.id, patchedRecord.name, aspects)
   }
 
