@@ -21,6 +21,23 @@ class RecordsServiceSpec extends ApiSpec {
       }
     }
 
+    it("returns 404 if the given ID does not have a required aspect") { api =>
+      val aspectDefinition = AspectDefinition("test", "test", None)
+      Post("/api/0.1/aspects", aspectDefinition) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val record = Record("foo", "foo", Map())
+      Post("/api/0.1/records", record) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      Get("/api/0.1/records/foo?aspect=test") ~> api.routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[BadRequest].message should include ("exist")
+      }
+    }
+
     it("includes optionalAspect if it exists") { api =>
       val aspectDefinition = AspectDefinition("test", "test", None)
       Post("/api/0.1/aspects", aspectDefinition) ~> api.routes ~> check {
