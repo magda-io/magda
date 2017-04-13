@@ -46,8 +46,8 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
       description = dcatStrings.extract[String]('description.?),
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
       modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
-      languages = dcatStrings.extract[String]('languages.? / find(_ => true)).toSet,
-      publisher = Some(Agent(dcatStrings.extract[String]('publisher.?))),
+      languages = dcatStrings.extract[String]('languages.? / *).toSet,
+      publisher = dcatStrings.extract[String]('publisher.?).map(name => Agent(Some(name))),
       accrualPeriodicity = dcatStrings.extract[String]('accrualPeriodicity.?).map(Periodicity.fromString(_)),
       spatial = dcatStrings.extract[String]('spatial.?).map(Location(_)), // TODO: move this to the CKAN Connector
       temporal = temporal,

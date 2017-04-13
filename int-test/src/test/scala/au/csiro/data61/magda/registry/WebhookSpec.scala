@@ -21,7 +21,7 @@ import au.csiro.data61.magda.test.api.BaseApiSpec
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.test.util.Generators
 import java.util.UUID
-import au.csiro.data61.magda.indexer.search.elasticsearch.{ElasticSearchIndexer}
+import au.csiro.data61.magda.indexer.search.elasticsearch.{ ElasticSearchIndexer }
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.indexer.external.registry.RegistryIndexerApi
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
@@ -74,17 +74,30 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
             val response = responseAs[SearchResult]
 
             val cleanedInputDataSets = dataSets.map(dataSet => dataSet.copy(
-              publisher = dataSet.publisher.map(publisher => Agent(name = publisher.name)),
+              publisher = dataSet.publisher.flatMap(_.name).map(name => Agent(name = Some(name))),
               accrualPeriodicity = dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => Periodicity(text = Some(duration.get(ChronoUnit.SECONDS) * 1000 + " ms"))),
               distributions = dataSet.distributions.map(distribution => distribution.copy(
-                license = distribution.license.map(license => License(license.name))
+                license = distribution.license.flatMap(_.name).map(name => License(Some(name))),
+                mediaType = None
               )),
-              contactPoint = dataSet.contactPoint.map(contactPoint => Agent(contactPoint.name)),
-              catalog = "MAGDA Registry"
+              contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
+              catalog = "MAGDA Registry",
+              spatial = dataSet.spatial match {
+                case Some(Location(None, None)) => None
+                case Some(spatial) => Some(Location(spatial.text))
+                case x => x
+              },
+              temporal = dataSet.temporal match {
+                case Some(PeriodOfTime(None, None)) => None
+                case x                        => x
+              }
             ))
 
             val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
-              indexed = None
+              indexed = None,
+              distributions = dataSet.distributions.map(distribution => distribution.copy(
+                mediaType = None
+              ))
             ))
 
             withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
@@ -93,49 +106,68 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
           }
         } catch {
           case e: Throwable =>
-            e.printStackTrace
+            //            e.printStackTrace
             throw e
         }
       }
     }
   }
 
-  def removeNulls(jsObject: JsObject) = jsObject.copy(jsObject.fields.filterNot(_._2 == JsNull))
+  def removeNulls(jsObject: JsObject) = JsObject(jsObject.fields.filter {
+    case (_, value) => value match {
+      case JsNull => false
+      case JsObject(fields) if fields.filterNot(_._2 == JsNull).isEmpty =>
+        println("Got one!")
+        false
+      case _ => true
+    }
+  })
   //  def removeText(date: 
-  def modifyJson(jsObject: JsObject, values: Map[String, JsValue]): JsObject = removeNulls(jsObject.copy(jsObject.fields ++ values))
+  def modifyJson(jsObject: JsObject, values: Map[String, JsValue]): JsObject = removeNulls(JsObject(jsObject.fields ++ values))
 
   def dataSetToRecord(dataSet: DataSet): Record = {
     val record = Record(
       id = dataSet.identifier,
       name = dataSet.title.getOrElse("No Title"),
-      aspects = Map(
-        "dcat-dataset-strings" -> modifyJson(
-          dataSet.copy(
-            distributions = Seq(),
-            publisher = None,
-            temporal = None,
-            accrualPeriodicity = None
-          ).toJson.asJsObject, Map(
-            "accrualPeriodicity" -> dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => duration.get(ChronoUnit.SECONDS) * 1000 + " ms").toJson,
-            "contactPoint" -> dataSet.contactPoint.flatMap(_.name).toJson,
-            "publisher" -> dataSet.publisher.map(_.name).toJson
-          )
-        ),
-        "dataset-distributions" -> JsObject(
-          "distributions" -> dataSet.distributions.map(dist =>
-            JsObject(
-              "id" -> dist.title.toJson,
-              "name" -> dist.title.toJson,
-              "aspects" -> JsObject(
-                "dcat-distribution-strings" ->
-                  modifyJson(dist.toJson.asJsObject, Map(
-                    "license" -> dist.license.map(_.name).toJson
+      aspects = {
+        val aspects = Map(
+          "dcat-dataset-strings" -> modifyJson(
+            dataSet.copy(
+              distributions = Seq(),
+              publisher = None,
+              accrualPeriodicity = None
+            ).toJson.asJsObject, Map(
+              "accrualPeriodicity" -> dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => duration.get(ChronoUnit.SECONDS) * 1000 + " ms").toJson,
+              "contactPoint" -> dataSet.contactPoint.flatMap(_.name).map(_.toJson).getOrElse(JsNull),
+              "publisher" -> dataSet.publisher.flatMap(_.name).map(_.toJson).getOrElse(JsNull),
+              "temporal" -> dataSet.temporal.map {
+                case PeriodOfTime(None, None) => JsNull
+                case PeriodOfTime(start, end) =>
+                  removeNulls(JsObject(
+                    "start" -> start.map(_.text).toJson,
+                    "end" -> end.map(_.text).toJson
                   ))
-              )
+              }.getOrElse(JsNull),
+              "spatial" -> dataSet.spatial.map(_.text).toJson
             )
-          ).toJson
-        ),
-        "temporal-coverage" -> dataSet.temporal
+          ),
+          "dataset-distributions" -> JsObject(
+            "distributions" -> dataSet.distributions.map(dist =>
+              JsObject(
+                "id" -> dist.title.toJson,
+                "name" -> dist.title.toJson,
+                "aspects" -> JsObject(
+                  "dcat-distribution-strings" ->
+                    modifyJson(dist.toJson.asJsObject, Map(
+                      "license" -> dist.license.flatMap(_.name).map(_.toJson).getOrElse(JsNull)
+                    ))
+                )
+              )
+            ).toJson
+          )
+        )
+
+        val temporal = dataSet.temporal
           .map(temporal => (temporal.start.flatMap(_.date), temporal.end.flatMap(_.date)))
           .flatMap {
             case (None, None) => None
@@ -149,9 +181,12 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
                 ).toJson
               ))
           }.map(_.toJson.asJsObject)
-          .getOrElse(JsObject())
 
-      )
+        temporal match {
+          case Some(innerTemporal) => aspects + (("temporal-coverage", innerTemporal))
+          case None                => aspects
+        }
+      }
     )
 
     record
