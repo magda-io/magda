@@ -23,7 +23,13 @@ const config = {
                  {id: 'temporal', component: Temporal},
                  {id: 'format', component: Format}
                ],
-        headerNavigation: ["search", "projects", "publishers", "about"]
+        headerNavigation: ["search", "projects", "publishers", "about"],
+        footerNavigation: [{category: "Search", links: ["Search syntax", "Data sources", "Publishers"]},
+                    {category: "Projects", links: ["Browse projects", "start a projects"]},
+                    {category: "Publishers", links: ["Publisher index", "Open data toolkit"]},
+                    {category: "Developers", links: ["Archetecture", "API doc"]},
+                    {category: "About", links: ["About data.gov.au", "Contact us", "Blog"]},
+                    {category: "Feedback", links: ["How can we imporve data.gov.au"]}]
         }
 
  export{config}

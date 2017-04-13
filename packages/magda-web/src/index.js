@@ -14,6 +14,7 @@ import AppContainer from './Components/AppContainer';
 import { Provider } from 'react-redux';
 import reducer from './reducers/index';
 import { createStore, applyMiddleware} from 'redux';
+import { staticPageRegister } from './content/register';
 
 let baseurl = "/";
 // eslint-disable-next-line
@@ -40,6 +41,8 @@ ReactDOM.render(
         <IndexRoute component={Home}/>
         <Route path="search" component={Search} />
         <Route path="dataset/:dataset/" component={DatasetDetails} />
+        {staticPageRegister.map( item => 
+        <Route path={item.path} component={item.component}/>)}
       </Route>
     </Router>
   </Provider>,

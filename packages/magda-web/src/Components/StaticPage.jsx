@@ -1,11 +1,11 @@
 import React from 'react';
 
 
-export default class Home extends React.Component {
+export default class StaticPage extends React.Component {
   render() {
     return (
       <div className="container">
-          <h1> Homepage</h1>
+          <h1> StaticPage </h1>
       </div>
     );
   }
