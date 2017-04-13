@@ -30,7 +30,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."),
     new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.")
   ))
-  def getAll = get { pathEnd { parameters('aspect.*, 'optionalAspect.*, 'aspects.?, 'optionalAspects.?, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?) { getAllWithAspects } } }
+  def getAll = get { pathEnd { parameters('aspect.*, 'optionalAspect.*, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?) { getAllWithAspects } } }
 
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
@@ -64,7 +64,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])
   ))
-  def getById = get { path(Segment) { id => { parameters('aspect.*, 'optionalAspect.*, 'aspects.?, 'optionalAspects.?, 'dereference.as[Boolean].?) { getByIdWithAspects(id) } } } }
+  def getById = get { path(Segment) { id => { parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { getByIdWithAspects(id) } } } }
 
   @Path("/{id}")
   @ApiOperation(value = "Modify a record by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Record],
@@ -114,44 +114,34 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     create ~
     new RecordAspectsService(system, materializer).route
 
-  private def getAllWithAspects(aspect: Iterable[String],
-                                optionalAspect: Iterable[String],
-                                aspects: Option[String],
-                                optionalAspects: Option[String],
+  private def getAllWithAspects(aspects: Iterable[String],
+                                optionalAspects: Iterable[String],
                                 pageToken: Option[String],
                                 start: Option[Int],
                                 limit: Option[Int],
                                 dereference: Option[Boolean]) = {
-    val allAspects = List.concat(aspect, aspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
-    val allOptionalAspects = List.concat(optionalAspect, optionalAspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
-
     complete {
       DB readOnly { session =>
-        if (allAspects.isEmpty && allOptionalAspects.isEmpty)
+        if (aspects.isEmpty && optionalAspects.isEmpty)
           RecordPersistence.getAll(session, pageToken, start, limit)
         else
-          RecordPersistence.getAllWithAspects(session, allAspects, allOptionalAspects, pageToken, start, limit, dereference)
+          RecordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference)
       }
     }
   }
 
   private def getByIdWithAspects(id: String)(
-                                 aspect: Iterable[String],
-                                 optionalAspect: Iterable[String],
-                                 aspects: Option[String],
-                                 optionalAspects: Option[String],
+                                 aspects: Iterable[String],
+                                 optionalAspects: Iterable[String],
                                  dereference: Option[Boolean]) = {
-    val allAspects = List.concat(aspect, aspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
-    val allOptionalAspects = List.concat(optionalAspect, optionalAspects.getOrElse("").split(",").map(_.trim).filter(!_.isEmpty))
-
     DB readOnly { session =>
-      if (allAspects.isEmpty && allOptionalAspects.isEmpty)
+      if (aspects.isEmpty && optionalAspects.isEmpty)
         RecordPersistence.getById(session, id) match {
           case Some(record) => complete(record)
           case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
         }
       else
-        RecordPersistence.getByIdWithAspects(session, id, allAspects, allOptionalAspects, dereference) match {
+        RecordPersistence.getByIdWithAspects(session, id, aspects, optionalAspects, dereference) match {
           case Some(record) => complete(record)
           case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
         }

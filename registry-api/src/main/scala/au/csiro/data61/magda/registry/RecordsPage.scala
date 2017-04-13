@@ -14,5 +14,5 @@ case class RecordsPage(
   nextPageToken: Option[String],
 
   @(ApiModelProperty @field)(value = "The records in this page.", required = true)
-  records: Iterable[Record]
+  records: List[Record]
 )

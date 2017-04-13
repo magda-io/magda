@@ -42,7 +42,7 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
 
   implicit val materializer = ActorMaterializer()
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    PropertyCheckConfiguration(workers = PosInt(1), sizeRange = PosInt(50), minSuccessful = PosInt(10)) // This is a super heavy test so do 10 only, one-at-a-time
+    PropertyCheckConfiguration(workers = PosInt(1), sizeRange = PosInt(20), minSuccessful = PosInt(10)) // This is a super heavy test so do 10 only, one-at-a-time
 
   implicit val config = TestActorSystem.config
 
