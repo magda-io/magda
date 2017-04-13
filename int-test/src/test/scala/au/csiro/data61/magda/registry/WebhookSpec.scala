@@ -36,8 +36,9 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
   describe("records.changed") {
     it("should index new datasets") {
       val dataSetsGen = Generators.listSizeBetween(0, 20, Generators.dataSetGen)
+      val dataSetsBatchesGen = Generators.listSizeBetween(0, 3, dataSetsGen)
 
-      forAll(dataSetsGen) { dataSets =>
+      forAll(dataSetsBatchesGen) { dataSetsBatches =>
         val indexId = UUID.randomUUID().toString
 
         val indices = new FakeIndices(indexId.toString)
@@ -49,27 +50,38 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
         val routes = webhookApi.routes
         indexer.ready.await
 
-        val payload = new RecordsChangedWebHookPayload(
-          action = "records.changed",
-          lastEventId = 104856,
-          events = None, // Not needed yet - soon?
-          records = Some(dataSets.map(dataSetToRecord))
+        val payloads = dataSetsBatches.map(dataSets =>
+          new RecordsChangedWebHookPayload(
+            action = "records.changed",
+            lastEventId = 104856,
+            events = None, // Not needed yet - soon?
+            records = Some(dataSets.map(dataSetToRecord))
+          )
         )
 
-        val post = new RequestBuilder(POST).apply("/", payload)
-
-        post ~> routes ~> check {
-          status shouldBe Accepted
+        val posts = payloads.map { payload =>
+          new RequestBuilder(POST).apply("/", payload)
         }
 
-        refresh(indexId)
-        blockUntilExactCount(dataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+        val responses = posts.map { post =>
+          post ~> routes
+        }
 
-        Get(s"/datasets/search?query=*&limit=${dataSets.size}") ~> searchApi.routes ~> check {
+        responses.foreach { response =>
+          response ~> check {
+            status shouldBe Accepted
+          }
+        }
+
+        val allDataSets = dataSetsBatches.flatten
+        refresh(indexId)
+        blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+
+        Get(s"/datasets/search?query=*&limit=${allDataSets.size}") ~> searchApi.routes ~> check {
           status shouldBe OK
           val response = responseAs[SearchResult]
 
-          val cleanedInputDataSets = dataSets.map(dataSet => dataSet.copy(
+          val cleanedInputDataSets = allDataSets.map(dataSet => dataSet.copy(
             // The only publisher details we get is the name
             publisher = dataSet.publisher.flatMap(_.name).map(name => Agent(name = Some(name))),
 
