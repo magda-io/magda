@@ -68,10 +68,6 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
     val urlString = dcatStrings.extract[String]('downloadURL.?)
     val descriptionString = dcatStrings.extract[String]('description.?)
 
-    // Get the mediatype first because we'll need it to determine the format if none is provided.
-    val mediaType = Distribution.parseMediaType(mediaTypeString, formatString, urlString)
-    val format = Distribution.parseFormat(formatString, urlString, mediaType, descriptionString)
-
     Distribution(
       title = dcatStrings.extract[String]('title.?).getOrElse(distributionRecord.name),
       description = descriptionString,
@@ -82,8 +78,8 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
       accessURL = dcatStrings.extract[String]('accessURL.?),
       downloadURL = urlString,
       byteSize = dcatStrings.extract[Int]('byteSize.?).flatMap(bs => Try(bs.toInt).toOption),
-      mediaType = mediaType,
-      format = format
+      mediaType = Distribution.parseMediaType(mediaTypeString, None, None),
+      format = formatString
     )
   }
 

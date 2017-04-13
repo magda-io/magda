@@ -1,37 +1,34 @@
 package au.csiro.data61.magda.registry
 
-import au.csiro.data61.magda.model.Registry._
-import spray.json.JsObject
-import java.time.format.DateTimeParseException
-import java.time.{ OffsetDateTime, ZoneOffset }
-
-import au.csiro.data61.magda.indexer.external.InterfaceConfig
-import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.Registry.{ Record, Protocols => RegistryProtocols }
-import au.csiro.data61.magda.model.temporal.{ ApiDate, PeriodOfTime, Periodicity }
-import spray.json.lenses.JsonLenses._
-import spray.json.DefaultJsonProtocol._
-import spray.json._
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
-import au.csiro.data61.magda.api.model.{ Protocols => ApiProtocols }
-
-import scala.util.Try
-import au.csiro.data61.magda.test.api.BaseApiSpec
-import com.typesafe.config.ConfigFactory
-import au.csiro.data61.magda.test.util.Generators
-import java.util.UUID
-import au.csiro.data61.magda.indexer.search.elasticsearch.{ ElasticSearchIndexer }
-import au.csiro.data61.magda.search.elasticsearch.Indices
-import au.csiro.data61.magda.indexer.external.registry.RegistryIndexerApi
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
-import au.csiro.data61.magda.api.SearchApi
-import akka.http.scaladsl.model.StatusCodes.{ OK, Accepted }
-import akka.http.scaladsl.model.HttpMethods.POST
-import akka.http.scaladsl.client.RequestBuilding
-import spray.json.JsNull
-import au.csiro.data61.magda.api.model.SearchResult
 import java.time.temporal.ChronoUnit
+import java.util.UUID
+
+import com.typesafe.config.ConfigFactory
+
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.HttpMethods.POST
+import akka.http.scaladsl.model.StatusCodes.Accepted
+import akka.http.scaladsl.model.StatusCodes.OK
+import au.csiro.data61.magda.api.SearchApi
+import au.csiro.data61.magda.api.model.{ Protocols => ApiProtocols }
+import au.csiro.data61.magda.api.model.SearchResult
+import au.csiro.data61.magda.indexer.external.registry.WebhookApi
+import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
+import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.Registry.{ Protocols => RegistryProtocols }
+import au.csiro.data61.magda.model.Registry.Record
+import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
+import au.csiro.data61.magda.model.temporal.PeriodOfTime
+import au.csiro.data61.magda.model.temporal.Periodicity
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
+import au.csiro.data61.magda.search.elasticsearch.Indices
+import au.csiro.data61.magda.test.api.BaseApiSpec
+import au.csiro.data61.magda.test.util.Generators
+import spray.json._
+import spray.json.JsNull
+import spray.json.JsObject
+import au.csiro.data61.magda.model.temporal.ApiDate
 
 class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols with ApiProtocols {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
@@ -46,7 +43,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
 
           val indices = new FakeIndices(indexId.toString)
           val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
-          val webhookApi = new RegistryIndexerApi(indexer)
+          val webhookApi = new WebhookApi(indexer)
           val searchQueryer = new ElasticSearchQueryer(indices)
           val searchApi = new SearchApi(searchQueryer)(config, logger)
 
@@ -83,13 +80,19 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
               contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
               catalog = "MAGDA Registry",
               spatial = dataSet.spatial match {
-                case Some(Location(None, None)) => None
-                case Some(spatial) => Some(Location(spatial.text))
-                case x => x
+                case Some(Location(None, _)) => None
+                case Some(spatial)              => Some(Location(spatial.text))
+                case other                      => other
               },
               temporal = dataSet.temporal match {
-                case Some(PeriodOfTime(None, None)) => None
-                case x                        => x
+                case Some(PeriodOfTime(None, None)) => 
+                  println("None None")
+                  None
+                case Some(PeriodOfTime(from, to)) => PeriodOfTime(filterDate(from), filterDate(to)) match {
+                  case PeriodOfTime(None, None) => None
+                  case other                    => Some(other)
+                }
+                case other => other
               }
             ))
 
@@ -111,6 +114,10 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
         }
       }
     }
+  }
+  def filterDate(input: Option[ApiDate]): Option[ApiDate] = input.flatMap {
+    case ApiDate(None, "") => None
+    case other             => Some(other)
   }
 
   def removeNulls(jsObject: JsObject) = JsObject(jsObject.fields.filter {

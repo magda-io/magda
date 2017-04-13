@@ -21,7 +21,7 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.indexer.external.registry.RegistryConverters
 import akka.stream.scaladsl.Source
 
-class RegistryIndexerApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryProtocols {
+class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryProtocols {
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 

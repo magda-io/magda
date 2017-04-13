@@ -20,7 +20,7 @@ import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import com.typesafe.config.Config
 import au.csiro.data61.magda.indexer.external.registry.RegistryConverters
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.indexer.external.registry.RegistryIndexerApi
+import au.csiro.data61.magda.indexer.external.registry.WebhookApi
 
 class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryProtocols {
   implicit val ec = system.dispatcher
@@ -31,7 +31,7 @@ class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
       pathPrefix("reindex") {
         new CrawlerApi(crawler, indexer).routes
       } ~ path("registry-hook") {
-        new RegistryIndexerApi(indexer).routes
+        new WebhookApi(indexer).routes
       }
     }
 
