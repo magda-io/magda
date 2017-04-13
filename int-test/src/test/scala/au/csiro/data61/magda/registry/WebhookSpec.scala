@@ -33,84 +33,96 @@ import au.csiro.data61.magda.model.temporal.ApiDate
 class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols with ApiProtocols {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
 
-  describe("hello") {
-    it("blah") {
+  describe("records.changed") {
+    it("should index new datasets") {
       val dataSetsGen = Generators.listSizeBetween(0, 20, Generators.dataSetGen)
 
       forAll(dataSetsGen) { dataSets =>
-        try {
-          val indexId = UUID.randomUUID().toString
+        val indexId = UUID.randomUUID().toString
 
-          val indices = new FakeIndices(indexId.toString)
-          val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
-          val webhookApi = new WebhookApi(indexer)
-          val searchQueryer = new ElasticSearchQueryer(indices)
-          val searchApi = new SearchApi(searchQueryer)(config, logger)
+        val indices = new FakeIndices(indexId.toString)
+        val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
+        val webhookApi = new WebhookApi(indexer)
+        val searchQueryer = new ElasticSearchQueryer(indices)
+        val searchApi = new SearchApi(searchQueryer)(config, logger)
 
-          val routes = webhookApi.routes
-          indexer.ready.await
+        val routes = webhookApi.routes
+        indexer.ready.await
 
-          val payload = new RecordsChangedWebHookPayload(
-            action = "records.changed",
-            lastEventId = 104856,
-            events = None, // Not needed yet - soon?
-            records = Some(dataSets.map(dataSetToRecord))
-          )
+        val payload = new RecordsChangedWebHookPayload(
+          action = "records.changed",
+          lastEventId = 104856,
+          events = None, // Not needed yet - soon?
+          records = Some(dataSets.map(dataSetToRecord))
+        )
 
-          val post = new RequestBuilder(POST).apply("/", payload)
+        val post = new RequestBuilder(POST).apply("/", payload)
 
-          post ~> routes ~> check {
-            status shouldBe Accepted
-          }
+        post ~> routes ~> check {
+          status shouldBe Accepted
+        }
 
-          refresh(indexId)
-          blockUntilExactCount(dataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+        refresh(indexId)
+        blockUntilExactCount(dataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
 
-          Get(s"/datasets/search?query=*&limit=${dataSets.size}") ~> searchApi.routes ~> check {
-            status shouldBe OK
-            val response = responseAs[SearchResult]
+        Get(s"/datasets/search?query=*&limit=${dataSets.size}") ~> searchApi.routes ~> check {
+          status shouldBe OK
+          val response = responseAs[SearchResult]
 
-            val cleanedInputDataSets = dataSets.map(dataSet => dataSet.copy(
-              publisher = dataSet.publisher.flatMap(_.name).map(name => Agent(name = Some(name))),
-              accrualPeriodicity = dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => Periodicity(text = Some(duration.get(ChronoUnit.SECONDS) * 1000 + " ms"))),
-              distributions = dataSet.distributions.map(distribution => distribution.copy(
-                license = distribution.license.flatMap(_.name).map(name => License(Some(name))),
-                mediaType = None
-              )),
-              contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
-              catalog = "MAGDA Registry",
-              spatial = dataSet.spatial match {
-                case Some(Location(None, _)) => None
-                case Some(spatial)              => Some(Location(spatial.text))
-                case other                      => other
-              },
-              temporal = dataSet.temporal match {
-                case Some(PeriodOfTime(None, None)) => 
-                  println("None None")
-                  None
-                case Some(PeriodOfTime(from, to)) => PeriodOfTime(filterDate(from), filterDate(to)) match {
-                  case PeriodOfTime(None, None) => None
-                  case other                    => Some(other)
-                }
-                case other => other
+          val cleanedInputDataSets = dataSets.map(dataSet => dataSet.copy(
+            // The only publisher details we get is the name
+            publisher = dataSet.publisher.flatMap(_.name).map(name => Agent(name = Some(name))),
+
+            // The registry only looks for the duration text so copy the actual duration into the text
+            accrualPeriodicity = dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => Periodicity(text = Some(duration.get(ChronoUnit.SECONDS) * 1000 + " ms"))),
+
+            distributions = dataSet.distributions.map(distribution => distribution.copy(
+              // Distribution only takes into account the name
+              license = distribution.license.flatMap(_.name).map(name => License(Some(name))),
+
+              // Code derives media type from the format rather than reading it directly.
+              mediaType = None
+            )),
+
+            // Contact points only look for name at the moment
+            contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
+
+            // Catalog is always MAGDA Registry so far
+            catalog = "MAGDA Registry",
+
+            // Registry doesn't know how to do spatial extent yet, so just keep the text, no text == None
+            spatial = dataSet.spatial match {
+              case Some(Location(None, _)) => None
+              case Some(spatial)           => Some(Location(spatial.text))
+              case other                   => other
+            },
+
+            temporal = dataSet.temporal match {
+              // The registry -> dataset converter rightly does this conversion.
+              case Some(PeriodOfTime(None, None)) => None
+
+              // The converter also filters out spatial extends that are a blank string, so we need to do that.
+              case Some(PeriodOfTime(from, to)) => PeriodOfTime(filterDate(from), filterDate(to)) match {
+                case PeriodOfTime(None, None) => None
+                case other                    => Some(other)
               }
-            ))
-
-            val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
-              indexed = None,
-              distributions = dataSet.distributions.map(distribution => distribution.copy(
-                mediaType = None
-              ))
-            ))
-
-            withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
-              cleanedOutputDataSets should equal(cleanedInputDataSets)
+              case other => other
             }
+          ))
+
+          val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
+            // We don't care about this. 
+            indexed = None,
+
+            distributions = dataSet.distributions.map(distribution => distribution.copy(
+              // This will be derived from the format so might not match the input 
+              mediaType = None
+            ))
+          ))
+
+          withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
+            cleanedOutputDataSets should equal(cleanedInputDataSets)
           }
-        } catch {
-          case e: Throwable =>
-            //            e.printStackTrace
-            throw e
         }
       }
     }
@@ -120,19 +132,18 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
     case other             => Some(other)
   }
 
-  def removeNulls(jsObject: JsObject) = JsObject(jsObject.fields.filter {
-    case (_, value) => value match {
-      case JsNull => false
-      case JsObject(fields) if fields.filterNot(_._2 == JsNull).isEmpty =>
-        println("Got one!")
-        false
-      case _ => true
-    }
-  })
-  //  def removeText(date: 
-  def modifyJson(jsObject: JsObject, values: Map[String, JsValue]): JsObject = removeNulls(JsObject(jsObject.fields ++ values))
-
   def dataSetToRecord(dataSet: DataSet): Record = {
+    def removeNulls(jsObject: JsObject) = JsObject(jsObject.fields.filter {
+      case (_, value) => value match {
+        case JsNull => false
+        case JsObject(fields) if fields.filterNot(_._2 == JsNull).isEmpty =>
+          println("Got one!")
+          false
+        case _ => true
+      }
+    })
+    def modifyJson(jsObject: JsObject, values: Map[String, JsValue]): JsObject = removeNulls(JsObject(jsObject.fields ++ values))
+
     val record = Record(
       id = dataSet.identifier,
       name = dataSet.title.getOrElse("No Title"),
