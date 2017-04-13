@@ -13,10 +13,12 @@ import scala.concurrent.Future
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json._
-import au.csiro.data61.magda.model.Registry.{Protocols => RegistryProtocols}
+import au.csiro.data61.magda.model.Registry.{ Protocols => RegistryProtocols }
 import scala.concurrent.duration._
+import au.csiro.data61.magda.AppConfig
+import com.typesafe.config.Config
 
-class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: ActorSystem) extends BaseMagdaApi with RegistryProtocols {
+class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryProtocols {
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 
@@ -24,30 +26,29 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
 
   def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
 
+  if (!config.hasPath("indexer.autoCrawl") || config.getBoolean("indexer.autoCrawl")) {
+    // Index every 3 days 
+    system.scheduler.schedule(0 millis, 3 days, new Runnable {
+      def run = {
+        crawl()
+      }
+    })
+  }
 
-  // Index every 3 days 
-  system.scheduler.schedule(0 millis, 3 days, new Runnable {
-    def run = {
-      crawl()
-    }
-  })
-  
   val routes =
     magdaRoute {
-      pathPrefix("reindex") {
-        path("in-progress") {
-          get {
-            complete(OK, crawlInProgress.toString)
+      path("in-progress") {
+        get {
+          complete(OK, crawlInProgress.toString)
+        }
+      } ~
+        post {
+          if (crawl) {
+            complete(Accepted)
+          } else {
+            complete(Conflict, "Reindex in progress")
           }
-        } ~
-          post {
-            if (crawl) {
-              complete(Accepted)
-            } else {
-              complete(Conflict, "Reindex in progress")
-            }
-          }
-      }
+        }
     }
 
   def crawl(): Boolean = {
