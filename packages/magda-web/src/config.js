@@ -23,13 +23,13 @@ const config = {
                  {id: 'temporal', component: Temporal},
                  {id: 'format', component: Format}
                ],
-        headerNavigation: ["search", "projects", "publishers", "about"],
-        footerNavigation: [{category: "Search", links: ["Search syntax", "Data sources", "Publishers"]},
-                    {category: "Projects", links: ["Browse projects", "start a projects"]},
-                    {category: "Publishers", links: ["Publisher index", "Open data toolkit"]},
-                    {category: "Developers", links: ["Archetecture", "API doc"]},
-                    {category: "About", links: ["About data.gov.au", "Contact us", "Blog"]},
-                    {category: "Feedback", links: ["How can we imporve data.gov.au"]}]
+        headerNavigation: [["Search", "search"], ["Projects", "projects"], ["Publishers", "publishers"], ["About", "about"]],
+        footerNavigation: [{category: "Search", links: [["Search syntax", "search-syntax"], ["Data sources", "data-source"], ["Publishers", "publisher"]]},
+                    {category: "Projects", links: [["Browse projects", "browse-projects"], ["start a projects", "start-a-projects"]]},
+                    {category: "Publishers", links: [["Publisher index", "publisher-index"], ["Open data toolkit", "open-data-toolkit"]]},
+                    {category: "Developers", links: [["Archetecture", "archetecture"], ["API doc", "api-doc"]]},
+                    {category: "About", links: [["About data.gov.au", "about"], ["Contact us", "contact"], ["Blog", "blog"]]},
+                    {category: "Feedback", links: [["How can we imporve data.gov.au", "feedback"]]}]
         }
 
  export{config}

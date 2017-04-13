@@ -18,7 +18,7 @@ class AppContainer extends React.Component {
                     </div>
                     <ul className="nav navbar-nav">
                       {headerNavs.map(nav=>
-                        <li key={nav}><Link to={`/${nav.toLowerCase()}`}>{nav}</Link></li>
+                        <li key={nav[1]}><Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link></li>
                       )}
                     </ul>
 
@@ -37,7 +37,7 @@ class AppContainer extends React.Component {
                       <li className="col-md-2 col-sm-4">{item.category}
                         <ul className="nav nav-pills nav-stacked">
                           {item.links.map(link=>
-                          <li key={link}><Link to={`/${link}`}>{link}</Link></li>)
+                          <li key={link[1]}><Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link></li>)
                           }
                         </ul>
                       </li>
