@@ -35,6 +35,8 @@ import scala.annotation.tailrec
 import org.scalacheck.Gen.const
 import org.scalacheck.Gen.freqTuple
 import scala.BigDecimal
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import scala.collection.JavaConversions._
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -45,8 +47,20 @@ object Generators {
   val defaultEndTime = ZonedDateTime.parse("2020-01-01T00:00:00Z").toInstant
   val defaultTightEndTime = ZonedDateTime.parse("2015-01-01T00:00:00Z").toInstant
 
+  // TODO: It'd be really cool to have arbitrary characters in here but some of them mess up ES for some
+  // reason - if there's time later on it'd be good to find out exactly what ES can accept because
+  // right now we're only testing english characters.
+  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf('-', '.', ''', ' ')))
+  val nonEmptyTextGen = for {
+    before <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
+    middle <- Gen.alphaNumChar
+    after <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
+  } yield (before + middle.toString + after)
+  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (1, Gen.oneOf(StandardAnalyzer.ENGLISH_STOP_WORDS_SET.toSeq.map(_.toString))))
+  val textGen = Gen.frequency((15, nonEmptyTextWithStopWordsGen), (1, Gen.const("")))
+
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = listSizeBetween(1, 3, gen).map(_.toSet)
-  
+
   def genInstant(start: Instant, end: Instant) =
     Gen.choose(start.toEpochMilli(), end.toEpochMilli())
       .flatMap(Instant.ofEpochMilli(_))
@@ -60,21 +74,7 @@ object Generators {
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds)
   )
 
-  
-
   val alphaNumRegex = ".*[a-zA-Z0-9].*".r
-
-  // TODO: It'd be really cool to have arbitrary characters in here but some of them mess up ES for some
-  // reason - if there's time later on it'd be good to find out exactly what ES can accept because
-  // right now we're only testing english characters.
-  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf('-', '.', ''', ' ')))
-
-  val nonEmptyTextGen = for {
-    before <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
-    middle <- Gen.alphaNumChar
-    after <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
-  } yield (before + middle.toString + after)
-  val textGen = Gen.frequency((15, nonEmptyTextGen), (1, Gen.const("")))
 
   def apiDateGen(start: Instant, end: Instant) = for {
     date <- someBiasedOption(offsetDateTimeGen(start, end))
@@ -255,7 +255,7 @@ object Generators {
   }
 
   val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50).trim), 1000)
-  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextGen.map(_.take(50).trim)).map(_.mkString(" ")), 50)
+  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(_.take(50).trim)).map(_.mkString(" ")), 50)
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
@@ -263,7 +263,8 @@ object Generators {
     MediaTypes.`application/json`,
     MediaTypes.`application/octet-stream`
   ))
-  val randomFormatGen = cachedListGen(nonEmptyTextGen, 50)
+  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(_.take(50).trim)).map(_.mkString(" "))
+  val randomFormatGen = cachedListGen(formatNameGen, 50)
 
   def textGen(inner: Gen[List[String]]) = inner
     .flatMap(list => Gen.choose(0, Math.min(100, list.length)).map((_, list)))
@@ -284,8 +285,8 @@ object Generators {
   } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).getOrElse(randomFormat))
 
   val distGen = for {
-    title <- nonEmptyTextGen
-    description <- someBiasedOption(nonEmptyTextGen)
+    title <- textGen
+    description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
     license <- someBiasedOption(licenseGen)
