@@ -896,6 +896,30 @@ class RecordsServiceSpec extends ApiSpec {
       }
     }
 
+    it("evaluates Test operations") { api =>
+      val A = AspectDefinition("A", "A", None)
+      Post("/api/0.1/aspects", A) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+      Post("/api/0.1/records", record) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val patchSuccess = JsonPatch(Test(Pointer.root / "aspects" / "A" / "foo", JsString("bar")))
+      Patch("/api/0.1/records/testId", patchSuccess) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record] shouldEqual Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+      }
+
+      val patchFail = JsonPatch(Test(Pointer.root / "aspects" / "A" / "foo", JsString("not this value")))
+      Patch("/api/0.1/records/testId", patchFail) ~> api.routes ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        responseAs[BadRequest].message should include ("test failed")
+      }
+    }
+
     it("does not support Move between aspects") { api =>
       val A = AspectDefinition("A", "A", None)
       Post("/api/0.1/aspects", A) ~> api.routes ~> check {
