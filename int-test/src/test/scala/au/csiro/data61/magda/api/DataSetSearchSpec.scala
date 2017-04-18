@@ -245,8 +245,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
               withClue(s"with query $textQuery \n and dataSet" +
                 s"\n\tdateUnspecified $dateUnspecified" +
-                s"\n\tdateTo $dataSetDateTo $dateFromMatched" +
-                s"\n\tdateFrom $dataSetDateFrom $dateToMatched" +
+                s"\n\tdateTo $dataSetDateTo $dateToMatched" +
+                s"\n\tdateFrom $dataSetDateFrom $dateFromMatched" +
                 s"\n\tpublisher ${dataSet.publisher} $publisherMatched" +
                 s"\n\tformats ${dataSet.distributions.map(_.format).mkString(",")} $formatMatched" +
                 s"\n\tdistances ${distances.map(t => t._1 + "/" + t._2).mkString(",")}" +

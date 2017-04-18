@@ -42,7 +42,11 @@ import au.csiro.data61.magda.test.util.Generators._
 
 object ApiGenerators {
 
-  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" "))
+  val filterWords = Set("in", "to", "as", "by", "from")
+  val filterWordsWithSpace = filterWords.map(_ + " ")
+  val filterWordRegex = s"(?i)(${filterWords.mkString("|")})\\s"
+
+  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" ")).map(_.replaceAll(filterWordRegex, ""))
   def unspecifiedGen(implicit config: Config) = Gen.const(Unspecified())
   def filterValueGen[T](innerGen: Gen[T])(implicit config: Config): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
 
@@ -100,7 +104,7 @@ object ApiGenerators {
     dateTo = dateTo,
     formats = formats,
     regions = regions
-  )) //.map(removeInvalid)
+  ))
 
   def exactQueryGen(implicit config: Config) = (for {
     freeText <- Gen.option(queryTextGen)
@@ -184,9 +188,6 @@ object ApiGenerators {
         else char
     }.mkString
   }
-
-  val filterWords = Set("in", "to", "as", "by", "from")
-  val filterWordsWithSpace = filterWords.map(_ + " ")
 
   def containsNoFilterWord(word: FilterValue[String]): Boolean = {
     !filterWords.exists(filterWord => word.map(_.toLowerCase.contains(" " + filterWord.toLowerCase + " ")).getOrElse(false))
