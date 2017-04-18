@@ -41,12 +41,7 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.test.util.Generators._
 
 object ApiGenerators {
-
-  val filterWords = Set("in", "to", "as", "by", "from")
-  val filterWordsWithSpace = filterWords.map(_ + " ")
-  val filterWordRegex = s"(?i)(${filterWords.mkString("|")})\\s"
-
-  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" ")).map(_.replaceAll(filterWordRegex, ""))
+  val queryTextGen = descWordGen.flatMap(descWords => descWordGen.flatMap(descWords => listSizeBetween(1, 5, Gen.oneOf(descWords)))).map(_.mkString(" ")).map(_.replaceAll(filterWordRegex, " ")).suchThat(!_.trim.isEmpty)
   def unspecifiedGen(implicit config: Config) = Gen.const(Unspecified())
   def filterValueGen[T](innerGen: Gen[T])(implicit config: Config): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
 
@@ -73,7 +68,7 @@ object ApiGenerators {
   }
 
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
-    .suchThat(word => !filterWords.contains(word.toLowerCase))
+    .suchThat(word => !filterWordRegex.r.matchesAny(word) && !filterWords.contains(word.toLowerCase))
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
   def innerRegionQueryGen(implicit config: Config): Gen[Region] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
     case (regionSource, regionObject) => Region(regionJsonToQueryRegion(regionSource, regionObject))

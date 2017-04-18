@@ -36,7 +36,7 @@ import org.scalacheck.Gen.const
 import org.scalacheck.Gen.freqTuple
 import scala.BigDecimal
 import org.apache.lucene.analysis.standard.StandardAnalyzer
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -56,7 +56,23 @@ object Generators {
     middle <- Gen.alphaNumChar
     after <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
   } yield (before + middle.toString + after)
-  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (1, Gen.oneOf(StandardAnalyzer.ENGLISH_STOP_WORDS_SET.toSeq.map(_.toString))))
+
+  val filterWords = Set("in", "to", "as", "by", "from")
+  // See StandardAnalyzer.ENGLISH_STOP_WORDS_SET
+  val luceneStopWords = Seq("a", "an", "and", "are", "as", "at", "be", "but", "by",
+    "for", "if", "in", "into", "is", "it",
+    "no", "not", "of", "on", "or", "such",
+    "that", "the", "their", "then", "there", "these",
+    "they", "this", "to", "was", "will", "with")
+
+  val stopWords = luceneStopWords.filterNot(filterWords.contains(_))
+
+  val filterWordsWithSpace = filterWords.map(_ + " ")
+  val filterWordRegex = s"(?i)(${filterWords.mkString("|")})\\s"
+  def removeFilterWords(s: String) = s.replaceAll(filterWordRegex, " ").trim
+
+  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (1, Gen.oneOf(stopWords)))
+
   val textGen = Gen.frequency((15, nonEmptyTextWithStopWordsGen), (1, Gen.const("")))
 
   def smallSet[T](gen: Gen[T]): Gen[Set[T]] = listSizeBetween(1, 3, gen).map(_.toSet)
@@ -255,7 +271,7 @@ object Generators {
   }
 
   val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50).trim), 1000)
-  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(_.take(50).trim)).map(_.mkString(" ")), 50)
+  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" ")), 50)
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
@@ -263,7 +279,7 @@ object Generators {
     MediaTypes.`application/json`,
     MediaTypes.`application/octet-stream`
   ))
-  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(_.take(50).trim)).map(_.mkString(" "))
+  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" "))
   val randomFormatGen = cachedListGen(formatNameGen, 50)
 
   def textGen(inner: Gen[List[String]]) = inner

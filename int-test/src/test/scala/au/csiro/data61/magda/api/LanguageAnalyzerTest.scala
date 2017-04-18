@@ -13,6 +13,8 @@ import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import au.csiro.data61.magda.test.util.Generators
+import au.csiro.data61.magda.util.Regex._
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
@@ -47,7 +49,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
     def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
       def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
-        .filter(term => filterWordsWithSpace.forall(filterWord => !term.toLowerCase.contains(filterWord)))
+        .filter(term => !Generators.filterWordRegex.r.matchesAny(term))
         .filter(term => term.matches(".*[A-Z][a-z].*"))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -123,7 +125,8 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .filterNot(_.contains("."))
         .filterNot(_.contains("'"))
         .filterNot(_.toLowerCase.endsWith("ss"))
-        .filterNot(term => StandardAnalyzer.ENGLISH_STOP_WORDS_SET.contains(term.toLowerCase))
+        .filterNot(term => Generators.filterWords.contains(term.toLowerCase))
+        .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
         .filterNot(_.isEmpty)
         .filterNot(term => term.toLowerCase.endsWith("e") ||
           term.toLowerCase.endsWith("ies") ||
