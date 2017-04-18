@@ -5,16 +5,19 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.TestProbe
 import org.scalatest.Matchers
 import org.scalatest.fixture.FunSpec
+import scala.concurrent.duration._
 import scalikejdbc._
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport {
-  type FixtureParam = Api
+  case class FixtureParam(api: Api, webHookActorProbe: TestProbe)
 
   override def testConfigSource = "db.default.url = \"jdbc:postgresql://localhost/postgres?currentSchema=test\""
 
   override def withFixture(test: OneArgTest) = {
     val webHookActorProbe = TestProbe()
     val api = new Api(webHookActorProbe.ref, testConfig, system, executor, materializer)
+
+    webHookActorProbe.expectMsg(1 millis, WebHookActor.Process)
 
     DB localTx { implicit session =>
       sql"DROP SCHEMA IF EXISTS test CASCADE".update.apply()
@@ -26,6 +29,6 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
       initializeSql.update().apply()
     }
 
-    super.withFixture(test.toNoArgTest(api))
+    super.withFixture(test.toNoArgTest(FixtureParam(api, webHookActorProbe)))
   }
 }
