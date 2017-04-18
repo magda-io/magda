@@ -24,6 +24,7 @@ import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
+import com.sksamuel.elastic4s.Indexes
 
 trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
   val INSERTION_WAIT_TIME = 90 seconds
@@ -119,16 +120,10 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
 
     val stream = Source.fromIterator[DataSet](() => dataSets.iterator)
 
-    indexer.ready.map { _ =>
-      indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), stream)
-    }.flatMap { _ ⇒
-      client.execute(refreshIndex(indexName))
-    }.recover {
-      case e: Throwable ⇒
-        logger.error(e, "")
-        throw e
-    }.await(INSERTION_WAIT_TIME)
-
+    indexer.ready.await(INSERTION_WAIT_TIME)
+    blockUntilIndexExists(indexName)
+    indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), stream).await(INSERTION_WAIT_TIME)
+    refresh(indexName)
     blockUntilExactCount(dataSets.size, indexName, fakeIndices.getType(Indices.DataSetsIndexType))
 
     (indexName, dataSets, api.routes)

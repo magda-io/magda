@@ -50,6 +50,8 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
         val routes = webhookApi.routes
         indexer.ready.await
 
+        blockUntilIndexExists(indices.getIndex(config, Indices.DataSetsIndex))
+
         val payloads = dataSetsBatches.map(dataSets =>
           new RecordsChangedWebHookPayload(
             action = "records.changed",
@@ -74,6 +76,9 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
         }
 
         val allDataSets = dataSetsBatches.flatten
+
+        Thread.sleep(1000);
+
         refresh(indexId)
         blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
 
@@ -132,9 +137,9 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
             ))
           ))
 
-//          withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
-            cleanedOutputDataSets should equal(cleanedInputDataSets)
-//          }
+          //          withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
+          cleanedOutputDataSets should equal(cleanedInputDataSets)
+          //          }
         }
       }
     }

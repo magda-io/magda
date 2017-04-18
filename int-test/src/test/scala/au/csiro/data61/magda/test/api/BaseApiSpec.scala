@@ -44,9 +44,14 @@ import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
+import java.nio.file.Paths
+import com.sksamuel.elastic4s.embedded.LocalNode
+import java.nio.file.Path
+import java.util.UUID
+import org.elasticsearch.common.settings.Settings
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with SharedElasticSugar with BeforeAndAfter with BeforeAndAfterAll with MagdaGeneratorTest {
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
+  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(3 minutes)
   def buildConfig = TestActorSystem.config
   implicit val config = buildConfig
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem

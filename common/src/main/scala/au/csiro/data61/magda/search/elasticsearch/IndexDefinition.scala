@@ -79,8 +79,8 @@ object IndexDefinition extends DefaultJsonProtocol {
     name = "datasets",
     version = 25,
     indicesIndex = Indices.DataSetsIndex,
-    definition = (indices, config) =>
-      createIndex(indices.getIndex(config, Indices.DataSetsIndex))
+    definition = (indices, config) => {
+      val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
         .shards(config.getInt("elasticSearch.shardCount"))
         .replicas(config.getInt("elasticSearch.replicaCount"))
         .mappings(
@@ -140,6 +140,12 @@ object IndexDefinition extends DefaultJsonProtocol {
           )
         )
 
+      if (config.hasPath("indexer.refreshInterval")) {
+        baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))
+      } else {
+        baseDefinition
+      }
+    }
   )
 
   val REGION_LANGUAGE_FIELDS = Seq("regionName")
