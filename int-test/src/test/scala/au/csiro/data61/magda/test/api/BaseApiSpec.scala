@@ -51,7 +51,7 @@ import java.util.UUID
 import org.elasticsearch.common.settings.Settings
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with SharedElasticSugar with BeforeAndAfter with BeforeAndAfterAll with MagdaGeneratorTest {
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(3 minutes)
+  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(90 seconds)
   def buildConfig = TestActorSystem.config
   implicit val config = buildConfig
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
