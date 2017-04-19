@@ -47,7 +47,7 @@ export function fetchSearchResults(query: string): Store {
 
 export function shouldFetchSearchResults(state: Object, query: string): boolean{
   const results = state.results;
-  if(!results){
+  if(!results || state.results.apiQuery.length === 0){
     return false
   } else if(results.isFetching){
     return false

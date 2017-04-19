@@ -7,6 +7,7 @@ import facetPublisherSearch from './facetPublisherSearch';
 import facetRegionSearch from './facetRegionSearch';
 import facetFormatSearch from './facetFormatSearch';
 import regionMapping from './regionMapping';
+import pageStats from './pageStats';
 
 import { combineReducers } from 'redux';
 

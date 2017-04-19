@@ -4,6 +4,7 @@ import Region from './SearchFacets/Region';
 import Temporal from './SearchFacets/Temporal';
 
 const config = {
+        appName: "Australia open data search",
         searchApiBaseUrl: 'http://magda-search-api-dev.terria.io/',
         facetListSize: 5,
         resultsPerPage: 10,
@@ -18,13 +19,15 @@ const config = {
           'Budget from 2016 to 2017 by Department of Finance',
           'Planning as WMS'
         ],
+        suggestion: "Try searcing for \n\n [Business names by ASIC as CSV]('search?q=Business+names+by+ASIC+as+CSV')",
         facets: [{id: 'publisher', component: Publisher},
                  {id: 'region', component: Region},
                  {id: 'temporal', component: Temporal},
                  {id: 'format', component: Format}
                ],
         headerNavigation: [["Search", "search"], ["Projects", "projects"], ["Publishers", "publishers"], ["About", "about"]],
-        footerNavigation: [{category: "Search", links: [["Search syntax", "search-syntax"], ["Data sources", "data-source"], ["Publishers", "publisher"]]},
+        footerNavigation: [
+                    {category: "Search", links: [["Search syntax", "search-syntax"], ["Data sources", "data-source"], ["Publishers", "publisher"]]},
                     {category: "Projects", links: [["Browse projects", "browse-projects"], ["start a projects", "start-a-projects"]]},
                     {category: "Publishers", links: [["Publisher index", "publisher-index"], ["Open data toolkit", "open-data-toolkit"]]},
                     {category: "Developers", links: [["Archetecture", "archetecture"], ["API doc", "api-doc"]]},

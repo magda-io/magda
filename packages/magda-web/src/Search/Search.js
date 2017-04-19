@@ -129,12 +129,7 @@ class Search extends Component {
    * This calculate the value to show in the search box
    */
   getSearchBoxValue(){
-    if(defined(this.state.searchText)){
-      return this.state.searchText;
-    } else if(defined(this.props.location.query.q)){
-      return this.props.location.query.q
-    }
-    return '';
+    return true;
   }
 
   onDismissError(){
@@ -157,27 +152,12 @@ class Search extends Component {
             <div className='container'>
               <div className='row'>
               <div className='col-sm-8 col-sm-offset-4'>
-                <SearchBox value={this.getSearchBoxValue()}
-                           onChange={this.onSearchTextChange}
-                           onKeyPress={this.handleSearchFieldEnterKeyPress}
-                           onClearSearch={this.onClearSearch}
-                           onClickSearch={this.onClickSearch}/>
-                {this.getSearchBoxValue().length === 0 &&
-                  <WelcomeText onClick={this.updateSearchText}/>
-                }
               </div>
             </div>
           </div>
           </div>
           <div className='search__search-body container'>
           <div className='row'>
-            <div className='col-sm-4 hidden-xs'>
-                {this.getSearchBoxValue().length > 0 &&
-                 <SearchFacets updateQuery={this.updateQuery}
-                               location={this.props.location}
-                 />
-                }
-            </div>
             <div className='col-sm-8'>
                 {this.getSearchBoxValue().length > 0 &&
                  !this.props.isFetching &&

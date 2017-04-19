@@ -14,6 +14,7 @@ export function requestRegionMapping(): Action{
 }
 
 export function receiveRegionMapping(json: Object): Action{
+  console.log(actionTypes.RECEIVE_REGION_MAPPING);
   return {
     type: actionTypes.RECEIVE_REGION_MAPPING,
     json: json,

@@ -31,7 +31,10 @@ const store = createStore(
 browserHistory.listen (location=>{
   window.ga('set', 'location', document.location);
   window.ga('send', 'pageview');
-  store.dispatch(fetchSearchResultsIfNeeded(location.query));
+  if(location.pathname === '/search'){
+      store.dispatch(fetchSearchResultsIfNeeded(location.query));
+  }
+  
 })
 
 ReactDOM.render(
@@ -42,7 +45,7 @@ ReactDOM.render(
         <Route path="search" component={Search} />
         <Route path="dataset/:dataset/" component={DatasetDetails} />
         {staticPageRegister.map( item => 
-        <Route path={item.path} component={item.component}/>)}
+        <Route path={item.path} key={item.path} component={item.component}/>)}
       </Route>
     </Router>
   </Provider>,
