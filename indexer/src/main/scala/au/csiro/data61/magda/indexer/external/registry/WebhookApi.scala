@@ -36,9 +36,9 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
             case Some(records) =>
               val dataSets = records.map(record => RegistryConverters.registryDataSetConv(registryConfig.get)(record))
 
-              indexer.index(registryConfig.get, Source(dataSets))
-
-              complete(Accepted)
+              onSuccess(indexer.index(registryConfig.get, Source(dataSets))) { result =>
+                complete(Accepted)
+              }
             case None => complete(BadRequest, "Needs records")
           }
         }

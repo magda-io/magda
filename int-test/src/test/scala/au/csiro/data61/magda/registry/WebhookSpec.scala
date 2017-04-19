@@ -29,6 +29,7 @@ import spray.json._
 import spray.json.JsNull
 import spray.json.JsObject
 import au.csiro.data61.magda.model.temporal.ApiDate
+import scala.concurrent.duration._
 
 class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols with ApiProtocols {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
@@ -66,20 +67,14 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
         }
 
         val responses = posts.map { post =>
-          post ~> routes
-        }
-
-        responses.foreach { response =>
-          response ~> check {
+          post ~> routes ~> check {
             status shouldBe Accepted
           }
         }
-
         val allDataSets = dataSetsBatches.flatten
 
-        Thread.sleep(1000);
-
         refresh(indexId)
+
         blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
 
         Get(s"/datasets/search?query=*&limit=${allDataSets.size}") ~> searchApi.routes ~> check {
