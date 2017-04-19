@@ -15,7 +15,7 @@ import SearchFacets from '../SearchFacets/SearchFacets';
 import Publisher from '../SearchFacets/Publisher';
 import SearchResults from '../SearchResults/SearchResults';
 import WelcomeText from './WelcomeText';
-import NoMatching from './NoMatching';
+import MatchingStatus from './MatchingStatus';
 import {fetchRegionMapping} from '../actions/regionMapping';
 import { bindActionCreators } from "redux";
 import {fetchSearchResultsIfNeeded} from '../actions/results';
@@ -168,8 +168,8 @@ class Search extends Component {
                  
                  {defined(this.props.location.query.q) &&
                   this.props.location.query.q.length > 0 &&
-                    <NoMatching datasets={this.props.datasets}
-                                strategy={this.props.strategy}
+                    <MatchingStatus datasets={this.props.datasets}
+                                    strategy={this.props.strategy}
                     />
                   }
 

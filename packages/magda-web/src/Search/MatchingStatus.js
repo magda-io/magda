@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import './NoMatching.css';
+import './MatchingStatus.css';
 
-export default class NoMatching extends Component {
+export default class MatchingStatus extends Component {
   render(){
     if(this.props.datasets.length > 0){
       if(this.props.strategy === 'match-part'){

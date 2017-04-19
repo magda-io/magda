@@ -19,7 +19,7 @@ const config = {
           'Budget from 2016 to 2017 by Department of Finance',
           'Planning as WMS'
         ],
-        suggestion: "Try searcing for \n\n [Business names by ASIC as CSV]('search?q=Business+names+by+ASIC+as+CSV')",
+        suggestion: "Try searcing for \n\n [Business names by ASIC as CSV](/search?q=Business+names+by+ASIC+as+CSV)",
         facets: [{id: 'publisher', component: Publisher},
                  {id: 'region', component: Region},
                  {id: 'temporal', component: Temporal},
