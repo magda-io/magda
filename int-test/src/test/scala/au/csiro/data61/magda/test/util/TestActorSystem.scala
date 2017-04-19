@@ -10,6 +10,7 @@ object TestActorSystem {
   val config = ConfigFactory.parseString(s"""
     akka.loglevel = ${if (ContinuousIntegration.isCi) "ERROR" else "INFO"}
     indexer.refreshInterval = -1
+    akka.http.server.request-timeout = 30s
   """).resolve().withFallback(AppConfig.conf(Some("local")))
 
   def actorSystem = ActorSystem("TestActorSystem", config)

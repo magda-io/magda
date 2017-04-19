@@ -101,6 +101,10 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         Stream.empty
       }
 
+      implicit val disableShrink: Shrink[(List[DataSet], Route, String, String, DataSet)] = Shrink { _ =>
+        Stream.empty
+      }
+
       val quoteGen = for {
         (_, dataSets, routes) <- indexGen.suchThat(!_._2.filter(_.description.isDefined).isEmpty)
         dataSetsWithDesc = dataSets.filter(_.description.isDefined)
@@ -117,7 +121,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
       forAll(quoteGen) {
         case (dataSets, routes, quote, reverseOrderQuote, sourceDataSet) =>
-          whenever(quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
+          whenever(!dataSets.isEmpty && quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
             Get(s"""/datasets/search?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
@@ -128,8 +132,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               response.dataSets.exists(_.identifier == sourceDataSet.identifier)
 
               response.dataSets.foreach { dataSet =>
-                withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.toString.toLowerCase}") {
-                  MagdaMatchers.extractAlphaNum(dataSet.toString).contains(
+                withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
+                  MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
                     MagdaMatchers.extractAlphaNum(quote)
                   ) should be(true)
                 }
@@ -143,8 +147,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
               if (response.strategy.get == MatchAll) {
                 response.dataSets.foreach { dataSet =>
-                  withClue(s"dataSet term ${reverseOrderQuote.toLowerCase} and dataSet ${dataSet.toString.toLowerCase}") {
-                    MagdaMatchers.extractAlphaNum(dataSet.toString).contains(
+                  withClue(s"dataSet term ${reverseOrderQuote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
+                    MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
                       MagdaMatchers.extractAlphaNum(reverseOrderQuote)
                     ) should be(true)
                   }
@@ -165,7 +169,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         forAll(mediumIndexGen, textQueryGen(queryGen)) { (indexTuple, queryTuple) ⇒
           val (_, dataSets, routes) = indexTuple
           val (textQuery, query) = queryTuple
-              
+
           Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
@@ -228,7 +232,12 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                     val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
                     val jtsRegion = GeometryConverter.toJTSGeo(queryRegion._3, geometryFactory)
 
-                    val length = Math.max(jtsGeo.getLength, jtsRegion.getLength)
+                    val length = {
+                      val jtsGeoEnv = jtsGeo.getEnvelopeInternal
+                      val jtsRegionEnv = jtsRegion.getEnvelopeInternal
+
+                      Seq(jtsGeoEnv.getHeight, jtsGeoEnv.getWidth, jtsRegionEnv.getHeight, jtsRegionEnv.getWidth).sorted.last
+                    }
 
                     (jtsGeo.distance(jtsRegion), if (length > 0) length else 1)
                   }))
@@ -497,22 +506,22 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
   describe("pagination") {
     it("should match the result of getting all datasets and using .drop(start).take(limit) to select a subset") {
-      forAll(indexGen) {
-        case (indexName, dataSets, routes) ⇒
-          val dataSetCount = dataSets.size
+      val gen = for {
+        (indexName, dataSets, routes) <- indexGen
+        dataSetCount = dataSets.size
+        start <- Gen.choose(0, dataSetCount)
+        limit <- Gen.choose(0, dataSetCount)
+      } yield (indexName, dataSets, routes, start, limit)
 
-          val starts = for (n ← Gen.choose(0, dataSetCount)) yield n
-          val limits = for (n ← Gen.choose(0, dataSetCount)) yield n
+      forAll(gen) {
+        case (indexName, dataSets, routes, start, limit) =>
+          whenever(start >= 0 && start <= dataSets.size && limit >= 0 && limit <= dataSets.size) {
+            Get(s"/datasets/search?query=*&start=${start}&limit=${limit}") ~> routes ~> check {
+              status shouldBe OK
+              val result = responseAs[SearchResult]
 
-          forAll(starts, limits) { (start, limit) ⇒
-            whenever(start >= 0 && start <= dataSetCount && limit >= 0 && limit <= dataSetCount) {
-              Get(s"/datasets/search?query=*&start=${start}&limit=${limit}") ~> routes ~> check {
-                status shouldBe OK
-                val result = responseAs[SearchResult]
-
-                val expectedResultIdentifiers = dataSets.drop(start).take(limit).map(_.identifier)
-                expectedResultIdentifiers shouldEqual result.dataSets.map(_.identifier)
-              }
+              val expectedResultIdentifiers = dataSets.drop(start).take(limit).map(_.identifier)
+              expectedResultIdentifiers shouldEqual result.dataSets.map(_.identifier)
             }
           }
       }

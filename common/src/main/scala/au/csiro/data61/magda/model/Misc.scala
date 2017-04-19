@@ -9,6 +9,7 @@ import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.model.GeoJsonFormats._
 import au.csiro.data61.magda.model.temporal._
 import spray.json._
+import scala.runtime.ScalaRunTime
 
 package misc {
   sealed trait FacetType {
@@ -72,7 +73,9 @@ package misc {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
 
-    //    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
+    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
+
+    def normalToString: String = ScalaRunTime._toString(this)
   }
 
   case class Agent(

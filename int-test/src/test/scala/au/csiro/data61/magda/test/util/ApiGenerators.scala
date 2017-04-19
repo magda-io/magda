@@ -41,7 +41,12 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.test.util.Generators._
 
 object ApiGenerators {
-  val queryTextGen = descWordGen.flatMap(descWords => descWordGen.flatMap(descWords => listSizeBetween(1, 5, Gen.oneOf(descWords)))).map(_.mkString(" ")).map(_.replaceAll(filterWordRegex, " ")).suchThat(!_.trim.isEmpty)
+  val queryTextGen = for {
+    allDescWords <- descWordGen
+    safeDescWords = allDescWords.filterNot(x => Generators.filterWords.contains(x.toLowerCase))
+    someDescWords <- listSizeBetween(1, 5, Gen.oneOf(allDescWords))
+    concated = someDescWords.mkString(" ")
+  } yield concated
   def unspecifiedGen(implicit config: Config) = Gen.const(Unspecified())
   def filterValueGen[T](innerGen: Gen[T])(implicit config: Config): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
 
@@ -50,7 +55,7 @@ object ApiGenerators {
 
   val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
   val formatQueryGenInner = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyTextGen))
-    .suchThat(word => !filterWords.contains(word.toLowerCase))
+    .suchThat(validFilter)
   def formatQueryGen(implicit config: Config) = filterValueGen(formatQueryGenInner)
 
   val partialPublisherGen = publisherGen.flatMap(Gen.oneOf(_)).flatMap { publisher =>
@@ -67,8 +72,9 @@ object ApiGenerators {
     } yield split.slice(start, Math.max(split.length - 1, 1)).mkString(delimiter)
   }
 
+  def validFilter(word: String): Boolean = !filterWordRegex.r.matchesAny(word) && !filterWords.contains(word.toLowerCase) && word.exists(_.isLetterOrDigit)
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
-    .suchThat(word => !filterWordRegex.r.matchesAny(word) && !filterWords.contains(word.toLowerCase))
+    .suchThat(validFilter)
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
   def innerRegionQueryGen(implicit config: Config): Gen[Region] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
     case (regionSource, regionObject) => Region(regionJsonToQueryRegion(regionSource, regionObject))
