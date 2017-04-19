@@ -14,6 +14,7 @@ export function requestResults(apiQuery: string ): Action{
 }
 
 export function receiveResults(apiQuery: string, json: DataSearchJson): DataAction{
+  debugger
   return {
     type: actionTypes.RECEIVE_RESULTS,
     apiQuery,
@@ -45,9 +46,9 @@ export function fetchSearchResults(query: string): Store {
   }
 }
 
-export function shouldFetchSearchResults(state: Object, query: string): boolean{
+export function shouldFetchSearchResults(state: Object, keyword: string, query: string): boolean{
   const results = state.results;
-  if(!results || state.results.apiQuery.length === 0){
+  if(!results || !keyword || keyword.length === 0 ){
     return false
   } else if(results.isFetching){
     return false
@@ -59,9 +60,10 @@ export function shouldFetchSearchResults(state: Object, query: string): boolean{
 }
 
 export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
-  let apiQuery = parseQuery(urlQueryObject);
+  const apiQuery = parseQuery(urlQueryObject);
+
   return (dispatch, getState)=>{
-    if(shouldFetchSearchResults(getState(), apiQuery)){
+    if(shouldFetchSearchResults(getState(), urlQueryObject.q,  apiQuery)){
       return dispatch(fetchSearchResults(apiQuery))
     }
   }
@@ -146,3 +148,4 @@ export function resetDateTo(): Action{
     type: actionTypes.RESET_DATE_TO
   }
 }
+

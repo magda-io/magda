@@ -17,7 +17,8 @@ import SearchResults from '../SearchResults/SearchResults';
 import WelcomeText from './WelcomeText';
 import NoMatching from './NoMatching';
 import {fetchRegionMapping} from '../actions/regionMapping';
-
+import { bindActionCreators } from "redux";
+import {fetchSearchResultsIfNeeded} from '../actions/results';
 
 class Search extends Component {
 
@@ -43,13 +44,12 @@ class Search extends Component {
   }
 
   componentWillMount(){
-    this.props.dispatch(fetchRegionMapping());
+    this.props.fetchSearchResultsIfNeeded(this.props.location.query);
   }
+  
 
   componentWillReceiveProps(nextProps){
-    this.setState({
-      searchText: nextProps.location.query.q
-    })
+    this.props.fetchSearchResultsIfNeeded(nextProps.location.query);
   }
 
   onSearchTextChange(text){
@@ -125,13 +125,6 @@ class Search extends Component {
     });
   }
 
-  /**
-   * This calculate the value to show in the search box
-   */
-  getSearchBoxValue(){
-    return true;
-  }
-
   onDismissError(){
     // remove all current configurations
     this.updateSearchText('');
@@ -143,23 +136,29 @@ class Search extends Component {
     })
   }
 
+   /**
+   * query in this case, is one or more of the params
+   * eg: {'q': 'water'}
+   */
+  updateQuery(query){
+    let {router} = this.context;
+    router.push({
+      pathname: '/search',
+      query: Object.assign(this.props.location.query, query)
+    });
+  }
+
   render() {
+    const searchText = this.props.location.query.q;
+    debugger
     return (
       <div>
         {this.props.isFetching && <ProgressBar progress={this.props.progress}/>}
         <div className='search'>
-          <div className='search__search-header'>
-            <div className='container'>
-              <div className='row'>
-              <div className='col-sm-8 col-sm-offset-4'>
-              </div>
-            </div>
-          </div>
-          </div>
           <div className='search__search-body container'>
           <div className='row'>
             <div className='col-sm-8'>
-                {this.getSearchBoxValue().length > 0 &&
+                {searchText.length > 0 &&
                  !this.props.isFetching &&
                  !this.props.hasError &&
                  <div>
@@ -213,12 +212,18 @@ Search.propTypes = {
   datasets: React.PropTypes.array.isRequired,
   hitCount: React.PropTypes.number.isRequired,
   isFetching: React.PropTypes.bool.isRequired,
-  dispatch: React.PropTypes.func.isRequired,
   progress: React.PropTypes.number.isRequired,
   hasError: React.PropTypes.bool.isRequired,
   strategy: React.PropTypes.string.isRequired,
   freeText: React.PropTypes.string,
   errorMessage: React.PropTypes.string
+}
+
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({
+    fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
+  }, dispatch);
 }
 
 
@@ -236,4 +241,4 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(mapStateToProps)(Search);
+export default connect(mapStateToProps, mapDispatchToProps)(Search);

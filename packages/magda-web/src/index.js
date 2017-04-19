@@ -30,11 +30,7 @@ const store = createStore(
 
 browserHistory.listen (location=>{
   window.ga('set', 'location', document.location);
-  window.ga('send', 'pageview');
-  if(location.pathname === '/search'){
-      store.dispatch(fetchSearchResultsIfNeeded(location.query));
-  }
-  
+  window.ga('send', 'pageview');  
 })
 
 ReactDOM.render(
