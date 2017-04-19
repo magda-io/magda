@@ -158,6 +158,15 @@ class Search extends Component {
           <div className='search__search-body container'>
           <div className='row'>
             <div className='col-sm-8'>
+              {searchText.length > 0 &&
+                 <SearchFacets updateQuery={this.updateQuery}
+                               location={this.props.location}
+                 />
+                }
+            </div>
+          </div>
+          <div className='row'>
+            <div className='col-sm-8'>
                 {searchText.length > 0 &&
                  !this.props.isFetching &&
                  !this.props.hasError &&
