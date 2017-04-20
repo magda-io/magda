@@ -88,6 +88,12 @@ sbt ~deployLocalOnChange
 
 This will automatically re-run `deployLocal` for a component each time a source file used by that component changes. 
 
+The CKAN Connector currently assumes the registry running on http://localhost:6100.  But when running on a Kubernetes cluster, it will be on the Kubernetes node's port 30010.  You can bridge this gap by port forwarding:
+
+```bash
+kubectl port-forward $(kubectl get pods -l service=registry-api -o=custom-columns=NAME:.metadata.name --no-headers) 6100:80 > /dev/null &
+```
+
 ## Host
 
 To run MAGDA itself directly on your development machine, follow these steps.
