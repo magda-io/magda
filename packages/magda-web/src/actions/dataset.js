@@ -35,7 +35,7 @@ export function datasetNotFound(): Action {
 export function fetchDatasetFromRegistry(id: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestDataset(id))
-    let url : string = config.registryUrl + `${encodeURIComponent(id)}`
+    let url : string = config.registryUrl + `${encodeURIComponent(id)}`;
     return fetch(url)
     .then(response => {
         if (response.status >= 400) {
@@ -44,10 +44,9 @@ export function fetchDatasetFromRegistry(id: string):Object{
         } else if ( false ){
             dispatch(datasetNotFound())
         }
-        response.json()
+        return response.json();
     })
-    .then((json: Dataset) =>
-      dispatch(receiveDataset(json))
+    .then((json: Dataset) => dispatch(receiveDataset(json))
     )
   }
 }

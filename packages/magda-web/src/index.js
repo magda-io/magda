@@ -9,7 +9,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Home from './Components/Home';
 import Search from './Search/Search';
-import DatasetDetails from './Components/DatasetDetails';
+import DatasetHandler from './Components/DatasetHandler';
 import AppContainer from './Components/AppContainer';
 import { Provider } from 'react-redux';
 import reducer from './reducers/index';
@@ -39,7 +39,7 @@ ReactDOM.render(
       <Route path={baseurl} component={AppContainer}>
         <IndexRoute component={Home}/>
         <Route path="search" component={Search} />
-        <Route path="dataset/:datasetId" component={DatasetDetails} />
+        <Route path="dataset/:datasetId" component={DatasetHandler} />
         {staticPageRegister.map( item => 
         <Route path={item.path} key={item.path} component={item.component}/>)}
       </Route>

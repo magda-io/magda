@@ -14,7 +14,6 @@ export function requestResults(apiQuery: string ): Action{
 }
 
 export function receiveResults(apiQuery: string, json: DataSearchJson): DataAction{
-  debugger
   return {
     type: actionTypes.RECEIVE_RESULTS,
     apiQuery,
