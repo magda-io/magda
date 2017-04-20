@@ -219,10 +219,10 @@ class FacetSpec extends BaseSearchApiSpec {
 
                 whenever(!unmatched.isEmpty) {
                   unmatched.foreach { option ⇒
-                    val facetDataSets = innerDataSets.filter(filter(_, option))
+                    val grouped = groupResult(innerDataSets)
 
-                    withClue(s"For option ${option} and grouped datasets ${groupResult(innerDataSets).mapValues(_.size)}") {
-                      facetDataSets.size shouldEqual option.hitCount
+                    withClue(s"For option ${option} and grouped datasets ${grouped.mapValues(_.size)}") {
+                      grouped(option.value).size shouldEqual option.hitCount
                     }
                   }
                 }
