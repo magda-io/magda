@@ -124,6 +124,9 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
     blockUntilIndexExists(indexName)
     indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), stream).await(INSERTION_WAIT_TIME)
     refresh(indexName)
+
+//    System.gc()
+
     blockUntilExactCount(dataSets.size, indexName, fakeIndices.getType(Indices.DataSetsIndexType))
 
     (indexName, dataSets, api.routes)
@@ -142,7 +145,9 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
     )
   }
 
-  after {
+  override def afterEach() {
+    super.afterEach()
+
     cleanUpIndexes()
   }
 }

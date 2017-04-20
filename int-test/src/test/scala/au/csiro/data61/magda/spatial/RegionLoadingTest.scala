@@ -36,8 +36,9 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionH
 import org.scalactic.anyvals.PosInt
 import com.sksamuel.elastic4s.testkit.SharedElasticSugar
 import au.csiro.data61.magda.test.util.TestActorSystem
+import au.csiro.data61.magda.test.util.MagdaElasticSugar
 
-class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with SharedElasticSugar {
+class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with MagdaElasticSugar {
   implicit val ec = system.dispatcher
 
   implicit val materializer = ActorMaterializer()
@@ -107,8 +108,10 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
     IndexDefinition.setupRegions(client, regionLoader, fakeIndices).await(120 seconds)
     val indexName = fakeIndices.getIndex(config, Indices.RegionsIndex)
     val typeName = fakeIndices.getType(Indices.RegionsIndexType)
+
     refresh(indexName)
-    Thread.sleep(2000)
+
+    blockUntilExactCount(regions.size, indexName, typeName)
 
     regions.foreach { region =>
       val regionId = region._1.name.toLowerCase + "/" + region._2.fields("properties").asJsObject.fields(region._1.idProperty).asInstanceOf[JsString].value
@@ -144,6 +147,8 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
         }
       }
     }
+
+    deleteIndex(indexName)
   }
 
   def withinFraction(left: Double, right: Double, comparison: Double, fraction: Double) = (

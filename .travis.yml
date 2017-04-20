@@ -9,7 +9,7 @@ services:
   - postgresql
 env:
   global:
-    - SBT_OPTS="-Xms4000M -Xmx4000M -XX:+CMSClassUnloadingEnabled"
+    - SBT_OPTS="-Xms1000M -Xmx1000M -XX:+CMSClassUnloadingEnabled -XX:MaxGCPauseMillis=100 -XX:+UseG1GC"
     - CI=true
 addons:
     postgresql: "9.6"

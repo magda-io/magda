@@ -62,6 +62,8 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
         doTest(indexId, sources, true)
         doTest(indexId, sources, false)
+
+        deleteIndex(indexId)
     }
   }
 

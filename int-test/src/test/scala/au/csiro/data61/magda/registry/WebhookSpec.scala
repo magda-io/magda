@@ -135,6 +135,8 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
           //          withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
           cleanedOutputDataSets should equal(cleanedInputDataSets)
           //          }
+          
+          deleteIndex(indexId)
         }
       }
     }
