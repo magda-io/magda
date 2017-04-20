@@ -25,7 +25,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.indexer.external.ckan._
 import au.csiro.data61.magda.model.misc.Protocols._

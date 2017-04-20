@@ -2,7 +2,7 @@ package au.csiro.data61.magda.indexer.external.registry
 
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.api.BaseMagdaApi
-import au.csiro.data61.magda.model.Registry.RecordsChangedWebHookPayload
+import au.csiro.data61.magda.model.Registry.WebHookPayload
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.server.Directives._
 import scala.util.Failure
@@ -30,7 +30,7 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
   val routes =
     magdaRoute {
       post {
-        entity(as[RecordsChangedWebHookPayload]) { payload =>
+        entity(as[WebHookPayload]) { payload =>
           payload.records match {
             // TODO: Handle registry config not found
             case Some(records) =>

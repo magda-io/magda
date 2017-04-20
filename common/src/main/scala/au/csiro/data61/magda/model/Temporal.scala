@@ -5,7 +5,7 @@ import java.time._
 import au.csiro.data61.magda.util.DateParser._
 import spray.json._
 
-package temporal {
+object Temporal {
 
   object Periodicity {
     val asNeeded: Periodicity = new Periodicity(text = Some("As Needed"))

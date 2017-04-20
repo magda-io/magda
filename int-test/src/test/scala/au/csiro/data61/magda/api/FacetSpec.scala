@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import au.csiro.data61.magda.util.SetExtractor
 import org.scalacheck.Arbitrary._
-import au.csiro.data61.magda.model.temporal.PeriodOfTime
+import au.csiro.data61.magda.model.Temporal.PeriodOfTime
 import au.csiro.data61.magda.search.SearchStrategy.{ MatchAll, MatchPart }
 import java.util.HashMap
 import com.sksamuel.elastic4s.TcpClient

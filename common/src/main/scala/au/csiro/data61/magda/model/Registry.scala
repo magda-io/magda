@@ -11,11 +11,20 @@ import spray.json.JsNumber
 import spray.json.RootJsonFormat
 
 object Registry {
-  case class RecordsChangedWebHookPayload(
+  @ApiModel(description = "A type of aspect in the registry.")
+  case class AspectDefinition(
+    @(ApiModelProperty @field)(value = "The unique identifier for the aspect type.", required = true) id: String,
+
+    @(ApiModelProperty @field)(value = "The name of the aspect.", required = true) name: String,
+
+    @(ApiModelProperty @field)(value = "The JSON Schema of this aspect.", required = false, dataType = "object") jsonSchema: Option[JsObject])
+
+  case class WebHookPayload(
     action: String,
     lastEventId: Long,
     events: Option[List[RegistryEvent]],
-    records: Option[List[Record]])
+    records: Option[List[Record]],
+    aspectDefinitions: Option[List[AspectDefinition]])
 
   case class RegistryEvent(
     id: Option[Long],
@@ -35,7 +44,14 @@ object Registry {
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
   case class Aspect()
-  sealed abstract class EventType(val value: Int, val name: String) extends IntEnumEntry
+  sealed abstract class EventType(val value: Int, val name: String) extends IntEnumEntry {
+    def isRecordEvent = this == EventType.CreateRecord || this == EventType.DeleteRecord || this == EventType.PatchRecord
+    def isAspectDefinitionEvent = this == EventType.CreateAspectDefinition || this == EventType.PatchAspectDefinition || this == EventType.DeleteAspectDefinition
+    def isRecordAspectEvent = this == EventType.CreateRecordAspect || this == EventType.DeleteRecordAspect || this == EventType.PatchRecordAspect
+    def isCreateEvent = this == EventType.CreateRecord || this == EventType.CreateRecordAspect || this == EventType.CreateAspectDefinition
+    def isDeleteEvent = this == EventType.DeleteRecord || this == EventType.DeleteRecordAspect || this == EventType.DeleteAspectDefinition
+    def isPatchEvent = this == EventType.PatchRecord || this == EventType.PatchRecordAspect || this == EventType.PatchAspectDefinition
+  }
 
   case object EventType extends IntEnum[EventType] {
     case object CreateRecord extends EventType(0, "Create Record")
@@ -51,7 +67,7 @@ object Registry {
     val values = findValues
   }
 
-  trait Protocols extends DefaultJsonProtocol with au.csiro.data61.magda.model.temporal.Protocols {
+  trait Protocols extends DefaultJsonProtocol with au.csiro.data61.magda.model.Temporal.Protocols {
     implicit object EventTypeFormat extends RootJsonFormat[EventType] {
       def write(e: EventType) = JsNumber(e.value)
       def read(value: JsValue) = EventType.withValue(value.asInstanceOf[JsNumber].value.toInt)
@@ -59,6 +75,7 @@ object Registry {
 
     implicit val recordFormat = jsonFormat3(Record.apply)
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
-    implicit val recordsChangedWebHookPayloadFormat = jsonFormat4(RecordsChangedWebHookPayload.apply)
+    implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
+    implicit val webHookPayloadFormat = jsonFormat5(WebHookPayload.apply)
   }
 }

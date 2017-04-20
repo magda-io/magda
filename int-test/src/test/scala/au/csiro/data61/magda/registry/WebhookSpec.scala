@@ -19,8 +19,8 @@ import au.csiro.data61.magda.model.Registry.{ Protocols => RegistryProtocols }
 import au.csiro.data61.magda.model.Registry.Record
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
-import au.csiro.data61.magda.model.temporal.PeriodOfTime
-import au.csiro.data61.magda.model.temporal.Periodicity
+import au.csiro.data61.magda.model.Temporal.PeriodOfTime
+import au.csiro.data61.magda.model.Temporal.Periodicity
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
@@ -28,7 +28,7 @@ import au.csiro.data61.magda.test.util.Generators
 import spray.json._
 import spray.json.JsNull
 import spray.json.JsObject
-import au.csiro.data61.magda.model.temporal.ApiDate
+import au.csiro.data61.magda.model.Temporal.ApiDate
 import scala.concurrent.duration._
 
 class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols with ApiProtocols {
@@ -54,11 +54,12 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
         blockUntilIndexExists(indices.getIndex(config, Indices.DataSetsIndex))
 
         val payloads = dataSetsBatches.map(dataSets =>
-          new RecordsChangedWebHookPayload(
+          new WebHookPayload(
             action = "records.changed",
             lastEventId = 104856,
             events = None, // Not needed yet - soon?
-            records = Some(dataSets.map(dataSetToRecord))
+            records = Some(dataSets.map(dataSetToRecord)),
+            aspectDefinitions = None
           )
         )
 
@@ -135,7 +136,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
           //          withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
           cleanedOutputDataSets should equal(cleanedInputDataSets)
           //          }
-          
+
           deleteIndex(indexId)
         }
       }

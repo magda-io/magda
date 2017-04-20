@@ -8,7 +8,7 @@ import org.scalacheck.Gen.Choose._
 import org.scalacheck.Arbitrary._
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import java.time.ZonedDateTime
 
 import com.fortysevendeg.scalacheck.datetime.instances.jdk8._

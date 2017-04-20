@@ -6,7 +6,7 @@ import scala.concurrent.Future
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc._
 import java.net.URL
 import au.csiro.data61.magda.indexer.external.csw.CSWExternalInterface

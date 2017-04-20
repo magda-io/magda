@@ -2,7 +2,6 @@ package au.csiro.data61.magda.indexer
 
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.api.BaseMagdaApi
-import au.csiro.data61.magda.model.Registry.RecordsChangedWebHookPayload
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.server.Directives._
 import scala.util.Failure

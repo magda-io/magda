@@ -11,7 +11,7 @@ import org.scalacheck.Gen.Choose._
 import org.scalacheck.Arbitrary._
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import java.time.ZonedDateTime
 import com.fortysevendeg.scalacheck.datetime.instances.jdk8._
 import java.time.ZoneOffset
@@ -26,7 +26,7 @@ import spray.json._
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc.Protocols._
 import scala.util.Try
 import org.locationtech.spatial4j.shape.jts.JtsGeometry

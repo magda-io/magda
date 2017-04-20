@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.MediaTypes
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import spray.json._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Distribution
 import au.csiro.data61.magda.model.misc.Protocols._

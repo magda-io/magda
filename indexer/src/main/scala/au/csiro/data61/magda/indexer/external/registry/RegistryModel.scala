@@ -6,7 +6,7 @@ import java.time.{ OffsetDateTime, ZoneOffset }
 import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.Registry.{ Record, Protocols => RegistryProtocols }
-import au.csiro.data61.magda.model.temporal.{ ApiDate, PeriodOfTime, Periodicity }
+import au.csiro.data61.magda.model.Temporal.{ ApiDate, PeriodOfTime, Periodicity }
 import spray.json.{ DefaultJsonProtocol, JsArray, JsObject }
 import spray.json.lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._

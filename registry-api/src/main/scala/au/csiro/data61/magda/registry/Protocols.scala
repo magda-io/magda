@@ -1,14 +1,15 @@
 package au.csiro.data61.magda.registry
 
-import spray.json.{DefaultJsonProtocol, JsNumber, JsValue, RootJsonFormat}
+import spray.json._
 import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry.{ Protocols => CommonRegistryProtocols }
+import au.csiro.data61.magda.registry.DeleteResult
+import au.csiro.data61.magda.registry.BadRequest
 
-trait Protocols extends DefaultJsonProtocol with DiffsonProtocol with au.csiro.data61.magda.model.temporal.Protocols with CommonRegistryProtocols {
+trait Protocols extends DefaultJsonProtocol with DiffsonProtocol with au.csiro.data61.magda.model.Temporal.Protocols with CommonRegistryProtocols {
 
   implicit val badRequestFormat = jsonFormat1(BadRequest.apply)
-  implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
   implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
   implicit val patchAspectDefinitionEventFormat = jsonFormat2(PatchAspectDefinitionEvent.apply)
   implicit val createAspectDefinitionEventFormat = jsonFormat3(CreateAspectDefinitionEvent.apply)
@@ -22,6 +23,4 @@ trait Protocols extends DefaultJsonProtocol with DiffsonProtocol with au.csiro.d
   implicit val deleteResultFormat = jsonFormat1(DeleteResult.apply)
   implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
   implicit val webHookFormat = jsonFormat8(WebHook.apply)
-  implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
-  implicit val webHookPayloadFormat = jsonFormat5(WebHookPayload.apply)
 }

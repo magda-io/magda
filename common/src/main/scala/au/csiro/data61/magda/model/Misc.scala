@@ -7,7 +7,7 @@ import com.monsanto.labs.mwundo.GeoJson._
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.model.GeoJsonFormats._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import spray.json._
 import scala.runtime.ScalaRunTime
 
@@ -274,7 +274,7 @@ package misc {
 
   case class License(name: Option[String] = None, url: Option[String] = None)
 
-  trait Protocols extends DefaultJsonProtocol with temporal.Protocols {
+  trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
 
     implicit val licenseFormat = jsonFormat2(License.apply)
 

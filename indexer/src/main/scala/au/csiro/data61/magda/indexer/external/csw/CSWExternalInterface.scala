@@ -13,7 +13,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import scala.concurrent.ExecutionContext
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.util.DateParser._
 import com.monsanto.labs.mwundo.GeoJson.Coordinate

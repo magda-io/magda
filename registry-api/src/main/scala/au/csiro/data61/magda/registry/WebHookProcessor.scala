@@ -9,6 +9,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import scalikejdbc._
 import spray.json.JsString
+import au.csiro.data61.magda.model.Registry._
 
 import scala.concurrent.{ExecutionContext, Future}
 
