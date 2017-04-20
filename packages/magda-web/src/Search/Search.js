@@ -18,7 +18,7 @@ import WelcomeText from './WelcomeText';
 import MatchingStatus from './MatchingStatus';
 import {fetchRegionMapping} from '../actions/regionMapping';
 import { bindActionCreators } from "redux";
-import {fetchSearchResultsIfNeeded} from '../actions/results';
+import { fetchSearchResultsIfNeeded } from '../actions/results';
 
 class Search extends Component {
 
@@ -150,7 +150,6 @@ class Search extends Component {
 
   render() {
     const searchText = this.props.location.query.q;
-    debugger
     return (
       <div>
         {this.props.isFetching && <ProgressBar progress={this.props.progress}/>}

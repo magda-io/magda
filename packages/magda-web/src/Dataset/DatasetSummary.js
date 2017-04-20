@@ -4,6 +4,7 @@ import MarkdownViewer from '../UI/MarkdownViewer';
 import Star from '../UI/Star';
 import ToggleList from '../UI/ToggleList';
 import './DatasetSummary.css';
+import { Link } from 'react-router';
 
 export default class DatasetSummary extends Component {
   constructor(props) {
@@ -71,12 +72,12 @@ export default class DatasetSummary extends Component {
                 <div className='dataset-summary__header'>
                   <div className='dataset-summary__header-top clearfix'>
                     <div className='dataset-summary__title-group'>
-                      <button target='_blank'
+                      <Link target='_blank'
                               className='dataset-summary__title btn'
-                              type='button'
-                              onClick={(e)=>{window.open(dataset.landingPage, '_blank')}}>
+                              to={`/dataset/${dataset.identifier}`}>
+                              
                         {dataset.title}
-                      </button>
+                      </Link>
                     {!this.props.isExpanded && <Star onClick={this.onClickStar} isOn={this.state.isFav}/>}
                     </div>
                     <button className='dataset-summary__toggle-info-btn hidden-xs'
@@ -89,7 +90,7 @@ export default class DatasetSummary extends Component {
                       <div><a className='btn dataset-summary__btn-view-dataset' href={dataset.landingPage} target='_blank'>View dataset</a></div>
                       <div><Star onClick={this.onClickStar} isOn={this.state.isFav}/></div>
                       <div>
-                        <a className='btn dataset-summary__btn-share' href={`https://twitter.com/intent/tweet?url=${dataset.landingPage}`} target='_blank'>
+                        <a className='btn dataset-summary__btn-share' href={``} target='_blank'>
                           <i className="fa fa-share-alt" aria-hidden="true"></i>
                         </a>
                       </div>

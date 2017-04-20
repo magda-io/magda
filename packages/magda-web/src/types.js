@@ -147,3 +147,8 @@ export type SearchState = {
   strategy: string,
   errorMessage: string
 }
+
+
+export type Dataset = {
+  
+}

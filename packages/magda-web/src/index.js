@@ -39,7 +39,7 @@ ReactDOM.render(
       <Route path={baseurl} component={AppContainer}>
         <IndexRoute component={Home}/>
         <Route path="search" component={Search} />
-        <Route path="dataset/:dataset/" component={DatasetDetails} />
+        <Route path="dataset/:datasetId" component={DatasetDetails} />
         {staticPageRegister.map( item => 
         <Route path={item.path} key={item.path} component={item.component}/>)}
       </Route>
