@@ -41,12 +41,12 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.test.util.Generators._
 
 object ApiGenerators {
-  val queryTextGen = for {
+  val queryTextGen = (for {
     allDescWords <- descWordGen
     safeDescWords = allDescWords.filterNot(x => Generators.filterWords.contains(x.toLowerCase))
     someDescWords <- listSizeBetween(1, 5, Gen.oneOf(allDescWords))
     concated = someDescWords.mkString(" ")
-  } yield concated
+  } yield concated).suchThat(validFilter)
   def unspecifiedGen(implicit config: Config) = Gen.const(Unspecified())
   def filterValueGen[T](innerGen: Gen[T])(implicit config: Config): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
 
