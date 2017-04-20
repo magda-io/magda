@@ -91,13 +91,11 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
     val routes = crawlerApi.routes
 
-    indexer.ready.await
+    indexer.ready.await(30 seconds)
 
     Post("/") ~> routes ~> check {
       status shouldBe Accepted
     }
-
-    Thread.sleep(2000)
 
     blockUntil("Reindex is finished") { () =>
       val reindexCheck = Get("/in-progress") ~> routes ~> runRoute
