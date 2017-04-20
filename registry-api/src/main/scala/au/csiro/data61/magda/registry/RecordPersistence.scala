@@ -412,50 +412,55 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     JsonParser(rs.string("data")).asJsObject
   }
 
-  private def buildDereferenceMap(implicit session: DBSession, aspectIds: Iterable[String]) = {
-    val aspects = sql"""select aspectId, jsonSchema
-          from Aspects
-          where aspectId in (${aspectIds})"""
-      .map(rs => (rs.string("aspectId"), JsonParser(rs.string("jsonSchema")).asJsObject))
-      .list.apply()
+  private def buildDereferenceMap(implicit session: DBSession, aspectIds: Iterable[String]): Map[String, PropertyWithLink] = {
+    if (aspectIds.isEmpty) {
+      Map()
+    } else {
+      val aspects =
+        sql"""select aspectId, jsonSchema
+            from Aspects
+            where aspectId in (${aspectIds})"""
+          .map(rs => (rs.string("aspectId"), JsonParser(rs.string("jsonSchema")).asJsObject))
+          .list.apply()
 
-    aspects.map { case(aspectId, jsonSchema) =>
-      // This aspect can only have links if it uses hyper-schema
-      if (jsonSchema.fields.getOrElse("$schema", JsString("")).toString().contains("hyper-schema")) {
-        // TODO: support multiple linked properties in an aspect.
+      aspects.map { case (aspectId, jsonSchema) =>
+        // This aspect can only have links if it uses hyper-schema
+        if (jsonSchema.fields.getOrElse("$schema", JsString("")).toString().contains("hyper-schema")) {
+          // TODO: support multiple linked properties in an aspect.
 
-        val properties = jsonSchema.fields.get("properties").flatMap {
-          case JsObject(properties) => Some(properties)
-          case _ => None
-        }.getOrElse(Map())
+          val properties = jsonSchema.fields.get("properties").flatMap {
+            case JsObject(properties) => Some(properties)
+            case _ => None
+          }.getOrElse(Map())
 
-        val propertyWithLinks = properties.map { case (propertyName, property) =>
-          val linksInProperties = property.extract[JsValue]('links.? / filter { value =>
-            val relPredicate = 'rel.is[String](_ == "item")
-            val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
-            relPredicate(value) && hrefPredicate(value)
-          })
+          val propertyWithLinks = properties.map { case (propertyName, property) =>
+            val linksInProperties = property.extract[JsValue]('links.? / filter { value =>
+              val relPredicate = 'rel.is[String](_ == "item")
+              val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
+              relPredicate(value) && hrefPredicate(value)
+            })
 
-          val linksInItems = property.extract[JsValue]('items.? / 'links.? / filter { value =>
-            val relPredicate = 'rel.is[String](_ == "item")
-            val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
-            relPredicate(value) && hrefPredicate(value)
-          })
+            val linksInItems = property.extract[JsValue]('items.? / 'links.? / filter { value =>
+              val relPredicate = 'rel.is[String](_ == "item")
+              val hrefPredicate = 'href.is[String](_ == "/api/0.1/records/{$}")
+              relPredicate(value) && hrefPredicate(value)
+            })
 
-          if (!linksInProperties.isEmpty) {
-            Some(PropertyWithLink(propertyName, false))
-          } else if (!linksInItems.isEmpty) {
-            Some(PropertyWithLink(propertyName, true))
-          } else {
-            None
-          }
-        }.filter(!_.isEmpty).map(_.get)
+            if (!linksInProperties.isEmpty) {
+              Some(PropertyWithLink(propertyName, false))
+            } else if (!linksInItems.isEmpty) {
+              Some(PropertyWithLink(propertyName, true))
+            } else {
+              None
+            }
+          }.filter(!_.isEmpty).map(_.get)
 
-        propertyWithLinks.map(property => (aspectId, property)).headOption
-      } else {
-        None
-      }
-    }.filter(!_.isEmpty).map(_.get).toMap
+          propertyWithLinks.map(property => (aspectId, property)).headOption
+        } else {
+          None
+        }
+      }.filter(!_.isEmpty).map(_.get).toMap
+    }
   }
 
   private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink]) = {

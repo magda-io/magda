@@ -1,10 +1,11 @@
 package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{as, complete, entity, post}
 import akka.http.scaladsl.server.Route
-import spray.json.JsObject
+import spray.json.{JsObject, JsString, JsonParser}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Await
@@ -60,6 +61,137 @@ class WebHookProcessorSpec extends ApiSpec {
     }
   }
 
+  it("does not duplicate records or aspect definitions") { param =>
+    testWebHook(param.api, None) { payloads =>
+      val a = AspectDefinition("A", "A", Some(JsObject()))
+      Post("/api/0.1/aspects", a) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val aModified = a.copy(name = "A modified")
+      Put("/api/0.1/aspects/A", aModified) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val record = Record("testId", "testName", Map())
+      Post("/api/0.1/records", record) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val modified = record.copy(name = "new name")
+      Put("/api/0.1/records/testId", modified) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val withAspect = modified.copy(aspects = Map("A" -> JsObject()))
+      Put("/api/0.1/records/testId", withAspect) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val result = Await.result(processor.sendNotifications(), 5 seconds)
+      result.foreach {
+        case (webHook, processingResult) => {
+          webHook.name shouldBe "test"
+          processingResult.failedPosts shouldBe 0
+          processingResult.successfulPosts shouldBe 1
+        }
+      }
+      payloads.length shouldBe 1
+      payloads(0).events.get.length shouldBe 5
+      payloads(0).records.get.length shouldBe 1
+      payloads(0).records.get(0).id shouldBe ("testId")
+      payloads(0).aspectDefinitions.get.length shouldBe 1
+      payloads(0).aspectDefinitions.get(0).id shouldBe ("A")
+    }
+  }
+
+  describe("dereference") {
+    it("includes a record when one of its distributions changes") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
+      testWebHook(param.api, Some(webHook)) { payloads =>
+        val jsonSchema =
+          """
+            |{
+            |    "$schema": "http://json-schema.org/hyper-schema#",
+            |    "title": "An aspect with a single link",
+            |    "type": "object",
+            |    "properties": {
+            |        "someLink": {
+            |            "title": "A link to another record.",
+            |            "type": "string",
+            |            "links": [
+            |                {
+            |                    "href": "/api/0.1/records/{$}",
+            |                    "rel": "item"
+            |                }
+            |            ]
+            |        }
+            |    }
+            |}
+          """.stripMargin
+        val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
+        Post("/api/0.1/aspects", a) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val dataset = Record("dataset", "dataset", Map())
+        Post("/api/0.1/records", dataset) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val distribution = Record("distribution", "distribution", Map())
+        Post("/api/0.1/records", distribution) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val result1 = Await.result(processor.sendNotifications(), 5 seconds)
+        result1.foreach {
+          case (webHook, processingResult) => {
+            webHook.name shouldBe "test"
+            processingResult.failedPosts shouldBe 0
+            processingResult.successfulPosts shouldBe 1
+          }
+        }
+
+        payloads.clear()
+
+        val recordWithLink = dataset.copy(aspects = Map("A" -> JsObject("someLink" -> JsString("target"))))
+        Put("/api/0.1/records/dataset", recordWithLink) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val result2 = Await.result(processor.sendNotifications(), 5 seconds)
+        result2.foreach {
+          case (webHook, processingResult) => {
+            webHook.name shouldBe "test"
+            processingResult.failedPosts shouldBe 0
+            processingResult.successfulPosts shouldBe 1
+          }
+        }
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 1
+        payloads(0).records.get(0).id shouldBe ("dataset")
+      }
+    }
+  }
+
+  private val defaultWebHook = WebHook(
+    id = None,
+    userId = None,
+    name = "test",
+    active = true,
+    lastEvent = None,
+    url = "",
+    eventTypes = EventType.values.toSet,
+    config = WebHookConfig(
+      includeEvents = Some(true),
+      includeRecords = Some(true),
+      includeAspectDefinitions = Some(true),
+      dereference = Some(true)
+    ))
+
   private def testWebHook(api: Api, webHook: Option[WebHook])(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
     val payloads = ArrayBuffer[WebHookPayload]()
     val route = post {
@@ -70,19 +202,7 @@ class WebHookProcessorSpec extends ApiSpec {
     }
     val server = createHookRoute(route)
 
-    val hook = webHook.getOrElse(WebHook(
-      id = None,
-      userId = None,
-      name = "test",
-      active = true,
-      lastEvent = None,
-      url = "http://localhost:" + server.localAddress.getPort.toString,
-      eventTypes = EventType.values.toSet,
-      config = WebHookConfig(
-        includeEvents = Some(true),
-        includeRecords = Some(true),
-        includeAspectDefinitions = Some(true)
-      )))
+    val hook = webHook.getOrElse(defaultWebHook).copy(url = "http://localhost:" + server.localAddress.getPort.toString)
     Post("/api/0.1/hooks", hook) ~> api.routes ~> check {
       status shouldEqual StatusCodes.OK
     }

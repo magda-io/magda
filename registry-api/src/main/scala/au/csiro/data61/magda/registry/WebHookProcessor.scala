@@ -45,6 +45,7 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
 
           // If we're including records, get a complete record with aspects for each record ID
           val records = webHook.config.includeRecords match {
+            case Some(false) | None => None
             case Some(true) => DB readOnly { implicit session =>
               // Get records directly modified by these events.
               val directRecords = RecordPersistence.getByIdsWithAspects(
@@ -69,7 +70,6 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
 
               Some(directRecords.records ++ recordsFromDereference)
             }
-            case Some(false) | None => None
           }
 
           val aspectDefinitions = webHook.config.includeAspectDefinitions match {
