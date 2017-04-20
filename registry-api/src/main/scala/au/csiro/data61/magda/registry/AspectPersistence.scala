@@ -20,7 +20,10 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
   }
 
   def getByIds(implicit session: DBSession, ids: Iterable[String]): List[AspectDefinition] = {
-    sql"select aspectId, name, jsonSchema from Aspects where aspectId in ($ids)".map(rowToAspect).list.apply()
+    if (ids.isEmpty)
+      List()
+    else
+      sql"select aspectId, name, jsonSchema from Aspects where aspectId in ($ids)".map(rowToAspect).list.apply()
   }
 
   def putById(implicit session: DBSession, id: String, newAspect: AspectDefinition): Try[AspectDefinition] = {

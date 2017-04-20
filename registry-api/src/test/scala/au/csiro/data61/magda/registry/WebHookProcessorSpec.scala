@@ -37,6 +37,29 @@ class WebHookProcessorSpec extends ApiSpec {
     }
   }
 
+  it("includes records if events modified them") { param =>
+    testWebHook(param.api, None) { payloads =>
+      val record = Record("testId", "testName", Map())
+      Post("/api/0.1/records", record) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val result = Await.result(processor.sendNotifications(), 5 seconds)
+      result.foreach {
+        case (webHook, processingResult) => {
+          webHook.name shouldBe "test"
+          processingResult.failedPosts shouldBe 0
+          processingResult.successfulPosts shouldBe 1
+        }
+      }
+      payloads.length shouldBe 1
+      payloads(0).events.get.length shouldBe 1
+      payloads(0).records.get.length shouldBe 1
+      payloads(0).records.get(0).id shouldBe ("testId")
+      payloads(0).aspectDefinitions.get.length shouldBe 0
+    }
+  }
+
   private def testWebHook(api: Api, webHook: Option[WebHook])(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
     val payloads = ArrayBuffer[WebHookPayload]()
     val route = post {
