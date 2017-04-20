@@ -76,6 +76,11 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       logger.info("Finished setting up regions")
     }
 
+    System.gc()
+  }
+  
+  override def afterAll() {
+    System.gc()
   }
 
   implicit object MockClientProvider extends ClientProvider {
