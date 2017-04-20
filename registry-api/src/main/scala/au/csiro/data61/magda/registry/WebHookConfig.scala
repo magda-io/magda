@@ -5,5 +5,6 @@ case class WebHookConfig (
   optionalAspects: Option[List[String]] = None,
   includeEvents: Option[Boolean] = None,
   includeRecords: Option[Boolean] = None,
+  includeAspectDefinitions: Option[Boolean] = None,
   dereference: Option[Boolean] = None
 )

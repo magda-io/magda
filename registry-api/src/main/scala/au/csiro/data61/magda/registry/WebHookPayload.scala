@@ -1,8 +1,9 @@
 package au.csiro.data61.magda.registry
 
-case class RecordsChangedWebHookPayload(
+case class WebHookPayload(
   action: String,
   lastEventId: Long,
   events: Option[List[RegistryEvent]],
-  records: Option[List[Record]]
+  records: Option[List[Record]],
+  aspectDefinitions: Option[List[AspectDefinition]]
 )

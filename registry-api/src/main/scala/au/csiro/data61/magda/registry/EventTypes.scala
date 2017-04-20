@@ -2,7 +2,14 @@ package au.csiro.data61.magda.registry
 
 import enumeratum.values.{IntEnum, IntEnumEntry}
 
-sealed abstract class EventType(val value: Int, val name: String) extends IntEnumEntry
+sealed abstract class EventType(val value: Int, val name: String) extends IntEnumEntry {
+  def isRecordEvent = this == EventType.CreateRecord || this == EventType.DeleteRecord || this == EventType.PatchRecord
+  def isAspectDefinitionEvent = this == EventType.CreateAspectDefinition || this == EventType.PatchAspectDefinition || this == EventType.DeleteAspectDefinition
+  def isRecordAspectEvent = this == EventType.CreateRecordAspect || this == EventType.DeleteRecordAspect || this == EventType.PatchRecordAspect
+  def isCreateEvent = this == EventType.CreateRecord || this == EventType.CreateRecordAspect || this == EventType.CreateAspectDefinition
+  def isDeleteEvent = this == EventType.DeleteRecord || this == EventType.DeleteRecordAspect || this == EventType.DeleteAspectDefinition
+  def isPatchEvent = this == EventType.PatchRecord || this == EventType.PatchRecordAspect || this == EventType.PatchAspectDefinition
+}
 
 case object EventType extends IntEnum[EventType] {
   case object CreateRecord extends EventType(0, "Create Record")

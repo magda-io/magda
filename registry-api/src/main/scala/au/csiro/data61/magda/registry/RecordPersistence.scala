@@ -47,7 +47,10 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                           aspectIds: Iterable[String] = Seq(),
                           optionalAspectIds: Iterable[String] = Seq(),
                           dereference: Option[Boolean] = None): RecordsPage = {
-    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId in (${ids})")))
+    if (ids.isEmpty)
+      RecordsPage(0, Some("0"), List())
+    else
+      this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId in (${ids})")))
   }
 
   def getRecordsLinkingToRecordIds(implicit session: DBSession,
