@@ -14,11 +14,18 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
   def getAll(implicit session: DBSession): List[AspectDefinition] = {
     sql"select aspectId, name, jsonSchema from Aspects".map(rowToAspect).list.apply()
   }
-  
+
   def getById(implicit session: DBSession, id: String): Option[AspectDefinition] = {
     sql"""select aspectId, name, jsonSchema from Aspects where aspectId=$id""".map(rowToAspect).single.apply()
   }
-  
+
+  def getByIds(implicit session: DBSession, ids: Iterable[String]): List[AspectDefinition] = {
+    if (ids.isEmpty)
+      List()
+    else
+      sql"select aspectId, name, jsonSchema from Aspects where aspectId in ($ids)".map(rowToAspect).list.apply()
+  }
+
   def putById(implicit session: DBSession, id: String, newAspect: AspectDefinition): Try[AspectDefinition] = {
     for {
       _ <- if (id == newAspect.id) Success(newAspect) else Failure(new RuntimeException("The provided ID does not match the aspect's ID."))
@@ -76,7 +83,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def create(implicit session: DBSession, aspect: AspectDefinition): Try[AspectDefinition] = {
     // Create a 'Create Aspect' event
-    val eventJson = CreateAspectDefinitionEvent(aspect).toJson.compactPrint
+    val eventJson = CreateAspectDefinitionEvent(aspect.id, aspect.name, aspect.jsonSchema).toJson.compactPrint
     val eventId = sql"insert into Events (eventTypeId, userId, data) values (${CreateAspectDefinitionEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey().apply()
 
     // Create the actual Aspect
@@ -91,7 +98,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       case e: SQLException => Failure(new RuntimeException("An aspect with the specified ID already exists."))
     }
   }
-  
+
   private def rowToAspect(rs: WrappedResultSet): AspectDefinition = {
     val jsonSchema: Option[JsObject] = if (rs.string("jsonSchema") == null) None else Some(JsonParser(rs.string("jsonSchema")).asJsObject)
     AspectDefinition(

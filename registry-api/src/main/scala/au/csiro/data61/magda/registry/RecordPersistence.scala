@@ -48,7 +48,10 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                           aspectIds: Iterable[String] = Seq(),
                           optionalAspectIds: Iterable[String] = Seq(),
                           dereference: Option[Boolean] = None): RecordsPage = {
-    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId in (${ids})")))
+    if (ids.isEmpty)
+      RecordsPage(0, Some("0"), List())
+    else
+      this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId in (${ids})")))
   }
 
   def getRecordsLinkingToRecordIds(implicit session: DBSession,
@@ -172,8 +175,21 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
             case Add("aspects" / (name / rest), value) => Add(rest, value)
             case Remove("aspects" / (name / rest), old) => Remove(rest, old)
             case Replace("aspects" / (name / rest), value, old) => Replace(rest, value, old)
-            case Move("aspects" / (sourceName / sourceRest), "aspects" / (destName / destRest)) => Move(sourceRest, destRest)
-            case Copy("aspects" / (sourceName / sourceRest), "aspects" / (destName / destRest)) => Copy(sourceRest, destRest)
+            case Move("aspects" / (sourceName / sourceRest), "aspects" / (destName / destRest)) => {
+              if (sourceName != destName)
+                // We can relax this restriction, and the one on Copy below, by turning a cross-aspect
+                // Move into a Remove on one and an Add on the other.  But it's probably not worth
+                // the trouble.
+                throw new RuntimeException("A patch may not move values between two different aspects.")
+              else
+                Move(sourceRest, destRest)
+            }
+            case Copy("aspects" / (sourceName / sourceRest), "aspects" / (destName / destRest)) => {
+              if (sourceName != destName)
+                throw new RuntimeException("A patch may not copy values between two different aspects.")
+              else
+                Copy(sourceRest, destRest)
+            }
             case Test("aspects" / (name / rest), value) => Test(rest, value)
             case _ => throw new RuntimeException("The patch contains an unsupported operation for aspect " + aspectId)
           }))))
@@ -441,12 +457,6 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         None
       }
     }.filter(!_.isEmpty).map(_.get).toMap
-  }
-
-  private def addPageTokenSelector(existingWhereClause: SQLSyntax, pageToken: Option[String]): SQLSyntax = {
-    val selector = sqls"Records.sequence > ${pageToken.getOrElse("0").toLong}"
-    if (existingWhereClause.isEmpty()) SQLSyntax.where(selector)
-    else existingWhereClause.and(selector)
   }
 
   private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink]) = {
