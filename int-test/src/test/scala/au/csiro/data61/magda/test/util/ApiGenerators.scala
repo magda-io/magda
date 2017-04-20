@@ -72,7 +72,15 @@ object ApiGenerators {
     } yield split.slice(start, Math.max(split.length - 1, 1)).mkString(delimiter)
   }
 
-  def validFilter(word: String): Boolean = !filterWordRegex.r.matchesAny(word) && !filterWords.contains(word.toLowerCase) && word.exists(_.isLetterOrDigit)
+  def validFilter(word: String): Boolean = !filterWordRegex.r.matchesAny(word) && // Don't want to inject filter words into our query
+    !filterWords.contains(word.toLowerCase) && // ditto
+    {
+      val words = word.split("^[\\s-.']")
+      words.exists(word => !stopWords.contains(word.toLowerCase()))
+    } && // stop words tend to not match anything because of TFDIF
+    word.exists(_.isLetterOrDigit) && // GOtta have at least one letter
+    word.length > 1
+
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
     .suchThat(validFilter)
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)

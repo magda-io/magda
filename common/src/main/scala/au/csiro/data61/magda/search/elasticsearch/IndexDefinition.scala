@@ -37,25 +37,6 @@ import spray.json._
 import com.sksamuel.elastic4s.mappings.TypedFieldDefinition
 import org.elasticsearch.common.xcontent.XContentBuilder
 import com.sksamuel.elastic4s.analyzers.Analyzer
-import com.sksamuel.elastic4s.mappings.attributes.Attribute
-import com.sksamuel.elastic4s.mappings.attributes.AttributeOmitNorms
-import com.sksamuel.elastic4s.mappings.attributes.AttributeIndex
-import com.sksamuel.elastic4s.mappings.attributes.AttributeSearchAnalyzer
-import com.sksamuel.elastic4s.mappings.attributes.AttributePostingsFormat
-import com.sksamuel.elastic4s.mappings.attributes.AttributeAnalyzer
-import com.sksamuel.elastic4s.mappings.attributes.AttributeIndexOptions
-import com.sksamuel.elastic4s.mappings.attributes.AttributePositionOffsetGap
-import com.sksamuel.elastic4s.mappings.attributes.AttributeTermVector
-import com.sksamuel.elastic4s.mappings.attributes.AttributeIgnoreAbove
-import com.sksamuel.elastic4s.mappings.attributes.AttributeIndexName
-import com.sksamuel.elastic4s.mappings.attributes.AttributeDocValues
-import com.sksamuel.elastic4s.mappings.attributes.AttributeIncludeInAll
-import com.sksamuel.elastic4s.mappings.attributes.AttributeSimilarity
-import com.sksamuel.elastic4s.mappings.attributes.AttributeStore
-import com.sksamuel.elastic4s.mappings.attributes.AttributeNullValue
-import com.sksamuel.elastic4s.mappings.attributes.AttributeFields
-import com.sksamuel.elastic4s.mappings.attributes.AttributeCopyTo
-import com.sksamuel.elastic4s.mappings.attributes.AttributeBoost
 
 case class IndexDefinition(
     name: String,
@@ -66,13 +47,12 @@ case class IndexDefinition(
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
-  def magdaTextField(name: String, extraFields: TypedFieldDefinition*): MagdaTextFieldDefinition = {
+  def magdaTextField(name: String, extraFields: TypedFieldDefinition*) = {
     val fields = extraFields ++ Seq(
-      new MagdaTextFieldDefinition("english").analyzer("english")
+      textField("english").analyzer("english")
     )
 
-    new MagdaTextFieldDefinition(name)
-      .fields(fields: _*)
+    textField(name).fields(fields: _*)
   }
 
   val dataSets: IndexDefinition = new IndexDefinition(
@@ -98,8 +78,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             field("publisher", ObjectType).inner(
               magdaTextField("name",
                 field("keyword", KeywordType),
-                field("keyword_lowercase", TextType).analyzer("quote"),
-                textField("english").analyzer("english")
+                field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),
             nestedField("distributions").nested(
@@ -107,8 +86,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("description"),
               magdaTextField("format",
                 field("keyword", KeywordType),
-                field("keyword_lowercase", TextType).analyzer("quote"),
-                textField("english").analyzer("english")
+                field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),
             field("spatial", ObjectType).inner(
@@ -302,65 +280,5 @@ trait AttributeQuoteSearchAnalyzer { self: TypedFieldDefinition =>
 
   protected override def insert(source: XContentBuilder): Unit = {
     _quoteSearchAnalyzer.foreach(source.field("search_quote_analyzer", _))
-  }
-}
-
-final class MagdaTextFieldDefinition(name: String)
-    extends TypedFieldDefinition(TextType, name)
-    with AttributeIndexName
-    with AttributeStore
-    with AttributeIndex
-    with AttributeTermVector
-    with AttributeNullValue[String]
-    with AttributeOmitNorms
-    with AttributeIndexOptions
-    with AttributeAnalyzer
-    with AttributeSearchAnalyzer
-    with AttributeIncludeInAll
-    with AttributeIgnoreAbove
-    with AttributePositionOffsetGap
-    with AttributePostingsFormat
-    with AttributeDocValues
-    with AttributeSimilarity
-    with AttributeCopyTo
-    with AttributeFields
-    with AttributeBoost
-    with AttributeQuoteSearchAnalyzer {
-
-  private var fielddata: Option[Boolean] = None
-
-  def fielddata(b: Boolean): MagdaTextFieldDefinition = {
-    this.fielddata = Option(b)
-    this
-  }
-
-  def build(source: XContentBuilder, startObject: Boolean = true): Unit = {
-    if (startObject)
-      source.startObject(name)
-
-    insertType(source)
-    super[AttributeAnalyzer].insert(source)
-    super[AttributeDocValues].insert(source)
-    super[AttributeIncludeInAll].insert(source)
-    super[AttributeIndex].insert(source)
-    super[AttributeIndexName].insert(source)
-    super[AttributeIndexOptions].insert(source)
-    super[AttributeIgnoreAbove].insert(source)
-    super[AttributeNullValue].insert(source)
-    super[AttributeOmitNorms].insert(source)
-    super[AttributePositionOffsetGap].insert(source)
-    super[AttributePostingsFormat].insert(source)
-    super[AttributeSearchAnalyzer].insert(source)
-    super[AttributeSimilarity].insert(source)
-    super[AttributeStore].insert(source)
-    super[AttributeTermVector].insert(source)
-    super[AttributeCopyTo].insert(source)
-    super[AttributeFields].insert(source)
-    super[AttributeQuoteSearchAnalyzer].insert(source)
-
-    fielddata.foreach(source.field("fielddata", _))
-
-    if (startObject)
-      source.endObject()
   }
 }

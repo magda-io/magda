@@ -67,11 +67,10 @@ object Generators {
 
   val stopWords = luceneStopWords.filterNot(filterWords.contains(_))
 
-  val filterWordsWithSpace = filterWords.map(_ + " ")
   val filterWordRegex = s"(?i)(${filterWords.mkString("|")})(\\s|$$)"
   def removeFilterWords(s: String) = s.replaceAll(filterWordRegex, " ").trim
 
-  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (1, Gen.oneOf(stopWords)))
+  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (100, Gen.oneOf(stopWords)))
 
   val textGen = Gen.frequency((15, nonEmptyTextWithStopWordsGen), (1, Gen.const("")))
 

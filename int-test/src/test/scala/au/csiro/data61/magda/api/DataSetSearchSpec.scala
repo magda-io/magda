@@ -274,7 +274,12 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     describe("format") {
       it("exact") {
         def dataSetToQuery(dataSet: DataSet) = {
-          val formats = dataSet.distributions.map(_.format.map(Specified.apply).getOrElse(Unspecified()))
+          val formats = dataSet.distributions
+            .map(_.format.map(Specified.apply).getOrElse(Unspecified()))
+            .filter {
+              case Specified(x) => ApiGenerators.validFilter(x)
+              case _            => true
+            }
 
           for {
             formatsReduced <- Gen.someOf(formats)
@@ -306,7 +311,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
       it("inexact") {
         def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
-          val formats = dataSet.distributions.map(_.format.map(Specified.apply).flatMap(x => x)).flatten
+          val formats = dataSet.distributions
+            .map(_.format.map(Specified.apply).flatMap(x => x)).flatten
 
           if (formats.isEmpty)
             Gen.const(Query())
@@ -314,20 +320,22 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             for {
               format <- Gen.oneOf(formats)
               reducedFormat <- ApiGenerators.partialStringGen(format)
+              reducedFormatValid = ApiGenerators.validFilter(reducedFormat)
               query = Query(formats = Set(Specified(reducedFormat)))
-            } yield query
+            } yield if (reducedFormatValid) query else Query()
           }
         }
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(query != Query() && query.formats.exists(!_.get.trim.isEmpty)) {
-            response.dataSets.isEmpty should be(false)
-            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            val queryFormats = query.formats
+            val dataSetFormats = dataSet.distributions.flatMap(_.format)
+            withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
 
             response.dataSets.foreach { dataSet =>
-              val queryFormats = query.formats
-              val dataSetFormats = dataSet.distributions.flatMap(_.format)
-
               val queryToDataSetComparison = for {
                 queryFormat <- queryFormats
                 queryWord <- MagdaMatchers.tokenize(queryFormat.get)
@@ -364,7 +372,17 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     describe("publisher") {
       it("exact") {
         def dataSetToQuery(dataSet: DataSet) = {
-          Gen.const(Query(publishers = Set(dataSet.publisher.flatMap(_.name).map(Specified.apply).getOrElse(Unspecified()))))
+
+          val publishers = Set(
+            dataSet.publisher
+              .flatMap(_.name)
+              .map(Specified.apply).getOrElse(Unspecified()))
+            .filter {
+              case Specified(x) => ApiGenerators.validFilter(x)
+              case _            => true
+            }.asInstanceOf[Set[FilterValue[String]]]
+
+          Gen.const(Query(publishers = publishers))
         }
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
@@ -400,18 +418,21 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             case Some(innerPublisher) =>
               for {
                 reducedPublisher <- ApiGenerators.partialStringGen(innerPublisher)
-                query = Query(publishers = Set(Specified(innerPublisher)))
-              } yield query
+                valid = ApiGenerators.validFilter(reducedPublisher)
+                query = Query(publishers = Set(Specified(reducedPublisher)))
+              } yield if (valid) query else Query()
           }
         }
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(query != Query() && query.publishers.exists(!_.get.trim.isEmpty)) {
-            response.dataSets.isEmpty should be(false)
-            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            val queryPublishers = query.publishers
+            withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSet.publisher.get.name}") {
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
 
             response.dataSets.foreach { dataSet =>
-              val queryPublishers = query.publishers
               val dataSetPublisher = dataSet.publisher.get.name
 
               withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSetPublisher}") {
