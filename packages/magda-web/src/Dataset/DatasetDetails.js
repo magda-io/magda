@@ -17,6 +17,7 @@ class DatasetDetails extends Component {
   }
 
   render(){
+    debugger
     let dataset = this.props.dataset;
     return <div className="dataset-details row" >
                 <div className='dataset-details__body col-sm-9'>
@@ -36,8 +37,8 @@ class DatasetDetails extends Component {
               <div className='dataset-details__sidebar col-sm-3'>
                   <div><button className='btn btn-primary'>Add to project</button></div>
                   <div><button className='btn btn-default'>Star</button></div>
-                  <div><button className='btn btn-subscribe'>Subscribe</button></div>
-                  <div><button className='btn btn-chare'>Share</button></div>
+                  <div><button className='btn btn-default'>Subscribe</button></div>
+                  <div><button className='btn btn-default'>Share</button></div>
                   <div className="tags">
                     <h5>Tags</h5>
                     {

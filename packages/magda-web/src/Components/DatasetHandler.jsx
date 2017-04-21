@@ -2,8 +2,7 @@ import React from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { fetchDatasetFromRegistry } from "../actions/datasetActions";
-import DatasetDetails from '../Dataset/DatasetDetails';
-import {parseDataset} from '../helpers/dataset';
+
 class DatasetHandler extends React.Component {
   componentWillMount(){
     const id = this.props.params.datasetId;
@@ -20,7 +19,7 @@ class DatasetHandler extends React.Component {
   }
   
   render() {
-    const dataset = this.props.data && parseDataset(this.props.data);
+    const dataset = this.props.dataset;
     return (
       <div>
           {this.renderByState(dataset)}
@@ -30,14 +29,14 @@ class DatasetHandler extends React.Component {
 }
 
 function mapStateToProps(state) {
-  const dataset= state.dataset;
-  const data = dataset.data;
-  const isFetching = dataset.isFetching;
-  const error = dataset.error;
-  const notFound = dataset.notFound;
+  const _dataset= state.dataset;
+  const dataset = _dataset.data;
+  const isFetching = _dataset.isFetching;
+  const error = _dataset.error;
+  const notFound = _dataset.notFound;
 
   return {
-    data, isFetching, error, notFound
+    dataset, isFetching, error, notFound
   };
 }
 

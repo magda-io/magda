@@ -1,5 +1,6 @@
 // @flow 
 import type { Action, Dataset } from '../types';
+import {parseDataset} from '../helpers/dataset';
 
 const initialData = {
     isFetching: false,
@@ -17,7 +18,7 @@ const dataset = (state: Dataset =initialData, action: Action) => {
     case 'RECEIVE_DATASET':
       return Object.assign({}, state, {
         isFetching: false,
-        data: action.json && action.json,
+        data: action.json && parseDataset(action.json),
       })
     case 'REQUEST_DATASET_ERROR':
       return Object.assign({}, state, {
