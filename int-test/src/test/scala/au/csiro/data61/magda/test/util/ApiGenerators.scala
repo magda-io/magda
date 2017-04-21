@@ -63,7 +63,7 @@ object ApiGenerators {
   }
 
   def partialStringGen(string: String): Gen[String] = {
-    val split = string.split("[\\s-]+")
+    val split = string.split("[\\s-.]+")
 
     for {
       start <- Gen.choose(0, split.length / 2)
