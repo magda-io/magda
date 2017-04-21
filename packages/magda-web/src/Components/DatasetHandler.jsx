@@ -19,7 +19,7 @@ class DatasetHandler extends React.Component {
     }
     switch(state){
       case 0: 
-      return <h2>{dataset.title}</h2>;
+      return <div><h1>{dataset.title}</h1> <a>{dataset.landingPage}</a><div>{dataset.updatedDate}</div></div>;
       case 1: 
       return <h2>error</h2>;
       case 2:
