@@ -184,20 +184,6 @@ object ApiGenerators {
     textQuery.flatMap((_, query.copy(publishers = publishers, formats = formats)))
   }
 
-  def randomCaseGen(string: String) = {
-    for {
-      whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 2))
-    } yield string.zip(whatToDo).map {
-      case (char, charWhatToDo) =>
-        if (char.isLetter) charWhatToDo match {
-          case 0 => char.toUpper
-          case 1 => char.toLower
-          case 2 => char
-        }
-        else char
-    }.mkString
-  }
-
   def containsNoFilterWord(word: FilterValue[String]): Boolean = {
     !filterWords.exists(filterWord => word.map(_.toLowerCase.contains(" " + filterWord.toLowerCase + " ")).getOrElse(false))
   }

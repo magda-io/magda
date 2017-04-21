@@ -294,10 +294,27 @@ object Generators {
     url <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
   } yield License(name, url)
 
+
+  def randomCaseGen(string: String) = {
+    for {
+      whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 2))
+    } yield string.zip(whatToDo).map {
+      case (char, charWhatToDo) =>
+        if (char.isLetter) charWhatToDo match {
+          case 0 => char.toUpper
+          case 1 => char.toLower
+          case 2 => char
+        }
+        else char
+    }.mkString
+  }
+  
   val formatGen = for {
     mediaType <- Gen.option(mediaTypeGen)
+    mediaTypeFormat = mediaType.flatMap(_.fileExtensions.headOption)
     randomFormat <- randomFormatGen.flatMap(Gen.oneOf(_))
-  } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).getOrElse(randomFormat))
+    format <- randomCaseGen(mediaTypeFormat.getOrElse(randomFormat))
+  } yield (mediaType, format)
 
   val distGen = for {
     title <- textGen

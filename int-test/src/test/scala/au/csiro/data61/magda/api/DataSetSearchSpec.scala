@@ -34,7 +34,7 @@ import au.csiro.data61.magda.search.SearchStrategy.MatchAll
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.test.util.ApiGenerators.innerRegionQueryGen
 import au.csiro.data61.magda.test.util.ApiGenerators.queryGen
-import au.csiro.data61.magda.test.util.ApiGenerators.randomCaseGen
+import au.csiro.data61.magda.test.util.Generators.randomCaseGen
 import au.csiro.data61.magda.test.util.ApiGenerators.regionJsonToQueryRegion
 import au.csiro.data61.magda.test.util.ApiGenerators.set
 import au.csiro.data61.magda.test.util.Generators.smallSet
