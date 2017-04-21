@@ -2,7 +2,7 @@
 // eslint-disable-next-line
 import createLogger from 'redux-logger'
 import './index.css';
-import { Router, Route, browserHistory, IndexRoute } from 'react-router'
+import { Router, Route, browserHistory, IndexRoute, IndexRedirect } from 'react-router'
 import {fetchSearchResultsIfNeeded} from './actions/results';
 import thunkMiddleware from 'redux-thunk'
 import React from 'react';
@@ -15,6 +15,9 @@ import { Provider } from 'react-redux';
 import reducer from './reducers/index';
 import { createStore, applyMiddleware} from 'redux';
 import { staticPageRegister } from './content/register';
+import DatasetDetails from './Dataset/DatasetDetails';
+import DatasetDiscussion from './Dataset/DatasetDiscussion';
+import DatasetPublisher from './Dataset/DatasetPublisher';
 
 let baseurl = "/";
 // eslint-disable-next-line
@@ -39,7 +42,12 @@ ReactDOM.render(
       <Route path={baseurl} component={AppContainer}>
         <IndexRoute component={Home}/>
         <Route path="search" component={Search} />
-        <Route path="dataset/:datasetId" component={DatasetHandler} />
+        <Route path="dataset/:datasetId" component={DatasetHandler}>
+          <IndexRedirect to="details"/>
+          <Route path="details" component={DatasetDetails}/>
+          <Route path="discussion" component={DatasetDiscussion}/>
+          <Route path="publisher" component={DatasetPublisher}/>
+        </Route>
         {staticPageRegister.map( item => 
         <Route path={item.path} key={item.path} component={item.component}/>)}
       </Route>

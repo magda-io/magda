@@ -3,8 +3,9 @@ import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import Star from '../UI/Star';
 import { Link } from 'react-router';
+import { connect } from "react-redux";
 
-export default class DatasetDetails extends Component {
+class DatasetDetails extends Component {
 
 
   renderSource(source){
@@ -27,7 +28,7 @@ export default class DatasetDetails extends Component {
                   <div className='dataset-details-source'>
                       <h3>Data and APIs</h3>
                       {
-                        dataset.source.map(s=> this.renderSource(s))
+                        dataset.source && dataset.source.map(s=> this.renderSource(s))
                       }
                   </div>
               </div>
@@ -40,7 +41,7 @@ export default class DatasetDetails extends Component {
                   <div className="tags">
                     <h5>Tags</h5>
                     {
-                      dataset.tags.map(t=><span className="badge" key={t}>{t}</span>)
+                      dataset.tags && dataset.tags.map(t=><span className="badge" key={t}>{t}</span>)
                     }
                   </div>
               </div>
@@ -48,4 +49,15 @@ export default class DatasetDetails extends Component {
   }
 }
 
+function mapStateToProps(state) {
+  const _dataset= state.dataset;
+  const dataset = _dataset.data;
+  return {
+    dataset
+  };
+}
+
+
 DatasetDetails.propTypes = {dataset: React.PropTypes.object};
+
+export default connect(mapStateToProps)(DatasetDetails);

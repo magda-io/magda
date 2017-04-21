@@ -16,7 +16,7 @@ class DatasetHandler extends React.Component {
     } else if(this.props.error){
       return <h2>error</h2>;
     }
-    return <div><h1>{dataset.title}</h1> <a>{dataset.landingPage}</a><div>{dataset.updatedDate}</div><DatasetDetails dataset={dataset}/></div>;
+    return <div><h1>{dataset.title}</h1> <a>{dataset.landingPage}</a><div>{dataset.updatedDate}</div>{this.props.children}</div>;
   }
   
   render() {
