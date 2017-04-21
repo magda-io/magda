@@ -1,15 +1,16 @@
 import React from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { fetchDatasetFromRegistry } from "../actions/dataset";
+import { fetchDatasetFromRegistry } from "../actions/datasetActions";
 import DatasetDetails from '../Dataset/DatasetDetails';
+import {parseDataset} from '../helpers/dataset';
 class DatasetHandler extends React.Component {
   componentWillMount(){
     const id = this.props.params.datasetId;
     this.props.fetchDataset(id);
   }
 
-  renderByState(){
+  renderByState(dataset){
     let state = 2;
     if(!this.props.notFound && !this.props.error && this.props.data){
       state = 0;
@@ -18,7 +19,7 @@ class DatasetHandler extends React.Component {
     }
     switch(state){
       case 0: 
-      return <h2>{this.props.data.name}</h2>;
+      return <h2>{dataset.title}</h2>;
       case 1: 
       return <h2>error</h2>;
       case 2:
@@ -28,10 +29,11 @@ class DatasetHandler extends React.Component {
   }
   
   render() {
+    const dataset = this.props.data && parseDataset(this.props.data);
     return (
       <div>
-          {this.renderByState()}
-          <DatasetDetails dataset={this.props.data}/>
+          {this.renderByState(dataset)}
+          <DatasetDetails dataset={dataset}/>
       </div>
     );
   }

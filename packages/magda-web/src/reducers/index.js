@@ -8,7 +8,7 @@ import facetRegionSearch from './facetRegionSearch';
 import facetFormatSearch from './facetFormatSearch';
 import regionMapping from './regionMapping';
 import pageStats from './pageStats';
-import dataset from './dataset';
+import dataset from './datasetReducer';
 
 import { combineReducers } from 'redux';
 

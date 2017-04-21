@@ -35,7 +35,7 @@ export function datasetNotFound(): Action {
 export function fetchDatasetFromRegistry(id: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestDataset(id))
-    let url : string = config.registryUrl + `${encodeURIComponent(id)}`;
+    let url : string = config.registryUrl + `${encodeURIComponent(id)}?aspect=dcat-dataset-strings&optionalAspect=dataset-distributions&dereference=true`;
     return fetch(url)
     .then(response => {
         if (response.status >= 400) {
