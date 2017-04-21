@@ -70,7 +70,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   }
 
   describe("should return the right publisher when searching by publisher name") {
-    def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
+    def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
       Get(s"""/facets/publisher/options/search?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> routes ~> check {
@@ -91,7 +91,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   }
 
   describe("should return the right format when searching by format value") {
-    def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format)
+    def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
       Get(s"""/facets/format/options/search?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> routes ~> check {
