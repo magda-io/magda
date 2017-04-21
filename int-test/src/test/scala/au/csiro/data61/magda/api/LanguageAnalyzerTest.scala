@@ -13,6 +13,8 @@ import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import au.csiro.data61.magda.test.util.Generators
+import au.csiro.data61.magda.util.Regex._
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
@@ -26,7 +28,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     describe("keywords") {
-      testDataSetSearch(dataSet => dataSet.keyword)
+      testDataSetSearch(dataSet => dataSet.keywords)
     }
 
     describe("publisher name") {
@@ -42,12 +44,12 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     describe("theme") {
-      testDataSetSearch(dataSet => dataSet.theme)
+      testDataSetSearch(dataSet => dataSet.themes)
     }
 
     def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
       def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
-        .filter(term => filterWordsWithSpace.forall(filterWord => !term.toLowerCase.contains(filterWord)))
+        .filter(term => !Generators.filterWordRegex.r.matchesAny(term))
         .filter(term => term.matches(".*[A-Z][a-z].*"))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -68,7 +70,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   }
 
   describe("should return the right publisher when searching by publisher name") {
-    def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
+    def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
       Get(s"""/facets/publisher/options/search?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> routes ~> check {
@@ -79,7 +81,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
         withClue(s"term: ${publisherName}, publisher: ${dataSet.publisher.map(_.name)} options ${result.options}") {
           result.options.exists(value =>
-            publisher == value.value
+            publisher.equalsIgnoreCase(value.value)
           ) should be(true)
         }
       }
@@ -89,7 +91,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   }
 
   describe("should return the right format when searching by format value") {
-    def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format)
+    def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
       Get(s"""/facets/format/options/search?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> routes ~> check {
@@ -100,7 +102,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         withClue(s"format: ${formatName} options ${result.options}") {
           result.options.exists(value =>
             formats.exists(format =>
-              value.value == format
+              value.value.equalsIgnoreCase(format)
             )
           ) should be(true)
         }
@@ -123,7 +125,8 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .filterNot(_.contains("."))
         .filterNot(_.contains("'"))
         .filterNot(_.toLowerCase.endsWith("ss"))
-        .filterNot(term => StandardAnalyzer.ENGLISH_STOP_WORDS_SET.contains(term.toLowerCase))
+        .filterNot(term => Generators.filterWords.contains(term.toLowerCase))
+        .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
         .filterNot(_.isEmpty)
         .filterNot(term => term.toLowerCase.endsWith("e") ||
           term.toLowerCase.endsWith("ies") ||

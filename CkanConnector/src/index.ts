@@ -15,7 +15,7 @@ const ckan = new Ckan({
 });
 
 const registry = new Registry({
-    baseUrl: 'http://localhost:6100/'
+    baseUrl: process.env.REGISTRY_URL || 'http://localhost:6100/'
 });
 
 const datasetAspectBuilders: AspectBuilder[] = [

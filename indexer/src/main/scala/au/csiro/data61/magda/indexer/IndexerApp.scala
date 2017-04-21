@@ -1,5 +1,5 @@
 
-package au.csiro.data61.magda
+package au.csiro.data61.magda.indexer
 
 import scala.collection.JavaConversions._
 import scala.util.Failure
@@ -15,13 +15,14 @@ import akka.actor.DeadLetter
 import akka.actor.Props
 import akka.event.Logging
 import akka.stream.ActorMaterializer
-import au.csiro.data61.magda.crawler.Crawler
-import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.search.SearchIndexer
+import au.csiro.data61.magda.AppConfig;
+import au.csiro.data61.magda.indexer.crawler.Crawler
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
-import au.csiro.data61.magda.external.ExternalInterface
-import au.csiro.data61.magda.crawler.CrawlerApi
+import au.csiro.data61.magda.indexer.external.ExternalInterface
+import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import akka.http.scaladsl.Http
 import scala.concurrent.duration._
 
@@ -44,16 +45,9 @@ object IndexerApp extends App {
   logger.debug("Starting Crawler")
 
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
-  val crawler = Crawler(interfaceConfigs.map(ExternalInterface(_)))
+  val crawler = Crawler(interfaceConfigs.values.toSeq.map(ExternalInterface(_)))
 
-  val api = new CrawlerApi(crawler, indexer)
-
-  // Index every 3 days 
-  system.scheduler.schedule(0 millis, 3 days, new Runnable {
-    def run = {
-      api.crawl
-    }
-  })
+  val api = new IndexerApi(crawler, indexer)
 
   Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
 }

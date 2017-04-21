@@ -11,6 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Random
+import au.csiro.data61.magda.model.Registry._
 
 class WebHookProcessorSpec extends ApiSpec {
   private val processor = new WebHookProcessor(system, executor)

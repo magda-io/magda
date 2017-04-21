@@ -1,5 +1,5 @@
 dist: trusty
-sudo: false
+sudo: true
 language: scala
 scala:
   - 2.11.8
@@ -9,7 +9,8 @@ services:
   - postgresql
 env:
   global:
-    - SBT_OPTS="-Xms4000M -Xmx4000M -XX:+CMSClassUnloadingEnabled"
+    # 3gb heap, unload classes we don't need, aim for < 50ms gc pauses (largely ignored), use the next-gen collector, try to free 5% of heap every gc, use < 25% of time for GC
+    - SBT_OPTS="-Xms3000M -Xmx3000M -XX:+CMSClassUnloadingEnabled -XX:MaxGCPauseMillis=1000 -XX:+UseG1GC -XX:GCTimeRatio=3"
     - CI=true
 addons:
     postgresql: "9.6"

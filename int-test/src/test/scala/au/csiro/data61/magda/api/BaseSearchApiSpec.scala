@@ -16,14 +16,15 @@ import com.sksamuel.elastic4s.ElasticDsl
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
-import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import au.csiro.data61.magda.model.misc.DataSet
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
+import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
+import com.sksamuel.elastic4s.Indexes
 
 trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
   val INSERTION_WAIT_TIME = 90 seconds
@@ -119,15 +120,12 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
 
     val stream = Source.fromIterator[DataSet](() => dataSets.iterator)
 
-    indexer.ready.map { _ =>
-      indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), stream)
-    }.flatMap { _ ⇒
-      client.execute(refreshIndex(indexName))
-    }.recover {
-      case e: Throwable ⇒
-        logger.error(e, "")
-        throw e
-    }.await(INSERTION_WAIT_TIME)
+    indexer.ready.await(INSERTION_WAIT_TIME)
+    blockUntilIndexExists(indexName)
+    indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), stream).await(INSERTION_WAIT_TIME)
+    refresh(indexName)
+
+//    System.gc()
 
     blockUntilExactCount(dataSets.size, indexName, fakeIndices.getType(Indices.DataSetsIndexType))
 
@@ -147,7 +145,9 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
     )
   }
 
-  after {
+  override def afterEach() {
+    super.afterEach()
+
     cleanUpIndexes()
   }
 }

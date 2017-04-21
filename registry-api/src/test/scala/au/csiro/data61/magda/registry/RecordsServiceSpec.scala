@@ -4,7 +4,9 @@ import akka.http.scaladsl.model.StatusCodes
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import spray.json._
+import au.csiro.data61.magda.model.Registry.Record
 import scala.concurrent.duration._
+import au.csiro.data61.magda.model.Registry._
 
 class RecordsServiceSpec extends ApiSpec {
   describe("GET") {

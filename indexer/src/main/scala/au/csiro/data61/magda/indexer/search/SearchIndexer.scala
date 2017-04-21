@@ -1,17 +1,18 @@
-package au.csiro.data61.magda.search
+package au.csiro.data61.magda.indexer.search
 
 import au.csiro.data61.magda.model.misc._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import akka.stream.Materializer
 import akka.actor.ActorSystem
-import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.search.elasticsearch.{ ClientProvider, ElasticSearchIndexer, Indices }
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import au.csiro.data61.magda.search.elasticsearch.{ ClientProvider, Indices }
 import com.typesafe.config.Config
 import java.time.Instant
 import akka.stream.scaladsl.Source
 import akka.NotUsed
 import java.time.OffsetDateTime
+import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 
 trait SearchIndexer {
   def index(source: InterfaceConfig, dataSetStream: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult]

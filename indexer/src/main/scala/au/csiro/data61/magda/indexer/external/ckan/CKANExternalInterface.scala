@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.external.ckan
+package au.csiro.data61.magda.indexer.external.ckan
 
 import java.io.IOException
 import java.net.URL
@@ -25,17 +25,17 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.external.ckan._
+import au.csiro.data61.magda.indexer.external.ckan._
 import au.csiro.data61.magda.model.misc.Protocols._
 import scala.util.{ Success, Failure }
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import java.net.URLEncoder
-import au.csiro.data61.magda.external.HttpFetcher
-import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.external.ExternalInterface
+import au.csiro.data61.magda.indexer.external.HttpFetcher
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.ExternalInterface
 import au.csiro.data61.magda.util.Collections.mapCatching
 import java.time.ZoneOffset
 

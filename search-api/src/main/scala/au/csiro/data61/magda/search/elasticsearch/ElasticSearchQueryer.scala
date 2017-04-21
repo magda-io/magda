@@ -58,7 +58,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   val REMOVE_REGEX = "(?i)((^|\\s)(AND|OR)(\\s|$)|[<>])".r
   val ESCAPE_AGG_NAME_REGEX = "[\\[\\]\\.]".r
 
-  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 2f), ("description"), "publisher.name", ("keyword", 1.5f), "theme")
+  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 2f), ("description"), "publisher.name", ("keywords", 1.5f), "themes")
   val NON_LANGUAGE_FIELDS = Seq("identifier", "catalog", "accrualPeriodicity", "contactPoint.name")
 
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {

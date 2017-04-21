@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import javax.ws.rs.Path
+import au.csiro.data61.magda.model.Registry._
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport

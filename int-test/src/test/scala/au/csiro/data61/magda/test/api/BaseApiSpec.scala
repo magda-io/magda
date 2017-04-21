@@ -44,9 +44,16 @@ import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
+import java.nio.file.Paths
+import com.sksamuel.elastic4s.embedded.LocalNode
+import java.nio.file.Path
+import java.util.UUID
+import org.elasticsearch.common.settings.Settings
+import au.csiro.data61.magda.test.util.MagdaElasticSugar
+import org.scalatest.BeforeAndAfterEach
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with SharedElasticSugar with BeforeAndAfter with BeforeAndAfterAll with MagdaGeneratorTest {
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(60 seconds)
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
+  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(31 seconds)
   def buildConfig = TestActorSystem.config
   implicit val config = buildConfig
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
@@ -68,6 +75,12 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Sha
       IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
       logger.info("Finished setting up regions")
     }
+
+    System.gc()
+  }
+  
+  override def afterAll() {
+    System.gc()
   }
 
   implicit object MockClientProvider extends ClientProvider {
@@ -92,7 +105,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Sha
         done = predicate()
 
         if (!done) {
-          logger.debug(s"Waiting another {}ms for {}", 200 * backoff, explain)
+          logger.debug(s"Waiting another {}ms for {}", 500 * backoff, explain)
           Thread.sleep(200 * (backoff))
         } else {
           logger.debug(s"{} is true, proceeding.", explain)

@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.crawler
+package au.csiro.data61.magda.indexer.crawler
 
 import akka.NotUsed
 import akka.actor.ActorSystem
@@ -6,9 +6,9 @@ import akka.event.Logging
 import akka.stream.{ Materializer, ThrottleMode }
 import akka.stream.scaladsl.{ Merge, Sink, Source }
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.external.{ ExternalInterface, InterfaceConfig }
+import au.csiro.data61.magda.indexer.external.{ ExternalInterface, InterfaceConfig }
 import au.csiro.data61.magda.model.misc.DataSet
-import au.csiro.data61.magda.search.SearchIndexer
+import au.csiro.data61.magda.indexer.search.SearchIndexer
 import com.typesafe.config.Config
 
 import scala.concurrent.Future

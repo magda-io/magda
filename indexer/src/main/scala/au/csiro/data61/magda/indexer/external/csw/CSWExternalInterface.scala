@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.external.csw
+package au.csiro.data61.magda.indexer.external.csw
 
 import java.io.IOException
 import au.csiro.data61.magda.util.RichConfig.RichConfig
@@ -13,7 +13,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import scala.concurrent.ExecutionContext
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.util.DateParser._
 import com.monsanto.labs.mwundo.GeoJson.Coordinate
@@ -22,9 +22,9 @@ import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
 import com.monsanto.labs.mwundo.GeoJson.Point
 import com.monsanto.labs.mwundo.GeoJson.MultiPoint
 import scala.xml.Node
-import au.csiro.data61.magda.external.ExternalInterface
-import au.csiro.data61.magda.external.HttpFetcher
-import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.ExternalInterface
+import au.csiro.data61.magda.indexer.external.HttpFetcher
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import scala.BigDecimal
 import com.typesafe.config.Config
 

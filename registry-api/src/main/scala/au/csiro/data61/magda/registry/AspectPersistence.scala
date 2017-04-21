@@ -10,6 +10,8 @@ import java.sql.SQLException
 import spray.json._
 import gnieh.diffson.sprayJson._
 
+import au.csiro.data61.magda.model.Registry._
+
 object AspectPersistence extends Protocols with DiffsonProtocol {
   def getAll(implicit session: DBSession): List[AspectDefinition] = {
     sql"select aspectId, name, jsonSchema from Aspects".map(rowToAspect).list.apply()

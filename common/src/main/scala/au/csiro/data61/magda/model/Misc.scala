@@ -7,8 +7,9 @@ import com.monsanto.labs.mwundo.GeoJson._
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.model.GeoJsonFormats._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import spray.json._
+import scala.runtime.ScalaRunTime
 
 package misc {
   sealed trait FacetType {
@@ -57,13 +58,13 @@ package misc {
       description: Option[String] = None,
       issued: Option[OffsetDateTime] = None,
       modified: Option[OffsetDateTime] = None,
-      language: Option[String] = None,
+      languages: Set[String] = Set(),
       publisher: Option[Agent] = None,
       accrualPeriodicity: Option[Periodicity] = None,
       spatial: Option[Location] = None,
       temporal: Option[PeriodOfTime] = None,
-      theme: Seq[String] = List(),
-      keyword: Seq[String] = List(),
+      themes: Seq[String] = List(),
+      keywords: Seq[String] = List(),
       contactPoint: Option[Agent] = None,
       distributions: Seq[Distribution] = Seq(),
       landingPage: Option[String] = None,
@@ -72,7 +73,9 @@ package misc {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
 
-    //    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
+    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
+
+    def normalToString: String = ScalaRunTime._toString(this)
   }
 
   case class Agent(
@@ -271,7 +274,7 @@ package misc {
 
   case class License(name: Option[String] = None, url: Option[String] = None)
 
-  trait Protocols extends DefaultJsonProtocol with temporal.Protocols {
+  trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
 
     implicit val licenseFormat = jsonFormat2(License.apply)
 

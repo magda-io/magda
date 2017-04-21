@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.search.elasticsearch;
+package au.csiro.data61.magda.indexer.search.elasticsearch;
 
 import java.util.Collection;
 import java.util.Iterator;

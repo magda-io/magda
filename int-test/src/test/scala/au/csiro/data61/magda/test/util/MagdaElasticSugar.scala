@@ -13,19 +13,19 @@ trait MagdaElasticSugar extends SharedElasticSugar {
 
   override def getNode: LocalNode = ClassloaderLocalNodeProvider.node
 
-  object ClassloaderLocalNodeProvider {
-    lazy val node = {
+}
+object ClassloaderLocalNodeProvider {
+  lazy val node = {
 
-      val tempDirectoryPath: Path = Paths get System.getProperty("java.io.tmpdir")
-      val pathHome: Path = tempDirectoryPath resolve UUID.randomUUID().toString
-      val requiredSettings = LocalNode.requiredSettings("classloader-node", pathHome.toAbsolutePath.toString)
+    val tempDirectoryPath: Path = Paths get System.getProperty("java.io.tmpdir")
+    val pathHome: Path = tempDirectoryPath resolve UUID.randomUUID().toString
+    val requiredSettings = LocalNode.requiredSettings("classloader-node", pathHome.toAbsolutePath.toString)
 
-      val settings = requiredSettings ++ Map(
-        "index.number_of_replicas" -> "0",
-        "index.number_of_shards" -> "1"
-      )
+    val settings = requiredSettings ++ Map(
+      "bootstrap.memory_lock" -> "true",
+      "cluster.routing.allocation.disk.threshold_enabled" -> "false"
+    )
 
-      LocalNode(settings)
-    }
+    LocalNode(settings)
   }
 }

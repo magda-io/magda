@@ -1,15 +1,15 @@
 package au.csiro.data61.magda.crawler
 
 import au.csiro.data61.magda.test.api.BaseApiSpec
-import au.csiro.data61.magda.crawler.CrawlerApi
-import au.csiro.data61.magda.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.crawler.CrawlerApi;
 import au.csiro.data61.magda.test.util.IndexerGenerators
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.Gen
-import au.csiro.data61.magda.external.ExternalInterface
+import au.csiro.data61.magda.indexer.external.ExternalInterface
 import scala.concurrent.Future
 import au.csiro.data61.magda.model.misc.DataSet
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchIndexer
+import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import akka.http.scaladsl.model.StatusCodes.{ OK, Accepted }
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import scala.concurrent.duration._
@@ -25,6 +25,7 @@ import java.util.UUID
 import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.ConfigFactory
+import au.csiro.data61.magda.indexer.crawler.Crawler
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
@@ -61,6 +62,8 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
         doTest(indexId, sources, true)
         doTest(indexId, sources, false)
+
+        deleteIndex(indexId)
     }
   }
 
@@ -88,20 +91,14 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
     val routes = crawlerApi.routes
 
-    indexer.ready.await
+    indexer.ready.await(30 seconds)
 
-    Get("/reindex/in-progress") ~> routes ~> check {
-
-    }
-
-    Post("/reindex") ~> routes ~> check {
+    Post("/") ~> routes ~> check {
       status shouldBe Accepted
     }
 
-    Thread.sleep(2000)
-
     blockUntil("Reindex is finished") { () =>
-      val reindexCheck = Get("/reindex/in-progress") ~> routes ~> runRoute
+      val reindexCheck = Get("/in-progress") ~> routes ~> runRoute
 
       val inProgress = reindexCheck.entity.toStrict(30 seconds).await.data.decodeString("UTF-8")
 

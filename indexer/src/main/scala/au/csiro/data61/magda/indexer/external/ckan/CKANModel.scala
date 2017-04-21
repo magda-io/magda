@@ -1,17 +1,19 @@
-package au.csiro.data61.magda.external.ckan
+package au.csiro.data61.magda.indexer.external.ckan
 
 import spray.json.DefaultJsonProtocol
 import akka.http.scaladsl.model.MediaTypes
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import spray.json._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.Distribution
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.model._
 import java.text.SimpleDateFormat
 import akka.http.scaladsl.model.MediaType
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import java.time.ZoneOffset
 
 case class CKANSearchResponse(success: Boolean, result: CKANSearchResult)
 case class CKANSearchResult(count: Int, results: List[CKANDataSet])
@@ -21,8 +23,6 @@ object CKANState extends Enumeration {
   val active, deleted = Value
 }
 import CKANState._
-import au.csiro.data61.magda.external.InterfaceConfig
-import java.time.ZoneOffset
 
 case class CKANDataSet(
   id: String,
@@ -143,7 +143,7 @@ trait CKANConverters {
       description = hit.notes,
       issued = Some(ckanDateTimeWithMsFormat.parse(hit.metadata_created).toInstant.atOffset(defaultOffset)),
       modified = Some(modified),
-      language = hit.language,
+      languages = hit.language.toSet,
       publisher = hit.organization,
       accrualPeriodicity = hit.update_freq map (Periodicity.fromString(_)),
       spatial = hit.spatial.map(Location(_)).orElse(hit.spatial_coverage.map(Location(_))),
@@ -151,8 +151,8 @@ trait CKANConverters {
         if (hit.temporal_coverage_from.isEmpty && hit.temporal_coverage_to.isEmpty) None
         else PeriodOfTime.parse(hit.temporal_coverage_from, hit.temporal_coverage_to, Some(modified))
       },
-      theme = List(), // ???
-      keyword = hit.tags match {
+      themes = List(), // ???
+      keywords = hit.tags match {
         case Some(tags) => tags.map(_.display_name)
         case None       => List()
       },

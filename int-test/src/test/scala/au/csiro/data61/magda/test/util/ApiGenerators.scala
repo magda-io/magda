@@ -8,7 +8,7 @@ import org.scalacheck.Gen.Choose._
 import org.scalacheck.Arbitrary._
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import java.time.ZonedDateTime
 
 import com.fortysevendeg.scalacheck.datetime.instances.jdk8._
@@ -41,18 +41,21 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.test.util.Generators._
 
 object ApiGenerators {
-
-  val queryTextGen = descWordGen.flatMap(descWords => Gen.choose(1, 5).flatMap(size => Gen.pick(size, descWords))).map(_.mkString(" "))
+  val queryTextGen = (for {
+    allDescWords <- descWordGen
+    safeDescWords = allDescWords.filterNot(x => Generators.filterWords.contains(x.toLowerCase))
+    someDescWords <- listSizeBetween(1, 5, Gen.oneOf(allDescWords))
+    concated = someDescWords.mkString(" ")
+  } yield concated).suchThat(validFilter)
   def unspecifiedGen(implicit config: Config) = Gen.const(Unspecified())
   def filterValueGen[T](innerGen: Gen[T])(implicit config: Config): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
 
   def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, smallSet(gen)), (3, Gen.const(Set())))
-  def smallSet[T](gen: Gen[T]): Gen[Set[T]] = listSizeBetween(1, 3, gen).map(_.toSet)
 
   val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
   val formatQueryGenInner = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyTextGen))
-    .suchThat(word => !filterWords.contains(word.toLowerCase))
+    .suchThat(validFilter)
   def formatQueryGen(implicit config: Config) = filterValueGen(formatQueryGenInner)
 
   val partialPublisherGen = publisherGen.flatMap(Gen.oneOf(_)).flatMap { publisher =>
@@ -69,8 +72,17 @@ object ApiGenerators {
     } yield split.slice(start, Math.max(split.length - 1, 1)).mkString(delimiter)
   }
 
+  def validFilter(word: String): Boolean = !filterWordRegex.r.matchesAny(word) && // Don't want to inject filter words into our query
+    !filterWords.contains(word.toLowerCase) && // ditto
+    {
+      val words = word.split("^[\\s-.']")
+      words.exists(word => !stopWords.contains(word.toLowerCase()))
+    } && // stop words tend to not match anything because of TFDIF
+    word.exists(_.isLetterOrDigit) && // GOtta have at least one letter
+    word.length > 1
+
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
-    .suchThat(word => !filterWords.contains(word.toLowerCase))
+    .suchThat(validFilter)
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
   def innerRegionQueryGen(implicit config: Config): Gen[Region] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
     case (regionSource, regionObject) => Region(regionJsonToQueryRegion(regionSource, regionObject))
@@ -101,7 +113,7 @@ object ApiGenerators {
     dateTo = dateTo,
     formats = formats,
     regions = regions
-  )) //.map(removeInvalid)
+  ))
 
   def exactQueryGen(implicit config: Config) = (for {
     freeText <- Gen.option(queryTextGen)
@@ -171,23 +183,6 @@ object ApiGenerators {
 
     textQuery.flatMap((_, query.copy(publishers = publishers, formats = formats)))
   }
-
-  def randomCaseGen(string: String) = {
-    for {
-      whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 2))
-    } yield string.zip(whatToDo).map {
-      case (char, charWhatToDo) =>
-        if (char.isLetter) charWhatToDo match {
-          case 0 => char.toUpper
-          case 1 => char.toLower
-          case 2 => char
-        }
-        else char
-    }.mkString
-  }
-
-  val filterWords = Set("in", "to", "as", "by", "from")
-  val filterWordsWithSpace = filterWords.map(_ + " ")
 
   def containsNoFilterWord(word: FilterValue[String]): Boolean = {
     !filterWords.exists(filterWord => word.map(_.toLowerCase.contains(" " + filterWord.toLowerCase + " ")).getOrElse(false))

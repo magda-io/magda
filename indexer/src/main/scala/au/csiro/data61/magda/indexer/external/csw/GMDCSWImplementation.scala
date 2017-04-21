@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.external.csw
+package au.csiro.data61.magda.indexer.external.csw
 
 import java.io.IOException
 import scala.concurrent.Future
@@ -12,7 +12,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import scala.concurrent.ExecutionContext
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.util.DateParser._
 import com.monsanto.labs.mwundo.GeoJson.Coordinate
@@ -21,10 +21,10 @@ import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
 import com.monsanto.labs.mwundo.GeoJson.Point
 import com.monsanto.labs.mwundo.GeoJson.MultiPoint
 import scala.xml.Node
-import au.csiro.data61.magda.external.ExternalInterface
-import au.csiro.data61.magda.external.HttpFetcher
-import au.csiro.data61.magda.external.InterfaceConfig
-import au.csiro.data61.magda.util.Xml._
+import au.csiro.data61.magda.indexer.external.ExternalInterface
+import au.csiro.data61.magda.indexer.external.HttpFetcher
+import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import au.csiro.data61.magda.indexer.util.Xml._
 import scala.BigDecimal
 import com.monsanto.labs.mwundo.GeoJson.LineString
 import com.monsanto.labs.mwundo.GeoJson.MultiLineString
@@ -69,7 +69,7 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config
         description = nodeToStringOption(identification \ "abstract" \ "CharacterString"),
         issued = publicationDate,
         modified = modifiedDate,
-        language = Option(summaryRecord \ "language" \ "LanguageCode" \@ "codeListValue"),
+        languages = Set(summaryRecord \ "language" \ "LanguageCode" \@ "codeListValue"),
         publisher = publisherFromNode(citation \ "citedResponsibleParty" \ "CI_ResponsibleParty")
           .orElse(publisherFromNode(summaryRecord \ "contact" \ "CI_ResponsibleParty"))
           .orElse(publisherFromNode(identification \ "pointOfContact" \ "CI_ResponsibleParty"))
@@ -80,8 +80,8 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config
         ).map(Periodicity.fromString(_)),
         spatial = buildLocation(extent \ "geographicElement" \ "EX_GeographicBoundingBox"),
         temporal = buildPeriodOfTime(modifiedDate)(extent \ "temporalElement" \ "EX_TemporalExtent"),
-        theme = (identification \ "topicCategory" \ "TopicCategoryCode").map(_.text),
-        keyword = (identification \ "descriptiveKeywords" \ "MD_Keywords" \ "keyword" \ "CharacterString").map(_.text),
+        themes = (identification \ "topicCategory" \ "TopicCategoryCode").map(_.text),
+        keywords = (identification \ "descriptiveKeywords" \ "MD_Keywords" \ "keyword" \ "CharacterString").map(_.text),
         contactPoint = nodeToNodeOption(summaryRecord \ "contact" \ "CI_ResponsibleParty")
           .orElse(nodeToNodeOption(identification \ "pointOfContact" \ "CI_ResponsibleParty"))
           .map(nodeSeq => buildAgent(true)(nodeSeq.head)),

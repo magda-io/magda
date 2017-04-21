@@ -9,6 +9,8 @@ object TestActorSystem {
   // This has to be separated out to make overriding the config work for some stupid reason.
   val config = ConfigFactory.parseString(s"""
     akka.loglevel = ${if (ContinuousIntegration.isCi) "ERROR" else "INFO"}
+    indexer.refreshInterval = -1
+    akka.http.server.request-timeout = 30s
   """).resolve().withFallback(AppConfig.conf(Some("local")))
 
   def actorSystem = ActorSystem("TestActorSystem", config)

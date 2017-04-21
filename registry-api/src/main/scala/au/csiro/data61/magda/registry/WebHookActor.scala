@@ -1,6 +1,10 @@
 package au.csiro.data61.magda.registry
 
 import akka.actor.{Actor, Props}
+import au.csiro.data61.magda.model.Registry._
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.model._
 import akka.pattern.pipe
 
 object WebHookActor {

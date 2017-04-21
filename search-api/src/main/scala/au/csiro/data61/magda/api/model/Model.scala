@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.api.model
 
 import au.csiro.data61.magda.model.misc.{ DataSet, Facet, Region }
-import au.csiro.data61.magda.model.temporal
+import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.search.SearchStrategy
 import spray.json.{ DefaultJsonProtocol, JsString, JsValue, JsonFormat }
@@ -23,7 +23,7 @@ case class RegionSearchResult(
   hitCount: Long,
   regions: List[Region])
 
-trait Protocols extends DefaultJsonProtocol with temporal.Protocols with misc.Protocols {
+trait Protocols extends DefaultJsonProtocol with Temporal.Protocols with misc.Protocols {
   implicit object SearchStrategyFormat extends JsonFormat[SearchStrategy] {
     override def write(strat: SearchStrategy): JsString = JsString.apply(strat.name)
 

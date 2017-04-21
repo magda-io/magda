@@ -11,7 +11,7 @@ import org.scalacheck.Gen.Choose._
 import org.scalacheck.Arbitrary._
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import java.time.ZonedDateTime
 import com.fortysevendeg.scalacheck.datetime.instances.jdk8._
 import java.time.ZoneOffset
@@ -26,7 +26,7 @@ import spray.json._
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.temporal._
+import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc.Protocols._
 import scala.util.Try
 import org.locationtech.spatial4j.shape.jts.JtsGeometry
@@ -35,6 +35,8 @@ import scala.annotation.tailrec
 import org.scalacheck.Gen.const
 import org.scalacheck.Gen.freqTuple
 import scala.BigDecimal
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import scala.collection.JavaConverters._
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -44,6 +46,35 @@ object Generators {
   val defaultTightStartTime = ZonedDateTime.parse("2000-01-01T00:00:00Z").toInstant
   val defaultEndTime = ZonedDateTime.parse("2020-01-01T00:00:00Z").toInstant
   val defaultTightEndTime = ZonedDateTime.parse("2015-01-01T00:00:00Z").toInstant
+
+  // TODO: It'd be really cool to have arbitrary characters in here but some of them mess up ES for some
+  // reason - if there's time later on it'd be good to find out exactly what ES can accept because
+  // right now we're only testing english characters.
+  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf('-', '.', ''', ' ')))
+  val nonEmptyTextGen = for {
+    before <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
+    middle <- Gen.alphaNumChar
+    after <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
+  } yield (before + middle.toString + after)
+
+  val filterWords = Set("in", "to", "as", "by", "from")
+  // See StandardAnalyzer.ENGLISH_STOP_WORDS_SET
+  val luceneStopWords = Seq("a", "an", "and", "are", "as", "at", "be", "but", "by",
+    "for", "if", "in", "into", "is", "it",
+    "no", "not", "of", "on", "or", "such",
+    "that", "the", "their", "then", "there", "these",
+    "they", "this", "to", "was", "will", "with")
+
+  val stopWords = luceneStopWords.filterNot(filterWords.contains(_))
+
+  val filterWordRegex = s"(?i)(${filterWords.mkString("|")})(\\s|$$)"
+  def removeFilterWords(s: String) = s.replaceAll(filterWordRegex, " ").trim
+
+  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (1, Gen.oneOf(stopWords)))
+
+  val textGen = Gen.frequency((15, nonEmptyTextWithStopWordsGen), (1, Gen.const("")))
+
+  def smallSet[T](gen: Gen[T]): Gen[Set[T]] = listSizeBetween(1, 3, gen).map(_.toSet)
 
   def genInstant(start: Instant, end: Instant) =
     Gen.choose(start.toEpochMilli(), end.toEpochMilli())
@@ -58,21 +89,7 @@ object Generators {
     ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds)
   )
 
-  
-
   val alphaNumRegex = ".*[a-zA-Z0-9].*".r
-
-  // TODO: It'd be really cool to have arbitrary characters in here but some of them mess up ES for some
-  // reason - if there's time later on it'd be good to find out exactly what ES can accept because
-  // right now we're only testing english characters.
-  val textCharGen = Gen.frequency((9, Gen.alphaNumChar), (1, Gen.oneOf('-', '.', ''', ' ')))
-
-  val nonEmptyTextGen = for {
-    before <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
-    middle <- Gen.alphaNumChar
-    after <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
-  } yield (before + middle.toString + after)
-  val textGen = Gen.frequency((15, nonEmptyTextGen), (1, Gen.const("")))
 
   def apiDateGen(start: Instant, end: Instant) = for {
     date <- someBiasedOption(offsetDateTimeGen(start, end))
@@ -253,7 +270,7 @@ object Generators {
   }
 
   val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50).trim), 1000)
-  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextGen.map(_.take(50).trim)).map(_.mkString(" ")), 50)
+  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" ")), 50)
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
@@ -261,7 +278,8 @@ object Generators {
     MediaTypes.`application/json`,
     MediaTypes.`application/octet-stream`
   ))
-  val randomFormatGen = cachedListGen(nonEmptyTextGen, 50)
+  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" "))
+  val randomFormatGen = cachedListGen(formatNameGen, 50)
 
   def textGen(inner: Gen[List[String]]) = inner
     .flatMap(list => Gen.choose(0, Math.min(100, list.length)).map((_, list)))
@@ -276,14 +294,31 @@ object Generators {
     url <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
   } yield License(name, url)
 
+
+  def randomCaseGen(string: String) = {
+    for {
+      whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 2))
+    } yield string.zip(whatToDo).map {
+      case (char, charWhatToDo) =>
+        if (char.isLetter) charWhatToDo match {
+          case 0 => char.toUpper
+          case 1 => char.toLower
+          case 2 => char
+        }
+        else char
+    }.mkString
+  }
+  
   val formatGen = for {
     mediaType <- Gen.option(mediaTypeGen)
+    mediaTypeFormat = mediaType.flatMap(_.fileExtensions.headOption)
     randomFormat <- randomFormatGen.flatMap(Gen.oneOf(_))
-  } yield (mediaType, mediaType.flatMap(_.fileExtensions.headOption).getOrElse(randomFormat))
+    format <- randomCaseGen(mediaTypeFormat.getOrElse(randomFormat))
+  } yield (mediaType, format)
 
   val distGen = for {
-    title <- nonEmptyTextGen
-    description <- someBiasedOption(nonEmptyTextGen)
+    title <- textGen
+    description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
     license <- someBiasedOption(licenseGen)
@@ -314,7 +349,7 @@ object Generators {
     description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
-    language <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    languages <- Generators.smallSet(arbitrary[String].map(_.take(50).trim))
     publisher <- someBiasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
     accrualPeriodicity <- someBiasedOption(periodicityGen)
     spatial <- noneBiasedOption(locationGen(geometryGen(6, coordGen())))
@@ -331,13 +366,13 @@ object Generators {
     description = description,
     issued = issued,
     modified = modified,
-    language = language,
+    languages = languages,
     publisher = publisher,
     accrualPeriodicity = accrualPeriodicity,
     spatial = spatial,
     temporal = temporal,
-    theme = theme,
-    keyword = keyword,
+    themes = theme,
+    keywords = keyword,
     contactPoint = contactPoint,
     distributions = distributions,
     landingPage = landingPage

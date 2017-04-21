@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import java.time.OffsetDateTime
+import au.csiro.data61.magda.model.Registry._
 
 import akka.stream.scaladsl.Source
 import spray.json._
