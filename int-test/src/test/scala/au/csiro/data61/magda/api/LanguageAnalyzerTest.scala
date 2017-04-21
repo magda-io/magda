@@ -81,7 +81,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
         withClue(s"term: ${publisherName}, publisher: ${dataSet.publisher.map(_.name)} options ${result.options}") {
           result.options.exists(value =>
-            publisher == value.value
+            publisher.equalsIgnoreCase(value.value)
           ) should be(true)
         }
       }
@@ -102,7 +102,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         withClue(s"format: ${formatName} options ${result.options}") {
           result.options.exists(value =>
             formats.exists(format =>
-              value.value == format
+              value.value.equalsIgnoreCase(format)
             )
           ) should be(true)
         }
