@@ -436,13 +436,25 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               val dataSetPublisher = dataSet.publisher.get.name
 
               withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSetPublisher}") {
-                val queryToDataSetComparison = for {
-                  queryPublisher <- queryPublishers
-                  queryWord <- queryPublisher.get.split("[\\s-]+").toSeq
-                  dataSetWord <- dataSetPublisher.get.split("[\\s-]+").toSeq
-                } yield (MagdaMatchers.toEnglishToken(dataSetWord), MagdaMatchers.toEnglishToken(queryWord))
+                def tokenize(string: String) = string.split("[\\s-.]+").map(MagdaMatchers.toEnglishToken)
 
-                queryToDataSetComparison.exists(x => x._1 == x._2) should be(true)
+                val gotQueryPublishers = queryPublishers.map(_.get).flatMap(_.split("[\\s-.]+"))
+                val tokenizedQueryPublishers = gotQueryPublishers.flatMap(tokenize)
+
+                val possibleQueryPublishers = gotQueryPublishers.zip(tokenizedQueryPublishers)
+
+                val tokenizedDataSetPublishers = tokenize(dataSetPublisher.get)
+
+                val allDataSetPublisherTerms = dataSetPublisher.get.split("[\\s-.]+") ++ tokenizedDataSetPublishers
+
+                val y = possibleQueryPublishers.foldLeft(0) {
+                  case (soFar, (untokenizedTerm, tokenizedTerm)) =>
+                    val hasAMatch = allDataSetPublisherTerms.exists(dataSetTerm => dataSetTerm == untokenizedTerm || dataSetTerm === tokenizedTerm)
+
+                    soFar + (if (hasAMatch) 1 else 0)
+                }
+
+                (y.toDouble / possibleQueryPublishers.size) should be >= 0.5
               }
             }
           }
