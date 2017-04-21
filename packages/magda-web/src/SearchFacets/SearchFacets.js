@@ -6,8 +6,8 @@ class SearchFacets extends Component {
     return (
       <div className="row">
         {config.facets.map(c=>
-          <div className="col-sm-3">
-            <c.component key={c.id}
+          <div className="col-sm-3" key={c.id}>
+            <c.component 
                        updateQuery={this.props.updateQuery}
                        location={this.props.location}
                        component={'facet'}/>
