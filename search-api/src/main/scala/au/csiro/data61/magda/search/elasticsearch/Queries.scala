@@ -24,11 +24,9 @@ object Queries {
       strategy match {
         case SearchStrategy.MatchAll => matchQuery("publisher.name.keyword_lowercase", publisherString)
         case SearchStrategy.MatchPart =>
-          constantScoreQuery(
-            multiMatchQuery(publisherString)
-              .fields("publisher.name", "publisher.name.english")
-              .minimumShouldMatch("-50%")
-          )
+          multiMatchQuery(publisherString)
+            .fields("publisher.name", "publisher.name.english")
+            .minimumShouldMatch("-50%")
       }, "publisher.name"
     )
   }
