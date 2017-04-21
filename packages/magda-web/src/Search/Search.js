@@ -149,7 +149,7 @@ class Search extends Component {
   }
 
   render() {
-    const searchText = this.props.location.query.q;
+    const searchText = this.props.location.query.q || '';
     return (
       <div>
         {this.props.isFetching && <ProgressBar progress={this.props.progress}/>}

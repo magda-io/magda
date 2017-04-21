@@ -36,14 +36,15 @@ export function fetchDatasetFromRegistry(id: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestDataset(id))
     let url : string = config.registryUrl + `${encodeURIComponent(id)}?aspect=dcat-dataset-strings&optionalAspect=dataset-distributions&dereference=true`;
+    console.log(url);
     return fetch(url)
     .then(response => {
         if (response.status >= 400) {
-            dispatch(requestDatasetError(response));
-            throw new Error("Bad response from server");
-        } else if ( false ){
-            dispatch(datasetNotFound())
-        }
+          if(response.status === 404){
+            return dispatch(datasetNotFound());
+          }
+            return dispatch(requestDatasetError(response));
+        } 
         return response.json();
     })
     .then((json: Dataset) => dispatch(receiveDataset(json))

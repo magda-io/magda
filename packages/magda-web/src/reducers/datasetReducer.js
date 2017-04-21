@@ -22,9 +22,9 @@ const dataset = (state: Dataset =initialData, action: Action) => {
     case 'REQUEST_DATASET_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
-        error:  action.error,
+        error: action.error,
       })
-    case 'RECEIVE_DATASET':
+    case 'DATASET_NOT_FOUND':
       return Object.assign({}, state, {
         isFetching: false,
         notFound:  true

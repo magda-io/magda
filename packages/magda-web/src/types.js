@@ -148,7 +148,3 @@ export type SearchState = {
   errorMessage: string
 }
 
-
-export type Dataset = {
-  
-}

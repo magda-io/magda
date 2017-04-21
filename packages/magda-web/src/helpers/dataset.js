@@ -16,7 +16,7 @@ export function parseDataset(dataset) {
       const distributionAspects = d["aspects"] || {};
       const info = distributionAspects["dcat-distribution-strings"] || {};
       return {
-          id: distributionAspects["id"] || "",
+          id: d["id"] || "",
           downloadUrl: info.downloadURL || "",
           format: info.format || "unknown format",
           license: info.license || "license unknown",
@@ -24,8 +24,6 @@ export function parseDataset(dataset) {
           description: info.description || ""
       }
   });
-  debugger
-
   return {
       title,issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source
   }

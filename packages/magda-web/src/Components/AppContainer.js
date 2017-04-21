@@ -39,8 +39,9 @@ class AppContainer extends React.Component {
                 </div>
                 </nav>
                 
-                <div id="content" className="container" tabIndex="-1">{ this.props.children }</div>
-                <footer className="container">
+                <div id="content" className="container">{ this.props.children }</div>
+                <footer className="footer clearfix">
+                  <div className="container">
                   <ul className="nav row">
                   {
                     footerNavs.map(item=>
@@ -54,6 +55,7 @@ class AppContainer extends React.Component {
                     )
                   }
                   </ul>
+                  </div>
                 </footer>
         </div>
       </ReactDocumentTitle>

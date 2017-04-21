@@ -49,6 +49,6 @@ class MarkdownViewer extends Component {
 }
 
 MarkdownViewer.propTypes = {markdown: React.PropTypes.string};
-MarkdownViewer.defaultProps = {markdown: ''};
+MarkdownViewer.defaultProps = {markdown: '', stripped: false};
 
 export default MarkdownViewer;

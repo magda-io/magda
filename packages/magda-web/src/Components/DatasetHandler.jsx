@@ -11,21 +11,12 @@ class DatasetHandler extends React.Component {
   }
 
   renderByState(dataset){
-    let state = 2;
-    if(!this.props.notFound && !this.props.error && this.props.data){
-      state = 0;
-    } else if(this.props.error){
-      state = 1;
-    }
-    switch(state){
-      case 0: 
-      return <div><h1>{dataset.title}</h1> <a>{dataset.landingPage}</a><div>{dataset.updatedDate}</div></div>;
-      case 1: 
-      return <h2>error</h2>;
-      case 2:
+    if(this.props.notFound){
       return <h2>Page not found</h2>;
+    } else if(this.props.error){
+      return <h2>error</h2>;
     }
-
+    return <div><h1>{dataset.title}</h1> <a>{dataset.landingPage}</a><div>{dataset.updatedDate}</div><DatasetDetails dataset={dataset}/></div>;
   }
   
   render() {
@@ -33,7 +24,6 @@ class DatasetHandler extends React.Component {
     return (
       <div>
           {this.renderByState(dataset)}
-          <DatasetDetails dataset={dataset}/>
       </div>
     );
   }
