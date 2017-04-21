@@ -50,12 +50,6 @@ export class DeleteResult {
 export class EventType {
     'value': number;
     'name': string;
-    'recordAspectEvent': boolean;
-    'aspectDefinitionEvent': boolean;
-    'deleteEvent': boolean;
-    'recordEvent': boolean;
-    'patchEvent': boolean;
-    'createEvent': boolean;
 }
 
 /**
@@ -110,7 +104,6 @@ export class WebHookConfig {
     'optionalAspects': Array<string>;
     'includeEvents': any;
     'includeRecords': any;
-    'includeAspectDefinitions': any;
     'dereference': any;
 }
 

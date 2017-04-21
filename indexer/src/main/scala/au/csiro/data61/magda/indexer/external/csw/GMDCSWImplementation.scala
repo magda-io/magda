@@ -64,7 +64,7 @@ class GMDCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config
 
       DataSet(
         identifier = identifier,
-        catalog = interfaceConfig.name,
+        catalog = Some(interfaceConfig.name),
         title = nodeToStringOption(citation \ "title" \ "CharacterString"),
         description = nodeToStringOption(identification \ "abstract" \ "CharacterString"),
         issued = publicationDate,

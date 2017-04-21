@@ -100,9 +100,6 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
             // Contact points only look for name at the moment
             contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
 
-            // Catalog is always MAGDA Registry so far
-            catalog = "MAGDA Registry",
-
             // Registry doesn't know how to do spatial extent yet, so just keep the text, no text == None
             spatial = dataSet.spatial match {
               case Some(Location(None, _)) => None
@@ -197,6 +194,9 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
                 )
               )
             ).toJson
+          ),
+          "source" -> JsObject(
+            "name" -> dataSet.catalog.toJson
           )
         )
 

@@ -11,6 +11,10 @@
             "title": "The source URL.",
             "type": "string"
         },
+        "name": {
+            "title": "The human-friendly name of this source.",
+            "type": "string"
+        },
         "problems": {
             "title": "Problems encountered while creating this record from the source.",
             "type": "array",

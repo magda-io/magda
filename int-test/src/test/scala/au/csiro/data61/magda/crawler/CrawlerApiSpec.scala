@@ -131,7 +131,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       bothDataSets.foreach {
         case (resDataSet, inputDataSet, interfaceConfig) =>
           // Everything except publisher and catalog should be the same between input/output
-          def removeDynamicFields(dataSet: DataSet) = dataSet.copy(publisher = None, catalog = "", indexed = None)
+          def removeDynamicFields(dataSet: DataSet) = dataSet.copy(publisher = None, catalog = None, indexed = None)
           removeDynamicFields(resDataSet) should equal(removeDynamicFields(inputDataSet))
 
           // The indexer should set the catalog field to the name of the source

@@ -30,6 +30,7 @@ export interface CkanPackageSearchResult {
 
 export interface CkanOptions {
     baseUrl: string,
+    name: string,
     apiBaseUrl?: string,
     pageSize?: number,
     maxRetries?: number,
@@ -38,6 +39,7 @@ export interface CkanOptions {
 
 export default class Ckan {
     public readonly baseUrl: uri.URI;
+    public readonly name: string;
     public readonly apiBaseUrl: uri.URI;
     public readonly pageSize: number;
     public readonly maxRetries: number;
@@ -45,12 +47,14 @@ export default class Ckan {
 
     constructor({
         baseUrl,
+        name,
         apiBaseUrl = baseUrl,
         pageSize = 1000,
         maxRetries = 10,
         secondsBetweenRetries = 10
     }: CkanOptions) {
         this.baseUrl = new URI(baseUrl);
+        this.name = name;
         this.apiBaseUrl = new URI(apiBaseUrl);
         this.pageSize = pageSize;
         this.maxRetries = maxRetries;

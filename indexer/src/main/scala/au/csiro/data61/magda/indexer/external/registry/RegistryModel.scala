@@ -27,6 +27,7 @@ trait RegistryIndexerProtocols extends DefaultJsonProtocol with RegistryProtocol
 trait RegistryConverters extends RegistryProtocols with ModelProtocols {
   implicit def registryDataSetConv(interface: InterfaceConfig)(hit: Record): DataSet = {
     val dcatStrings = hit.aspects("dcat-dataset-strings")
+    val source = hit.aspects("source")
     val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
     val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
 
@@ -42,7 +43,7 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
     DataSet(
       identifier = hit.id,
       title = dcatStrings.extract[String]('title.?),
-      catalog = interface.name,
+      catalog = source.extract[String]('name.?),
       description = dcatStrings.extract[String]('description.?),
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
       modified = tryParseDate(dcatStrings.extract[String]('modified.?)),

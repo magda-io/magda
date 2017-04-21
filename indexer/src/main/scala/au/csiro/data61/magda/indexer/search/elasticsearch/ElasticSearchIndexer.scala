@@ -423,7 +423,7 @@ class ElasticSearchIndexer(
    */
   private def buildDatasetIndexDefinition(source: InterfaceConfig, rawDataSet: DataSet): Seq[ESIndexDefinition] = {
     val dataSet = rawDataSet.copy(
-      catalog = source.name,
+      catalog = rawDataSet.catalog.orElse(Some(source.name)),
       description = rawDataSet.description.map(_.take(32766)),
       years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
       indexed = Some(OffsetDateTime.now)

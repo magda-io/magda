@@ -54,7 +54,7 @@ package misc {
   case class DataSet(
       identifier: String,
       title: Option[String] = None,
-      catalog: String,
+      catalog: Option[String],
       description: Option[String] = None,
       issued: Option[OffsetDateTime] = None,
       modified: Option[OffsetDateTime] = None,

@@ -32,7 +32,7 @@ import java.time.ZoneOffset
 
 class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val config: Config, implicit val system: ActorSystem) extends CSWImplementation with ScalaXmlSupport {
   val logger = Logging(system, getClass)
-  
+
   override def typeName = "csw:Record"
 
   def schema = "http://www.opengis.net/cat/csw/2.0.2"
@@ -50,7 +50,7 @@ class DefaultCSWImplementation(interfaceConfig: InterfaceConfig, implicit val co
 
       DataSet(
         identifier = identifier,
-        catalog = interfaceConfig.name,
+        catalog = Some(interfaceConfig.name),
         title = nodeToStringOption(summaryRecord \ "title"),
         description = nodeToStringOption(summaryRecord \ "description")
           .orElse(nodeToStringOption(summaryRecord \ "abstract")),

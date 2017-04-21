@@ -11,7 +11,8 @@ import * as moment from 'moment';
 
 const ckan = new Ckan({
     baseUrl: 'https://data.gov.au/',
-    pageSize: 1000
+    pageSize: 1000,
+    name: "Data.gov.au"
 });
 
 const registry = new Registry({

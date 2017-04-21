@@ -361,7 +361,7 @@ object Generators {
     landingPage <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
   } yield DataSet(
     identifier = identifier.toString,
-    catalog = "test-catalog",
+    catalog = Some("test-catalog"),
     title = title,
     description = description,
     issued = issued,

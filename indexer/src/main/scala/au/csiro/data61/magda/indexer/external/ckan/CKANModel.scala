@@ -138,7 +138,7 @@ trait CKANConverters {
     val modified = ckanDateTimeWithMsFormat.parse(hit.metadata_modified).toInstant.atOffset(defaultOffset)
     DataSet(
       identifier = hit.name,
-      catalog = interface.name,
+      catalog = Some(interface.name),
       title = hit.title,
       description = hit.notes,
       issued = Some(ckanDateTimeWithMsFormat.parse(hit.metadata_created).toInstant.atOffset(defaultOffset)),
