@@ -109,7 +109,10 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     val allDataSets = filteredSources.flatMap { case (dataSets, interfaceConfig) => dataSets.map((_, interfaceConfig)) }
 
     refresh(indexId)
-    blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+
+    withClue(allDataSets.map(_._1.uniqueId)) {
+      blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+    }
 
     Get(s"/datasets/search?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
       status shouldBe OK
@@ -131,11 +134,11 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       bothDataSets.foreach {
         case (resDataSet, inputDataSet, interfaceConfig) =>
           // Everything except publisher and catalog should be the same between input/output
-          def removeDynamicFields(dataSet: DataSet) = dataSet.copy(publisher = None, catalog = None, indexed = None)
+          def removeDynamicFields(dataSet: DataSet) = dataSet.copy(publisher = None, catalog = None, indexed = None, source = None)
           removeDynamicFields(resDataSet) should equal(removeDynamicFields(inputDataSet))
 
-          // The indexer should set the catalog field to the name of the source
-          resDataSet.catalog should equal(interfaceConfig.name)
+          // The indexer should set the source field to the name of the source
+          resDataSet.source.get should equal(interfaceConfig.name)
 
           // If publisher is not defined by the dataset, it should be set to the default of the interface if one is
           // present

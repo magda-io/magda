@@ -78,7 +78,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
     System.gc()
   }
-  
+
   override def afterAll() {
     System.gc()
   }
@@ -117,7 +117,9 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       }
     }
 
-    require(done, s"Failed waiting on: $explain")
+    if (!done) {
+      fail(s"Failed waiting on: $explain")
+    }
   }
 
   def configWith(newProps: Map[String, String]): Config = {

@@ -14,8 +14,8 @@ object IndexerGenerators {
     path <- Gen.listOf(Gen.alphaNumStr).map(_.mkString("/"))
   } yield new URL(s"$scheme://$host.$tld/$path")
 
-  val interfaceConfGen = for {
-    name <- Generators.listSizeBetween(1, 50, arbitrary[Char]).map(_.mkString).suchThat(!_.isEmpty)
+  val interfaceConfInnerGen = for {
+    name <- Generators.listSizeBetween(1, 50, Gen.alphaNumChar).map(_.mkString).suchThat(!_.isEmpty)
     interfaceType <- arbitrary[String]
     baseUrl <- urlGen
     pageSize <- Gen.choose(1, 30)
@@ -27,4 +27,6 @@ object IndexerGenerators {
     pageSize = pageSize,
     defaultPublisherName = defaultPublisherName
   )
+
+  val interfaceConfGen = Generators.cachedListGen(interfaceConfInnerGen, 5)
 }

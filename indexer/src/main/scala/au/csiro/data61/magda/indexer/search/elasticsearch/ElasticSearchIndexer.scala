@@ -381,7 +381,7 @@ class ElasticSearchIndexer(
         deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
           filter(must(
             rangeQuery("indexed").to(before.toString),
-            termQuery("catalog", source.name)
+            termQuery("source", source.name)
           ))
         )
       )
@@ -423,7 +423,7 @@ class ElasticSearchIndexer(
    */
   private def buildDatasetIndexDefinition(source: InterfaceConfig, rawDataSet: DataSet): Seq[ESIndexDefinition] = {
     val dataSet = rawDataSet.copy(
-      catalog = rawDataSet.catalog.orElse(Some(source.name)),
+      source = Some(source.name),
       description = rawDataSet.description.map(_.take(32766)),
       years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
       indexed = Some(OffsetDateTime.now)

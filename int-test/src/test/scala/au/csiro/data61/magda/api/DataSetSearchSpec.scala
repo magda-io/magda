@@ -436,9 +436,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               val dataSetPublisher = dataSet.publisher.get.name
 
               withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSetPublisher}") {
-                def tokenize(string: String) = string.split("[\\s-.]+").map(MagdaMatchers.toEnglishToken)
+                def tokenize(string: String) = string.split("[\\s-.']+").map(MagdaMatchers.toEnglishToken)
 
-                val gotQueryPublishers = queryPublishers.map(_.get).flatMap(_.split("[\\s-.]+"))
+                val gotQueryPublishers = queryPublishers.map(_.get).flatMap(_.split("[\\s-.']+"))
                 val tokenizedQueryPublishers = gotQueryPublishers.flatMap(tokenize)
 
                 val possibleQueryPublishers = gotQueryPublishers.zip(tokenizedQueryPublishers)

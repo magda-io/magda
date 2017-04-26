@@ -55,6 +55,7 @@ package misc {
       identifier: String,
       title: Option[String] = None,
       catalog: Option[String],
+      source: Option[String] = None,
       description: Option[String] = None,
       issued: Option[OffsetDateTime] = None,
       modified: Option[OffsetDateTime] = None,
@@ -380,7 +381,7 @@ package misc {
     implicit val distributionFormat = jsonFormat11(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat3(Agent.apply)
-    implicit val dataSetFormat = jsonFormat18(DataSet.apply)
+    implicit val dataSetFormat = jsonFormat19(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)

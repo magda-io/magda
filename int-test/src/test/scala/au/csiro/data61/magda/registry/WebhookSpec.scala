@@ -96,6 +96,8 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
               // Code derives media type from the format rather than reading it directly.
               mediaType = None
             )),
+            
+            source = None,
 
             // Contact points only look for name at the moment
             contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
@@ -123,6 +125,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
           val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
             // We don't care about this. 
             indexed = None,
+            source = None,
 
             distributions = dataSet.distributions.map(distribution => distribution.copy(
               // This will be derived from the format so might not match the input 
