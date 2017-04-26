@@ -17,7 +17,6 @@ class DatasetDetails extends Component {
   }
 
   render(){
-    debugger
     let dataset = this.props.dataset;
     return <div className="dataset-details row" >
                 <div className='dataset-details__body col-sm-9'>

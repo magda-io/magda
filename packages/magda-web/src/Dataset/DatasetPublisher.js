@@ -7,8 +7,8 @@ import { Link } from 'react-router';
 export default class DatasetPublisher extends Component {
   render(){
     let dataset = this.props.dataset;
-    return <div className="dataset-details row" >
-                discussion
+    return <div className="dataset-publisher row" >
+                about this publisher
           </div>
   }
 }

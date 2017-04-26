@@ -47,6 +47,14 @@ ReactDOM.render(
           <Route path="details" component={DatasetDetails}/>
           <Route path="discussion" component={DatasetDiscussion}/>
           <Route path="publisher" component={DatasetPublisher}/>
+        
+          <Route path="resource/:resourceId" component={DatasetHandler}>
+            <IndexRedirect to="details"/>
+            <Route path="details" component={DatasetDetails}/>
+            <Route path="map" component={DatasetDiscussion}/>
+            <Route path="publisher" component={DatasetPublisher}/>
+          </Route>
+
         </Route>
         {staticPageRegister.map( item => 
         <Route path={item.path} key={item.path} component={item.component}/>)}

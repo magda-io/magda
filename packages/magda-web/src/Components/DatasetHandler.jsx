@@ -2,6 +2,8 @@ import React from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { fetchDatasetFromRegistry } from "../actions/datasetActions";
+import Tabs from '../UI/Tabs';
+import {config} from '../config';
 
 class DatasetHandler extends React.Component {
   componentWillMount(){
@@ -15,7 +17,13 @@ class DatasetHandler extends React.Component {
     } else if(this.props.error){
       return <h2>error</h2>;
     }
-    return <div><h1>{dataset.title}</h1> <a>{dataset.landingPage}</a><div>{dataset.updatedDate}</div>{this.props.children}</div>;
+    return (<div>
+            <h1>{dataset.title}</h1>
+            <a>{dataset.landingPage}</a>
+            <div>{dataset.updatedDate}</div>
+            <Tabs list = {config.datasetTabList} baseUrl = {`/dataset/${this.props.params.datasetId}`}/>
+            <div>{this.props.children}</div>
+            </div>);
   }
   
   render() {
