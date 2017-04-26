@@ -7,8 +7,12 @@ import {config} from '../config';
 
 class DatasetHandler extends React.Component {
   componentWillMount(){
-    const id = this.props.params.datasetId;
-    this.props.fetchDataset(id);
+    const datasetId = this.props.params.datasetId;
+    const resourceId = this.props.params.resourceId;
+    if(!resourceId){
+      this.props.fetchDataset(datasetId);
+    }
+    this.props.fetchDataset(resourceId);
   }
 
   renderByState(dataset){

@@ -1,4 +1,5 @@
 export function parseDataset(dataset) {
+  const id = dataset["id"];
   const aspect = dataset["aspects"] || {};
   const datasetInfo = aspect["dcat-dataset-strings"] || {};
   const distribution = aspect["dataset-distributions"] || {};
@@ -15,6 +16,7 @@ export function parseDataset(dataset) {
   const source = distributions.map(d=> {
       const distributionAspects = d["aspects"] || {};
       const info = distributionAspects["dcat-distribution-strings"] || {};
+      
       return {
           id: d["id"] || "",
           downloadUrl: info.downloadURL || "",
@@ -25,6 +27,6 @@ export function parseDataset(dataset) {
       }
   });
   return {
-      title,issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source
+      id, title, issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source
   }
 };

@@ -19,6 +19,10 @@ import DatasetDetails from './Dataset/DatasetDetails';
 import DatasetDiscussion from './Dataset/DatasetDiscussion';
 import DatasetPublisher from './Dataset/DatasetPublisher';
 
+import ResourceDetails from './Dataset/ResourceDetails';
+import ResourceMap from './Dataset/ResourceMap';
+import ResourceChart from './Dataset/ResourceChart';
+
 let baseurl = "/";
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
@@ -47,14 +51,12 @@ ReactDOM.render(
           <Route path="details" component={DatasetDetails}/>
           <Route path="discussion" component={DatasetDiscussion}/>
           <Route path="publisher" component={DatasetPublisher}/>
-        
-          <Route path="resource/:resourceId" component={DatasetHandler}>
+        </Route>
+        <Route path="dataset/:datasetId/resource/:resourceId" component={DatasetHandler}>
             <IndexRedirect to="details"/>
-            <Route path="details" component={DatasetDetails}/>
-            <Route path="map" component={DatasetDiscussion}/>
-            <Route path="publisher" component={DatasetPublisher}/>
-          </Route>
-
+            <Route path="details" component={ResourceDetails}/>
+            <Route path="map" component={ResourceMap}/>
+            <Route path="chart" component={ResourceChart}/>
         </Route>
         {staticPageRegister.map( item => 
         <Route path={item.path} key={item.path} component={item.component}/>)}
