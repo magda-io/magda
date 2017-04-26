@@ -102,12 +102,21 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     }
   } } }
 
+  def history = get { path(Segment / "history") { (id: String) => {
+    complete {
+      DB readOnly { session =>
+        EventPersistence.getEventsSince(session, recordId = Some(id))
+      }
+    }
+  } } }
+
   val route =
     getAll ~
     getById ~
     putById ~
     patchById ~
     create ~
+    history ~
     new RecordAspectsService(system, materializer).route
 
   private def getAllWithAspects(aspects: Iterable[String],
