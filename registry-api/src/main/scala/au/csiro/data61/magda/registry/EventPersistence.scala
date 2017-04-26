@@ -12,17 +12,18 @@ object EventPersistence extends Protocols with DiffsonProtocol {
   def streamEventsSince(lastEventId: Long, recordId: Option[String] = None, aspectId: Option[String] = None) = {
     Source.unfold(lastEventId)(offset => {
       val events = DB readOnly { implicit session =>
-        getEventsSince(session, Some(offset), Some(eventStreamPageSize), recordId, aspectId)
+        getEventsSince(session, Some(offset), None, Some(eventStreamPageSize), recordId, aspectId)
       }
-      events.lastOption.map(last => (last.id.get, events))
-    }).mapConcat(page => page)
+      events.events.lastOption.map(last => (last.id.get, events))
+    }).mapConcat(page => page.events)
   }
 
   def getEventsSince(implicit session: DBSession,
                      lastEventId: Option[Long] = None,
-                     limit: Option[Number] = None,
+                     start: Option[Int] = None,
+                     limit: Option[Int] = None,
                      recordId: Option[String] = None,
-                     aspectId: Option[String] = None): List[RegistryEvent] = {
+                     aspectId: Option[String] = None): EventsPage = {
     val filters = Seq(
       lastEventId.map(v => sqls"eventId > $v"),
       recordId.map(v => sqls"data->>'recordId' = $v"),
@@ -31,7 +32,11 @@ object EventPersistence extends Protocols with DiffsonProtocol {
 
     val whereClause = SQLSyntax.where(SQLSyntax.joinWithAnd(filters.map(_.get):_*))
 
-    sql"""select
+    val totalCount = sql"select count(*) from Events $whereClause".map(_.int(1)).single.apply().getOrElse(0)
+
+    var lastEventIdInPage: Option[Long] = None
+    val events =
+      sql"""select
             eventId,
             eventTime,
             eventTypeId,
@@ -40,8 +45,15 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           from Events
           $whereClause
           order by eventId asc
+          offset ${start.getOrElse(0)}
           limit ${limit.getOrElse(1000)}"""
-      .map(rowToEvent).list.apply()
+      .map(rs => {
+        // Side-effectily track the sequence number of the very last result.
+        lastEventIdInPage = Some(rs.long("eventId"))
+        rowToEvent(rs)
+      }).list.apply()
+
+    EventsPage(totalCount, lastEventIdInPage.map(_.toString), events)
   }
 
   private def rowToEvent(rs: WrappedResultSet): RegistryEvent = RegistryEvent(

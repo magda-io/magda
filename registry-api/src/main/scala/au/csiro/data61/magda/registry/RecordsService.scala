@@ -102,13 +102,13 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     }
   } } }
 
-  def history = get { path(Segment / "history") { (id: String) => {
+  def history = get { path(Segment / "history") { id => { parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
     complete {
       DB readOnly { session =>
-        EventPersistence.getEventsSince(session, recordId = Some(id))
+        EventPersistence.getEventsSince(session, recordId = Some(id), lastEventId = pageToken, start = start, limit = limit)
       }
     }
-  } } }
+  } } } }
 
   val route =
     getAll ~
