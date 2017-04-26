@@ -28,5 +28,6 @@ object IndexerGenerators {
     defaultPublisherName = defaultPublisherName
   )
 
-  val interfaceConfGen = Generators.cachedListGen(interfaceConfInnerGen, 5)
+  val interfaceConfsGen = Generators.cachedListGen(interfaceConfInnerGen, 5)
+  val interfaceConfGen = interfaceConfsGen.flatMap(Gen.oneOf(_))
 }
