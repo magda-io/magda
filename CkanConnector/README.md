@@ -2,7 +2,6 @@
 Requires SBT to be installed to generated the swagger files from the registry.
 
 ```bash
-../registry-api/generate-typescript.sh
 npm run build
 ```
 
