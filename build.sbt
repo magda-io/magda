@@ -29,14 +29,6 @@ lazy val intTest = (project in file("int-test"))
   .settings(commonSettings: _*)
   .dependsOn(indexer)
   .dependsOn(searchApi)
-  
-  
-// removing because it's not compiling and being redeveloped in node, if we need
-// it again uncomment
-// lazy val ckanConnector = (project in file("ckan-connector"))
-// .settings(commonSettings: _*)
-// .dependsOn(common)
-// .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true

@@ -19,18 +19,21 @@ object CommandLine {
 
   /**
    * Generates a swagger.json file and writes it to the path specified in the first command line arg.
-   * 
+   *
    * Execute from the command line with sbt "registryApi/runMain au.csiro.data61.magda.registry.CommandLine ./swagger.json"
    */
   def main(args: Array[String]) = {
-    val file = new File(args(0))
-    file.createNewFile()
-
-    val x = new SwaggerDocService("localhost", 9001, system).generateSwaggerJson
+    val swaggerJson = new SwaggerDocService("localhost", 9001, system).generateSwaggerJson
     system.terminate()
 
+    val file = new File(args(0))
+    val parent = file.getParentFile()
+    if ((!parent.exists() && !parent.mkdirs()) || file.createNewFile()) {
+      throw new IllegalStateException("Couldn't create file: " + file);
+    }
+
     printToFile(file) { p =>
-      p.println(x)
+      p.println(swaggerJson)
     }
   }
 
