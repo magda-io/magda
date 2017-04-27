@@ -35,8 +35,10 @@ const java = spawnSync(
     "-o",
     "../registry-api/generated/typescript",
     "--type-mappings",
-    "Aspect=any,JsonPatch=any,Operation=none",
-    "-DsupportsES6=true\\"
+    "Aspect=any,JsonPatch=any",
+    "--import-mappings",
+    "Aspect=none,JsonPatch=none,Operation=none",
+    "-DsupportsES6=true"
   ],
   {
     cwd: scriptsDir,

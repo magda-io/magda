@@ -1,4 +1,4 @@
-import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api';
+import { AspectDefinition, AspectDefinitionsApi } from '../../registry-api/generated/typescript/api';
 import retry from './retry';
 import Ckan from './Ckan';
 import CkanConnector, { AspectBuilder } from './CkanConnector';
