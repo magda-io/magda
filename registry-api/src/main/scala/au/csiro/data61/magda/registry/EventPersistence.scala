@@ -9,23 +9,47 @@ import scalikejdbc._
 object EventPersistence extends Protocols with DiffsonProtocol {
   val eventStreamPageSize = 1000
 
-  def streamEventsSince(lastEventId: Long, recordId: Option[String] = None, aspectId: Option[String] = None) = {
-    Source.unfold(lastEventId)(offset => {
+  def streamEventsSince(sinceEventId: Long, recordId: Option[String] = None, aspectId: Option[String] = None) = {
+    Source.unfold(sinceEventId)(offset => {
       val events = DB readOnly { implicit session =>
-        getEventsSince(session, Some(offset), None, Some(eventStreamPageSize), recordId, aspectId)
+        getEvents(
+          session = session,
+          pageToken = Some(offset),
+          start = None,
+          limit = Some(eventStreamPageSize),
+          recordId = recordId,
+          aspectId = aspectId)
       }
       events.events.lastOption.map(last => (last.id.get, events))
     }).mapConcat(page => page.events)
   }
 
-  def getEventsSince(implicit session: DBSession,
-                     lastEventId: Option[Long] = None,
-                     start: Option[Int] = None,
-                     limit: Option[Int] = None,
-                     recordId: Option[String] = None,
-                     aspectId: Option[String] = None): EventsPage = {
+  def streamEventsUpTo(lastEventId: Long, recordId: Option[String] = None, aspectId: Option[String] = None) = {
+    Source.unfold(0L)(offset => {
+      val events = DB readOnly { implicit session =>
+        getEvents(
+          session = session,
+          pageToken = Some(offset),
+          start = None,
+          limit = Some(eventStreamPageSize),
+          lastEventId = Some(lastEventId),
+          recordId = recordId,
+          aspectId = aspectId)
+      }
+      events.events.lastOption.map(last => (last.id.get, events))
+    }).mapConcat(page => page.events)
+  }
+
+  def getEvents(implicit session: DBSession,
+                pageToken: Option[Long] = None,
+                start: Option[Int] = None,
+                limit: Option[Int] = None,
+                lastEventId: Option[Long] = None,
+                recordId: Option[String] = None,
+                aspectId: Option[String] = None): EventsPage = {
     val filters = Seq(
-      lastEventId.map(v => sqls"eventId > $v"),
+      pageToken.map(v => sqls"eventId > $v"),
+      lastEventId.map(v => sqls"eventId <= $v"),
       recordId.map(v => sqls"data->>'recordId' = $v"),
       aspectId.map(v => sqls"data->>'aspectId' = $v")
     ).filter(_.isDefined)
