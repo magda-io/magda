@@ -7,7 +7,7 @@ class FacetHeader extends Component {
   render(){
     return (
       <div className='facet-header'>
-        <button className='facet-header__title btn'>any {this.props.title}</button>
+        <button className='facet-header__title btn' onClick={this.props.onClick}>any {this.props.title}</button>
       </div>
       );
   }

@@ -17,6 +17,7 @@ class FacetRegion extends Component {
         super(props);
         this.renderOption = this.renderOption.bind(this);
         this.onToggleOption = this.onToggleOption.bind(this);
+        this.onToggleOpen = this.onToggleOpen.bind(this);
 
         /**
          * @type {object}
@@ -27,7 +28,7 @@ class FacetRegion extends Component {
         }
     }
 
-    toggleOpen(){
+    onToggleOpen(){
      this.setState({
        isOpen: !this.state.isOpen
      })
@@ -63,10 +64,10 @@ class FacetRegion extends Component {
                      title={this.props.title}
                      activeOptions={this.props.activeOptions}
                      hasQuery={this.props.hasQuery}
-                     onClick={this.onClick}/>
-                 {this.isOpen && <RegionPopup onToggleOption={this.props.onToggleOption}
+                     onClick={this.onToggleOpen}/>
+                 {this.state.isOpen && <RegionPopup onToggleOption={this.props.onToggleOption}
                               facetSearchResults={this.props.facetSearchResults}
-                              closePopUp={this.closePopUp}
+                              closePopUp={this.onToggleOpen}
                               renderOption={this.renderOption}
                               searchFacet={this.props.searchFacet}
                               regionMapping={this.props.regionMapping}

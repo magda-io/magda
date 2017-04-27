@@ -18,6 +18,7 @@ class FacetTemporal extends Component {
     this.onResetDateTo = this.onResetDateTo.bind(this);
     this.onResetDateFrom = this.onResetDateFrom.bind(this);
     this.onToggleOption = this.onToggleOption.bind(this);
+    this.onToggleOpen = this.onToggleOpen.bind(this);
     this.onDrag = this.onDrag.bind(this);
     this.state = {
       isOpen: false
@@ -38,7 +39,7 @@ class FacetTemporal extends Component {
    /**
     * expand the list (reacting to show more less button )
     */
-   toggleOpen(){
+   onToggleOpen(){
      this.setState({
        isOpen: !this.state.isOpen
      })
@@ -186,7 +187,7 @@ class FacetTemporal extends Component {
                      title={this.props.title}
                      activeOptions={this.props.activeOptions}
                      hasQuery={this.props.hasQuery}
-                     onClick={this.onClick}/>
+                     onClick={this.onToggleOpen}/>
              {this.state.isOpen && <div className='clearfix facet-temporal'>
                <div className='slider'>
                  {this.renderDragBar()}
