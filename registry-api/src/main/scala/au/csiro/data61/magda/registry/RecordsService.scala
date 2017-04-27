@@ -7,7 +7,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
-import scalikejdbc._
+import scalikejdbc.DB
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.scaladsl.Sink
 import io.swagger.annotations._
@@ -49,6 +49,23 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     }
     webHookActor ! WebHookActor.Process
     result
+  } } }
+
+  @Path("/{recordId}")
+  @ApiOperation(value = "Delete a record", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to delete.")
+  ))
+  @ApiResponses(Array(
+    new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])
+  ))
+  def deleteById = delete { path(Segment) { (recordId: String) => {
+    DB localTx { session =>
+      RecordPersistence.deleteRecord(session, recordId) match {
+        case Success(result) => complete(DeleteResult(result))
+        case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      }
+    }
   } } }
 
   @Path("/{id}")
@@ -121,7 +138,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
       val future = recordSource.runWith(sink)(materializer)
       Await.result[Option[Record]](future, 5 seconds) match {
         case Some(record) => complete(record)
-        case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have a CreateRecord event."))
+        case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."))
       }
     }
   } } } }
@@ -132,6 +149,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     putById ~
     patchById ~
     create ~
+    deleteById ~
     history ~
     version ~
     new RecordAspectsService(system, materializer).route

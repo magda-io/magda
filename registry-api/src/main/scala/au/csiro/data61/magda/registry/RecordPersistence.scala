@@ -278,6 +278,18 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     } yield hasAspectFailure
   }
 
+  def deleteRecord(implicit session: DBSession, recordId: String): Try[Boolean] = {
+    for {
+      _ <- Try {
+        val eventJson = DeleteRecordEvent(recordId).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+      }
+      rowsDeleted <- Try {
+        sql"""delete from Records where recordId=$recordId""".update.apply()
+      }
+    } yield rowsDeleted > 0
+  }
+
   def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject] = {
     for {
       eventId <- Try {
