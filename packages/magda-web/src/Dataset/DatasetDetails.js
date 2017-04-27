@@ -6,11 +6,11 @@ import { Link } from 'react-router';
 import { connect } from "react-redux";
 
 class DatasetDetails extends Component {
-  renderSource(source, datasetId){
-    return <div className="" key={source.id}>
-              <h4><Link to={`/dataset/${datasetId}/resource/${source.id}`}>{source.title}({source.format})</Link></h4>
-              <div>{source.description}</div>
-              <div>{source.licence}</div>
+  renderDistribution(distribution, datasetId){
+    return <div className="" key={distribution.id}>
+              <h4><Link to={`/dataset/${datasetId}/distribution/${distribution.id}`}>{distribution.title}({distribution.format})</Link></h4>
+              <div>{distribution.description}</div>
+              <div>{distribution.licence}</div>
             </div>
   }
 
@@ -21,13 +21,13 @@ class DatasetDetails extends Component {
                 <div className='dataset-details__body col-sm-9'>
                   <div className='dataset-details-overview'>
                     <h3>Overview</h3>
-                    {dataset.description && <MarkdownViewer markdown={dataset.description}/>}
+                    {dataset.datasetDescription && <MarkdownViewer markdown={dataset.datasetDescription}/>}
                   </div>
 
                   <div className='dataset-details-source'>
                       <h3>Data and APIs</h3>
                       {
-                        dataset.source && dataset.source.map(s=> this.renderSource(s, datasetId))
+                        dataset.datasetSource && dataset.datasetSource.map(s=> this.renderDistribution(s, datasetId))
                       }
                   </div>
               </div>
@@ -40,7 +40,7 @@ class DatasetDetails extends Component {
                   <div className="tags">
                     <h5>Tags</h5>
                     {
-                      dataset.tags && dataset.tags.map(t=><span className="badge" key={t}>{t}</span>)
+                      dataset.datasetTags && dataset.datasetTags.map(t=><span className="badge" key={t}>{t}</span>)
                     }
                   </div>
               </div>
@@ -49,8 +49,8 @@ class DatasetDetails extends Component {
 }
 
 function mapStateToProps(state) {
-  const _dataset= state.dataset;
-  const dataset = _dataset.data;
+  const record= state.record;
+  const dataset = record.data;
   return {
     dataset
   };

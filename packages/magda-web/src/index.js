@@ -19,9 +19,9 @@ import DatasetDetails from './Dataset/DatasetDetails';
 import DatasetDiscussion from './Dataset/DatasetDiscussion';
 import DatasetPublisher from './Dataset/DatasetPublisher';
 
-import ResourceDetails from './Dataset/ResourceDetails';
-import ResourceMap from './Dataset/ResourceMap';
-import ResourceChart from './Dataset/ResourceChart';
+import DistributionDetails from './Dataset/DistributionDetails';
+import DistributionMap from './Dataset/DistributionMap';
+import DistributionChart from './Dataset/DistributionChart';
 
 let baseurl = "/";
 // eslint-disable-next-line
@@ -52,11 +52,11 @@ ReactDOM.render(
           <Route path="discussion" component={DatasetDiscussion}/>
           <Route path="publisher" component={DatasetPublisher}/>
         </Route>
-        <Route path="dataset/:datasetId/resource/:resourceId" component={RecordHandler}>
+        <Route path="dataset/:datasetId/distribution/:distributionId" component={RecordHandler}>
             <IndexRedirect to="details"/>
-            <Route path="details" component={ResourceDetails}/>
-            <Route path="map" component={ResourceMap}/>
-            <Route path="chart" component={ResourceChart}/>
+            <Route path="details" component={DistributionDetails}/>
+            <Route path="map" component={DistributionMap}/>
+            <Route path="chart" component={DistributionChart}/>
         </Route>
         {staticPageRegister.map( item => 
         <Route path={item.path} key={item.path} component={item.component}/>)}

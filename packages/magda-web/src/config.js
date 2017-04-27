@@ -12,7 +12,7 @@ const config = {
         descriptionLength: 50,
         downloadLinksSize: 3,
         datasetTabList: ["Details", "Discussion", "Publisher"],
-        resourceTabList: ["Details", "Map", "Chart"],
+        distributionTabList: ["Details", "Map", "Chart"],
         exampleSearch: [
           'Business Names by ASIC as CSV',
           'Geocoded National Address File',

@@ -22,7 +22,7 @@ type recordAction = {
   type: boolean
 }
 
-const dataset = (state: RecordResult = initialData, action: recordAction) => {
+const record = (state: RecordResult = initialData, action: recordAction) => {
   switch (action.type) {
     case 'REQUEST_RECORD':
       return Object.assign({}, state, {
@@ -47,4 +47,4 @@ const dataset = (state: RecordResult = initialData, action: recordAction) => {
       return state
   }
 };
-export default dataset;
+export default record;

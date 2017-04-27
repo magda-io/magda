@@ -5,10 +5,10 @@ import Star from '../UI/Star';
 import { Link } from 'react-router';
 import { connect } from "react-redux";
 
-class ResourcetChart extends Component {
+class ResourcetDetails extends Component {
   render(){
-    return <div className="dataset-details row" >
-                Chart
+    return <div className="dataset-details" >
+                <h2>details</h2>
           </div>
   }
 }
@@ -20,4 +20,4 @@ function mapStateToProps(state) {
 
 
 
-export default connect(mapStateToProps)(ResourcetChart);
+export default connect(mapStateToProps)(ResourcetDetails);
