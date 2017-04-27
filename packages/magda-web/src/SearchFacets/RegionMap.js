@@ -1,14 +1,13 @@
 import 'leaflet/dist/leaflet.css';
 import './RegionMap.css';
-import Facet from './FacetWrapper';
+import React, { Component } from 'react';
 // eslint-disable-next-line
 import L from 'leaflet';
 // eslint-disable-next-line
 import MVTSource from 'leaflet-mapbox-vector-tile';
 import defined from '../helpers/defined';
-import React from 'react';
 
-class RegionMap extends Facet {
+class RegionMap extends Component {
     constructor(props) {
         super(props);
         this.map = undefined;

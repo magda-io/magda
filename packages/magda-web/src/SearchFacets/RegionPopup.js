@@ -1,15 +1,14 @@
 import './RegionPopup.css';
 import DropDown from '../UI/DropDown';
 import defined from '../helpers/defined';
-import Facet from './FacetWrapper';
+import React, { Component } from 'react';
 import RegionMap from './RegionMap';
 import FacetSearchBox from './FacetSearchBox';
-import React from 'react'
 import RegionSummray from './RegionSummary';
 import {parseRegion} from '../helpers/api';
 
 
-class RegionPopup extends Facet {
+class RegionPopup extends Component {
     constructor(props) {
         super(props);
         this.onToggleOption = this.onToggleOption.bind(this);

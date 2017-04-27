@@ -1,6 +1,6 @@
 import './FacetTemporal.css';
 import React, { Component } from 'react';
-import FacetWrapper from './FacetWrapper';
+import FacetHeader from './FacetHeader';
 import maxBy from 'lodash.maxby';
 import max from 'lodash.max';
 import min from 'lodash.min';
@@ -19,6 +19,9 @@ class FacetTemporal extends Component {
     this.onResetDateFrom = this.onResetDateFrom.bind(this);
     this.onToggleOption = this.onToggleOption.bind(this);
     this.onDrag = this.onDrag.bind(this);
+    this.state = {
+      isOpen: false
+    }
   }
 
   onResetDateTo(){
@@ -30,6 +33,16 @@ class FacetTemporal extends Component {
     let datesArray = [undefined, this.props.activeDates[1]]
     this.props.onToggleOption(datesArray);
   }
+
+
+   /**
+    * expand the list (reacting to show more less button )
+    */
+   toggleOpen(){
+     this.setState({
+       isOpen: !this.state.isOpen
+     })
+   }
 
 
   onToggleOption(option){
@@ -168,11 +181,13 @@ class FacetTemporal extends Component {
 
   render(){
     let that = this;
-    return <FacetWrapper onResetFacet={this.props.onResetFacet}
-                         title={this.props.title}
-                         activeDates={this.props.activeDates}
-                         hasQuery={this.props.hasQuery}>
-             <div className='clearfix facet-temporal'>
+    return <div className="facet-wrapper">
+            <FacetHeader onResetFacet={this.props.onResetFacet}
+                     title={this.props.title}
+                     activeOptions={this.props.activeOptions}
+                     hasQuery={this.props.hasQuery}
+                     onClick={this.onClick}/>
+             {this.state.isOpen && <div className='clearfix facet-temporal'>
                <div className='slider'>
                  {this.renderDragBar()}
                </div>
@@ -182,7 +197,8 @@ class FacetTemporal extends Component {
                  <li><button className='btn btn-facet-option btn-facet-date-option' onClick={this.onResetDateFrom}>Any start date </button></li>
                </ul>
              </div>
-           </FacetWrapper>
+           }
+           </div>
   }
 }
 

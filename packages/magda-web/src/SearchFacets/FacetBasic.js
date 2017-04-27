@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import FacetWrapper from './FacetWrapper';
+import FacetHeader from './FacetHeader';
 import find from 'lodash.find';
 import maxBy from 'lodash.maxby';
 import defined from '../helpers/defined';
@@ -14,7 +14,8 @@ class FacetBasic extends Component {
     this.renderOption=this.renderOption.bind(this);
     this.toggleExpand= this.toggleExpand.bind(this);
     this.state = {
-      isExpanded: false
+      isExpanded: false,
+      isOpen: false
     }
   }
 /**
@@ -30,6 +31,15 @@ class FacetBasic extends Component {
    toggleExpand(){
      this.setState({
        isExpanded: !this.state.isExpanded
+     })
+   }
+
+   /**
+    * expand the list (reacting to show more less button )
+    */
+   toggleOpen(){
+     this.setState({
+       isOpen: !this.state.isOpen
      })
    }
 
@@ -63,21 +73,15 @@ class FacetBasic extends Component {
     </button>);
   }
 
-
-  render(){
+  renderBox(){
     let that = this;
     let defaultSize = config.facetListSize;
     // default list of options to display for the facet filter except those already active, which will be displayed in a seperate list
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
     // the option that has the max object.value value, use to calculate volumne indicator
     let maxOptionOptionList = maxBy(this.props.options, o=> +o.hitCount);
-
-
-    return <FacetWrapper onResetFacet={this.props.onResetFacet}
-                         title={this.props.title}
-                         activeOptions={this.props.activeOptions}
-                         hasQuery={this.props.hasQuery}>
-               <FacetSearchBox renderOption={this.renderOption}
+    return (<div>
+              <FacetSearchBox renderOption={this.renderOption}
                                options={this.props.facetSearchResults}
                                onToggleOption={this.props.onToggleOption}
                                searchFacet={this.props.searchFacet}
@@ -89,7 +93,18 @@ class FacetBasic extends Component {
                            defaultLength={defaultSize}
                            renderFunction={(o)=>this.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}
                            getKey={(o)=>o.value} className={''}/>
-           </FacetWrapper>
+            </div>)
+  }
+
+  render(){
+    return <div className="facet-wrapper">
+              <FacetHeader onResetFacet={this.props.onResetFacet}
+                     title={this.props.title}
+                     activeOptions={this.props.activeOptions}
+                     hasQuery={this.props.hasQuery}
+                     onClick={this.toggleOpen}/>
+                {this.state.isOpen && this.renderBox()}
+           </div>
   }
 }
 
