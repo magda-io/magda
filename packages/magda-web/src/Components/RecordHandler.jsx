@@ -1,30 +1,32 @@
 import React from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { fetchDatasetFromRegistry } from "../actions/datasetActions";
+import { fetchRecordFromRegistry } from "../actions/recordActions";
 import Tabs from '../UI/Tabs';
 import {config} from '../config';
 
-class DatasetHandler extends React.Component {
+class RecordHandler extends React.Component {
   componentWillMount(){
     const datasetId = this.props.params.datasetId;
     const resourceId = this.props.params.resourceId;
+    debugger
     if(!resourceId){
-      this.props.fetchDataset(datasetId);
+      this.props.fetchRecord(datasetId);
+    } else{
+      this.props.fetchRecord(resourceId);
     }
-    this.props.fetchDataset(resourceId);
   }
 
-  renderByState(dataset){
+  renderByState(record){
     if(this.props.notFound){
       return <h2>Page not found</h2>;
     } else if(this.props.error){
       return <h2>error</h2>;
     }
     return (<div>
-            <h1>{dataset.title}</h1>
-            <a>{dataset.landingPage}</a>
-            <div>{dataset.updatedDate}</div>
+            <h1>{record.title}</h1>
+            <a>{record.landingPage}</a>
+            <div>{record.updatedDate}</div>
             <Tabs list = {config.datasetTabList} baseUrl = {`/dataset/${this.props.params.datasetId}`}/>
             <div>{this.props.children}</div>
             </div>);
@@ -54,11 +56,11 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
-    fetchDataset: fetchDatasetFromRegistry,
+    fetchRecord: fetchRecordFromRegistry,
   }, dispatch);
 }
 
-DatasetHandler.propTypes = {
+RecordHandler.propTypes = {
   data: React.PropTypes.object,
   location: React.PropTypes.object.isRequired,
   isFetching: React.PropTypes.bool.isRequired,
@@ -66,7 +68,7 @@ DatasetHandler.propTypes = {
   error: React.PropTypes.object
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(DatasetHandler);
+export default connect(mapStateToProps, mapDispatchToProps)(RecordHandler);
 
 
 

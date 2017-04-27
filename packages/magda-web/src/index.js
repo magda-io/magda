@@ -9,7 +9,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Home from './Components/Home';
 import Search from './Search/Search';
-import DatasetHandler from './Components/DatasetHandler';
+import RecordHandler from './Components/RecordHandler';
 import AppContainer from './Components/AppContainer';
 import { Provider } from 'react-redux';
 import reducer from './reducers/index';
@@ -46,13 +46,13 @@ ReactDOM.render(
       <Route path={baseurl} component={AppContainer}>
         <IndexRoute component={Home}/>
         <Route path="search" component={Search} />
-        <Route path="dataset/:datasetId" component={DatasetHandler}>
+        <Route path="dataset/:datasetId" component={RecordHandler}>
           <IndexRedirect to="details"/>
           <Route path="details" component={DatasetDetails}/>
           <Route path="discussion" component={DatasetDiscussion}/>
           <Route path="publisher" component={DatasetPublisher}/>
         </Route>
-        <Route path="dataset/:datasetId/resource/:resourceId" component={DatasetHandler}>
+        <Route path="dataset/:datasetId/resource/:resourceId" component={RecordHandler}>
             <IndexRedirect to="details"/>
             <Route path="details" component={ResourceDetails}/>
             <Route path="map" component={ResourceMap}/>

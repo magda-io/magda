@@ -7,35 +7,35 @@ import type { Action, Dataset } from '../types';
 
 export function requestDataset(id: string):Action {
   return {
-    type: actionTypes.REQUEST_DATASET,
+    type: actionTypes.REQUEST_RECORD,
     id
   }
 }
 
 export function receiveDataset(json: Object): Action {
   return {
-    type: actionTypes.RECEIVE_DATASET,
+    type: actionTypes.RECEIVE_RECORD,
     json,
   }
 }
 
 export function requestDatasetError(error: Object): Action {
   return {
-    type: actionTypes.REQUEST_DATASET_ERROR,
+    type: actionTypes.REQUEST_RECORD_ERROR,
     error,
   }
 }
 
 export function datasetNotFound(): Action {
   return {
-    type: actionTypes.DATASET_NOT_FOUND,
+    type: actionTypes.RECORD_NOT_FOUND,
   }
 }
 
-export function fetchDatasetFromRegistry(id: string):Object{
+export function fetchRecordFromRegistry(id: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestDataset(id))
-    let url : string = config.registryUrl + `${encodeURIComponent(id)}?aspect=dcat-dataset-strings&optionalAspect=dataset-distributions&dereference=true`;
+    let url : string = config.registryUrl + `${encodeURIComponent(id)}?optionalAspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&dereference=true`;
     console.log(url);
     return fetch(url)
     .then(response => {
@@ -51,3 +51,4 @@ export function fetchDatasetFromRegistry(id: string):Object{
     )
   }
 }
+

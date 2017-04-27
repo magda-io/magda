@@ -1,6 +1,5 @@
 // @flow 
-import type { Action, Dataset } from '../types';
-import {parseDataset} from '../helpers/dataset';
+import {parseRecord} from '../helpers/record';
 
 const initialData = {
     isFetching: false,
@@ -9,23 +8,37 @@ const initialData = {
     notFound:  false
 }
 
-const dataset = (state: Dataset =initialData, action: Action) => {
+
+type RecordResult = {
+  isFetching : boolean,
+  data: Object,
+  error: any,
+  notFound: boolean
+}
+
+type recordAction = {
+  json: Object,
+  error: boolean,
+  type: boolean
+}
+
+const dataset = (state: RecordResult = initialData, action: recordAction) => {
   switch (action.type) {
-    case 'REQUEST_DATASET':
+    case 'REQUEST_RECORD':
       return Object.assign({}, state, {
         isFetching: true
       })
-    case 'RECEIVE_DATASET':
+    case 'RECEIVE_RECORD':
       return Object.assign({}, state, {
         isFetching: false,
-        data: action.json && parseDataset(action.json),
+        data: action.json && parseRecord(action.json),
       })
-    case 'REQUEST_DATASET_ERROR':
+    case 'REQUEST_RECORD_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,
       })
-    case 'DATASET_NOT_FOUND':
+    case 'RECORD_NOT_FOUND':
       return Object.assign({}, state, {
         isFetching: false,
         notFound:  true

@@ -49,6 +49,7 @@ export type Dataset = {
   theme: Array<any>
 }
 
+
 export type FacetSearchJson = {
   options?: Array<Object>,
   regions? : Array<Object>,
