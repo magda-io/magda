@@ -1,4 +1,4 @@
-import { AspectDefinition, AspectDefinitionsApi, Record, RecordsApi } from './generated/registry/api';
+import { AspectDefinition, AspectDefinitionsApi, Record, RecordsApi } from '../../registry-api/generated/typescript/api';
 import * as URI from 'urijs';
 import retry from './retry';
 import formatServiceError from './formatServiceError';

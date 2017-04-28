@@ -38,6 +38,7 @@ object CommandLine {
 
     val parent = file.getParentFile()
     if ((!parent.exists() && !parent.mkdirs()) || !file.createNewFile()) {
+      // if (dir doesn't exist and wasn't just created) or (the file doesn't exist and was just created)
       throw new IllegalStateException("Couldn't create file: " + file);
     }
 
