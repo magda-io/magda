@@ -17,7 +17,7 @@ class FacetHeader extends Component {
     } 
     
     else{
-        if( !this.props.activeOptions || this.props.activeOptions.length === 0 || !this.props.activeOptions[0] ||(this.props.title === !this.props.activeOptions[0].regionType)){
+        if( !this.props.activeOptions || this.props.activeOptions.length === 0 || !this.props.activeOptions[0] ||(this.props.title === "location" && !this.props.activeOptions[0].regionType)){
           return <span>{"any " + this.props.title}</span>;
         } else if(this.props.activeOptions.length === 1){
           return <span>{this.props.activeOptions[0].value || this.props.activeOptions[0].regionType + ": " + this.props.activeOptions[0].regionName}<span className="caret"></span> </span>;
