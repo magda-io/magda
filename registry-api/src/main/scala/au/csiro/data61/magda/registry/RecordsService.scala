@@ -9,13 +9,9 @@ import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
 import scalikejdbc.DB
 import akka.http.scaladsl.model.StatusCodes
-import akka.stream.scaladsl.Sink
 import io.swagger.annotations._
-import spray.json._
 import gnieh.diffson.sprayJson._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.util.Failure
 import scala.util.Success
 
@@ -122,27 +118,6 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     }
   } } }
 
-  def history = get { path(Segment / "history") { id => { parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
-    complete {
-      DB readOnly { session =>
-        EventPersistence.getEvents(session, recordId = Some(id), pageToken = pageToken, start = start, limit = limit)
-      }
-    }
-  } } } }
-
-  def version = get { path(Segment / "history" / Segment) { (id, version) => { parameters('aspect.*, 'optionalAspect.*) { (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
-    DB readOnly { session =>
-      val events = EventPersistence.streamEventsUpTo(version.toLong, recordId = Some(id))
-      val recordSource = RecordPersistence.reconstructRecordFromEvents(id, events, aspects, optionalAspects)
-      val sink = Sink.head[Option[Record]]
-      val future = recordSource.runWith(sink)(materializer)
-      Await.result[Option[Record]](future, 5 seconds) match {
-        case Some(record) => complete(record)
-        case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."))
-      }
-    }
-  } } } }
-
   val route =
     getAll ~
     getById ~
@@ -150,9 +125,8 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     patchById ~
     create ~
     deleteById ~
-    history ~
-    version ~
-    new RecordAspectsService(system, materializer).route
+    new RecordAspectsService(system, materializer).route ~
+    new RecordHistoryService(system, materializer).route
 
   private def getAllWithAspects(aspects: Iterable[String],
                                 optionalAspects: Iterable[String],
