@@ -17,7 +17,7 @@ class DatasetDetails extends Component {
   render(){
     const dataset = this.props.dataset;
     const datasetId = this.props.params.datasetId;
-    return <div className="dataset-details row" >
+    return <div className="dataset-details row">
                 <div className='dataset-details__body col-sm-9'>
                   <div className='dataset-details-overview'>
                     <h3>Overview</h3>

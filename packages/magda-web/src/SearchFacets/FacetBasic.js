@@ -81,12 +81,15 @@ class FacetBasic extends Component {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
     // the option that has the max object.value value, use to calculate volumne indicator
     let maxOptionOptionList = maxBy(this.props.options, o=> +o.hitCount);
-    return (<div>
-              <FacetSearchBox renderOption={this.renderOption}
-                               options={this.props.facetSearchResults}
-                               onToggleOption={this.props.onToggleOption}
-                               searchFacet={this.props.searchFacet}
-                               />
+    return (<div className="facet-body">
+              <div className="clearfix facet-body__header">
+                <FacetSearchBox renderOption={this.renderOption}
+                                options={this.props.facetSearchResults}
+                                onToggleOption={this.props.onToggleOption}
+                                searchFacet={this.props.searchFacet}
+                                />
+                <button className="btn btn-reset" onClick={this.props.onResetFacet}> Clear </button>
+              </div>
                <ul className='list-unstyled'>
                  {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
                </ul>
@@ -99,7 +102,7 @@ class FacetBasic extends Component {
 
   render(){
     return <div className="facet-wrapper">
-              <FacetHeader onResetFacet={this.props.onResetFacet}
+              <FacetHeader 
                      title={this.props.title}
                      activeOptions={this.props.activeOptions}
                      hasQuery={this.props.hasQuery}

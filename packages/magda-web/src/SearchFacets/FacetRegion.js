@@ -62,7 +62,7 @@ class FacetRegion extends Component {
             <div className="facet-wrapper">
                <FacetHeader onResetFacet={this.props.onResetFacet}
                      title={this.props.title}
-                     activeOptions={this.props.activeOptions}
+                     activeOptions={[this.props.activeRegion]}
                      hasQuery={this.props.hasQuery}
                      onClick={this.onToggleOpen}/>
                  {this.state.isOpen && <RegionPopup onToggleOption={this.props.onToggleOption}

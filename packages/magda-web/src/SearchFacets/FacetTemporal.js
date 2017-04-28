@@ -185,10 +185,10 @@ class FacetTemporal extends Component {
     return <div className="facet-wrapper">
             <FacetHeader onResetFacet={this.props.onResetFacet}
                      title={this.props.title}
-                     activeOptions={this.props.activeOptions}
+                     activeOptions={this.props.activeDates}
                      hasQuery={this.props.hasQuery}
                      onClick={this.onToggleOpen}/>
-             {this.state.isOpen && <div className='clearfix facet-temporal'>
+             {this.state.isOpen && <div className='clearfix facet-temporal facet-body'>
                <div className='slider'>
                  {this.renderDragBar()}
                </div>
