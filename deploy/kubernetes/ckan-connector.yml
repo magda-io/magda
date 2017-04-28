@@ -10,5 +10,7 @@ spec:
       containers:
       - name: ckan-connector
         image: localhost:5000/data61/magda-ckan-connector:latest
-        # command: ["node",  "/usr/src/app/bin/index.js"]
+        env:
+        - name: "REGISTRY_URL"
+          value: "http://registry-api"
       restartPolicy: Never
