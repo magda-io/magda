@@ -1,9 +1,10 @@
 // @flow 
-import {parseRecord} from '../helpers/record';
+import {parseDataset, parseDistribution} from '../helpers/record';
 
 const initialData = {
     isFetching: false,
-    data: {},
+    dataset: {},
+    distribution: {},
     error: undefined,
     notFound:  false
 }
@@ -11,7 +12,8 @@ const initialData = {
 
 type RecordResult = {
   isFetching : boolean,
-  data: Object,
+  dataset: Object,
+  distribution: Object,
   error: any,
   notFound: boolean
 }
@@ -24,21 +26,40 @@ type recordAction = {
 
 const record = (state: RecordResult = initialData, action: recordAction) => {
   switch (action.type) {
-    case 'REQUEST_RECORD':
+    case 'REQUEST_DATASET':
       return Object.assign({}, state, {
         isFetching: true
       })
-    case 'RECEIVE_RECORD':
+    case 'RECEIVE_DATASET':
       return Object.assign({}, state, {
         isFetching: false,
-        data: action.json && parseRecord(action.json),
+        dataset: action.json && parseDataset(action.json),
       })
-    case 'REQUEST_RECORD_ERROR':
+    case 'REQUEST_DATASET_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,
       })
-    case 'RECORD_NOT_FOUND':
+    case 'DATASET_NOT_FOUND':
+      return Object.assign({}, state, {
+        isFetching: false,
+        notFound:  true
+      })
+      case 'REQUEST_DISTRIBUTION':
+      return Object.assign({}, state, {
+        isFetching: true
+      })
+    case 'RECEIVE_DISTRIBUTION':
+      return Object.assign({}, state, {
+        isFetching: false,
+        distribution: action.json && parseDistribution(action.json),
+      })
+    case 'REQUEST_DISTRIBUTION_ERROR':
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: action.error,
+      })
+    case 'DISTRIBUTION_NOT_FOUND':
       return Object.assign({}, state, {
         isFetching: false,
         notFound:  true

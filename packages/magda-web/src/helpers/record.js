@@ -1,33 +1,38 @@
-export function parseRecord(record) {
+export function parseDistribution(record) {
   const id = record["id"];
   const title = record["name"];
 
   const aspect = record["aspects"] || {};
 
+  const info = aspect["dcat-distribution-strings"] || {};
+
+  const format = info.format || "";
+  const downloadUrl = info.downloadURL || "";
+  const updatedDate = info.modified || "";
+  const license = info.license || "";
+  const description = info.description || "";
+
+  return { id, title, description, format, downloadUrl, updatedDate, license }
+};
+
+
+export function parseDataset(dataset) {
+  const aspect = dataset["aspects"] || {};
   const datasetInfo = aspect["dcat-dataset-strings"] || {};
-  const distributionInfo = aspect["dcat-distribution-strings"] || {};
+  const distribution = aspect["dataset-distributions"] || {};
+  const distributions = distribution["distributions"] || [];
 
-  const datasetDistribution = aspect["dataset-distributions"] || {};
-  const datasetDistributions = datasetDistribution["distributions"] || [];
+  const description = datasetInfo.description || '';
+  const publisher = datasetInfo.publisher || '';
+  const tags = datasetInfo.keywords || [];
+  const landingPage = datasetInfo.landingPage;
+  const title = datasetInfo.title;
+  const issuedDate= datasetInfo.issued;
+  const updatedDate = datasetInfo.modified;
 
-  const datasetDescription = datasetInfo.description || '';
-  const datasetPublisher = datasetInfo.publisher || '';
-  const datasetTags = datasetInfo.keywords || [];
-  const datasetLandingPage = datasetInfo.landingPage;
-  const datasetIssuedDate= datasetInfo.issued;
-  const datasetUpdatedDate = datasetInfo.modified;
-
-
-  const distributionFormat = distributionInfo.format || "";
-  const distributionDownloadUrl = distributionInfo.downloadURL || "";
-  const distributionUpdatedDate = distributionInfo.modified || "";
-  const distributionLicense = distributionInfo.license || "";
-  
-
-  const datasetSource = datasetDistributions.map(d=> {
+  const source = distributions.map(d=> {
       const distributionAspects = d["aspects"] || {};
       const info = distributionAspects["dcat-distribution-strings"] || {};
-      
       return {
           id: d["id"] || "",
           downloadUrl: info.downloadURL || "",
@@ -38,6 +43,6 @@ export function parseRecord(record) {
       }
   });
   return {
-      id, title, datasetSource, datasetDescription, datasetPublisher, datasetTags, datasetLandingPage, datasetIssuedDate, datasetUpdatedDate, distributionFormat, distributionDownloadUrl, distributionUpdatedDate, distributionLicense
+      title,issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source
   }
 };

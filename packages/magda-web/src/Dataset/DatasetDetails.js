@@ -16,18 +16,18 @@ class DatasetDetails extends Component {
 
   render(){
     const dataset = this.props.dataset;
-    const datasetId = dataset.id;
+    const datasetId = this.props.params.datasetId;
     return <div className="dataset-details row" >
                 <div className='dataset-details__body col-sm-9'>
                   <div className='dataset-details-overview'>
                     <h3>Overview</h3>
-                    {dataset.datasetDescription && <MarkdownViewer markdown={dataset.datasetDescription}/>}
+                    {dataset.description && <MarkdownViewer markdown={dataset.description}/>}
                   </div>
 
                   <div className='dataset-details-source'>
                       <h3>Data and APIs</h3>
                       {
-                        dataset.datasetSource && dataset.datasetSource.map(s=> this.renderDistribution(s, datasetId))
+                        dataset.source && dataset.source.map(s=> this.renderDistribution(s, datasetId))
                       }
                   </div>
               </div>
@@ -40,7 +40,7 @@ class DatasetDetails extends Component {
                   <div className="tags">
                     <h5>Tags</h5>
                     {
-                      dataset.datasetTags && dataset.datasetTags.map(t=><span className="badge" key={t}>{t}</span>)
+                      dataset.tags && dataset.tags.map(t=><Link className="badge" key={t} to={`/search?${t}`}>{t}</Link>)
                     }
                   </div>
               </div>
@@ -50,7 +50,7 @@ class DatasetDetails extends Component {
 
 function mapStateToProps(state) {
   const record= state.record;
-  const dataset = record.data;
+  const dataset = record.dataset;
   return {
     dataset
   };

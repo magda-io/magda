@@ -5,7 +5,7 @@ import Star from '../UI/Star';
 import { Link } from 'react-router';
 import { connect } from "react-redux";
 
-class ResourcetDetails extends Component {
+class DistributionDetails extends Component {
   render(){
     return <div className="dataset-details" >
                 <h2>details</h2>
@@ -20,4 +20,4 @@ function mapStateToProps(state) {
 
 
 
-export default connect(mapStateToProps)(ResourcetDetails);
+export default connect(mapStateToProps)(DistributionDetails);
