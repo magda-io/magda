@@ -159,7 +159,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
           val dataSetAndTermGens = indexedDataSets.flatMap { dataSet =>
             val terms = getIndividualTerms(innerTermExtractor(dataSet))
               .filter(_.length > 2)
-              .filterNot(term => Seq("and", "or", "").contains(term.trim))
+              .filterNot(term => Seq("and", "or", "").contains(term.trim.toLowerCase))
 
             if (!terms.isEmpty) {
               val termGen = for {
