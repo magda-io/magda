@@ -1,12 +1,5 @@
-// const tmp = require('tmp');
-// const fs = require('fs-extra')
 const path = require('path');
 const spawnSync = require("child_process").spawnSync;
-
-// const tempContext = tmp.dirSync();
-
-// fs.copySync(path.join(__dirname, '..', 'CkanConnector'), tempContext);
-// fs.copySync(path.join(__dirname, '..', 'CkanConnector'), tempContext);
 
 const ckanConnectorDir = path.join(__dirname, "..", "CkanConnector");
 
