@@ -1,4 +1,4 @@
-import { BadRequest } from '../../registry-api/generated/typescript/api';
+import { BadRequest } from './generated/registry/api';
 
 export class ServiceError extends Error {
     public e: any;

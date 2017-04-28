@@ -1,4 +1,4 @@
-import { AspectDefinition, AspectDefinitionsApi, Record } from '../../registry-api/generated/typescript/api';
+import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/registry/api';
 import Ckan, { CkanThing, CkanDataset, CkanResource } from './Ckan';
 import Registry from './Registry';
 import AsyncPage, { forEachAsync } from './AsyncPage';

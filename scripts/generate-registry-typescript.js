@@ -3,24 +3,27 @@ const fs = require('fs-extra')
 var path = require('path');
 
 const outputDir = path.resolve(process.argv[2]);
-const swaggerJson = path.resolve('../registry-api/generated/swagger.json');
+const swaggerJson = path.resolve(__dirname, '../registry-api/generated/swagger.json');
 
 
 fs.removeSync(outputDir)
 
-spawnSync(
+const sbt = spawnSync(
   "sbt",
   [
-    "registryApi/runMain au.csiro.data61.magda.registry.CommandLine " + swaggerJson
+    '"registryApi/runMain au.csiro.data61.magda.registry.CommandLine ' + swaggerJson + '"'
   ],
   {
     cwd: path.resolve(__dirname, ".."),
     stdio: "inherit",
-    shell: false
+    shell: true
   }
 );
+if (sbt.status !== 0) {
+    throw sbt.error;
+}
 
-spawnSync(
+const java = spawnSync(
   "java",
   [
     "-jar",
@@ -44,3 +47,6 @@ spawnSync(
     shell: false
   }
 );
+if (java.status !== 0) {
+    throw java.error;
+}

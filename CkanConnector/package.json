@@ -4,7 +4,7 @@
   "description": "MAGDA CKAN Connector",
   "main": "index.js",
   "scripts": {
-    "generate": "node ../scripts/generate-registry-typescript ./src/generated",
+    "generate": "node ../scripts/generate-registry-typescript ./src/generated/registry",
     "compile": "tsc",
     "build": "npm run generate && npm run compile",
     "test": "echo \"Error: no test specified\" && exit 1",
