@@ -1,16 +1,15 @@
 package au.csiro.data61.magda.registry
 
 import javax.ws.rs.Path
-import au.csiro.data61.magda.model.Registry._
 
+import au.csiro.data61.magda.model.Registry._
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
-import scalikejdbc._
+import scalikejdbc.DB
 import akka.http.scaladsl.model.StatusCodes
 import io.swagger.annotations._
-import spray.json._
 import gnieh.diffson.sprayJson._
 
 import scala.util.Failure
@@ -46,6 +45,23 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     }
     webHookActor ! WebHookActor.Process
     result
+  } } }
+
+  @Path("/{recordId}")
+  @ApiOperation(value = "Delete a record", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to delete.")
+  ))
+  @ApiResponses(Array(
+    new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])
+  ))
+  def deleteById = delete { path(Segment) { (recordId: String) => {
+    DB localTx { session =>
+      RecordPersistence.deleteRecord(session, recordId) match {
+        case Success(result) => complete(DeleteResult(result))
+        case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      }
+    }
   } } }
 
   @Path("/{id}")
@@ -108,7 +124,9 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     putById ~
     patchById ~
     create ~
-    new RecordAspectsService(system, materializer).route
+    deleteById ~
+    new RecordAspectsService(system, materializer).route ~
+    new RecordHistoryService(system, materializer).route
 
   private def getAllWithAspects(aspects: Iterable[String],
                                 optionalAspects: Iterable[String],

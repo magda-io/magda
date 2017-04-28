@@ -8,10 +8,11 @@ import scala.util.Try
 import scala.util.{Failure, Success}
 import java.sql.SQLException
 
+import akka.NotUsed
+import akka.stream.scaladsl.Source
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry._
-
 
 object RecordPersistence extends Protocols with DiffsonProtocol {
   val maxResultCount = 1000
@@ -277,6 +278,26 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     } yield hasAspectFailure
   }
 
+  def deleteRecord(implicit session: DBSession, recordId: String): Try[Boolean] = {
+    for {
+      aspects <- Try {
+        sql"select aspectId from RecordAspects where recordId=$recordId"
+          .map(rs => rs.string("aspectId")).list.apply()
+      }
+      _ <- aspects.map(aspectId => deleteRecordAspect(session, recordId, aspectId)).find(_.isFailure) match {
+        case Some(Failure(e)) => Failure(e)
+        case _ => Success(aspects)
+      }
+      _ <- Try {
+        val eventJson = DeleteRecordEvent(recordId).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+      }
+      rowsDeleted <- Try {
+        sql"""delete from Records where recordId=$recordId""".update.apply()
+      }
+    } yield rowsDeleted > 0
+  }
+
   def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject] = {
     for {
       eventId <- Try {
@@ -305,6 +326,47 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         sql"""delete from RecordAspects where recordId=$recordId and aspectId=$aspectId""".update.apply()
       }
     } yield rowsDeleted > 0
+  }
+
+  def reconstructRecordFromEvents(id: String, events: Source[RegistryEvent, NotUsed], aspects: Iterable[String], optionalAspects: Iterable[String]): Source[Option[Record], NotUsed] = {
+    // TODO: can probably simplify some of this with lenses or whatever
+    events.fold[JsValue](JsNull)((recordValue, event) => event.eventType match {
+      case EventType.CreateRecord => JsObject("id" -> event.data.fields("recordId"), "name" -> event.data.fields("name"), "aspects" -> JsObject())
+      case EventType.PatchRecord => event.data.fields("patch").convertTo[JsonPatch].apply(recordValue)
+      case EventType.DeleteRecord => JsNull
+      case EventType.CreateRecordAspect => {
+        val createAspectEvent = event.data.convertTo[CreateRecordAspectEvent]
+        val record = recordValue.asJsObject
+        val existingFields = record.fields
+        val existingAspects = record.fields("aspects").asJsObject.fields
+        val newAspects = existingAspects + (createAspectEvent.aspectId -> createAspectEvent.aspect)
+        val newFields = existingFields + ("aspects" -> JsObject(newAspects))
+        JsObject(newFields)
+      }
+      case EventType.PatchRecordAspect => {
+        val patchRecordAspectEvent = event.data.convertTo[PatchRecordAspectEvent]
+        val record = recordValue.asJsObject
+        val existingFields = record.fields
+        val existingAspects = record.fields("aspects").asJsObject.fields
+        val existingAspect = existingAspects(patchRecordAspectEvent.aspectId)
+        val newAspects = existingAspects + (patchRecordAspectEvent.aspectId -> patchRecordAspectEvent.patch.apply(existingAspect))
+        val newFields = existingFields + ("aspects" -> JsObject(newAspects))
+        JsObject(newFields)
+      }
+      case EventType.DeleteRecordAspect => {
+        val deleteRecordAspectEvent = event.data.convertTo[DeleteRecordAspectEvent]
+        val record = recordValue.asJsObject
+        val existingFields = record.fields
+        val existingAspects = record.fields("aspects").asJsObject.fields
+        val newAspects = existingAspects - deleteRecordAspectEvent.aspectId
+        val newFields = existingFields + ("aspects" -> JsObject(newAspects))
+        JsObject(newFields)
+      }
+      case _ => recordValue
+    }).map {
+      case obj: JsObject => Some(obj.convertTo[Record])
+      case _ => None
+    }
   }
 
   private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int], recordId: Option[String] = None): RecordSummariesPage = {
