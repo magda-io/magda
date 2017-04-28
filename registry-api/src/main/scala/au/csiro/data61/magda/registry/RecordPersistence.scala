@@ -280,6 +280,14 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
 
   def deleteRecord(implicit session: DBSession, recordId: String): Try[Boolean] = {
     for {
+      aspects <- Try {
+        sql"select aspectId from RecordAspects where recordId=$recordId"
+          .map(rs => rs.string("aspectId")).list.apply()
+      }
+      _ <- aspects.map(aspectId => deleteRecordAspect(session, recordId, aspectId)).find(_.isFailure) match {
+        case Some(Failure(e)) => Failure(e)
+        case _ => Success(aspects)
+      }
       _ <- Try {
         val eventJson = DeleteRecordEvent(recordId).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()

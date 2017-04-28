@@ -57,7 +57,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to delete.")
   ))
   @ApiResponses(Array(
-    new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])
+    new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])
   ))
   def deleteById = delete { path(Segment) { (recordId: String) => {
     DB localTx { session =>

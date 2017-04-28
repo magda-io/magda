@@ -1006,4 +1006,42 @@ class RecordsServiceSpec extends ApiSpec {
       param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process)
     }
   }
+
+  describe("DELETE") {
+    it("can delete a record without any aspects") { param =>
+      val record = Record("without", "without", Map())
+      Post("/api/0.1/records", record) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      Delete("/api/0.1/records/without") ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[DeleteResult].deleted shouldBe true
+      }
+    }
+
+    it("returns 200 and deleted=false when asked to delete a record that doesn't exist") { param =>
+      Delete("/api/0.1/records/doesnotexist") ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[DeleteResult].deleted shouldBe false
+      }
+    }
+
+    it("can delete a record with an aspect") { param =>
+      val aspectDefinition = AspectDefinition("test", "test", None)
+      Post("/api/0.1/aspects", aspectDefinition) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      val record = Record("with", "with", Map("test" -> JsObject()))
+      Post("/api/0.1/records", record) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      Delete("/api/0.1/records/with") ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[DeleteResult].deleted shouldBe true
+      }
+    }
+  }
 }
