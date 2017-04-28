@@ -29,7 +29,7 @@ class RecordHandler extends React.Component {
 
   renderByState(){
     if(this.props.notFound){
-      return <h2>Page not found</h2>;
+      return <h2>No record </h2>;
     } else if(this.props.error){
       return <h2>error</h2>;
     } else if(this.props.params.distributionId){
