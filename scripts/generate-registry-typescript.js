@@ -8,15 +8,13 @@ const swaggerJson = path.resolve('../registry-api/generated/swagger.json');
 
 fs.removeSync(outputDir)
 
-
-
 spawnSync(
   "sbt",
   [
     "registryApi/runMain au.csiro.data61.magda.registry.CommandLine " + swaggerJson
   ],
   {
-    cwd: __dirname + "/../",
+    cwd: path.resolve(__dirname, ".."),
     stdio: "inherit",
     shell: false
   }
@@ -35,8 +33,10 @@ spawnSync(
     "-o",
     outputDir,
     "--type-mappings",
-    "Aspect=any,JsonPatch=any,Operation=none",
-    "-DsupportsES6=true\\"
+    "Aspect=any,JsonPatch=any",
+    "--import-mappings",
+    "Aspect=none,JsonPatch=none,Operation=none",
+    "-DsupportsES6=true"
   ],
   {
     cwd: __dirname,

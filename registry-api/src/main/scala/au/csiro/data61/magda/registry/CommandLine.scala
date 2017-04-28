@@ -17,7 +17,6 @@ object CommandLine {
   """).resolve().withFallback(AppConfig.conf(Some("local")))
   implicit val system = ActorSystem("blah", config)
 
-  val api = RegistryApp
   val root = org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[ch.qos.logback.classic.Logger]
   root.setLevel(Level.ERROR);
 
