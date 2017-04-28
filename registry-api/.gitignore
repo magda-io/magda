@@ -25,3 +25,6 @@ project/plugins/project/
 
 postgres/data/
 /bin/
+
+
+generated

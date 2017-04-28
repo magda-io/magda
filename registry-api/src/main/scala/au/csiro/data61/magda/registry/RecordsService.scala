@@ -31,7 +31,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
 
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.registry.Record", paramType = "body", value = "The definition of the new record.")
+    new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The definition of the new record.")
   ))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])
@@ -83,7 +83,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     notes = "Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
-    new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.registry.Record", paramType = "body", value = "The record to save.")
+    new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The record to save.")
   ))
   def putById = put { path(Segment) { (id: String) => {
     entity(as[Record]) { record =>

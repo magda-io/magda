@@ -28,6 +28,8 @@ libraryDependencies ++= {
   )
 }
 
+mainClass in Compile := Some("au.csiro.data61.magda.registry.RegistryApp")
+
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
 

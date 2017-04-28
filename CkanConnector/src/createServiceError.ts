@@ -21,7 +21,7 @@ export class BadRequestError extends ServiceError {
  * by swagger-codegen.  The result typically includes `response` (with a status code) and
  * a `body` (the JSON the server returned with the error), but may be other things if,
  * e.g., an exception occurred while attempting to invoke the service.
- * 
+ *
  * @export
  * @param {*} e The result of the failed call.
  * @returns {Error} An Error created from the failed result.

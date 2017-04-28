@@ -1,4 +1,5 @@
 ## Building
+Requires SBT to be installed to generated the swagger files from the registry.
 
 ```bash
 npm run build
