@@ -56,7 +56,7 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to update an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to update."),
-    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.registry.Aspect", paramType = "body", value = "The record aspect to save.")
+    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$Aspect", paramType = "body", value = "The record aspect to save.")
   ))
   def putById = put { path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) => {
     entity(as[JsObject]) { aspect =>

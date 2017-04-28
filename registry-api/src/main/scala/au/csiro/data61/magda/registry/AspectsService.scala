@@ -29,7 +29,7 @@ class AspectsService(system: ActorSystem, materializer: Materializer) extends Pr
 
   @ApiOperation(value = "Create a new aspect", nickname = "create", httpMethod = "POST", response = classOf[AspectDefinition])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.registry.AspectDefinition", paramType = "body", value = "The definition of the new aspect.")
+    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The definition of the new aspect.")
   ))
   def create = post { pathEnd { entity(as[AspectDefinition]) { aspect =>
     DB localTx { session =>
@@ -59,7 +59,7 @@ class AspectsService(system: ActorSystem, materializer: Materializer) extends Pr
     notes = "Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
-    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.registry.AspectDefinition", paramType = "body", value = "The aspect to save.")
+    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The aspect to save.")
   ))
   def putById = put { path(Segment) { (id: String) => {
     entity(as[AspectDefinition]) { aspect =>

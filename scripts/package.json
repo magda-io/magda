@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "dockerode": "^2.4.3",
+    "tmp": "0.0.31"
+  }
+}

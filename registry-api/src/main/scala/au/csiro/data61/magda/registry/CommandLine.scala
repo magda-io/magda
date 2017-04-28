@@ -5,15 +5,19 @@ import au.csiro.data61.magda.AppConfig
 import com.typesafe.config.ConfigFactory
 import java.io.File
 import ch.qos.logback.classic.Level
+import au.csiro.data61.magda.registry.Api
 
 /**
  * Command line interface for the registry.
  */
 object CommandLine {
+
   val config = ConfigFactory.parseString(s"""
     akka.loglevel = "ERROR"
   """).resolve().withFallback(AppConfig.conf(Some("local")))
   implicit val system = ActorSystem("blah", config)
+
+  val api = RegistryApp
   val root = org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[ch.qos.logback.classic.Logger]
   root.setLevel(Level.ERROR);
 
@@ -27,8 +31,13 @@ object CommandLine {
     system.terminate()
 
     val file = new File(args(0))
+
+    if (file.exists()) {
+      file.delete()
+    }
+
     val parent = file.getParentFile()
-    if ((!parent.exists() && !parent.mkdirs()) || file.createNewFile()) {
+    if ((!parent.exists() && !parent.mkdirs()) || !file.createNewFile()) {
       throw new IllegalStateException("Couldn't create file: " + file);
     }
 
