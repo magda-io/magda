@@ -49,12 +49,19 @@ class SwaggerDocService(address: String, port: Int, system: ActorSystem) extends
             possibleValues.add(entry.toString)
           })
 
-          val impl = new ModelImpl()
-          impl.setName(cls.getSimpleName())
-          impl.`type`("string")
-          impl.setEnum(possibleValues)
-          context.defineModel(impl.getName(), impl)
-          impl
+          val impl = next.next().resolve(`type`, context, next).asInstanceOf[ModelImpl]
+          val newImpl = new ModelImpl()
+          newImpl.setName(impl.getName)
+          newImpl.setTitle(impl.getTitle)
+          newImpl.setDescription(impl.getDescription)
+          if (impl.getDefaultValue() != null) {
+            newImpl.setDefaultValue(impl.getDefaultValue.toString)
+          }
+          newImpl.setExample(impl.getExample)
+          newImpl.`type`("string")
+          newImpl.setEnum(possibleValues)
+          context.defineModel(newImpl.getName(), newImpl)
+          newImpl
         } else {
           next.next().resolve(`type`, context, next)
         }

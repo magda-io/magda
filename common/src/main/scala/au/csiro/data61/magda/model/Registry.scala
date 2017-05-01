@@ -41,6 +41,8 @@ object Registry {
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
   case class Aspect()
+
+  @ApiModel(description = "The type of a registry modification event.")
   sealed abstract class EventType(val value: Int, val name: String) extends IntEnumEntry {
     def isRecordEvent = this == EventType.CreateRecord || this == EventType.DeleteRecord || this == EventType.PatchRecord
     def isAspectDefinitionEvent = this == EventType.CreateAspectDefinition || this == EventType.PatchAspectDefinition || this == EventType.DeleteAspectDefinition
