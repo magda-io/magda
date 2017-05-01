@@ -1,14 +1,11 @@
 package au.csiro.data61.magda.model
 
-import io.swagger.annotations.{ ApiModel, ApiModelProperty }
-import enumeratum.values.{ IntEnum, IntEnumEntry }
+import io.swagger.annotations.{ApiModel, ApiModelProperty}
+import enumeratum.values.{IntEnum, IntEnumEntry}
+
 import scala.annotation.meta.field
-import spray.json.JsObject
+import spray.json.{DefaultJsonProtocol, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
 import java.time.OffsetDateTime
-import spray.json.DefaultJsonProtocol
-import spray.json.JsValue
-import spray.json.JsNumber
-import spray.json.RootJsonFormat
 
 object Registry {
   @ApiModel(description = "A type of aspect in the registry.")
@@ -69,8 +66,8 @@ object Registry {
 
   trait Protocols extends DefaultJsonProtocol with au.csiro.data61.magda.model.Temporal.Protocols {
     implicit object EventTypeFormat extends RootJsonFormat[EventType] {
-      def write(e: EventType) = JsNumber(e.value)
-      def read(value: JsValue) = EventType.withValue(value.asInstanceOf[JsNumber].value.toInt)
+      def write(e: EventType) = JsString(e.toString)
+      def read(value: JsValue) = EventType.values.find(e => e.toString == value.asInstanceOf[JsString]).get
     }
 
     implicit val recordFormat = jsonFormat3(Record.apply)
