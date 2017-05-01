@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ckan-connector
+spec:
+  template:
+    metadata:
+      name: ckan-connector
+    spec:
+      containers:
+      - name: ckan-connector
+        image: data61/magda-ckan-connector:${version}
+        env:
+        - name: "REGISTRY_URL"
+          value: "http://registry-api"
+      restartPolicy: OnFailure

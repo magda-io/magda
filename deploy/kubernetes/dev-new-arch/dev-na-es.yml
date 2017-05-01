@@ -89,15 +89,6 @@ spec:
         requests:
           storage: 200Gi
 ---
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: spinning-rust
-provisioner: kubernetes.io/gce-pd
-parameters:
-  type: pd-standard
-  zone: asia-east1-a
----
 apiVersion: v1
 kind: Service
 metadata:
