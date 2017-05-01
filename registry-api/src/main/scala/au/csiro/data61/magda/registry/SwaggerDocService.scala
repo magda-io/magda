@@ -26,7 +26,7 @@ class SwaggerDocService(address: String, port: Int, system: ActorSystem) extends
   override val info = Info(version = "0.1")
   override val basePath = "/api/0.1/"
 
-  private class Foo extends ModelConverter {
+  private class Converter extends ModelConverter {
     override def resolveProperty(`type`: Type, context: ModelConverterContext, annotations: Array[Annotation], chain: java.util.Iterator[ModelConverter]) = {
       chain.next().resolveProperty(`type`, context, annotations, chain)
     }
@@ -36,19 +36,22 @@ class SwaggerDocService(address: String, port: Int, system: ActorSystem) extends
         val cls = `type`.asInstanceOf[Class[_]]
         if (classOf[IntEnumEntry].isAssignableFrom(cls)) {
           // Find the corresponding object and get its values property
-          val objClass = cls.getClassLoader.loadClass(cls.getName + "$")
-          val valuesMethod = objClass.getMethod("values")
-          val objSingleton = objClass.getField("MODULE$").get(null)
-          val values = valuesMethod.invoke(objSingleton).asInstanceOf[IndexedSeq[IntEnumEntry]]
-
-          val impl = new ModelImpl()
-          impl.setName(cls.getSimpleName())
-          impl.`type`("string")
+          val m = ru.runtimeMirror(cls.getClassLoader)
+          val moduleMirror = m.reflectModule(m.staticModule(cls.getName))
+          val singleton = moduleMirror.instance
+          val im = m.reflect(singleton)
+          val valuesMethodSymbol = im.symbol.info.member(ru.TermName("values")).asMethod
+          val valuesMethod = im.reflectMethod(valuesMethodSymbol)
+          val values = valuesMethod().asInstanceOf[IndexedSeq[IntEnumEntry]]
 
           val possibleValues = new java.util.ArrayList[String]()
           values.foreach(entry => {
             possibleValues.add(entry.toString)
           })
+
+          val impl = new ModelImpl()
+          impl.setName(cls.getSimpleName())
+          impl.`type`("string")
           impl.setEnum(possibleValues)
           context.defineModel(impl.getName(), impl)
           impl
@@ -61,5 +64,5 @@ class SwaggerDocService(address: String, port: Int, system: ActorSystem) extends
     }
   }
 
-  ModelConverters.getInstance().addConverter(new Foo())
+  ModelConverters.getInstance().addConverter(new Converter())
 }

@@ -67,7 +67,7 @@ object Registry {
   trait Protocols extends DefaultJsonProtocol with au.csiro.data61.magda.model.Temporal.Protocols {
     implicit object EventTypeFormat extends RootJsonFormat[EventType] {
       def write(e: EventType) = JsString(e.toString)
-      def read(value: JsValue) = EventType.values.find(e => e.toString == value.asInstanceOf[JsString]).get
+      def read(value: JsValue) = EventType.values.find(e => e.toString == value.asInstanceOf[JsString].value).get
     }
 
     implicit val recordFormat = jsonFormat3(Record.apply)
