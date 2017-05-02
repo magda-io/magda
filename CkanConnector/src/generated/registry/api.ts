@@ -47,6 +47,9 @@ export class DeleteResult {
     'deleted': boolean;
 }
 
+/**
+* The type of a registry modification event.
+*/
 export class EventType {
 }
 
@@ -73,6 +76,9 @@ export class JsObject {
 }
 
 export class JsValue {
+}
+
+export class Operation {
 }
 
 /**
@@ -377,7 +383,7 @@ export class AspectDefinitionsApi {
      * @param id ID of the aspect to be saved.
      * @param aspectPatch The RFC 6902 patch to apply to the aspect.
      */
-    public patchById (id: string, aspectPatch: any) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
+    public patchById (id: string, aspectPatch: Array<Operation>) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
         const localVarPath = this.basePath + '/aspects/{id}'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};
@@ -699,7 +705,7 @@ export class RecordAspectsApi {
      * @param aspectId ID of the aspect to fetch.
      * @param aspectPatch The RFC 6902 patch to apply to the aspect.
      */
-    public patchById (recordId: string, aspectId: string, aspectPatch: any) : Promise<{ response: http.IncomingMessage; body: any;  }> {
+    public patchById (recordId: string, aspectId: string, aspectPatch: Array<Operation>) : Promise<{ response: http.IncomingMessage; body: any;  }> {
         const localVarPath = this.basePath + '/records/{recordId}/aspects/{aspectId}'
             .replace('{' + 'recordId' + '}', String(recordId))
             .replace('{' + 'aspectId' + '}', String(aspectId));
@@ -1253,7 +1259,7 @@ export class RecordsApi {
      * @param id ID of the aspect to be saved.
      * @param recordPatch The RFC 6902 patch to apply to the aspect.
      */
-    public patchById (id: string, recordPatch: any) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
+    public patchById (id: string, recordPatch: Array<Operation>) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
         const localVarPath = this.basePath + '/records/{id}'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};

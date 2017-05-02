@@ -26,11 +26,19 @@ object CommandLine {
    * Execute from the command line with sbt "registryApi/runMain au.csiro.data61.magda.registry.CommandLine ./swagger.json"
    */
   def main(args: Array[String]) = {
-    val swaggerJson = new SwaggerDocService("localhost", 9001, system).generateSwaggerJson
+    val docService = new SwaggerDocService("localhost", 9001, system)
+    val swaggerJson = docService.generateSwaggerJson
+    val jsonPatchJson = docService.getJsonPatchSchema
     system.terminate()
 
-    val file = new File(args(0))
+    val swaggerFile = new File(args(0), "swagger.json")
+    writeStringToFile(swaggerFile, swaggerJson)
 
+    val jsonPatchFile = new File(args(0), "json-patch.json")
+    writeStringToFile(jsonPatchFile, jsonPatchJson)
+  }
+
+  def writeStringToFile(file: File, content: String) = {
     if (file.exists()) {
       file.delete()
     }
@@ -42,7 +50,7 @@ object CommandLine {
     }
 
     printToFile(file) { p =>
-      p.println(swaggerJson)
+      p.println(content)
     }
   }
 
