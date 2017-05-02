@@ -15,6 +15,9 @@ spec:
         env:
         - name: SCALA_ENV
           value: dev-na
+        resources:
+          requests:
+            cpu: 0m
         image: "data61/magda-registry-api:${version}"
         imagePullPolicy: Always
         ports:

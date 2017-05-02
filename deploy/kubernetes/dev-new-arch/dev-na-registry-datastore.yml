@@ -21,8 +21,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5432
+        env:
+        - name: PGDATA
+          value: /var/pv/data
         volumeMounts:
-        - mountPath: /var/lib/postgresql
+        - mountPath: /var/pv
           name: registrydata
   volumeClaimTemplates:
   - metadata:
