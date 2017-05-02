@@ -97,6 +97,25 @@ object ApiGenerators {
   def dateFromGen(implicit config: Config) = filterValueGen(periodOfTimeGen.map(_.start.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
   def dateToGen(implicit config: Config) = filterValueGen(periodOfTimeGen.map(_.end.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
 
+  def queryIsSmallEnough(query: Query) = {
+    def textCount(input: String) = input.split("\\s\\.-").size
+    def createCount(iterable: Iterable[Int]) = if (iterable.isEmpty) 0 else iterable.reduce(_ + _)
+    def iterableTextCount(input: Iterable[String]) = createCount(input.map(textCount))
+    def iterableTextCountFv(input: Iterable[FilterValue[String]]) = {
+      createCount(input.map(_.map(textCount).getOrElse(0)))
+    }
+
+    val freeTextCount = iterableTextCount(query.freeText)
+    val quoteCount = iterableTextCount(query.quotes)
+    val publisherCount = iterableTextCountFv(query.publishers)
+    val dateFromCount = query.dateFrom.map(_ => 1).getOrElse(0)
+    val dateToCount = query.dateTo.map(_ => 1).getOrElse(0)
+    val formatsCount = iterableTextCountFv(query.formats)
+    val regionsCount = query.regions.size
+
+    (freeTextCount + quoteCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
+  }
+
   def queryGen(implicit config: Config) = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
@@ -113,7 +132,7 @@ object ApiGenerators {
     dateTo = dateTo,
     formats = formats,
     regions = regions
-  ))
+  )).suchThat(queryIsSmallEnough)
 
   def exactQueryGen(implicit config: Config) = (for {
     freeText <- Gen.option(queryTextGen)
@@ -131,7 +150,7 @@ object ApiGenerators {
     dateTo = dateTo,
     formats = formats,
     regions = regions
-  )) //.map(removeInvalid)
+  )).suchThat(queryIsSmallEnough)
 
   val specificBiasedQueryGen = (for {
     publishers <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](publisherGen.flatMap(Gen.oneOf(_)).map(Specified.apply))
@@ -140,7 +159,7 @@ object ApiGenerators {
     freeText = Some("*"),
     publishers = publishers,
     formats = formats
-  )) //.map(removeInvalid)
+  )).suchThat(queryIsSmallEnough)
 
   def unspecificQueryGen(implicit config: Config) = (for {
     freeText <- noneBiasedOption(queryTextGen)
@@ -158,8 +177,8 @@ object ApiGenerators {
     dateTo = dateTo,
     formats = formats,
     regions = regions
-  ))
-    .flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
+  )).flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
+    .suchThat(queryIsSmallEnough)
 
   def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>
     val textListComponents = (Seq(query.freeText).flatten ++
