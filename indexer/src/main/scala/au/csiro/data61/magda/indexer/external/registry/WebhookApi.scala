@@ -39,7 +39,9 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
               onSuccess(indexer.index(registryConfig.get, Source(dataSets))) { result =>
                 complete(Accepted)
               }
-            case None => complete(BadRequest, "Needs records")
+            case None => 
+              getLogger.error("Recieved webhook payload with no records")
+              complete(BadRequest, "Needs records")
           }
         }
       }

@@ -13,6 +13,9 @@ spec:
           containers:
           - name: ckan-connector
             image: data61/magda-ckan-connector:${version}
+            resources:
+              requests:
+                cpu: 0m
             env:
             - name: "REGISTRY_URL"
               value: "http://registry-api"
