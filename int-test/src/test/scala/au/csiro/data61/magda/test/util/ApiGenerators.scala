@@ -113,7 +113,21 @@ object ApiGenerators {
     dateTo = dateTo,
     formats = formats,
     regions = regions
-  ))
+  )).suchThat { query =>
+    def textCount(input: String) = input.split("\\s\\.-").size
+    def iterableTextCount(input: Iterable[String]) = input.map(textCount).reduce(_ + _)
+    def iterableTextCountFv(input: Iterable[FilterValue[String]]) = input.map(_.map(textCount).getOrElse(0)).reduce(_ + _)
+
+    val freeTextCount = iterableTextCount(query.freeText)
+    val quoteCount = iterableTextCount(query.quotes)
+    val publisherCount = iterableTextCountFv(query.publishers)
+    val dateFromCount = query.dateFrom.map(_ => 1).getOrElse(0)
+    val dateToCount = query.dateTo.map(_ => 1).getOrElse(0)
+    val formatsCount = iterableTextCountFv(query.formats)
+    val regionsCount = query.regions.size
+
+    (freeTextCount + quoteCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
+  }
 
   def exactQueryGen(implicit config: Config) = (for {
     freeText <- Gen.option(queryTextGen)
