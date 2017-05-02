@@ -15,7 +15,7 @@ spec:
       - name: indexer
         env:
         - name: SCALA_ENV
-          value: dev
+          value: dev-na
         image: "data61/magda-metadata-indexer:${version}"
         resources:
           requests:

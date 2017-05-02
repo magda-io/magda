@@ -16,11 +16,10 @@ spec:
         resources:
           requests:
             cpu: 0m
-            memory: 0Mi
         imagePullPolicy: Always
         env:
         - name: BACKEND_PORT_80_TCP_ADDR
-          value: api
+          value: search-api
         - name: BACKEND_ENV_PORT
           value: "80"
         - name: LISTEN_PORT
@@ -60,7 +59,7 @@ spec:
       - name: search-api
         env:
         - name: SCALA_ENV
-          value: dev
+          value: dev-na
         image: "data61/magda-search-api:${version}"
         imagePullPolicy: Always
         ports:
@@ -77,4 +76,4 @@ spec:
     targetPort: 80
   selector:
     service: search-api
-  type: "LoadBalancer"
+  type: "NodePort"

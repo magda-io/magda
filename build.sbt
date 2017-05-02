@@ -8,7 +8,7 @@ lazy val packageJson = {
   val jsonAst = source.parseJson.asJsObject
   
    Map(
-    "version" -> jsonAst.getFields("version").head.toString
+    "version" -> jsonAst.getFields("version").head.asInstanceOf[JsString].value
   )
 }
 

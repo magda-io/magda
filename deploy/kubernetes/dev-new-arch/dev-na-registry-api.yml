@@ -14,7 +14,7 @@ spec:
       - name: registry-api
         env:
         - name: SCALA_ENV
-          value: dev
+          value: dev-na
         image: "data61/magda-registry-api:${version}"
         imagePullPolicy: Always
         ports:

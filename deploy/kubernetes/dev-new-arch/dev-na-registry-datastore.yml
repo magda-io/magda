@@ -14,18 +14,21 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: registry-datastore
+        resources:
+          requests:
+            cpu: 0m
         image: "data61/magda-registry-datastore:${version}"
         imagePullPolicy: Always
         ports:
         - containerPort: 5432
         volumeMounts:
-        - mountPath: /var/lib/postgresql/data
+        - mountPath: /var/lib/postgresql
           name: registrydata
-volumeClaimTemplates:
+  volumeClaimTemplates:
   - metadata:
       name: registrydata
       annotations:
-        storageClassName: spinning-rust
+        volume.beta.kubernetes.io/storage-class: spinning-rust
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
