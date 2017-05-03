@@ -27,7 +27,7 @@ const java = spawnSync(
   "java",
   [
     "-jar",
-    "../tools/swagger-codegen-cli.jar",
+    "./tools/swagger-codegen-cli.jar",
     "generate",
     "-l",
     "typescript-node",

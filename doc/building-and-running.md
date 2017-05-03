@@ -117,4 +117,4 @@ export SCALA_ENV=host
 * Build and run using sbt.  It's helpful to start an interactive `sbt` session and run these commands as necessary.
   * `~relaunch` - Compile (if necessary) and launch a JVM process for each component.  When a source file changes, affected components will be built and relaunched automatically.
   * `registryApi/reStart` - Compile (if necessary) and restart a specific component (registryApi in this case).
-  * `reStatus` - Tells you which components are running.  It is normal for `root` and `common` to not be running, since they are not executable.
+  * `reStatus` - Tells you which components are running.  It is normal for `root` and `magda-scala-common` to not be running, since they are not executable.

@@ -23,7 +23,7 @@ spec:
             secretKeyRef:
               name: s3-secret-key
               key: s3-secret-key
-        image: "data61/magda-metadata-indexer:${version}"
+        image: "data61/magda-indexer:${version}"
         imagePullPolicy: Always
         volumeMounts:
         - mountPath: /usr/regions
