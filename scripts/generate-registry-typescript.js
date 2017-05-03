@@ -3,15 +3,15 @@ const fs = require('fs-extra')
 var path = require('path');
 
 const outputDir = path.resolve(process.argv[2]);
-const swaggerJson = path.resolve(__dirname, '../registry-api/generated/swagger.json');
-
+const swaggerOutputDir = path.resolve(__dirname, '../registry-api/generated/');
+const swaggerJson = path.resolve(swaggerOutputDir, 'swagger.json');
 
 fs.removeSync(outputDir)
 
 const sbt = spawnSync(
   "sbt",
   [
-    '"registryApi/runMain au.csiro.data61.magda.registry.CommandLine ' + swaggerJson + '"'
+    '"registryApi/runMain au.csiro.data61.magda.registry.CommandLine ' + swaggerOutputDir + '"'
   ],
   {
     cwd: path.resolve(__dirname, ".."),
@@ -36,9 +36,9 @@ const java = spawnSync(
     "-o",
     outputDir,
     "--type-mappings",
-    "Aspect=any,JsonPatch=any",
+    "Aspect=any",
     "--import-mappings",
-    "Aspect=none,JsonPatch=none,Operation=none",
+    "Aspect=none",
     "-DsupportsES6=true"
   ],
   {
