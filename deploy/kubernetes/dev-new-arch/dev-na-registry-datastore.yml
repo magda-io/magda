@@ -1,0 +1,53 @@
+# Postgres for the Registry
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: registry-datastore
+spec:
+  serviceName: registry-datastore
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: registry-datastore
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: registry-datastore
+        resources:
+          requests:
+            cpu: 0m
+        image: "data61/magda-registry-datastore:${version}"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5432
+        env:
+        - name: PGDATA
+          value: /var/pv/data
+        volumeMounts:
+        - mountPath: /var/pv
+          name: registrydata
+  volumeClaimTemplates:
+  - metadata:
+      name: registrydata
+      annotations:
+        volume.beta.kubernetes.io/storage-class: spinning-rust
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 200Gi      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-datastore
+spec:
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    nodePort: 30543
+  selector:
+    service: registry-datastore
+  type: "NodePort"

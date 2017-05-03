@@ -1,10 +1,20 @@
-
+import spray.json._
+import DefaultJsonProtocol._
 
 name := "magda-metadata"
 
+lazy val packageJson = {
+  val source = scala.io.Source.fromFile("package.json").mkString
+  val jsonAst = source.parseJson.asJsObject
+  
+   Map(
+    "version" -> jsonAst.getFields("version").head.asInstanceOf[JsString].value
+  )
+}
+
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
-  version := "0.0.25-SNAPSHOT",
+  version := packageJson("version"),
   scalaVersion := "2.11.8"
 )
 
