@@ -49,15 +49,15 @@ First, build and push the Docker containers:
 docker build -t localhost:5000/data61/elasticsearch-kubernetes:latest -f deploy/docker/elasticsearch-kubernetes.dockerfile deploy/docker
 docker push localhost:5000/data61/elasticsearch-kubernetes:latest
 
-docker build -t localhost:5000/data61/registry-datastore:latest registry-datastore
-docker push localhost:5000/data61/registry-datastore:latest
+docker build -t localhost:5000/data61/magda-registry-datastore:latest magda-registry-datastore
+docker push localhost:5000/data61/magda-registry-datastore:latest
 ```
 
 Then, start them up on the cluster with:
 
 ```bash
 cd deploy/kubernetes
-kubectl create -f elasticsearch.yml -f registry-datastore.yml
+kubectl create -f elasticsearch.yml -f magda-registry-datastore.yml
 ```
 
 ## Run MAGDA on a Kubernetes cluster
@@ -106,7 +106,7 @@ kubectl port-forward $(kubectl get pods -l service=registry-datastore -o=custom-
 kubectl port-forward $(kubectl get pods -l component=elasticsearch -o=custom-columns=NAME:.metadata.name --no-headers) 9300 > /dev/null &
 ```
 
-Note that if you want to use a different hostname or port for the database, you will need to change `db.default.url` in `registry-api/src/main/resources/env-specific-config/host.conf` accordingly.
+Note that if you want to use a different hostname or port for the database, you will need to change `db.default.url` in `magda-registry-api/src/main/resources/env-specific-config/host.conf` accordingly.
 
 * Set the environment variable indicating that we will be running directly on our development machine:
 
@@ -117,4 +117,4 @@ export SCALA_ENV=host
 * Build and run using sbt.  It's helpful to start an interactive `sbt` session and run these commands as necessary.
   * `~relaunch` - Compile (if necessary) and launch a JVM process for each component.  When a source file changes, affected components will be built and relaunched automatically.
   * `registryApi/reStart` - Compile (if necessary) and restart a specific component (registryApi in this case).
-  * `reStatus` - Tells you which components are running.  It is normal for `root` and `common` to not be running, since they are not executable.
+  * `reStatus` - Tells you which components are running.  It is normal for `root` and `magda-scala-common` to not be running, since they are not executable.

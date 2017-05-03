@@ -3,7 +3,7 @@ const fs = require('fs-extra')
 var path = require('path');
 
 const outputDir = path.resolve(process.argv[2]);
-const swaggerOutputDir = path.resolve(__dirname, '../registry-api/generated/');
+const swaggerOutputDir = path.resolve(__dirname, '../magda-registry-api/generated/');
 const swaggerJson = path.resolve(swaggerOutputDir, 'swagger.json');
 
 fs.removeSync(outputDir)
@@ -27,7 +27,7 @@ const java = spawnSync(
   "java",
   [
     "-jar",
-    "../tools/swagger-codegen-cli.jar",
+    "./tools/swagger-codegen-cli.jar",
     "generate",
     "-l",
     "typescript-node",

@@ -149,7 +149,7 @@ spec:
         env:
         - name: SCALA_ENV
           value: local
-        image: "localhost:5000/data61/magda-metadata-indexer:latest"
+        image: "localhost:5000/data61/magda-indexer:latest"
         imagePullPolicy: Always
         volumeMounts:
         - mountPath: /usr/regions

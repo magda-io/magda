@@ -16,7 +16,7 @@ spec:
         env:
         - name: SCALA_ENV
           value: dev-na
-        image: "data61/magda-metadata-indexer:${version}"
+        image: "data61/magda-indexer:${version}"
         resources:
           requests:
             cpu: 0m

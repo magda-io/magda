@@ -1,0 +1,28 @@
+{
+  "name": "magda-ckan-connector",
+  "description": "MAGDA CKAN Connector",
+  "main": "index.js",
+  "scripts": {
+    "generate": "node ../scripts/generate-registry-typescript ./src/generated/registry",
+    "compile": "tsc",
+    "copySchemas": "mkdir -p bin && mkdir -p bin/registry-aspects && cp -r ../magda-registry-aspects ./bin/registry-aspects",
+    "build": "npm run copySchemas && npm run generate && npm run compile",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bin/index.js",
+    "startMinikube": "REGISTRY_URL=http://$(minikube ip):30010 node bin/index.js"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^7.0.5",
+    "@types/request": "0.0.39",
+    "@types/urijs": "^1.15.31",
+    "typescript": "^2.1.6"
+  },
+  "dependencies": {
+    "moment": "^2.17.1",
+    "request": "^2.79.0",
+    "ts-node": "^2.1.0",
+    "urijs": "^1.18.7"
+  }
+}

@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Aspect for capturing the source of a dataset or distribution",
+    "type": "object",
+    "properties": {
+        "type": {
+            "title": "The type of the source.",
+            "type": "string"
+        },
+        "url": {
+            "title": "The source URL.",
+            "type": "string"
+        },
+        "name": {
+            "title": "The human-friendly name of this source.",
+            "type": "string"
+        },
+        "problems": {
+            "title": "Problems encountered while creating this record from the source.",
+            "type": "array",
+            "items": {
+                "title": "A problem report.",
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "title": "A short explanation of the problem.",
+                        "type": "string"
+                    },
+                    "message": {
+                        "title": "A message describing the problem.",
+                        "type": "string"
+                    },
+                    "additionalInfo": {
+                        "title": "Additional information about the problem."
+                    }
+                }
+            }
+        }
+    }
+}

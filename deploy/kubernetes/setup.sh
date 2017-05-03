@@ -11,7 +11,7 @@ docker push localhost:5000/data61/magda-sbt-local:latest
 docker build -t localhost:5000/data61/elasticsearch-kubernetes:latest -f deploy/docker/elasticsearch-kubernetes.dockerfile deploy/docker
 docker push localhost:5000/data61/elasticsearch-kubernetes:latest
 
-docker build -t localhost:5000/data61/registry-datastore:latest registry-datastore
+docker build -t localhost:5000/data61/magda-registry-datastore:latest magda-registry-datastore
 docker push localhost:5000/data61/registry-datastore:latest
 
 kubectl create -f target/kubernetes/local.yml
