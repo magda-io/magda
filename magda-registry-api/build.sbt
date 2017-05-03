@@ -35,4 +35,4 @@ EclipseKeys.withSource := true
 
 setupDocker(stage)
 
-unmanagedResources in Test += baseDirectory.value.getParentFile / "registry-datastore" / "scripts" / "init" / "evolveschema.sql"
+unmanagedResources in Test += baseDirectory.value.getParentFile / "magda-registry-datastore" / "scripts" / "init" / "evolveschema.sql"

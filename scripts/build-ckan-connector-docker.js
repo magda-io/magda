@@ -2,7 +2,7 @@ const path = require('path');
 const spawnSync = require("child_process").spawnSync;
 const packageJson = require('../package.json')
 
-const ckanConnectorDir = path.join(__dirname, "..", "CkanConnector");
+const ckanConnectorDir = path.join(__dirname, "..", "magda-ckan-connector");
 
 const isLocal = process.argv[2] === '--local';
 const imgBase = isLocal ? 'localhost:5000/' : '';
