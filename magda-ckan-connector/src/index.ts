@@ -1,7 +1,7 @@
 import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api';
 import retry from './retry';
 import Ckan from './Ckan';
-import CkanConnector, { AspectBuilder } from './magda-ckan-connector';
+import CkanConnector, { AspectBuilder } from './CkanConnector';
 import Registry from './Registry';
 import * as fs from 'fs';
 import * as request from 'request';

@@ -5,7 +5,7 @@
   "scripts": {
     "generate": "node ../scripts/generate-registry-typescript ./src/generated/registry",
     "compile": "tsc",
-    "copySchemas": "cp -r ../registry-aspects ./bin/registry-aspects",
+    "copySchemas": "mkdir -p bin && mkdir -p bin/registry-aspects && cp -r ../magda-registry-aspects ./bin/registry-aspects",
     "build": "npm run copySchemas && npm run generate && npm run compile",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node bin/index.js",
