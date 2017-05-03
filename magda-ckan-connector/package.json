@@ -1,6 +1,5 @@
 {
-  "name": "ckan-connector",
-  "version": "0.0.1",
+  "name": "magda-ckan-connector",
   "description": "MAGDA CKAN Connector",
   "main": "index.js",
   "scripts": {
