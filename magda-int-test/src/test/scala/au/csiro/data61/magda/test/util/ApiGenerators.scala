@@ -98,7 +98,7 @@ object ApiGenerators {
   def dateToGen(implicit config: Config) = filterValueGen(periodOfTimeGen.map(_.end.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
 
   def queryIsSmallEnough(query: Query) = {
-    def textCount(input: String) = input.split("\\s\\.-").size
+    def textCount(input: String) = input.split("[\\s\\.-]").size
     def createCount(iterable: Iterable[Int]) = if (iterable.isEmpty) 0 else iterable.reduce(_ + _)
     def iterableTextCount(input: Iterable[String]) = createCount(input.map(textCount))
     def iterableTextCountFv(input: Iterable[FilterValue[String]]) = {
