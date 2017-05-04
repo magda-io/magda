@@ -162,6 +162,7 @@ class Search extends Component {
                  />
                 }
             </div>
+            <div className="results-count">{this.props.hitCount} results found</div>
           </div>
           <div className='row'>
             <div className='col-sm-8'>
@@ -183,7 +184,6 @@ class Search extends Component {
                   <SearchResults
                       strategy={this.props.strategy}
                       searchResults={this.props.datasets}
-                      totalNumberOfResults={this.props.hitCount}
                       onClickTag={this.onClickTag}
                       onToggleDataset={this.onToggleDataset}
                       openDataset={this.props.location.query.open}

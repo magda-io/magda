@@ -7,7 +7,7 @@ class FacetHeader extends Component {
   calculateTitle(){
     if(this.props.title === "date range"){
         if(this.props.activeOptions.every(o=>!o)){
-          return <span> any date </span>
+          return <span> Any date </span>
         } else if(this.props.activeOptions[0] && !this.props.activeOptions[1]){
           return <span> since {this.props.activeOptions[0]}</span>
         } else if(this.props.activeOptions[1] && !this.props.activeOptions[0]){
@@ -18,7 +18,7 @@ class FacetHeader extends Component {
     
     else{
         if( !this.props.activeOptions || this.props.activeOptions.length === 0 || !this.props.activeOptions[0] ||(this.props.title === "location" && !this.props.activeOptions[0].regionType)){
-          return <span>{"any " + this.props.title}</span>;
+          return <span>{"Any " + this.props.title}</span>;
         } else if(this.props.activeOptions.length === 1){
           return <span>{this.props.activeOptions[0].value || this.props.activeOptions[0].regionType + ": " + this.props.activeOptions[0].regionName}<span className="caret"></span> </span>;
         } else{

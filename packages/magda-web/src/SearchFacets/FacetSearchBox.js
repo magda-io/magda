@@ -123,10 +123,6 @@ class FacetSearchBox extends Component {
                    value={this.state.searchText}
                    onInput={this.onSearchTextChange}
                    />
-            {this.state.searchText.length > 0 &&
-              <button type='button' className='btn btn-clear-search' onClick={this.clearSearch}>
-                <i className="fa fa-times" aria-hidden="true"></i>
-              </button>}
           </form>
 
           {this.state.searchText.length > 0 &&

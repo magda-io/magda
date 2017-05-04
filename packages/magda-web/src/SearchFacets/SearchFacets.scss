@@ -17,6 +17,8 @@
     box-shadow: 0 0 5px rgba(0,0,0,.2);
     background: #fff;
     border: 1px solid #f5f5f5;
+    position: absolute;
+    z-index: 1;
 }
 
 .facet-body__header{

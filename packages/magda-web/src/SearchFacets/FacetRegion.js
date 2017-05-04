@@ -57,6 +57,16 @@ class FacetRegion extends Component {
             </button>);
     }
 
+
+    renderBox(){
+        return (<div className="facet-body">
+                <FacetSearchBox renderOption={this.renderOption}
+                                onToggleOption={this.onToggleOption}
+                                options={this.props.facetSearchResults}
+                                searchFacet={this.props.searchFacet}/>
+                </div>)
+    }
+
     render(){
         return (
             <div className="facet-wrapper">
@@ -65,14 +75,7 @@ class FacetRegion extends Component {
                      activeOptions={[this.props.activeRegion]}
                      hasQuery={this.props.hasQuery}
                      onClick={this.onToggleOpen}/>
-                 {this.state.isOpen && <RegionPopup onToggleOption={this.props.onToggleOption}
-                              facetSearchResults={this.props.facetSearchResults}
-                              closePopUp={this.onToggleOpen}
-                              renderOption={this.renderOption}
-                              searchFacet={this.props.searchFacet}
-                              regionMapping={this.props.regionMapping}
-                              activeRegion={this.props.activeRegion}
-                  />}
+                 {this.state.isOpen && this.renderBox()}
           </div>
 
       );

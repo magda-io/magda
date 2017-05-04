@@ -88,7 +88,9 @@ export default class DatasetSummary extends Component {
                     </button>
                   </div>
                   {this.props.isExpanded && <div className='dataset-summary__middle clearfix'>
-                      <div><a className='btn dataset-summary__btn-view-dataset' href={dataset.landingPage} target='_blank'>View dataset</a></div>
+                      <div><Link target='_blank'
+                              className='btn dataset-summary__btn-view-dataset'
+                              to={`/dataset/${dataset.identifier}`}>View dataset</Link></div>
                       <div><Star onClick={this.onClickStar} isOn={this.state.isFav}/></div>
                       <div>
                         <a className='btn dataset-summary__btn-share' href={``} target='_blank'>
@@ -98,19 +100,11 @@ export default class DatasetSummary extends Component {
                   </div>}
                 </div>
                 <div className='dataset-summary__body'>
-                  <label className='dataset-summary__search-result--publisher'>{defined(dataset.publisher) ? dataset.publisher.name : 'unspecified'}</label>
+
                   <div className='dataset-summary__dataset-description' onClick={this.props.onClickDataset}>
                     <MarkdownViewer markdown={dataset.description} stripped={true}/>
                   </div>
-
-                  <ToggleList list={this.props.dataset.keyword}
-                              getKey={tag=>tag}
-                              renderFunction={tag=><a onClick={this.onClick.bind(this, tag)}>#{tag}</a>}
-                              defaultLength={5}
-                              className={"dataset-summary__tags"}
-                              />
-
-                  {!this.props.isExpanded ? <div className='search-result--source'>Source: <span className='search-result--sourceName'>{dataset.catalog}</span></div> : null}
+                  <label className='dataset-summary__search-result--publisher'>{defined(dataset.publisher) ? dataset.publisher.name : 'unspecified'}</label>
                 </div>
               <div className='dataset-summary__footer'>
                   {this.props.isExpanded && this.renderLinks()}
