@@ -7,16 +7,18 @@ class Tabs extends Component {
     }
 
     render(){
-      return (<ul className="tabs nav nav-tabs">
-                {this.props.list.map(item=>
-                <li role="presentation" 
-                    key={item}>
-                    <Link activeClassName="active"
-                          to={`${this.props.baseUrl}/${item.toLowerCase()}`}>
-                          {item}
-                    </Link>
-                </li>)}
-              </ul>)
+      return (<div className="tabs">
+            <ul className="nav nav-tabs container">
+                  {this.props.list.map(item=>
+                  <li role="presentation" 
+                      key={item}>
+                      <Link activeClassName="active"
+                            to={`${this.props.baseUrl}/${item.toLowerCase()}`}>
+                            {item}
+                      </Link>
+                  </li>)}
+                </ul>
+              </div>)
     }
 }
 

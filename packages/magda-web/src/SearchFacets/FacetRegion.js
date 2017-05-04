@@ -4,7 +4,6 @@ import React, { Component } from 'react';
 import DropDown from '../UI/DropDown';
 import FacetHeader from './FacetHeader';
 import RegionMap from './RegionMap';
-import RegionPopup from './RegionPopup';
 import FacetSearchBox from './FacetSearchBox';
 import RegionSummary from './RegionSummary';
 import defined from '../helpers/defined';

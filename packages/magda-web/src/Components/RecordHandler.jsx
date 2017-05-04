@@ -5,6 +5,7 @@ import { fetchDatasetFromRegistry, fetchDistributionFromRegistry } from "../acti
 import Tabs from '../UI/Tabs';
 import {config} from '../config';
 import { Link } from 'react-router';
+import NotFoundHandler from '../Components/NotFoundHandler';
 
 class RecordHandler extends React.Component {
   componentWillMount(){
@@ -29,31 +30,35 @@ class RecordHandler extends React.Component {
 
   renderByState(){
     if(this.props.notFound){
-      return <h2>No record </h2>;
+      return <NotFoundHandler displayText={"No records found"}/>;
     } else if(this.props.error){
       return <h2>error</h2>;
     } else if(this.props.params.distributionId){
       return (
         <div>
-          <ul className="breadcrumb">
-            <li className="breadcrumb-item"><Link to="#">Home</Link></li>
-            <li className="breadcrumb-item"><Link to={`/dataset/${this.props.params.datasetId}`}>Dataset</Link></li>
-          </ul>
-            <h1>{this.props.distribution.title}</h1>
-            <a>{this.props.distribution.downloadUrl}</a>
-            <div>{this.props.distribution.updatedDate}</div>
-            <Tabs list = {config.distributionTabList} baseUrl = {`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
-            <div>{this.props.children}</div>
+          <div className="container">
+              <ul className="breadcrumb">
+                <li className="breadcrumb-item"><Link to="#">Home</Link></li>
+                <li className="breadcrumb-item"><Link to={`/dataset/${this.props.params.datasetId}`}>Dataset</Link></li>
+              </ul>
+                <h1>{this.props.distribution.title}</h1>
+                <a>{this.props.distribution.downloadUrl}</a>
+                <div>{this.props.distribution.updatedDate}</div>
+                <Tabs list = {config.distributionTabList} baseUrl = {`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
+            </div>
+            <div className="tab-content">{this.props.children}</div>
             </div>
       )
     }
     return (
       <div>
-          <h1>{this.props.dataset.title}</h1>
-          <a>{this.props.dataset.landingPage}</a>
-          <div>{this.props.dataset.updatedDate}</div>
+          <div className="container">
+            <h1>{this.props.dataset.title}</h1>
+            <a>{this.props.dataset.landingPage}</a>
+            <div>{this.props.dataset.updatedDate}</div>
+          </div>
           <Tabs list = {config.datasetTabList} baseUrl = {`/dataset/${this.props.params.datasetId}`}/>
-          <div>{this.props.children}</div>
+          <div className="tab-content">{this.props.children}</div>
       </div>
     );
   }

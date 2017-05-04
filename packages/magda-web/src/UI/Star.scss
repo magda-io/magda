@@ -1,3 +1,4 @@
+@import "../variables";
 .star{
   position: relative;
 }
@@ -15,7 +16,7 @@
   top: 37px;
   width: 170px;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid $magda-grey;
   background: #fff;
   z-index: 9;
 }
@@ -26,10 +27,10 @@
   height: 20px;
   display: block;
   background: #fff;
-  border: #ddd;
+  border: $magda-grey;
   position: absolute;
-  border-top: 1px solid #ddd;
-  border-right: 1px solid #ddd;
+  border-top: 1px solid $magda-grey;
+  border-right: 1px solid $magda-grey;
   top: -10.14px;
   transform: rotate(-45deg);
   left: 28px;

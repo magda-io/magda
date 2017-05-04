@@ -9,7 +9,7 @@ export function parseDistribution(record) {
   const format = info.format || "";
   const downloadUrl = info.downloadURL || "";
   const updatedDate = info.modified || "";
-  const license = info.license || "";
+  const license = info.license || "License restrictions unknown";
   const description = info.description || "";
 
   return { id, title, description, format, downloadUrl, updatedDate, license }
@@ -33,13 +33,14 @@ export function parseDataset(dataset) {
   const source = distributions.map(d=> {
       const distributionAspects = d["aspects"] || {};
       const info = distributionAspects["dcat-distribution-strings"] || {};
+
       return {
           id: d["id"] || "",
-          downloadUrl: info.downloadURL || "",
+          downloadUrl: info.downloadURL || "No download url provided",
           format: info.format || "unknown format",
-          license: info.license || "license unknown",
+          license: (!info.license || info.license === "notspecified") ? "License restrictions unknown" : info.license,
           title: info.title || "",
-          description: info.description || ""
+          description: info.description || "No description provided"
       }
   });
   return {

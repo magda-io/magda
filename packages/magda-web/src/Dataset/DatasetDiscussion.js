@@ -7,7 +7,7 @@ import { Link } from 'react-router';
 export default class DatasetDiscussion extends Component {
   render(){
     let dataset = this.props.dataset;
-    return <div className="dataset-details" >
+    return <div className="dataset-details container" >
                 discussion
           </div>
   }

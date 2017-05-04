@@ -1,3 +1,4 @@
+@import "../variables";
 .dataset-summary{
   border: 1px solid #fff;
   margin-bottom: 15px;
@@ -129,8 +130,8 @@
 
 .dataset-summary__source{
   padding-bottom: 15px;
-  border-top: 1px solid #ECF0F1;
-  border-bottom: 1px solid #ECF0F1;
+  border-top: 1px solid $magda-grey;
+  border-bottom: 1px solid $magda-grey;
   font-size: 16px;
 }
 

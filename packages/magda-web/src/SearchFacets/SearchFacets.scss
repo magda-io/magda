@@ -1,3 +1,4 @@
+@import "../variables";
 .search-facets{
     .search-facet{
         padding-right: 0;
@@ -23,7 +24,7 @@
 
 .facet-body__header{
     position: relative;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid $magda-grey;
 }
 
 

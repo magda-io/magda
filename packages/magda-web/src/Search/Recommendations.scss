@@ -1,3 +1,4 @@
+@import "../variables";
 .search-recomendation {
   margin: 10px 15px; }
 
@@ -26,7 +27,7 @@
   position: absolute;
   background: #fff;
   z-index: 999;
-  border: 1px solid #ddd;
+  border: 1px solid $magda-grey;
   right: 0; }
 
 .search-recomendation__main {

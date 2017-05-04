@@ -1,6 +1,16 @@
+@import "../variables";
 .tabs{
     display: block;
+    border-bottom: 1px solid #ddd;
+    .nav-tabs{
+        border-bottom: 0;
+    }
+    
     .active{
         border-bottom: 3px solid #3498db;
     }
+}
+
+.tab-content{
+    background: $magda-grey;
 }

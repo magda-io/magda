@@ -1,3 +1,4 @@
+@import "../variables";
 .progress-bar{
   width: 100%;
   height: 8px;
@@ -6,7 +7,7 @@
 }
 
 .progress{
-  background: linear-gradient(to right, #3498db, #ecf0f1, #3498db, #ecf0f1, #c0392b);
+  background: linear-gradient(to right, #3498db, $magda-grey, #3498db, $magda-grey, #c0392b);
   border-radius: 1px;
   animation: gradient 3s linear infinite;
   background-position: 0% 0%;
