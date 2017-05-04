@@ -27,10 +27,11 @@ class DropDown extends Component {
   }
 
   render(){
+    
     return (
       <div className={`dropdown ${this.state.isOpen ? 'is-open': ''}`}>
         <button className='dropdown__toggle-btn btn'
-                onClick={this.toggle}>{this.props.activeOption}
+                onClick={this.toggle}>{this.props.activeOption.length > 0 ? this.props.activeOption : "Select a region type"}
                 <i className='fa fa-caret-down' aria-hidden='true'></i>
         </button>
         <ul className='list-unstyled dropdown__options'>
