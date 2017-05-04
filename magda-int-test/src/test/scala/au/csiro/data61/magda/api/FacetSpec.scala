@@ -60,7 +60,7 @@ class FacetSpec extends BaseSearchApiSpec {
         val facetSize = Math.max(rawFacetSize, 1)
 
         whenever(start >= 0 && limit >= 0) {
-          Get(s"/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> routes ~> check {
+          Get(s"/v0/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> routes ~> check {
             status shouldBe OK
             inner(dataSets, facetSize)
           }
@@ -74,7 +74,7 @@ class FacetSpec extends BaseSearchApiSpec {
         val (textQuery, objQuery) = query
         val facetSize = Math.max(rawFacetSize, 1)
 
-        Get(s"/datasets?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
+        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
           status shouldBe OK
           inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
         }
@@ -95,7 +95,7 @@ class FacetSpec extends BaseSearchApiSpec {
       whenever(!queryWithoutFilter.equals(Query())) {
         val textQueryWithoutFacet = queryToText(queryWithoutFilter)
 
-        Get(s"/datasets?query=${encodeForUrl(textQueryWithoutFacet)}&start=0&limit=${allDataSets.size}&facetSize=1") ~> routes ~> check {
+        Get(s"/v0/datasets?query=${encodeForUrl(textQueryWithoutFacet)}&start=0&limit=${allDataSets.size}&facetSize=1") ~> routes ~> check {
           status shouldBe OK
           val innerResult = responseAs[SearchResult]
           val innerDataSets = innerResult.dataSets

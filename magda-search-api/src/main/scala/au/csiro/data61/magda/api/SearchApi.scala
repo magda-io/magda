@@ -17,38 +17,40 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
 
   val routes =
     magdaRoute {
-      pathPrefix("facets") {
-        path(Segment / "options") { facetId ⇒
-          (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
-            FacetType.fromId(facetId) match {
-              case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, queryCompiler.apply(generalQuery), start, limit))
-              case None            ⇒ complete(NotFound)
-            }
-          }
-        }
-      } ~
-        pathPrefix("datasets") {
-          (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10, "facetSize" ? 10)) { (rawQuery, start, limit, facetSize) ⇒
-            val query = if (rawQuery.equals("")) "*" else rawQuery
-
-            onSuccess(searchQueryer.search(queryCompiler.apply(query), start, limit, facetSize)) { result =>
-              val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
-
-              pathPrefix("datasets") {
-                complete(status, result.copy(facets = None))
-              } ~ pathPrefix("facets") {
-                complete(status, result.facets)
-              } ~ pathEnd {
-                complete(status, result)
+      pathPrefix("v0") {
+        pathPrefix("facets") {
+          path(Segment / "options") { facetId ⇒
+            (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
+              FacetType.fromId(facetId) match {
+                case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, queryCompiler.apply(generalQuery), start, limit))
+                case None            ⇒ complete(NotFound)
               }
             }
           }
         } ~
-        path("region-types") { get { getFromResource("regionMapping.json") } } ~
-        path("regions") {
-          (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-            complete(searchQueryer.searchRegions(query, start, limit))
+          pathPrefix("datasets") {
+            (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10, "facetSize" ? 10)) { (rawQuery, start, limit, facetSize) ⇒
+              val query = if (rawQuery.equals("")) "*" else rawQuery
+
+              onSuccess(searchQueryer.search(queryCompiler.apply(query), start, limit, facetSize)) { result =>
+                val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
+
+                pathPrefix("datasets") {
+                  complete(status, result.copy(facets = None))
+                } ~ pathPrefix("facets") {
+                  complete(status, result.facets)
+                } ~ pathEnd {
+                  complete(status, result)
+                }
+              }
+            }
+          } ~
+          path("region-types") { get { getFromResource("regionMapping.json") } } ~
+          path("regions") {
+            (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+              complete(searchQueryer.searchRegions(query, start, limit))
+            }
           }
-        }
+      }
     }
 }

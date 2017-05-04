@@ -23,7 +23,7 @@ class RegistryExternalInterface(interfaceConfig: InterfaceConfig, implicit val c
 
   override def getInterfaceConfig = interfaceConfig
 
-  val baseUrl = s"api/0.1/records?aspect=dcat-dataset-strings&aspect=source"
+  val baseUrl = s"v0/records?aspect=dcat-dataset-strings&aspect=source"
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =
     fetcher.request(s"$baseUrl&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&start=$start&limit=$number").flatMap { response =>

@@ -6,7 +6,7 @@
     "title" : "",
     "termsOfService" : ""
   },
-  "basePath" : "/api/0.1/",
+  "basePath" : "/v0/",
   "tags" : [ {
     "name" : "aspect definitions"
   }, {

@@ -72,7 +72,7 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
-      pathPrefix("api" / "0.1") {
+      pathPrefix("v0") {
         path("ping") { complete("OK") } ~
           pathPrefix("aspects") { new AspectsService(system, materializer).route } ~
           pathPrefix("records") { new RecordsService(webHookActor, system, materializer).route } ~

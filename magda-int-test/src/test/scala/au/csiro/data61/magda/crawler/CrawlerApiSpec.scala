@@ -1,3 +1,4 @@
+
 package au.csiro.data61.magda.crawler
 
 import au.csiro.data61.magda.test.api.BaseApiSpec
@@ -114,7 +115,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
     }
 
-    Get(s"/datasets?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
+    Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
       status shouldBe OK
       val response = responseAs[SearchResult]
 
