@@ -4,7 +4,9 @@ import ReactDocumentTitle from "react-document-title";
 import {config} from '../config.js';
 import { Link } from 'react-router';
 import SearchBox from '../Search/SearchBox';
+import ProgressBar from '../UI/ProgressBar';
 import MarkdownViewer from '../UI/MarkdownViewer';
+import {connect} from 'react-redux';
 import './AppContainer.css';
 
 class AppContainer extends React.Component {  
@@ -15,6 +17,7 @@ class AppContainer extends React.Component {
     
     <ReactDocumentTitle title={config.appName}>
         <div>
+          {this.props.isFetching && <ProgressBar/>  }        
             <nav className='appContainer__nav'> 
               <div className="container">
                 <div className="clearfix">
@@ -42,7 +45,7 @@ class AppContainer extends React.Component {
                 </div>
                 </nav>
                 
-                <div id="content" className="container">{ this.props.children }</div>
+                <div id="content" className="clearfix">{ this.props.children }</div>
                 <footer className="footer clearfix">
                   <div className="container">
                   <ul className="nav row">
@@ -66,7 +69,15 @@ class AppContainer extends React.Component {
   }
 }
 
-export default AppContainer;
+function mapStateToProps(state) {
+  let { results, record } = state;
+  return {
+    isFetching: results.isFetching || record.isFetching,
+  }
+}
+
+export default connect(mapStateToProps)(AppContainer);
+
 
 
 

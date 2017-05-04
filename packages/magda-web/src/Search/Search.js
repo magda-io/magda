@@ -8,7 +8,7 @@ import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
 import Pagination from '../UI/Pagination';
 import Notification from '../UI/Notification';
-import ProgressBar from '../UI/ProgressBar';
+
 import React, { Component } from 'react';
 import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
@@ -152,7 +152,6 @@ class Search extends Component {
     const searchText = this.props.location.query.q || '';
     return (
       <div>
-        {this.props.isFetching && <ProgressBar progress={this.props.progress}/>}
         <div className='search'>
           <div className='search__search-body container'>
           <div className='row'>
