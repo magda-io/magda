@@ -213,6 +213,13 @@ class FacetSpec extends BaseSearchApiSpec {
         }
 
         describe("exact match facets") {
+          val specificBiasedQueryGen = queryGen.flatMap(query =>
+            for {
+              publishers <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](Generators.publisherGen.flatMap(Gen.oneOf(_)).map(Specified.apply))
+              formats <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](Generators.formatGen.map(x => Specified(x._2)))
+            } yield query.copy(publishers = publishers, formats = formats)
+          ).suchThat(queryIsSmallEnough)
+
           it("should not show filters that do not have records") {
             checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen), indexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]

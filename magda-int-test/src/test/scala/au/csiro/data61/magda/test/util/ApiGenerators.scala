@@ -152,15 +152,6 @@ object ApiGenerators {
     regions = regions
   )).suchThat(queryIsSmallEnough)
 
-  val specificBiasedQueryGen = (for {
-    publishers <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](publisherGen.flatMap(Gen.oneOf(_)).map(Specified.apply))
-    formats <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](formatGen.map(x => Specified(x._2)))
-  } yield Query(
-    freeText = Some("*"),
-    publishers = publishers,
-    formats = formats
-  )).suchThat(queryIsSmallEnough)
-
   def unspecificQueryGen(implicit config: Config) = (for {
     freeText <- noneBiasedOption(queryTextGen)
     quotes <- smallSet(queryTextGen)
