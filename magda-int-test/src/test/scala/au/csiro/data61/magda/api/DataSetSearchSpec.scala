@@ -289,12 +289,14 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(query != Query() && query.formats.filter(_.isDefined).forall(!_.get.contains("  "))) {
-            response.strategy.get should be(MatchAll)
-            response.dataSets.isEmpty should be(false)
-            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            val queryFormats = query.formats.map(_.map(MagdaMatchers.extractAlphaNum))
+            withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
+              response.strategy.get should be(MatchAll)
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
 
             response.dataSets.foreach { dataSet =>
-              val queryFormats = query.formats.map(_.map(MagdaMatchers.extractAlphaNum))
 
               val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
                 case Some(format) => queryFormats.contains(Specified(MagdaMatchers.extractAlphaNum(format)))
@@ -387,22 +389,21 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
-            withClue("query " + query.publishers) {
+            val queryPublishers = query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))
+            withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
               response.strategy.get should be(MatchAll)
               response.dataSets.isEmpty should be(false)
               response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
 
-              response.dataSets.foreach { dataSet =>
-                val queryPublishers = query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))
+            response.dataSets.foreach { dataSet =>
+              val matchesQuery = dataSet.publisher.flatMap(_.name) match {
+                case Some(publisher) => queryPublishers.contains(Specified(MagdaMatchers.extractAlphaNum(publisher)))
+                case None            => queryPublishers.contains(Unspecified())
+              }
 
-                val matchesQuery = dataSet.publisher.flatMap(_.name) match {
-                  case Some(publisher) => queryPublishers.contains(Specified(MagdaMatchers.extractAlphaNum(publisher)))
-                  case None            => queryPublishers.contains(Unspecified())
-                }
-
-                withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
-                  matchesQuery should be(true)
-                }
+              withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
+                matchesQuery should be(true)
               }
             }
           }
@@ -457,7 +458,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                 // I don't know why yet, FIXME
                 if (allDataSetPublisherTerms.exists(_.length == 1)) {
                   y should be > 0
-                } else { 
+                } else {
                   (y.toDouble / possibleQueryPublishers.size) should be >= 0.5
                 }
               }
