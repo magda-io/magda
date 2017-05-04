@@ -114,7 +114,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
     }
 
-    Get(s"/datasets/search?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
+    Get(s"/datasets?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
       status shouldBe OK
       val response = responseAs[SearchResult]
 

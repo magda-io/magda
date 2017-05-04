@@ -29,7 +29,7 @@ class SwaggerDocService(address: String, port: Int, system: ActorSystem) extends
     ru.typeOf[HooksService])
   override val host = ""
   override val info = Info(version = "0.1")
-  override val basePath = "/api/0.1/"
+  override val basePath = "/api/v0/registry"
   lazy val allRoutes =
     routes ~
       path(apiDocsBase / "json-patch.json") {
