@@ -417,10 +417,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             case None => Gen.const(Query())
             case Some(innerPublisher) =>
               for {
-                reducedPublisher <- ApiGenerators.partialStringGen(innerPublisher)
-                valid = ApiGenerators.validFilter(reducedPublisher)
+                reducedPublisher <- ApiGenerators.partialStringGen(innerPublisher).suchThat(ApiGenerators.validFilter(_))
                 query = Query(publishers = Set(Specified(reducedPublisher)))
-              } yield if (valid) query else Query()
+              } yield query
           }
         }
 
