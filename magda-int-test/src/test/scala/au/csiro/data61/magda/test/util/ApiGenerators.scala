@@ -113,7 +113,7 @@ object ApiGenerators {
     val formatsCount = iterableTextCountFv(query.formats)
     val regionsCount = query.regions.size
 
-    (freeTextCount + quoteCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
+    (freeTextCount + quoteCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 100
   }
 
   def queryGen(implicit config: Config) = (for {
