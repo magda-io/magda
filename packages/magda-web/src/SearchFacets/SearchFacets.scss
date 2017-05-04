@@ -81,20 +81,20 @@
   display: none;
   padding: 2px;
   width: 30px;
-  float: right;
-  background: #27AE60;
-  float: right;
+  background: transparent;
   text-align: center;
+  position: absolute;
+  padding: 0;
+  left: 0;
+  top: 0;
 }
 
 .btn-facet-option.is-active .btn-facet-option__action{
   display: block;
-  background: #3498DB;
 }
 
 .btn-facet-option.is-active:hover .btn-facet-option__action,
 .btn-facet-option.is-active:focus .btn-facet-option__action{
-  background: #E74C3C;
 }
 
 

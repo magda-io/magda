@@ -102,6 +102,7 @@ class FacetTemporal extends Component {
             >
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}</span>
+      <span className='btn-facet-option__action'><i className={`fa fa-check`}/></span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
     </button>)
   }
