@@ -6,28 +6,22 @@
   padding-right: 30px; }
 
 .search-box__input {
-  width: calc(100% - 38px);
-  position: relative; }
+  width: 100%;
+  position: relative;
+  input.form-control{
+    padding-right: 50px;
+  } }
 
 .search-box {
   position: relative;
   margin-bottom: 20px;
   padding: 0; }
 
-.search-box__clear-btn {
-  position: absolute;
-  right: 1px;
-  top: 3px;
-  bottom: 3px;
-  z-index: 10;
-  background: transparent;
-  background: #fff;
-  color: #ddd; }
 
 .search-box__icon {
   border-radius: 1px;
-  background-color: #3498db;
-  color: #fff;
+  background-color: transparent;
+  color: #000;
   position: absolute;
   right: 0;
   top: 0;

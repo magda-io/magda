@@ -17,7 +17,6 @@ class SearchBox extends Component {
     this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
     this.updateQuery = this.updateQuery.bind(this);
     this.updateSearchText = this.updateSearchText.bind(this);
-    this.onClearSearch = this.onClearSearch.bind(this);
     this.onClickSearch = this.onClickSearch.bind(this);
     this.onSearchTextChange = this.onSearchTextChange.bind(this);
     this.getSearchBoxValue = this.getSearchBoxValue.bind(this);
@@ -63,11 +62,6 @@ class SearchBox extends Component {
     });
   }
 
-  onClearSearch(){
-    this.updateSearchText('');
-    // cancle any future requests from debounce
-    this.debounceUpdateSearchQuery.cancel();
-  }
 
   handleSearchFieldEnterKeyPress(event) {
     // when user hit enter, no need to submit the form
@@ -128,11 +122,6 @@ class SearchBox extends Component {
             onKeyPress={this.handleSearchFieldEnterKeyPress}
             ref={(searchBox)=>{searchBox && searchBox.focus()}}
           />
-          {this.getSearchBoxValue() > 0 &&
-            <button type='button' className='btn search-box__clear-btn' onClick={this.onClearSearch}>
-              <i className="fa fa-times" aria-hidden="true"></i>
-            </button>
-          }
           </div>
           <button onClick={this.onClickSearch} type='button' className="btn search-box__icon"><i className="fa fa-search" aria-hidden="true"></i> </button>
         </form>

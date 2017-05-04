@@ -18,6 +18,7 @@ class AppContainer extends React.Component {
             <nav className='appContainer__nav'> 
               <div className="container">
                 <div className="clearfix">
+                  <div className="col-sm-9">
                     <div className="navbar-header">
                       <a className="navbar-brand" href="/"><img className='logo' alt='data.gov.au-alpha' src={logo}/></a>
                     </div>
@@ -26,11 +27,13 @@ class AppContainer extends React.Component {
                         <li key={nav[1]}><Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link></li>
                       )}
                     </ul>
-
-                    <ul className="nav navbar-nav pull-right">
-                      <li><Link to={`/sign-in`}>Sign in</Link></li>
+                    </div>
+                    <ul className="nav navbar-nav navbar-account col-sm-3">
                       <li><Link to={`/new-account`}>Create an account</Link></li>
+                      <li className="decorator"> or </li>
+                      <li><Link to={`/sign-in`}>Sign in</Link></li> 
                     </ul>
+
                 </div>
                 <div className="row">
                   <div className='col-sm-9'><SearchBox location={this.props.location}/> </div>
@@ -45,7 +48,7 @@ class AppContainer extends React.Component {
                   <ul className="nav row">
                   {
                     footerNavs.map(item=>
-                      <li key={item.category} className="col-md-2 col-sm-4">{item.category}
+                      <li key={item.category} className="col-md-2 col-sm-3"><span className="nav-title">{item.category}</span>
                         <ul className="nav nav-pills nav-stacked">
                           {item.links.map(link=>
                           <li key={link[1]}><Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link></li>)

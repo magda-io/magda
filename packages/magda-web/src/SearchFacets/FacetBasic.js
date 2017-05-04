@@ -67,10 +67,9 @@ class FacetBasic extends Component {
             title={option.value}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>
-        {option.value}
+        {option.value}({option.hitCount})
         {(option.matched && !isActive) && <span className='btn-facet-option__recomended-badge'>*</span>}</span>
-      <span className='btn-facet-option__action'><i className={`fa fa-${isActive ? 'times' : 'plus'}`}/></span>
-      <span className='btn-facet-option__count'>{option.hitCount}</span>
+      <span className='btn-facet-option__action'><i className={`fa fa-check`}/></span>
     </button>);
   }
 

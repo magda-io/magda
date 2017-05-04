@@ -7,6 +7,31 @@
     background: transparent;
 }
 
+.navbar-nav{
+    float: right;
+    a{
+        color: #000000;    
+    }
+}
+
+@media(min-width: 768px){
+    .decorator{
+        padding: 15px 0;
+    }
+}
+
+
+.navbar-account.navbar-nav{
+        &>li{
+            float: right;
+            &>a{
+                text-decoration: underline;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+}
+
 .appContainer__suggestion{
     padding: 15px;
     color: #fff;
@@ -25,5 +50,14 @@
     a{
         color: #fff;
         text-decoration: underline;
+    }
+    .nav > li > a{
+        padding: 10px 0px;
+        &:hover{
+            background: transparent;
+        }
+    }
+    .nav-title{
+        text-transform: uppercase;
     }
 }
