@@ -434,9 +434,9 @@ class FacetSpec extends BaseSearchApiSpec {
           }
 
           it("for unmatched facet options") {
-            val yearQueryGen = queryGen.map { query =>
-              query.copy(quotes = Set[String](), publishers = Set[FilterValue[String]](), regions = Set[FilterValue[Region]](), formats = Set[FilterValue[String]]())
-            }
+            val yearQueryGen = Gen.option(Gen.alphaNumChar).flatMap(char =>
+              Query(freeText = char.map(_.toString), quotes = Set[String](), publishers = Set[FilterValue[String]](), regions = Set[FilterValue[Region]](), formats = Set[FilterValue[String]]())
+            )
 
             checkFacetsWithQuery(textQueryGen(yearQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
