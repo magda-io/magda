@@ -34,7 +34,6 @@
 
 .facet-wrapper .btn{
    box-shadow: 0;
-   padding: 4px;
 }
 
 .facet-wrapper .btn-reset,
@@ -54,9 +53,9 @@
    color: #777;
    border-radius: 2px;
    position: relative;
-   padding: 0;
    line-height: 2.3;
    background: transparent;
+   padding: 0 0 0 40px;
 }
 
 .btn-facet-option__volume-indicator{
@@ -120,7 +119,6 @@
     float: left;
     text-overflow: ellipsis;
     overflow: hidden;
-    padding: 2px 5px 2px 12px;
 }
 
 .btn-facet-option__detail {
