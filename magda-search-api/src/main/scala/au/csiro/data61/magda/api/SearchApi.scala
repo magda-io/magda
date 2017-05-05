@@ -17,18 +17,18 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
 
   val routes =
     magdaRoute {
-      pathPrefix("facets") {
-        path(Segment / "options" / "search") { facetId ⇒
-          (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
-            FacetType.fromId(facetId) match {
-              case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, queryCompiler.apply(generalQuery), start, limit))
-              case None            ⇒ complete(NotFound)
+      pathPrefix("v0") {
+        pathPrefix("facets") {
+          path(Segment / "options") { facetId ⇒
+            (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
+              FacetType.fromId(facetId) match {
+                case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, queryCompiler.apply(generalQuery), start, limit))
+                case None            ⇒ complete(NotFound)
+              }
             }
           }
-        }
-      } ~
-        pathPrefix("datasets") {
-          pathPrefix("search") {
+        } ~
+          pathPrefix("datasets") {
             (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10, "facetSize" ? 10)) { (rawQuery, start, limit, facetSize) ⇒
               val query = if (rawQuery.equals("")) "*" else rawQuery
 
@@ -44,13 +44,13 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                 }
               }
             }
+          } ~
+          path("region-types") { get { getFromResource("regionMapping.json") } } ~
+          path("regions") {
+            (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+              complete(searchQueryer.searchRegions(query, start, limit))
+            }
           }
-        } ~
-        path("region-types") { get { getFromResource("regionMapping.json") } } ~
-        path("regions" / "search") {
-          (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-            complete(searchQueryer.searchRegions(query, start, limit))
-          }
-        }
+      }
     }
 }

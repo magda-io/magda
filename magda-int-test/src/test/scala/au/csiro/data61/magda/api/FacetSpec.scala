@@ -60,7 +60,7 @@ class FacetSpec extends BaseSearchApiSpec {
         val facetSize = Math.max(rawFacetSize, 1)
 
         whenever(start >= 0 && limit >= 0) {
-          Get(s"/datasets/search?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> routes ~> check {
+          Get(s"/v0/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> routes ~> check {
             status shouldBe OK
             inner(dataSets, facetSize)
           }
@@ -74,7 +74,7 @@ class FacetSpec extends BaseSearchApiSpec {
         val (textQuery, objQuery) = query
         val facetSize = Math.max(rawFacetSize, 1)
 
-        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
+        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
           status shouldBe OK
           inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
         }
@@ -95,7 +95,7 @@ class FacetSpec extends BaseSearchApiSpec {
       whenever(!queryWithoutFilter.equals(Query())) {
         val textQueryWithoutFacet = queryToText(queryWithoutFilter)
 
-        Get(s"/datasets/search?query=${encodeForUrl(textQueryWithoutFacet)}&start=0&limit=${allDataSets.size}&facetSize=1") ~> routes ~> check {
+        Get(s"/v0/datasets?query=${encodeForUrl(textQueryWithoutFacet)}&start=0&limit=${allDataSets.size}&facetSize=1") ~> routes ~> check {
           status shouldBe OK
           val innerResult = responseAs[SearchResult]
           val innerDataSets = innerResult.dataSets
@@ -107,7 +107,7 @@ class FacetSpec extends BaseSearchApiSpec {
       }
     }
 
-    def genericFacetSpecs(facetType: FacetType, reducer: DataSet ⇒ Set[String], queryCounter: Query ⇒ Int, filterQueryGen: Gen[Query]) = {
+    def genericFacetSpecs(facetType: FacetType, reducer: DataSet ⇒ Set[String], queryCounter: Query ⇒ Int, filterQueryGen: Gen[Query], exactGen: Gen[Query]) = {
       def filter(dataSet: DataSet, facetOption: FacetOption) = {
         val facetValue = reducer(dataSet)
 
@@ -214,7 +214,7 @@ class FacetSpec extends BaseSearchApiSpec {
 
         describe("exact match facets") {
           it("should not show filters that do not have records") {
-            checkFacetsWithQuery(textQueryGen(specificBiasedQueryGen), indexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(exactGen), indexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 
@@ -336,7 +336,13 @@ class FacetSpec extends BaseSearchApiSpec {
         publishers <- Generators.smallSet(publisherQueryGen)
       } yield new Query(publishers = publishers)
 
-      genericFacetSpecs(Publisher, reducer, queryToInt, queryGen)
+      val specificBiasedQueryGen = Gen.uuid.flatMap(uuid =>
+        for {
+          publishers <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](Generators.publisherGen.flatMap(Gen.oneOf(_)).map(Specified.apply))
+        } yield Query(quotes = Set(uuid.toString), publishers = publishers)
+      ).suchThat(queryIsSmallEnough)
+
+      genericFacetSpecs(Publisher, reducer, queryToInt, queryGen, specificBiasedQueryGen)
     }
 
     describe("format") {
@@ -347,7 +353,13 @@ class FacetSpec extends BaseSearchApiSpec {
         formats <- Generators.smallSet(formatQueryGen)
       } yield Query(formats = formats)
 
-      genericFacetSpecs(Format, reducer, queryToInt, queryGen)
+      val specificBiasedQueryGen = Gen.uuid.flatMap(uuid =>
+        for {
+          formats <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](Generators.formatGen.map(x => Specified(x._2)))
+        } yield Query(quotes = Set(uuid.toString), formats = formats)
+      ).suchThat(queryIsSmallEnough)
+
+      genericFacetSpecs(Format, reducer, queryToInt, queryGen, specificBiasedQueryGen)
     }
 
     describe("year") {
@@ -397,11 +409,11 @@ class FacetSpec extends BaseSearchApiSpec {
 
         describe("with a query") {
           it("for matched facet options") {
-            val queryGen = (for {
-              dateFrom <- Generators.someBiasedOption(dateFromGen)
-              dateTo <- Generators.someBiasedOption(dateToGen)
-            } yield Query(dateFrom = dateFrom, dateTo = dateTo))
-              .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined)
+            val queryGen = for {
+              dateFrom <- dateFromGen
+              dateTo <- dateToGen
+              result <- Gen.oneOf(Query(dateFrom = Some(dateFrom)), Query(dateTo = Some(dateTo)), Query(dateFrom = Some(dateFrom), dateTo = Some(dateTo)))
+            } yield result
 
             checkFacetsWithQuery(textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
@@ -422,9 +434,9 @@ class FacetSpec extends BaseSearchApiSpec {
           }
 
           it("for unmatched facet options") {
-            val yearQueryGen = queryGen.map { query =>
-              query.copy(quotes = Set[String](), publishers = Set[FilterValue[String]](), regions = Set[FilterValue[Region]](), formats = Set[FilterValue[String]]())
-            }
+            val yearQueryGen = Gen.option(Gen.alphaNumChar).flatMap(char =>
+              Query(freeText = char.map(_.toString), quotes = Set[String](), publishers = Set[FilterValue[String]](), regions = Set[FilterValue[Region]](), formats = Set[FilterValue[String]]())
+            )
 
             checkFacetsWithQuery(textQueryGen(yearQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]

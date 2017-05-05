@@ -53,7 +53,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .filter(term => term.matches(".*[A-Z][a-z].*"))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
-        Get(s"""/datasets/search?query=${encodeForUrl(term)}&limit=10000""") ~> routes ~> check {
+        Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> routes ~> check {
           status shouldBe OK
           val result = responseAs[SearchResult]
 
@@ -73,7 +73,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
-      Get(s"""/facets/publisher/options/search?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> routes ~> check {
+      Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
 
@@ -94,7 +94,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
-      Get(s"""/facets/format/options/search?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> routes ~> check {
+      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
         val formats = termExtractor(dataSet)

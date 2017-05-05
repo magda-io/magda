@@ -27,11 +27,12 @@ class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
 
   val routes =
     magdaRoute {
-      pathPrefix("reindex") {
-        new CrawlerApi(crawler, indexer).routes
-      } ~ path("registry-hook") {
-        new WebhookApi(indexer).routes
+      pathPrefix("v0") {
+        pathPrefix("reindex") {
+          new CrawlerApi(crawler, indexer).routes
+        } ~ path("registry-hook") {
+          new WebhookApi(indexer).routes
+        }
       }
     }
-
 }

@@ -19,7 +19,7 @@ class WebHookProcessorSpec extends ApiSpec {
   it("includes aspectDefinitions if events modified them") { param =>
     testWebHook(param.api, None) { payloads =>
       val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-      Post("/api/0.1/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
@@ -42,7 +42,7 @@ class WebHookProcessorSpec extends ApiSpec {
   it("includes records if events modified them") { param =>
     testWebHook(param.api, None) { payloads =>
       val record = Record("testId", "testName", Map())
-      Post("/api/0.1/records", record) ~> param.api.routes ~> check {
+      Post("/v0/records", record) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
@@ -65,27 +65,27 @@ class WebHookProcessorSpec extends ApiSpec {
   it("does not duplicate records or aspect definitions") { param =>
     testWebHook(param.api, None) { payloads =>
       val a = AspectDefinition("A", "A", Some(JsObject()))
-      Post("/api/0.1/aspects", a) ~> param.api.routes ~> check {
+      Post("/v0/aspects", a) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
       val aModified = a.copy(name = "A modified")
-      Put("/api/0.1/aspects/A", aModified) ~> param.api.routes ~> check {
+      Put("/v0/aspects/A", aModified) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
       val record = Record("testId", "testName", Map())
-      Post("/api/0.1/records", record) ~> param.api.routes ~> check {
+      Post("/v0/records", record) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
       val modified = record.copy(name = "new name")
-      Put("/api/0.1/records/testId", modified) ~> param.api.routes ~> check {
+      Put("/v0/records/testId", modified) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
       val withAspect = modified.copy(aspects = Map("A" -> JsObject()))
-      Put("/api/0.1/records/testId", withAspect) ~> param.api.routes ~> check {
+      Put("/v0/records/testId", withAspect) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
@@ -122,7 +122,7 @@ class WebHookProcessorSpec extends ApiSpec {
             |            "type": "string",
             |            "links": [
             |                {
-            |                    "href": "/api/0.1/records/{$}",
+            |                    "href": "/api/v0/registry/records/{$}",
             |                    "rel": "item"
             |                }
             |            ]
@@ -131,17 +131,17 @@ class WebHookProcessorSpec extends ApiSpec {
             |}
           """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        Post("/api/0.1/aspects", a) ~> param.api.routes ~> check {
+        Post("/v0/aspects", a) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val dataset = Record("dataset", "dataset", Map())
-        Post("/api/0.1/records", dataset) ~> param.api.routes ~> check {
+        Post("/v0/records", dataset) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val distribution = Record("distribution", "distribution", Map())
-        Post("/api/0.1/records", distribution) ~> param.api.routes ~> check {
+        Post("/v0/records", distribution) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -157,7 +157,7 @@ class WebHookProcessorSpec extends ApiSpec {
         payloads.clear()
 
         val recordWithLink = dataset.copy(aspects = Map("A" -> JsObject("someLink" -> JsString("target"))))
-        Put("/api/0.1/records/dataset", recordWithLink) ~> param.api.routes ~> check {
+        Put("/v0/records/dataset", recordWithLink) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -204,7 +204,7 @@ class WebHookProcessorSpec extends ApiSpec {
     val server = createHookRoute(route)
 
     val hook = webHook.getOrElse(defaultWebHook).copy(url = "http://localhost:" + server.localAddress.getPort.toString)
-    Post("/api/0.1/hooks", hook) ~> api.routes ~> check {
+    Post("/v0/hooks", hook) ~> api.routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 

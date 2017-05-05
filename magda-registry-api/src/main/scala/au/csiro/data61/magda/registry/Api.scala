@@ -58,9 +58,9 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
   )
 
   case class DBsWithEnvSpecificConfig(configToUse: Config) extends DBs
-    with TypesafeConfigReader
-    with TypesafeConfig
-    with EnvPrefix {
+      with TypesafeConfigReader
+      with TypesafeConfig
+      with EnvPrefix {
 
     override val config = configToUse
   }
@@ -72,15 +72,15 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
-      pathPrefix("api" / "0.1") {
+      pathPrefix("v0") {
         path("ping") { complete("OK") } ~
-        pathPrefix("aspects") { new AspectsService(system, materializer).route } ~
-        pathPrefix("records") { new RecordsService(webHookActor, system, materializer).route } ~
-        pathPrefix("hooks") { new HooksService(system, materializer).route } ~
-        new SwaggerDocService("localhost", 9001, system).allRoutes
-      } ~
-      pathPrefix("swagger") {
-        getFromResourceDirectory("swagger") ~ pathSingleSlash(get(redirect("index.html", StatusCodes.PermanentRedirect)))
+          pathPrefix("aspects") { new AspectsService(system, materializer).route } ~
+          pathPrefix("records") { new RecordsService(webHookActor, system, materializer).route } ~
+          pathPrefix("hooks") { new HooksService(system, materializer).route } ~
+          new SwaggerDocService("localhost", 9001, system).allRoutes ~
+          pathPrefix("swagger") {
+            getFromResourceDirectory("swagger") ~ pathSingleSlash(get(redirect("index.html", StatusCodes.PermanentRedirect)))
+          }
       }
     }
   }

@@ -78,7 +78,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
 
         blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
 
-        Get(s"/datasets/search?query=*&limit=${allDataSets.size}") ~> searchApi.routes ~> check {
+        Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> searchApi.routes ~> check {
           status shouldBe OK
           val response = responseAs[SearchResult]
 

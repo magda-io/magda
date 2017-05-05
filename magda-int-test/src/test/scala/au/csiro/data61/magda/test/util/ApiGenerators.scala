@@ -98,7 +98,7 @@ object ApiGenerators {
   def dateToGen(implicit config: Config) = filterValueGen(periodOfTimeGen.map(_.end.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
 
   def queryIsSmallEnough(query: Query) = {
-    def textCount(input: String) = input.split("\\s\\.-").size
+    def textCount(input: String) = input.split("[\\s\\.-]").size
     def createCount(iterable: Iterable[Int]) = if (iterable.isEmpty) 0 else iterable.reduce(_ + _)
     def iterableTextCount(input: Iterable[String]) = createCount(input.map(textCount))
     def iterableTextCountFv(input: Iterable[FilterValue[String]]) = {
@@ -150,15 +150,6 @@ object ApiGenerators {
     dateTo = dateTo,
     formats = formats,
     regions = regions
-  )).suchThat(queryIsSmallEnough)
-
-  val specificBiasedQueryGen = (for {
-    publishers <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](publisherGen.flatMap(Gen.oneOf(_)).map(Specified.apply))
-    formats <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](formatGen.map(x => Specified(x._2)))
-  } yield Query(
-    freeText = Some("*"),
-    publishers = publishers,
-    formats = formats
   )).suchThat(queryIsSmallEnough)
 
   def unspecificQueryGen(implicit config: Config) = (for {

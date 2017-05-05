@@ -68,7 +68,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       it("should return all results") {
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
-            Get(s"/datasets/search?query=*&limit=${dataSets.length}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> routes ~> check {
               status shouldBe OK
               contentType shouldBe `application/json`
               val response = responseAs[SearchResult]
@@ -82,7 +82,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       it("hitCount should reflect all hits in the system, not just what is returned") {
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
-            Get(s"/datasets/search?query=*&limit=${dataSets.length / 2}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
 
@@ -122,7 +122,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(quoteGen) {
         case (dataSets, routes, quote, reverseOrderQuote, sourceDataSet) =>
           whenever(!dataSets.isEmpty && quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
-            Get(s"""/datasets/search?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
+            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
 
@@ -141,7 +141,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             }
 
             // Just to make sure we're matching on the quote in order, run it backwards.
-            Get(s"""/datasets/search?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
+            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
 
@@ -170,7 +170,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
           val (_, dataSets, routes) = indexTuple
           val (textQuery, query) = queryTuple
 
-          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
+          Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
             whenever(response.strategy.get == MatchAll) {
@@ -289,12 +289,14 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(query != Query() && query.formats.filter(_.isDefined).forall(!_.get.contains("  "))) {
-            response.strategy.get should be(MatchAll)
-            response.dataSets.isEmpty should be(false)
-            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            val queryFormats = query.formats.map(_.map(MagdaMatchers.extractAlphaNum))
+            withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
+              response.strategy.get should be(MatchAll)
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
 
             response.dataSets.foreach { dataSet =>
-              val queryFormats = query.formats.map(_.map(MagdaMatchers.extractAlphaNum))
 
               val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
                 case Some(format) => queryFormats.contains(Specified(MagdaMatchers.extractAlphaNum(format)))
@@ -387,22 +389,21 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
-            withClue("query " + query.publishers) {
+            val queryPublishers = query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))
+            withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
               response.strategy.get should be(MatchAll)
               response.dataSets.isEmpty should be(false)
               response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
 
-              response.dataSets.foreach { dataSet =>
-                val queryPublishers = query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))
+            response.dataSets.foreach { dataSet =>
+              val matchesQuery = dataSet.publisher.flatMap(_.name) match {
+                case Some(publisher) => queryPublishers.contains(Specified(MagdaMatchers.extractAlphaNum(publisher)))
+                case None            => queryPublishers.contains(Unspecified())
+              }
 
-                val matchesQuery = dataSet.publisher.flatMap(_.name) match {
-                  case Some(publisher) => queryPublishers.contains(Specified(MagdaMatchers.extractAlphaNum(publisher)))
-                  case None            => queryPublishers.contains(Unspecified())
-                }
-
-                withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
-                  matchesQuery should be(true)
-                }
+              withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
+                matchesQuery should be(true)
               }
             }
           }
@@ -417,10 +418,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             case None => Gen.const(Query())
             case Some(innerPublisher) =>
               for {
-                reducedPublisher <- ApiGenerators.partialStringGen(innerPublisher)
-                valid = ApiGenerators.validFilter(reducedPublisher)
+                reducedPublisher <- ApiGenerators.partialStringGen(innerPublisher).suchThat(ApiGenerators.validFilter(_))
                 query = Query(publishers = Set(Specified(reducedPublisher)))
-              } yield if (valid) query else Query()
+              } yield query
           }
         }
 
@@ -458,7 +458,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                 // I don't know why yet, FIXME
                 if (allDataSetPublisherTerms.exists(_.length == 1)) {
                   y should be > 0
-                } else { 
+                } else {
                   (y.toDouble / possibleQueryPublishers.size) should be >= 0.5
                 }
               }
@@ -513,7 +513,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     }
 
     def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
-      Get(s"/datasets/search?query=${encodeForUrl(query)}&limit=${dataSets.length}") ~> routes ~> check {
+      Get(s"/v0/datasets?query=${encodeForUrl(query)}&limit=${dataSets.length}") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
 
@@ -555,7 +555,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(gen) {
         case (indexName, dataSets, routes, start, limit) =>
           whenever(start >= 0 && start <= dataSets.size && limit >= 0 && limit <= dataSets.size) {
-            Get(s"/datasets/search?query=*&start=${start}&limit=${limit}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> routes ~> check {
               status shouldBe OK
               val result = responseAs[SearchResult]
 
@@ -616,7 +616,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         whenever(textQuery.trim.equals(textQuery) && !textQuery.contains("  ") &&
           !textQuery.toLowerCase.contains("or") && !textQuery.toLowerCase.contains("and")) {
 
-          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+          Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
             if (textQuery.equals("")) {
@@ -635,7 +635,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
-        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
           status shouldBe OK
           val response = responseAs[SearchResult]
 
@@ -725,7 +725,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         val (_, _, routes) = indexTuple
 
         whenever(!textQuery.contains("  ") && !query.equals(Query())) {
-          Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+          Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
             status shouldBe OK
 
             val response = responseAs[SearchResult]
@@ -739,7 +739,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(emptyIndexGen, Gen.listOf(arbitrary[String]).map(_.mkString(" "))) { (indexTuple, textQuery) =>
         val (_, _, routes) = indexTuple
 
-        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
           status shouldBe OK
         }
       }
@@ -754,7 +754,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(emptyIndexGen, queryTextGen) { (indexTuple, textQuery) =>
         val (_, _, routes) = indexTuple
 
-        Get(s"/datasets/search?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
           status shouldBe OK
         }
       }
