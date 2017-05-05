@@ -31,7 +31,7 @@ export function transferFailed(errorMessage: string): Action{
 
 export function fetchSearchResults(query: string): Store {
   return (dispatch: Dispatch)=>{
-    let url : string = config.searchApiBaseUrl + `datasets/search?query=${query}`;
+    let url : string = config.searchApiBaseUrl + `search/datasets?query=${query}`;
     dispatch(requestResults(query))
     return fetch(url)
     .then(response => {

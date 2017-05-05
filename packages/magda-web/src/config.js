@@ -5,8 +5,8 @@ import Temporal from './SearchFacets/Temporal';
 
 const config = {
         appName: "Australia open data search",
-        searchApiBaseUrl: 'http://magda-search-api.terria.io/',
-        registryUrl: 'http://localhost:6100/api/0.1/records/',
+        searchApiBaseUrl: 'http://104.199.180.124/api/v0/',
+        registryUrl: 'http://104.199.180.124/api/v0/registry/records/',
         facetListSize: 5,
         resultsPerPage: 10,
         descriptionLength: 50,
