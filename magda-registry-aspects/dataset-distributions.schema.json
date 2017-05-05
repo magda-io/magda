@@ -12,7 +12,7 @@
                 "type": "string",
                 "links": [
                     {
-                        "href": "api/v0/registry/records/{$}",
+                        "href": "/api/v0/registry/records/{$}",
                         "rel": "item"
                     }
                 ]

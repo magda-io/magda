@@ -499,13 +499,13 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           val propertyWithLinks = properties.map { case (propertyName, property) =>
             val linksInProperties = property.extract[JsValue]('links.? / filter { value =>
               val relPredicate = 'rel.is[String](_ == "item")
-              val hrefPredicate = 'href.is[String](_ == "/v0/records/{$}")
+              val hrefPredicate = 'href.is[String](_ == "/api/v0/registry/records/{$}")
               relPredicate(value) && hrefPredicate(value)
             })
 
             val linksInItems = property.extract[JsValue]('items.? / 'links.? / filter { value =>
               val relPredicate = 'rel.is[String](_ == "item")
-              val hrefPredicate = 'href.is[String](_ == "/v0/records/{$}")
+              val hrefPredicate = 'href.is[String](_ == "/api/v0/registry/records/{$}")
               relPredicate(value) && hrefPredicate(value)
             })
 
