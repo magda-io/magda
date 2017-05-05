@@ -1,3 +1,5 @@
+import getDateString from './getDateString';
+
 export function parseDistribution(record) {
   const id = record["id"];
   const title = record["name"];
@@ -6,11 +8,11 @@ export function parseDistribution(record) {
 
   const info = aspect["dcat-distribution-strings"] || {};
 
-  const format = info.format || "";
-  const downloadUrl = info.downloadURL || "";
-  const updatedDate = info.modified || "";
+  const format = info.format || "Unknown format";
+  const downloadUrl = info.downloadURL || "No downloads available";
+  const updatedDate = info.modified ? getDateString(info.modified) : "Unknown updated date";
   const license = info.license || "License restrictions unknown";
-  const description = info.description || "";
+  const description = info.description || "No description provided";
 
   return { id, title, description, format, downloadUrl, updatedDate, license }
 };
@@ -22,13 +24,13 @@ export function parseDataset(dataset) {
   const distribution = aspect["dataset-distributions"] || {};
   const distributions = distribution["distributions"] || [];
 
-  const description = datasetInfo.description || '';
-  const publisher = datasetInfo.publisher || '';
+  const description = datasetInfo.description || 'No description provided';
+  const publisher = datasetInfo.publisher || 'Unknown publisher';
   const tags = datasetInfo.keywords || [];
   const landingPage = datasetInfo.landingPage;
   const title = datasetInfo.title;
-  const issuedDate= datasetInfo.issued;
-  const updatedDate = datasetInfo.modified;
+  const issuedDate= datasetInfo.issued || 'Unknown issued date';
+  const updatedDate = datasetInfo.modified ? getDateString(datasetInfo.modified) : 'Unknown updated date';
 
   const source = distributions.map(d=> {
       const distributionAspects = d["aspects"] || {};
@@ -37,7 +39,7 @@ export function parseDataset(dataset) {
       return {
           id: d["id"] || "",
           downloadUrl: info.downloadURL || "No download url provided",
-          format: info.format || "unknown format",
+          format: info.format || "Unknown format",
           license: (!info.license || info.license === "notspecified") ? "License restrictions unknown" : info.license,
           title: info.title || "",
           description: info.description || "No description provided"

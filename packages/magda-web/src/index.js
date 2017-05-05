@@ -35,14 +35,14 @@ const store = createStore(
    )
 )
 
-browserHistory.listen (location=>{
+hashHistory.listen (location=>{
   window.ga('set', 'location', document.location);
   window.ga('send', 'pageview');  
 })
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={browserHistory}>
+    <Router history={hashHistory}>
       <Route path={baseurl} component={AppContainer}>
         <IndexRoute component={Home}/>
         <Route path="search" component={Search} />

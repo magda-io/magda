@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 
 class ResourcetMap extends Component {
   render(){
-    return <div className="dataset-details" >
+    return <div className="dataset-details container" >
                 <h2>Map</h2>
           </div>
   }

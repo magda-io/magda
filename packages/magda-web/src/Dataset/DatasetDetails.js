@@ -7,7 +7,6 @@ import { connect } from "react-redux";
 import './DatasetDetails.css';
 class DatasetDetails extends Component {
   renderDistribution(distribution, datasetId){
-    debugger
     return <div className="" key={distribution.id}>
               <h4><Link to={`/dataset/${datasetId}/distribution/${distribution.id}`}>{distribution.title}({distribution.format})</Link></h4>
               <div>{distribution.description}</div>

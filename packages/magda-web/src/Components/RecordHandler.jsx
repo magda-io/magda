@@ -43,7 +43,7 @@ class RecordHandler extends React.Component {
               </ul>
                 <h1>{this.props.distribution.title}</h1>
                 <a>{this.props.distribution.downloadUrl}</a>
-                <div>{this.props.distribution.updatedDate}</div>
+                <div>Updated {this.props.distribution.updatedDate}</div>
                 <Tabs list = {config.distributionTabList} baseUrl = {`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
             </div>
             <div className="tab-content">{this.props.children}</div>
@@ -55,7 +55,7 @@ class RecordHandler extends React.Component {
           <div className="container">
             <h1>{this.props.dataset.title}</h1>
             <a>{this.props.dataset.landingPage}</a>
-            <div>{this.props.dataset.updatedDate}</div>
+            <div>Updated {this.props.dataset.updatedDate}</div>
           </div>
           <Tabs list = {config.datasetTabList} baseUrl = {`/dataset/${this.props.params.datasetId}`}/>
           <div className="tab-content">{this.props.children}</div>
