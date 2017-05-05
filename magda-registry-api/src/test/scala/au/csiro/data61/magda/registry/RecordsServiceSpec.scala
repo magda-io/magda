@@ -255,7 +255,7 @@ class RecordsServiceSpec extends ApiSpec {
             |            "type": "string",
             |            "links": [
             |                {
-            |                    "href": "/v0/records/{$}",
+            |                    "href": "/api/v0/registry/records/{$}",
             |                    "rel": "item"
             |                }
             |            ]
@@ -324,7 +324,7 @@ class RecordsServiceSpec extends ApiSpec {
             |                "type": "string",
             |                "links": [
             |                    {
-            |                        "href": "/v0/records/{$}",
+            |                        "href": "/api/v0/registry/records/{$}",
             |                        "rel": "item"
             |                    }
             |                ]
