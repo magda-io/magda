@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './MatchingStatus.css';
 
 export default class MatchingStatus extends Component {
   render(){
