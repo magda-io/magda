@@ -32,13 +32,13 @@ export default class Registry {
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
 
-        const registryApiUrl = this.baseUrl.clone().segment('v0').toString();
+        const registryApiUrl = this.baseUrl.toString();
         this.aspectDefinitionsApi = new AspectDefinitionsApi(registryApiUrl);
         this.recordsApi = new RecordsApi(registryApiUrl);
     }
 
     getRecordUrl(id: string): string {
-        return this.baseUrl.clone().segment('v0/records').segment(id).toString();
+        return this.baseUrl.clone().segment('records').segment(id).toString();
     }
 
     putAspectDefinition(aspectDefinition: AspectDefinition): Promise<AspectDefinition | Error> {

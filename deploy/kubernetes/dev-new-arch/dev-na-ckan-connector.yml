@@ -10,6 +10,7 @@ spec:
       containers:
       - name: ckan-connector
         image: data61/magda-ckan-connector:${version}
+        imagePullPolicy: Always
         resources:
           requests:
             cpu: 0m
