@@ -18,5 +18,5 @@ spec:
                 cpu: 0m
             env:
             - name: "REGISTRY_URL"
-              value: "http://registry-api"
+              value: "http://registry-api/v0"
           restartPolicy: OnFailure
