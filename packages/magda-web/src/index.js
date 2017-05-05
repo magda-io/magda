@@ -23,7 +23,7 @@ import DistributionDetails from './Dataset/DistributionDetails';
 import DistributionMap from './Dataset/DistributionMap';
 import DistributionChart from './Dataset/DistributionChart';
 
-let baseurl = "/";
+let baseurl = location.pathname;
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
 
@@ -42,7 +42,7 @@ browserHistory.listen (location=>{
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={hashHistory}>
+    <Router history={browserHistory}>
       <Route path={baseurl} component={AppContainer}>
         <IndexRoute component={Home}/>
         <Route path="search" component={Search} />
