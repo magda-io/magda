@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
+import TemporalAspectViewer from '../UI/TemporalAspectViewer';
+import SpatialAspectViewer from '../UI/SpatialAspectViewer';
+import CustomIcons from '../UI/CustomIcons';
 import Star from '../UI/Star';
 import { Link } from 'react-router';
 import { connect } from "react-redux";
@@ -21,10 +24,13 @@ class DatasetDetails extends Component {
 
   }
   renderDistribution(distribution, datasetId){
-    return <div className="" key={distribution.id}>
-              <h4><Link to={`/dataset/${datasetId}/distribution/${distribution.id}`}>{distribution.title}({distribution.format})</Link></h4>
-              <div>{distribution.description}</div>
-              <div>{distribution.license}</div>
+    return <div className="media" key={distribution.id}>
+              {<div className="media-left"> <CustomIcons className="media-object" name={distribution.format}/></div>}
+              <div className="media-body">
+                <h3><Link to={`/dataset/${datasetId}/distribution/${distribution.id}`}>{distribution.title}({distribution.format})</Link></h3>
+                <div>{distribution.description}</div>
+                <div>{distribution.license}</div>
+              </div>
             </div>
   }
 
@@ -35,18 +41,26 @@ class DatasetDetails extends Component {
               <div className="row">
                 <div className='dataset-details__body col-sm-9'>
                   <div className='dataset-details-overview'>
-                    <h4>Overview</h4>
+                    <h3>Overview</h3>
                     <div className="white-box">
                       {dataset.description && <MarkdownViewer markdown={dataset.description} stripped={!this.state.isExpanded}/>}
-                      <button onClick={this.toggleExpand} className="overview-toggle btn btn-reset"><i className="fa fa-chevron-down" aria-hidden="true"></i></button>
+                      <button onClick={this.toggleExpand} className="overview-toggle btn btn-reset"><i className={`fa fa-chevron-${this.state.isExpanded ? "up" : "down"}`} aria-hidden="true"></i></button>
                     </div>
                   </div>
 
                   <div className='dataset-details-source'>
-                      <h4>Data and APIs</h4>
+                      <h3>Data and APIs</h3>
                       <div className="white-box">{
                         dataset.source && dataset.source.map(s=> this.renderDistribution(s, datasetId))
                       }</div>
+                  </div>
+                  <div className="dataset-details-spatial-coverage">
+                      <h3>Spatial coverage</h3>
+                      <SpatialAspectViewer/>
+                  </div>
+                  <div className="dataset-details-temporal-coverage">
+                      <h3>Temporal coverage</h3>
+                      <TemporalAspectViewer/>
                   </div>
               </div>
 

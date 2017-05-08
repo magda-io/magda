@@ -70,14 +70,14 @@
 
 .dataset-summary__header-top .star-btn{
   padding: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 
 .dataset-summary__title-group{
   width: calc(100% - 60px);
   .star__btn{
     padding: 1px;
-    font-size: 1.2em;
+    font-size: 1.125rem
   }
 }
 
@@ -88,7 +88,7 @@
   color: #2980B9;
   font-weight: 600;
   padding: 0;
-  font-size: 1.2em;
+  font-size: 1.125rem;
   white-space: normal;
   text-align: left;
   padding-right: 5px;
@@ -98,7 +98,7 @@
 .dataset-summary__middle{
     margin-top: 15px;
     .fa {
-        font-size: 1.2em;
+        font-size: 1.125rem;
         color: #bbb;
         &:hover, &:focus{
             color: $magda-blue;

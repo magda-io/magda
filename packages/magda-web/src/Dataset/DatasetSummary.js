@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
+import CustomIcons from '../UI/CustomIcons';
 import Star from '../UI/Star';
 import ToggleList from '../UI/ToggleList';
 import './DatasetSummary.css';
@@ -23,14 +24,6 @@ export default class DatasetSummary extends Component {
     this.props.onClickTag(tag);
   }
 
-  getIcon(format){
-    let fileTypes = ['Default', 'CSV', 'DOC', 'DOCX', 'HTML', 'JSON', 'KML', 'PDF', 'TXT', 'XLS','XLSX', 'ZIP'];
-    let type = 0;
-    if(fileTypes.indexOf(format) > 0){
-      type = fileTypes.indexOf(format)
-    }
-    return `./assets/file-icons/${fileTypes[type]}.png`;
-  }
 
   onClickStar(){
     this.setState({
@@ -41,7 +34,7 @@ export default class DatasetSummary extends Component {
   renderDownloadLink(d){
     return <div className={`dataset-summary__media clearfix ${d.format}`}>
             <div className='dataset-summary__media-left'>
-              <img src={this.getIcon(d.format)} alt={d.format} className='dataset-summary__media-object'/>
+              {<CustomIcons name={d.format}/>}
             </div>
             <div className="dataset-summary__media-body">
              <a className='dataset-summary__media-heading' href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
