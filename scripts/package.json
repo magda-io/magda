@@ -1,5 +1,5 @@
 {
-  "name": "magda-scripts",
+  "name": "@magda/scripts",
   "version": "1.0.0",
   "description": "Scripts for building, running, and deploying MAGDA",
   "scripts": {
@@ -10,5 +10,8 @@
   "dependencies": {
     "fs-extra": "^2.1.2",
     "tmp": "0.0.31"
+  },
+  "bin": {
+      "generate-registry-typescript": "generate-registry-typescript.js"
   }
 }

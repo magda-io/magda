@@ -1,9 +1,9 @@
 {
-  "name": "magda-ckan-connector",
+  "name": "@magda/ckan-connector",
   "description": "MAGDA CKAN Connector",
   "main": "index.js",
   "scripts": {
-    "generate": "node ../scripts/generate-registry-typescript ./src/generated/registry",
+    "generate": "generate-registry-typescript ./src/generated/registry",
     "compile": "tsc",
     "copySchemas": "mkdir -p bin && mkdir -p bin/registry-aspects && cp -r ../magda-registry-aspects/* ./bin/registry-aspects",
     "build": "npm run copySchemas && npm run generate && npm run compile",
@@ -14,6 +14,8 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@magda/scripts": "^1.0.0",
+    "@magda/registry-aspects": "^1.0.0",
     "@types/node": "^7.0.5",
     "@types/request": "0.0.39",
     "@types/urijs": "^1.15.31",
