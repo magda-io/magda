@@ -39,6 +39,7 @@ lazy val intTest = (project in file("magda-int-test"))
   .settings(commonSettings: _*)
   .dependsOn(indexer)
   .dependsOn(searchApi)
+  .dependsOn(registryApi % "test->test;compile->compile")
 
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true

@@ -54,7 +54,7 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implementation: CSW
   def getDataSets(start: Long = 0, number: Int = 10): Future[List[DataSet]] = {
     val query = s"""csw?service=CSW&version=2.0.2&request=GetRecords&constraintlanguage=FILTER&resultType=results&elementsetname=full&outputschema=${implementation.schema}&typeNames=${implementation.typeName}&startPosition=${start + 1}&maxRecords=$number""";
 
-    fetcher.request(query).flatMap { response =>
+    fetcher.get(query).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[NodeSeq].map(implementation.responseConv(_))
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
@@ -69,7 +69,7 @@ class CSWExternalInterface(interfaceConfig: InterfaceConfig, implementation: CSW
   def getTotalDataSetCount(): Future[Long] = {
     val query = s"""csw?service=CSW&version=2.0.2&request=GetRecords&constraintlanguage=FILTER&typeNames=${implementation.typeName}&maxRecords=1""";
 
-    fetcher.request(query).flatMap { response =>
+    fetcher.get(query).flatMap { response =>
       response.status match {
         case OK =>
           val future = Unmarshal(response.entity).to[NodeSeq]

@@ -7,23 +7,25 @@ import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.stream.scaladsl._
 import au.csiro.data61.magda.util.Http.getPort
+import akka.http.scaladsl.marshalling.ToEntityMarshaller
 
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.Try
 
 class HttpFetcher(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem,
                   implicit val materializer: Materializer, implicit val ec: ExecutionContext) {
 
-  lazy val connectionFlow = {
+  lazy val connectionFlow : Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
     val host = interfaceConfig.baseUrl.getHost
     val port = getPort(interfaceConfig.baseUrl)
-    
+
     interfaceConfig.baseUrl.getProtocol match {
       case "http"  => Http().cachedHostConnectionPool[Int](host, port)
       case "https" => Http().cachedHostConnectionPoolHttps[Int](host, port)
     }
   }
 
-  def request(path: String): Future[HttpResponse] =
+  def get(path: String): Future[HttpResponse] =
     interfaceConfig.fakeConfig match {
       case Some(fakeConfig) => Future {
         val file = scala.io.Source.fromInputStream(getClass.getResourceAsStream(fakeConfig.datasetPath))
@@ -51,4 +53,13 @@ class HttpFetcher(interfaceConfig: InterfaceConfig, implicit val system: ActorSy
         }
       }
     }
+
+  def post[T](path: String, payload: T)(implicit m: ToEntityMarshaller[T]): Future[HttpResponse] = {
+    val url = s"${interfaceConfig.baseUrl.getPath}${path}"
+    system.log.debug("Making request to {}{} with {}", interfaceConfig.baseUrl.getHost, url, payload)
+    val request = RequestBuilding.Post(url, payload)
+    Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
+      case (response, _) => response.get
+    }
+  }
 }
