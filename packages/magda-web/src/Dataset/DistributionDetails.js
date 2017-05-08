@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { connect } from "react-redux";
 
 class DistributionDetails extends Component {
+  
   render(){
     return <div className="dataset-details container" >
                 <h2>{this.props.distribution.description}</h2>

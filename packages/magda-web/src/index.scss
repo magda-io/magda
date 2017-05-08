@@ -1,3 +1,4 @@
+@import "variables";
 body {
   margin: 0;
   padding: 0;
@@ -29,12 +30,12 @@ body {
 }
 
 .prototype-warning{
-  background-color: #3498db;
+  background-color: $magda-blue;
   color: #fff;
   padding: 5px;
   text-align: center;
   a{
-    color: #2c3e50;
+    color: $magda-dark-blue;
     font-weight: 800;
   }
 }

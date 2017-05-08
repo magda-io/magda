@@ -6,6 +6,20 @@ import { Link } from 'react-router';
 import { connect } from "react-redux";
 import './DatasetDetails.css';
 class DatasetDetails extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      isExpanded: false
+    }
+    this.toggleExpand = this.toggleExpand.bind(this);
+  }
+
+  toggleExpand(){
+    this.setState({
+      isExpanded: !this.state.isExpanded
+    })
+
+  }
   renderDistribution(distribution, datasetId){
     return <div className="" key={distribution.id}>
               <h4><Link to={`/dataset/${datasetId}/distribution/${distribution.id}`}>{distribution.title}({distribution.format})</Link></h4>
@@ -22,7 +36,10 @@ class DatasetDetails extends Component {
                 <div className='dataset-details__body col-sm-9'>
                   <div className='dataset-details-overview'>
                     <h4>Overview</h4>
-                    <div className="white-box">{dataset.description && <MarkdownViewer markdown={dataset.description}/>}</div>
+                    <div className="white-box">
+                      {dataset.description && <MarkdownViewer markdown={dataset.description} stripped={!this.state.isExpanded}/>}
+                      <button onClick={this.toggleExpand} className="overview-toggle btn btn-reset"><i className="fa fa-chevron-down" aria-hidden="true"></i></button>
+                    </div>
                   </div>
 
                   <div className='dataset-details-source'>

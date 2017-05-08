@@ -11,7 +11,7 @@
   width: auto;
   vertical-align: baseline;
   font-style: italic;
-  color: #3498DB; }
+  color: $magda-blue; }
 
 .search-recomendation__option-btn:hover,
 .search-recomendation__more-option-btn:hover,
@@ -47,7 +47,7 @@
   text-decoration: underline; }
 
 .btn-suggested-option.is-active {
-  color: #3498db; }
+  color: $magda-blue; }
 
 .btn-suggested-option.is-active:after {
   content: '\f00d';
