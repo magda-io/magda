@@ -32,12 +32,12 @@ export default class DatasetSummary extends Component {
   }
 
   renderDownloadLink(d){
-    return <div className={`dataset-summary__media clearfix ${d.format}`}>
-            <div className='dataset-summary__media-left'>
+    return <div className={`media clearfix ${d.format}`}>
+            <div className='media-left'>
               {<CustomIcons name={d.format}/>}
             </div>
-            <div className="dataset-summary__media-body">
-             <a className='dataset-summary__media-heading' href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
+            <div className="media-body">
+             <a className='media-heading' href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
              <div className='dataset-summary__license'>{defined(d.license) && d.license.name}</div>
             </div>
           </div>
