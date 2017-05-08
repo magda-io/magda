@@ -5,6 +5,7 @@
     "magda-indexer/",
     "magda-int-test/",
     "magda-registry-api/",
+    "magda-registry-aspects/",
     "magda-registry-datastore/",
     "magda-reverse-proxy/",
     "magda-scala-common/",
