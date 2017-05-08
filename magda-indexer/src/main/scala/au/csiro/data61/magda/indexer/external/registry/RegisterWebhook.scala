@@ -9,22 +9,32 @@ import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.Registry.{ WebHook, EventType, WebHookConfig }
 
 object RegisterWebhook {
-  def registerWebhook(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
-    val interface = new RegistryExternalInterface(interfaceConfig)
+  def registerWebhook(interface: RegistryExternalInterface)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
+    new WebhookRegisterer(interface).registerWebhook
 
-    registerWebhook(interface)
+  def registerWebhook(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
+    new WebhookRegisterer(interfaceConfig).registerWebhook()
+}
+
+private class WebhookRegisterer(interface: RegistryExternalInterface)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) {
+  def this(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
+    this(new RegistryExternalInterface(interfaceConfig))
   }
 
-  def registerWebhook(interface: RegistryExternalInterface)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
+  def registerWebhook(): Future[Unit] = {
     interface.getWebhooks().map { webHooks =>
       webHooks.find(hook => hook.url == config.getString("registry.webhookUrl"))
     } flatMap {
-      case Some(hook) => Future(Unit) //all good
-      case None       => registerIndexerWebhook(interface)
+      case Some(hook) =>
+        system.log.info("Registry webhook is already in place, no need to add one")
+        Future(Unit) //all good
+      case None =>
+        system.log.info("No registry webhook for the indexer - adding one")
+        registerIndexerWebhook()
     }
   }
 
-  def registerIndexerWebhook(interface: RegistryExternalInterface)(implicit ec: ExecutionContext, config: Config): Future[Unit] = {
+  private def registerIndexerWebhook(): Future[Unit] = {
     val webhook = WebHook(
       name = "Indexer",
       eventTypes = Set(
@@ -51,6 +61,14 @@ object RegisterWebhook {
       active = true
     )
 
-    interface.addWebhook(webhook).map(_ => Unit)
+    interface.addWebhook(webhook).map { _ =>
+      system.log.info("Successfully added webhook")
+
+      Unit
+    }.recover {
+      case e: Throwable =>
+        system.log.error(e, "Failed to add webhook")
+        throw e
+    }.map(_ => Unit)
   }
 }

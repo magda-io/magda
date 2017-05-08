@@ -45,7 +45,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
         val hooks = responseAs[Seq[WebHook]]
 
         hooks.size should equal(1)
-        hooks.head.url should equal("http://indexer/registry-hook")
+        hooks.head.url should equal(config.getString("registry.webhookUrl"))
       }
     }
   }

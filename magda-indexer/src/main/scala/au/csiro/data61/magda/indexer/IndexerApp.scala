@@ -48,6 +48,7 @@ object IndexerApp extends App {
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
   val crawler = Crawler(interfaceConfigs.values.toSeq.map(ExternalInterface(_)))
 
+  println(config.getBoolean("registry.registerForWebhooks"))
   if (config.getBoolean("registry.registerForWebhooks")) {
     val registryConfig = interfaceConfigs("registry")
     
