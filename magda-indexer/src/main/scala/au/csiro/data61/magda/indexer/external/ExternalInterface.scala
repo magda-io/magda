@@ -20,7 +20,7 @@ object ExternalInterface {
     interfaceConfig.interfaceType match {
       case "CKAN" => new CKANExternalInterface(interfaceConfig, config, system, executor, materializer)
       case "CSW"  => CSWExternalInterface(interfaceConfig)
-      case "MAGDA"  => new RegistryExternalInterface(interfaceConfig, config, system, executor, materializer)
+      case "MAGDA"  => new RegistryExternalInterface(interfaceConfig)(config, system, executor, materializer)
       case _      => throw new RuntimeException(s"Could not find interface implementation for ${interfaceConfig.interfaceType}")
     }
 }

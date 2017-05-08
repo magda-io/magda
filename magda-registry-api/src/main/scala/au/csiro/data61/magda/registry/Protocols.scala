@@ -22,7 +22,5 @@ trait Protocols extends DefaultJsonProtocol with DiffsonProtocol with au.csiro.d
   implicit val recordsPageFormat = jsonFormat3(RecordsPage.apply)
   implicit val recordSummariesPageFormat = jsonFormat3(RecordSummariesPage.apply)
   implicit val deleteResultFormat = jsonFormat1(DeleteResult.apply)
-  implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
-  implicit val webHookFormat = jsonFormat8(WebHook.apply)
   implicit val eventsPageFormat = jsonFormat3(EventsPage.apply)
 }

@@ -25,6 +25,7 @@ import au.csiro.data61.magda.indexer.external.ExternalInterface
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import akka.http.scaladsl.Http
 import scala.concurrent.duration._
+import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
 
 object IndexerApp extends App {
   implicit val system = ActorSystem()
@@ -47,8 +48,13 @@ object IndexerApp extends App {
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
   val crawler = Crawler(interfaceConfigs.values.toSeq.map(ExternalInterface(_)))
 
+  if (config.getBoolean("registry.registerForWebhooks")) {
+    val registryConfig = interfaceConfigs("registry")
+    
+    RegisterWebhook.registerWebhook(registryConfig)
+  }
+  
   val api = new IndexerApi(crawler, indexer)
-
   Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
 }
 
