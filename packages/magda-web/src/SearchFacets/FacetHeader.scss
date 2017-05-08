@@ -5,4 +5,8 @@
   overflow: hidden;
   border-radius: 15px;
   background: $magda-grey;
+  text-align: left;
+  .caret{
+    margin-left: 3px;
+  }
 }

@@ -20,9 +20,9 @@ class FacetHeader extends Component {
         if( !this.props.activeOptions || this.props.activeOptions.length === 0 || !this.props.activeOptions[0] ||(this.props.title === "location" && !this.props.activeOptions[0].regionType)){
           return <span>{"Any " + this.props.title}</span>;
         } else if(this.props.activeOptions.length === 1){
-          return <span>{this.props.activeOptions[0].value || this.props.activeOptions[0].regionType + ": " + this.props.activeOptions[0].regionName}<span className="caret"></span> </span>;
+          return <span>{this.props.activeOptions[0].value || this.props.activeOptions[0].regionType + ": " + this.props.activeOptions[0].regionName} </span>;
         } else{
-          return <span>{this.props.title + ": " + this.props.activeOptions.length} <span className="caret"></span> </span>
+          return <span>{this.props.title + ": " + this.props.activeOptions.length}  </span>
         }
     }
   }
@@ -30,7 +30,7 @@ class FacetHeader extends Component {
   render(){
     return (
       <div className='facet-header'>
-        <button className='facet-header__title btn' onClick={this.props.onClick}>{this.calculateTitle()}</button>
+        <button className='facet-header__title btn' onClick={this.props.onClick}>{this.calculateTitle()}<span className="caret"></span></button>
       </div>
       );
   }
