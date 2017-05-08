@@ -9,9 +9,11 @@
   "license": "Apache-2.0",
   "dependencies": {
     "fs-extra": "^2.1.2",
-    "tmp": "0.0.31"
+    "tmp": "0.0.31",
+    "yargs": "^8.0.1"
   },
   "bin": {
-      "generate-registry-typescript": "generate-registry-typescript.js"
+    "generate-registry-typescript": "generate-registry-typescript.js",
+    "create-docker-context-for-node-component": "create-docker-context-for-node-component.js"
   }
 }
