@@ -6,6 +6,7 @@ import Tabs from '../UI/Tabs';
 import {config} from '../config';
 import { Link } from 'react-router';
 import NotFoundHandler from '../Components/NotFoundHandler';
+import CustomIcons from '../UI/CustomIcons';
 
 class RecordHandler extends React.Component {
   componentWillMount(){
@@ -41,9 +42,16 @@ class RecordHandler extends React.Component {
                 <li className="breadcrumb-item"><Link to="#">Home</Link></li>
                 <li className="breadcrumb-item"><Link to={`/dataset/${this.props.params.datasetId}`}>Dataset</Link></li>
               </ul>
-                <h1>{this.props.distribution.title}</h1>
-                <a>{this.props.distribution.downloadUrl}</a>
-                <div>Updated {this.props.distribution.updatedDate}</div>
+              <div className="media">
+                <div className="media-left">
+                  <CustomIcons/>
+                </div>
+                <div className="media-body">
+                  <h1>{this.props.distribution.title}</h1>
+                  <a>{this.props.distribution.downloadUrl}</a>
+                  <div>Updated {this.props.distribution.updatedDate}</div>
+                </div>
+              </div>
                 <Tabs list = {config.distributionTabList} baseUrl = {`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
             </div>
             <div className="tab-content">{this.props.children}</div>
@@ -52,10 +60,15 @@ class RecordHandler extends React.Component {
     }
     return (
       <div>
-          <div className="container">
-            <h1>{this.props.dataset.title}</h1>
-            <a>{this.props.dataset.landingPage}</a>
-            <div>Updated {this.props.dataset.updatedDate}</div>
+          <div className="container media">
+            <div className="media-left">
+              <CustomIcons/>
+            </div>
+             <div className="media-body">
+                <h1>{this.props.dataset.title}</h1>
+                <a>{this.props.dataset.landingPage}</a>
+                <div>Updated {this.props.dataset.updatedDate}</div>
+            </div>
           </div>
           <Tabs list = {config.datasetTabList} baseUrl = {`/dataset/${this.props.params.datasetId}`}/>
           <div className="tab-content">{this.props.children}</div>

@@ -40,6 +40,7 @@ class Publisher extends Component {
   }
 
   render() {
+    debugger
     switch (this.props.component) {
       case 'facet':
         return (
@@ -52,6 +53,8 @@ class Publisher extends Component {
                       onToggleOption={this.onTogglePublisherOption}
                       onResetFacet={this.onResetPublisherFacet}
                       searchFacet={this.onSearchPublisherFacet}
+                      toggleFacet={this.props.toggleFacet}
+                      isOpen={this.props.isOpen}
           />
         );
       case 'recommendations':
@@ -72,7 +75,9 @@ Publisher.propTypes = {
   publisherOptions: React.PropTypes.array.isRequired,
   activePublishers: React.PropTypes.array.isRequired,
   publisherSearchResults: React.PropTypes.array.isRequired,
-  updateQuery: React.PropTypes.func.isRequired
+  updateQuery: React.PropTypes.func.isRequired,
+  toggleFacet: React.PropTypes.func,
+  isOpen: React.PropTypes.bool,
 }
 
 

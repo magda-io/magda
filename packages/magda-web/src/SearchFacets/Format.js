@@ -52,6 +52,8 @@ class Format extends Component {
                       onToggleOption={this.onToggleFormatOption}
                       onResetFacet={this.onResetFormatFacet}
                       searchFacet={this.onSearchFormatFacet}
+                      toggleFacet={this.props.toggleFacet}
+                      isOpen={this.props.isOpen}
           />
         );
       case 'recommendations':
@@ -72,7 +74,9 @@ Format.propTypes = {
   formatOptions: React.PropTypes.array.isRequired,
   activeFormats: React.PropTypes.array.isRequired,
   formatSearchResults: React.PropTypes.array.isRequired,
-  updateQuery: React.PropTypes.func.isRequired
+  updateQuery: React.PropTypes.func.isRequired,
+  toggleFacet: React.PropTypes.func.isRequired,
+  isOpen: React.PropTypes.bool.isRequired,
 }
 
 

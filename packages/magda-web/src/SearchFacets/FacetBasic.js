@@ -13,10 +13,8 @@ class FacetBasic extends Component {
     super(props);
     this.renderOption=this.renderOption.bind(this);
     this.toggleExpand= this.toggleExpand.bind(this);
-    this.onToggleOpen = this.onToggleOpen.bind(this);
     this.state = {
       isExpanded: false,
-      isOpen: false
     }
   }
 /**
@@ -35,14 +33,7 @@ class FacetBasic extends Component {
      })
    }
 
-   /**
-    * expand the list (reacting to show more less button )
-    */
-   onToggleOpen(){
-     this.setState({
-       isOpen: !this.state.isOpen
-     })
-   }
+
 
 /**
  * generate the html for a option of this filter
@@ -105,8 +96,8 @@ class FacetBasic extends Component {
                      title={this.props.title}
                      activeOptions={this.props.activeOptions}
                      hasQuery={this.props.hasQuery}
-                     onClick={this.onToggleOpen}/>
-                {this.state.isOpen && this.renderBox()}
+                     onClick={this.props.toggleFacet}/>
+                {this.props.isOpen && this.renderBox()}
            </div>
   }
 }
