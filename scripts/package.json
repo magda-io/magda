@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "1.0.0",
+  "version": "0.0.26-SNAPSHOT",
   "description": "Scripts for building, running, and deploying MAGDA",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
