@@ -40,7 +40,6 @@ class Publisher extends Component {
   }
 
   render() {
-    debugger
     switch (this.props.component) {
       case 'facet':
         return (

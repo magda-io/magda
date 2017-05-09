@@ -24,7 +24,7 @@ export function receiveRegionMapping(json: Object): Action{
 export function fetchRegionMapping() {
   return (dispatch: Function)=>{
     dispatch(requestRegionMapping())
-    return fetch(config.searchApiBaseUrl + 'region-types')
+    return fetch(config.searchApiBaseUrl + 'search/region-types')
     .then(response => response.json())
     .then((json: FacetSearchJson) =>
       dispatch(receiveRegionMapping(json))

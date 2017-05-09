@@ -7,10 +7,22 @@ class SearchFacets extends Component {
     super(props);
     this.state = {openFacet : null};
     this.toggleFacet = this.toggleFacet.bind(this);
+    this.closeFacet = this.closeFacet.bind(this);
   }
 
+  componentWillMount(){
+    const that = this;
+    window.addEventListener("click", that.closeFacet)
+  }
+
+  closeFacet(){
+    this.setState({
+      openFacet: null
+    })
+  }
+  
+
   toggleFacet(facet){
-    debugger
     this.setState({
       openFacet: this.state.openFacet === facet ? null : facet
     })
@@ -20,7 +32,7 @@ class SearchFacets extends Component {
     return (
       <div className="row search-facets">
         {config.facets.map(c=>
-          <div className="col-sm-3 search-facet" key={c.id}>
+          <div className="col-sm-3 search-facet" key={c.id} onClick={(ev)=>ev.stopPropagation()}>
             <c.component 
                        updateQuery={this.props.updateQuery}
                        location={this.props.location}

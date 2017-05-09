@@ -18,7 +18,6 @@ class FacetRegion extends Component {
         super(props);
         this.renderOption = this.renderOption.bind(this);
         this.onToggleOption = this.onToggleOption.bind(this);
-        this.onToggleOpen = this.onToggleOpen.bind(this);
         this.onFeatureClick = this.onFeatureClick.bind(this);
         this.selectRegionType = this.selectRegionType.bind(this);
 
@@ -27,7 +26,6 @@ class FacetRegion extends Component {
          * @property {boolean} popUpIsOpen whether the popup window that shows the bigger map is open or not
          */
         this.state = {
-            isOpen: false,
             _activeRegion: {
                regionId: undefined,
                regionType: undefined
@@ -42,13 +40,6 @@ class FacetRegion extends Component {
             })
         }
     }
-
-    onToggleOpen(){
-     this.setState({
-       isOpen: !this.state.isOpen
-     })
-   }
-
 
     onToggleOption(option){
         this.props.onToggleOption(parseRegion(option));
@@ -152,8 +143,8 @@ class FacetRegion extends Component {
                      title={this.props.title}
                      activeOptions={[this.props.activeRegion]}
                      hasQuery={this.props.hasQuery}
-                     onClick={this.onToggleOpen}/>
-                 {this.state.isOpen && this.renderBox()}
+                     onClick={this.props.toggleFacet}/>
+                 {this.props.isOpen && this.renderBox()}
           </div>
 
       );

@@ -49,6 +49,8 @@ class Region extends Component {
                     onResetFacet={this.onResetRegionFacet}
                     searchFacet={this.onSearchRegionFacet}
                     regionMapping={this.props.regionMapping}
+                    toggleFacet={this.props.toggleFacet}
+                    isOpen={this.props.isOpen}
       />
     );
   }
@@ -58,7 +60,9 @@ Region.propTypes = {
   activeRegions: React.PropTypes.object,
   regionSearchResults: React.PropTypes.array.isRequired,
   updateQuery: React.PropTypes.func.isRequired,
-  regionMapping: React.PropTypes.object
+  regionMapping: React.PropTypes.object,
+  toggleFacet: React.PropTypes.func,
+  isOpen: React.PropTypes.bool,
 }
 
 

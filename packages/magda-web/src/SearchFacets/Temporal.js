@@ -43,6 +43,8 @@ class Temporal extends Component {
                     activeDates={[this.props.activeDateFrom, this.props.activeDateTo]}
                     onToggleOption={this.onToggleTemporalOption}
                     onResetFacet={this.onResetTemporalFacet}
+                    toggleFacet={this.props.toggleFacet}
+                    isOpen={this.props.isOpen}
       />
     );
   }
@@ -52,7 +54,9 @@ Temporal.propTypes = {
   temporalOptions: React.PropTypes.array,
   activeDateFrom: React.PropTypes.number,
   activeDateTo: React.PropTypes.number,
-  updateQuery: React.PropTypes.func.isRequired
+  updateQuery: React.PropTypes.func.isRequired,
+  toggleFacet: React.PropTypes.func,
+  isOpen: React.PropTypes.bool
 }
 
 

@@ -14,10 +14,6 @@ class FacetTemporal extends Component {
     this.onResetDateTo = this.onResetDateTo.bind(this);
     this.onResetDateFrom = this.onResetDateFrom.bind(this);
     this.onToggleOption = this.onToggleOption.bind(this);
-    this.onToggleOpen = this.onToggleOpen.bind(this);
-    this.state = {
-      isOpen: false
-    }
   }
 
   onResetDateTo(){
@@ -29,17 +25,6 @@ class FacetTemporal extends Component {
     let datesArray = [undefined, this.props.activeDates[1]]
     this.props.onToggleOption(datesArray);
   }
-
-
-   /**
-    * expand the list (reacting to show more less button )
-    */
-   onToggleOpen(){
-     this.setState({
-       isOpen: !this.state.isOpen
-     })
-   }
-
 
   onToggleOption(option){
     let tempDateFrom = this.props.activeDates[0];
@@ -138,8 +123,8 @@ class FacetTemporal extends Component {
                      title={this.props.title}
                      activeOptions={this.props.activeDates}
                      hasQuery={this.props.hasQuery}
-                     onClick={this.onToggleOpen}/>
-             {this.state.isOpen && <div className='clearfix facet-temporal facet-body'>
+                     onClick={this.props.toggleFacet}/>
+             {this.props.isOpen && <div className='clearfix facet-temporal facet-body'>
                <ul className='list-unstyled list'>
                 <li><button className='btn btn-facet-option btn-facet-date-option' onClick={this.onResetDateTo}>Any end date </button></li>
                  {that.props.options.map(o=><li key={o.value}>{that.renderOption(o, this.onToggleOption)}</li>)}

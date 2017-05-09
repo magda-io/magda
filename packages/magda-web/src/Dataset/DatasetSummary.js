@@ -66,9 +66,8 @@ export default class DatasetSummary extends Component {
                 <div className='dataset-summary__header'>
                   <div className='dataset-summary__header-top clearfix'>
                     <div className='dataset-summary__title-group'>
-                      <Link target='_blank'
-                              className='dataset-summary__title btn'
-                              to={`/dataset/${dataset.identifier}`}>
+                      <Link className='dataset-summary__title btn'
+                            to={`/dataset/${dataset.identifier}`}>
                               
                         {dataset.title}
                       </Link>
@@ -81,9 +80,8 @@ export default class DatasetSummary extends Component {
                     </button>
                   </div>
                   {this.props.isExpanded && <div className='dataset-summary__middle clearfix'>
-                      <div><Link target='_blank'
-                              className='btn dataset-summary__btn-view-dataset'
-                              to={`/dataset/${dataset.identifier}`}>View dataset</Link></div>
+                      <div><Link className='btn dataset-summary__btn-view-dataset'
+                                 to={`/dataset/${dataset.identifier}`}>View dataset</Link></div>
                       <div><Star onClick={this.onClickStar} isOn={this.state.isFav}/></div>
                       <div>
                         <a className='btn dataset-summary__btn-share' href={``} target='_blank'>
