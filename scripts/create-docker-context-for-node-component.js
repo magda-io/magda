@@ -42,7 +42,7 @@ if (!argv.build && !argv.output) {
 }
 
 const componentSrcDir = path.resolve(process.cwd())
-const dockerContextDir = path.resolve(__dirname, '..', 'docker-context');
+const dockerContextDir = fse.mkdtempSync(path.resolve(__dirname, '..', 'docker-context-'));
 const componentDestDir = path.resolve(dockerContextDir, process.env.npm_package_name);
 
 fse.emptyDirSync(dockerContextDir);
@@ -107,6 +107,16 @@ if (argv.build) {
 
     dockerProcess.on('close', code => {
         fse.removeSync(dockerContextDir);
+
+        if (code === 0 && argv.push) {
+            if (!tag) {
+                console.error('Can not push an image without a tag.');
+                process.exit(1);
+            }
+            childProcess.spawnSync('docker', ['push', tag], {
+                stdio: 'inherit'
+            });
+        }
         process.exit(code);
     });
 
