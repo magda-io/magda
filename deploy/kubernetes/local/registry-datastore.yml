@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: registry-datastore
-        image: localhost:5000/data61/registry-datastore:latest
+        image: localhost:5000/data61/magda-registry-datastore:latest
         ports:
         - containerPort: 5432
         volumeMounts:
