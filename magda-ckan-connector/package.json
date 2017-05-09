@@ -1,6 +1,7 @@
 {
   "name": "@magda/ckan-connector",
   "description": "MAGDA CKAN Connector",
+  "version": "0.0.26-SNAPSHOT",
   "main": "index.js",
   "scripts": {
     "generate": "generate-registry-typescript ./src/generated/registry",
@@ -33,6 +34,5 @@
       "name": "data61/magda-ckan-connector",
       "include": "aspect-templates bin Dockerfile node_modules"
     }
-  },
-  "version": "0.0.26-SNAPSHOT"
+  }
 }
