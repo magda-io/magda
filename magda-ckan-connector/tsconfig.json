@@ -8,5 +8,5 @@
         "alwaysStrict": true,
         "outDir": "bin"
     },
-    "exclude": ["aspect-templates", "node_modules", "bin", "docker-image"]
+    "exclude": ["aspect-templates", "node_modules", "bin"]
 }
