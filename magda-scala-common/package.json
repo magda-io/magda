@@ -1,0 +1,10 @@
+{
+  "name": "@magda/scala-common",
+  "version": "0.0.26-SNAPSHOT",
+  "description": "Common Scala code shared between components.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

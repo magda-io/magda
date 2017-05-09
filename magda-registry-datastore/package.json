@@ -1,0 +1,10 @@
+{
+  "name": "@magda/registry-datastore",
+  "version": "0.0.26-SNAPSHOT",
+  "description": "The registry's PostgreSQL database.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

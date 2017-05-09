@@ -1,0 +1,10 @@
+{
+  "name": "@magda/indexer",
+  "version": "0.0.26-SNAPSHOT",
+  "description": "Indexes the registry for searching.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

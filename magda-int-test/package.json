@@ -1,0 +1,10 @@
+{
+  "name": "@magda/int-test",
+  "version": "0.0.26-SNAPSHOT",
+  "description": "Integration tests",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}
