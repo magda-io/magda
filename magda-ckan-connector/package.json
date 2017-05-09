@@ -5,12 +5,12 @@
   "scripts": {
     "generate": "generate-registry-typescript ./src/generated/registry",
     "compile": "tsc",
-    "copySchemas": "echo \"mkdir -p bin && mkdir -p bin/registry-aspects && cp -r ../magda-registry-aspects/* ./bin/registry-aspects\"",
-    "build": "npm run copySchemas && npm run generate && npm run compile",
+    "build": "npm run generate && npm run compile",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node bin/index.js",
     "startMinikube": "REGISTRY_URL=http://$(minikube ip):30010 node bin/index.js",
-    "docker-build": "create-docker-context-for-node-component --build --tag localhost:5000/data61/magda-ckan-connector:latest"
+    "docker-build-local": "create-docker-context-for-node-component --build --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --tag auto"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -27,5 +27,11 @@
     "request": "^2.79.0",
     "ts-node": "^2.1.0",
     "urijs": "^1.18.7"
+  },
+  "config": {
+      "docker": {
+          "name": "data61/magda-ckan-connector",
+          "include": "aspect-templates bin Dockerfile node_modules"
+      }
   }
 }

@@ -7,21 +7,32 @@ const yargs = require('yargs');
 
 const argv = yargs.options({
     include: {
-        description: 'The files and directories to include in the Docker image.  Dockerfile, node_modules, and bin are included by default and do not need to be listed.',
-        default: [],
+        description: 'The files and directories to include in the Docker image.  If not specified, uses the space-separated list in the `npm_package_config_docker_include` environment variable.',
+        default: (process.env.npm_package_config_docker_include || '').split(' '),
         type: 'array'
     },
     build: {
         description: 'Pipe the Docker context straight to Docker.',
-        type: 'boolean'
+        type: 'boolean',
+        default: false
     },
     tag: {
-        description: 'The tag to pass to "docker build".  This parameter is only used if --build is specified.',
+        description: 'The tag to pass to "docker build".  This parameter is only used if --build is specified.  If the value of this parameter is `auto`, a tag name is automatically created from NPM configuration.',
         type: 'string'
     },
     output: {
         description: 'The output path and filename for the Docker context .tar file.',
         type: 'string'
+    },
+    local: {
+        description: 'Build for a local Kubernetes container registry.  This parameter is only used if --build is specified.',
+        type: 'boolean',
+        default: false
+    },
+    push: {
+        description: 'Push the build image to the docker registry.  This parameter is only used if --build is specified.',
+        type: 'boolean',
+        default: false
     }
 }).help().argv;
 
@@ -38,7 +49,7 @@ fse.emptyDirSync(dockerContextDir);
 fse.ensureDirSync(componentDestDir);
 fse.ensureSymlinkSync(path.resolve(componentSrcDir, '..', 'node_modules'), path.resolve(dockerContextDir, 'node_modules'), 'junction');
 
-const linksToCreate = argv.include.concat(['node_modules', 'bin', 'Dockerfile']).filter((value, index, self) => self.indexOf(value) === index);
+const linksToCreate = argv.include.filter((value, index, self) => self.indexOf(value) === index);
 linksToCreate.forEach(link => {
     const src = path.resolve(componentSrcDir, link);
     const dest = path.resolve(componentDestDir, link);
@@ -75,7 +86,17 @@ if (argv.build) {
         env: env
     });
 
-    const tagArgs = argv.tag ? ['-t', argv.tag] : [];
+    let tag = argv.tag;
+    if (tag === 'auto') {
+        const tagPrefix = argv.local ? 'localhost:5000/' : '';
+        const version = !argv.local && process.env.npm_package_version ? process.env.npm_package_version : 'latest';
+        const name = process.env.npm_package_config_docker_name
+            ? process.env.npm_package_config_docker_name
+            : (process.env.npm_package_name ? process.env.npm_package_name : 'UnnamedImage');
+        tag = tagPrefix + name + ':' + version;
+    }
+    const tagArgs = tag ? ['-t', tag] : [];
+
     const dockerProcess = childProcess.spawn(
         'docker',
         [...extraParameters, 'build', ...tagArgs, '-f', `./${process.env.npm_package_name}/Dockerfile`, '-'], {
