@@ -83,7 +83,8 @@ if (argv.build) {
     const tarProcess = childProcess.spawn(tar, [...extraParameters, '--dereference', '-cf', '-', '*'], {
         cwd: dockerContextDir,
         stdio: ['inherit', 'pipe', 'inherit'],
-        env: env
+        env: env,
+        shell: true
     });
 
     let tag = argv.tag;
