@@ -12,5 +12,5 @@ spec:
         image: localhost:5000/data61/magda-ckan-connector:latest
         env:
         - name: "REGISTRY_URL"
-          value: "http://registry-api"
+          value: "http://registry-api/v0"
       restartPolicy: Never
