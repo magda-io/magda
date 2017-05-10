@@ -1,10 +1,10 @@
 package au.csiro.data61.magda.model
 
-import io.swagger.annotations.{ApiModel, ApiModelProperty}
-import enumeratum.values.{IntEnum, IntEnumEntry}
+import io.swagger.annotations.{ ApiModel, ApiModelProperty }
+import enumeratum.values.{ IntEnum, IntEnumEntry }
 
 import scala.annotation.meta.field
-import spray.json.{DefaultJsonProtocol, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
+import spray.json.{ DefaultJsonProtocol, JsNumber, JsObject, JsString, JsValue, RootJsonFormat }
 import java.time.OffsetDateTime
 
 object Registry {
@@ -52,6 +52,24 @@ object Registry {
     def isPatchEvent = this == EventType.PatchRecord || this == EventType.PatchRecordAspect || this == EventType.PatchAspectDefinition
   }
 
+  case class WebHook(
+    id: Option[Int] = None,
+    userId: Option[Int],
+    name: String,
+    active: Boolean,
+    lastEvent: Option[Long] = None,
+    url: String,
+    eventTypes: Set[EventType],
+    config: WebHookConfig)
+
+  case class WebHookConfig(
+    aspects: Option[List[String]] = None,
+    optionalAspects: Option[List[String]] = None,
+    includeEvents: Option[Boolean] = None,
+    includeRecords: Option[Boolean] = None,
+    includeAspectDefinitions: Option[Boolean] = None,
+    dereference: Option[Boolean] = None)
+
   case object EventType extends IntEnum[EventType] {
     case object CreateRecord extends EventType(0, "Create Record")
     case object CreateAspectDefinition extends EventType(1, "Create Aspect Definition")
@@ -76,5 +94,7 @@ object Registry {
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
     implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
     implicit val webHookPayloadFormat = jsonFormat5(WebHookPayload.apply)
+    implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
+    implicit val webHookFormat = jsonFormat8(WebHook.apply)
   }
 }

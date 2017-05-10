@@ -59,7 +59,7 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val confi
   val baseUrl = s"api/3/action/package_search?${exclusionQueryString.map(q => s"fq=${q}").getOrElse("")}&sort=metadata_created%20asc"
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =
-    fetcher.request(s"$baseUrl&start=$start&rows=$number").flatMap { response =>
+    fetcher.get(s"$baseUrl&start=$start&rows=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[CKANSearchResponse].map { ckanDataSet =>
           mapCatching[CKANDataSet, DataSet](ckanDataSet.result.results,
@@ -76,7 +76,7 @@ class CKANExternalInterface(interfaceConfig: InterfaceConfig, implicit val confi
     }
 
   override def getTotalDataSetCount(): scala.concurrent.Future[Long] =
-    fetcher.request(s"$baseUrl&rows=0").flatMap { response =>
+    fetcher.get(s"$baseUrl&rows=0").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[CKANSearchResponse].map(_.result.count)
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
