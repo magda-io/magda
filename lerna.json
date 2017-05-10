@@ -1,0 +1,17 @@
+{
+  "lerna": "2.0.0-rc.4",
+  "packages": [
+    "magda-ckan-connector/",
+    "magda-indexer/",
+    "magda-int-test/",
+    "magda-registry-api/",
+    "magda-registry-aspects/",
+    "magda-registry-datastore/",
+    "magda-reverse-proxy/",
+    "magda-scala-common/",
+    "magda-search-api/",
+    "scripts/"
+  ],
+  "version": "0.0.26-SNAPSHOT",
+  "hoist": "**"
+}

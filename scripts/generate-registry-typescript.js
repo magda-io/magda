@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 var spawnSync = require("child_process").spawnSync;
 const fs = require('fs-extra')
 var path = require('path');

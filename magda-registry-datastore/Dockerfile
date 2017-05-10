@@ -1,2 +1,2 @@
 FROM postgres
-COPY scripts/init/* /docker-entrypoint-initdb.d
+COPY @magda/registry-datastore/scripts/init/* /docker-entrypoint-initdb.d
