@@ -1,4 +1,4 @@
-import Mention from "./AtMention";
+import Mention from "./UserMention/UserMentionSearch";
 import createMentionPlugin, {
   defaultSuggestionsFilter
 } from "draft-js-mention-plugin";
@@ -11,7 +11,7 @@ function mentionPlugin() {
 
 function plugins() {
   return {
-      mention: mentionPlugin()
+      userMentions: mentionPlugin()
   };
 }
 export default plugins;

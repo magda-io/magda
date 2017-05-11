@@ -11,7 +11,6 @@ export default class DatasetDiscussion extends Component {
     super(props);
   }
 
-
   render() {
     return (
       <div className="dataset-details container">

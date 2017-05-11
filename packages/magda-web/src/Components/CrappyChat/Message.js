@@ -1,7 +1,7 @@
 import React from "react";
 import { EditorState, convertFromRaw } from "draft-js";
 import Editor from "draft-js-plugins-editor";
-import pluginsFn from "./Plugins";
+import pluginsFn from "./Plugins/Plugins";
 
 export default class Message extends React.Component {
   constructor(props) {
