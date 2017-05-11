@@ -7,7 +7,7 @@ export default function AtMention(props) {
       className={props.className}
       onClick={() => alert("Clicked on the Mention!")}
     >
-      {props.mention.get("displayName")}
+      @{props.mention.get("displayName")}
     </span>
   );
 }

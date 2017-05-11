@@ -9,7 +9,7 @@ import {
 import base from "./Base";
 
 import pluginsFn from "./Plugins/Plugins";
-import PluginComponents from './Plugins/PluginComponents';
+import PluginComponents from "./Plugins/PluginComponents";
 
 export default class EntryBox extends React.Component {
   constructor(props) {
@@ -56,7 +56,10 @@ export default class EntryBox extends React.Component {
           onChange={this.onEditorChange.bind(this)}
           plugins={Object.values(this.plugins)}
         />
-        <PluginComponents userMentionsPlugin={this.plugins.userMentions} />
+        <PluginComponents
+          userMentionsPlugin={this.plugins.userMentions}
+          dataSetMentionsPlugin={this.plugins.dataSetMentions}
+        />
         <input type="submit" />
       </form>
     );

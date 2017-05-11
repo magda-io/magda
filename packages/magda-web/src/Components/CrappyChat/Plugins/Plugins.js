@@ -1,17 +1,25 @@
-import Mention from "./UserMention/UserMentionSearch";
-import createMentionPlugin, {
-  defaultSuggestionsFilter
-} from "draft-js-mention-plugin";
+import UserMentionSearch from "./UserMention/UserMentionSearch";
+import DataSetMentionSearch from "./DataSetMention/DataSetMentionSearch";
+import createMentionPlugin from "draft-js-mention-plugin";
 
-function mentionPlugin() {
+function userMentionPlugin() {
   return createMentionPlugin({
-    mentionComponent: Mention
+    mentionComponent: UserMentionSearch
+  });
+}
+
+function dataSetMentionPlugin() {
+  return createMentionPlugin({
+    mentionComponent: DataSetMentionSearch,
+    mentionPrefix: "#",
+    mentionTrigger: "#"
   });
 }
 
 function plugins() {
   return {
-      userMentions: mentionPlugin()
+    userMentions: userMentionPlugin(),
+    dataSetMentions: dataSetMentionPlugin()
   };
 }
 export default plugins;
