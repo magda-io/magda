@@ -17,6 +17,9 @@ export interface CkanDataset extends CkanThing {
     resources: CkanResource[];
 }
 
+export interface CkanOrganization extends CkanThing {
+}
+
 export interface CkanPackageSearchResponse {
     result: CkanPackageSearchResult;
     [propName: string]: any;
@@ -25,6 +28,11 @@ export interface CkanPackageSearchResponse {
 export interface CkanPackageSearchResult {
     count: number;
     results: CkanDataset[];
+    [propName: string]: any;
+}
+
+export interface CkanOrganizationListResponse {
+    result: CkanOrganization[];
     [propName: string]: any;
 }
 
@@ -87,12 +95,32 @@ export default class Ckan {
         });
     }
 
+    public organizationList(): AsyncPage<CkanOrganizationListResponse> {
+        const url = this.apiBaseUrl.clone().segment('api/3/action/organization_list').addSearch('all_fields', 'true');
+
+        let startIndex = 0;
+        return AsyncPage.create<CkanOrganizationListResponse>(previous => {
+            if (previous) {
+                if (previous.result.length === 0) {
+                    return undefined;
+                }
+                startIndex += previous.result.length;
+            }
+
+            return this.requestOrganizationListPage(url, startIndex);
+        });
+    }
+
     public getPackageShowUrl(id: string): string {
         return this.apiBaseUrl.clone().segment('api/3/action/package_show').addSearch('id', id).toString();
     }
 
     public getResourceShowUrl(id: string): string {
         return this.apiBaseUrl.clone().segment('api/3/action/resource_show').addSearch('id', id).toString();
+    }
+
+    public getOrganizationShowUrl(id: string): string {
+        return this.apiBaseUrl.clone().segment('api/3/action/organization_show').addSearch('id', id).toString();
     }
 
     public getDatasetLandingPageUrl(id: string): string {
@@ -105,6 +133,26 @@ export default class Ckan {
         pageUrl.addSearch('rows', this.pageSize);
 
         const operation = () => new Promise<CkanPackageSearchResponse>((resolve, reject) => {
+            console.log('Requesting ' + pageUrl.toString());
+            request(pageUrl.toString(), { json: true }, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                console.log('Received@' + startIndex);
+                resolve(body);
+            });
+        });
+
+        return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
+    }
+
+    private requestOrganizationListPage(url: uri.URI, startIndex: number): Promise<CkanOrganizationListResponse> {
+        const pageUrl = url.clone();
+        pageUrl.addSearch('offset', startIndex);
+        pageUrl.addSearch('limit', this.pageSize);
+
+        const operation = () => new Promise<CkanOrganizationListResponse>((resolve, reject) => {
             console.log('Requesting ' + pageUrl.toString());
             request(pageUrl.toString(), { json: true }, (error, response, body) => {
                 if (error) {

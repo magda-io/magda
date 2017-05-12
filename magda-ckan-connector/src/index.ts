@@ -90,11 +90,31 @@ const distributionAspectBuilders: AspectBuilder[] = [
     }
 ];
 
+const organizationAspectBuilders: AspectBuilder[] = [
+    {
+        aspectDefinition: {
+            id: 'source',
+            name: 'Source',
+            jsonSchema: require('@magda/registry-aspects/source.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/organization-source.js', 'utf8')
+    },
+    {
+        aspectDefinition: {
+            id: 'organization',
+            name: 'Organization',
+            jsonSchema: require('@magda/registry-aspects/organization.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/organization.js', 'utf8')
+    }
+];
+
 const connector = new CkanConnector({
     ckan: ckan,
     registry: registry,
     datasetAspectBuilders: datasetAspectBuilders,
-    distributionAspectBuilders: distributionAspectBuilders
+    distributionAspectBuilders: distributionAspectBuilders,
+    organizationAspectBuilders: organizationAspectBuilders
 });
 
 connector.run().then(result => {

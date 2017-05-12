@@ -1,5 +1,5 @@
 import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/registry/api';
-import Ckan, { CkanThing, CkanDataset, CkanResource } from './Ckan';
+import Ckan, { CkanThing, CkanDataset, CkanResource, CkanOrganization } from './Ckan';
 import Registry from './Registry';
 import AsyncPage, { forEachAsync } from './AsyncPage';
 import * as moment from 'moment';
@@ -17,6 +17,7 @@ export interface CkanConnectorOptions {
     registry: Registry,
     datasetAspectBuilders?: AspectBuilder[],
     distributionAspectBuilders?: AspectBuilder[],
+    organizationAspectBuilders?: AspectBuilder[],
     ignoreHarvestSources?: string[],
     maxConcurrency?: number
 }
@@ -177,11 +178,26 @@ class DistributionBuilderFunctionParameters extends BuilderFunctionParameters {
     }
 }
 
+class OrganizationBuilderFunctionParameters extends BuilderFunctionParameters {
+    /**
+     * The CKAN organization from which to build aspects.
+     *
+     * @type {CkanOrganization}
+     * @memberOf OrganizationBuilderFunctionParameters
+     */
+    organization: CkanOrganization = undefined;
+
+    getCkanThing(): CkanOrganization {
+        return this.organization;
+    }
+}
+
 export class CkanConnectionResult {
     public aspectDefinitionsConnected: number = 0;
     public datasetsConnected: number = 0;
     public distributionsConnected: number = 0;
-    public errors: { aspectDefinitionId?: string, datasetId?: string, resourceId?: string, error: Error }[] = [];
+    public organizationsConnected: number = 0;
+    public errors: { aspectDefinitionId?: string, datasetId?: string, resourceId?: string, organizationId?: string, error: Error }[] = [];
 }
 
 export default class CkanConnector {
@@ -192,12 +208,14 @@ export default class CkanConnector {
 
     public datasetAspectBuilders: AspectBuilder[]
     public distributionAspectBuilders: AspectBuilder[]
+    public organizationAspectBuilders: AspectBuilder[]
 
     constructor({
         ckan,
         registry,
         datasetAspectBuilders = [],
         distributionAspectBuilders = [],
+        organizationAspectBuilders = [],
         ignoreHarvestSources = [],
         maxConcurrency = 6
     }: CkanConnectorOptions) {
@@ -205,6 +223,7 @@ export default class CkanConnector {
         this.registry = registry;
         this.datasetAspectBuilders = datasetAspectBuilders.slice();
         this.distributionAspectBuilders = distributionAspectBuilders.slice();
+        this.organizationAspectBuilders = organizationAspectBuilders.slice();
         this.ignoreHarvestSources = ignoreHarvestSources.slice();
         this.maxConcurrency = maxConcurrency;
     }
@@ -240,15 +259,23 @@ export default class CkanConnector {
         distributionParameters.source = this.ckan;
         distributionParameters.registry = this.registry;
 
+        const organizationParameters = new OrganizationBuilderFunctionParameters();
+        organizationParameters.libraries = libraries;
+        organizationParameters.source = this.ckan;
+        organizationParameters.registry = this.registry;
+
         const datasetAspects = buildersToCompiledAspects(connectionResult, this.datasetAspectBuilders, setupParameters, datasetParameters);
         const distributionAspects = buildersToCompiledAspects(connectionResult, this.distributionAspectBuilders, setupParameters, distributionParameters);
+        const organizationAspects = buildersToCompiledAspects(connectionResult, this.organizationAspectBuilders, setupParameters, organizationParameters);
 
         // If there were errors initializing the aspect definitions, don't try to create records.
         if (connectionResult.errors.length > 0) {
             return connectionResult;
         }
 
-        const aspectBuilderPage = AsyncPage.create<AspectBuilder[]>(current => current ? undefined : Promise.resolve(this.datasetAspectBuilders.concat(this.distributionAspectBuilders)));
+        const allAspects = this.datasetAspectBuilders.concat(this.distributionAspectBuilders).concat(this.organizationAspectBuilders);
+
+        const aspectBuilderPage = AsyncPage.create<AspectBuilder[]>(current => current ? undefined : Promise.resolve(allAspects));
         await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectBuilder => {
             const aspectDefinitionOrError = await this.registry.putAspectDefinition(aspectBuilder.aspectDefinition);
             if (aspectDefinitionOrError instanceof Error) {
@@ -265,6 +292,21 @@ export default class CkanConnector {
         if (connectionResult.errors.length > 0) {
             return connectionResult;
         }
+
+        const organizationPages = this.ckan.organizationList();
+        const organizations = organizationPages.map(organizationPage => organizationPage.result);
+        await forEachAsync(organizations, this.maxConcurrency, async organization => {
+            organizationParameters.organization = organization;
+            const recordOrError = await this.registry.putRecord(this.ckanToRecord(connectionResult, organizationAspects));
+            if (recordOrError instanceof Error) {
+                connectionResult.errors.push({
+                    organizationId: organization.id,
+                    error: recordOrError
+                });
+            } else {
+                ++connectionResult.organizationsConnected;
+            }
+        });
 
         const packagePages = this.ckan.packageSearch(this.ignoreHarvestSources);
         const datasets = packagePages.map(packagePage => packagePage.result.results);
