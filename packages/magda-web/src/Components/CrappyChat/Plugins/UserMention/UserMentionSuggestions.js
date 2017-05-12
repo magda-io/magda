@@ -1,8 +1,14 @@
 import React from "react";
 
-import Entry from "./UserMentionEntry";
+import UserMentionSearchResult from "./UserMentionSearchResult";
 import SuggestionsState from "../SuggestionsState";
 import base from "../../Base";
+
+const builtInUsers = [
+  {
+    displayName: "Custodian"
+  }
+];
 
 export default class UserMentionSuggestions extends React.Component {
   constructor(props) {
@@ -21,7 +27,8 @@ export default class UserMentionSuggestions extends React.Component {
       })
       .then(users => {
         this.setState({
-          suggestions: users
+          suggestions: builtInUsers
+            .concat(users)
             .filter(
               user =>
                 user.displayName.toLowerCase().indexOf(value.toLowerCase()) > -1
@@ -40,7 +47,7 @@ export default class UserMentionSuggestions extends React.Component {
         plugin={this.props.plugin}
         onSearchChange={this.onSearchChange.bind(this)}
         suggestions={this.state.suggestions}
-        entryComponent={Entry}
+        entryComponent={UserMentionSearchResult}
       />
     );
   }

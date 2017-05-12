@@ -1,7 +1,7 @@
 import React from "react";
 
 import { config } from "../../../../config";
-import DataSetMentionEntry from "./DataSetMentionEntry";
+import DataSetMentionSearchResult from "./DataSetMentionSearchResult";
 import SuggestionsState from "../SuggestionsState";
 
 export default class DataSetMentionSuggestions extends React.Component {
@@ -45,7 +45,7 @@ export default class DataSetMentionSuggestions extends React.Component {
         plugin={this.props.plugin}
         onSearchChange={this.onSearchChange.bind(this)}
         suggestions={this.state.suggestions}
-        entryComponent={DataSetMentionEntry}
+        entryComponent={DataSetMentionSearchResult}
       />
     );
   }
