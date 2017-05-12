@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Aspect for capturing basic details of an organization",
+    "type": "object",
+    "properties": {
+        "title": {
+            "title": "A name given to the organization",
+            "type": "string"
+        },
+        "description": {
+            "title": "Free-text account of the organization.",
+            "type": "string"
+        },
+        "imageUrl": {
+            "title": "The URL of an image representing the organization, such as its logo.",
+            "type": "string"
+        }
+    }
+}
