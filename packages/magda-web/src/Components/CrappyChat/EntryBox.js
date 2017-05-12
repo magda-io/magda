@@ -1,11 +1,15 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import Editor from "draft-js-plugins-editor";
 import {
   EditorState,
   ContentState,
   convertFromRaw,
-  convertToRaw
+  convertToRaw,
+  getDefaultKeyBinding,
+  KeyBindingUtil
 } from "draft-js";
+const { hasShiftModifier } = KeyBindingUtil;
 import base from "./Base";
 
 import pluginsFn from "./Plugins/Plugins";
@@ -43,11 +47,29 @@ export default class EntryBox extends React.Component {
   onSubmit(e) {
     e.preventDefault();
 
+    this.submit();
+  }
+
+  submit() {
     this.props.onSubmit(
       JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()))
     );
 
     this.resetState();
+
+    setTimeout(() => {
+      document.activeElement.blur();
+      setTimeout(() => this.editor.focus());
+    });
+  }
+
+  onReturnPressed(e) {
+    if (e.shiftKey) {
+      return "not-handled";
+    } else {
+      this.submit();
+      return "handled";
+    }
   }
 
   render() {
@@ -58,6 +80,8 @@ export default class EntryBox extends React.Component {
             editorState={this.state.editorState}
             onChange={this.onEditorChange.bind(this)}
             plugins={Object.values(this.plugins)}
+            handleReturn={this.onReturnPressed.bind(this)}
+            ref={editor => this.editor = editor}
           />
         </div>
         <PluginComponents
