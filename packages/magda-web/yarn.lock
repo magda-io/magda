@@ -1819,16 +1819,21 @@ dotenv@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-2.0.0.tgz#bd759c357aaa70365e01c96b7b0bec08a6e0d949"
 
-draft-js-mention-plugin@beta:
-  version "2.0.0-beta11"
-  resolved "https://registry.yarnpkg.com/draft-js-mention-plugin/-/draft-js-mention-plugin-2.0.0-beta11.tgz#2da7822d12b5172f3b2b64703a592974373b9a45"
+"draft-js-mention-plugin@git+https://github.com/nishp1/draft-js-mention-plugin#v2.0.0":
+  version "0.1.0"
+  resolved "git+https://github.com/nishp1/draft-js-mention-plugin#932deafcc21d946facaa554a6bb28d4af9d37d11"
   dependencies:
     decorate-component-with-props "^1.0.2"
-    draft-js ">=0.9.1"
     find-with-regex "^1.0.2"
-    immutable "~3.7.4"
+    union-class-names "^1.0.0"
+
+"draft-js-mention-plugin@git+https://github.com/nishp1/draft-js-mention-plugin#v2.1.0":
+  version "0.1.0"
+  resolved "git+https://github.com/nishp1/draft-js-mention-plugin#e180d44a84ce7d9497ec2248783b9d0bb2712a8a"
+  dependencies:
+    decorate-component-with-props "^1.0.2"
+    find-with-regex "^1.0.2"
     lodash.escaperegexp "^4.1.2"
-    prop-types "^15.5.8"
     union-class-names "^1.0.0"
 
 draft-js-plugins-editor@beta:

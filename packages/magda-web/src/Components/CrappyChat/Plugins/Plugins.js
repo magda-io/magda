@@ -4,15 +4,19 @@ import createMentionPlugin from "draft-js-mention-plugin";
 
 function userMentionPlugin() {
   return createMentionPlugin({
-    mentionComponent: UserMentionSearch
+    mentionComponent: UserMentionSearch,
+    mentionTrigger: "@",
+    mentionRegExp: "[\\w\\s]{0,20}",
+    entityMutability: "IMMUTABLE"
   });
 }
 
 function dataSetMentionPlugin() {
   return createMentionPlugin({
     mentionComponent: DataSetMentionSearch,
-    mentionPrefix: "#",
-    mentionTrigger: "#"
+    mentionTrigger: "#",
+    mentionRegExp: "[\\w\\s]{0,20}",
+    entityMutability: "IMMUTABLE"
   });
 }
 

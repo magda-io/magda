@@ -1,29 +1,23 @@
 import React from "react";
-import { fromJS } from "immutable";
 
 import { config } from "../../../../config";
 import DataSetMentionEntry from "./DataSetMentionEntry";
+import SuggestionsState from "../SuggestionsState";
 
 export default class DataSetMentionSuggestions extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = this.buildStateFromProps(props);
-  }
-
-  onComponentWillReceiveProps(props) {
-    this.buildStateFromProps(props);
-  }
-
-  buildStateFromProps(props) {
-    return {
-      suggestions: fromJS(props.datasets || [])
+    this.state = {
+      suggestions: []
     };
   }
 
-  onSearchChange({ value }) {
+  onSearchChange(value) {
     let url: string =
       config.searchApiBaseUrl + `search/datasets?query=${value}`;
+
+    this.latestUrl = url;
 
     return fetch(url)
       .then(response => {
@@ -33,17 +27,22 @@ export default class DataSetMentionSuggestions extends React.Component {
         return response.json();
       })
       .then((json: DataSearchJson) => {
-        this.setState({
-          suggestions: fromJS(json.dataSets || [])
-        });
+        if (this.latestUrl === url) {
+          this.setState({
+            suggestions: (json.dataSets || []).map(dataSet => ({
+              ...dataSet,
+              name: dataSet.title,
+              decoratedText: dataSet.title
+            }))
+          });
+        }
       });
   }
 
   render() {
-    const MentionSuggestions = this.props.plugin.MentionSuggestions;
-
     return (
-      <MentionSuggestions
+      <SuggestionsState
+        plugin={this.props.plugin}
         onSearchChange={this.onSearchChange.bind(this)}
         suggestions={this.state.suggestions}
         entryComponent={DataSetMentionEntry}
