@@ -7,6 +7,7 @@ export default function DataSetMentionSearch(props) {
       style={{ background: "rgba(0, 0, 255, 0.2)" }}
       className={props.className}
       onClick={() => alert("Clicked on the Mention!")}
+      contentEditable={false}
     >
       #{props.mention.get("title")}
     </span>

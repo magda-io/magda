@@ -6,6 +6,7 @@ export default function AtMention(props) {
       style={{ background: "rgba(0, 0, 0, 0.2)" }}
       className={props.className}
       onClick={() => alert("Clicked on the Mention!")}
+      contentEditable={false}
     >
       @{props.mention.get("displayName")}
     </span>
