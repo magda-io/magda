@@ -37,6 +37,7 @@
     "lodash.minby": "^4.6.0",
     "marked": "^0.3.6",
     "node-sass": "^4.5.0",
+    "pretty-date": "^0.2.0",
     "re-base": "^2.7.0",
     "react": "^15.3.1",
     "react-document-title": "^2.0.3",

@@ -1,7 +1,11 @@
 import React from "react";
 import { EditorState, convertFromRaw } from "draft-js";
 import Editor from "draft-js-plugins-editor";
+import prettydate from 'pretty-date';
+
+import base from "./Base";
 import pluginsFn from "./Plugins/Plugins";
+import "./Message.css";
 
 export default class Message extends React.Component {
   constructor(props) {
@@ -19,14 +23,18 @@ export default class Message extends React.Component {
     };
   }
 
-  componentWillReceiveProps(props) {
-    const comment = props.comment;
+  componentWillMount() {
+    base.syncState(`users/${this.props.comment.uid}`, {
+      context: this,
+      state: "user"
+    });
+  }
 
+  componentWillReceiveProps(props) {
     this.setState({
-      ...comment,
       editorState: EditorState.push(
         this.state.editorState,
-        convertFromRaw(JSON.parse(comment.message))
+        convertFromRaw(JSON.parse(props.comment.message))
       )
     });
   }
@@ -38,17 +46,23 @@ export default class Message extends React.Component {
   }
 
   render() {
-    const comment = this.state;
-
     return (
-      <div>
-        <strong>{comment.email}:</strong>
-        <Editor
-          onChange={this.onEditorChange.bind(this)}
-          readOnly={true}
-          editorState={comment.editorState}
-          plugins={Object.values(this.plugins)}
+      <div className="cc-message">
+        <img
+          className="cc-message__avatar"
+          src={this.state.user && this.state.user.photoURL}
         />
+
+        <div className="cc-message__right-of-avatar">
+          <strong>{this.state.user && this.state.user.displayName}</strong>{" "}
+          <small>{this.props.comment.date && prettydate.format(new Date(this.props.comment.date))}</small>
+          <Editor
+            onChange={this.onEditorChange.bind(this)}
+            readOnly={true}
+            editorState={this.state.editorState}
+            plugins={Object.values(this.plugins)}
+          />
+        </div>
       </div>
     );
   }

@@ -1819,14 +1819,6 @@ dotenv@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-2.0.0.tgz#bd759c357aaa70365e01c96b7b0bec08a6e0d949"
 
-"draft-js-mention-plugin@git+https://github.com/nishp1/draft-js-mention-plugin#v2.0.0":
-  version "0.1.0"
-  resolved "git+https://github.com/nishp1/draft-js-mention-plugin#932deafcc21d946facaa554a6bb28d4af9d37d11"
-  dependencies:
-    decorate-component-with-props "^1.0.2"
-    find-with-regex "^1.0.2"
-    union-class-names "^1.0.0"
-
 "draft-js-mention-plugin@git+https://github.com/nishp1/draft-js-mention-plugin#v2.1.0":
   version "0.1.0"
   resolved "git+https://github.com/nishp1/draft-js-mention-plugin#e180d44a84ce7d9497ec2248783b9d0bb2712a8a"
@@ -4817,6 +4809,10 @@ prepend-http@^1.0.0:
 preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
+
+pretty-date@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/pretty-date/-/pretty-date-0.2.0.tgz#bea90fe6aad0dc3d77b9c1c42154eb45f680ca52"
 
 pretty-error@^2.0.2:
   version "2.0.2"

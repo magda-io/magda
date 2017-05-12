@@ -23,6 +23,7 @@ export default class CrappyChat extends React.Component {
       user: base.auth().currentUser
     };
   }
+  
   componentWillMount() {
     base.listenTo(`dataset-discussions/${this.props.datasetId}`, {
       context: this,
@@ -82,7 +83,7 @@ export default class CrappyChat extends React.Component {
     base.push(`dataset-discussions/${this.props.datasetId}`, {
       data: {
         uid: this.state.user.uid,
-        email: this.state.user.email,
+        date: new Date().toISOString(),
         message
       },
       context: this,
