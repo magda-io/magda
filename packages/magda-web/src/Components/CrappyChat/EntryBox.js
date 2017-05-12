@@ -11,6 +11,8 @@ import base from "./Base";
 import pluginsFn from "./Plugins/Plugins";
 import PluginComponents from "./Plugins/PluginComponents";
 
+import "./EntryBox.css";
+
 export default class EntryBox extends React.Component {
   constructor(props) {
     super(props);
@@ -50,17 +52,19 @@ export default class EntryBox extends React.Component {
 
   render() {
     return (
-      <form onSubmit={this.onSubmit.bind(this)}>
-        <Editor
-          editorState={this.state.editorState}
-          onChange={this.onEditorChange.bind(this)}
-          plugins={Object.values(this.plugins)}
-        />
+      <form className="entry-box" onSubmit={this.onSubmit.bind(this)}>
+        <div className="entry-box__editor">
+          <Editor
+            editorState={this.state.editorState}
+            onChange={this.onEditorChange.bind(this)}
+            plugins={Object.values(this.plugins)}
+          />
+        </div>
         <PluginComponents
           userMentionsPlugin={this.plugins.userMentions}
           dataSetMentionsPlugin={this.plugins.dataSetMentions}
         />
-        <input type="submit" />
+        <input className="entry-box__submit-button" type="submit" />
       </form>
     );
   }

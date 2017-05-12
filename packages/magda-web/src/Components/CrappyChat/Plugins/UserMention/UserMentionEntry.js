@@ -9,9 +9,13 @@ export default function Entry(props) {
       onMouseUp={props.onMouseUp}
       role={props.role}
       className={props.className}
-      style={props.style}
+      style={{
+        ...props.style,
+        background: "none",
+        border: "none"
+      }}
     >
-      Name: {mention.get("displayName")}
+      {mention.get("displayName")}
     </button>
   );
 }
