@@ -60,6 +60,14 @@ const datasetAspectBuilders: AspectBuilder[] = [
             jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
         },
         builderFunctionString: fs.readFileSync('aspect-templates/dataset-distributions.js', 'utf8')
+    },
+    {
+        aspectDefinition: {
+            id: 'dataset-publisher',
+            name: 'Dataset Publisher',
+            jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/dataset-publisher.js', 'utf8')
     }
 ];
 
@@ -103,9 +111,9 @@ const organizationAspectBuilders: AspectBuilder[] = [
         aspectDefinition: {
             id: 'organization',
             name: 'Organization',
-            jsonSchema: require('@magda/registry-aspects/organization.schema.json')
+            jsonSchema: require('@magda/registry-aspects/organization-details.schema.json')
         },
-        builderFunctionString: fs.readFileSync('aspect-templates/organization.js', 'utf8')
+        builderFunctionString: fs.readFileSync('aspect-templates/organization-details.js', 'utf8')
     }
 ];
 

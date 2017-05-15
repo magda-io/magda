@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "Dataset publisher",
+    "description": "Links to the publisher of a dataset.",
+    "type": "object",
+    "properties": {
+        "publisher": {
+            "title": "The ID of the record representing the organization that published this dataset.",
+            "type": "string",
+            "links": [
+                {
+                    "href": "/api/v0/registry/records/{$}",
+                    "rel": "item"
+                }
+            ]
+        }
+    }
+}
