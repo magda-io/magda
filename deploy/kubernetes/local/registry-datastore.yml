@@ -21,7 +21,7 @@ spec:
       volumes:
       - name: registrydata
         hostPath:
-          path: /tmp/registrydata
+          path: /data/registrydata
 ---
 apiVersion: v1
 kind: Service
