@@ -378,7 +378,7 @@ export default class CkanConnector {
 
         return {
             id: ckanThing.id,
-            name: ckanThing['title'] || ckanThing.name,
+            name: ckanThing['title'] || ckanThing.name || ckanThing.id,
             aspects: generatedAspects
         };
     }
