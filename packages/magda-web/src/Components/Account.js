@@ -32,19 +32,6 @@ export default class Account extends React.Component {
       ]
     };
 
-    this.unsubscribeDiscussionsListener = base.listenTo(
-      `dataset-discussions/${this.props.datasetId}`,
-      {
-        context: this,
-        asArray: true,
-        then: comments => {
-          this.setState({
-            comments: comments
-          });
-        }
-      }
-    );
-
     this.unsubscribeOnAuthChanged = base.auth().onAuthStateChanged(user => {
       console.log(arguments);
 

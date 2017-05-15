@@ -34,6 +34,14 @@ export default class CrappyChat extends React.Component {
         }
       }
     );
+
+    this.unsubscribeOnAuthChanged = base.auth().onAuthStateChanged(user => {    
+      if (user) {
+        this.setState({ user });
+      } else {
+        this.setState({ user: null });
+      }
+    });
   }
 
   componentWillUnmount() {
