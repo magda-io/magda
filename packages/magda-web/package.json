@@ -19,7 +19,7 @@
   "dependencies": {
     "d3-drag": "^1.0.1",
     "d3-selection": "^1.0.2",
-    "draft-js-mention-plugin": "git+https://github.com/nishp1/draft-js-mention-plugin#v2.1.0",
+    "draft-js-mention-plugin": "git+https://github.com/TerriaJS/draft-js-mention-plugin#v2.1.0",
     "draft-js-plugins-editor": "beta",
     "fetch-mock": "^5.8.1",
     "firebase": "^3.9.0",
