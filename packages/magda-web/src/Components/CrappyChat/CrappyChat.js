@@ -23,26 +23,6 @@ export default class CrappyChat extends React.Component {
       user: base.auth().currentUser
     };
   }
-  
-  componentWillMount() {
-    base.listenTo(`dataset-discussions/${this.props.datasetId}`, {
-      context: this,
-      asArray: true,
-      then: comments => {
-        this.setState({
-          comments: comments
-        });
-      }
-    });
-
-    base.auth().onAuthStateChanged(user => {
-      if (user) {
-        this.setState({ user });
-      } else {
-        this.setState({ user: null });
-      }
-    });
-  }
 
   componentDidMount() {
     var self = this;
@@ -60,11 +40,34 @@ export default class CrappyChat extends React.Component {
         base.auth.EmailAuthProvider.PROVIDER_ID
       ]
     };
+
+    this.unsubscribeDiscussionsListener = base.listenTo(`dataset-discussions/${this.props.datasetId}`, {
+      context: this,
+      asArray: true,
+      then: comments => {
+        this.setState({
+          comments: comments
+        });
+      }
+    });
+
+    this.unsubscribeOnAuthChanged = base.auth().onAuthStateChanged(user => {
+      console.log(arguments);
+
+      if (user) {
+        this.setState({ user });
+      } else {
+        this.setState({ user: null });
+      }
+    });
+
     authUi.start("#firebaseui-auth", uiConfig);
   }
 
   componentWillUnmount() {
     authUi.reset();
+    this.unsubscribeOnAuthChanged();
+    // this.unsubscribeDiscussionsListener();
   }
 
   _newChat(message) {
@@ -111,6 +114,8 @@ export default class CrappyChat extends React.Component {
   }
 
   render() {
+    console.log(this.state.user);
+
     return (
       <div>
         {!this.state.user && <div id="firebaseui-auth" />}
