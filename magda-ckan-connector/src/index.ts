@@ -12,7 +12,7 @@ import * as moment from 'moment';
 const ckan = new Ckan({
     baseUrl: 'https://data.gov.au/',
     pageSize: 1000,
-    name: "Data.gov.au"
+    name: 'Data.gov.au'
 });
 
 const registry = new Registry({
@@ -129,6 +129,7 @@ connector.run().then(result => {
     console.log('Aspect Definitions Connected: ' + result.aspectDefinitionsConnected);
     console.log('Datasets Connected: ' + result.datasetsConnected);
     console.log('Distributions Connected: ' + result.distributionsConnected);
+    console.log('Organizations Connected: ' + result.organizationsConnected);
 
     if (result.errors.length > 0) {
         console.log('Errors:\n' + JSON.stringify(result.errors, undefined, '  '));
