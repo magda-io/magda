@@ -1,18 +1,15 @@
 import React from "react";
-import firebaseui from "firebaseui";
-import "firebaseui/dist/firebaseui.css";
 import ReactDOM from "react-dom";
 import Editor from "draft-js-plugins-editor";
 import { fromJS } from "immutable";
 import { Editor as DraftEditor, EditorState, ContentState } from "draft-js";
+import {Link} from 'react-router';
 
-import base from "./Base";
+import base from "../../Base";
 import Message from "./Message";
 import EntryBox from "./EntryBox";
 import "draft-js-mention-plugin/lib/plugin.css";
 import "./CrappyChat.css";
-
-const authUi = new firebaseui.auth.AuthUI(base.auth());
 
 export default class CrappyChat extends React.Component {
   constructor(props) {
@@ -25,48 +22,21 @@ export default class CrappyChat extends React.Component {
   }
 
   componentDidMount() {
-    var self = this;
-    var uiConfig = {
-      callbacks: {
-        signInSuccess: function(user) {
-          if (self.props.onSignIn) {
-            self.props.onSignIn(user);
-          }
-          return false;
+    this.unsubscribeDiscussionsListener = base.listenTo(
+      `dataset-discussions/${this.props.datasetId}`,
+      {
+        context: this,
+        asArray: true,
+        then: comments => {
+          this.setState({
+            comments: comments
+          });
         }
-      },
-      signInOptions: [
-        base.auth.GoogleAuthProvider.PROVIDER_ID,
-        base.auth.EmailAuthProvider.PROVIDER_ID
-      ]
-    };
-
-    this.unsubscribeDiscussionsListener = base.listenTo(`dataset-discussions/${this.props.datasetId}`, {
-      context: this,
-      asArray: true,
-      then: comments => {
-        this.setState({
-          comments: comments
-        });
       }
-    });
-
-    this.unsubscribeOnAuthChanged = base.auth().onAuthStateChanged(user => {
-      console.log(arguments);
-
-      if (user) {
-        this.setState({ user });
-      } else {
-        this.setState({ user: null });
-      }
-    });
-
-    authUi.start("#firebaseui-auth", uiConfig);
+    );
   }
 
   componentWillUnmount() {
-    authUi.reset();
-    this.unsubscribeOnAuthChanged();
     // this.unsubscribeDiscussionsListener();
   }
 
@@ -118,7 +88,6 @@ export default class CrappyChat extends React.Component {
 
     return (
       <div>
-        {!this.state.user && <div id="firebaseui-auth" />}
 
         <div
           ref={this.registerMessagesDiv.bind(this)}
@@ -130,6 +99,9 @@ export default class CrappyChat extends React.Component {
         </div>
 
         {this.state.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
+
+        {!this.state.user &&
+          <div><Link to="sign-in">Sign in</Link> to join the discussion!</div>}
       </div>
     );
   }

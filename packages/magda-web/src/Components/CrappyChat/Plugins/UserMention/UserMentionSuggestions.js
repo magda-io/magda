@@ -2,7 +2,7 @@ import React from "react";
 
 import UserMentionSearchResult from "./UserMentionSearchResult";
 import SuggestionsState from "../SuggestionsState";
-import base from "../../Base";
+import base from "../../../../Base";
 
 const builtInUsers = [
   {
