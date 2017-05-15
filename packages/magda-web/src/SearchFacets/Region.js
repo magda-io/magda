@@ -1,6 +1,6 @@
-import {addRegion, resetRegion} from '../actions/results';
+import {addRegion, resetRegion} from '../actions/datasetSearchActions';
 import {connect} from 'react-redux';
-import {fetchRegionSearchResults} from '../actions/facetRegionSearch';
+import {fetchRegionSearchResults} from '../actions/facetRegionSearchActions';
 import defined from '../helpers/defined';
 import FacetRegion from './FacetRegion';
 import React, { Component } from 'react';
@@ -67,9 +67,9 @@ Region.propTypes = {
 
 
 function mapStateToProps(state) {
-  let { results , facetRegionSearch, regionMapping} = state;
+  let { datasetSearch , facetRegionSearch, regionMapping} = state;
   return {
-    activeRegion: results.activeRegion,
+    activeRegion: datasetSearch.activeRegion,
     regionSearchResults: facetRegionSearch.data,
     regionMapping: regionMapping.data
   }

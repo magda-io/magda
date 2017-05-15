@@ -149,3 +149,16 @@ export type SearchState = {
   errorMessage: string
 }
 
+export type Publisher ={
+  title: string,
+  description: string,
+  id: string,
+  image_url: string
+}
+
+export type Project ={
+  title: string,
+  description: string,
+  id: string,
+}
+

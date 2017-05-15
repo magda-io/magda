@@ -3,26 +3,24 @@ import type { Action, FacetSearchState } from '../types';
 
 const initialData = {
   isFetching: false,
-  data: [],
-  generalQuery: '',
-  facetQuery: ''
+  facetQuery: '',
+  data: []
 }
 
-const facetFormatSearch = (state: FacetSearchState=initialData, action: Action) => {
+const facetRegionSearch = (state: FacetSearchState =initialData, action: Action) => {
   switch (action.type) {
-    case 'REQUEST_FORMATS':
+    case 'FACET_REQUEST_REGIONS':
       return Object.assign({}, state, {
         isFetching: true
       })
-    case 'RECEIVE_FORMATS':
+    case 'FACET_RECEIVE_REGIONS':
       return Object.assign({}, state, {
         isFetching: false,
-        data: (action.json && action.json.options) && action.json.options,
-        generalQuery: action.generalQuery && action.generalQuery,
+        data: (action.json && action.json.regions) && action.json.regions,
         facetQuery: action.facetQuery && action.facetQuery
       })
     default:
       return state
   }
 };
-export default facetFormatSearch;
+export default facetRegionSearch;

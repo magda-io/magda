@@ -10,22 +10,18 @@ import Pagination from '../UI/Pagination';
 import Notification from '../UI/Notification';
 
 import React, { Component } from 'react';
-import SearchBox from './SearchBox';
 import SearchFacets from '../SearchFacets/SearchFacets';
 import Publisher from '../SearchFacets/Publisher';
 import SearchResults from '../SearchResults/SearchResults';
-import WelcomeText from './WelcomeText';
 import MatchingStatus from './MatchingStatus';
-import {fetchRegionMapping} from '../actions/regionMapping';
 import { bindActionCreators } from "redux";
-import { fetchSearchResultsIfNeeded } from '../actions/results';
+import { fetchSearchResultsIfNeeded } from '../actions/datasetSearchActions';
 
 class Search extends Component {
 
   constructor(props) {
     super(props);
     this.debounceUpdateSearchQuery = debounce(this.updateSearchText, 3000);
-    this.goToPage=this.goToPage.bind(this);
     this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
     this.onClickTag = this.onClickTag.bind(this);
     this.updateQuery = this.updateQuery.bind(this);
@@ -104,14 +100,6 @@ class Search extends Component {
   }
 
 
-  /**
-   * Pagination
-   */
-  goToPage(index){
-    this.updateQuery({
-      page: index
-    })
-  }
 
   /**
    * query in this case, is one or more of the params
@@ -136,18 +124,6 @@ class Search extends Component {
     })
   }
 
-   /**
-   * query in this case, is one or more of the params
-   * eg: {'q': 'water'}
-   */
-  updateQuery(query){
-    let {router} = this.context;
-    router.push({
-      pathname: '/search',
-      query: Object.assign(this.props.location.query, query)
-    });
-  }
-
   render() {
     const searchText = this.props.location.query.q || '';
     return (
@@ -162,7 +138,9 @@ class Search extends Component {
                  />
                 }
             </div>
-            <div className="results-count">{this.props.hitCount} results found</div>
+            {searchText.length > 0 &&
+             !this.props.isFetching &&
+             !this.props.hasError && <div className="results-count">{this.props.hitCount} results found</div>}
           </div>
           <div className='row'>
             <div className='col-sm-8'>
@@ -188,11 +166,11 @@ class Search extends Component {
                       onToggleDataset={this.onToggleDataset}
                       openDataset={this.props.location.query.open}
                   />
-                  {this.props.hitCount > 20 &&
+                  {this.props.hitCount > config.resultsPerPage &&
                       <Pagination
                         currentPage={+this.props.location.query.page || 1}
                         maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
-                        goToPage={this.goToPage}
+                        location={this.props.location}
                       />
                    }
                  </div>
@@ -235,16 +213,16 @@ function mapDispatchToProps(dispatch) {
 
 
 function mapStateToProps(state) {
-  let { results } = state;
+  let { datasetSearch } = state;
   return {
-    datasets: results.datasets,
-    hitCount: results.hitCount,
-    isFetching: results.isFetching,
-    progress: results.progress,
-    hasError: results.hasError,
-    strategy: results.strategy,
-    errorMessage: results.errorMessage,
-    freeText: results.freeText,
+    datasets: datasetSearch.datasets,
+    hitCount: datasetSearch.hitCount,
+    isFetching: datasetSearch.isFetching,
+    progress: datasetSearch.progress,
+    hasError: datasetSearch.hasError,
+    strategy: datasetSearch.strategy,
+    errorMessage: datasetSearch.errorMessage,
+    freeText: datasetSearch.freeText,
   }
 }
 

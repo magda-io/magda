@@ -1,28 +1,14 @@
 import React, { Component } from 'react';
-import defined from '../helpers/defined';
-import MarkdownViewer from '../UI/MarkdownViewer';
+
 import TemporalAspectViewer from '../UI/TemporalAspectViewer';
 import SpatialAspectViewer from '../UI/SpatialAspectViewer';
+import OverviewBox from '../UI/OverviewBox';
 import CustomIcons from '../UI/CustomIcons';
-import Star from '../UI/Star';
+import Social from '../Components/Social';
 import { Link } from 'react-router';
 import { connect } from "react-redux";
 import './DatasetDetails.css';
 class DatasetDetails extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      isExpanded: false
-    }
-    this.toggleExpand = this.toggleExpand.bind(this);
-  }
-
-  toggleExpand(){
-    this.setState({
-      isExpanded: !this.state.isExpanded
-    })
-
-  }
   renderDistribution(distribution, datasetId){
     return <div className="media" key={distribution.id}>
               {<div className="media-left"> <CustomIcons className="media-object" name={distribution.format}/></div>}
@@ -42,10 +28,7 @@ class DatasetDetails extends Component {
                 <div className='dataset-details__body col-sm-9'>
                   <div className='dataset-details-overview'>
                     <h3>Overview</h3>
-                    <div className="white-box">
-                      {dataset.description && <MarkdownViewer markdown={dataset.description} stripped={!this.state.isExpanded}/>}
-                      <button onClick={this.toggleExpand} className="overview-toggle btn btn-reset"><i className={`fa fa-chevron-${this.state.isExpanded ? "up" : "down"}`} aria-hidden="true"></i></button>
-                    </div>
+                    <OverviewBox content={dataset.description}/>
                   </div>
 
                   <div className='dataset-details-source'>
@@ -56,24 +39,20 @@ class DatasetDetails extends Component {
                   </div>
                   <div className="dataset-details-spatial-coverage">
                       <h3>Spatial coverage</h3>
-                      <SpatialAspectViewer/>
+                      <SpatialAspectViewer data={dataset.spatialCoverage}/>
                   </div>
                   <div className="dataset-details-temporal-coverage">
                       <h3>Temporal coverage</h3>
-                      <TemporalAspectViewer/>
+                      <TemporalAspectViewer data={dataset.temporalCoverage}/>
                   </div>
               </div>
 
               <div className='dataset-details__sidebar col-sm-3'>
                   <div><button className='btn btn-primary'>Add to project</button></div>
-                  <div><button className='btn btn-default'>Star</button></div>
-                  <div><button className='btn btn-default'>Subscribe</button></div>
-                  <div><button className='btn btn-default'>Share</button></div>
+                  <Social/>
                   <div className="tags">
                     <h5>Tags</h5>
-                    {
-                      dataset.tags && dataset.tags.map(t=><Link className="badge" key={t} to={`/search?${t}`}>{t}</Link>)
-                    }
+                    {dataset.tags && dataset.tags.map(t=><Link className="badge" key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
                   </div>
               </div>
               </div>

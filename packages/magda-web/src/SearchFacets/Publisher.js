@@ -1,6 +1,6 @@
-import {addPublisher, removePublisher, resetPublisher} from '../actions/results';
+import {addPublisher, removePublisher, resetPublisher} from '../actions/datasetSearchActions';
 import {connect} from 'react-redux';
-import {fetchPublisherSearchResults} from '../actions/facetPublisherSearch';
+import {fetchPublisherSearchResults} from '../actions/facetPublisherSearchActions';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'
@@ -81,10 +81,10 @@ Publisher.propTypes = {
 
 
 function mapStateToProps(state) {
-  let { results , facetPublisherSearch} = state;
+  let { datasetSearch , facetPublisherSearch} = state;
   return {
-    publisherOptions: results.publisherOptions,
-    activePublishers: results.activePublishers,
+    publisherOptions: datasetSearch.publisherOptions,
+    activePublishers: datasetSearch.activePublishers,
     publisherSearchResults: facetPublisherSearch.data
   }
 }

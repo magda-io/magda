@@ -5,7 +5,7 @@ import { fetchDatasetFromRegistry, fetchDistributionFromRegistry } from "../acti
 import Tabs from '../UI/Tabs';
 import {config} from '../config';
 import { Link } from 'react-router';
-import NotFoundHandler from '../Components/NotFoundHandler';
+import ErrorHandler from '../Components/ErrorHandler';
 import CustomIcons from '../UI/CustomIcons';
 
 class RecordHandler extends React.Component {
@@ -30,11 +30,9 @@ class RecordHandler extends React.Component {
   }
 
   renderByState(){
-    if(this.props.notFound){
-      return <NotFoundHandler displayText={"No records found"}/>;
-    } else if(this.props.error){
-      return <h2>error</h2>;
-    } else if(this.props.params.distributionId){
+    if(this.props.error){
+      return <ErrorHandler errorCode={this.props.error}/>;
+    } else if (this.props.params.distributionId){
       return (
         <div>
           <div className="container">
@@ -52,7 +50,7 @@ class RecordHandler extends React.Component {
                   <div>Updated {this.props.distribution.updatedDate}</div>
                 </div>
               </div>
-                <Tabs list = {config.distributionTabList} baseUrl = {`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
+                <Tabs list={config.distributionTabList} baseUrl={`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
             </div>
             <div className="tab-content">{this.props.children}</div>
             </div>
@@ -70,7 +68,7 @@ class RecordHandler extends React.Component {
                 <div>Updated {this.props.dataset.updatedDate}</div>
             </div>
           </div>
-          <Tabs list = {config.datasetTabList} baseUrl = {`/dataset/${this.props.params.datasetId}`}/>
+          <Tabs list={config.datasetTabList} baseUrl={`/dataset/${this.props.params.datasetId}`}/>
           <div className="tab-content">{this.props.children}</div>
       </div>
     );
@@ -79,7 +77,7 @@ class RecordHandler extends React.Component {
   render() {
     return (
       <div>
-          {this.renderByState()}
+          {!this.props.isFetching && this.renderByState()}
       </div>
     );
   }
@@ -91,10 +89,9 @@ function mapStateToProps(state) {
   const distribution=record.distribution;
   const isFetching=record.isFetching;
   const error=record.error;
-  const notFound=record.notFound;
 
   return {
-    dataset, distribution, isFetching, error, notFound
+    dataset, distribution, isFetching, error
   };
 }
 
@@ -110,8 +107,7 @@ RecordHandler.propTypes = {
   distribution: React.PropTypes.object,
   location: React.PropTypes.object.isRequired,
   isFetching: React.PropTypes.bool.isRequired,
-  notFound: React.PropTypes.bool.isRequired,
-  error: React.PropTypes.object
+  error: React.PropTypes.number
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(RecordHandler);

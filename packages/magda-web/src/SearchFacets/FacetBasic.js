@@ -82,6 +82,7 @@ class FacetBasic extends Component {
               </div>
                <ul className='list-unstyled'>
                  {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
+                 {this.props.options.length === 0 && <li className="no-data">No {this.props.id}</li>}
                </ul>
                <ToggleList list={inactiveOptions}
                            defaultLength={defaultSize}

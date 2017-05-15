@@ -22,7 +22,6 @@ class DropDown extends Component {
 
   toggle(ev){
     ev.preventDefault();
-    debugger
     this.setState({
       isOpen: !this.state.isOpen
     })

@@ -2,10 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router';
 import './Tabs.css';
 class Tabs extends Component {
-    constructor(props) {
-      super(props);
-    }
-
     render(){
       return (<div className="tabs">
             <ul className="nav nav-tabs container">

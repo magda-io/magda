@@ -10,11 +10,11 @@ const initialData = {
 
 const facetPublisher = (state: FacetSearchState = initialData, action: Action ) => {
   switch (action.type) {
-    case 'REQUEST_PUBLISHERS':
+    case 'FACET_REQUEST_PUBLISHERS':
       return Object.assign({}, state, {
         isFetching: true
       })
-    case 'RECEIVE_PUBLISHERS':
+    case 'FACET_RECEIVE_PUBLISHERS':
       return Object.assign({}, state, {
         isFetching: false,
         data: (action.json && action.json.options) && action.json.options,

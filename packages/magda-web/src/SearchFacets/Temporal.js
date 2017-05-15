@@ -1,4 +1,4 @@
-import {setDateFrom, setDateTo, resetDateFrom, resetDateTo} from '../actions/results';
+import {setDateFrom, setDateTo, resetDateFrom, resetDateTo} from '../actions/datasetSearchActions';
 import {connect} from 'react-redux';
 import defined from '../helpers/defined';
 import FacetTemporal from './FacetTemporal';
@@ -61,11 +61,11 @@ Temporal.propTypes = {
 
 
 function mapStateToProps(state) {
-  let { results} = state;
+  let { datasetSearch} = state;
   return {
-    temporalOptions: results.temporalOptions,
-    activeDateFrom: results.activeDateFrom,
-    activeDateTo: results.activeDateTo,
+    temporalOptions: datasetSearch.temporalOptions,
+    activeDateFrom: datasetSearch.activeDateFrom,
+    activeDateTo: datasetSearch.activeDateTo,
   }
 }
 

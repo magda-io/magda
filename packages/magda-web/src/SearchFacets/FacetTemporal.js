@@ -4,7 +4,6 @@ import FacetHeader from './FacetHeader';
 import maxBy from 'lodash.maxby';
 import max from 'lodash.max';
 import min from 'lodash.min';
-import DragBar from './DragBar';
 import defined from '../helpers/defined';
 
 // the date range facet facet, extends facet component

@@ -32,7 +32,7 @@ export default class DatasetSummary extends Component {
   }
 
   renderDownloadLink(d){
-    return <div className={`media clearfix ${d.format}`}>
+    return <div className={`media clearfix ${d.format} dataset-summary__media-object`}>
             <div className='media-left'>
               {<CustomIcons name={d.format}/>}
             </div>

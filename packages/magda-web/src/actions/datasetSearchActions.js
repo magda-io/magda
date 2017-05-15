@@ -31,7 +31,8 @@ export function transferFailed(errorMessage: string): Action{
 
 export function fetchSearchResults(query: string): Store {
   return (dispatch: Dispatch)=>{
-    let url : string = config.searchApiBaseUrl + `search/datasets?query=${query}`;
+    let url : string = config.searchApiBaseUrl + `datasets?query=${query}`;
+    console.log(url);
     dispatch(requestResults(query))
     return fetch(url)
     .then(response => {
@@ -47,12 +48,12 @@ export function fetchSearchResults(query: string): Store {
 }
 
 export function shouldFetchSearchResults(state: Object, keyword: string, query: string): boolean{
-  const results = state.results;
-  if(!results || !keyword || keyword.length === 0 ){
+  const datasetSearch = state.datasetSearch;
+  if(!datasetSearch || !keyword || keyword.length === 0 ){
     return false
-  } else if(results.isFetching){
+  } else if(datasetSearch.isFetching){
     return false
-  } else if(query !== results.apiQuery){
+  } else if(query !== datasetSearch.apiQuery){
     return true
   } else{
     return false
@@ -61,7 +62,6 @@ export function shouldFetchSearchResults(state: Object, keyword: string, query: 
 
 export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
   const apiQuery = parseQuery(urlQueryObject);
-
   return (dispatch, getState)=>{
     if(shouldFetchSearchResults(getState(), urlQueryObject.q,  apiQuery)){
       return dispatch(fetchSearchResults(apiQuery))

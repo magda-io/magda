@@ -1,6 +1,6 @@
-import {addFormat, removeFormat, resetFormat} from '../actions/results';
+import {addFormat, removeFormat, resetFormat} from '../actions/datasetSearchActions';
 import {connect} from 'react-redux';
-import {fetchFormatSearchResults} from '../actions/facetFormatSearch';
+import {fetchFormatSearchResults} from '../actions/facetFormatSearchActions';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'
@@ -81,10 +81,10 @@ Format.propTypes = {
 
 
 function mapStateToProps(state) {
-  let { results , facetFormatSearch} = state;
+  let { datasetSearch , facetFormatSearch} = state;
   return {
-    formatOptions: results.formatOptions,
-    activeFormats: results.activeFormats,
+    formatOptions: datasetSearch.formatOptions,
+    activeFormats: datasetSearch.activeFormats,
     formatSearchResults: facetFormatSearch.data
   }
 }

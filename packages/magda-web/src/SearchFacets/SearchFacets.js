@@ -20,6 +20,11 @@ class SearchFacets extends Component {
       openFacet: null
     })
   }
+
+  componentWillUnmount(){
+    const that = this;
+    window.removeEventListener("click", that.closeFacet)
+  }
   
 
   toggleFacet(facet){

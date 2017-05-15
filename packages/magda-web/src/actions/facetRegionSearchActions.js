@@ -7,14 +7,14 @@ import type { Action, FacetSearchJson } from '../types';
 
 export function requestRegions(facetQuery: string ): Action{
   return {
-    type: actionTypes.REQUEST_REGIONS,
+    type: actionTypes.FACET_REQUEST_REGIONS,
     facetQuery
   }
 }
 
 export function receiveRegions(facetQuery: string , json: Object ): Action{
   return {
-    type: actionTypes.RECEIVE_REGIONS,
+    type: actionTypes.FACET_RECEIVE_REGIONS,
     json: json,
     facetQuery
   }

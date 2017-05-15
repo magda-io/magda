@@ -5,7 +5,6 @@ import DropDown from '../UI/DropDown';
 import FacetHeader from './FacetHeader';
 import RegionMap from './RegionMap';
 import FacetSearchBox from './FacetSearchBox';
-import RegionSummary from './RegionSummary';
 import defined from '../helpers/defined';
 import {parseRegion} from '../helpers/api';
 import RegionSummray from './RegionSummary';

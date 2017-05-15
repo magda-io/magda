@@ -9,8 +9,13 @@ class Pagination extends Component {
     }
 
     onClick(i){
-      this.props.goToPage(i);
+      let {router} = this.context;
+      router.push({
+        pathname: this.props.location.pathname,
+        query: Object.assign(this.props.location.query, {page: i})
+      });
     }
+
 
     render(){
       let currentPage = this.props.currentPage;
@@ -46,7 +51,12 @@ class Pagination extends Component {
     }
 }
 
-Pagination.propTypes = {currentPage: React.PropTypes.number, maxPage: React.PropTypes.number, goToPage: React.PropTypes.func};
+Pagination.contextTypes ={
+  router: React.PropTypes.object.isRequired,
+}
+
+
+Pagination.propTypes = {currentPage: React.PropTypes.number, maxPage: React.PropTypes.number};
 Pagination.defaultProps = { currentPage: 1, maxPage: 10};
 
 export default Pagination;

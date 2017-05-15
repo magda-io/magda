@@ -40,12 +40,7 @@ const record = (state: RecordResult = initialData, action: recordAction) => {
         isFetching: false,
         error: action.error,
       })
-    case 'DATASET_NOT_FOUND':
-      return Object.assign({}, state, {
-        isFetching: false,
-        notFound:  true
-      })
-      case 'REQUEST_DISTRIBUTION':
+    case 'REQUEST_DISTRIBUTION':
       return Object.assign({}, state, {
         isFetching: true
       })
@@ -58,11 +53,6 @@ const record = (state: RecordResult = initialData, action: recordAction) => {
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,
-      })
-    case 'DISTRIBUTION_NOT_FOUND':
-      return Object.assign({}, state, {
-        isFetching: false,
-        notFound:  true
       })
     default:
       return state

@@ -35,6 +35,7 @@
     "lodash.maxby": "^4.6.0",
     "lodash.min": "^4.0.1",
     "lodash.minby": "^4.6.0",
+    "markdown-with-front-matter-loader": "^0.1.0",
     "marked": "^0.3.6",
     "node-sass": "^4.5.0",
     "pretty-date": "^0.2.0",

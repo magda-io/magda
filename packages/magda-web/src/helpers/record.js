@@ -10,7 +10,7 @@ export function parseDistribution(record) {
 
   const format = info.format || "Unknown format";
   const downloadUrl = info.downloadURL || "No downloads available";
-  const updatedDate = info.modified ? getDateString(info.modified) : "Unknown updated date";
+  const updatedDate = info.modified ? getDateString(info.modified) : "unknown date";
   const license = info.license || "License restrictions unknown";
   const description = info.description || "No description provided";
 
@@ -23,6 +23,8 @@ export function parseDataset(dataset) {
   const datasetInfo = aspect["dcat-dataset-strings"] || {};
   const distribution = aspect["dataset-distributions"] || {};
   const distributions = distribution["distributions"] || [];
+  const temporalCoverage = aspect["temporal-coverage"];
+  const spatialCoverage = aspect["spatial-coverage"];
 
   const description = datasetInfo.description || 'No description provided';
   const publisher = datasetInfo.publisher || 'Unknown publisher';
@@ -30,7 +32,7 @@ export function parseDataset(dataset) {
   const landingPage = datasetInfo.landingPage;
   const title = datasetInfo.title;
   const issuedDate= datasetInfo.issued || 'Unknown issued date';
-  const updatedDate = datasetInfo.modified ? getDateString(datasetInfo.modified) : 'Unknown updated date';
+  const updatedDate = datasetInfo.modified ? getDateString(datasetInfo.modified) : 'unknown date';
 
   const source = distributions.map(d=> {
       const distributionAspects = d["aspects"] || {};
@@ -46,6 +48,6 @@ export function parseDataset(dataset) {
       }
   });
   return {
-      title,issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source
+      title,issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source, temporalCoverage, spatialCoverage
   }
 };

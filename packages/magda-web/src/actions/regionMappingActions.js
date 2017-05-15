@@ -1,10 +1,8 @@
 // @flow
-
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import type { Action, FacetSearchJson } from '../types';
-
 
 
 export function requestRegionMapping(): Action{
@@ -24,7 +22,7 @@ export function receiveRegionMapping(json: Object): Action{
 export function fetchRegionMapping() {
   return (dispatch: Function)=>{
     dispatch(requestRegionMapping())
-    return fetch(config.searchApiBaseUrl + 'search/region-types')
+    return fetch(config.searchApiBaseUrl + 'region-types')
     .then(response => response.json())
     .then((json: FacetSearchJson) =>
       dispatch(receiveRegionMapping(json))

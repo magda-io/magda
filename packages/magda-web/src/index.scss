@@ -91,3 +91,22 @@ input[type=text].form-control{
     margin: 0;
   }
 }
+
+.license{
+  font-size: 1rem;
+  color: #16A085;
+}
+
+.nav>li>a:focus, .nav>li>a:hover{
+  background: transparent;
+}
+
+.badge{
+  background: $badge-bg;
+  margin-bottom: 5px;
+  color: #000;
+  font-weight: normal;
+  border-radius: 5px;
+  padding: 7px;
+  margin-right: 5px;
+}

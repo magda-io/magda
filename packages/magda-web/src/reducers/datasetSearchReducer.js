@@ -33,7 +33,7 @@ const initialData = {
   errorMessage: ''
 }
 
-const results = (state: SearchState= initialData, action: DataAction) => {
+const datasetSearchReducer = (state: SearchState= initialData, action: DataAction) => {
   switch (action.type) {
     case 'REQUEST_RESULTS':
       return Object.assign({}, state, {
@@ -155,4 +155,4 @@ const results = (state: SearchState= initialData, action: DataAction) => {
       return state
   }
 };
-export default results;
+export default datasetSearchReducer;
