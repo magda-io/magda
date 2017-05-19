@@ -3,7 +3,7 @@ import { EditorState, convertFromRaw } from "draft-js";
 import Editor from "draft-js-plugins-editor";
 import prettydate from 'pretty-date';
 
-import base from "../../Base";
+import base from "../../RealtimeData/Base";
 import pluginsFn from "./Plugins/Plugins";
 import "./Message.css";
 
@@ -34,6 +34,17 @@ export default class Message extends React.Component {
     });
   }
 
+  componentDidMount() {
+    // Update the amount of time every minute.
+    this.interval = setInterval(() => {
+      this.forceUpdate();
+    }, 60000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+
   componentWillReceiveProps(props) {
     this.setState({
       editorState: EditorState.push(
@@ -49,16 +60,24 @@ export default class Message extends React.Component {
     });
   }
 
+  filter(value) {
+    if (typeof value === "object" && Object.keys(value).length === 0) {
+      return;
+    } else {
+      return value;
+    }
+  }
+
   render() {
     return (
       <div className="cc-message">
         <img
           className="cc-message__avatar"
-          src={this.state.userAvatar}
+          src={this.filter(this.state.userAvatar) || ""}
         />
 
         <div className="cc-message__right-of-avatar">
-          <strong>{this.state.userName}</strong>{" "}
+          <strong>{this.filter(this.state.userName) || "Unknown"}</strong>{" "}
           <small>{this.props.comment.date && prettydate.format(new Date(this.props.comment.date))}</small>
           <Editor
             onChange={this.onEditorChange.bind(this)}

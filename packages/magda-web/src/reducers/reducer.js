@@ -10,6 +10,7 @@ import regionMapping from './regionMappingReducer';
 import record from './recordReducer';
 import publisher from './publisherReducer';
 import project from './projectReducer';
+import userManagement from './userManagementReducer';
 
 import { combineReducers } from 'redux';
 
@@ -22,6 +23,7 @@ const reducer = combineReducers({
   record,
   publisher,
   project,
+  user: userManagement
 });
 
 export default reducer;

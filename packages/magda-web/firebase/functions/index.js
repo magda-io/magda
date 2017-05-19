@@ -8,14 +8,10 @@ exports.addUserToDatabase = functions.auth.user().onCreate(event => {
 
   const userData = firebase.database().ref(`/users/${user.uid}`);
 
+  console.log(user);
+
   return userData
-    .set({
-      uid: user.uid,
-      displayName: user.displayName,
-      email: user.email,
-      photoURL: user.photoURL,
-      metadata: user.metadata
-    })
+    .set(user)
     .catch(e => {
       console.error(e);
       throw e;

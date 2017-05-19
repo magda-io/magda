@@ -14,7 +14,7 @@ import AppContainer from './Components/AppContainer';
 
 import Feedback from './Components/Feedback';
 import Contact from './Components/Contact';
-import Account from './Components/Account';
+import Account from './Components/Account/Account';
 
 import { Provider } from 'react-redux';
 import reducer from './reducers/reducer';
@@ -34,6 +34,8 @@ import DistributionDetails from './Dataset/DistributionDetails';
 import DistributionMap from './Dataset/DistributionMap';
 import DistributionChart from './Dataset/DistributionChart';
 
+import setupUserManagement from './RealtimeData/setupUserManagement';
+
 let baseurl = location.pathname;
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
@@ -45,6 +47,8 @@ const store = createStore(
      // loggerMiddleware // neat middleware that logs actions
    )
 )
+
+setupUserManagement(store);
 
 hashHistory.listen (location=>{
   window.ga('set', 'location', document.location);

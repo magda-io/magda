@@ -3,9 +3,9 @@ import ReactDOM from "react-dom";
 import Editor from "draft-js-plugins-editor";
 import { fromJS } from "immutable";
 import { Editor as DraftEditor, EditorState, ContentState } from "draft-js";
-import {Link} from 'react-router';
+import { Link } from "react-router";
 
-import base from "../../Base";
+import base from "../../RealtimeData/Base";
 import Message from "./Message";
 import EntryBox from "./EntryBox";
 import "draft-js-mention-plugin/lib/plugin.css";
@@ -22,7 +22,7 @@ export default class CrappyChat extends React.Component {
   }
 
   componentDidMount() {
-    this.unsubscribeDiscussionsListener = base.listenTo(
+    this.subscribeDiscussionsListener = base.listenTo(
       `dataset-discussions/${this.props.datasetId}`,
       {
         context: this,
@@ -35,7 +35,7 @@ export default class CrappyChat extends React.Component {
       }
     );
 
-    this.unsubscribeOnAuthChanged = base.auth().onAuthStateChanged(user => {    
+    this.unsubscribeOnAuthChanged = base.auth().onAuthStateChanged(user => {
       if (user) {
         this.setState({ user });
       } else {
@@ -45,7 +45,9 @@ export default class CrappyChat extends React.Component {
   }
 
   componentWillUnmount() {
-    // this.unsubscribeDiscussionsListener();
+    this.unsubscribeOnAuthChanged();
+
+    base.removeBinding(this.subscribeDiscussionsListener);
   }
 
   _newChat(message) {
@@ -92,8 +94,6 @@ export default class CrappyChat extends React.Component {
   }
 
   render() {
-    console.log(this.state.user);
-
     return (
       <div>
 
