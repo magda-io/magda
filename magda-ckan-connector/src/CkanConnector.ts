@@ -2,10 +2,10 @@ import AspectBuilder from './AspectBuilder';
 import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/registry/api';
 import Ckan, { CkanThing, CkanDataset, CkanResource, CkanOrganization } from './Ckan';
 import CkanConnectionResult from './CkanConnectionResult';
-import Registry from './Registry';
-import AsyncPage, { forEachAsync } from './AsyncPage';
+import Registry from '@magda/typescript-common/lib/Registry';
+import AsyncPage, { forEachAsync } from '@magda/typescript-common/lib/AsyncPage';
 import * as moment from 'moment';
-import createServiceError from './createServiceError';
+import createServiceError from '@magda/typescript-common/lib/createServiceError';
 import * as URI from 'urijs';
 
 interface ReportProblem {

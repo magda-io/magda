@@ -6,6 +6,7 @@
     "magda-int-test/",
     "magda-registry-api/",
     "magda-registry-aspects/",
+    "magda-typescript-common/",
     "magda-registry-datastore/",
     "magda-reverse-proxy/",
     "magda-scala-common/",

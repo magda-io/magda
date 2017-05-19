@@ -1,8 +1,8 @@
 import * as URI from 'urijs';
 import * as request from 'request';
-import retry from './retry';
-import formatServiceError from './formatServiceError';
-import AsyncPage from './AsyncPage';
+import retry from '@magda/typescript-common/lib/retry';
+import formatServiceError from '@magda/typescript-common/lib/formatServiceError';
+import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
 
 export interface CkanThing {
     id: string;

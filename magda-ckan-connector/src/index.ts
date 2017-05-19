@@ -1,14 +1,8 @@
 import AspectBuilder from './AspectBuilder';
-import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api';
-import retry from './retry';
 import Ckan from './Ckan';
 import CkanConnector from './CkanConnector';
-import Registry from './Registry';
+import Registry from '@magda/typescript-common/lib/Registry';
 import * as fs from 'fs';
-import * as request from 'request';
-import formatServiceError from './formatServiceError';
-import * as URI from 'urijs';
-import * as moment from 'moment';
 
 const ckan = new Ckan({
     baseUrl: 'https://data.gov.au/',
