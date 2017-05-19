@@ -3,8 +3,12 @@
     "title": "Aspect for capturing basic details of an organization",
     "type": "object",
     "properties": {
+        "name": {
+            "title": "A short name given to the organization.",
+            "type": "string"
+        },
         "title": {
-            "title": "A name given to the organization",
+            "title": "A name given to the organization.",
             "type": "string"
         },
         "description": {

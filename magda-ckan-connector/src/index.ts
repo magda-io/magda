@@ -1,7 +1,8 @@
+import AspectBuilder from './AspectBuilder';
 import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api';
 import retry from './retry';
 import Ckan from './Ckan';
-import CkanConnector, { AspectBuilder } from './CkanConnector';
+import CkanConnector from './CkanConnector';
 import Registry from './Registry';
 import * as fs from 'fs';
 import * as request from 'request';
@@ -109,7 +110,7 @@ const organizationAspectBuilders: AspectBuilder[] = [
     },
     {
         aspectDefinition: {
-            id: 'organization',
+            id: 'organization-details',
             name: 'Organization',
             jsonSchema: require('@magda/registry-aspects/organization-details.schema.json')
         },

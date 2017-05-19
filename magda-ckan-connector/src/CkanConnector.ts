@@ -1,79 +1,25 @@
+import AspectBuilder from './AspectBuilder';
 import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/registry/api';
 import Ckan, { CkanThing, CkanDataset, CkanResource, CkanOrganization } from './Ckan';
+import CkanConnectionResult from './CkanConnectionResult';
 import Registry from './Registry';
 import AsyncPage, { forEachAsync } from './AsyncPage';
 import * as moment from 'moment';
 import createServiceError from './createServiceError';
 import * as URI from 'urijs';
 
-export interface AspectBuilder {
-    aspectDefinition: AspectDefinition,
-    builderFunctionString: string,
-    setupFunctionString?: string
-}
-
-export interface CkanConnectorOptions {
-    ckan: Ckan,
-    registry: Registry,
-    datasetAspectBuilders?: AspectBuilder[],
-    distributionAspectBuilders?: AspectBuilder[],
-    organizationAspectBuilders?: AspectBuilder[],
-    ignoreHarvestSources?: string[],
-    maxConcurrency?: number
-}
-
-interface CompiledAspects {
-    parameterNames: string[];
-    parameters: BuilderFunctionParameters;
-    aspects: CompiledAspect[];
-}
-
-interface CompiledAspect {
-    id: string,
-    builderFunction: Function,
-    setupResult: any
-}
-
-interface Aspects {
-    [propName: string]: any;
-}
-
-interface ProblemReport {
-    title: string,
-    message?: string,
-    additionalInfo?: any
-}
-
 interface ReportProblem {
     (title: string, message?: string, additionalInfo?: any): void
 }
 
-class BuilderFunctionLibraries {
-    /**
-     * The [moment.js](https://momentjs.com) library.
-     *
-     * @type {moment.Moment}
-     * @memberOf BuilderFunctionLibraries
-     */
-    moment: typeof moment = undefined;
-
-    /**
-     * The [URI.js](https://medialize.github.io/URI.js/) library.
-     *
-     * @type {typeof URI}
-     * @memberOf BuilderFunctionLibraries
-     */
-    URI: typeof URI = undefined;
-}
-
-class BuilderSetupFunctionParameters {
+interface BuilderSetupFunctionParameters {
     /**
      * The source of this item for which we are building aspects.
      *
      * @type {Ckan}
      * @memberOf BuilderFunctionParameters
      */
-    source: Ckan = undefined;
+    source: Ckan;
 
     /**
      * The registry to be populated with records created from the CKAN datasets and resources.
@@ -81,7 +27,7 @@ class BuilderSetupFunctionParameters {
      * @type {Registry}
      * @memberOf BuilderSetupFunctionParameters
      */
-    registry: Registry = undefined;
+    registry: Registry;
 
     /**
      * Provides access to utility libraries that may be helpful in setting up the builder.
@@ -89,9 +35,7 @@ class BuilderSetupFunctionParameters {
      * @type {BuilderFunctionLibraries}
      * @memberOf BuilderFunctionParameters
      */
-    libraries: BuilderFunctionLibraries = undefined;
-
-    [propName: string]: any;
+    libraries: BuilderFunctionLibraries;
 }
 
 abstract class BuilderFunctionParameters {
@@ -192,14 +136,6 @@ class OrganizationBuilderFunctionParameters extends BuilderFunctionParameters {
     }
 }
 
-export class CkanConnectionResult {
-    public aspectDefinitionsConnected: number = 0;
-    public datasetsConnected: number = 0;
-    public distributionsConnected: number = 0;
-    public organizationsConnected: number = 0;
-    public errors: { aspectDefinitionId?: string, datasetId?: string, resourceId?: string, organizationId?: string, error: Error }[] = [];
-}
-
 export default class CkanConnector {
     private ckan: Ckan;
     private registry: Registry;
@@ -241,13 +177,16 @@ export default class CkanConnector {
     async run(): Promise<CkanConnectionResult> {
         const connectionResult = new CkanConnectionResult();
 
-        const libraries = new BuilderFunctionLibraries();
-        libraries.moment = moment;
-        libraries.URI = URI;
+        const libraries: BuilderFunctionLibraries = {
+            moment,
+            URI
+        };
 
-        const setupParameters = new BuilderSetupFunctionParameters();
-        setupParameters.libraries = libraries;
-        setupParameters.source = this.ckan;
+        const setupParameters: BuilderSetupFunctionParameters = {
+            source: this.ckan,
+            registry: this.registry,
+            libraries
+        };
 
         const datasetParameters = new DatasetBuilderFunctionParameters();
         datasetParameters.libraries = libraries;
@@ -396,7 +335,8 @@ function buildersToCompiledAspects(connectionResult: CkanConnectionResult, build
                 let setupResult = undefined;
                 if (builder.setupFunctionString) {
                     const setupFunction = new Function(...setupParameterNames, builder.setupFunctionString);
-                    setupResult = setupFunction.apply(undefined, setupParameterNames.map(name => setupParameters[name]));
+                    const setupParametersUntyped: any = setupParameters;
+                    setupResult = setupFunction.apply(undefined, setupParameterNames.map(name => setupParametersUntyped[name]));
                 }
 
                 const builderFunction = new Function(...buildParameterNames, builder.builderFunctionString);
@@ -412,4 +352,54 @@ function buildersToCompiledAspects(connectionResult: CkanConnectionResult, build
             }
         })
     };
+}
+
+interface CkanConnectorOptions {
+    ckan: Ckan,
+    registry: Registry,
+    datasetAspectBuilders?: AspectBuilder[],
+    distributionAspectBuilders?: AspectBuilder[],
+    organizationAspectBuilders?: AspectBuilder[],
+    ignoreHarvestSources?: string[],
+    maxConcurrency?: number
+}
+
+interface CompiledAspects {
+    parameterNames: string[];
+    parameters: BuilderFunctionParameters;
+    aspects: CompiledAspect[];
+}
+
+interface CompiledAspect {
+    id: string,
+    builderFunction: Function,
+    setupResult: any
+}
+
+interface Aspects {
+    [propName: string]: any;
+}
+
+interface ProblemReport {
+    title: string,
+    message?: string,
+    additionalInfo?: any
+}
+
+interface BuilderFunctionLibraries {
+    /**
+     * The [moment.js](https://momentjs.com) library.
+     *
+     * @type {moment.Moment}
+     * @memberOf BuilderFunctionLibraries
+     */
+    moment: typeof moment;
+
+    /**
+     * The [URI.js](https://medialize.github.io/URI.js/) library.
+     *
+     * @type {typeof URI}
+     * @memberOf BuilderFunctionLibraries
+     */
+    URI: typeof URI;
 }
