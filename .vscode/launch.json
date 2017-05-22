@@ -6,6 +6,12 @@
     "configurations": [
         {
             "type": "node",
+            "request": "attach",
+            "name": "Attach",
+            "port": 5858
+        },
+        {
+            "type": "node",
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch CKAN Connector",
