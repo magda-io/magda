@@ -1,0 +1,38 @@
+# Postgres for Auth
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: auth-db
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: auth-db
+    spec:
+      containers:
+      - name: auth-db
+        image: localhost:5000/data61/magda-auth-db:latest
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: data
+      volumes:
+      - name: data
+        hostPath:
+          path: /tmp/authDbData
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-db
+spec:
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    nodePort: 30544
+  selector:
+    service: auth-db
+  type: "NodePort"

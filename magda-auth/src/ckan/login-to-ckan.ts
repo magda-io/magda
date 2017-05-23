@@ -1,10 +1,18 @@
 require("isomorphic-fetch");
 require("isomorphic-form-data");
 
+import { Either } from 'tsmonad';
+
 const cheerio = require("cheerio");
 const gravatar = require("gravatar");
+import * as passport from 'passport';
 
-function loginToCkan(username, password) {
+namespace loginToCkan {
+  export type Failure = string;
+  export type Success = passport.Profile
+}
+
+function loginToCkan(username: string, password: string): Promise<Either<loginToCkan.Failure, loginToCkan.Success>> {
   return fetch("https://data.gov.au/login_generic?came_from=/user/logged_in", {
     method: "POST",
     redirect: "manual",
@@ -16,9 +24,7 @@ function loginToCkan(username, password) {
     const cookies = res.headers.get("set-cookie");
 
     if (!cookies) {
-      return {
-        result: "unauthorized"
-      };
+      return Promise.resolve(Either.left<loginToCkan.Failure, loginToCkan.Success>("unauthorized"));
     }
 
     const relevantCookie = cookies.split(";")[0];
@@ -27,7 +33,7 @@ function loginToCkan(username, password) {
   });
 }
 
-function afterLoginSuccess(cookies, username) {
+function afterLoginSuccess(cookies: string, username: string): Promise<Either<loginToCkan.Failure, loginToCkan.Success>> {
   return fetch("https://data.gov.au/user/edit/" + username, {
     headers: {
       cookie: cookies
@@ -36,29 +42,26 @@ function afterLoginSuccess(cookies, username) {
     if (secondRes.status === 200) {
       return parseUser(secondRes);
     } else {
-      return {
-        result: "unauthorized"
-      };
+      return Promise.resolve(Either.left<loginToCkan.Failure, loginToCkan.Success>("unauthorized"));
     }
   });
 }
 
-function parseUser(res) {
+function parseUser(res: Response): Promise<Either<loginToCkan.Failure, loginToCkan.Success>> {
   return res.text().then(text => {
     const $ = cheerio.load(text);
 
     const email = $("#field-email").attr("value");
     const displayName = $("#field-fullname").attr("value");
 
-    return {
-      result: "success",
-      profile: {
-        displayName,
-        emails: [{value: email}],
-        photos: [{value: gravatar.url(email)}]
-      }
-    };
+    return Promise.resolve(Either.right<loginToCkan.Failure, loginToCkan.Success>({
+      id: "0",
+      provider: 'ckan',
+      displayName,
+      emails: [{ value: email }],
+      photos: [{ value: gravatar.url(email) }]
+    }))
   });
 }
 
-module.exports = loginToCkan;
+export default loginToCkan;

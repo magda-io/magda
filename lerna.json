@@ -10,6 +10,8 @@
     "magda-reverse-proxy/",
     "magda-scala-common/",
     "magda-search-api/",
+    "magda-auth/",
+    "magda-auth-db/",
     "scripts/"
   ],
   "version": "0.0.26-SNAPSHOT",
