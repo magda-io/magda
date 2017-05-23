@@ -12,7 +12,13 @@ export default class ProjectOpenDataConnector extends JsonConnector {
     private dataPromise: Promise<object>;
 
     constructor(options: ProjectOpenDataConnectorOptions) {
-        super(options);
+        const source = {
+            name: options.name,
+            url: options.url
+        };
+
+        super(Object.assign({}, options, { source }));
+
         this.url = options.url;
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
         this.maxRetries = options.maxRetries || 10;
@@ -80,6 +86,7 @@ export default class ProjectOpenDataConnector extends JsonConnector {
 }
 
 export interface ProjectOpenDataConnectorOptions extends JsonConnectorOptions {
+    name: string,
     url: string,
     secondsBetweenRetries?: number;
     maxRetries?: number;

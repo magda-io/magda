@@ -84,7 +84,7 @@ export default abstract class JsonConnector {
     }
 
     datasetJsonToRecord(jsonDataset: object): Record {
-        this.organizationAspects.parameters.dataset = jsonDataset;
+        this.datasetAspects.parameters.dataset = jsonDataset;
 
         const id = this.getIdFromJsonDataset(jsonDataset);
         const name = this.getNameFromJsonDataset(jsonDataset);
@@ -92,8 +92,8 @@ export default abstract class JsonConnector {
     }
 
     distributionJsonToRecord(jsonDistribution: object, jsonDataset: object): Record {
-        this.organizationAspects.parameters.dataset = jsonDataset;
-        this.organizationAspects.parameters.distribution = jsonDistribution;
+        this.distributionAspects.parameters.dataset = jsonDataset;
+        this.distributionAspects.parameters.distribution = jsonDistribution;
 
         const id = this.getIdFromJsonDistribution(jsonDistribution, jsonDataset);
         const name = this.getNameFromJsonDistribution(jsonDistribution, jsonDataset);
