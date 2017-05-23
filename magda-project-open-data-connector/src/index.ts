@@ -13,6 +13,8 @@ const registry = new Registry({
 const connector = new ProjectOpenDataConnector({
     name: 'Logan City Council',
     url: 'http://data-logancity.opendata.arcgis.com/data.json',
+    // name: 'US Department of Energy',
+    // url: 'https://www.energy.gov/sites/prod/files/2017/05/f34/doe-pdl-5-19-2017.json',
     source: null,
     registry: registry,
     libraries: {

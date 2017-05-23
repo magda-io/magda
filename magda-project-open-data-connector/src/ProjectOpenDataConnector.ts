@@ -57,7 +57,7 @@ export default class ProjectOpenDataConnector extends JsonConnector {
         return AsyncPage.singlePromise<object[]>(this.dataPromise.then((response: any) => response.dataset));
     }
     protected getJsonDistributions(dataset: any): AsyncPage<object[]> {
-        return AsyncPage.single<object[]>(dataset.distribution);
+        return AsyncPage.single<object[]>(dataset.distribution || []);
     }
 
     protected getIdFromJsonOrganization(jsonOrganization: any): string {

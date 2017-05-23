@@ -176,17 +176,20 @@ export default abstract class JsonConnector {
                 ++result.datasetsConnected;
 
                 const distributions = this.getJsonDistributions(dataset);
-                await forEachAsync(distributions, 1, async distribution => {
-                    const recordOrError = await this.createDistribution(distribution, dataset);
-                    if (recordOrError instanceof Error) {
-                        result.distributionFailures.push(new CreationFailure(
-                            this.getIdFromJsonDistribution(distribution, dataset),
-                            this.getIdFromJsonDataset(dataset),
-                            recordOrError));
-                    } else {
-                        ++result.distributionsConnected;
-                    }
-                });
+                console.log(distributions);
+                if (distributions) {
+                    await forEachAsync(distributions, 1, async distribution => {
+                        const recordOrError = await this.createDistribution(distribution, dataset);
+                        if (recordOrError instanceof Error) {
+                            result.distributionFailures.push(new CreationFailure(
+                                this.getIdFromJsonDistribution(distribution, dataset),
+                                this.getIdFromJsonDataset(dataset),
+                                recordOrError));
+                        } else {
+                            ++result.distributionsConnected;
+                        }
+                    });
+                }
             }
         });
 
