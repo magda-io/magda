@@ -6,6 +6,7 @@
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts"
   },
   "dependencies": {
+    "@types/pg": "^6.1.40",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "connect-ensure-login": "^0.1.1",

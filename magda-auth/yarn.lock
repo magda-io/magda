@@ -36,6 +36,19 @@
   dependencies:
     "@types/express" "*"
 
+"@types/pg-types@*":
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/@types/pg-types/-/pg-types-1.11.1.tgz#eab15cbe339dd8009112b2a6e225d78165e66f54"
+  dependencies:
+    moment ">=2.14.0"
+
+"@types/pg@^6.1.40":
+  version "6.1.40"
+  resolved "https://registry.yarnpkg.com/@types/pg/-/pg-6.1.40.tgz#0af6f342fa7e17dacd966ac188774932cc02c193"
+  dependencies:
+    "@types/node" "*"
+    "@types/pg-types" "*"
+
 "@types/serve-static@*":
   version "1.7.31"
   resolved "https://registry.yarnpkg.com/@types/serve-static/-/serve-static-1.7.31.tgz#15456de8d98d6b4cff31be6c6af7492ae63f521a"
@@ -1282,6 +1295,10 @@ minimist@^1.2.0:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
+
+moment@>=2.14.0:
+  version "2.18.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
 
 morgan@^1.6.1:
   version "1.8.1"

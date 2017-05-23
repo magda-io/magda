@@ -1,7 +1,7 @@
 <p>
 Name: <%= user.displayName %><br/>
-Email: <%= user.emails[0].value %><br/>
-<img src="<%= user.photos[0].value %>">
+Email: <%= user.email %><br/>
+<img src="<%= user.photoURL %>">
 </p>
 
 <%= JSON.stringify(user) %>

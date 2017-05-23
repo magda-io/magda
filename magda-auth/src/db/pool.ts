@@ -1,5 +1,4 @@
-const pg = require('pg');
-
+import * as pg from 'pg';
 
 //   conString: "postgres://postgres@192.168.99.100:30544/postgres"
 const config = {
@@ -24,4 +23,4 @@ pool.on('error', function (err, client) {
   console.error('idle client error', err.message, err.stack);
 });
 
-module.exports = pool;
+export default pool;

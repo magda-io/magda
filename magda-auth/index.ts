@@ -7,8 +7,8 @@ import * as express from 'express';
 import { Strategy as FBStrategy } from 'passport-facebook';
 import loginToCkan from "./src/ckan/login-to-ckan";
 
-const pool = require("./src/db/pool");
-const db = require("./src/db/db");
+import pool from "./src/db/pool";
+import { User, createOrGet, get as getUser } from "./src/db/db";
 
 // Configure the Facebook strategy for use by Passport.
 //
@@ -26,8 +26,7 @@ passport.use(
       profileFields: ["displayName", "picture", "email"]
     },
     function (accessToken, refreshToken, profile, cb) {
-      db.createOrGet(profile, 'facebook');
-      return cb(null, profile);
+      createOrGet(profile, 'facebook').then((user: User) => cb(null, user)).catch(error => cb(error));
     }
   )
 );
@@ -40,7 +39,7 @@ passport.use(
       callbackURL: "http://localhost:3000/login/google/return"
     },
     function (accessToken: string, refreshToken: string, profile: passport.Profile, cb: (error: any, user?: any, info?: any) => void) {
-      return cb(null, profile);
+      createOrGet(profile, 'google').then((user: User) => cb(null, user)).catch(error => cb(error));
     }
   )
 );
@@ -50,7 +49,11 @@ passport.use(
     loginToCkan(username, password).then(result => {
       result.caseOf({
         left: error => cb(error),
-        right: profile => cb(null, profile)
+        right: profile => {
+          createOrGet(profile, 'ckan')
+            .then((user: User) => cb(null, user))
+            .catch(error => cb(error));
+        }
       });
     });
   })
@@ -65,12 +68,12 @@ passport.use(
 // from the database when deserializing.  However, due to the fact that this
 // example does not have a database, the complete Facebook profile is serialized
 // and deserialized.
-passport.serializeUser(function (user, cb) {
-  cb(null, user);
+passport.serializeUser(function (user: User, cb) {
+  cb(null, user.id);
 });
 
-passport.deserializeUser(function (obj, cb) {
-  cb(null, obj);
+passport.deserializeUser(function (id: string, cb) {
+  getUser(id).then(user => cb(null, user));
 });
 
 // Create a new Express application.
@@ -94,7 +97,8 @@ app.use(
     store,
     secret: "keyboard cat",
     cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 },
-    resave: false
+    resave: false,
+    saveUninitialized: false
   })
 );
 
