@@ -11,6 +11,14 @@
             "name": "Launch CKAN Connector",
             "program": "${workspaceRoot}/magda-ckan-connector/bin/index.js",
             "cwd": "${workspaceRoot}/magda-ckan-connector"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Launch Project Open Data Connector",
+            "program": "${workspaceRoot}/magda-project-open-data-connector/bin/index.js",
+            "cwd": "${workspaceRoot}/magda-project-open-data-connector"
         }
     ]
 }

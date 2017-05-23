@@ -4,6 +4,7 @@
     "magda-ckan-connector/",
     "magda-indexer/",
     "magda-int-test/",
+    "magda-project-open-data-connector/",
     "magda-registry-api/",
     "magda-registry-aspects/",
     "magda-typescript-common/",

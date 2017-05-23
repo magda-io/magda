@@ -22,6 +22,14 @@ export default class AsyncPage<T> {
         return new AsyncPage(undefined, false, () => nextPage(undefined));
     }
 
+    static single<T>(value: T): AsyncPage<T> {
+        return AsyncPage.create<T>(current => current ? undefined : Promise.resolve(value));
+    }
+
+    static singlePromise<T>(valuePromise: Promise<T>): AsyncPage<T> {
+        return AsyncPage.create<T>(current => current ? undefined : valuePromise);
+    }
+
     constructor(data: T, hasData: boolean, requestNextPage: CreateAsyncPage<T>) {
         this.data = data;
         this.hasData = hasData;
@@ -54,7 +62,7 @@ export function forEachAsync<T>(page: AsyncPage<T[]>, maxConcurrency: number, ca
                     currentIndex = 0;
                     return nextPage;
                 });
-            }            
+            }
             page = await currentPromise;
             currentPromise = undefined;
         }

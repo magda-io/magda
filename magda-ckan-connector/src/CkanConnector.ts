@@ -1,5 +1,5 @@
-import AspectBuilder from './AspectBuilder';
-import { AspectDefinition, AspectDefinitionsApi, Record } from './generated/registry/api';
+import AspectBuilder from '@magda/typescript-common/lib/AspectBuilder';
+import { AspectDefinition, AspectDefinitionsApi, Record } from '@magda/typescript-common/lib/generated/registry/api';
 import Ckan, { CkanThing, CkanDataset, CkanResource, CkanOrganization } from './Ckan';
 import CkanConnectionResult from './CkanConnectionResult';
 import Registry from '@magda/typescript-common/lib/Registry';

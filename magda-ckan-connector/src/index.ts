@@ -1,4 +1,4 @@
-import AspectBuilder from './AspectBuilder';
+import AspectBuilder from '@magda/typescript-common/lib/AspectBuilder';
 import Ckan from './Ckan';
 import CkanConnector from './CkanConnector';
 import Registry from '@magda/typescript-common/lib/Registry';
