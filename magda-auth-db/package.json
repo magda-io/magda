@@ -1,0 +1,22 @@
+{
+  "name": "@magda/auth-db",
+  "version": "0.0.26-SNAPSHOT",
+  "description": "Magda auth's PostgreSQL database.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "config": {
+    "docker": {
+      "name": "data61/magda-auth-db",
+      "include": "Dockerfile scripts"
+    }
+  },
+  "devDependencies": {
+    "@magda/scripts": "^0.0.26-SNAPSHOT",
+    "@magda/auth": "^0.0.26-SNAPSHOT"
+  }
+}
