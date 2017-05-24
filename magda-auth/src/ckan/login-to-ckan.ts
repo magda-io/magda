@@ -51,11 +51,12 @@ function parseUser(res: Response): Promise<Either<loginToCkan.Failure, loginToCk
   return res.text().then(text => {
     const $ = cheerio.load(text);
 
+    const userName = $("#field-username").attr("value");
     const email = $("#field-email").attr("value");
     const displayName = $("#field-fullname").attr("value");
 
     return Promise.resolve(Either.right<loginToCkan.Failure, loginToCkan.Success>({
-      id: "0",
+      id: userName,
       provider: 'ckan',
       displayName,
       emails: [{ value: email }],

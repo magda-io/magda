@@ -12,6 +12,7 @@
     "magda-search-api/",
     "magda-auth/",
     "magda-auth-db/",
+    "magda-combined-db",
     "scripts/"
   ],
   "version": "0.0.26-SNAPSHOT",
