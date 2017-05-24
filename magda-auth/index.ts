@@ -1,63 +1,14 @@
-var GoogleStrategy = require("passport-google-oauth20").Strategy;
-var LocalStrategy = require("passport-local").Strategy;
 const session = require("express-session");
 
 import * as passport from 'passport';
 import * as express from 'express';
-import { Strategy as FBStrategy } from 'passport-facebook';
-import loginToCkan from "./src/ckan/login-to-ckan";
 
+import googleAuthRouter from './src/oauth2/google';
+import fbAuthRouter from './src/oauth2/facebook';
+import ckanAuthRouter from './src/oauth2/ckan';
+import apiRouter from './src/api/api';
 import pool from "./src/db/pool";
-import { User, createOrGet, get as getUser } from "./src/db/db";
-
-// Configure the Facebook strategy for use by Passport.
-//
-// OAuth 2.0-based strategies require a `verify` function which receives the
-// credential (`accessToken`) for accessing the Facebook API on the user's
-// behalf, along with the user's profile.  The function must invoke `cb`
-// with a user object, which will be set at `req.user` in route handlers after
-// authentication.
-passport.use(
-  new FBStrategy(
-    {
-      clientID: process.env.FACEBOOK_CLIENT_ID,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/login/facebook/return",
-      profileFields: ["displayName", "picture", "email"]
-    },
-    function (accessToken, refreshToken, profile, cb) {
-      createOrGet(profile, 'facebook').then((user: User) => cb(null, user)).catch(error => cb(error));
-    }
-  )
-);
-
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/login/google/return"
-    },
-    function (accessToken: string, refreshToken: string, profile: passport.Profile, cb: (error: any, user?: any, info?: any) => void) {
-      createOrGet(profile, 'google').then((user: User) => cb(null, user)).catch(error => cb(error));
-    }
-  )
-);
-
-passport.use(
-  new LocalStrategy(function (username: string, password: string, cb: (error: any, user?: any, info?: any) => void) {
-    loginToCkan(username, password).then(result => {
-      result.caseOf({
-        left: error => cb(error),
-        right: profile => {
-          createOrGet(profile, 'ckan')
-            .then((user: User) => cb(null, user))
-            .catch(error => cb(error));
-        }
-      });
-    });
-  })
-);
+import { User, get as getUser } from "./src/db/db";
 
 // Configure Passport authenticated session persistence.
 //
@@ -116,43 +67,10 @@ app.get("/login", function (req, res) {
   res.render("login");
 });
 
-app.get(
-  "/login/facebook",
-  passport.authenticate("facebook", { scope: ["public_profile", "email"] })
-);
-
-app.get(
-  "/login/facebook/return",
-  passport.authenticate("facebook", { failureRedirect: "/login" }),
-  function (req, res) {
-    res.redirect("/");
-  }
-);
-
-app.get(
-  "/login/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-app.get(
-  "/login/google/return",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  function (req, res) {
-    res.redirect("/");
-  }
-);
-
-app.get("/login/ckan", function (req, res) {
-  res.render("form");
-});
-
-app.post(
-  "/login/ckan",
-  passport.authenticate("local", { failureRedirect: "/login" }),
-  function (req, res) {
-    res.redirect("/");
-  }
-);
+app.use('/google', googleAuthRouter);
+app.use('/facebook', fbAuthRouter);
+app.use('/ckan', ckanAuthRouter);
+app.use('/api/v0', apiRouter);
 
 app.get("/profile", require("connect-ensure-login").ensureLoggedIn(), function (
   req,
