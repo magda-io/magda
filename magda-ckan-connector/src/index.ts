@@ -1,18 +1,13 @@
-import { AspectDefinition, AspectDefinitionsApi } from './generated/registry/api';
-import retry from './retry';
+import AspectBuilder from '@magda/typescript-common/lib/AspectBuilder';
 import Ckan from './Ckan';
-import CkanConnector, { AspectBuilder } from './CkanConnector';
-import Registry from './Registry';
+import CkanConnector from './CkanConnector';
+import Registry from '@magda/typescript-common/lib/Registry';
 import * as fs from 'fs';
-import * as request from 'request';
-import formatServiceError from './formatServiceError';
-import * as URI from 'urijs';
-import * as moment from 'moment';
 
 const ckan = new Ckan({
     baseUrl: 'https://data.gov.au/',
     pageSize: 1000,
-    name: "Data.gov.au"
+    name: 'Data.gov.au'
 });
 
 const registry = new Registry({
@@ -60,6 +55,14 @@ const datasetAspectBuilders: AspectBuilder[] = [
             jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
         },
         builderFunctionString: fs.readFileSync('aspect-templates/dataset-distributions.js', 'utf8')
+    },
+    {
+        aspectDefinition: {
+            id: 'dataset-publisher',
+            name: 'Dataset Publisher',
+            jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/dataset-publisher.js', 'utf8')
     }
 ];
 
@@ -101,11 +104,11 @@ const organizationAspectBuilders: AspectBuilder[] = [
     },
     {
         aspectDefinition: {
-            id: 'organization',
+            id: 'organization-details',
             name: 'Organization',
-            jsonSchema: require('@magda/registry-aspects/organization.schema.json')
+            jsonSchema: require('@magda/registry-aspects/organization-details.schema.json')
         },
-        builderFunctionString: fs.readFileSync('aspect-templates/organization.js', 'utf8')
+        builderFunctionString: fs.readFileSync('aspect-templates/organization-details.js', 'utf8')
     }
 ];
 
@@ -121,6 +124,7 @@ connector.run().then(result => {
     console.log('Aspect Definitions Connected: ' + result.aspectDefinitionsConnected);
     console.log('Datasets Connected: ' + result.datasetsConnected);
     console.log('Distributions Connected: ' + result.distributionsConnected);
+    console.log('Organizations Connected: ' + result.organizationsConnected);
 
     if (result.errors.length > 0) {
         console.log('Errors:\n' + JSON.stringify(result.errors, undefined, '  '));

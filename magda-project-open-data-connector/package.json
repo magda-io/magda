@@ -1,6 +1,6 @@
 {
-  "name": "@magda/ckan-connector",
-  "description": "MAGDA CKAN Connector",
+  "name": "@magda/project-open-data-connector",
+  "description": "MAGDA Project Open Data (data.json) Connector",
   "version": "0.0.26-SNAPSHOT",
   "main": "bin/index.js",
   "scripts": {
@@ -33,7 +33,7 @@
   "config": {
     "registryUrl": "http://localhost:6100/v0",
     "docker": {
-      "name": "data61/magda-ckan-connector",
+      "name": "data61/magda-project-open-data-connector",
       "include": "aspect-templates bin Dockerfile node_modules"
     }
   }

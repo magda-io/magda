@@ -42,14 +42,14 @@ export default class Registry {
     }
 
     putAspectDefinition(aspectDefinition: AspectDefinition): Promise<AspectDefinition | Error> {
-        const operation = () => this.aspectDefinitionsApi.putById(aspectDefinition.id, aspectDefinition);
+        const operation = () => this.aspectDefinitionsApi.putById(encodeURIComponent(aspectDefinition.id), aspectDefinition);
         return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to create aspect definition "${aspectDefinition.id}".`, e, retriesLeft)))
             .then(result => result.body)
             .catch(createServiceError);
     }
 
     putRecord(record: Record): Promise<Record | Error> {
-        const operation = () => this.recordsApi.putById(record.id, record);
+        const operation = () => this.recordsApi.putById(encodeURIComponent(record.id), record);
         return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry record with ID "${record.id}".`, e, retriesLeft)))
             .then(result => result.body)
             .catch(createServiceError);

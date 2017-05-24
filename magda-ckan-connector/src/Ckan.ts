@@ -1,8 +1,8 @@
-import * as URI from 'urijs';
+import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
+import formatServiceError from '@magda/typescript-common/lib/formatServiceError';
+import retry from '@magda/typescript-common/lib/retry';
 import * as request from 'request';
-import retry from './retry';
-import formatServiceError from './formatServiceError';
-import AsyncPage from './AsyncPage';
+import * as URI from 'urijs';
 
 export interface CkanThing {
     id: string;
@@ -37,12 +37,12 @@ export interface CkanOrganizationListResponse {
 }
 
 export interface CkanOptions {
-    baseUrl: string,
-    name: string,
-    apiBaseUrl?: string,
-    pageSize?: number,
-    maxRetries?: number,
-    secondsBetweenRetries?: number
+    baseUrl: string;
+    name: string;
+    apiBaseUrl?: string;
+    pageSize?: number;
+    maxRetries?: number;
+    secondsBetweenRetries?: number;
 }
 
 export default class Ckan {
