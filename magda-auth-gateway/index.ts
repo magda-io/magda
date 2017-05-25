@@ -1,4 +1,5 @@
 require("isomorphic-fetch");
+const config = require("config");
 const session = require("express-session");
 
 import * as passport from 'passport';
@@ -12,6 +13,13 @@ import fbAuthRouter from './src/oauth2/facebook';
 import ckanAuthRouter from './src/oauth2/ckan';
 import { getUser } from './src/auth-api-client';
 import pool from "./src/pool";
+
+if (!process.env.JWT_SECRET) {
+  throw new Error("No JWT_SECRET env variable passed");
+}
+if (!process.env.SESSION_SECRET) {
+  throw new Error("No SESSION_SECRET env variable passed");
+}
 
 passport.serializeUser(function (user: string, cb) {
   cb(null, user);
@@ -39,7 +47,7 @@ function setupApp(app: express.Application) {
   app.use(
     session({
       store,
-      secret: "keyboard cat",
+      secret: process.env.SESSION_SECRET,
       cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 },
       resave: false,
       saveUninitialized: false
@@ -82,19 +90,18 @@ var proxy = httpProxy.createProxyServer({});
 app.use('/auth', authRouter);
 
 app.get("*", (req, res) => {
-  proxy.web(req, res, { target: 'http://192.168.99.100:30013' });
+  proxy.web(req, res, { target: config.get("proxyTarget") });
 });
-
-const JWT_SECRET = "squirrel";
 
 proxy.on('proxyReq', function (proxyReq: any, req: express.Request, res: Response, options: any) {
   if (req.user) {
-    const token = jwt.sign({ userId: req.user }, JWT_SECRET)
+    const token = jwt.sign({ userId: req.user }, process.env.JWT_SECRET)
     proxyReq.setHeader('X-Magda-Session', token);
   }
 });
 
-app.listen(3000);
+app.listen(config.get("listenPort"));
+console.log("Listening on port " + config.get("listenPort"));
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
   console.error(reason);

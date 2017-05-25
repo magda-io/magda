@@ -1,3 +1,5 @@
+const config = require("config");
+
 export default {
-    loginBaseUrl: "http://localhost:3000/auth/login"
+    loginBaseUrl: `${config.externalHost}/auth/login`
 }

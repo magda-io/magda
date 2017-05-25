@@ -1,10 +1,11 @@
 require("isomorphic-fetch");
+const config = require("config");
 
 import * as passport from 'passport';
 import { User } from "@magda/auth-api/src/model";
 import { Maybe } from "tsmonad";
 
-const baseUrl = "http://localhost:3001/v0";
+const baseUrl = `${config.get("baseAuthApiUrl")}/v0`;
 
 function handleGetResult(promise: Promise<Response>): Promise<Maybe<User>> {
     return promise.then(res => {

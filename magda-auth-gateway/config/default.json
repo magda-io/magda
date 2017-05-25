@@ -1,0 +1,9 @@
+{
+    "listenPort": 80,
+    "db": {
+        "host": "session-store",
+        "port": 5432
+    },
+    "proxyTarget": "http://reverse-proxy",
+    "baseAuthApiUrl": "http://auth-api"
+}

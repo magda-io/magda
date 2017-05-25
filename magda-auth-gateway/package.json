@@ -3,7 +3,9 @@
   "version": "0.0.26-SNAPSHOT",
   "scripts": {
     "start": "npm run build:live",
-    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts"
+    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
     "@magda/auth-api": "^0.0.26-SNAPSHOT",
@@ -30,6 +32,7 @@
     "tsmonad": "^0.7.2"
   },
   "devDependencies": {
+    "@magda/scripts": "^0.0.26-SNAPSHOT",
     "@types/express": "^4.0.35",
     "@types/node": "^7.0.22",
     "@types/passport": "^0.3.3",
@@ -37,5 +40,11 @@
     "nodemon": "^1.11.0",
     "ts-node": "^3.0.4",
     "typescript": "^2.3.3"
+  },
+  "config": {
+    "docker": {
+      "name": "data61/magda-auth-gateway",
+      "include": "node_modules index.ts src views config tsconfig.json Dockerfile"
+    }
   }
 }
