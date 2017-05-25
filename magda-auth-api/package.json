@@ -2,20 +2,31 @@
   "name": "@magda/auth-api",
   "version": "0.0.26-SNAPSHOT",
   "scripts": {
-    "start": "npm run build:live",
-    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts"
+    "start": "ts-node ./index.ts",
+    "dev": "npm run build:live",
+    "dev:local": "NODE_ENV=local npm run build:live",
+    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
     "@types/pg": "^6.1.40",
+    "config": "^1.26.1",
     "express": "^4.13.1",
-    "jsonwebtoken": "^7.4.1"
+    "jsonwebtoken": "^7.4.1",
+    "ts-node": "^3.0.4"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.26-SNAPSHOT",
     "@types/express": "^4.0.35",
     "@types/node": "^7.0.22",
     "nodemon": "^1.11.0",
-    "ts-node": "^3.0.4",
     "typescript": "^2.3.3"
+  },
+  "config": {
+    "docker": {
+      "name": "data61/magda-auth-api",
+      "include": "node_modules package.json index.ts src config tsconfig.json Dockerfile"
+    }
   }
 }
