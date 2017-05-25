@@ -3,9 +3,6 @@ const session = require("express-session");
 import * as passport from 'passport';
 import * as express from 'express';
 
-import googleAuthRouter from './src/oauth2/google';
-import fbAuthRouter from './src/oauth2/facebook';
-import ckanAuthRouter from './src/oauth2/ckan';
 import apiRouter from './src/api/api';
 import pool from "./src/db/pool";
 import { User, get as getUser } from "./src/db/db";

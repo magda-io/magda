@@ -12,13 +12,13 @@
   "config": {
     "docker": {
       "name": "data61/magda-combined-db",
-      "include": "Dockerfile scripts node_modules/@magda"
+      "include": "Dockerfile node_modules/@magda/auth-db/scripts node_modules/@magda/registry-datastore/scripts node_modules/@magda/session-store/scripts"
     }
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.26-SNAPSHOT",
-    "@magda/auth": "^0.0.26-SNAPSHOT",
     "@magda/auth-db": "^0.0.26-SNAPSHOT",
-    "@magda/registry-datastore": "^0.0.26-SNAPSHOT"
+    "@magda/registry-datastore": "^0.0.26-SNAPSHOT",
+    "@magda/session-store": "^0.0.26-SNAPSHOT"
   }
 }

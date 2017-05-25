@@ -1,5 +1,5 @@
 {
-  "name": "@magda/auth",
+  "name": "@magda/discussions-api",
   "version": "0.0.26-SNAPShOT",
   "scripts": {
     "start": "npm run build:live",
