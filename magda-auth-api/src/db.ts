@@ -1,19 +1,20 @@
 import pool from "./pool";
 import { User } from './model';
 import { Maybe } from 'tsmonad';
+import arrayToMaybe from '@magda/typescript-common/src/util/array-to-maybe';
 
 function getUser(id: string): Promise<Maybe<User>> {
   return pool
     .query(
     'SELECT id, "displayName", email, "photoURL", source FROM users WHERE "id" = $1',
     [id]
-    ).then(res => rowsToMaybe(res.rows));
+    ).then(res => arrayToMaybe(res.rows));
 }
 
 function getUserByExternalDetails(source: string, sourceId: string): Promise<Maybe<User>> {
   return pool
     .query('SELECT id, "displayName", email, "photoURL", source, "sourceId" FROM users WHERE "sourceId" = $1 AND source = $2', [sourceId, source])
-    .then(res => rowsToMaybe(res.rows));
+    .then(res => arrayToMaybe(res.rows));
 }
 
 function createUser(user: User): Promise<User> {
@@ -23,10 +24,6 @@ function createUser(user: User): Promise<User> {
     [user.displayName, user.email, user.photoURL, user.source, user.sourceId]
     )
     .then(result => result.rows[0]);
-}
-
-function rowsToMaybe(rows: User[]): Maybe<User> {
-  return rows.length > 0 ? Maybe.just(rows[0]) : Maybe.nothing<User>();
 }
 
 export { getUserByExternalDetails, getUser, createUser }

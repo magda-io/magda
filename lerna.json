@@ -17,6 +17,8 @@
     "magda-auth-api/",
     "magda-auth-db/",
     "magda-combined-db/",
+    "magda-discussions-db/",
+    "magda-discussions-api/",
     "scripts/"
   ],
   "version": "0.0.26-SNAPSHOT",

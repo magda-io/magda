@@ -1,9 +1,9 @@
 import * as express from 'express';
 import { Maybe } from 'tsmonad';
-const jwt = require('jsonwebtoken');
 
 import { getUser, getUserByExternalDetails, createUser } from './db';
 import { User } from './model';
+import getUserId from '@magda/typescript-common/src/session/GetUserId';
 
 const router = express.Router();
 
@@ -27,9 +27,7 @@ router.get("/users/lookup", function (req, res) {
 });
 
 router.get("/users/whoami", function (req, res) {
-    const jwtToken = req.header("X-Magda-Session");
-    const { userId } = jwt.verify(jwtToken, process.env.JWT_SECRET);
-
+    const userId = getUserId(req);
     handleUserPromise(res, getUser(userId));
 });
 
