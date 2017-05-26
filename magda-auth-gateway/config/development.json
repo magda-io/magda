@@ -1,6 +1,10 @@
 {
+    "listenPort": 3000,
     "db": {
-        "host": "combined-db"
+        "host": "192.168.99.100",
+        "port": 30545
     },
-    "externalHost": "http://192.168.99.100:30016"
+    "proxyTarget": "http://localhost:80",
+    "externalHost": "http://localhost:3000",
+    "baseAuthApiUrl": "http://localhost:3001"
 }

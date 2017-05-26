@@ -16,7 +16,9 @@ spec:
             memory: 0
         env:
         - name: NODE_ENV
-          value: development
+          value: minikube
+        - name: JWT_SECRET
+          value: squirrel
         image: "localhost:5000/data61/magda-auth-api:latest"
         imagePullPolicy: Always
 ---

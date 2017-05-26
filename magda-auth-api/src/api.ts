@@ -1,6 +1,8 @@
 import * as express from 'express';
-import { getUser, getUserByExternalDetails, createUser } from './db';
 import { Maybe } from 'tsmonad';
+const jwt = require('jsonwebtoken');
+
+import { getUser, getUserByExternalDetails, createUser } from './db';
 import { User } from './model';
 
 const router = express.Router();
@@ -22,6 +24,13 @@ router.get("/users/lookup", function (req, res) {
     const sourceId = req.query.sourceId;
 
     handleUserPromise(res, getUserByExternalDetails(source, sourceId));
+});
+
+router.get("/users/whoami", function (req, res) {
+    const jwtToken = req.header("X-Magda-Session");
+    const { userId } = jwt.verify(jwtToken, process.env.JWT_SECRET);
+
+    handleUserPromise(res, getUser(userId));
 });
 
 router.get("/users/:userId", function (req, res) {

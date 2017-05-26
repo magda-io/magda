@@ -16,7 +16,7 @@ spec:
             memory: 0
         env:
         - name: NODE_ENV
-          value: development
+          value: minikube
         - name: JWT_SECRET
           value: squirrel
         - name: SESSION_SECRET
