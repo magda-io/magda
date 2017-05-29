@@ -89,7 +89,7 @@ var proxy = httpProxy.createProxyServer({});
 
 app.use('/auth', authRouter);
 
-app.get("*", (req, res) => {
+app.all("*", (req, res) => {
   proxy.web(req, res, { target: config.get("proxyTarget") });
 });
 

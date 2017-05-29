@@ -4,6 +4,7 @@ import apiRouter from './src/api';
 const nodeConfig = require('config');
 
 const app = express();
+app.use(require("body-parser").json());
 
 app.use("/v0", apiRouter);
 

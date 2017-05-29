@@ -1,39 +1,54 @@
 import * as express from 'express';
 
-import { Message } from './model';
-import { getMessagesForDiscussion, addMessageToDiscussion } from './db';
-import getUserId from '@magda/typescript-common/src/session/GetUserId';
+import { getMessagesForDiscussion, addMessageToDiscussion, getMessagesForDataset, addMessageToDataset } from './db';
+import getUserId from '@magda/typescript-common/lib/session/GetUserId';
 
 const router = express.Router();
 
-router.get('/discussions/:discussionId/messages', (req, res) => {
-    getMessagesForDiscussion(req.params.discussionId)
-        .then(messages => Promise.resolve(res.json(messages)))
+router.route('/discussions/:discussionId/messages')
+    .get((req, res) =>
+        getMessagesForDiscussion(req.params.discussionId)
+            .then(messages => res.json(messages).send())
+            .catch(e => {
+                console.error(e);
+                res.status(500).send();
+            }))
+    .post((req, res) => {
+        const userId = getUserId(req);
+        const message: Object = req.body;
+
+        addMessageToDiscussion(userId, req.params.discussionId, message)
+            .then(message => {
+                res.json(message);
+                res.status(201);
+                return Promise.resolve();
+            })
+            .catch(e => {
+                console.log(e);
+                res.status(500);
+            })
+            .then(() => res.send());
+    });
+
+router.get('/datasets/:datasetId/messages', (req, res) => {
+    getMessagesForDataset(req.params.datasetId)
+        .then(messages => res.json(messages).send())
         .catch(e => {
-            console.log(e);
-            res.status(500);
-        })
-        .then(() => res.send());
+            console.error(e);
+            res.status(500).send();
+        });
 });
 
-router.post('/discussions/:discussionId/messages', (req, res) => {
+router.post('/datasets/:datasetId/messages', (req, res) => {
     const userId = getUserId(req);
+    const message: Object = req.body;
 
-    const message: Message = req.body.json();
-    message.discussionId = req.params.discussionId
-    message.userId = userId
-
-    addMessageToDiscussion(message)
-        .then(message => {
-            res.json(message);
-            res.status(201);
-            return Promise.resolve();
-        })
+    addMessageToDataset(userId, req.params.datasetId, message)
+        .then(messages => res.json(messages).send())
         .catch(e => {
-            console.log(e);
-            res.status(500);
-        })
-        .then(() => res.send());
+            console.error(e);
+            res.status(500).send();
+        });
 });
 
 export default router;

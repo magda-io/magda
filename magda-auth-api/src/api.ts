@@ -3,7 +3,7 @@ import { Maybe } from 'tsmonad';
 
 import { getUser, getUserByExternalDetails, createUser } from './db';
 import { User } from './model';
-import getUserId from '@magda/typescript-common/src/session/GetUserId';
+import getUserId from '@magda/typescript-common/lib/session/GetUserId';
 
 const router = express.Router();
 
@@ -49,5 +49,14 @@ router.post("/users", function (req, res) {
         })
         .then(() => res.send());
 });
+
+// This is for getting a JWT in development so you can do fake authenticated requests to a local server.
+if (process.env.NODE_ENV !== "production") {
+    router.get("/jwt", function (req, res) {
+        res.status(200);
+        res.write("X-Magda-Session: " + req.header("X-Magda-Session"));
+        res.send();
+    });
+}
 
 export default router;
