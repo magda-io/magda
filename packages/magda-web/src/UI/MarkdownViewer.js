@@ -31,24 +31,12 @@ LIST.forEach(l=>{
 
 class MarkdownViewer extends Component {
     render(){
-      if(this.props.stripped === true){
-        let text = marked(this.props.markdown, { renderer: renderer });
-
-        let length = config.descriptionLength;
-        let array = text.split(" ");
-        let string = array.slice(0, length).join(" ");
-        if(array.length > length){
-           string += "...";
-        }
-        return <div className='markdown__stripped markdown__wrap'>{string}</div>
-      } else{
         let markdown = {__html: marked(this.props.markdown)};
         return <div className='markdown' dangerouslySetInnerHTML={markdown}/>
-      }
     }
 }
 
 MarkdownViewer.propTypes = {markdown: React.PropTypes.string};
-MarkdownViewer.defaultProps = {markdown: '', stripped: false};
+MarkdownViewer.defaultProps = {markdown: ''};
 
 export default MarkdownViewer;

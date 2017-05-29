@@ -1,3 +1,4 @@
+// @flow
 export default function toggleBasicOption(option, activeOptions, key,  removeOption, addOption, updateQuery, dispatch) {
   updateQuery({
     page: undefined

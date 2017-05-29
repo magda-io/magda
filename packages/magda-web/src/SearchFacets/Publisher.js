@@ -5,7 +5,7 @@ import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'
 import Recommendations from '../Search/Recommendations';
-
+import queryString from 'query-string';
 class Publisher extends Component {
 
   constructor(props) {
@@ -36,7 +36,7 @@ class Publisher extends Component {
   }
 
   onSearchPublisherFacet(facetKeyword){
-    this.props.dispatch(fetchPublisherSearchResults(this.props.location.query.q, facetKeyword))
+    this.props.dispatch(fetchPublisherSearchResults(queryString.parse(this.props.location.search).q, facetKeyword))
   }
 
   render() {

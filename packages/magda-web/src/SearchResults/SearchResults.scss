@@ -1,9 +1,10 @@
+@import "../variables";
 .search-results__result {
   background: #fff; }
 
 .search-results__count,
 .search-recomendations__count {
-  font-family: 'Montserrat', sans-serif;
+  font-family: $font-base;
   font-size: 16px;
   color: #2B2B2B;
   text-transform: uppercase;

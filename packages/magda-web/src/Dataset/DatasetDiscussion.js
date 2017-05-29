@@ -1,19 +1,11 @@
 import React, { Component } from "react";
-import defined from "../helpers/defined";
-import MarkdownViewer from "../UI/MarkdownViewer";
-import Star from "../UI/Star";
-import { Link } from "react-router";
 import CrappyChat from '../Components/CrappyChat/CrappyChat'
-
+import './RecordDetails.css';
 
 export default class DatasetDiscussion extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return (
-      <div className="dataset-details container">
+      <div className="dataset-discussion container">
         <CrappyChat datasetId={this.props.params.datasetId} />
       </div>
     );

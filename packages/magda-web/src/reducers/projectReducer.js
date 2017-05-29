@@ -1,10 +1,10 @@
-// @flow 
+// @flow
 import {parseProject} from '../helpers/api';
 
 const initialData = {
     isFetching: false,
     projects: [],
-    error: undefined,
+    error: null,
     notFound:  false,
     hitCount: 0
 }
@@ -13,14 +13,13 @@ const initialData = {
 type ProjectsResult = {
   isFetching : boolean,
   projects: Array<Object>,
-  error: any,
-  notFound: boolean,
-  hitCount: number 
+  error: ?number,
+  hitCount: number
 }
 
 type recordAction = {
   json: Object,
-  error: boolean,
+  error: ?number,
   type: boolean
 }
 
@@ -28,7 +27,8 @@ const projects = (state: ProjectsResult = initialData, action: recordAction) => 
   switch (action.type) {
     case 'REQUEST_PROJECTS':
       return Object.assign({}, state, {
-        isFetching: true
+        isFetching: true,
+        error: null
       })
     case 'RECEIVE_PROJECTS':
       return Object.assign({}, state, {
@@ -40,11 +40,6 @@ const projects = (state: ProjectsResult = initialData, action: recordAction) => 
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,
-      })
-    case 'PROJECTS_NOT_FOUND':
-      return Object.assign({}, state, {
-        isFetching: false,
-        notFound:  true
       })
     default:
       return state

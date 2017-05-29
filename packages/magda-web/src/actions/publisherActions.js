@@ -25,29 +25,48 @@ export function requestPublishersError(error: number): Action {
   }
 }
 
+export function requestPublisher():Action {
+  return {
+    type: actionTypes.REQUEST_PUBLISHER,
+  }
+}
+
+export function receivePublisher(json: Object): Action {
+  return {
+    type: actionTypes.RECEIVE_PUBLISHER,
+    json,
+  }
+}
+
+export function requestPublisherError(error: number): Action {
+  return {
+    type: actionTypes.REQUEST_PUBLISHER_ERROR,
+    error,
+  }
+}
+
 function fetchPublishers(start){
     return (dispatch: Function) => {
         dispatch(requestPublishers());
-        const url = `http://data.gov.au/api/3/action/organization_list?all_fields=true&limit=${config.resultsPerPage}&offset=${(start-1)*config.resultsPerPage}`;
-        console.log(url);
+        const url = `${config.registryUrl}?aspect=organization-details&limit=${config.resultsPerPage}&start=${(start-1)*config.resultsPerPage}`;
         return fetch(url)
             .then(response => {
-                if (response.status >= 400) {
-                if(response.status === 404){
-                    return dispatch(requestPublishersError(404));
+                if (response.status === 200) {
+                    return response.json();
                 }
-                    return dispatch(requestPublishersError(response.status));
-                } 
-                return response.json();
+                return dispatch(requestPublishersError(response.status))
             })
-            .then((json) => dispatch(receivePublishers(json))
-            )
+            .then(json => {
+                if(!json.error){
+                    return dispatch(receivePublishers(json));
+                }
+            })
     }
 }
 
 function shouldFetchPublishers(state){
     const publisher = state.publisher;
-    if(publisher.isFetching){
+    if(publisher.isFetchingPublishers){
         return false;
     }
     return true;
@@ -64,3 +83,42 @@ export function fetchPublishersIfNeeded(start: number):Object{
   }
 }
 
+
+function fetchPublisher(id){
+    return (dispatch: Function) => {
+        dispatch(requestPublisher());
+        const url = `${config.registryUrl}/${id}?aspect=organization-details`;
+        console.log(url);
+        return fetch(url)
+            .then(response => {
+                if (response.status === 200) {
+                    return response.json()
+                }
+                return dispatch(requestPublisherError(response.status))
+            })
+            .then(json => {
+                if(!json.error){
+                    return dispatch(receivePublisher(json));
+                }
+            })
+    }
+}
+
+function shouldFetchPublisher(state){
+    const publisher = state.publisher;
+    if(publisher.isFetchingPublisher){
+        return false;
+    }
+    return true;
+}
+
+
+export function fetchPublisherIfNeeded(id: number):Object{
+  return (dispatch: Function, getState: Function)=>{
+      if(shouldFetchPublisher(getState())){
+          return dispatch(fetchPublisher(id))
+      } else{
+          return Promise.resolve();
+      }
+  }
+}

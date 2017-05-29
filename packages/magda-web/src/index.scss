@@ -5,21 +5,28 @@ html{
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Source Sans Pro', sans-serif;
+  font-family: $font-base;
   color: #333333;
   font-size: 1rem;
 }
 
 h1{
   font-size: $heading1;
+  font-weight: 800;
 }
 
 h2{
   font-size: $heading2;
+  font-weight: 800;
 }
 
 h3{
   font-size: $heading3;
+  font-weight: 800;
+}
+
+h4{
+  font-weight: 800;
 }
 
 .navbar-header{
@@ -66,9 +73,6 @@ input[type=text].form-control{
 }
 
 @media (max-width: 768px) {
-	body{
-		background: #dcdfe1;
-	}
   .form-control:focus {
     border: none;
   }
@@ -84,6 +88,13 @@ input[type=text].form-control{
   padding: 15px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   margin-bottom: 10px;
+}
+
+
+.media-left{
+  img{
+    max-width: 100px;
+  }
 }
 
 .media-body{
@@ -109,4 +120,23 @@ input[type=text].form-control{
   border-radius: 5px;
   padding: 7px;
   margin-right: 5px;
+}
+
+.dont-break-out {
+
+  /* These are technically the same, but use both */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  -ms-word-break: break-all;
+  /* This is the dangerous one in WebKit, as it breaks things wherever */
+  word-break: break-all;
+  /* Instead use this non-standard one: */
+  word-break: break-word;
+
+  /* Adds a hyphen where the word breaks, if supported (No Blink) */
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
 }

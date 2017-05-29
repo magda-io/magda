@@ -25,7 +25,7 @@ class SearchFacets extends Component {
     const that = this;
     window.removeEventListener("click", that.closeFacet)
   }
-  
+
 
   toggleFacet(facet){
     this.setState({
@@ -38,7 +38,7 @@ class SearchFacets extends Component {
       <div className="row search-facets">
         {config.facets.map(c=>
           <div className="col-sm-3 search-facet" key={c.id} onClick={(ev)=>ev.stopPropagation()}>
-            <c.component 
+            <c.component
                        updateQuery={this.props.updateQuery}
                        location={this.props.location}
                        component={'facet'}

@@ -7,15 +7,15 @@ import OverviewBox from '../UI/OverviewBox';
 import CustomIcons from '../UI/CustomIcons';
 import Social from '../Components/Social';
 import { Link } from 'react-router';
+import './RecordDetails.css';
+
 
 class DistributionDetails extends Component {
-
-  
   render(){
     const distribution = this.props.distribution;
     return <div className="distribution-details container" >
                 <div className="row">
-                <div className='distribution-details__body col-sm-9'>
+                <div className='distribution-details__body col-sm-8'>
                   <div className='distribution-details-overview'>
                     <h3>Overview</h3>
                     <OverviewBox content={distribution.description}/>
@@ -31,7 +31,7 @@ class DistributionDetails extends Component {
                   </div>
               </div>
 
-              <div className='distribution-details__sidebar col-sm-3'>
+              <div className='record-details__sidebar col-sm-4'>
                   <div><button className='btn btn-primary'>Add to project</button></div>
                   <Social/>
                   <div className="tags">

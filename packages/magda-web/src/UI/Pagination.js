@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import queryString from 'query-string';
 import './Pagination.css';
 
 class Pagination extends Component {
@@ -12,7 +13,7 @@ class Pagination extends Component {
       let {router} = this.context;
       router.push({
         pathname: this.props.location.pathname,
-        query: Object.assign(this.props.location.query, {page: i})
+        query: Object.assign(queryString.parse(this.props.location.search), {page: i})
       });
     }
 

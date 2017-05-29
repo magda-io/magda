@@ -11,8 +11,15 @@ const config = {
         resultsPerPage: 10,
         descriptionLength: 50,
         downloadLinksSize: 3,
+        breakpoints: {
+          small: 768,
+          medium: 992,
+          large: 1200
+        },
         datasetTabList: ["Details", "Discussion", "Publisher"],
         distributionTabList: ["Details", "Map", "Chart"],
+        featuredDatasets: ["0f208fbe-8cf4-4408-b39e-07ca9700ffcf", "9804e9c3-304e-4d71-890a-3b0078df0d73"],
+        featuredPublishers: ["4d907503-b2aa-4c38-ac13-1273e791cb08", "9ad7ef22-735a-45c1-9e83-0f702d56984b"],
         exampleSearch: [
           'Business Names by ASIC as CSV',
           'Geocoded National Address File',

@@ -1,18 +1,23 @@
-// eslint-disable-next-line
-import expect from 'expect';
-// eslint-disable-next-line
-import deepFreeze from 'deep-freeze';
-import datasetSearch from './datasetSearchReducer';
-import facetPublisherSearch from './facetPublisherSearchReducer';
-import facetRegionSearch from './facetRegionSearchReducer';
-import facetFormatSearch from './facetFormatSearchReducer';
-import regionMapping from './regionMappingReducer';
-import record from './recordReducer';
-import publisher from './publisherReducer';
-import project from './projectReducer';
-import userManagement from './userManagementReducer';
+// @flow
 
-import { combineReducers } from 'redux';
+// eslint-disable-next-line
+import expect from "expect";
+// eslint-disable-next-line
+// import deepFreeze from 'deep-freeze';
+import datasetSearch from "./datasetSearchReducer";
+import facetPublisherSearch from "./facetPublisherSearchReducer";
+import facetRegionSearch from "./facetRegionSearchReducer";
+import facetFormatSearch from "./facetFormatSearchReducer";
+import regionMapping from "./regionMappingReducer";
+import record from "./recordReducer";
+import publisher from "./publisherReducer";
+import project from "./projectReducer";
+import userManagement from "./userManagementReducer";
+
+import featuredDatasets from "./featuredDatasetsReducer";
+import featuredPublishers from "./featuredPublishersReducer";
+
+import { combineReducers } from "redux";
 
 const reducer = combineReducers({
   regionMapping,
@@ -23,7 +28,9 @@ const reducer = combineReducers({
   record,
   publisher,
   project,
-  user: userManagement
+  user: userManagement,
+  featuredDatasets,
+  featuredPublishers
 });
 
 export default reducer;

@@ -72,11 +72,8 @@
 
 .dataset-summary__title-group{
   width: calc(100% - 60px);
-  .star__btn{
-    padding: 1px;
-    font-size: 1.125rem
-  }
 }
+
 
 
 .dataset-summary__title{
@@ -111,7 +108,7 @@
 .dataset-summary__sub-heading{
   font-size: 14px;
   color: #7F8C8D;
-  font-family: 'Montserrat', sans-serif;
+  font-family: $font-base;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -154,24 +151,10 @@
 }
 
 .dataset-summary__dataset-description > .markdown{
-  max-height: 100px;
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 10px;
 }
 
 .dataset-summary__dataset-description:hover{
   cursor: pointer;
-}
-
-.dataset-summary__dataset-description > .markdown:before {
-  content:'';
-  width:100%;
-  height:100%;
-  position:absolute;
-  left:0;
-  top:0;
-  background:linear-gradient(rgba(255, 255, 255, 0) 50px, #FFF);
 }
 
 
@@ -182,12 +165,22 @@
 .dataset-summary__toggle-info-btn{
   border: 0;
   background: transparent;
-  font-size: 18px;
   color: #bbb;
-  padding: 2px 10px;
+}
+
+.dataset-summary__toggle{
   position: absolute;
   right: 20px;
   top: 15px;
+  .star__btn{
+    padding: 1px;
+    font-size: 1.125rem;
+    margin-right: 5px;
+  }
+
+  .fa-ellipsis-h{
+    vertical-align: bottom;
+  }
 }
 
 .dataset-summary__toggle-info-btn.mobile{
@@ -237,7 +230,7 @@
 .dataset-summary__search-result--publisher{
   font-weight: 400;
   font-size: 16px;
-  color: #7F8C8D;
+  color: $magda-green;
 }
 
 .dataset-summary__mobile-footer{
@@ -263,10 +256,6 @@
 
 .dataset-summary__star-btn.is-active{
   color: #e67e22;
-}
-
-.dataset-summary .fa{
-  vertical-align: text-top;
 }
 
 @media (max-width: 768px) {

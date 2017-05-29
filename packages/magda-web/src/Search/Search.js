@@ -1,3 +1,5 @@
+// @flow
+
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
 
@@ -8,6 +10,7 @@ import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
 import Pagination from '../UI/Pagination';
 import Notification from '../UI/Notification';
+import PublisherBox from '../Components/PublisherBox';
 
 import React, { Component } from 'react';
 import SearchFacets from '../SearchFacets/SearchFacets';
@@ -16,21 +19,25 @@ import SearchResults from '../SearchResults/SearchResults';
 import MatchingStatus from './MatchingStatus';
 import { bindActionCreators } from "redux";
 import { fetchSearchResultsIfNeeded } from '../actions/datasetSearchActions';
+import type { SearchState} from '../types';
+import queryString from 'query-string';
+import cripsy from './crispy.gif';
+
 
 class Search extends Component {
+  state: {
+    searchText: ?string
+  }
 
   constructor(props) {
     super(props);
-    this.debounceUpdateSearchQuery = debounce(this.updateSearchText, 3000);
-    this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
-    this.onClickTag = this.onClickTag.bind(this);
-    this.updateQuery = this.updateQuery.bind(this);
-    this.onDismissError = this.onDismissError.bind(this);
-    this.updateSearchText = this.updateSearchText.bind(this);
-    this.onClearSearch = this.onClearSearch.bind(this);
-    this.onClickSearch = this.onClickSearch.bind(this);
-    this.onSearchTextChange = this.onSearchTextChange.bind(this);
-    this.onToggleDataset = this.onToggleDataset.bind(this);
+    const self: any = this;
+
+    self.onClickTag = this.onClickTag.bind(this);
+    self.updateQuery = this.updateQuery.bind(this);
+    self.onDismissError = this.onDismissError.bind(this);
+    self.updateSearchText = this.updateSearchText.bind(this);
+    self.onToggleDataset = this.onToggleDataset.bind(this);
 
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
@@ -39,23 +46,18 @@ class Search extends Component {
     }
   }
 
+
   componentWillMount(){
-    this.props.fetchSearchResultsIfNeeded(this.props.location.query);
+    this.props.fetchSearchResultsIfNeeded(queryString.parse(this.props.location.search));
   }
-  
+
 
   componentWillReceiveProps(nextProps){
     this.props.fetchSearchResultsIfNeeded(nextProps.location.query);
   }
 
-  onSearchTextChange(text){
-    this.setState({
-      searchText: text
-    });
-    this.debounceUpdateSearchQuery(text);
-  }
 
-  onClickTag(tag){
+  onClickTag(tag: string){
     this.setState({
       searchText: tag
     });
@@ -65,7 +67,7 @@ class Search extends Component {
   /**
    * update only the search text, remove all facets
    */
-  updateSearchText(text){
+  updateSearchText(text: string){
     this.updateQuery({
       q: text,
       publisher: [],
@@ -78,29 +80,6 @@ class Search extends Component {
     });
   }
 
-  onClearSearch(){
-    this.updateSearchText('');
-    // cancle any future requests from debounce
-    this.debounceUpdateSearchQuery.cancel();
-  }
-
-  handleSearchFieldEnterKeyPress(event) {
-    // when user hit enter, no need to submit the form
-    if(event.charCode===13){
-        event.preventDefault();
-        this.debounceUpdateSearchQuery.flush();
-    }
-  }
-
-  /**
-   * If the search button is clicked, we do the search immediately
-   */
-  onClickSearch(){
-    this.debounceUpdateSearchQuery.flush();
-  }
-
-
-
   /**
    * query in this case, is one or more of the params
    * eg: {'q': 'water'}
@@ -109,7 +88,7 @@ class Search extends Component {
     let {router} = this.context;
     router.push({
       pathname: this.props.location.pathname,
-      query: Object.assign(this.props.location.query, query)
+      query: Object.assign(queryString.parse(this.props.location.search), query)
     });
   }
 
@@ -120,12 +99,12 @@ class Search extends Component {
 
   onToggleDataset(datasetIdentifier){
     this.updateQuery({
-      open: datasetIdentifier === this.props.location.query.open ? '' : datasetIdentifier
+      open: datasetIdentifier === queryString.parse(this.props.location.search).open ? '' : datasetIdentifier
     })
   }
 
   render() {
-    const searchText = this.props.location.query.q || '';
+    const searchText = queryString.parse(this.props.location.search).q || '';
     return (
       <div>
         <div className='search'>
@@ -140,20 +119,21 @@ class Search extends Component {
             </div>
             {searchText.length > 0 &&
              !this.props.isFetching &&
-             !this.props.hasError && <div className="results-count">{this.props.hitCount} results found</div>}
+             !this.props.error && <div className="results-count">{this.props.hitCount} results found</div>}
           </div>
           <div className='row'>
             <div className='col-sm-8'>
+                {searchText.length === 0 && <div><img className="img-responsive img-rounded img-crispy" src={cripsy} alt="crispy"/></div>}
                 {searchText.length > 0 &&
                  !this.props.isFetching &&
-                 !this.props.hasError &&
+                 !this.props.error &&
                  <div>
                  <Publisher updateQuery={this.updateQuery}
                             component={'recommendations'}
                  />
-                 
-                 {defined(this.props.location.query.q) &&
-                  this.props.location.query.q.length > 0 &&
+
+                 {defined(queryString.parse(this.props.location.search).q) &&
+                  queryString.parse(this.props.location.search).q.length > 0 &&
                     <MatchingStatus datasets={this.props.datasets}
                                     strategy={this.props.strategy}
                     />
@@ -164,23 +144,27 @@ class Search extends Component {
                       searchResults={this.props.datasets}
                       onClickTag={this.onClickTag}
                       onToggleDataset={this.onToggleDataset}
-                      openDataset={this.props.location.query.open}
+                      openDataset={queryString.parse(this.props.location.search).open}
                   />
                   {this.props.hitCount > config.resultsPerPage &&
                       <Pagination
-                        currentPage={+this.props.location.query.page || 1}
+                        currentPage={+queryString.parse(this.props.location.search).page || 1}
                         maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
                         location={this.props.location}
                       />
                    }
                  </div>
                }
-               {!this.props.isFetching && this.props.hasError &&
-                  <Notification content={this.props.errorMessage}
+               {!this.props.isFetching && this.props.error &&
+                  <Notification content={this.props.error}
                                 type='error'
                                 onDismiss={this.onDismissError}/>
                }
               </div>
+
+            <div className='col-sm-4 pull-right'>
+            {this.props.featuredPublishers.map(p=><PublisherBox key={p.id} publisher={p}/>)}
+            </div>
             </div>
           </div>
         </div>
@@ -198,10 +182,9 @@ Search.propTypes = {
   hitCount: React.PropTypes.number.isRequired,
   isFetching: React.PropTypes.bool.isRequired,
   progress: React.PropTypes.number.isRequired,
-  hasError: React.PropTypes.bool.isRequired,
   strategy: React.PropTypes.string.isRequired,
   freeText: React.PropTypes.string,
-  errorMessage: React.PropTypes.string
+  error: React.PropTypes.number
 }
 
 
@@ -213,16 +196,16 @@ function mapDispatchToProps(dispatch) {
 
 
 function mapStateToProps(state) {
-  let { datasetSearch } = state;
+  let { datasetSearch, featuredPublishers } = state;
   return {
     datasets: datasetSearch.datasets,
     hitCount: datasetSearch.hitCount,
     isFetching: datasetSearch.isFetching,
     progress: datasetSearch.progress,
-    hasError: datasetSearch.hasError,
     strategy: datasetSearch.strategy,
-    errorMessage: datasetSearch.errorMessage,
+    error: datasetSearch.error,
     freeText: datasetSearch.freeText,
+    featuredPublishers: featuredPublishers.records
   }
 }
 

@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../helpers/toggleBasicOption'
 import Recommendations from '../Search/Recommendations';
+import queryString from 'query-string';
 
 class Format extends Component {
 
@@ -36,7 +37,7 @@ class Format extends Component {
   }
 
   onSearchFormatFacet(facetKeyword){
-    this.props.dispatch(fetchFormatSearchResults(this.props.location.query.q, facetKeyword))
+    this.props.dispatch(fetchFormatSearchResults(queryString.parse(this.props.location.search).q, facetKeyword))
   }
 
   render() {

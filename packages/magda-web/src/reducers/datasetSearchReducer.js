@@ -1,4 +1,4 @@
-// @flow 
+// @flow
 import type { SearchState, DataSearchJson, Dataset, DataAction, Query, FacetOption, Region } from '../types';
 
 import findIndex from 'lodash.findindex';
@@ -28,9 +28,8 @@ const initialData = {
   temporalOptions: [],
   formatOptions: [],
   apiQuery: '',
-  hasError: false,
   strategy: "match-all",
-  errorMessage: ''
+  error: null
 }
 
 const datasetSearchReducer = (state: SearchState= initialData, action: DataAction) => {
@@ -38,7 +37,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: DataActio
     case 'REQUEST_RESULTS':
       return Object.assign({}, state, {
         isFetching: true,
-        hasError: false,
+        error: null,
         apiQuery: action.apiQuery && action.apiQuery
       })
 
@@ -51,8 +50,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: DataActio
     case 'FETCH_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
-        hasError: true,
-        errorMessage: action.errorMessage && action.errorMessage
+        error: action.error,
       })
 
     case 'RECEIVE_RESULTS':
@@ -84,12 +82,13 @@ const datasetSearchReducer = (state: SearchState= initialData, action: DataActio
         publisherOptions,
         temporalOptions,
         formatOptions,
-        freeText, 
+        freeText,
         activePublishers,
         activeRegion,
         activeDateFrom,
         activeDateTo,
-        activeFormats
+        activeFormats,
+        error: null
       })
 
 

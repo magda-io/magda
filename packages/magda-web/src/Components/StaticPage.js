@@ -11,14 +11,14 @@ export default class StaticPage extends React.Component {
     return (
       <ReactDocumentTitle title={config.appName + "|" + id}>
       <div className="container">
-          <h1> {content.title} </h1>
-          <div className='markdown-body' dangerouslySetInnerHTML={{__html: content.__content}}/>
+        <div className="row">
+          <div className='col-sm-8'>
+            <h1> {content.title} </h1>
+            <div className='markdown-body' dangerouslySetInnerHTML={{__html: content.__content}}/>
+          </div>
+        </div>
       </div>
       </ReactDocumentTitle>
     );
   }
 }
-
-
-
-

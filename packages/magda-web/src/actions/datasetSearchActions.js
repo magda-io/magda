@@ -1,4 +1,4 @@
-// @flow 
+// @flow
 import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import {config} from '../config'
@@ -13,7 +13,7 @@ export function requestResults(apiQuery: string ): Action{
   }
 }
 
-export function receiveResults(apiQuery: string, json: DataSearchJson): DataAction{
+export function receiveResults(apiQuery: string, json: DataSearchJson): Action{
   return {
     type: actionTypes.RECEIVE_RESULTS,
     apiQuery,
@@ -21,10 +21,10 @@ export function receiveResults(apiQuery: string, json: DataSearchJson): DataActi
   }
 }
 
-export function transferFailed(errorMessage: string): Action{
+export function transferFailed(error: number): Action{
   return {
     type: actionTypes.FETCH_ERROR,
-    errorMessage
+    error
   }
 }
 
@@ -35,14 +35,17 @@ export function fetchSearchResults(query: string): Store {
     console.log(url);
     dispatch(requestResults(query))
     return fetch(url)
-    .then(response => {
-      if (response.status >= 400) {
-        dispatch(transferFailed('Bad response from server'))
+    .then((response: Object) => {
+      if (response.status === 200) {
+          return response.json();
       }
-      return response.json()}
-    )
-    .then((json: DataSearchJson) =>
-      dispatch(receiveResults(query, json))
+      return dispatch(transferFailed(response.status))
+    })
+    .then((json: DataSearchJson) =>{
+        if(!json.error){
+            return dispatch(receiveResults(query, json));
+        }
+      }
     )
   }
 }
@@ -148,4 +151,3 @@ export function resetDateTo(): Action{
     type: actionTypes.RESET_DATE_TO
   }
 }
-

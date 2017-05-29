@@ -1,10 +1,19 @@
 import React from 'react';
 
 export default class ErrorHandler extends React.Component {
+  interpretateErrorCode(code){
+    switch(code){
+      case 404:
+        return "record not found";
+      default: 
+        return "Error occured"
+    }
+  } 
   render() {
     return (
       <div className="container">
-        <h2>{this.props.errorCode}</h2>
+        <h1>{this.props.errorCode}</h1>
+        {this.interpretateErrorCode(this.props.errorCode)}
       </div>
     );
   }

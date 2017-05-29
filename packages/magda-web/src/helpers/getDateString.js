@@ -1,4 +1,5 @@
-export default function(dateString){
+//@flow
+export default function(dateString: string){
     const month = [];
     month[0] = "January";
     month[1] = "February";

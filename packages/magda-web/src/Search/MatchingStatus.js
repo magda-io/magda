@@ -1,7 +1,13 @@
+// @flow
 import React, { Component } from 'react';
 import './MatchingStatus.css';
 
 export default class MatchingStatus extends Component {
+  props: {
+      datasets: Array<Object>,
+      strategy: string
+  }
+
   render(){
     if(this.props.datasets.length > 0){
       if(this.props.strategy === 'match-part'){

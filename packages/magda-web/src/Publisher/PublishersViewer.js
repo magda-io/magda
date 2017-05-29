@@ -1,3 +1,4 @@
+// @flow
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import {config} from '../config.js';
@@ -6,31 +7,40 @@ import { fetchPublishersIfNeeded } from '../actions/publisherActions';
 import PublisherSummary from './PublisherSummary';
 import Pagination from '../UI/Pagination';
 import ErrorHandler from '../Components/ErrorHandler';
-
+import getPageNumber from '../helpers/getPageNumber';
 
 import './PublishersViewer.css';
 class PublishersViewer extends Component {
-    componentWillMount(){
-      this.props.fetchPublishersIfNeeded(this.props.location.query.page || 1);
+    props: {
+        location: Location,
+        error: ?number,
+        publishers: Array<Object>,
+        isFetching: boolean,
+        hitCount: number,
+        fetchPublishersIfNeeded: Function
     }
-    
+    componentWillMount(){
+      this.props.fetchPublishersIfNeeded(getPageNumber(this.props)|| 1);
+    }
+
     componentWillReceiveProps(nextProps){
-    if(this.props.location.query.page !== nextProps.location.query.page){
-        nextProps.fetchPublishersIfNeeded(nextProps.location.query.page || 1);
+      if(getPageNumber(this.props) !== getPageNumber(nextProps)){
+        nextProps.fetchPublishersIfNeeded(getPageNumber(nextProps) || 1);
       }
     }
+
 
     renderContent(){
       if(this.props.error){
         return <ErrorHandler errorCode={this.props.error}/>
       } else{
-        return (<div>
+        return (<div className="col-sm-8">
               {this.props.publishers.map(p=>
                 <PublisherSummary publisher={p} key={p.id}/>
               )}
               {this.props.hitCount > config.resultsPerPage &&
                 <Pagination
-                  currentPage={+this.props.location.query.page || 1}
+                  currentPage={+getPageNumber(this.props)|| 1}
                   maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
                   location={this.props.location}
                 />}
@@ -40,7 +50,9 @@ class PublishersViewer extends Component {
 
     render(){
       return <div className="container publishers-viewer">
-              {!this.props.isFetching && this.renderContent()}
+              <div className="row">
+                {!this.props.isFetching && this.renderContent()}
+              </div>
              </div>
     }
 }
@@ -50,18 +62,18 @@ PublishersViewer.propTypes = {publishers: React.PropTypes.array,
                               error: React.PropTypes.string};
 
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch: Function) {
   return bindActionCreators({
     fetchPublishersIfNeeded: fetchPublishersIfNeeded,
   }, dispatch);
 }
 
-function mapStateToProps(state, ownProps) {
-  const publishers= state.publisher.publishers;
-  const isFetching= state.publisher.isFetching;
-  const hitCount= state.publisher.hitCount;
-  const error = state.publisher.error;
-  const location = ownProps.location;
+function mapStateToProps(state: Object, ownProps: Object) {
+  const publishers: Array <Object> = state.publisher.publishers;
+  const isFetching: boolean = state.publisher.isFetchingPublishers;
+  const hitCount: number = state.publisher.hitCount;
+  const error: number = state.publisher.errorFetchingPublishers;
+  const location: Location = ownProps.location;
   return {
     publishers, isFetching, hitCount, location, error
   };

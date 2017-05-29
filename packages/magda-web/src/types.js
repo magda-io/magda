@@ -26,7 +26,7 @@ export type Dataset = {
   spatial: Object,
   identifier: string,
   description: string,
-  accrualPeriodicity: Object,
+  accrualPeriodicity: ?Object,
   landingPage: string,
   keyword: Array<string>,
   modified: string,
@@ -39,7 +39,7 @@ export type Dataset = {
     },
     end: {
       date: string,
-      text: string 
+      text: string
     }
   },
   language: string,
@@ -110,9 +110,9 @@ export type FacetAction = {
 export type DataAction = {
   type: string,
   apiQuery? : string,
-  errorMessage? : string,
   item?: FacetOption,
-  json: DataSearchJson
+  json: DataSearchJson,
+  error?: number
 }
 
 export type FacetSearchState = {
@@ -144,9 +144,8 @@ export type SearchState = {
   temporalOptions: Array<Object>,
   formatOptions: Array<Object>,
   apiQuery: string,
-  hasError: boolean,
+  error: ?number,
   strategy: string,
-  errorMessage: string
 }
 
 export type Publisher ={
@@ -162,3 +161,25 @@ export type Project ={
   id: string,
 }
 
+
+export type FeaturedRecords = {
+  records: Array<any>,
+  isFetching: boolean,
+  error: ?number,
+}
+
+
+export type FeaturedAction = {
+  type: string,
+  json: Array<Object>,
+  error: ?number
+}
+
+export type WMSParser = {
+  read: (text: string) => Object
+}
+
+
+export type Location = {
+
+}

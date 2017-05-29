@@ -16,6 +16,7 @@
     }
 }
 
+
 @media(min-width: 768px){
     .decorator{
         padding: 15px 0;
@@ -25,7 +26,6 @@
 
 .navbar-account.navbar-nav{
         &>li{
-            float: right;
             &>a{
                 text-decoration: underline;
                 padding-left: 5px;
@@ -51,6 +51,7 @@
     a{
         color: #fff;
         text-decoration: underline;
+        font-size: 0.9rem;
     }
     .nav > li > a{
         padding: 10px 0px;

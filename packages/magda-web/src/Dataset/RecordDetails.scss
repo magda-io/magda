@@ -1,5 +1,5 @@
 @import "../variables";
-.dataset-details__sidebar{
+.record-details__sidebar{
     margin-top: 40px;
     &>div{
         margin-bottom: 10px;
@@ -12,4 +12,9 @@
     background-color: $magda-grey;
     border-radius: 50%;
     padding: 5px 8px;
+}
+
+.dataset-discussion{
+  padding-top: 20px;
+  padding-bottom: 20px;
 }

@@ -1,25 +1,44 @@
+//  @flow
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import CustomIcons from '../UI/CustomIcons';
 import Star from '../UI/Star';
 import ToggleList from '../UI/ToggleList';
+import renderDistribution from '../UI/Distribution';
 import './DatasetSummary.css';
 import { Link } from 'react-router';
 
+type Props = {
+  onClickTag: Function,
+  onClickDataset: Function,
+  dataset: Object,
+  isExpanded: boolean
+}
+
+type DefaultProps = {
+  datasets: Object
+}
 
 export default class DatasetSummary extends Component {
-  constructor(props) {
+  state: {
+    tagsExpanded: boolean,
+    isFav: boolean
+  }
+
+  constructor(props: Props) {
     super(props);
-    this.onClick = this.onClick.bind(this);
-    this.onClickStar = this.onClickStar.bind(this);
+    const self: any = this;
+
+    self.onClick = this.onClick.bind(this);
+    self.onClickStar = this.onClickStar.bind(this);
     this.state ={
       tagsExpanded: false,
       isFav: false
     }
   }
 
-  onClick(tag, e){
+  onClick(tag: string, e: Event){
     e.stopPropagation();
     this.props.onClickTag(tag);
   }
@@ -31,19 +50,10 @@ export default class DatasetSummary extends Component {
     })
   }
 
-  renderDownloadLink(d){
-    return <div className={`media clearfix ${d.format} dataset-summary__media-object`}>
-            <div className='media-left'>
-              {<CustomIcons name={d.format}/>}
-            </div>
-            <div className="media-body">
-             <a className='media-heading' href={d.downloadURL} target='_blank'>{d.title}({d.format})</a>
-             <div className='dataset-summary__license'>{defined(d.license) && d.license.name}</div>
-            </div>
-          </div>
-  }
+
 
   renderLinks(){
+    const distribution = this.props.dataset.distributions;
     return <div className='dataset-summary__more-info'>
               <div className='dataset-summary__source clearfix'>
               <h5 className='dataset-summary__sub-heading'>Source</h5>
@@ -52,7 +62,7 @@ export default class DatasetSummary extends Component {
               <div className='dataset-summary__content clearfix'>
                 <h5 className='dataset-summary__sub-heading'>Contents</h5>
                 <ToggleList list={this.props.dataset.distributions}
-                            renderFunction={item=>this.renderDownloadLink(item)}
+                            renderFunction={item=>renderDistribution(item.format, item.id, item.title, item.license.name, this.props.dataset.identifier)}
                             className={''}
                             defaultLength={3}
                             getKey={item=>item.downloadURL}/>
@@ -68,16 +78,13 @@ export default class DatasetSummary extends Component {
                     <div className='dataset-summary__title-group'>
                       <Link className='dataset-summary__title btn'
                             to={`/dataset/${dataset.identifier}`}>
-                              
                         {dataset.title}
                       </Link>
-                    {!this.props.isExpanded && <Star onClick={this.onClickStar} isOn={this.state.isFav}/>}
                     </div>
-                    <button className='dataset-summary__toggle-info-btn hidden-xs'
-                                                       onClick={this.props.onClickDataset}
-                                                       type='button'>
-                        {this.props.isExpanded ? <span>Close</span> : <i className="fa fa-ellipsis-h" aria-hidden="true"></i>}
-                    </button>
+                    <span className='hidden-xs dataset-summary__toggle'>
+                        {!this.props.isExpanded && <Star onClick={this.onClickStar} isOn={this.state.isFav}/>}
+                        {this.props.onClickDataset && <button className='dataset-summary__toggle-info-btn' onClick={this.props.onClickDataset} type='button'>{this.props.isExpanded ? <span>Close</span> : <i className="fa fa-ellipsis-h" aria-hidden="true"></i>}</button>}
+                    </span>
                   </div>
                   {this.props.isExpanded && <div className='dataset-summary__middle clearfix'>
                       <div><Link className='btn dataset-summary__btn-view-dataset'
@@ -93,7 +100,7 @@ export default class DatasetSummary extends Component {
                 <div className='dataset-summary__body'>
 
                   <div className='dataset-summary__dataset-description' onClick={this.props.onClickDataset}>
-                    <MarkdownViewer markdown={dataset.description} stripped={true}/>
+                    <MarkdownViewer markdown={this.props.isExpanded ? dataset.description : dataset.description.slice(0, 100) + "..."}/>
                   </div>
                   <label className='dataset-summary__search-result--publisher'>{defined(dataset.publisher) ? dataset.publisher.name : 'unspecified'}</label>
                 </div>
@@ -110,6 +117,3 @@ export default class DatasetSummary extends Component {
           </div>
   }
 }
-
-DatasetSummary.propTypes = {dataset: React.PropTypes.object};
-DatasetSummary.defaultProps = {dataset: {}};

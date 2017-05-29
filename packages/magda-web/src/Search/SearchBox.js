@@ -1,3 +1,4 @@
+// @flow
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
 
@@ -9,17 +10,24 @@ import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
 import React, { Component } from 'react';
 import {fetchRegionMapping} from '../actions/regionMappingActions';
+import { fetchSearchResultsIfNeeded } from '../actions/datasetSearchActions';
+import queryString from 'query-string';
+
 
 class SearchBox extends Component {
+  state : {
+    searchText: ?string
+  }
+
   constructor(props) {
     super(props);
-    this.debounceUpdateSearchQuery = debounce(this.updateSearchText, 3000);
-    this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
-    this.updateQuery = this.updateQuery.bind(this);
-    this.updateSearchText = this.updateSearchText.bind(this);
-    this.onClickSearch = this.onClickSearch.bind(this);
-    this.onSearchTextChange = this.onSearchTextChange.bind(this);
-    this.getSearchBoxValue = this.getSearchBoxValue.bind(this);
+    const self: any = this;
+    self.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(this);
+    self.updateQuery = this.updateQuery.bind(this);
+    self.updateSearchText = this.updateSearchText.bind(this);
+    self.onClickSearch = this.onClickSearch.bind(this);
+    self.onSearchTextChange = this.onSearchTextChange.bind(this);
+    self.getSearchBoxValue = this.getSearchBoxValue.bind(this);
 
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
@@ -27,6 +35,8 @@ class SearchBox extends Component {
       searchText: undefined
     }
   }
+
+  debounceUpdateSearchQuery = debounce(this.updateSearchText, 3000);
 
   componentWillMount(){
     this.props.fetchRegionMapping();
@@ -37,6 +47,7 @@ class SearchBox extends Component {
       searchText: nextProps.location.query.q
     })
   }
+
 
   onSearchTextChange(event){
     const text = event.target.value;
@@ -86,7 +97,7 @@ class SearchBox extends Component {
     let {router} = this.context;
     router.push({
       pathname: '/search',
-      query: Object.assign(this.props.location.query, query)
+      query: Object.assign(queryString.parse(this.props.location.search), query)
     });
   }
 
@@ -96,8 +107,8 @@ class SearchBox extends Component {
   getSearchBoxValue(){
     if(defined(this.state.searchText)){
       return this.state.searchText;
-    } else if(defined(this.props.location.query.q)){
-      return this.props.location.query.q
+    } else if(defined(queryString.parse(this.props.location.search).q)){
+      return queryString.parse(this.props.location.search).q
     }
     return '';
   }
@@ -135,21 +146,20 @@ SearchBox.contextTypes ={
 
 SearchBox.propTypes = {
   freeText: React.PropTypes.string,
-  errorMessage: React.PropTypes.string
 }
 
 
-function mapStateToProps(state, ownProps) {
+const mapStateToProps = (state, ownProps)=> {
   let { datasetSearch } = state;
   return {
     freeText: datasetSearch.freeText,
   }
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({
+const mapDispatchToProps = (dispatch: Dispatch<*>) =>
+   bindActionCreators({
     fetchRegionMapping: fetchRegionMapping,
   }, dispatch);
-}
+
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchBox);
