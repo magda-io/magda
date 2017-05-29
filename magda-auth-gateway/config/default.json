@@ -4,6 +4,5 @@
         "host": "session-store",
         "port": 5432
     },
-    "proxyTarget": "http://reverse-proxy",
-    "baseAuthApiUrl": "http://auth-api"
+    "proxyTarget": "http://reverse-proxy"
 }

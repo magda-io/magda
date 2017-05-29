@@ -7,7 +7,8 @@
     "dev:local": "NODE_ENV=local npm run build:live",
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "postinstall": "tsc"
   },
   "dependencies": {
     "@magda/typescript-common": "0.0.26-SNAPSHOT",

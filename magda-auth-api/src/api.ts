@@ -2,12 +2,12 @@ import * as express from 'express';
 import { Maybe } from 'tsmonad';
 
 import { getUser, getUserByExternalDetails, createUser } from './db';
-import { User } from './model';
+import { PublicUser } from './model';
 import getUserId from '@magda/typescript-common/lib/session/GetUserId';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
-function handleUserPromise(res: express.Response, promise: Promise<Maybe<User>>) {
+function handlePromise<T>(res: express.Response, promise: Promise<Maybe<T>>) {
     return promise
         .then(user => user.caseOf({
             just: user => Promise.resolve(res.json(user)),
@@ -18,26 +18,20 @@ function handleUserPromise(res: express.Response, promise: Promise<Maybe<User>>)
         }).then(() => res.send());
 }
 
-// TODO: Need to protect email addresses.
-router.get("/users/lookup", function (req, res) {
+router.get("/private/users/lookup", function (req, res) {
     const source = req.query.source;
     const sourceId = req.query.sourceId;
 
-    handleUserPromise(res, getUserByExternalDetails(source, sourceId));
+    handlePromise(res, getUserByExternalDetails(source, sourceId));
 });
 
-router.get("/users/whoami", function (req, res) {
-    const userId = getUserId(req);
-    handleUserPromise(res, getUser(userId));
-});
-
-router.get("/users/:userId", function (req, res) {
+router.get("/private/users/:userId", function (req, res) {
     const userId = req.params.userId;
 
-    handleUserPromise(res, getUser(userId));
+    handlePromise(res, getUser(userId));
 });
 
-router.post("/users", function (req, res) {
+router.post("private/users", function (req, res) {
     createUser(req.body)
         .then(user => {
             res.json(user);
@@ -50,9 +44,30 @@ router.post("/users", function (req, res) {
         .then(() => res.send());
 });
 
+router.get("/public/users/whoami", function (req, res) {
+    const userId = getUserId(req);
+    handlePromise(res, getUser(userId));
+});
+
+router.get("/public/users/:userId", (req, res) => {
+    const userId = req.params.userId;
+
+    const getPublicUser = getUser(userId).then(userMaybe => userMaybe.map(user => {
+        const publicUser: PublicUser = {
+            id: user.id,
+            photoURL: user.photoURL,
+            displayName: user.displayName
+        }
+
+        return publicUser;
+    }));
+
+    handlePromise(res, getPublicUser);
+});
+
 // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
 if (process.env.NODE_ENV !== "production") {
-    router.get("/jwt", function (req, res) {
+    router.get("public/jwt", function (req, res) {
         res.status(200);
         res.write("X-Magda-Session: " + req.header("X-Magda-Session"));
         res.send();

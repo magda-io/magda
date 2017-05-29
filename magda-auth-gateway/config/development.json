@@ -5,6 +5,5 @@
         "port": 30545
     },
     "proxyTarget": "http://localhost:80",
-    "externalHost": "http://localhost:3000",
-    "baseAuthApiUrl": "http://localhost:3001"
+    "externalHost": "http://localhost:3000"
 }

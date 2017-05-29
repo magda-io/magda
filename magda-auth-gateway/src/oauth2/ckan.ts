@@ -4,7 +4,7 @@ import * as express from 'express';
 const LocalStrategy = require("passport-local").Strategy;
 
 import loginToCkan from "./login-to-ckan";
-import { createOrGet } from '../auth-api-client';
+import createOrGet from '../create-or-get';
 
 passport.use(
     new LocalStrategy(function (username: string, password: string, cb: (error: any, user?: any, info?: any) => void) {

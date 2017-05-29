@@ -1,8 +1,11 @@
-export interface User {
+export interface PublicUser {
   id?: string,
   displayName: string,
+  photoURL?: string
+}
+
+export interface User extends PublicUser {
   email: string,
-  photoURL?: string,
   source: string,
   sourceId: string
 }

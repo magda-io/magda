@@ -3,5 +3,5 @@
     "db": {
         "host": "auth-db",
         "port": 5432
-    }
+    },
 }

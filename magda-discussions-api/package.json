@@ -9,11 +9,14 @@
   },
   "dependencies": {
     "@magda/typescript-common": "0.0.26-SNAPSHOT",
+    "@magda/auth-api": "0.0.26-SNAPSHOT",
+    "@types/lodash": "^4.14.64",
     "@types/pg": "^6.1.40",
     "body-parser": "^1.13.2",
     "express": "^4.13.1",
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-form-data": "^1.0.0",
+    "lodash": "^4.17.4",
     "tsmonad": "^0.7.2"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@ import * as passport from 'passport';
 import * as express from 'express';
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
-import { createOrGet } from '../auth-api-client';
+import createOrGet from '../create-or-get';
 import constants from '../constants';
 
 passport.use(

@@ -11,7 +11,7 @@ const jwt = require('jsonwebtoken');
 import googleAuthRouter from './src/oauth2/google';
 import fbAuthRouter from './src/oauth2/facebook';
 import ckanAuthRouter from './src/oauth2/ckan';
-import { getUser } from './src/auth-api-client';
+import { getUser } from '@magda/auth-api/lib/src/client';
 import pool from "./src/pool";
 
 if (!process.env.JWT_SECRET) {

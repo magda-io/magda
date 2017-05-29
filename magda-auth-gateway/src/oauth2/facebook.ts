@@ -1,6 +1,6 @@
 import * as passport from 'passport';
 import * as express from 'express';
-import { createOrGet } from '../auth-api-client';
+import createOrGet from '../create-or-get';
 import { Strategy as FBStrategy } from 'passport-facebook';
 import constants from '../constants';
 
