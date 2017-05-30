@@ -31,7 +31,7 @@ CREATE TABLE public.datasetdiscussions
     "datasetId" character varying(200) COLLATE pg_catalog."default" NOT NULL,
     "discussionId" uuid NOT NULL,
     CONSTRAINT datasetdiscussions_pkey PRIMARY KEY (id),
-    CONSTRAINT datasetdiscussions_id_fkey FOREIGN KEY (id)
+    CONSTRAINT "datasetdiscussions_discussionId_fkey" FOREIGN KEY ("discussionId")
         REFERENCES public.discussions (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
@@ -42,6 +42,11 @@ WITH (
 TABLESPACE pg_default;
 ALTER TABLE public.datasetdiscussions
     OWNER to postgres;
+
+CREATE INDEX x
+    ON public.datasetdiscussions USING btree
+    ("discussionId")
+    TABLESPACE pg_default;
 
 CREATE TABLE public.messages
 (

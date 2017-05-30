@@ -5,6 +5,7 @@ const LocalStrategy = require("passport-local").Strategy;
 
 import loginToCkan from "./login-to-ckan";
 import createOrGet from '../create-or-get';
+import { redirectOnSuccess, redirectOnError } from './redirect';
 
 passport.use(
     new LocalStrategy(function (username: string, password: string, cb: (error: any, user?: any, info?: any) => void) {
@@ -29,13 +30,16 @@ router.get("/", function (req, res) {
 
 router.post(
     "/",
-    (req, res, next) => {
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
         passport.authenticate("local", {
-            failureRedirect: req.query.source
+            failWithError: true
         })(req, res, next)
     },
-    (req, res) => {
-        res.redirect(req.query.source);
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
+        redirectOnSuccess(req.query.redirect, req, res);
+    },
+    (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any => {
+        redirectOnError(err, req.query.redirect, req, res);
     }
 );
 

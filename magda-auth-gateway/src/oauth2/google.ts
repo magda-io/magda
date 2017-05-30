@@ -5,6 +5,7 @@ import { Profile } from 'passport';
 
 import createOrGet from '../create-or-get';
 import constants from '../constants';
+import { redirectOnSuccess, redirectOnError } from './redirect';
 
 passport.use(
     new GoogleStrategy(
@@ -26,20 +27,23 @@ router.get(
     (req, res, next) => {
         passport.authenticate("google", {
             scope: ["profile", "email"],
-            state: req.query.source
+            state: req.query.redirect
         })(req, res, next);
     }
 );
 
 router.get(
     "/return",
-    (req, res, next) => {
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
         passport.authenticate("google", {
-            failureRedirect: req.query.state
+            failWithError: true
         })(req, res, next)
     },
-    (req, res) => {
-        res.redirect(req.query.state);
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
+        redirectOnSuccess(req.query.state, req, res);
+    },
+    (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any => {
+        redirectOnError(err, req.query.state, req, res);
     }
 );
 
