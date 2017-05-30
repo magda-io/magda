@@ -1,6 +1,6 @@
 import React from "react";
 import "./Account.css";
-import FirebaseLogin from './FirebaseLogin';
+import Login from './Login';
 
 export default class Account extends React.Component {
   constructor(props) {
@@ -15,7 +15,7 @@ export default class Account extends React.Component {
       <div className="container account">
         <h2>Account</h2>
         {!this.state.user && (
-          <FirebaseLogin />
+          <Login />
         )}
         {this.state.user && (
           <div>

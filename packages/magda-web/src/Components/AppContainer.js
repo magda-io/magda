@@ -42,13 +42,15 @@ class AppContainer extends React.Component {
 
                 <Medium>
                   <div className="col-sm-10 nav-links">
-                    {this.props.user && this.props.user.user
-                      ? <li>You are {this.props.user.user.displayName}</li>
+                    {this.props.user 
+                      ? <li>You are {this.props.user.displayName}</li>
                       : <ul className="nav navbar-nav navbar-account">
                           <li>
-                            <Link to={`/new-account`}>Create an account</Link>
+                            <Link to={`account/sign-in`}>
+                              Create an account
+                            </Link>
                           </li>
-                          <li><Link to={`/sign-in`}>Sign in</Link></li>
+                          <li><Link to={`account/sign-in`}>Sign in</Link></li>
                         </ul>}
 
                     <ul className="nav navbar-nav">
@@ -105,9 +107,7 @@ class AppContainer extends React.Component {
 }
 
 function mapStateToProps(state) {
-  let { datasetSearch, record, publisher, project, user } = state;
-
-  console.log(user);
+  let { datasetSearch, record, publisher, project, userManagement } = state;
 
   return {
     isFetching: datasetSearch.isFetching ||
@@ -115,7 +115,7 @@ function mapStateToProps(state) {
       publisher.isFetchingPublishers ||
       publisher.isFetchingPublisher ||
       project.isFetching,
-    user
+    user: userManagement.user
   };
 }
 

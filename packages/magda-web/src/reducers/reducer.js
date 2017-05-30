@@ -28,7 +28,7 @@ const reducer = combineReducers({
   record,
   publisher,
   project,
-  user: userManagement,
+  userManagement,
   featuredDatasets,
   featuredPublishers
 });

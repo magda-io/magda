@@ -1,9 +1,8 @@
 // @flow
-import fetch from 'isomorphic-fetch'
-import {config} from '../config'
-import {actionTypes} from '../constants/ActionTypes';
-import type { Action, FacetSearchJson } from '../types';
-
+import fetch from "isomorphic-fetch";
+import { config } from "../config";
+import { actionTypes } from "../constants/ActionTypes";
+import type { Action, FacetSearchJson } from "../types";
 
 // export function signIn(): Action{
 //   return {
@@ -11,11 +10,52 @@ import type { Action, FacetSearchJson } from '../types';
 //   }
 // }
 
+export function requestWhoAmI(): Action {
+  return (dispatch: Function, getState: Function) => {
+    console.log("requestWhoAmI");
+
+    if (getState().userManagement.isFetchingWhoAmI) {
+      return false;
+    }
+
+    dispatch({
+      type: actionTypes.REQUEST_WHO_AM_I
+    });
+
+    fetch("http://localhost:3000/api/v0/auth/users/whoami", {
+      credentials: "include"
+    })
+      .then(response => {
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          return dispatch(receiveWhoAmI());
+        }
+      })
+      .then(user => dispatch(receiveWhoAmI(user)))
+      .catch(err => dispatch(receiveWhoAmIError(err)));
+  };
+}
+
+export function receiveWhoAmI(user): Action {
+  return {
+    type: actionTypes.RECEIVE_WHO_AM_I,
+    user
+  };
+}
+
+export function receiveWhoAmIError(err): Action {
+  return {
+    type: actionTypes.RECEIVE_WHO_AM_I_ERROR,
+    err
+  };
+}
+
 export function signedIn(user): Action {
   return {
     type: actionTypes.SIGNED_IN,
     user
-  }
+  };
 }
 
 // export function signUp(): Action{
