@@ -31,7 +31,7 @@ router.get("/private/users/:userId", function (req, res) {
     handlePromise(res, getUser(userId));
 });
 
-router.post("private/users", function (req, res) {
+router.post("/private/users", function (req, res) {
     createUser(req.body)
         .then(user => {
             res.json(user);

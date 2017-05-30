@@ -1,6 +1,7 @@
-import * as passport from 'passport';
+const passport = require('passport');
 import * as express from 'express';
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+import { Profile } from 'passport';
 
 import createOrGet from '../create-or-get';
 import constants from '../constants';
@@ -12,7 +13,7 @@ passport.use(
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             callbackURL: `${constants.loginBaseUrl}/google/return`
         },
-        function (accessToken: string, refreshToken: string, profile: passport.Profile, cb: (error: any, user?: any, info?: any) => void) {
+        function (accessToken: string, refreshToken: string, profile: Profile, cb: (error: any, user?: any, info?: any) => void) {
             createOrGet(profile, 'google').then(userId => cb(null, userId)).catch(error => cb(error));
         }
     )
@@ -22,14 +23,23 @@ const router = express.Router();
 
 router.get(
     "/",
-    passport.authenticate("google", { scope: ["profile", "email"] })
+    (req, res, next) => {
+        passport.authenticate("google", {
+            scope: ["profile", "email"],
+            state: req.query.source
+        })(req, res, next);
+    }
 );
 
 router.get(
     "/return",
-    passport.authenticate("google", { failureRedirect: "/auth/login" }),
-    function (req, res) {
-        res.redirect("/auth/");
+    (req, res, next) => {
+        passport.authenticate("google", {
+            failureRedirect: req.query.state
+        })(req, res, next)
+    },
+    (req, res) => {
+        res.redirect(req.query.state);
     }
 );
 

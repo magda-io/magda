@@ -1,18 +1,19 @@
-import * as passport from 'passport';
+// import * as passport from 'passport';
+const passport = require('passport');
+const FBStrategy = require('passport-facebook').Strategy
 import * as express from 'express';
 import createOrGet from '../create-or-get';
-import { Strategy as FBStrategy } from 'passport-facebook';
 import constants from '../constants';
+import { Profile } from 'passport';
 
 passport.use(
     new FBStrategy(
         {
             clientID: process.env.FACEBOOK_CLIENT_ID,
             clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-            callbackURL: `${constants.loginBaseUrl}/facebook/return`,
             profileFields: ["displayName", "picture", "email"]
         },
-        function (accessToken, refreshToken, profile, cb) {
+        function (accessToken: string, refreshToken: string, profile: Profile, cb: Function) {
             createOrGet(profile, 'facebook').then(userId => cb(null, userId)).catch(error => cb(error));
         }
     )
@@ -22,14 +23,25 @@ const router = express.Router();
 
 router.get(
     "/",
-    passport.authenticate("facebook", { scope: ["public_profile", "email"] })
+    (req, res, next) => {
+        passport.authenticate('facebook', {
+            scope: ["public_profile", "email"],
+            callbackURL: `${constants.loginBaseUrl}/facebook/return?source=${encodeURIComponent(req.query.source)}`
+        })(req, res, next)
+    }
 );
 
 router.get(
     "/return",
-    passport.authenticate("facebook", { failureRedirect: "/auth/login" }),
-    function (req, res) {
-        res.redirect("/auth/");
+    function (req, res, next) {
+        passport.authenticate("facebook", {
+            failureRedirect: req.query.source,
+            callbackURL: `${constants.loginBaseUrl}/facebook/return?source=${encodeURIComponent(req.query.source)}`
+        })(req, res, next);
+    },
+    function (req, res, next) {
+        const source = decodeURIComponent(req.query.source);
+        res.redirect(source);
     }
 );
 

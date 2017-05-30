@@ -29,9 +29,13 @@ router.get("/", function (req, res) {
 
 router.post(
     "/",
-    passport.authenticate("local", { failureRedirect: "/auth/login" }),
-    function (req, res) {
-        res.redirect("/auth/");
+    (req, res, next) => {
+        passport.authenticate("local", {
+            failureRedirect: req.query.source
+        })(req, res, next)
+    },
+    (req, res) => {
+        res.redirect(req.query.source);
     }
 );
 
