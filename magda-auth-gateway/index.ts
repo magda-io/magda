@@ -50,7 +50,8 @@ function setupApp(app: express.Application) {
       secret: process.env.SESSION_SECRET,
       cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 },
       resave: false,
-      saveUninitialized: false
+      saveUninitialized: false,
+      rolling: true
     })
   );
   app.use(passport.initialize());

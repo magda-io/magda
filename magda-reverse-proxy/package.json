@@ -15,7 +15,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-reverse-proxy",
-      "include": "Dockerfile nginx.conf"
+      "include": "Dockerfile nginx.conf cors.conf"
     }
   }
 }
