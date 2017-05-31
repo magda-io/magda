@@ -15,6 +15,8 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@types/ftp": "^0.3.29",
+    "@types/lru-cache": "^4.0.0",
     "@types/node": "^7.0.5",
     "@types/request": "0.0.39",
     "@types/urijs": "^1.15.31",
@@ -23,8 +25,10 @@
   },
   "dependencies": {
     "@magda/registry-aspects": "^0.0.26-SNAPSHOT",
-    "@magda/typescript-common": "^0.0.26-SNAPSHOT",
     "@magda/scripts": "^0.0.26-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.26-SNAPSHOT",
+    "ftp": "^0.3.10",
+    "lru-cache": "^4.0.2",
     "request": "^2.79.0",
     "ts-node": "^2.1.0",
     "urijs": "^1.18.7"
