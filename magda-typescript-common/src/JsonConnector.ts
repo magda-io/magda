@@ -176,7 +176,6 @@ export default abstract class JsonConnector {
                 ++result.datasetsConnected;
 
                 const distributions = this.getJsonDistributions(dataset);
-                console.log(distributions);
                 if (distributions) {
                     await forEachAsync(distributions, 1, async distribution => {
                         const recordOrError = await this.createDistribution(distribution, dataset);
