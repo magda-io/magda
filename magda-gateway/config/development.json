@@ -1,0 +1,9 @@
+{
+    "listenPort": 3000,
+    "db": {
+        "host": "192.168.99.100",
+        "port": 30545
+    },
+    "proxyTarget": "http://minikube.data.gov.au:30013",
+    "externalHost": "http://localhost:3000"
+}

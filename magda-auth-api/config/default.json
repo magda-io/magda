@@ -1,0 +1,7 @@
+{
+    "listenPort": 80,
+    "db": {
+        "host": "auth-db",
+        "port": 5432
+    }
+}

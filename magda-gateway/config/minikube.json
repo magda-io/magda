@@ -1,0 +1,6 @@
+{
+    "db": {
+        "host": "combined-db"
+    },
+    "externalHost": "http://minikube.data.gov.au:30016"
+}
