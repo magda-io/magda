@@ -15,7 +15,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import akka.util.Timeout
-import ch.megard.akka.http.cors.CorsDirectives
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives
 import scalikejdbc.config._
 import scalikejdbc._
 
