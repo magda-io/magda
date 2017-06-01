@@ -6,6 +6,6 @@ RUN npm update && \
 
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app
-WORKDIR /usr/src/app/@magda/auth-gateway
+WORKDIR /usr/src/app/@magda/gateway
 
 CMD [ "ts-node", "./index.ts" ]

@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gateway
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: gateway
+    spec:
+      containers:
+      - name: gateway
+        resources:
+          requests:
+            cpu: 0m
+            memory: 0
+        env:
+        - name: NODE_ENV
+          value: dev-na
+        image: "data61/magda-gateway:${version}"
+        imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: gateway
+  type: "LoadBalancer"
+  loadBalancerIP: "104.199.180.124"

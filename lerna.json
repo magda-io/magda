@@ -12,7 +12,7 @@
     "magda-reverse-proxy/",
     "magda-scala-common/",
     "magda-search-api/",
-    "magda-auth-gateway/",
+    "magda-gateway/",
     "magda-session-store/",
     "magda-auth-api/",
     "magda-auth-db/",

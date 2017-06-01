@@ -1,16 +1,16 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: auth-gateway
+  name: gateway
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        service: auth-gateway
+        service: gateway
     spec:
       containers:
-      - name: auth-gateway
+      - name: gateway
         resources:
           requests:
             memory: 0
@@ -35,13 +35,13 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: google-client-secret
-        image: "localhost:5000/data61/magda-auth-gateway:latest"
+        image: "localhost:5000/data61/magda-gateway:latest"
         imagePullPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-gateway
+  name: gateway
 spec:
   ports:
   - name: http
@@ -49,5 +49,5 @@ spec:
     targetPort: 80
     nodePort: 30016
   selector:
-    service: auth-gateway
+    service: gateway
   type: "NodePort"
