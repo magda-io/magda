@@ -6,12 +6,6 @@
     "configurations": [
         {
             "type": "node",
-            "request": "attach",
-            "name": "Attach",
-            "port": 5858
-        },
-        {
-            "type": "node",
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch CKAN Connector",
@@ -25,6 +19,14 @@
             "name": "Launch Project Open Data Connector",
             "program": "${workspaceRoot}/magda-project-open-data-connector/bin/index.js",
             "cwd": "${workspaceRoot}/magda-project-open-data-connector"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Launch CSW Connector",
+            "program": "${workspaceRoot}/magda-csw-connector/bin/index.js",
+            "cwd": "${workspaceRoot}/magda-csw-connector"
         }
     ]
 }
