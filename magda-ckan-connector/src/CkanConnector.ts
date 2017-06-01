@@ -1,7 +1,5 @@
 import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
 import JsonConnector, { JsonConnectorOptions } from '@magda/typescript-common/lib/JsonConnector';
-import * as moment from 'moment';
-import * as URI from 'urijs';
 import Ckan from './Ckan';
 
 export default class CkanConnector extends JsonConnector {
