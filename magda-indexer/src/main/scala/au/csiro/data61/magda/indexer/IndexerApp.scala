@@ -52,6 +52,13 @@ object IndexerApp extends App {
     val registryConfig = interfaceConfigs("registry")
 
     RegisterWebhook.registerWebhook(registryConfig)
+      .recover {
+        case e: Throwable =>
+          // This is a super massive problem - might as well just crash to make it super-obvious and to
+          // use K8S' restart logic
+          system.log.error("Failure to register webhook is an unrecoverable and drastic error, crashing")
+          System.exit(1)
+      }
   }
 
   val api = new IndexerApi(crawler, indexer)
