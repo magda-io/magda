@@ -30,6 +30,10 @@ export default class AsyncPage<T> {
         return AsyncPage.create<T>(current => current ? undefined : valuePromise);
     }
 
+    static none<T>(): AsyncPage<T> {
+        return new AsyncPage(undefined, false, undefined);
+    }
+
     constructor(data: T, hasData: boolean, requestNextPage: CreateAsyncPage<T>) {
         this.data = data;
         this.hasData = hasData;

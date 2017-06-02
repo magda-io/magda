@@ -34,31 +34,39 @@ export default class Csw implements IConnectorSource {
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
     }
 
-    getRecords(): AsyncPage<CswGmdResponse> {
+    getRecords(): AsyncPage<any> {
         const parameters = Object.assign({}, Csw.defaultGetRecordsParameters, this.parameters);
         const url = this.baseUrl.clone().addSearch(parameters);
 
         let startIndex = 0;
 
-        return AsyncPage.create<CswGmdResponse>(previous => {
+        return AsyncPage.create<any>(previous => {
             if (previous) {
-                console.dir(previous);
-                // startIndex += previous.result.results.length;
-                // if (startIndex >= previous.result.count) {
-                //     return undefined;
-                // }
+                const searchResults = previous.GetRecordsResponse.SearchResults[0];
+                if (!searchResults || !searchResults.$ || !searchResults.$.nextRecord || !searchResults.$.numberOfRecordsMatched) {
+                    return undefined;
+                }
+
+                const nextRecord = searchResults.$.nextRecord.value;
+                const numberOfRecordsMatched = searchResults.$.numberOfRecordsMatched.value;
+
+                startIndex = nextRecord - 1;
+
+                if (startIndex >= numberOfRecordsMatched) {
+                    return undefined;
+                }
             }
 
             return this.requestRecordsPage(url, startIndex);
         });
     }
 
-    private requestRecordsPage(url: uri.URI, startIndex: number): Promise<CswGmdResponse> {
+    private requestRecordsPage(url: uri.URI, startIndex: number): Promise<any> {
         const pageUrl = url.clone();
         pageUrl.addSearch('startPosition', startIndex + 1);
         pageUrl.addSearch('maxRecords', this.pageSize);
 
-        const operation = () => new Promise<CswGmdResponse>((resolve, reject) => {
+        const operation = () => new Promise<any>((resolve, reject) => {
             console.log('Requesting ' + pageUrl.toString());
             request(pageUrl.toString(), {}, (error, response, body) => {
                 if (error) {
@@ -92,8 +100,4 @@ export interface CswOptions {
     pageSize?: number;
     maxRetries?: number;
     secondsBetweenRetries?: number;
-}
-
-export interface CswGmdResponse {
-
 }

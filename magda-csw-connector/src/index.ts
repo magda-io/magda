@@ -1,16 +1,23 @@
-import Csw, { CswGmdResponse } from './Csw';
+import Csw from './Csw';
+import CswConnector from './CswConnector';
 import { forEachAsync } from '@magda/typescript-common/lib/AsyncPage';
+import Registry from '@magda/typescript-common/lib/Registry';
 
 const csw = new Csw({
     baseUrl: 'http://www.bom.gov.au/geonetwork/srv/eng/csw',
     name: 'Australian Bureau of Meteorology'
 });
 
-const recordsPages = csw.getRecords().map((data: CswGmdResponse) => {
-    return [data];
+const registry = new Registry({
+    baseUrl: process.env.REGISTRY_URL || process.env.npm_package_config_registryUrl || 'http://localhost:6100/v0'
 });
 
-forEachAsync(recordsPages, 1, (data: CswGmdResponse) => {
-    console.dir(data);
-    return Promise.resolve();
+const connector = new CswConnector({
+    source: csw,
+    registry: registry,
+    libraries: {}
+});
+
+connector.run().then(result => {
+    console.log(result.summarize());
 });
