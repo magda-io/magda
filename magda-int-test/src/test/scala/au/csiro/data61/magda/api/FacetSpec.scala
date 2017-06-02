@@ -214,7 +214,7 @@ class FacetSpec extends BaseSearchApiSpec {
 
         describe("exact match facets") {
           it("should not show filters that do not have records") {
-            checkFacetsWithQuery(textQueryGen(exactGen), smallIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+            checkFacetsWithQuery(textQueryGen(exactGen), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
               val facet = getFacet(outerResult)
 
