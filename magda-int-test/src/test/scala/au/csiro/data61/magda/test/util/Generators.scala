@@ -107,8 +107,8 @@ object Generators {
   }
 
   def agentGen(nameGen: Gen[String]) = for {
-    identifier <- someBiasedOption(Gen.uuid.map(_.toString))
-    name <- someBiasedOption(nameGen)
+    identifier <- Gen.uuid.map(_.toString).map(Some.apply)
+    name <- nameGen.map(Some.apply)
     homePage <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     email <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     imageUrl <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
@@ -325,7 +325,7 @@ object Generators {
   } yield (mediaType, format)
 
   val distGen = for {
-    identifier <- someBiasedOption(Gen.uuid.map(_.toString))
+    identifier <- Gen.uuid.map(_.toString).map(Some.apply)
     title <- textGen
     description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
