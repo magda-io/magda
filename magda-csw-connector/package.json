@@ -26,6 +26,7 @@
     "@magda/registry-aspects": "^0.0.26-SNAPSHOT",
     "@magda/scripts": "^0.0.26-SNAPSHOT",
     "@magda/typescript-common": "^0.0.26-SNAPSHOT",
+    "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "request": "^2.79.0",
     "ts-node": "^2.1.0",

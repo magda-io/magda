@@ -6,6 +6,7 @@ import createServiceError from './createServiceError';
 import CreationFailure from './CreationFailure';
 import CreationFailuresError from './CreationFailuresError';
 import Registry from './Registry';
+import * as fs from 'fs';
 
 /**
  * A base class for connectors for most any JSON-based catalog source.
@@ -115,7 +116,16 @@ export default abstract class JsonConnector {
     async createAspectDefinitions(): Promise<ConnectionResult> {
         const result = new ConnectionResult();
 
-        const allAspects = this.datasetAspectBuilders.concat(this.distributionAspectBuilders).concat(this.organizationAspectBuilders);
+        const allAspects = this.datasetAspectBuilders.concat(this.distributionAspectBuilders).concat(this.organizationAspectBuilders).concat([
+            {
+                aspectDefinition: {
+                    id: 'dataset-distributions',
+                    name: 'Dataset Distributions',
+                    jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
+                },
+                builderFunctionString: undefined
+            }
+        ]);
 
         const aspectBuilderPage = AsyncPage.single<AspectBuilder[]>(allAspects);
         await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectBuilder => {
@@ -177,6 +187,7 @@ export default abstract class JsonConnector {
 
                 const distributions = this.getJsonDistributions(dataset);
                 if (distributions) {
+                    const distributionIds: string[] = [];
                     await forEachAsync(distributions, 1, async distribution => {
                         const recordOrError = await this.createDistribution(distribution, dataset);
                         if (recordOrError instanceof Error) {
@@ -185,8 +196,13 @@ export default abstract class JsonConnector {
                                 this.getIdFromJsonDataset(dataset),
                                 recordOrError));
                         } else {
+                            distributionIds.push(this.getIdFromJsonDistribution(distribution, dataset));
                             ++result.distributionsConnected;
                         }
+                    });
+
+                    await this.registry.putRecordAspect(this.getIdFromJsonDataset(dataset), 'dataset-distributions', {
+                        distributions: distributionIds
                     });
                 }
             }

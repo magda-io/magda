@@ -35,14 +35,6 @@ export default [
     },
     {
         aspectDefinition: {
-            id: 'dataset-distributions',
-            name: 'Dataset Distributions',
-            jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
-        },
-        builderFunctionString: fs.readFileSync('aspect-templates/dataset-distributions.js', 'utf8')
-    },
-    {
-        aspectDefinition: {
             id: 'dataset-publisher',
             name: 'Dataset Publisher',
             jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')

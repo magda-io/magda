@@ -54,5 +54,4 @@ export default class CkanConnector extends JsonConnector {
 export interface CkanConnectorOptions extends JsonConnectorOptions {
     source: Ckan;
     ignoreHarvestSources?: string[];
-    maxConcurrency?: number;
 }
