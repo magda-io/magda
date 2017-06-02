@@ -1,4 +1,4 @@
-import { AspectDefinition, AspectDefinitionsApi, Record, RecordsApi } from './generated/registry/api';
+import { AspectDefinition, AspectDefinitionsApi, Record, RecordsApi, RecordAspectsApi } from './generated/registry/api';
 import * as URI from 'urijs';
 import retry from './retry';
 import formatServiceError from './formatServiceError';
@@ -20,6 +20,7 @@ export default class Registry {
     private baseUrl: uri.URI;
     private aspectDefinitionsApi: AspectDefinitionsApi;
     private recordsApi: RecordsApi;
+    private recordAspectsApi: RecordAspectsApi;
     private maxRetries: number;
     private secondsBetweenRetries: number;
 
@@ -35,6 +36,7 @@ export default class Registry {
         const registryApiUrl = this.baseUrl.toString();
         this.aspectDefinitionsApi = new AspectDefinitionsApi(registryApiUrl);
         this.recordsApi = new RecordsApi(registryApiUrl);
+        this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
     }
 
     getRecordUrl(id: string): string {
@@ -51,6 +53,13 @@ export default class Registry {
     putRecord(record: Record): Promise<Record | Error> {
         const operation = () => this.recordsApi.putById(encodeURIComponent(record.id), record);
         return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry record with ID "${record.id}".`, e, retriesLeft)))
+            .then(result => result.body)
+            .catch(createServiceError);
+    }
+
+    putRecordAspect(recordId: string, aspectId: string, aspect: any): Promise<Record | Error> {
+        const operation = () => this.recordAspectsApi.putById(encodeURIComponent(recordId), aspectId, aspect);
+        return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry aspect ${aspectId} for record with ID "${recordId}".`, e, retriesLeft)))
             .then(result => result.body)
             .catch(createServiceError);
     }

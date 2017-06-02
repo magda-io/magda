@@ -1,6 +1,7 @@
 import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
 import JsonConnector, { JsonConnectorOptions } from '@magda/typescript-common/lib/JsonConnector';
 import Csw from './Csw';
+import { flatMap } from 'lodash';
 
 export default class CswConnector extends JsonConnector {
     private csw: Csw;
@@ -24,31 +25,11 @@ export default class CswConnector extends JsonConnector {
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
-        const {
-            distributionInfo: [
-                {
-                    MD_Distribution: [
-                        {
-                            transferOptions: [
-                                {
-                                    MD_DigitalTransferOptions: [
-                                        {
-                                            onLine: [
-                                                {
-                                                    CI_OnlineResource: distributions = <any[]>[]
-                                                } = {}
-                                            ] = []
-                                        } = {}
-                                    ] = []
-                                } = {}
-                            ] = []
-                        } = {}
-                    ] = []
-                } = {}
-            ] = []
-        } = dataset;
-
-        return distributions;
+        return flatMap(dataset.distributionInfo || [], di =>
+            flatMap(di.MD_Distribution || [], mdd =>
+                flatMap(mdd.transferOptions || [], to =>
+                    flatMap(to.MD_DigitalTransferOptions || [], mddto =>
+                        flatMap(mddto.onLine || [], ol => ol.CI_OnlineResource || [])))));
     }
 
     protected getIdFromJsonOrganization(jsonOrganization: any): string {
