@@ -14,6 +14,8 @@ import spray.json._
 import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
 
 import scala.util.Try
+import java.time.format.DateTimeFormatter
+import au.csiro.data61.magda.util.DateParser
 
 case class RegistryRecordsResponse(
   totalCount: Long,
@@ -25,7 +27,7 @@ trait RegistryIndexerProtocols extends DefaultJsonProtocol with RegistryProtocol
 }
 
 trait RegistryConverters extends RegistryProtocols with ModelProtocols {
-  implicit def registryDataSetConv(interface: InterfaceConfig)(hit: Record): DataSet = {
+  implicit def registryDataSetConv(interface: InterfaceConfig)(hit: Record)(implicit defaultOffset: ZoneOffset): DataSet = {
     val dcatStrings = hit.aspects("dcat-dataset-strings")
     val source = hit.aspects("source")
     val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
@@ -60,7 +62,7 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
     )
   }
 
-  private def convertDistribution(distribution: JsObject, hit: Record): Distribution = {
+  private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
     val distributionRecord = distribution.convertTo[Record]
     val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
 
@@ -84,8 +86,8 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
     )
   }
 
-  private def tryParseDate(dateString: Option[String]): Option[OffsetDateTime] = {
-    dateString.flatMap(s => Try(OffsetDateTime.parse(s)).toOption)
+  private def tryParseDate(dateString: Option[String])(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] = {
+    dateString.flatMap(s => DateParser.parseDateDefault(s, false))
   }
 }
 
