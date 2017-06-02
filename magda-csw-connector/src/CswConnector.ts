@@ -20,7 +20,35 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getJsonDistributions(dataset: any): AsyncPage<object[]> {
-        return AsyncPage.none<object[]>();
+        return AsyncPage.single<object[]>(this.getJsonDistributionsArray(dataset));
+    }
+
+    private getJsonDistributionsArray(dataset: any): any[] {
+        const {
+            distributionInfo: [
+                {
+                    MD_Distribution: [
+                        {
+                            transferOptions: [
+                                {
+                                    MD_DigitalTransferOptions: [
+                                        {
+                                            onLine: [
+                                                {
+                                                    CI_OnlineResource: distributions = <any[]>[]
+                                                } = {}
+                                            ] = []
+                                        } = {}
+                                    ] = []
+                                } = {}
+                            ] = []
+                        } = {}
+                    ] = []
+                } = {}
+            ] = []
+        } = dataset;
+
+        return distributions;
     }
 
     protected getIdFromJsonOrganization(jsonOrganization: any): string {
@@ -32,7 +60,7 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
-        return jsonDistribution.id;
+        return this.getIdFromJsonDataset(jsonDataset) + '-' + this.getJsonDistributionsArray(jsonDataset).indexOf(jsonDistribution);
     }
 
     protected getNameFromJsonOrganization(jsonOrganization: any): string {
@@ -79,7 +107,28 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getNameFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
-        return jsonDistribution.name || jsonDistribution.id;
+        const {
+            name: [
+                {
+                    CharacterString: [
+                        {
+                            _: name = <string>undefined
+                        } = {}
+                    ] = []
+                } = {}
+            ] = [],
+            description: [
+                {
+                    CharacterString: [
+                        {
+                            _: description = <string>undefined
+                        } = {}
+                    ] = []
+                } = {}
+            ] = []
+        } = jsonDistribution;
+
+        return name || description || this.getIdFromJsonDistribution(jsonDistribution, jsonDataset);
     }
 }
 
