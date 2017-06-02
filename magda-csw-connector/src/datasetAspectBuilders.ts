@@ -9,14 +9,14 @@ export default [
         },
         builderFunctionString: fs.readFileSync('aspect-templates/csw-dataset.js', 'utf8')
     },
-    // {
-    //     aspectDefinition: {
-    //         id: 'dcat-dataset-strings',
-    //         name: 'DCAT Dataset properties as strings',
-    //         jsonSchema: require('@magda/registry-aspects/dcat-dataset-strings.schema.json')
-    //     },
-    //     builderFunctionString: fs.readFileSync('aspect-templates/dcat-dataset-strings.js', 'utf8')
-    // },
+    {
+        aspectDefinition: {
+            id: 'dcat-dataset-strings',
+            name: 'DCAT Dataset properties as strings',
+            jsonSchema: require('@magda/registry-aspects/dcat-dataset-strings.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/dcat-dataset-strings.js', 'utf8')
+    },
     // {
     //     aspectDefinition: {
     //         id: 'source',

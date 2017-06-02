@@ -248,11 +248,14 @@ export default abstract class JsonConnector {
             }
         });
 
+        if (!generatedAspects['source']) {
+            generatedAspects['source'] = {};
+        }
+
         if (problems.length > 0) {
-            if (!generatedAspects['source']) {
-                generatedAspects['source'] = {};
-            }
             generatedAspects['source'].problems = problems;
+        } else {
+            generatedAspects['source'].problems = undefined;
         }
 
         return {
