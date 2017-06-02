@@ -17,18 +17,21 @@ import au.csiro.data61.magda.indexer.external.registry.{ RegistryIndexerProtocol
 
 import scala.concurrent.{ ExecutionContext, Future }
 import akka.http.scaladsl.model.HttpResponse
+import java.time.ZoneOffset
 
 class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: InterfaceConfig)(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends RegistryIndexerProtocols with ExternalInterface with RegistryConverters {
   def this(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
     this(new HttpFetcher(interfaceConfig, system, materializer, executor), interfaceConfig)(config, system, executor, materializer)
   }
 
+  implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
   implicit val fetcher = httpFetcher
   implicit val logger = Logging(system, getClass)
 
   override def getInterfaceConfig = interfaceConfig
 
-  val baseUrl = s"v0/records?aspect=dcat-dataset-strings&aspect=source"
+  val path = if (interfaceConfig.raw.hasPath("path")) interfaceConfig.raw.getString("path") else ""
+  val baseUrl = s"${path}records?aspect=dcat-dataset-strings&aspect=dataset-distributions&aspect=source"
 
   def onError(response: HttpResponse)(entity: String) = {
     val error = s"Registry request failed with status code ${response.status} and entity $entity"
@@ -37,7 +40,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
   }
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =
-    fetcher.get(s"$baseUrl&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&start=$start&limit=$number").flatMap { response =>
+    fetcher.get(s"${baseUrl}&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&dereference=true&start=$start&limit=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           mapCatching[Record, DataSet](registryResponse.records,
@@ -50,7 +53,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
     }
 
   override def getTotalDataSetCount(): Future[Long] =
-    fetcher.get(s"$baseUrl&limit=0").flatMap { response =>
+    fetcher.get(s"${baseUrl}&limit=0").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map(_.totalCount)
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -58,7 +61,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
     }
 
   def getWebhooks(): Future[List[WebHook]] = {
-    fetcher.get(s"v0/hooks").flatMap { response =>
+    fetcher.get(s"${path}hooks").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[List[WebHook]]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -67,7 +70,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
   }
 
   def addWebhook(webhook: WebHook): Future[WebHook] = {
-    fetcher.post(s"v0/hooks", webhook).flatMap { response =>
+    fetcher.post(s"${path}hooks", webhook).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[WebHook]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))

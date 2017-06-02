@@ -80,9 +80,11 @@ package misc {
   }
 
   case class Agent(
+    identifier: Option[String] = None,
     name: Option[String] = None,
     homePage: Option[String] = None,
-    email: Option[String] = None)
+    email: Option[String] = None,
+    imageUrl: Option[String] = None)
 
   case class Location(
     text: Option[String] = None,
@@ -182,6 +184,7 @@ package misc {
     boundingBox: Option[BoundingBox] = None)
 
   case class Distribution(
+    identifier: Option[String] = None,
     title: String,
     description: Option[String] = None,
     issued: Option[OffsetDateTime] = None,
@@ -378,9 +381,9 @@ package misc {
     val apiRegionFormat = new RegionFormat(apiBoundingBoxFormat)
     val esRegionFormat = new RegionFormat(EsBoundingBoxFormat)
 
-    implicit val distributionFormat = jsonFormat11(Distribution.apply)
+    implicit val distributionFormat = jsonFormat12(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat3(Agent.apply)
+    implicit val agentFormat = jsonFormat5(Agent.apply)
     implicit val dataSetFormat = jsonFormat19(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)

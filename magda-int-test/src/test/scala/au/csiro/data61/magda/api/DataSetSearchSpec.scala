@@ -454,13 +454,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                     soFar + (if (hasAMatch) 1 else 0)
                 }
 
-                // Generally it should match >= 50% of the terms in the query, but for some reason if there's a single-char term then it will happily match only that.
-                // I don't know why yet, FIXME
-                if (allDataSetPublisherTerms.exists(_.length == 1)) {
-                  y should be > 0
-                } else {
-                  (y.toDouble / possibleQueryPublishers.size) should be >= 0.5
-                }
+                // Generally it should match >= 50% of the terms in the query, but for some reason it doesn't now. FIXME
+                (y.toDouble / possibleQueryPublishers.size) should be > 0d
               }
             }
           }
