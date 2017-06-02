@@ -3,8 +3,8 @@ import * as URI from 'urijs';
 import * as request from 'request';
 import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
 import retry from '@magda/typescript-common/lib/retry';
-import * as xml2js from 'xml2js';
 import formatServiceError from '@magda/typescript-common/lib/formatServiceError';
+import * as xmldom from 'xmldom';
 
 export default class Csw implements IConnectorSource {
     public readonly baseUrl: uri.URI;
@@ -13,6 +13,8 @@ export default class Csw implements IConnectorSource {
     public readonly pageSize: number;
     public readonly maxRetries: number;
     public readonly secondsBetweenRetries: number;
+
+    private readonly xmlParser = new xmldom.DOMParser();
 
     public static readonly defaultGetRecordsParameters = Object.freeze({
         service: 'CSW',
@@ -34,7 +36,7 @@ export default class Csw implements IConnectorSource {
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
     }
 
-    getRecords(): AsyncPage<any> {
+    getRecords(): AsyncPage<Document> {
         const parameters = Object.assign({}, Csw.defaultGetRecordsParameters, this.parameters);
         const url = this.baseUrl.clone().addSearch(parameters);
 
@@ -42,13 +44,9 @@ export default class Csw implements IConnectorSource {
 
         return AsyncPage.create<any>(previous => {
             if (previous) {
-                const searchResults = previous.GetRecordsResponse.SearchResults[0];
-                if (!searchResults || !searchResults.$ || !searchResults.$.nextRecord || !searchResults.$.numberOfRecordsMatched) {
-                    return undefined;
-                }
-
-                const nextRecord = searchResults.$.nextRecord.value;
-                const numberOfRecordsMatched = searchResults.$.numberOfRecordsMatched.value;
+                const searchResults = previous.documentElement.getElementsByTagNameNS('http://www.opengis.net/cat/csw/2.0.2', 'SearchResults')[0];
+                const numberOfRecordsMatched = parseInt(searchResults.attributes.getNamedItem('numberOfRecordsMatched').value, 10);
+                const nextRecord = parseInt(searchResults.attributes.getNamedItem('nextRecord').value, 10);
 
                 startIndex = nextRecord - 1;
 
@@ -74,18 +72,7 @@ export default class Csw implements IConnectorSource {
                     return;
                 }
                 console.log('Received@' + startIndex);
-                const xml2jsany: any = xml2js;
-                const parser = new xml2js.Parser({
-                    xmlns: true,
-                    tagNameProcessors: [ xml2jsany.processors.stripPrefix ]
-                });
-                parser.parseString(body, function(error: any, result: any) {
-                    if (error) {
-                        reject(error);
-                        return;
-                    }
-                    resolve(result);
-                });
+                resolve(this.xmlParser.parseFromString(body));
             });
         });
 

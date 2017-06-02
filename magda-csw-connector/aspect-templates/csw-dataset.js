@@ -1,0 +1,3 @@
+return {
+    xml: dataset.xmlString
+};

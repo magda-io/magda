@@ -4,6 +4,7 @@ import { forEachAsync } from '@magda/typescript-common/lib/AsyncPage';
 import Registry from '@magda/typescript-common/lib/Registry';
 import * as moment from 'moment';
 import * as URI from 'urijs';
+import datasetAspectBuilders from './datasetAspectBuilders';
 
 const csw = new Csw({
     baseUrl: 'http://www.bom.gov.au/geonetwork/srv/eng/csw',
@@ -17,10 +18,11 @@ const registry = new Registry({
 const connector = new CswConnector({
     source: csw,
     registry: registry,
+    datasetAspectBuilders: datasetAspectBuilders,
     libraries: {
         moment: moment,
         URI: URI
-    },
+    }
 });
 
 connector.run().then(result => {

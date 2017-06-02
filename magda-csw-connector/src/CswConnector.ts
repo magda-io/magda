@@ -2,9 +2,12 @@ import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
 import JsonConnector, { JsonConnectorOptions } from '@magda/typescript-common/lib/JsonConnector';
 import Csw from './Csw';
 import { flatMap } from 'lodash';
+import * as xmldom from 'xmldom';
+import * as xml2js from 'xml2js';
 
 export default class CswConnector extends JsonConnector {
-    private csw: Csw;
+    private readonly csw: Csw;
+    private readonly xmlSerializer = new xmldom.XMLSerializer();
 
     constructor(options: CswConnectorOptions) {
         super(options);
@@ -17,7 +20,40 @@ export default class CswConnector extends JsonConnector {
 
     protected getJsonDatasets(): AsyncPage<object[]> {
         const recordPages = this.csw.getRecords();
-        return recordPages.map((recordPage) => recordPage.GetRecordsResponse.SearchResults[0].MD_Metadata);
+        return recordPages.map(pageXml => {
+            const searchResults = pageXml.documentElement.getElementsByTagNameNS('http://www.opengis.net/cat/csw/2.0.2', 'SearchResults')[0];
+            const records = searchResults.getElementsByTagNameNS('http://www.isotc211.org/2005/gmd', 'MD_Metadata');
+
+            const result = [];
+
+            for (let i = 0; i < records.length; ++i) {
+                const recordXml = records.item(i);
+
+                const xml2jsany: any = xml2js; // needed because the current TypeScript declarations don't know about xml2js.processors.
+                const parser = new xml2js.Parser({
+                    xmlns: true,
+                    tagNameProcessors: [ xml2jsany.processors.stripPrefix ],
+                    async: false,
+                    explicitRoot: false
+                });
+
+                const xmlString = this.xmlSerializer.serializeToString(recordXml);
+                let json: any = {};
+                parser.parseString(xmlString, function(error: any, result: any) {
+                    if (error) {
+                        return;
+                    }
+                    json = result;
+                });
+
+                json.xmlElement = recordXml;
+                json.xmlString = xmlString;
+
+                result.push(json);
+            }
+
+            return result;
+        });
     }
 
     protected getJsonDistributions(dataset: any): AsyncPage<object[]> {
