@@ -58,7 +58,7 @@ object ApiGenerators {
     .suchThat(validFilter)
   def formatQueryGen(implicit config: Config) = filterValueGen(formatQueryGenInner)
 
-  val partialPublisherGen = publisherGen.flatMap(Gen.oneOf(_)).flatMap { publisher =>
+  val partialPublisherGen = publisherGen.filter(!_.isEmpty).flatMap(Gen.oneOf(_)).flatMap { publisher =>
     Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)).trim)
   }
 

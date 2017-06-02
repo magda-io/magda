@@ -454,8 +454,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                     soFar + (if (hasAMatch) 1 else 0)
                 }
 
-                // Generally it should match >= 50% of the terms in the query, but for some reason it doesn't always now. FIXME
-                y should be > 0
+                // Generally it should match >= 50% of the terms in the query, but for some reason it doesn't now. FIXME
+                (y.toDouble / possibleQueryPublishers.size) should be > 0d
               }
             }
           }
