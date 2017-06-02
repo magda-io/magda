@@ -40,7 +40,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
   }
 
   override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =
-    fetcher.get(s"${baseUrl}&optionalAspect=temporal-coverage&dereference=true&start=$start&limit=$number").flatMap { response =>
+    fetcher.get(s"${baseUrl}&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&dereference=true&start=$start&limit=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           mapCatching[Record, DataSet](registryResponse.records,

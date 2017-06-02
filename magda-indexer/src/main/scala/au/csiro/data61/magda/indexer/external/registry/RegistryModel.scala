@@ -32,6 +32,7 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
     val source = hit.aspects("source")
     val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
     val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
+    val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
 
     val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
     val coverageEnd = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'end.?)), dcatStrings.extract[String]('temporal.? / 'end.?).getOrElse(""))
@@ -50,7 +51,7 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
       modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
       languages = dcatStrings.extract[String]('languages.? / *).toSet,
-      publisher = dcatStrings.extract[String]('publisher.?).map(name => Agent(Some(name))),
+      publisher = publisher.map(convertPublisher),
       accrualPeriodicity = dcatStrings.extract[String]('accrualPeriodicity.?).map(Periodicity.fromString(_)),
       spatial = dcatStrings.extract[String]('spatial.?).map(Location(_)), // TODO: move this to the CKAN Connector
       temporal = temporal,
@@ -59,6 +60,15 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
       contactPoint = dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
       distributions = distributions.extract[JsObject]('distributions.? / *).map(convertDistribution(_, hit)),
       landingPage = dcatStrings.extract[String]('landingPage.?)
+    )
+  }
+
+  private def convertPublisher(publisher: Record): Agent = {
+    val organizationDetails = publisher.aspects.getOrElse("organization-details", JsObject())
+    Agent(
+      identifier = Some(publisher.id),
+      name = organizationDetails.extract[String]('title.?),
+      imageUrl = organizationDetails.extract[String]('imageUrl.?)
     )
   }
 
@@ -72,6 +82,7 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
     val descriptionString = dcatStrings.extract[String]('description.?)
 
     Distribution(
+      identifier = Some(distributionRecord.id),
       title = dcatStrings.extract[String]('title.?).getOrElse(distributionRecord.name),
       description = descriptionString,
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
