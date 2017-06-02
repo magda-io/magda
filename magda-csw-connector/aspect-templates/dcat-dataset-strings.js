@@ -30,5 +30,14 @@ return {
     title: get(citation, 'title', 0, 'CharacterString', 0, '_'),
     description: get(identification, 'abstract', 0, 'CharacterString', 0, '_'),
     issued: publicationDate,
-    modified: modifiedDate
+    modified: modifiedDate,
+    languages: get(dataset, 'language').map(language => get(language, 'CharacterString', 0, '_')),
+    publisher: undefined,
+    accrualPeriodicity: get(identification, 'resourceMaintenance', 0, 'MD_MaintenanceInformation', 0, 'maintenanceAndUpdateFrequency', 0, 'MD_MaintenanceFrequencyCode', '$', 'codeListValue', 'value'),
+    spatial: undefined,
+    temporal: undefined,
+    themes: get(identification, 'topicCategory').map(topic => get(topic, 'MD_TopicCategoryCode', '0', '_')),
+    keywords: get(identification, 'descriptiveKeywords', 0, 'MD_Keywords', 0, 'keyword').map(keyword => get(keyword, 'CharacterString', '0', '_')),
+    contactPoint: undefined,
+    landingPage: undefined
 };
