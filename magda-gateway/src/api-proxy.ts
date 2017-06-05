@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const config = require("config");
 const cors = require('cors')
 
+import setupAuth from './setup-auth';
+
 var proxy = httpProxy.createProxyServer({ prependUrl: false });
 
 const router = express.Router();
@@ -23,11 +25,15 @@ router.use(configuredCors);
 
 router.options("*", configuredCors);
 
-function proxyRoute(baseRoute: string, target: string, verbs: string[] = ['all']) {
+function proxyRoute(baseRoute: string, target: string, verbs: string[] = ['all'], auth = false) {
     const routeRouter: any = express.Router();
 
+    if (auth) {
+        setupAuth(routeRouter);
+    }
+
     verbs.forEach((verb: string) =>
-        routeRouter[verb]("*", (req: express.Request, res: express.Response) => {
+        routeRouter[verb.toLowerCase()]("*", (req: express.Request, res: express.Response) => {
             proxy.web(req, res, { target });
         })
     );
@@ -38,8 +44,8 @@ function proxyRoute(baseRoute: string, target: string, verbs: string[] = ['all']
 }
 
 proxyRoute('/search', config.get("targets.search"));
-proxyRoute('/registry', config.get("targets.registry"));
-proxyRoute('/auth', config.get("targets.auth"));
-proxyRoute('/discussions', config.get("targets.discussions"));
+proxyRoute('/registry', config.get("targets.registry"), undefined, true);
+proxyRoute('/auth', config.get("targets.auth"), ['get'], true);
+proxyRoute('/discussions', config.get("targets.discussions"), undefined, true);
 
 export default router;

@@ -27,7 +27,7 @@ router.get(
     (req, res, next) => {
         passport.authenticate("google", {
             scope: ["profile", "email"],
-            state: req.query.redirect
+            state: req.query.redirect || constants.authHome
         })(req, res, next);
     }
 );

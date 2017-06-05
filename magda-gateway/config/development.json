@@ -4,6 +4,11 @@
         "host": "192.168.99.100",
         "port": 30545
     },
-    "proxyTarget": "http://minikube.data.gov.au:30013",
-    "externalHost": "http://localhost:3000"
+    "externalHost": "http://localhost:3000",
+    "targets": {
+        "search": "http://192.168.99.100:30009/v0",
+        "registry": "http://registry-api/v0",
+        "auth": "http://192.168.99.100:30015/v0/public",
+        "discussions": "http://discussions-api/v0"
+    }
 }
