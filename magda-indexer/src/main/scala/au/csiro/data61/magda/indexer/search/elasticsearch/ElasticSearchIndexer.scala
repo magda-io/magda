@@ -122,7 +122,7 @@ class ElasticSearchIndexer(
 
             groupedByInterface.foreach {
               case (interfaceName, responses) =>
-                logger.debug("Successfully indexed {} datasets from {}", responses.size, interfaceName)
+                logger.info("Successfully indexed {} datasets from {}", responses.size, interfaceName)
             }
           }
 

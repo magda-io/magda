@@ -27,6 +27,7 @@ import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.indexer.crawler.Crawler
+import au.csiro.data61.magda.indexer.crawler.CrawlerImpl
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
@@ -83,7 +84,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
           override def getTotalDataSetCount(): Future[Long] = Future(dataSets.length)
         }
     }
-    val crawler = Crawler(externalInterfaces)
+    val crawler = CrawlerImpl(externalInterfaces)
     val indices = new FakeIndices(indexId.toString)
     val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
     val crawlerApi = new CrawlerApi(crawler, indexer)

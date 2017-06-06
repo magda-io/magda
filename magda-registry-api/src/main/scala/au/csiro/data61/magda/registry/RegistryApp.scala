@@ -18,10 +18,10 @@ object RegistryApp extends App {
     }
   }
 
-  implicit val system = ActorSystem()
+  implicit val config = AppConfig.conf()
+  implicit val system = ActorSystem("registry-api", config)
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  implicit val config = AppConfig.conf()
 
   val logger = Logging(system, getClass)
 
