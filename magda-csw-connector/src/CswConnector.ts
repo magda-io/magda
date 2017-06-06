@@ -4,6 +4,8 @@ import Csw from './Csw';
 import { flatMap } from 'lodash';
 import * as xmldom from 'xmldom';
 import * as xml2js from 'xml2js';
+import * as jsonpath from 'jsonpath';
+import { groupBy } from 'lodash';
 
 export default class CswConnector extends JsonConnector {
     private readonly csw: Csw;
@@ -14,11 +16,36 @@ export default class CswConnector extends JsonConnector {
         this.csw = options.source;
     }
 
-    protected getJsonOrganizations(): AsyncPage<object[]> {
-        return AsyncPage.none<object[]>();
+    protected getJsonOrganizations(): AsyncPage<any[]> {
+        const allOrgs = new Set<string>();
+        //this.getJsonDatasets();
+        //return AsyncPage.none<any[]>();
+        return this.getJsonDatasets().map(datasets => {
+            // return [];
+            const thisPageOrgs: any[] = [];
+            datasets.forEach(dataset => {
+                // Find all parties that are publishers, owners, or custodians.
+                const responsibleParties = jsonpath.query(dataset, '$..CI_ResponsibleParty[*]');
+                const byRole = groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
+                const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian;
+                if (!datasetOrgs || datasetOrgs.length === 0) {
+                    return;
+                }
+
+                const datasetOrg = datasetOrgs[0];
+                const orgName = jsonpath.value(datasetOrg, '$.organisationName[0].CharacterString[0]._');
+
+                if (orgName && !allOrgs.has(orgName)) {
+                    allOrgs.add(orgName);
+                    thisPageOrgs.push(datasetOrg);
+                }
+            });
+
+            return thisPageOrgs;
+        });
     }
 
-    protected getJsonDatasets(): AsyncPage<object[]> {
+    protected getJsonDatasets(): AsyncPage<any[]> {
         const recordPages = this.csw.getRecords();
         return recordPages.map(pageXml => {
             const searchResults = pageXml.documentElement.getElementsByTagNameNS('http://www.opengis.net/cat/csw/2.0.2', 'SearchResults')[0];
@@ -46,7 +73,6 @@ export default class CswConnector extends JsonConnector {
                     json = result;
                 });
 
-                json.xmlElement = recordXml;
                 json.xmlString = xmlString;
 
                 result.push(json);
@@ -69,7 +95,7 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getIdFromJsonOrganization(jsonOrganization: any): string {
-        return jsonOrganization.id;
+        return jsonpath.value(jsonOrganization, '$.organisationName[0].CharacterString[0]._');
     }
 
     protected getIdFromJsonDataset(jsonDataset: any): string {
@@ -81,7 +107,7 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getNameFromJsonOrganization(jsonOrganization: any): string {
-        return jsonOrganization.display_name || jsonOrganization.title || jsonOrganization.name || jsonOrganization.id;
+        return this.getIdFromJsonOrganization(jsonOrganization);
     }
 
     protected getNameFromJsonDataset(jsonDataset: any): string {

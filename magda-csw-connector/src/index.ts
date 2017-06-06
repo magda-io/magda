@@ -4,6 +4,7 @@ import { forEachAsync } from '@magda/typescript-common/lib/AsyncPage';
 import Registry from '@magda/typescript-common/lib/Registry';
 import * as moment from 'moment';
 import * as URI from 'urijs';
+import * as lodash from 'lodash';
 import datasetAspectBuilders from './datasetAspectBuilders';
 
 const csw = new Csw({
@@ -21,7 +22,8 @@ const connector = new CswConnector({
     datasetAspectBuilders: datasetAspectBuilders,
     libraries: {
         moment: moment,
-        URI: URI
+        URI: URI,
+        lodash: lodash
     }
 });
 

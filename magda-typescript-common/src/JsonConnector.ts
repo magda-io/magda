@@ -144,8 +144,8 @@ export default abstract class JsonConnector {
         return this.registry.putRecord(this.organizationJsonToRecord(organizationJson));
     }
 
-    async createDataset(organizationJson: object): Promise<Record | Error> {
-        return this.registry.putRecord(this.datasetJsonToRecord(organizationJson));
+    async createDataset(datasetJson: object): Promise<Record | Error> {
+        return this.registry.putRecord(this.datasetJsonToRecord(datasetJson));
     }
 
     async createDistribution(distributionJson: object, datasetJson: object): Promise<Record | Error> {
@@ -176,7 +176,49 @@ export default abstract class JsonConnector {
 
         const datasets = this.getJsonDatasets();
         await forEachAsync(datasets, this.maxConcurrency, async dataset => {
-            const recordOrError = await this.createDataset(dataset);
+            const record = this.datasetJsonToRecord(dataset);
+
+            const distributions = this.getJsonDistributions(dataset);
+            if (distributions) {
+                const distributionIds: string[] = [];
+                await forEachAsync(distributions, 1, async distribution => {
+                    const recordOrError = await this.createDistribution(distribution, dataset);
+                    if (recordOrError instanceof Error) {
+                        result.distributionFailures.push(new CreationFailure(
+                            this.getIdFromJsonDistribution(distribution, dataset),
+                            this.getIdFromJsonDataset(dataset),
+                            recordOrError));
+                    } else {
+                        ++result.distributionsConnected;
+                        distributionIds.push(this.getIdFromJsonDistribution(distribution, dataset));
+                    }
+                });
+
+                if (distributionIds.length > 0) {
+                    record.aspects['dataset-distributions'] = {
+                        distributions: distributionIds
+                    };
+                }
+
+                await this.registry.putRecordAspect(this.getIdFromJsonDataset(dataset), 'dataset-distributions', {
+                    distributions: distributionIds
+                });
+            }
+
+            // const publisher = this.getJsonDatasetPublisher(dataset);
+            // if (publisher && this.getIdFromJsonOrganization(publisher)) {
+            //     const recordOrError = await this.createOrganization(publisher, dataset);
+            //     if (recordOrError instanceof Error) {
+            //         result.organizationFailures.push(new CreationFailure(
+            //             this.getIdFromJsonOrganization(organization),
+            //             undefined,
+            //             recordOrError));
+            //     } else {
+            //         ++result.organizationsConnected;
+            //     }
+            // }
+
+            const recordOrError = await this.registry.putRecord(record);
             if (recordOrError instanceof Error) {
                 result.datasetFailures.push(new CreationFailure(
                     this.getIdFromJsonDataset(dataset),
@@ -184,27 +226,6 @@ export default abstract class JsonConnector {
                     recordOrError));
             } else {
                 ++result.datasetsConnected;
-
-                const distributions = this.getJsonDistributions(dataset);
-                if (distributions) {
-                    const distributionIds: string[] = [];
-                    await forEachAsync(distributions, 1, async distribution => {
-                        const recordOrError = await this.createDistribution(distribution, dataset);
-                        if (recordOrError instanceof Error) {
-                            result.distributionFailures.push(new CreationFailure(
-                                this.getIdFromJsonDistribution(distribution, dataset),
-                                this.getIdFromJsonDataset(dataset),
-                                recordOrError));
-                        } else {
-                            distributionIds.push(this.getIdFromJsonDistribution(distribution, dataset));
-                            ++result.distributionsConnected;
-                        }
-                    });
-
-                    await this.registry.putRecordAspect(this.getIdFromJsonDataset(dataset), 'dataset-distributions', {
-                        distributions: distributionIds
-                    });
-                }
             }
         });
 
