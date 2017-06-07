@@ -40,7 +40,7 @@ export default class BrokenLinkSleuther {
             }
         }).map(page => page.records);
 
-        await forEachAsync(registryPage, 6, record => {
+        await forEachAsync(registryPage, 20, record => {
             const url = record.aspects['dcat-distribution-strings'].downloadURL;
             if (url) {
                 const parsedURL = new URI(url);
