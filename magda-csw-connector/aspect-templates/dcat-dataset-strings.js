@@ -12,13 +12,18 @@ const modifiedDate = jsonpath.value(findDatesWithType(dates, 'revision'), '$[*].
 
 const extent = jsonpath.query(identification, '$[*].extent[*].EX_Extent[*]');
 
-const datasetContactPoint = getContactPoint(jsonpath.query(dataset, '$.contact[*].CI_ResponsibleParty[*]'));
-const identificationContactPoint = getContactPoint(jsonpath.query(identification, '$[*].pointOfContact[*].CI_ResponsibleParty[*]'));
+const datasetContactPoint = getContactPoint(jsonpath.query(dataset, '$.contact[*].CI_ResponsibleParty[*]'), true);
+const identificationContactPoint = getContactPoint(jsonpath.query(identification, '$[*].pointOfContact[*].CI_ResponsibleParty[*]'), true);
 const contactPoint = datasetContactPoint.length > identificationContactPoint.length ? datasetContactPoint : identificationContactPoint;
 
 const distNodes = jsonpath.query(dataset, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
 
 const pointOfTruth = distNodes.filter(distNode => jsonpath.value(distNode, '$.description[*].CharacterString[*]._') === 'Point of truth URL of this metadata record');
+
+const responsibleParties = jsonpath.query(dataset, '$..CI_ResponsibleParty[*]');
+const byRole = libraries.lodash.groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
+const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian || [];
+const publisher = getContactPoint(datasetOrgs, false);
 
 return {
     title: jsonpath.value(citation, '$[*].title[*].CharacterString[*]._'),
@@ -26,7 +31,7 @@ return {
     issued: publicationDate,
     modified: modifiedDate,
     languages: jsonpath.query(dataset, '$.language[*].CharacterString[*]._').concat(jsonpath.query(dataset, '$.language[*].LanguageCode[*]["$"].codeListValue.value')).filter((item, index, array) => array.indexOf(item) === index),
-    publisher: undefined,
+    publisher: publisher,
     accrualPeriodicity: jsonpath.value(identification, '$[*].resourceMaintenance[*].MD_MaintenanceInformation[*].maintenanceAndUpdateFrequency[*].MD_MaintenanceFrequencyCode[*]["$"].codeListValue.value'),
     spatial: spatialExtentElementToProperty(jsonpath.query(extent, '$[*].geographicElement[*].EX_GeographicBoundingBox[*]')),
     temporal: temporalExtentElementToProperty(jsonpath.query(extent, '$[*].temporalElement[*].EX_TemporalExtent[*].extent[*]')),
@@ -78,7 +83,7 @@ function spatialExtentElementToProperty(extentElements) {
     }
 }
 
-function getContactPoint(responsibleParties) {
+function getContactPoint(responsibleParties, preferIndividual) {
     if (!responsibleParties) {
         return '';
     }
@@ -90,5 +95,6 @@ function getContactPoint(responsibleParties) {
     const address = jsonpath.query(contactInfo, '$[*].address[*].CI_Address[*]');
     const emailAddress = jsonpath.value(address, '$[*].electronicMailAddress[*].CharacterString[*]._');
 
-    return [individual || organisation, homepage, emailAddress].filter(element => element !== undefined).join(', ');
+    const name = preferIndividual ? individual || organisation : organisation || individual;
+    return [name, homepage, emailAddress].filter(element => element !== undefined).join(', ');
 }

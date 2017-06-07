@@ -42,6 +42,7 @@ export default abstract class JsonConnector {
 
         const setupParameters: BuilderSetupFunctionParameters = {
             source: this.source,
+            connector: this,
             registry: this.registry,
             libraries
         };
@@ -49,16 +50,19 @@ export default abstract class JsonConnector {
         const datasetParameters = new DatasetBuilderFunctionParameters();
         datasetParameters.libraries = libraries;
         datasetParameters.source = this.source;
+        datasetParameters.connector = this;
         datasetParameters.registry = this.registry;
 
         const distributionParameters = new DistributionBuilderFunctionParameters();
         distributionParameters.libraries = libraries;
         distributionParameters.source = this.source;
+        distributionParameters.connector = this;
         distributionParameters.registry = this.registry;
 
         const organizationParameters = new OrganizationBuilderFunctionParameters();
         organizationParameters.libraries = libraries;
         organizationParameters.source = this.source;
+        organizationParameters.connector = this;
         organizationParameters.registry = this.registry;
 
         this.datasetAspects = buildersToCompiledAspects(datasetAspectBuilders, setupParameters, datasetParameters);
@@ -358,6 +362,14 @@ interface ReportProblem {
 
 interface BuilderSetupFunctionParameters {
     /**
+     * The connector that is building aspects.
+     *
+     * @type {JsonConnector}
+     * @memberof BuilderFunctionParameters
+     */
+    connector: JsonConnector;
+
+    /**
      * The source of this item for which we are building aspects.
      *
      * @type {Ckan}
@@ -392,6 +404,13 @@ abstract class BuilderFunctionParameters {
      */
     setup: any = undefined;
 
+    /**
+     * The connector that is building aspects.
+     *
+     * @type {JsonConnector}
+     * @memberof BuilderFunctionParameters
+     */
+    connector: JsonConnector;
 
     /**
      * The source of this item for which we are building aspects.

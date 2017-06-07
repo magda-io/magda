@@ -33,12 +33,12 @@ export default [
         },
         builderFunctionString: fs.readFileSync('aspect-templates/temporal-coverage.js', 'utf8')
     },
-    // {
-    //     aspectDefinition: {
-    //         id: 'dataset-publisher',
-    //         name: 'Dataset Publisher',
-    //         jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')
-    //     },
-    //     builderFunctionString: fs.readFileSync('aspect-templates/dataset-publisher.js', 'utf8')
-    // }
+    {
+        aspectDefinition: {
+            id: 'dataset-publisher',
+            name: 'Dataset Publisher',
+            jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/dataset-publisher.js', 'utf8')
+    }
 ];
