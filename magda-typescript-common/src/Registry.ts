@@ -36,6 +36,7 @@ export default class Registry {
         const registryApiUrl = this.baseUrl.toString();
         this.aspectDefinitionsApi = new AspectDefinitionsApi(registryApiUrl);
         this.recordsApi = new RecordsApi(registryApiUrl);
+        this.recordsApi.useQuerystring = true; // Use querystring instead of qs to construct URL
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
     }
 
@@ -48,6 +49,13 @@ export default class Registry {
         return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to create aspect definition "${aspectDefinition.id}".`, e, retriesLeft)))
             .then(result => result.body)
             .catch(createServiceError);
+    }
+
+    getRecords(aspect?: Array<string>, optionalAspect?: Array<string>, pageToken?: string, dereference?: boolean) {
+        const operation = (pageToken: string) => () => this.recordsApi.getAll(aspect, optionalAspect, pageToken, undefined, undefined, dereference);
+        return <any>(retry(operation(pageToken), this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError('Failed to GET records.', e, retriesLeft)))
+            .then(result => result.body)
+            .catch(createServiceError));
     }
 
     putRecord(record: Record): Promise<Record | Error> {
