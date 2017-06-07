@@ -1,24 +1,59 @@
-function get(o, ...path) {
-    while (o !== undefined && path.length > 0) {
-        const nextPart = path.shift();
-        o = o[nextPart];
-    }
-    return o;
-}
+const jsonpath = libraries.jsonpath;
 
-function findDateWithType(dates, type) {
+const identifier = jsonpath.value(dataset, '$.fileIdentifier[*].CharacterString[*]._');
+const dataIdentification = jsonpath.query(dataset, '$.identificationInfo[*].MD_DataIdentification[*]');
+const serviceIdentification = jsonpath.query(dataset, '$.identificationInfo[*].SV_ServiceIdentification[*]');
+const identification = dataIdentification.concat(serviceIdentification);
+const citation = jsonpath.query(identification, '$[*].citation[*].CI_Citation[*]');
+
+const dates = jsonpath.query(citation, '$[*].date[*].CI_Date[*]');
+const publicationDate = jsonpath.value(findDatesWithType(dates, 'creation').concat(findDatesWithType(dates, 'publication')), '$[*].date[*].DateTime[*]._');
+const modifiedDate = jsonpath.value(findDatesWithType(dates, 'revision'), '$[*].date[*].DateTime[*]._') || publicationDate;
+
+const extent = jsonpath.query(identification, '$[*].extent[*].EX_Extent[*]');
+
+const datasetContactPoint = getContactPoint(jsonpath.query(dataset, '$.contact[*].CI_ResponsibleParty[*]'));
+const identificationContactPoint = getContactPoint(jsonpath.query(identification, '$[*].pointOfContact[*].CI_ResponsibleParty[*]'));
+const contactPoint = datasetContactPoint.length > identificationContactPoint.length ? datasetContactPoint : identificationContactPoint;
+
+const distNodes = jsonpath.query(dataset, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
+
+const pointOfTruth = distNodes.filter(distNode => jsonpath.value(distNode, '$.description[*].CharacterString[*]._') === 'Point of truth URL of this metadata record');
+
+return {
+    title: jsonpath.value(citation, '$[*].title[*].CharacterString[*]._'),
+    description: jsonpath.value(identification, '$[*].abstract[*].CharacterString[*]._'),
+    issued: publicationDate,
+    modified: modifiedDate,
+    languages: jsonpath.query(dataset, '$.language[*].CharacterString[*]._').concat(jsonpath.query(dataset, '$.language[*].LanguageCode[*]["$"].codeListValue.value')).filter((item, index, array) => array.indexOf(item) === index),
+    publisher: undefined,
+    accrualPeriodicity: jsonpath.value(identification, '$[*].resourceMaintenance[*].MD_MaintenanceInformation[*].maintenanceAndUpdateFrequency[*].MD_MaintenanceFrequencyCode[*]["$"].codeListValue.value'),
+    spatial: spatialExtentElementToProperty(jsonpath.query(extent, '$[*].geographicElement[*].EX_GeographicBoundingBox[*]')),
+    temporal: temporalExtentElementToProperty(jsonpath.query(extent, '$[*].temporalElement[*].EX_TemporalExtent[*].extent[*]')),
+    themes: jsonpath.query(identification, '$[*].topicCategory[*].MD_TopicCategoryCode[*]._'),
+    keywords: jsonpath.query(identification, '$[*].descriptiveKeywords[*].MD_Keywords[*].keyword[*].CharacterString[*]._'),
+    contactPoint: contactPoint,
+    landingPage: jsonpath.value(pointOfTruth, '$[*].linkage[*].URL[*]._')
+};
+
+function findDatesWithType(dates, type) {
     if (!dates) {
-        return undefined;
+        return [];
     }
-    return dates.filter(date => get(date, 'dateType', 0, 'CI_DateTypeCode', 0, '$', 'codeListValue', 'value') === type)[0];
+    return dates.filter(date => jsonpath.value(date, '$.dateType[*].CI_DateTypeCode[*]["$"].codeListValue.value') === type);
 }
 
-function temporalExtentElementToProperty(extentElement) {
-    const beginTimePosition = get(extentElement, 'TimePeriod', 0, 'begin', 0, 'TimeInstant', 0, 'timePosition', 0);
-    const endTimePosition = get(extentElement, 'TimePeriod', 0, 'end', 0, 'TimeInstant', 0, 'timePosition', 0);
+function temporalExtentElementToProperty(extentElements) {
+    const beginPosition = jsonpath.query(extentElements, '$[*].TimePeriod[*].beginPosition[*]');
+    const endPosition = jsonpath.query(extentElements, '$[*].TimePeriod[*].endPosition[*]');
+    const beginTimePosition = jsonpath.query(extentElements, '$[*].TimePeriod[*].begin[*].TimeInstant[*].timePosition[*]');
+    const endTimePosition = jsonpath.query(extentElements, '$[*].TimePeriod[*].end[*].TimeInstant[*].timePosition[*]');
 
-    const begin = get(beginTimePosition, '_') || get(beginTimePosition, '$', 'indeterminatePosition', 'value');
-    const end = get(endTimePosition, '_') || get(endTimePosition, '$', 'indeterminatePosition', 'value');
+    const allBegin = beginPosition.concat(beginTimePosition);
+    const allEnd = endPosition.concat(endTimePosition);
+
+    const begin = jsonpath.value(allBegin, '$[*]._') || jsonpath.value(allBegin, '$[*]["$"].indeterminatePosition.value');
+    const end = jsonpath.value(allEnd, '$[*]._') || jsonpath.value(allEnd, '$[*]["$"].indeterminatePosition.value');
 
     if (begin || end) {
         return {
@@ -30,11 +65,11 @@ function temporalExtentElementToProperty(extentElement) {
     }
 }
 
-function spatialExtentElementToProperty(extentElement) {
-    const west = get(extentElement, 'westBoundLongitude', 0, 'Decimal', 0, '_');
-    const south = get(extentElement, 'southBoundLatitude', 0, 'Decimal', 0, '_');
-    const east = get(extentElement, 'eastBoundLongitude', 0, 'Decimal', 0, '_');
-    const north = get(extentElement, 'northBoundLatitude', 0, 'Decimal', 0, '_');
+function spatialExtentElementToProperty(extentElements) {
+    const west = jsonpath.value(extentElements, '$[*].westBoundLongitude[*].Decimal[*]._');
+    const south = jsonpath.value(extentElements, '$[*].southBoundLatitude[*].Decimal[*]._');
+    const east = jsonpath.value(extentElements, '$[*].eastBoundLongitude[*].Decimal[*]._');
+    const north = jsonpath.value(extentElements, '$[*].northBoundLatitude[*].Decimal[*]._');
 
     if (west !== undefined && south !== undefined && east !== undefined && north !== undefined) {
         return `POLYGON((${west} ${south}, ${east} ${south}, ${east} ${north}, ${west} ${north}, ${west} ${south}))`;
@@ -43,60 +78,17 @@ function spatialExtentElementToProperty(extentElement) {
     }
 }
 
-function getContactPoint(responsibleParty) {
-    if (!responsibleParty) {
-        return undefined;
+function getContactPoint(responsibleParties) {
+    if (!responsibleParties) {
+        return '';
     }
 
-    const contactInfo = get(responsibleParty, 'contactInfo', 0, 'CI_Contact', 0);
-    const individual = get(responsibleParty, 'individualName', 0, 'CharacterString', 0, '_');
-    const organisation = get(responsibleParty, 'organisationName', 0, 'CharacterString', 0, '_');
-    const homepage = get(contactInfo, 'onlineResource', 0, 'CI_OnlineResource', 0, 'linkage', 0, 'URL', 0, '_');
-    const address = get(contactInfo, 'address', 0, 'CI_Address', 0);
-    const emailAddress = get(address, 'electronicMailAddress', 0, 'CharacterString', 0, '_');
+    const contactInfo = jsonpath.query(responsibleParties, '$[*].contactInfo[*].CI_Contact[*]');
+    const individual = jsonpath.value(responsibleParties, '$[*].individualName[*].CharacterString[*]._');
+    const organisation = jsonpath.value(responsibleParties, '$[*].organisationName[*].CharacterString[*]._');
+    const homepage = jsonpath.value(contactInfo, '$[*].onlineResource[*].CI_OnlineResource[*].linkage[*].URL[*]._');
+    const address = jsonpath.query(contactInfo, '$[*].address[*].CI_Address[*]');
+    const emailAddress = jsonpath.value(address, '$[*].electronicMailAddress[*].CharacterString[*]._');
 
     return [individual || organisation, homepage, emailAddress].filter(element => element !== undefined).join(', ');
 }
-
-const identifier = get(dataset, 'fileIdentifier', 0, 'CharacterString', 0, '_');
-const dataIdentification = get(dataset, 'identificationInfo', 0, 'MD_DataIdentification', 0);
-const serviceIdentification = get(dataset, 'identificationInfo', 0, 'SV_ServiceIdentification', 0);
-const identification = dataIdentification || serviceIdentification || {};
-const citation = get(identification, 'citation', 0, 'CI_Citation', 0);
-
-const dates = get(citation, 'date').map(date => get(date, 'CI_Date', 0));
-const publicationDate = get(findDateWithType(dates, 'creation') || findDateWithType(dates, 'publication'), 'date', 0, 'DateTime', 0, '_');
-const modifiedDate = get(findDateWithType(dates, 'revision'), 'date', 0, 'DateTime', 0, '_') || publicationDate;
-
-const extent = get(identification, 'extent', 0, 'EX_Extent', 0);
-
-const datasetContactPoint = getContactPoint(get(dataset, 'contact', 0, 'CI_ResponsibleParty', 0));
-const identificationContactPoint = getContactPoint(get(identification, 'pointOfContact', 0, 'CI_ResponsibleParty', 0));
-const contactPoint = datasetContactPoint && identificationContactPoint
-    ? (datasetContactPoint.length > identificationContactPoint.length ? datasetContactPoint : identificationContactPoint)
-    : datasetContactPoint || identificationContactPoint;
-
-const flatMap = libraries.lodash.flatMap;
-const distNodes = flatMap(dataset.distributionInfo || [], di =>
-    flatMap(di.MD_Distribution || [], mdd =>
-        flatMap(mdd.transferOptions || [], to =>
-            flatMap(to.MD_DigitalTransferOptions || [], mddto =>
-                flatMap(mddto.onLine || [], ol => ol.CI_OnlineResource || [])))));
-
-const pointOfTruth = distNodes.filter(distNode => get(distNode, 'description', 0, 'CharacterString', 0, '_') === 'Point of truth URL of this metadata record')[0];
-
-return {
-    title: get(citation, 'title', 0, 'CharacterString', 0, '_'),
-    description: get(identification, 'abstract', 0, 'CharacterString', 0, '_'),
-    issued: publicationDate,
-    modified: modifiedDate,
-    languages: (get(dataset, 'language') || []).map(language => get(language, 'CharacterString', 0, '_')),
-    publisher: undefined,
-    accrualPeriodicity: get(identification, 'resourceMaintenance', 0, 'MD_MaintenanceInformation', 0, 'maintenanceAndUpdateFrequency', 0, 'MD_MaintenanceFrequencyCode', '$', 'codeListValue', 'value'),
-    spatial: spatialExtentElementToProperty(get(extent, 'geographicElement', 0, 'EX_GeographicBoundingBox', 0)),
-    temporal: temporalExtentElementToProperty(get(extent, 'temporalElement', 0, 'EX_TemporalExtent', 0, 'extent', 0)),
-    themes: (get(identification, 'topicCategory') || []).map(topic => get(topic, 'MD_TopicCategoryCode', '0', '_')),
-    keywords: (get(identification, 'descriptiveKeywords', 0, 'MD_Keywords', 0, 'keyword') || []).map(keyword => get(keyword, 'CharacterString', '0', '_')),
-    contactPoint: contactPoint,
-    landingPage: get(pointOfTruth, 'linkage', 0, 'URL', 0, '_')
-};

@@ -20,7 +20,6 @@ export default class CswConnector extends JsonConnector {
     protected getJsonOrganizations(): AsyncPage<any[]> {
         const allOrgs = new Set<string>();
         return this.getJsonDatasets().map(datasets => {
-            // return [];
             const thisPageOrgs: any[] = [];
             datasets.forEach(dataset => {
                 // Find all parties that are publishers, owners, or custodians.

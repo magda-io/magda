@@ -17,14 +17,14 @@ export default [
         },
         builderFunctionString: fs.readFileSync('aspect-templates/dcat-dataset-strings.js', 'utf8')
     },
-    // {
-    //     aspectDefinition: {
-    //         id: 'source',
-    //         name: 'Source',
-    //         jsonSchema: require('@magda/registry-aspects/source.schema.json')
-    //     },
-    //     builderFunctionString: fs.readFileSync('aspect-templates/dataset-source.js', 'utf8')
-    // },
+    {
+        aspectDefinition: {
+            id: 'source',
+            name: 'Source',
+            jsonSchema: require('@magda/registry-aspects/source.schema.json')
+        },
+        builderFunctionString: fs.readFileSync('aspect-templates/dataset-source.js', 'utf8')
+    },
     // {
     //     aspectDefinition: {
     //         id: 'temporal-coverage',

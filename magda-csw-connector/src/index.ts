@@ -5,6 +5,7 @@ import Registry from '@magda/typescript-common/lib/Registry';
 import * as moment from 'moment';
 import * as URI from 'urijs';
 import * as lodash from 'lodash';
+import * as jsonpath from 'jsonpath';
 import datasetAspectBuilders from './datasetAspectBuilders';
 
 const csw = new Csw({
@@ -23,7 +24,8 @@ const connector = new CswConnector({
     libraries: {
         moment: moment,
         URI: URI,
-        lodash: lodash
+        lodash: lodash,
+        jsonpath: jsonpath
     }
 });
 
