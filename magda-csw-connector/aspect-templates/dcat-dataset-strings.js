@@ -8,7 +8,7 @@ const citation = jsonpath.query(identification, '$[*].citation[*].CI_Citation[*]
 
 const dates = jsonpath.query(citation, '$[*].date[*].CI_Date[*]');
 const publicationDate = jsonpath.value(findDatesWithType(dates, 'creation').concat(findDatesWithType(dates, 'publication')), '$[*].date[*].DateTime[*]._');
-const modifiedDate = jsonpath.value(findDatesWithType(dates, 'revision'), '$[*].date[*].DateTime[*]._') || publicationDate;
+const modifiedDate = jsonpath.value(findDatesWithType(dates, 'revision'), '$[*].date[*].DateTime[*]._') || jsonpath.value(dataset, '$.dateStamp[*].DateTime[*]._') || publicationDate;
 
 const extent = jsonpath.query(identification, '$[*].extent[*].EX_Extent[*]');
 
