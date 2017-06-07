@@ -6,6 +6,7 @@ import * as LRU from 'lru-cache';
 import * as URI from 'urijs';
 import retryBackoff from '@magda/typescript-common/lib/retryBackoff';
 import formatServiceError from '@magda/typescript-common/lib/formatServiceError';
+import AsyncPage, { forEachAsync } from '@magda/typescript-common/lib/AsyncPage';
 
 const aspectDefinition = {
     id: 'source-link-status',
@@ -16,6 +17,7 @@ const aspectDefinition = {
 
 export default class BrokenLinkSleuther {
     private registry: Registry;
+
     constructor({ registry }: BrokenLinkSleutherOptions) {
         this.registry = registry;
     }
@@ -26,7 +28,19 @@ export default class BrokenLinkSleuther {
 
         await this.registry.putAspectDefinition(aspectDefinition);
 
-        await this.registry.forEachRecord(record => {
+
+        const registryPage = AsyncPage.create<{records: Array<{id: string, aspects: {'dcat-distribution-strings': {downloadURL: string}}}>, nextPageToken: string}>((previous) => {
+            if (previous === undefined) {
+                return this.registry.getRecords(['dcat-distribution-strings']);
+            } else if (previous.records.length === 0) {
+                // Last page was an empty page, no more records left
+                return undefined;
+            } else {
+                return this.registry.getRecords(['dcat-distribution-strings'], undefined, previous.nextPageToken, undefined);
+            }
+        }).map(page => page.records);
+
+        await forEachAsync(registryPage, 6, record => {
             const url = record.aspects['dcat-distribution-strings'].downloadURL;
             if (url) {
                 const parsedURL = new URI(url);
@@ -38,37 +52,33 @@ export default class BrokenLinkSleuther {
                             if (response.statusCode >= 200 && response.statusCode <= 299) {
                                 resolve({ response });
                             } else {
-                                reject({
-                                    response,
-                                    httpStatusCode: response.statusCode,
-                                    errorDetails: response.statusMessage
-                                });
+                                reject(new BadHttpResponseError(response.statusMessage, response, response.statusCode));
                             }
                         }
                     }));
-                    return retryBackoff(operation, 10, 4, (err, retries) => {console.log(`Downloading ${url} failed: ${err.errorDetails || err.httpStatusCode || err} (${retries} retries remaining)`);})
-                    .then(({response}) => {
-                        checkedDistributions++;
-                        return {status: 'active', httpStatusCode: response.statusCode};
-                    }, err => {
-                        checkedDistributions++;
-                        if (err.httpStatusCode == 429) {
-                            tooManyRequests++
-                        } else {
-                            brokenLinks++;
-                        }
-                        return {
-                            status: 'broken',
-                            httpStatusCode: err.httpStatusCode,
-                            errorDetails: err.errorDetails || `${err}`
-                        };
-                    })
-                    .then(aspect => this.registry.putRecordAspect(record.id, 'source-link-status', aspect))
-                    .then(() => {
-                        if (checkedDistributions % 100 === 0) {
-                            console.log(`Processed ${checkedDistributions}. ${brokenLinks} broken links & ${tooManyRequests} failed with 429 status code`);
-                        }
-                    });
+                    return retryBackoff(operation, 1, 5, (err, retries) => {console.log(`Downloading ${url} failed: ${err.errorDetails || err.httpStatusCode || err} (${retries} retries remaining)`);})
+                        .then(({response}) => {
+                            checkedDistributions++;
+                            return {status: 'active', httpStatusCode: response.statusCode};
+                        }, err => {
+                            checkedDistributions++;
+                            if (err.httpStatusCode == 429) {
+                                tooManyRequests++
+                            } else {
+                                brokenLinks++;
+                            }
+                            return {
+                                status: 'broken',
+                                httpStatusCode: err.httpStatusCode,
+                                errorDetails: err.errorDetails || `${err}`
+                            };
+                        })
+                        .then(aspect => this.registry.putRecordAspect(record.id, 'source-link-status', aspect))
+                        .then(() => {
+                            if (checkedDistributions % 100 === 0) {
+                                console.log(`Processed ${checkedDistributions}. ${brokenLinks} broken links & ${tooManyRequests} failed with 429 status code`);
+                            }
+                        });
                 } else if (parsedURL.protocol() === 'ftp') {
                     const port = +(parsedURL.port() || 21)
                     const pClient = FTPHandler.getClient(parsedURL.hostname(), port);
@@ -99,9 +109,23 @@ export default class BrokenLinkSleuther {
                     return this.registry.putRecordAspect(record.id, 'source-link-status', {status: 'broken', errorDetails: `Unrecognised URL: ${url}`});
                 }
             }
-        }, <any>'dcat-distribution-strings');
+        });
+
         FTPHandler.lru.reset();
         return Promise.resolve({checkedDistributions, brokenLinks, tooManyRequests});
+    }
+}
+
+class BadHttpResponseError extends Error  {
+    public response: http.IncomingMessage;
+    public httpStatusCode: number;
+
+    constructor(message?: string, response?: http.IncomingMessage, httpStatusCode?: number) {
+        super(message);
+        this.message = message;
+        this.response = response;
+        this.httpStatusCode = httpStatusCode;
+        this.stack = (new Error()).stack;
     }
 }
 

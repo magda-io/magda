@@ -36,6 +36,7 @@ export default class Registry {
         const registryApiUrl = this.baseUrl.toString();
         this.aspectDefinitionsApi = new AspectDefinitionsApi(registryApiUrl);
         this.recordsApi = new RecordsApi(registryApiUrl);
+        this.recordsApi.useQuerystring = true; // Use querystring instead of qs to construct URL
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
     }
 
@@ -50,18 +51,11 @@ export default class Registry {
             .catch(createServiceError);
     }
 
-    async forEachRecord(callback: (record: Record) => Promise<any>, aspect?: Array<string>, optionalAspect?: Array<string>, dereference?: boolean) {
-        console.log(aspect);
+    getRecords(aspect?: Array<string>, optionalAspect?: Array<string>, pageToken?: string, dereference?: boolean) {
         const operation = (pageToken: string) => () => this.recordsApi.getAll(aspect, optionalAspect, pageToken, undefined, undefined, dereference);
-        let records;
-        let pageToken = undefined;
-        do {
-            records = await retry(operation(pageToken), this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError('Failed to GET records.', e, retriesLeft)))
-                .then(result => result.body)
-                .catch(createServiceError);
-            await Promise.all((<any>records).records.map(callback));
-            pageToken = (<any>records).nextPageToken;
-        } while ((<any>records).records.length > 0)
+        return <any>(retry(operation(pageToken), this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError('Failed to GET records.', e, retriesLeft)))
+            .then(result => result.body)
+            .catch(createServiceError));
     }
 
     putRecord(record: Record): Promise<Record | Error> {
