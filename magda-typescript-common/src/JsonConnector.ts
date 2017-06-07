@@ -124,7 +124,15 @@ export default abstract class JsonConnector {
                     jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
                 },
                 builderFunctionString: undefined
-            }
+            },
+            {
+                aspectDefinition: {
+                    id: 'source',
+                    name: 'Source',
+                    jsonSchema: require('@magda/registry-aspects/source.schema.json')
+                },
+                builderFunctionString: undefined
+            },
         ]);
 
         const aspectBuilderPage = AsyncPage.single<AspectBuilder[]>(allAspects);
@@ -199,10 +207,6 @@ export default abstract class JsonConnector {
                         distributions: distributionIds
                     };
                 }
-
-                await this.registry.putRecordAspect(this.getIdFromJsonDataset(dataset), 'dataset-distributions', {
-                    distributions: distributionIds
-                });
             }
 
             // const publisher = this.getJsonDatasetPublisher(dataset);

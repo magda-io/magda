@@ -6,6 +6,7 @@ import * as xmldom from 'xmldom';
 import * as xml2js from 'xml2js';
 import * as jsonpath from 'jsonpath';
 import { groupBy } from 'lodash';
+import * as crypto from 'crypto';
 
 export default class CswConnector extends JsonConnector {
     private readonly csw: Csw;
@@ -18,8 +19,6 @@ export default class CswConnector extends JsonConnector {
 
     protected getJsonOrganizations(): AsyncPage<any[]> {
         const allOrgs = new Set<string>();
-        //this.getJsonDatasets();
-        //return AsyncPage.none<any[]>();
         return this.getJsonDatasets().map(datasets => {
             // return [];
             const thisPageOrgs: any[] = [];
@@ -95,7 +94,9 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getIdFromJsonOrganization(jsonOrganization: any): string {
-        return jsonpath.value(jsonOrganization, '$.organisationName[0].CharacterString[0]._');
+        const name = this.getNameFromJsonOrganization(jsonOrganization);
+        const id = name.length > 100 ? crypto.createHash('sha256').update(name, 'utf8').digest('hex') : name;
+        return id
     }
 
     protected getIdFromJsonDataset(jsonDataset: any): string {
@@ -107,7 +108,7 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getNameFromJsonOrganization(jsonOrganization: any): string {
-        return this.getIdFromJsonOrganization(jsonOrganization);
+        return jsonpath.value(jsonOrganization, '$.organisationName[0].CharacterString[0]._');
     }
 
     protected getNameFromJsonDataset(jsonDataset: any): string {
