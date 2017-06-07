@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import au.csiro.data61.magda.model.misc.{ BoundingBox, DataSet, FacetOption, Region, QueryRegion }
+import au.csiro.data61.magda.model.misc.{ BoundingBox, DataSet, FacetOption, Region, QueryRegion, Agent }
 import au.csiro.data61.magda.model.misc.Protocols
 import org.elasticsearch.search.aggregations.Aggregation
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
@@ -10,6 +10,9 @@ import com.sksamuel.elastic4s.Indexable
 import com.sksamuel.elastic4s.searches.RichSearchHit
 import com.sksamuel.elastic4s.HitReader
 import com.sksamuel.elastic4s.Hit
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation.Bucket
+import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
+import java.util.HashMap
 
 object ElasticSearchImplicits extends Protocols {
 
@@ -33,14 +36,25 @@ object ElasticSearchImplicits extends Protocols {
     }
   }
 
-  implicit def aggregationsToFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation match {
-    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket =>
-      new FacetOption(
-        value = bucket.getKeyAsString,
-        hitCount = bucket.getDocCount
-      )
-    )
+  def aggregationsToFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation match {
+    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket => {
+      bucketToFacetOption(bucket)
+    })
     case (_) => Seq()
   }
 
+  def bucketToFacetOption(bucket: Bucket) = {
+    val topHit = bucket.getAggregations.asMap().asScala.get("topHits")
+
+    new FacetOption(
+      identifier = topHit.flatMap {
+        case hit: InternalTopHits =>
+          val dataSet = hit.getHits.getAt(0).getSourceAsString().parseJson.convertTo[DataSet]
+
+          dataSet.publisher.flatMap(_.identifier)
+      },
+      value = bucket.getKeyAsString,
+      hitCount = bucket.getDocCount
+    )
+  }
 }

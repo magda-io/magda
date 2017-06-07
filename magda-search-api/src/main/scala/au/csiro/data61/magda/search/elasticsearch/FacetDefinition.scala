@@ -25,6 +25,8 @@ import au.csiro.data61.magda.api.FilterValue._
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.search.SearchStrategy
+import org.elasticsearch.search.sort.SortOrder
+import org.elasticsearch.search.aggregations.InternalAggregation
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -62,7 +64,7 @@ trait FacetDefinition {
    * Given an aggregation resolved from ElasticSearch, extract the actual individual FacetOptions. This has to be specified
    * per-facet because some facets use nested aggregations, so we need code to reach into the right sub-aggregation.
    */
-  def extractFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation
+  def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = aggregationsToFacetOptions(aggregation)
 
   /**
    * Returns a query with the details relevant to this facet removed - useful for showing what options there *would* be
@@ -115,7 +117,13 @@ object FacetDefinition {
 
 class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition = {
-    aggregation.terms(Publisher.id).field("publisher.name.keyword").size(limit).missing(config.getString("strings.unspecifiedWord"))
+    termsAggregation(Publisher.id)
+      .field("publisher.name.keyword")
+      .size(limit)
+      .missing(config.getString("strings.unspecifiedWord"))
+      .subAggregations(
+        topHitsAggregation("topHits").size(1).sortBy(scoreSort(SortOrder.DESC))
+      )
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -238,8 +246,9 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
           }.foldLeft(0l)(_ + _._2)
 
           FacetOption(
+            identifier = None,
             value = if (bucketStart != bucketEnd) s"$bucketStart - $bucketEnd" else bucketStart.toString,
-            hitCount,
+            hitCount = hitCount,
             lowerBound = Some(bucketStart),
             upperBound = Some(bucketEnd)
           )
@@ -303,23 +312,25 @@ object YearFacetDefinition {
 
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def aggregationDefinition(limit: Int): AggregationDefinition =
-    aggregation nested Format.id path "distributions" aggs {
-      val termsAgg = aggregation terms "nested" field "distributions.format.keyword" size limit includeExclude (Seq(), Seq("")) aggs {
-        aggregation reverseNested "reverse"
-      }
-
-      termsAgg.builder.missing(config.getString("strings.unspecifiedWord"))
-
-      termsAgg
+    nestedAggregation(Format.id, "distributions").subAggregations {
+      termsAggregation("nested")
+        .field("distributions.format.keyword")
+        .size(limit)
+        .includeExclude(Seq(), Seq(""))
+        .missing(config.getString("strings.unspecifiedWord"))
+        .subAggregations {
+          aggregation reverseNested "reverse"
+        }
     }
 
-  override def extractFacetOptions(aggregation: Aggregation): Seq[FacetOption] = {
+  override def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = {
     val nested = aggregation.getProperty("nested").asInstanceOf[MultiBucketsAggregation]
 
     nested.getBuckets.asScala.map { bucket =>
       val innerBucket = bucket.getAggregations.asScala.head.asInstanceOf[InternalReverseNested]
 
       new FacetOption(
+        identifier = None,
         value = bucket.getKeyAsString,
         hitCount = innerBucket.getDocCount
       )

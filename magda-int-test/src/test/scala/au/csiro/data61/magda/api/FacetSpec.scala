@@ -219,7 +219,7 @@ class FacetSpec extends BaseSearchApiSpec {
               val facet = getFacet(outerResult)
 
               val exactMatchFacets = facet.options.filter(option => option.matched && option.hitCount == 0)
-              
+
               whenever(exactMatchFacets.size > 0) {
                 val grouped = groupResult(allDataSets)
 
@@ -342,7 +342,39 @@ class FacetSpec extends BaseSearchApiSpec {
         } yield Query(quotes = Set(uuid.toString), publishers = publishers)
       ).suchThat(queryIsSmallEnough)
 
+      it("should have identifiers") {
+        forAll(mediumIndexGen, textQueryGen(queryGen)) { (tuple, textQuery) ⇒
+          val (indexName, dataSets, routes) = tuple
+
+          val publishers = dataSets
+            .flatMap(_.publisher)
+            .distinct
+            //            .filter(_.name.isDefined)
+            .groupBy(_.name.get)
+            .mapValues(_.head)
+
+          Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=5") ~> routes ~> check {
+            status shouldBe OK
+
+            val result = responseAs[SearchResult]
+
+            val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
+
+            //            println(dataSets.map(_.publisher.flatMap(_.identifier)))
+
+            facet.options.foreach { x =>
+              val matchedPublisher = publishers.get(x.value)
+
+              matchedPublisher match {
+                case Some(publisher) => publisher.identifier should equal(x.identifier)
+                case None            =>
+              }
+            }
+          }
+        }
+      }
       genericFacetSpecs(Publisher, reducer, queryToInt, queryGen, specificBiasedQueryGen)
+
     }
 
     describe("format") {
