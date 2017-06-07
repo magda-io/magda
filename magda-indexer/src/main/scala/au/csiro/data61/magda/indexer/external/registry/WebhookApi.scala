@@ -20,12 +20,14 @@ import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import com.typesafe.config.Config
 import au.csiro.data61.magda.indexer.external.registry.RegistryConverters
 import akka.stream.scaladsl.Source
+import java.time.ZoneOffset
 
 class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryProtocols {
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 
   val registryConfig = InterfaceConfig.all.get("registry")
+  implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
   val routes =
     magdaRoute {
@@ -39,7 +41,7 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
               onSuccess(indexer.index(registryConfig.get, Source(dataSets))) { result =>
                 complete(Accepted)
               }
-            case None => 
+            case None =>
               getLogger.error("Recieved webhook payload with no records")
               complete(BadRequest, "Needs records")
           }

@@ -65,9 +65,9 @@ export default class Registry {
             .catch(createServiceError);
     }
 
-    putRecordAspect(recordId: string, aspectId: string, aspect: any): Promise<any | Error> {
-        const operation = () => this.recordAspectsApi.putById(encodeURIComponent(recordId), encodeURIComponent(aspectId), aspect);
-        return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry record aspect with ID "${recordId}":"${aspectId}".`, e, retriesLeft)))
+    putRecordAspect(recordId: string, aspectId: string, aspect: any): Promise<Record | Error> {
+        const operation = () => this.recordAspectsApi.putById(encodeURIComponent(recordId), aspectId, aspect);
+        return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to PUT data registry aspect ${aspectId} for record with ID "${recordId}".`, e, retriesLeft)))
             .then(result => result.body)
             .catch(createServiceError);
     }

@@ -3,11 +3,13 @@ import Ckan from './Ckan';
 import CkanConnector from './CkanConnector';
 import Registry from '@magda/typescript-common/lib/Registry';
 import * as fs from 'fs';
+import * as moment from 'moment';
+import * as URI from 'urijs';
 
 const ckan = new Ckan({
     baseUrl: 'https://data.gov.au/',
-    pageSize: 1000,
-    name: 'Data.gov.au'
+    name: 'Data.gov.au',
+    pageSize: 1000
 });
 
 const registry = new Registry({
@@ -47,14 +49,6 @@ const datasetAspectBuilders: AspectBuilder[] = [
         },
         setupFunctionString: fs.readFileSync('aspect-templates/temporal-coverage-setup.js', 'utf8'),
         builderFunctionString: fs.readFileSync('aspect-templates/temporal-coverage.js', 'utf8')
-    },
-    {
-        aspectDefinition: {
-            id: 'dataset-distributions',
-            name: 'Dataset Distributions',
-            jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
-        },
-        builderFunctionString: fs.readFileSync('aspect-templates/dataset-distributions.js', 'utf8')
     },
     {
         aspectDefinition: {
@@ -113,20 +107,17 @@ const organizationAspectBuilders: AspectBuilder[] = [
 ];
 
 const connector = new CkanConnector({
-    ckan: ckan,
+    source: ckan,
     registry: registry,
     datasetAspectBuilders: datasetAspectBuilders,
     distributionAspectBuilders: distributionAspectBuilders,
-    organizationAspectBuilders: organizationAspectBuilders
+    organizationAspectBuilders: organizationAspectBuilders,
+    libraries: {
+        moment: moment,
+        URI: URI
+    },
 });
 
 connector.run().then(result => {
-    console.log('Aspect Definitions Connected: ' + result.aspectDefinitionsConnected);
-    console.log('Datasets Connected: ' + result.datasetsConnected);
-    console.log('Distributions Connected: ' + result.distributionsConnected);
-    console.log('Organizations Connected: ' + result.organizationsConnected);
-
-    if (result.errors.length > 0) {
-        console.log('Errors:\n' + JSON.stringify(result.errors, undefined, '  '));
-    }
+    console.log(result.summarize());
 });

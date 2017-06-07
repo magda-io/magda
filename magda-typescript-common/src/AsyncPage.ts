@@ -23,11 +23,15 @@ export default class AsyncPage<T> {
     }
 
     static single<T>(value: T): AsyncPage<T> {
-        return AsyncPage.create<T>(current => current ? undefined : Promise.resolve(value));
+        return new AsyncPage<T>(value, true, undefined);
     }
 
     static singlePromise<T>(valuePromise: Promise<T>): AsyncPage<T> {
         return AsyncPage.create<T>(current => current ? undefined : valuePromise);
+    }
+
+    static none<T>(): AsyncPage<T> {
+        return new AsyncPage(undefined, false, undefined);
     }
 
     constructor(data: T, hasData: boolean, requestNextPage: CreateAsyncPage<T>) {
@@ -46,38 +50,56 @@ export default class AsyncPage<T> {
             return new AsyncPage<TResult>(data, nextPage.hasData, loadNextPageFunction);
         }
 
-        return new AsyncPage<TResult>(undefined, false, () => loadNextPage(this));
+        return new AsyncPage<TResult>(this.hasData ? selector(this.data) : undefined, this.hasData, this.requestNextPage ? () => loadNextPage(this) : undefined);
+    }
+
+    async forEach(callback: (data: T) => void): Promise<void> {
+        let current: AsyncPage<T> = this;
+        while (current) {
+            if (current.hasData) {
+                callback(current.data);
+            }
+
+            if (current.requestNextPage) {
+                current = await current.requestNextPage();
+            } else {
+                current = undefined;
+            }
+        }
     }
 }
 
 export function forEachAsync<T>(page: AsyncPage<T[]>, maxConcurrency: number, callbackFn: (data: T) => Promise<void>): Promise<void> {
     let currentPromise: Promise<AsyncPage<T[]>> = undefined;
+    let currentPage = page;
     let currentIndex = 0;
     let resultIndex = 0;
 
     async function getNext(): Promise<{value: T, index: number}> {
-        while (page.requestNextPage && (!page.hasData || currentIndex >= page.data.length)) {
+        while (currentPage.requestNextPage && (!currentPage.hasData || currentIndex >= currentPage.data.length)) {
             if (!currentPromise) {
-                currentPromise = page.requestNextPage().then(nextPage => {
+                currentPromise = currentPage.requestNextPage().then(nextPage => {
                     currentIndex = 0;
+                    currentPromise = undefined;
+                    currentPage = nextPage;
                     return nextPage;
                 });
             }
-            page = await currentPromise;
-            currentPromise = undefined;
+
+            currentPage = await currentPromise;
         }
 
-        if (!page.hasData) {
+        if (!currentPage.hasData || currentIndex >= currentPage.data.length) {
             return undefined;
         }
 
         return {
-            value: page.data[currentIndex++],
+            value: currentPage.data[currentIndex++],
             index: resultIndex++
         };
     }
 
-    async function transformNext(): Promise<void> {
+    async function callNext(): Promise<void> {
         const next = await getNext();
         if (!next) {
             return;
@@ -86,13 +108,13 @@ export function forEachAsync<T>(page: AsyncPage<T[]>, maxConcurrency: number, ca
         await callbackFn(next.value);
 
         // Start the next value.
-        return transformNext();
+        return callNext();
     }
 
     const promises = [];
 
     for (var i = 0; i < maxConcurrency; ++i) {
-        promises.push(transformNext());
+        promises.push(callNext());
     }
 
     return Promise.all(promises).then(results => { return; });

@@ -6,6 +6,7 @@ import createServiceError from './createServiceError';
 import CreationFailure from './CreationFailure';
 import CreationFailuresError from './CreationFailuresError';
 import Registry from './Registry';
+import * as fs from 'fs';
 
 /**
  * A base class for connectors for most any JSON-based catalog source.
@@ -115,7 +116,24 @@ export default abstract class JsonConnector {
     async createAspectDefinitions(): Promise<ConnectionResult> {
         const result = new ConnectionResult();
 
-        const allAspects = this.datasetAspectBuilders.concat(this.distributionAspectBuilders).concat(this.organizationAspectBuilders);
+        const allAspects = this.datasetAspectBuilders.concat(this.distributionAspectBuilders).concat(this.organizationAspectBuilders).concat([
+            {
+                aspectDefinition: {
+                    id: 'dataset-distributions',
+                    name: 'Dataset Distributions',
+                    jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
+                },
+                builderFunctionString: undefined
+            },
+            {
+                aspectDefinition: {
+                    id: 'source',
+                    name: 'Source',
+                    jsonSchema: require('@magda/registry-aspects/source.schema.json')
+                },
+                builderFunctionString: undefined
+            },
+        ]);
 
         const aspectBuilderPage = AsyncPage.single<AspectBuilder[]>(allAspects);
         await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectBuilder => {
@@ -134,8 +152,8 @@ export default abstract class JsonConnector {
         return this.registry.putRecord(this.organizationJsonToRecord(organizationJson));
     }
 
-    async createDataset(organizationJson: object): Promise<Record | Error> {
-        return this.registry.putRecord(this.datasetJsonToRecord(organizationJson));
+    async createDataset(datasetJson: object): Promise<Record | Error> {
+        return this.registry.putRecord(this.datasetJsonToRecord(datasetJson));
     }
 
     async createDistribution(distributionJson: object, datasetJson: object): Promise<Record | Error> {
@@ -166,7 +184,45 @@ export default abstract class JsonConnector {
 
         const datasets = this.getJsonDatasets();
         await forEachAsync(datasets, this.maxConcurrency, async dataset => {
-            const recordOrError = await this.createDataset(dataset);
+            const record = this.datasetJsonToRecord(dataset);
+
+            const distributions = this.getJsonDistributions(dataset);
+            if (distributions) {
+                const distributionIds: string[] = [];
+                await forEachAsync(distributions, 1, async distribution => {
+                    const recordOrError = await this.createDistribution(distribution, dataset);
+                    if (recordOrError instanceof Error) {
+                        result.distributionFailures.push(new CreationFailure(
+                            this.getIdFromJsonDistribution(distribution, dataset),
+                            this.getIdFromJsonDataset(dataset),
+                            recordOrError));
+                    } else {
+                        ++result.distributionsConnected;
+                        distributionIds.push(this.getIdFromJsonDistribution(distribution, dataset));
+                    }
+                });
+
+                if (distributionIds.length > 0) {
+                    record.aspects['dataset-distributions'] = {
+                        distributions: distributionIds
+                    };
+                }
+            }
+
+            // const publisher = this.getJsonDatasetPublisher(dataset);
+            // if (publisher && this.getIdFromJsonOrganization(publisher)) {
+            //     const recordOrError = await this.createOrganization(publisher, dataset);
+            //     if (recordOrError instanceof Error) {
+            //         result.organizationFailures.push(new CreationFailure(
+            //             this.getIdFromJsonOrganization(organization),
+            //             undefined,
+            //             recordOrError));
+            //     } else {
+            //         ++result.organizationsConnected;
+            //     }
+            // }
+
+            const recordOrError = await this.registry.putRecord(record);
             if (recordOrError instanceof Error) {
                 result.datasetFailures.push(new CreationFailure(
                     this.getIdFromJsonDataset(dataset),
@@ -174,22 +230,6 @@ export default abstract class JsonConnector {
                     recordOrError));
             } else {
                 ++result.datasetsConnected;
-
-                const distributions = this.getJsonDistributions(dataset);
-                console.log(distributions);
-                if (distributions) {
-                    await forEachAsync(distributions, 1, async distribution => {
-                        const recordOrError = await this.createDistribution(distribution, dataset);
-                        if (recordOrError instanceof Error) {
-                            result.distributionFailures.push(new CreationFailure(
-                                this.getIdFromJsonDistribution(distribution, dataset),
-                                this.getIdFromJsonDataset(dataset),
-                                recordOrError));
-                        } else {
-                            ++result.distributionsConnected;
-                        }
-                    });
-                }
             }
         });
 
@@ -233,11 +273,14 @@ export default abstract class JsonConnector {
             }
         });
 
+        if (!generatedAspects['source']) {
+            generatedAspects['source'] = {};
+        }
+
         if (problems.length > 0) {
-            if (!generatedAspects['source']) {
-                generatedAspects['source'] = {};
-            }
             generatedAspects['source'].problems = problems;
+        } else {
+            generatedAspects['source'].problems = undefined;
         }
 
         return {

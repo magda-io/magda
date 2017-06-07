@@ -7,16 +7,17 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 resolvers += Resolver.bintrayRepo("monsanto", "maven")
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.9"
+  val akkaV       = "2.4.18"
+  val akkaHttpV   = "10.0.7"
   val scalaTestV  = "2.2.6"
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe.akka" %% "akka-stream" % akkaV,
-    "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
-    "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaV,
-    "com.typesafe.akka" %% "akka-http-xml-experimental" % akkaV,
+    "com.typesafe.akka" %% "akka-http" % akkaHttpV,
+    "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpV,
+    "com.typesafe.akka" %% "akka-http-xml" % akkaHttpV,
     "com.typesafe.akka" %% "akka-contrib" % akkaV,
-    "ch.megard" %% "akka-http-cors" % "0.1.5",
+    "ch.megard" %% "akka-http-cors" % "0.2.1",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
     "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),

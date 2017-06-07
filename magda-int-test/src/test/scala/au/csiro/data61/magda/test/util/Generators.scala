@@ -107,10 +107,18 @@ object Generators {
   }
 
   def agentGen(nameGen: Gen[String]) = for {
-    name <- someBiasedOption(nameGen)
+    identifier <- Gen.uuid.map(_.toString).map(Some.apply)
+    name <- nameGen.map(Some.apply)
     homePage <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     email <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
-  } yield new Agent(name, homePage, email)
+    imageUrl <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+  } yield new Agent(
+    identifier = identifier,
+    name = name,
+    homePage = homePage,
+    email = email,
+    imageUrl = imageUrl
+  )
 
   val durationGen = for {
     number <- Gen.chooseNum(0l, 100l)
@@ -270,7 +278,8 @@ object Generators {
   }
 
   val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50).trim), 1000)
-  val publisherGen = cachedListGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" ")), 50)
+  val publisherAgentGen = cachedListGen(agentGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" "))), 50)
+  val publisherGen = publisherAgentGen.map(_.filter(_.name.isDefined).map(_.name.get))
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
@@ -294,7 +303,6 @@ object Generators {
     url <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
   } yield License(name, url)
 
-
   def randomCaseGen(string: String) = {
     for {
       whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 2))
@@ -308,7 +316,7 @@ object Generators {
         else char
     }.mkString
   }
-  
+
   val formatGen = for {
     mediaType <- Gen.option(mediaTypeGen)
     mediaTypeFormat = mediaType.flatMap(_.fileExtensions.headOption)
@@ -317,6 +325,7 @@ object Generators {
   } yield (mediaType, format)
 
   val distGen = for {
+    identifier <- Gen.uuid.map(_.toString).map(Some.apply)
     title <- textGen
     description <- someBiasedOption(textGen(descWordGen))
     issued <- someBiasedOption(offsetDateTimeGen())
@@ -327,6 +336,7 @@ object Generators {
     byteSize <- someBiasedOption(arbitrary[Int])
     format <- someBiasedOption(formatGen)
   } yield Distribution(
+    identifier = identifier,
     title = title,
     description = description,
     issued = issued,
@@ -350,7 +360,7 @@ object Generators {
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
     languages <- Generators.smallSet(arbitrary[String].map(_.take(50).trim))
-    publisher <- someBiasedOption(agentGen(publisherGen.flatMap(Gen.oneOf(_))))
+    publisher <- someBiasedOption(publisherAgentGen.flatMap(Gen.oneOf(_)))
     accrualPeriodicity <- someBiasedOption(periodicityGen)
     spatial <- noneBiasedOption(locationGen(geometryGen(6, coordGen())))
     temporal <- someBiasedOption(periodOfTimeGen)

@@ -3,6 +3,7 @@
   "packages": [
     "magda-broken-link-sleuther/",
     "magda-ckan-connector/",
+    "magda-csw-connector/",
     "magda-indexer/",
     "magda-int-test/",
     "magda-project-open-data-connector/",
@@ -13,6 +14,13 @@
     "magda-reverse-proxy/",
     "magda-scala-common/",
     "magda-search-api/",
+    "magda-gateway/",
+    "magda-session-store/",
+    "magda-auth-api/",
+    "magda-auth-db/",
+    "magda-combined-db/",
+    "magda-discussions-db/",
+    "magda-discussions-api/",
     "scripts/"
   ],
   "version": "0.0.26-SNAPSHOT",

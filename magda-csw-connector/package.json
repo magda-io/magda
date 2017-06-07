@@ -1,0 +1,47 @@
+{
+  "name": "@magda/csw-connector",
+  "description": "MAGDA OGC Catalogue Service for the Web (CSW) Connector",
+  "version": "0.0.26-SNAPSHOT",
+  "main": "bin/index.js",
+  "scripts": {
+    "compile": "tsc",
+    "build": "npm run compile",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bin/index.js",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "lint": "tslint -p tsconfig.json -e \"**/generated/**"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/jsonpath": "^0.1.29",
+    "@types/node": "^7.0.5",
+    "@types/request": "0.0.39",
+    "@types/urijs": "^1.15.31",
+    "@types/xml2js": "0.0.33",
+    "@types/xmldom": "^0.1.29",
+    "tslint": "^5.2.0",
+    "typescript": "^2.3.2"
+  },
+  "dependencies": {
+    "@magda/registry-aspects": "^0.0.26-SNAPSHOT",
+    "@magda/scripts": "^0.0.26-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.26-SNAPSHOT",
+    "jsonpath": "^0.2.11",
+    "lodash": "^4.17.4",
+    "moment": "^2.17.1",
+    "request": "^2.79.0",
+    "ts-node": "^2.1.0",
+    "urijs": "^1.18.7",
+    "xml2js": "^0.4.17",
+    "xmldom": "^0.1.27"
+  },
+  "config": {
+    "registryUrl": "http://localhost:6100/v0",
+    "docker": {
+      "name": "data61/magda-csw-connector",
+      "include": "aspect-templates bin Dockerfile node_modules"
+    }
+  }
+}

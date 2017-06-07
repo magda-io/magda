@@ -3,9 +3,9 @@ name := "magda-int-test"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.9"
+  val akkaV       = "2.4.18"
   val scalaTestV  = "2.2.6"
-  Seq(    
+  Seq(
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
     "org.scalatest"     %% "scalatest" % scalaTestV % "test",
     "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "5.2.4" % "test",
