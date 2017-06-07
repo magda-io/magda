@@ -1,26 +1,26 @@
 const jsonpath = libraries.jsonpath;
 
-const identifier = jsonpath.value(dataset, '$.fileIdentifier[*].CharacterString[*]._');
-const dataIdentification = jsonpath.query(dataset, '$.identificationInfo[*].MD_DataIdentification[*]');
-const serviceIdentification = jsonpath.query(dataset, '$.identificationInfo[*].SV_ServiceIdentification[*]');
+const identifier = jsonpath.value(dataset.json, '$.fileIdentifier[*].CharacterString[*]._');
+const dataIdentification = jsonpath.query(dataset.json, '$.identificationInfo[*].MD_DataIdentification[*]');
+const serviceIdentification = jsonpath.query(dataset.json, '$.identificationInfo[*].SV_ServiceIdentification[*]');
 const identification = dataIdentification.concat(serviceIdentification);
 const citation = jsonpath.query(identification, '$[*].citation[*].CI_Citation[*]');
 
 const dates = jsonpath.query(citation, '$[*].date[*].CI_Date[*]');
 const publicationDate = jsonpath.value(findDatesWithType(dates, 'creation').concat(findDatesWithType(dates, 'publication')), '$[*].date[*].DateTime[*]._');
-const modifiedDate = jsonpath.value(findDatesWithType(dates, 'revision'), '$[*].date[*].DateTime[*]._') || jsonpath.value(dataset, '$.dateStamp[*].DateTime[*]._') || publicationDate;
+const modifiedDate = jsonpath.value(findDatesWithType(dates, 'revision'), '$[*].date[*].DateTime[*]._') || jsonpath.value(dataset.json, '$.dateStamp[*].DateTime[*]._') || publicationDate;
 
 const extent = jsonpath.query(identification, '$[*].extent[*].EX_Extent[*]');
 
-const datasetContactPoint = getContactPoint(jsonpath.query(dataset, '$.contact[*].CI_ResponsibleParty[*]'), true);
+const datasetContactPoint = getContactPoint(jsonpath.query(dataset.json, '$.contact[*].CI_ResponsibleParty[*]'), true);
 const identificationContactPoint = getContactPoint(jsonpath.query(identification, '$[*].pointOfContact[*].CI_ResponsibleParty[*]'), true);
 const contactPoint = datasetContactPoint.length > identificationContactPoint.length ? datasetContactPoint : identificationContactPoint;
 
-const distNodes = jsonpath.query(dataset, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
+const distNodes = jsonpath.query(dataset.json, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
 
 const pointOfTruth = distNodes.filter(distNode => jsonpath.value(distNode, '$.description[*].CharacterString[*]._') === 'Point of truth URL of this metadata record');
 
-const responsibleParties = jsonpath.query(dataset, '$..CI_ResponsibleParty[*]');
+const responsibleParties = jsonpath.query(dataset.json, '$..CI_ResponsibleParty[*]');
 const byRole = libraries.lodash.groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
 const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian || [];
 const publisher = getContactPoint(datasetOrgs, false);
@@ -30,7 +30,7 @@ return {
     description: jsonpath.value(identification, '$[*].abstract[*].CharacterString[*]._'),
     issued: publicationDate,
     modified: modifiedDate,
-    languages: jsonpath.query(dataset, '$.language[*].CharacterString[*]._').concat(jsonpath.query(dataset, '$.language[*].LanguageCode[*]["$"].codeListValue.value')).filter((item, index, array) => array.indexOf(item) === index),
+    languages: jsonpath.query(dataset.json, '$.language[*].CharacterString[*]._').concat(jsonpath.query(dataset.json, '$.language[*].LanguageCode[*]["$"].codeListValue.value')).filter((item, index, array) => array.indexOf(item) === index),
     publisher: publisher,
     accrualPeriodicity: jsonpath.value(identification, '$[*].resourceMaintenance[*].MD_MaintenanceInformation[*].maintenanceAndUpdateFrequency[*].MD_MaintenanceFrequencyCode[*]["$"].codeListValue.value'),
     spatial: spatialExtentElementToProperty(jsonpath.query(extent, '$[*].geographicElement[*].EX_GeographicBoundingBox[*]')),

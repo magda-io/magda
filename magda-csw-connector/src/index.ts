@@ -7,6 +7,7 @@ import * as URI from 'urijs';
 import * as lodash from 'lodash';
 import * as jsonpath from 'jsonpath';
 import datasetAspectBuilders from './datasetAspectBuilders';
+import distributionAspectBuilders from './distributionAspectBuilders';
 
 const csw = new Csw({
     baseUrl: 'http://www.bom.gov.au/geonetwork/srv/eng/csw',
@@ -21,6 +22,7 @@ const connector = new CswConnector({
     source: csw,
     registry: registry,
     datasetAspectBuilders: datasetAspectBuilders,
+    distributionAspectBuilders: distributionAspectBuilders,
     libraries: {
         moment: moment,
         URI: URI,

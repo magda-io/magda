@@ -23,7 +23,7 @@ export default class CswConnector extends JsonConnector {
             const thisPageOrgs: any[] = [];
             datasets.forEach(dataset => {
                 // Find all parties that are publishers, owners, or custodians.
-                const responsibleParties = jsonpath.query(dataset, '$..CI_ResponsibleParty[*]');
+                const responsibleParties = jsonpath.query(dataset.json, '$..CI_ResponsibleParty[*]');
                 const byRole = groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
                 const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian;
                 if (!datasetOrgs || datasetOrgs.length === 0) {
@@ -71,9 +71,11 @@ export default class CswConnector extends JsonConnector {
                     json = result;
                 });
 
-                json.xmlString = xmlString;
-
-                result.push(json);
+                result.push({
+                    json: json,
+                    xml: recordXml,
+                    xmlString: xmlString
+                });
             }
 
             return result;
@@ -85,11 +87,7 @@ export default class CswConnector extends JsonConnector {
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
-        return flatMap(dataset.distributionInfo || [], di =>
-            flatMap(di.MD_Distribution || [], mdd =>
-                flatMap(mdd.transferOptions || [], to =>
-                    flatMap(to.MD_DigitalTransferOptions || [], mddto =>
-                        flatMap(mddto.onLine || [], ol => ol.CI_OnlineResource || [])))));
+        return jsonpath.query(dataset.json, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
     }
 
     protected getIdFromJsonOrganization(jsonOrganization: any): string {
@@ -99,7 +97,7 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getIdFromJsonDataset(jsonDataset: any): string {
-        return jsonDataset.fileIdentifier[0].CharacterString[0]._;
+        return jsonDataset.json.fileIdentifier[0].CharacterString[0]._;
     }
 
     protected getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
@@ -122,7 +120,7 @@ export default class CswConnector extends JsonConnector {
                     ] = []
                 } = {}
             ] = []
-        } = jsonDataset;
+        } = jsonDataset.json;
 
         const identification = dataIdentification || serviceIdentification || {};
 
