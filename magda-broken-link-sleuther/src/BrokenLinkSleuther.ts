@@ -102,11 +102,10 @@ export default class BrokenLinkSleuther {
                         brokenLinks++;
                         console.log(`${err}`);
                         return {status: 'broken', errorDetails: `${err}`};
-                    }).then(aspect => this.registry.putRecordAspect(record.id, 'source-link-status', aspect));
-
+                    }).then(aspect => {this.registry.putRecordAspect(record.id, 'source-link-status', aspect);});
                 } else {
                     console.log(`Unrecognised URL: ${url}`);
-                    return this.registry.putRecordAspect(record.id, 'source-link-status', {status: 'broken', errorDetails: `Unrecognised URL: ${url}`});
+                    return this.registry.putRecordAspect(record.id, 'source-link-status', {status: 'broken', errorDetails: `Unrecognised URL: ${url}`}).then(() => {});
                 }
             }
         });

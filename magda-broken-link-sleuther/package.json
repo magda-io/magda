@@ -1,7 +1,7 @@
 {
   "name": "@magda/broken-link-sleuther",
   "description": "MAGDA Broken Link Sleuther",
-  "version": "0.0.1",
+  "version": "0.0.26-SNAPSHOT",
   "main": "bin/index.js",
   "scripts": {
     "compile": "tsc",
@@ -36,8 +36,8 @@
   "config": {
     "registryUrl": "http://localhost:6100/v0",
     "docker": {
-      "name": "data61/magda-project-open-data-connector",
-      "include": "aspect-templates bin Dockerfile node_modules"
+      "name": "data61/magda-broken-link-sleuther",
+      "include": "bin Dockerfile node_modules"
     }
   }
 }
