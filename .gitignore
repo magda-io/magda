@@ -1,6 +1,7 @@
 *.class
 *.log
 .classpath
+.metadata
 
 # sbt specific
 .cache
