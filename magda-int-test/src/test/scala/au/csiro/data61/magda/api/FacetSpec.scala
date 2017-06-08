@@ -350,9 +350,8 @@ class FacetSpec extends BaseSearchApiSpec {
 
             val publisherLookup = publishers
               .groupBy(_.name.get.toLowerCase)
-              .mapValues(_.head)
 
-            Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${facetSize + 1}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
               status shouldBe OK
 
               val result = responseAs[SearchResult]
@@ -360,8 +359,8 @@ class FacetSpec extends BaseSearchApiSpec {
               val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
 
               facet.options.filterNot(_.value == "Unspecified").foreach { x =>
-                val matchedPublisher = publisherLookup(x.value.toLowerCase)
-                matchedPublisher.identifier.get should equal(x.identifier.get)
+                val matchedPublishers = publisherLookup(x.value.toLowerCase)
+                matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
               }
             }
           }
@@ -371,7 +370,7 @@ class FacetSpec extends BaseSearchApiSpec {
           forAll(mediumIndexGen, textQueryGen(specificBiasedQueryGen), Gen.posNum[Int], Generators.publisherAgentGen) { (tuple, textQuery, facetSize, publishers) ⇒
             val (indexName, dataSets, routes) = tuple
 
-            Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${facetSize + 1}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
               status shouldBe OK
 
               val result = responseAs[SearchResult]
@@ -382,14 +381,13 @@ class FacetSpec extends BaseSearchApiSpec {
 
               val publisherLookup = publishers
                 .groupBy(_.name.get.toLowerCase)
-                .mapValues(_.head)
 
               whenever(exactMatchFacets.size > 0) {
                 facet.options.filterNot(_.value == "Unspecified").foreach { x =>
                   withClue("for facet " + x.toString) {
                     x.identifier should not be (None)
-                    val matchedPublisher = publisherLookup(x.value.toLowerCase)
-                    matchedPublisher.identifier.get should equal(x.identifier.get)
+                    val matchedPublishers = publisherLookup(x.value.toLowerCase)
+                    matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
                   }
                 }
               }
