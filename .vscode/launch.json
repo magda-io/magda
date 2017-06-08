@@ -10,6 +10,9 @@
             "protocol": "inspector",
             "name": "Launch CKAN Connector",
             "program": "${workspaceRoot}/magda-ckan-connector/bin/index.js",
+            "args": [
+                "--config", "${workspaceRoot}/deploy/connector-config/data-gov-au.json"
+            ],
             "cwd": "${workspaceRoot}/magda-ckan-connector"
         },
         {

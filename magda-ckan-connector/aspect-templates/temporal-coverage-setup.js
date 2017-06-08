@@ -161,8 +161,8 @@ function parse(start, end, modified) {
 
         if (startSplit && endSplit) {
             result = {
-                start: moment.minimum(startSplit.start, endSplit.start),
-                end: moment.maximum(startSplit.end, endSplit.end)
+                start: moment.min(startSplit.start, endSplit.start),
+                end: moment.max(startSplit.end, endSplit.end)
             };
         }
     } else if (start && !end) {

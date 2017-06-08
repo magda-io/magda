@@ -5,15 +5,45 @@ import Registry from '@magda/typescript-common/lib/Registry';
 import * as fs from 'fs';
 import * as moment from 'moment';
 import * as URI from 'urijs';
+import * as yargs from 'yargs';
+
+const argv = yargs
+    .config()
+    .option('name', {
+        describe: 'The name of this connector, to be displayed to users to indicate the source of datasets.',
+        type: 'string',
+        demandOption: true
+    })
+    .option('ckanUrl', {
+        describe: 'The base URL of the CKAN server, without /api/...',
+        type: 'string',
+        demandOption: true
+    })
+    .option('pageSize', {
+        describe: 'The number of datasets per page to request from the CKAN server.',
+        type: 'number',
+        default: 1000
+    })
+    .option('ignoreHarvestSources', {
+        describe: 'An array of harvest sources to ignore.  Datasets from these harvest soures will not be added to the registry.',
+        type: 'array',
+        default: []
+    })
+    .option('registryUrl', {
+        describe: 'The base URL of the registry to which to write data from CKAN.',
+        type: 'string',
+        default: 'http://localhost:6100/v0'
+    })
+    .argv;
 
 const ckan = new Ckan({
-    baseUrl: 'https://data.gov.au/',
-    name: 'Data.gov.au',
-    pageSize: 1000
+    baseUrl: argv.ckanUrl,
+    name: argv.name,
+    pageSize: argv.pageSize
 });
 
 const registry = new Registry({
-    baseUrl: process.env.REGISTRY_URL || process.env.npm_package_config_registryUrl || 'http://localhost:6100/v0'
+    baseUrl: argv.registryUrl
 });
 
 const datasetAspectBuilders: AspectBuilder[] = [
@@ -101,6 +131,7 @@ const organizationAspectBuilders: AspectBuilder[] = [
 const connector = new CkanConnector({
     source: ckan,
     registry: registry,
+    ignoreHarvestSources: argv.ignoreHarvestSources,
     datasetAspectBuilders: datasetAspectBuilders,
     distributionAspectBuilders: distributionAspectBuilders,
     organizationAspectBuilders: organizationAspectBuilders,

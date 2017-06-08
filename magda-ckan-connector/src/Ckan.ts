@@ -74,9 +74,10 @@ export default class Ckan {
     }): AsyncPage<CkanPackageSearchResponse> {
         const url = this.apiBaseUrl.clone().segment('api/3/action/package_search');
 
+        let fqComponent = '';
         if (options && options.ignoreHarvestSources && options.ignoreHarvestSources.length > 0) {
-            const solrQueries = options.ignoreHarvestSources.map(title => `-harvest_source_title:${encodeURIComponent(title)}`);
-            url.addSearch('fq', solrQueries.join('+'));
+            const solrQueries = options.ignoreHarvestSources.map(title => `-harvest_source_title:${encodeURIComponent('"' + title + '"')}`);
+            fqComponent = '&fq=' + solrQueries.join('+');
         }
 
         url.addSearch('sort', 'metadata_created asc');
@@ -91,7 +92,7 @@ export default class Ckan {
                 }
             }
 
-            return this.requestPackageSearchPage(url, startIndex);
+            return this.requestPackageSearchPage(url, fqComponent, startIndex);
         });
     }
 
@@ -127,14 +128,15 @@ export default class Ckan {
         return this.baseUrl.clone().segment('dataset').segment(id).toString();
     }
 
-    private requestPackageSearchPage(url: uri.URI, startIndex: number): Promise<CkanPackageSearchResponse> {
+    private requestPackageSearchPage(url: uri.URI, fqComponent: string, startIndex: number): Promise<CkanPackageSearchResponse> {
         const pageUrl = url.clone();
         pageUrl.addSearch('start', startIndex);
         pageUrl.addSearch('rows', this.pageSize);
 
         const operation = () => new Promise<CkanPackageSearchResponse>((resolve, reject) => {
-            console.log('Requesting ' + pageUrl.toString());
-            request(pageUrl.toString(), { json: true }, (error, response, body) => {
+            const requestUrl = pageUrl.toString() + fqComponent;
+            console.log('Requesting ' + requestUrl);
+            request(requestUrl, { json: true }, (error, response, body) => {
                 if (error) {
                     reject(error);
                     return;

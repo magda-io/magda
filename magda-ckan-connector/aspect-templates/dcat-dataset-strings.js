@@ -6,7 +6,7 @@ return {
     issued: dataset.metadata_created ? moment.utc(dataset.metadata_created).format() : undefined,
     modified: dataset.metadata_modified ? moment.utc(dataset.metadata_modified).format() : undefined,
     languages: dataset.language ? [dataset.language] : [],
-    publisher: dataset.organization.title,
+    publisher: (dataset.organization || {}).title,
     accrualPeriodicity: dataset.update_freq,
     spatial: dataset.spatial_coverage,
     temporal: {

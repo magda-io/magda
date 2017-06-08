@@ -25,7 +25,9 @@ export default class CkanConnector extends JsonConnector {
     }
 
     protected getJsonDatasets(): AsyncPage<object[]> {
-        const packagePages = this.ckan.packageSearch(this.ignoreHarvestSources);
+        const packagePages = this.ckan.packageSearch({
+            ignoreHarvestSources: this.ignoreHarvestSources
+        });
         return packagePages.map((packagePage) => packagePage.result.results);
     }
 

@@ -1,0 +1,6 @@
+{
+    "type": "magda-ckan-connector",
+    "name": "data.qld.gov.au",
+    "url": "https://data.qld.gov.au/",
+    "pageSize": 100
+}
