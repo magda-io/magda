@@ -77,12 +77,13 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
 
-        val publisher = termExtractor(dataSet).head
+        val publisher = dataSet.publisher.get
 
         withClue(s"term: ${publisherName}, publisher: ${dataSet.publisher.map(_.name)} options ${result.options}") {
-          result.options.exists(value =>
-            publisher.equalsIgnoreCase(value.value)
-          ) should be(true)
+          result.options.exists { option =>
+            option.value.equalsIgnoreCase(publisher.name.get)
+            option.identifier.get.equals(publisher.identifier.get)
+          } should be(true)
         }
       }
     }
@@ -102,9 +103,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         withClue(s"format: ${formatName} options ${result.options}") {
           result.options.exists(value =>
             formats.exists(format =>
-              value.value.equalsIgnoreCase(format)
-            )
-          ) should be(true)
+              value.value.equalsIgnoreCase(format))) should be(true)
         }
       }
     }
@@ -176,8 +175,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
             for {
               currentInner <- current
               list <- soFar
-            } yield currentInner :+ list
-          )
+            } yield currentInner :+ list)
 
           combinedDataSetAndTermGen.map((indexName, _, routes))
       }

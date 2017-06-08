@@ -26,12 +26,15 @@ import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import akka.http.scaladsl.Http
 import scala.concurrent.duration._
 import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.indexer.crawler.CrawlerImpl
 
 object IndexerApp extends App {
-  implicit val system = ActorSystem()
+  implicit val config = AppConfig.conf()
+  implicit val system = ActorSystem("indexer", config)
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  implicit val config = AppConfig.conf()
 
   val logger = Logging(system, getClass)
 
@@ -46,7 +49,11 @@ object IndexerApp extends App {
   logger.debug("Starting Crawler")
 
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
-  val crawler = Crawler(interfaceConfigs.values.toSeq.map(ExternalInterface(_)))
+  val crawler = if (config.hasPath("featureFlags.registryOnly") && config.getBoolean("featureFlags.registryOnly")) {
+    new RegistryCrawler(new RegistryExternalInterface(interfaceConfigs("registry")))
+  } else {
+    CrawlerImpl(interfaceConfigs.values.toSeq.map(ExternalInterface(_)))
+  }
 
   if (config.getBoolean("registry.registerForWebhooks")) {
     val registryConfig = interfaceConfigs("registry")

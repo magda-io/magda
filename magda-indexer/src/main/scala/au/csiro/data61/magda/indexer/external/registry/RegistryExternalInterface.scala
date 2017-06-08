@@ -39,18 +39,35 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
     Future.failed(new IOException(error))
   }
 
-  override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] =
-    fetcher.get(s"${baseUrl}&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&dereference=true&start=$start&limit=$number").flatMap { response =>
+  def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
+    fetcher.get(s"${baseUrl}&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&dereference=true&pageToken=$pageToken&limit=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
-          mapCatching[Record, DataSet](registryResponse.records,
+          (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
             { hit => registryDataSetConv(interfaceConfig)(hit) },
             { (e, item) => logger.error(e, "Could not parse item for {}: {}", interfaceConfig.name, item.toString) }
-          )
+          ))
         }
         case _ => Unmarshal(response.entity).to[String].flatMap(onError(response))
       }
     }
+  }
+
+  def getDataSetsReturnToken(start: Long, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
+    fetcher.get(s"${baseUrl}&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&dereference=true&start=$start&limit=$number").flatMap { response =>
+      response.status match {
+        case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
+          (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
+            { hit => registryDataSetConv(interfaceConfig)(hit) },
+            { (e, item) => logger.error(e, "Could not parse item for {}: {}", interfaceConfig.name, item.toString) }
+          ))
+        }
+        case _ => Unmarshal(response.entity).to[String].flatMap(onError(response))
+      }
+    }
+  }
+
+  override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = getDataSetsReturnToken(start, number).map(_._2)
 
   override def getTotalDataSetCount(): Future[Long] =
     fetcher.get(s"${baseUrl}&limit=0").flatMap { response =>

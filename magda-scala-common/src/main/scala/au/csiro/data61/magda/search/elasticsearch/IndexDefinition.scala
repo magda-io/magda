@@ -34,9 +34,9 @@ import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
-import com.sksamuel.elastic4s.mappings.TypedFieldDefinition
 import org.elasticsearch.common.xcontent.XContentBuilder
 import com.sksamuel.elastic4s.analyzers.Analyzer
+import com.sksamuel.elastic4s.mappings.FieldDefinition
 
 case class IndexDefinition(
     name: String,
@@ -47,17 +47,17 @@ case class IndexDefinition(
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
-  def magdaTextField(name: String, extraFields: TypedFieldDefinition*) = {
+  def magdaTextField(name: String, extraFields: FieldDefinition*) = {
     val fields = extraFields ++ Seq(
       textField("english").analyzer("english")
     )
 
-    textField(name).fields(fields: _*)
+    textField(name).fields(fields)
   }
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 26,
+    version = 27,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -65,23 +65,25 @@ object IndexDefinition extends DefaultJsonProtocol {
         .replicas(config.getInt("elasticSearch.replicaCount"))
         .mappings(
           mapping(indices.getType(Indices.DataSetsIndexType)).fields(
-            field("temporal", ObjectType).inner(
-              field("start", ObjectType).inner(
+            field("temporal", ObjectType).fields(
+              field("start", ObjectType).fields(
                 field("date", DateType),
                 field("text", TextType)
               ),
-              field("end", ObjectType).inner(
+              field("end", ObjectType).fields(
                 field("date", DateType),
                 field("text", TextType)
               )
             ),
-            field("publisher", ObjectType).inner(
+            field("publisher", ObjectType).fields(
+              field("identifier", KeywordType),
               magdaTextField("name",
                 field("keyword", KeywordType),
                 field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),
-            nestedField("distributions").nested(
+            nestedField("distributions").fields(
+              field("identifier", KeywordType),
               magdaTextField("title"),
               magdaTextField("description"),
               magdaTextField("format",
@@ -89,7 +91,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 field("keyword_lowercase", TextType).analyzer("quote")
               )
             ),
-            field("spatial", ObjectType).inner(
+            field("spatial", ObjectType).fields(
               field("geoJson", GeoShapeType)
             ),
             magdaTextField("title"),
@@ -107,6 +109,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             textField("english").analyzer("english")
           ),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
+            keywordField("identifier"),
             magdaTextField("value"),
             textField("english").analyzer("english")
           )
@@ -262,24 +265,5 @@ object IndexDefinition extends DefaultJsonProtocol {
     val indexedEnvelope = GeometryConverter.toJTSGeo(geometry, geoFactory).getEnvelopeInternal
 
     BoundingBox(indexedEnvelope.getMaxY, indexedEnvelope.getMinX, indexedEnvelope.getMinY, indexedEnvelope.getMaxX)
-  }
-}
-
-trait AttributeQuoteSearchAnalyzer { self: TypedFieldDefinition =>
-
-  private[this] var _quoteSearchAnalyzer: Option[String] = None
-
-  def quoteSearchAnalyzer(analyzer: String): this.type = {
-    _quoteSearchAnalyzer = Some(analyzer)
-    this
-  }
-
-  def quoteSearchAnalyzer(analyzer: Analyzer): this.type = {
-    _quoteSearchAnalyzer = Some(analyzer.name)
-    this
-  }
-
-  protected override def insert(source: XContentBuilder): Unit = {
-    _quoteSearchAnalyzer.foreach(source.field("search_quote_analyzer", _))
   }
 }

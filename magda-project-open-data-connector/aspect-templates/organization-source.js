@@ -1,4 +1,5 @@
 return {
     type: 'project-open-data-organization',
-    url: source.url
+    url: source.url,
+    name: connector.name
 };

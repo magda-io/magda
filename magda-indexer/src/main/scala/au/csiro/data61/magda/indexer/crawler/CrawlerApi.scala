@@ -52,7 +52,9 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
     }
 
   def crawl(): Boolean = {
-    if (!crawlInProgress) {
+    if (crawlInProgress) {
+      false
+    } else {
       lastCrawl = Some(crawler.crawl(indexer))
       val future = lastCrawl.get
 
@@ -64,8 +66,6 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
       }
 
       true
-    } else {
-      false
     }
   }
 }

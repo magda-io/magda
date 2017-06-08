@@ -11,6 +11,7 @@ object TestActorSystem {
     akka.loglevel = ${if (ContinuousIntegration.isCi) "ERROR" else "DEBUG"}
     indexer.refreshInterval = -1
     akka.http.server.request-timeout = 30s
+    indexedServices.registry.path = "v0/"
   """).resolve().withFallback(AppConfig.conf(Some("local")))
 
   def actorSystem = ActorSystem("TestActorSystem", config)
