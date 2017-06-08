@@ -1,4 +1,4 @@
 return {
     type: 'ckan-resource',
-    url: source.getResourceShowUrl(resource.id)
+    url: source.getResourceShowUrl(distribution.id)
 };

@@ -1,1 +1,1 @@
-return resource;
+return distribution;

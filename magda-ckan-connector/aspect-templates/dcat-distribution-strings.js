@@ -1,13 +1,13 @@
 var moment = libraries.moment;
 
 return {
-    title: resource.name || resource.id,
-    description: resource.description || undefined,
-    issued: resource.created ? moment.utc(resource.created).format() : undefined,
-    modified: resource.last_modified ? moment.utc(resource.last_modified).format() : undefined,
+    title: distribution.name || distribution.id,
+    description: distribution.description || undefined,
+    issued: distribution.created ? moment.utc(distribution.created).format() : undefined,
+    modified: distribution.last_modified ? moment.utc(distribution.last_modified).format() : undefined,
     license: dataset.license_title || undefined,
-    accessURL: resource.webstore_url || undefined,
-    downloadURL: resource.url || undefined,
-    mediaType: resource.mimetype || resource.mimetype_inner || undefined,
-    format: resource.format || undefined
+    accessURL: distribution.webstore_url || undefined,
+    downloadURL: distribution.url || undefined,
+    mediaType: distribution.mimetype || distribution.mimetype_inner || undefined,
+    format: distribution.format || undefined
 };
