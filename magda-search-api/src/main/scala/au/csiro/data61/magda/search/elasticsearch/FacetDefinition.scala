@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import au.csiro.data61.magda.api.Query
+import spray.json._
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
@@ -27,12 +28,16 @@ import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.search.SearchStrategy
 import org.elasticsearch.search.sort.SortOrder
 import org.elasticsearch.search.aggregations.InternalAggregation
+import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
+import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
  * over to elasticsearch which doesn't necessarily simply support it.
  */
 trait FacetDefinition {
+  def facetType: FacetType
+
   /**
    *  The elastic4s aggregation definition for this facet, given a max bucket size
    */
@@ -116,22 +121,39 @@ object FacetDefinition {
 }
 
 class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinition {
+  def facetType = Publisher
+
   override def aggregationDefinition(limit: Int): AggregationDefinition = {
     termsAggregation(Publisher.id)
       .field("publisher.name.keyword")
       .size(limit)
       .missing(config.getString("strings.unspecifiedWord"))
       .subAggregations(
-        topHitsAggregation("topHits").size(1).sortBy(scoreSort(SortOrder.DESC))
-      )
+        topHitsAggregation("topHits").size(1).sortBy(fieldSort("publisher.identifier")))
+  }
+
+  override def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = aggregation match {
+    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket => {
+      val topHit = bucket.getAggregations.asMap().asScala.get("topHits")
+
+      new FacetOption(
+        identifier = topHit.flatMap {
+          case hit: InternalTopHits =>
+            val dataSet = hit.getHits.getAt(0).getSourceAsString().parseJson.convertTo[DataSet]
+
+            dataSet.publisher.flatMap(_.identifier)
+        },
+        value = bucket.getKeyAsString,
+        hitCount = bucket.getDocCount)
+    })
+    case (_) => throw new RuntimeException("Halp")
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
 
   override def filterAggregationQuery(query: Query): QueryDefinition =
     should(
-      query.publishers.map(publisherQuery(SearchStrategy.MatchPart))
-    ).minimumShouldMatch(1)
+      query.publishers.map(publisherQuery(SearchStrategy.MatchPart))).minimumShouldMatch(1)
 
   override def removeFromQuery(query: Query): Query = query.copy(publishers = Set())
 
@@ -144,6 +166,8 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
 
 class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
+
+  override def facetType = Year
 
   override def aggregationDefinition(limit: Int): AggregationDefinition =
     aggregation.terms(Year.id).field("years").size(Int.MaxValue)
@@ -250,8 +274,7 @@ class YearFacetDefinition(implicit val config: Config) extends FacetDefinition {
             value = if (bucketStart != bucketEnd) s"$bucketStart - $bucketEnd" else bucketStart.toString,
             hitCount = hitCount,
             lowerBound = Some(bucketStart),
-            upperBound = Some(bucketEnd)
-          )
+            upperBound = Some(bucketEnd))
       }.filter(_.hitCount > 0)
   }
 
@@ -311,6 +334,8 @@ object YearFacetDefinition {
 }
 
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
+  override def facetType = Format
+
   override def aggregationDefinition(limit: Int): AggregationDefinition =
     nestedAggregation(Format.id, "distributions").subAggregations {
       termsAggregation("nested")
@@ -332,8 +357,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
       new FacetOption(
         identifier = None,
         value = bucket.getKeyAsString,
-        hitCount = innerBucket.getDocCount
-      )
+        hitCount = innerBucket.getDocCount)
     }
   }
 
