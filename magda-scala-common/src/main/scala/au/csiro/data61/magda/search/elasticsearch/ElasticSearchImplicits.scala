@@ -37,24 +37,11 @@ object ElasticSearchImplicits extends Protocols {
   }
 
   def aggregationsToFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation match {
-    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket => {
-      bucketToFacetOption(bucket)
-    })
-    case (_) => Seq()
-  }
-
-  def bucketToFacetOption(bucket: Bucket) = {
-    val topHit = bucket.getAggregations.asMap().asScala.get("topHits")
-
-    new FacetOption(
-      identifier = topHit.flatMap {
-        case hit: InternalTopHits =>
-          val dataSet = hit.getHits.getAt(0).getSourceAsString().parseJson.convertTo[DataSet]
-
-          dataSet.publisher.flatMap(_.identifier)
-      },
-      value = bucket.getKeyAsString,
-      hitCount = bucket.getDocCount
-    )
+    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket =>
+      new FacetOption(
+        identifier = None,
+        value = bucket.getKeyAsString,
+        hitCount = bucket.getDocCount))
+    case (_) => throw new RuntimeException("Halp")
   }
 }
