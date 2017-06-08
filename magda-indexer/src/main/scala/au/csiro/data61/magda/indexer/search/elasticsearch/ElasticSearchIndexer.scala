@@ -180,8 +180,7 @@ class ElasticSearchIndexer(
               // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
               client
             }
-        }
-    )
+        })
   }
 
   private def tryReindexSpatialFail(source: InterfaceConfig, dataSet: DataSet, result: RichBulkItemResponse, promise: Promise[Unit]) = {
@@ -260,8 +259,7 @@ class ElasticSearchIndexer(
                   else {
                     logger.info("Snapshotting disabled, skipping")
                     Future(Unit)
-                  }
-                )
+                  })
               case None => Future(Unit)
             }
           }
@@ -327,8 +325,7 @@ class ElasticSearchIndexer(
     val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
 
     client.execute(
-      create repository SNAPSHOT_REPO_NAME `type` repoType settings settings
-    )
+      create repository SNAPSHOT_REPO_NAME `type` repoType settings settings)
   }
 
   private def snapshotPrefix(definition: IndexDefinition) = s"${definition.name}-${definition.version}"
@@ -381,10 +378,7 @@ class ElasticSearchIndexer(
         deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
           filter(must(
             rangeQuery("indexed").to(before.toString),
-            termQuery("source", source.name)
-          ))
-        )
-      )
+            termQuery("source", source.name)))))
     }.map { response =>
       logger.info("Trimmed {} old datasets from {}", response.getDeleted, source.name)
 
@@ -426,17 +420,17 @@ class ElasticSearchIndexer(
       source = Some(source.name),
       description = rawDataSet.description.map(_.take(32766)),
       years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
-      indexed = Some(OffsetDateTime.now)
-    )
+      indexed = Some(OffsetDateTime.now))
 
     val indexDataSet = ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType) id dataSet.uniqueId source (
-      dataSet.toJson
-    )
+      dataSet.toJson)
 
-    val indexPublisher = dataSet.publisher.flatMap(_.name.map(publisherName =>
+    val indexPublisher = dataSet.publisher.flatMap(publisher => publisher.name.map(publisherName =>
       ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(Publisher)))
         .id(publisherName.toLowerCase)
-        .source(Map("value" -> publisherName).toJson)))
+        .source(Map(
+          "identifier" -> publisher.identifier.toJson,
+          "value" -> publisherName.toJson).toJson)))
 
     val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
       val format = distribution.format.get

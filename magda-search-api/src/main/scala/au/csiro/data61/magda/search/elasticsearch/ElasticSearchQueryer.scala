@@ -377,9 +377,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             case _ =>
               val hits: Seq[(String, Option[String])] = response.hits
                 .map { hit =>
+                  val map = hit.sourceAsMap
                   (
-                    hit.field("value").value.toString,
-                    hit.fieldOpt("identifier").map(_.toString))
+                    map("value")toString,
+                    map.get("identifier").map(_.toString))
                 }
 
               // Create a dataset filter aggregation for each hit in the initial query
