@@ -12,6 +12,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   case class FixtureParam(api: Api, webHookActorProbe: TestProbe)
 
   override def testConfigSource = "db.default.url = \"jdbc:postgresql://localhost/postgres?currentSchema=test\""
+//  override def testConfigSource = "db.default.url = \"jdbc:postgresql://192.168.99.100:30545/postgres?currentSchema=test\""
 
   override def withFixture(test: OneArgTest) = {
     val webHookActorProbe = TestProbe()

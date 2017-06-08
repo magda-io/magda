@@ -52,8 +52,6 @@ import au.csiro.data61.magda.test.util.Generators
 class FacetSpec extends BaseSearchApiSpec {
 
   describe("facets") {
-    val facetSizes = for (n ← Gen.choose(0, 10)) yield n
-
     def checkFacetsNoQuery(inner: (List[DataSet], Int) ⇒ Unit) = {
       forAll(mediumIndexGen, Gen.posNum[Int], Gen.posNum[Int], Gen.posNum[Int]) { (tuple, rawFacetSize, start, limit) ⇒
         val (indexName, dataSets, routes) = tuple
@@ -219,7 +217,7 @@ class FacetSpec extends BaseSearchApiSpec {
               val facet = getFacet(outerResult)
 
               val exactMatchFacets = facet.options.filter(option => option.matched && option.hitCount == 0)
-              
+
               whenever(exactMatchFacets.size > 0) {
                 val grouped = groupResult(allDataSets)
 
@@ -339,10 +337,68 @@ class FacetSpec extends BaseSearchApiSpec {
       val specificBiasedQueryGen = Gen.uuid.flatMap(uuid =>
         for {
           publishers <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](Generators.publisherGen.flatMap(Gen.oneOf(_)).map(Specified.apply))
-        } yield Query(quotes = Set(uuid.toString), publishers = publishers)
-      ).suchThat(queryIsSmallEnough)
+        } yield Query(quotes = Set(uuid.toString), publishers = publishers)).suchThat(queryIsSmallEnough)
 
+      describe("should have identifiers") {
+        implicit val stringShrink: Shrink[List[Agent]] = Shrink { string =>
+          Stream.empty
+        }
+
+        it("in general") {
+          forAll(indexGen, textQueryGen(queryGen), Gen.posNum[Int], Generators.publisherAgentGen) { (tuple, textQuery, facetSize, publishers) ⇒
+            val (indexName, dataSets, routes) = tuple
+
+            val publisherLookup = publishers
+              .groupBy(_.name.get.toLowerCase)
+
+            Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
+              status shouldBe OK
+
+              val result = responseAs[SearchResult]
+
+              val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
+
+              withClue("publishers " + publisherLookup) {
+                facet.options.filterNot(_.value == "Unspecified").foreach { x =>
+                  val matchedPublishers = publisherLookup(x.value.toLowerCase)
+                  matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                }
+              }
+            }
+          }
+        }
+
+        it("for exact match facets") {
+          forAll(mediumIndexGen, textQueryGen(specificBiasedQueryGen), Gen.posNum[Int], Generators.publisherAgentGen) { (tuple, textQuery, facetSize, publishers) ⇒
+            val (indexName, dataSets, routes) = tuple
+
+            Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
+              status shouldBe OK
+
+              val result = responseAs[SearchResult]
+
+              val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
+
+              val exactMatchFacets = facet.options.filter(option => option.matched && option.hitCount == 0)
+
+              val publisherLookup = publishers
+                .groupBy(_.name.get.toLowerCase)
+
+              whenever(exactMatchFacets.size > 0) {
+                facet.options.filterNot(_.value == "Unspecified").foreach { x =>
+                  withClue("for facet " + x.toString) {
+                    x.identifier should not be (None)
+                    val matchedPublishers = publisherLookup(x.value.toLowerCase)
+                    matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       genericFacetSpecs(Publisher, reducer, queryToInt, queryGen, specificBiasedQueryGen)
+
     }
 
     describe("format") {
@@ -356,8 +412,7 @@ class FacetSpec extends BaseSearchApiSpec {
       val specificBiasedQueryGen = Gen.uuid.flatMap(uuid =>
         for {
           formats <- Gen.nonEmptyContainerOf[Set, FilterValue[String]](Generators.formatGen.map(x => Specified(x._2)))
-        } yield Query(quotes = Set(uuid.toString), formats = formats)
-      ).suchThat(queryIsSmallEnough)
+        } yield Query(quotes = Set(uuid.toString), formats = formats)).suchThat(queryIsSmallEnough)
 
       genericFacetSpecs(Format, reducer, queryToInt, queryGen, specificBiasedQueryGen)
     }
@@ -435,8 +490,7 @@ class FacetSpec extends BaseSearchApiSpec {
 
           it("for unmatched facet options") {
             val yearQueryGen = Gen.option(Gen.alphaNumChar).flatMap(char =>
-              Query(freeText = char.map(_.toString), quotes = Set[String](), publishers = Set[FilterValue[String]](), regions = Set[FilterValue[Region]](), formats = Set[FilterValue[String]]())
-            )
+              Query(freeText = char.map(_.toString), quotes = Set[String](), publishers = Set[FilterValue[String]](), regions = Set[FilterValue[Region]](), formats = Set[FilterValue[String]]()))
 
             checkFacetsWithQuery(textQueryGen(yearQueryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
               val outerResult = responseAs[SearchResult]
@@ -474,8 +528,7 @@ class FacetSpec extends BaseSearchApiSpec {
 
                 option.value should equal(
                   if (lowerBound == upperBound) lowerBound.toString
-                  else s"$lowerBound - " + s"$upperBound"
-                )
+                  else s"$lowerBound - " + s"$upperBound")
                 YearFacetDefinition.YEAR_BIN_SIZES should contain(size)
                 if (facetSize > 1) withClue(s"[$lowerBound-$upperBound with size $size]") {
                   lowerBound % size shouldEqual 0
