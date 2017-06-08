@@ -109,66 +109,16 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getNameFromJsonDataset(jsonDataset: any): string {
-        const {
-            identificationInfo: [
-                {
-                    MD_DataIdentification: [
-                        dataIdentification = <any>undefined
-                    ] = [],
-                    SV_ServiceIdentification: [
-                        serviceIdentification = <any>undefined
-                    ] = []
-                } = {}
-            ] = []
-        } = jsonDataset.json;
-
+        const dataIdentification = jsonpath.query(jsonDataset.json, '$.identificationInfo[*].MD_DataIdentification[*].dataIdentification[*]');
+        const serviceIdentification = jsonpath.query(jsonDataset.json, '$.identificationInfo[*].SV_ServiceIdentification[*].serviceIdentification[*]');
         const identification = dataIdentification || serviceIdentification || {};
-
-        const {
-            citation: [
-                {
-                    CI_Citation: [
-                        {
-                            title: [
-                                {
-                                    CharacterString: [
-                                        {
-                                            _: title = this.getIdFromJsonDataset(jsonDataset)
-                                        } = {}
-                                    ] = []
-                                } = {}
-                            ] = []
-                        } = {}
-                    ] = []
-                } = {}
-            ] = []
-        } = identification;
-
+        const title = jsonpath.value(identification, '$.citation[*].CI_Citation[*].title[*].CharacterString[*]._') || this.getIdFromJsonDataset(jsonDataset);
         return title;
     }
 
     protected getNameFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
-        const {
-            name: [
-                {
-                    CharacterString: [
-                        {
-                            _: name = <string>undefined
-                        } = {}
-                    ] = []
-                } = {}
-            ] = [],
-            description: [
-                {
-                    CharacterString: [
-                        {
-                            _: description = <string>undefined
-                        } = {}
-                    ] = []
-                } = {}
-            ] = []
-        } = jsonDistribution;
-
+        const name = jsonpath.value(jsonDistribution, '$.name[*].CharacterString[*]._');
+        const description = jsonpath.value(jsonDistribution, '$.description[*].CharacterString[*]._');
         return name || description || this.getIdFromJsonDistribution(jsonDistribution, jsonDataset);
     }
 }
