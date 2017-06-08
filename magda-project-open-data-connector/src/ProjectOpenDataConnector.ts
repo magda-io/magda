@@ -40,6 +40,13 @@ export default class ProjectOpenDataConnector extends JsonConnector {
             (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${this.url}.`, e, retriesLeft)));
     }
 
+    protected getJsonDatasetPublisher(dataset: any): any {
+        if (!dataset.publisher) {
+            return undefined;
+        }
+        return dataset.publisher.name
+    }
+
     protected getJsonOrganizations(): AsyncPage<object[]> {
         return AsyncPage.singlePromise<object[]>(this.dataPromise.then((response: any) => {
             const orgs = new Set<string>();

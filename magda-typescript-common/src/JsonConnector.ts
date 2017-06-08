@@ -108,6 +108,7 @@ export default abstract class JsonConnector {
     protected abstract getJsonOrganizations(): AsyncPage<object[]>;
     protected abstract getJsonDatasets(): AsyncPage<object[]>;
     protected abstract getJsonDistributions(dataset: object): AsyncPage<object[]>;
+    protected abstract getJsonDatasetPublisher(dataset: object): string | object;
 
     protected abstract getIdFromJsonOrganization(jsonOrganization: object): string;
     protected abstract getIdFromJsonDataset(jsonDataset: object): string;
@@ -137,6 +138,14 @@ export default abstract class JsonConnector {
                 },
                 builderFunctionString: undefined
             },
+            {
+                aspectDefinition: {
+                    id: 'dataset-publisher',
+                    name: 'Dataset Publisher',
+                    jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')
+                },
+                builderFunctionString: undefined
+            }
         ]);
 
         const aspectBuilderPage = AsyncPage.single<AspectBuilder[]>(allAspects);
@@ -206,25 +215,27 @@ export default abstract class JsonConnector {
                     }
                 });
 
-                if (distributionIds.length > 0) {
-                    record.aspects['dataset-distributions'] = {
-                        distributions: distributionIds
-                    };
-                }
+                record.aspects['dataset-distributions'] = {
+                    distributions: distributionIds
+                };
             }
 
-            // const publisher = this.getJsonDatasetPublisher(dataset);
-            // if (publisher && this.getIdFromJsonOrganization(publisher)) {
-            //     const recordOrError = await this.createOrganization(publisher, dataset);
-            //     if (recordOrError instanceof Error) {
-            //         result.organizationFailures.push(new CreationFailure(
-            //             this.getIdFromJsonOrganization(organization),
-            //             undefined,
-            //             recordOrError));
-            //     } else {
-            //         ++result.organizationsConnected;
-            //     }
-            // }
+            const publisher = this.getJsonDatasetPublisher(dataset);
+            if (typeof publisher === 'string' || publisher instanceof String) {
+                record.aspects['dataset-publisher'] = {
+                    publisher: publisher
+                };
+            } else if (typeof publisher === 'object') {
+                const recordOrError = await this.createOrganization(publisher);
+                if (recordOrError instanceof Error) {
+                    result.organizationFailures.push(new CreationFailure(
+                        this.getIdFromJsonOrganization(publisher),
+                        undefined,
+                        recordOrError));
+                } else {
+                    ++result.organizationsConnected;
+                }
+            }
 
             const recordOrError = await this.registry.putRecord(record);
             if (recordOrError instanceof Error) {

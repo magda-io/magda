@@ -17,30 +17,27 @@ export default class CswConnector extends JsonConnector {
         this.csw = options.source;
     }
 
+    protected getJsonDatasetPublisher(dataset: any): any {
+        // Find all parties that are publishers, owners, or custodians.
+        const responsibleParties = jsonpath.query(dataset.json, '$..CI_ResponsibleParty[*]');
+        const byRole = groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
+        const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian;
+        if (!datasetOrgs || datasetOrgs.length === 0) {
+            return undefined;
+        }
+
+        const datasetOrg = datasetOrgs[0];
+        if (this.getIdFromJsonOrganization(datasetOrg) === undefined) {
+            return undefined;
+        }
+
+        return datasetOrg;
+    }
+
     protected getJsonOrganizations(): AsyncPage<any[]> {
-        const allOrgs = new Set<string>();
-        return this.getJsonDatasets().map(datasets => {
-            const thisPageOrgs: any[] = [];
-            datasets.forEach(dataset => {
-                // Find all parties that are publishers, owners, or custodians.
-                const responsibleParties = jsonpath.query(dataset.json, '$..CI_ResponsibleParty[*]');
-                const byRole = groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
-                const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian;
-                if (!datasetOrgs || datasetOrgs.length === 0) {
-                    return;
-                }
-
-                const datasetOrg = datasetOrgs[0];
-                const orgName = jsonpath.value(datasetOrg, '$.organisationName[0].CharacterString[0]._');
-
-                if (orgName && !allOrgs.has(orgName)) {
-                    allOrgs.add(orgName);
-                    thisPageOrgs.push(datasetOrg);
-                }
-            });
-
-            return thisPageOrgs;
-        });
+        // Enumerate organizations along with the datasets using getJsonDatasetPublisher rather than up front in this function,
+        // because the latter would require an extra pass through all the CSW records.
+        return AsyncPage.none<any[]>();
     }
 
     protected getJsonDatasets(): AsyncPage<any[]> {
@@ -92,7 +89,7 @@ export default class CswConnector extends JsonConnector {
 
     protected getIdFromJsonOrganization(jsonOrganization: any): string {
         const name = this.getNameFromJsonOrganization(jsonOrganization);
-        const id = name.length > 100 ? crypto.createHash('sha256').update(name, 'utf8').digest('hex') : name;
+        const id = name && name.length > 100 ? crypto.createHash('sha256').update(name, 'utf8').digest('hex') : name;
         return id
     }
 
