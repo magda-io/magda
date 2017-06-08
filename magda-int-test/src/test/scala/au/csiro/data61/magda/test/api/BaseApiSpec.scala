@@ -106,7 +106,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
         if (!done) {
           logger.debug(s"Waiting another {}ms for {}", 500 * backoff, explain)
-          Thread.sleep(200 * (backoff))
+          Thread.sleep(500 * (backoff))
         } else {
           logger.debug(s"{} is true, proceeding.", explain)
         }
