@@ -12,6 +12,13 @@ export default class CkanConnector extends JsonConnector {
         this.ignoreHarvestSources = (options.ignoreHarvestSources || []).slice();
     }
 
+    protected getJsonDatasetPublisher(dataset: any): any {
+        if (!dataset.organization) {
+            return undefined;
+        }
+        return dataset.organization.id;
+    }
+
     protected getJsonOrganizations(): AsyncPage<object[]> {
         const organizationPages = this.ckan.organizationList();
         return organizationPages.map((organizationPage) => organizationPage.result);

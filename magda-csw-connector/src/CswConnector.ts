@@ -4,6 +4,9 @@ import Csw from './Csw';
 import { flatMap } from 'lodash';
 import * as xmldom from 'xmldom';
 import * as xml2js from 'xml2js';
+import * as jsonpath from 'jsonpath';
+import { groupBy } from 'lodash';
+import * as crypto from 'crypto';
 
 export default class CswConnector extends JsonConnector {
     private readonly csw: Csw;
@@ -14,11 +17,30 @@ export default class CswConnector extends JsonConnector {
         this.csw = options.source;
     }
 
-    protected getJsonOrganizations(): AsyncPage<object[]> {
-        return AsyncPage.none<object[]>();
+    protected getJsonDatasetPublisher(dataset: any): any {
+        // Find all parties that are publishers, owners, or custodians.
+        const responsibleParties = jsonpath.query(dataset.json, '$..CI_ResponsibleParty[*]');
+        const byRole = groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
+        const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian;
+        if (!datasetOrgs || datasetOrgs.length === 0) {
+            return undefined;
+        }
+
+        const datasetOrg = datasetOrgs[0];
+        if (this.getIdFromJsonOrganization(datasetOrg) === undefined) {
+            return undefined;
+        }
+
+        return datasetOrg;
     }
 
-    protected getJsonDatasets(): AsyncPage<object[]> {
+    protected getJsonOrganizations(): AsyncPage<any[]> {
+        // Enumerate organizations along with the datasets using getJsonDatasetPublisher rather than up front in this function,
+        // because the latter would require an extra pass through all the CSW records.
+        return AsyncPage.none<any[]>();
+    }
+
+    protected getJsonDatasets(): AsyncPage<any[]> {
         const recordPages = this.csw.getRecords();
         return recordPages.map(pageXml => {
             const searchResults = pageXml.documentElement.getElementsByTagNameNS('http://www.opengis.net/cat/csw/2.0.2', 'SearchResults')[0];
@@ -46,10 +68,11 @@ export default class CswConnector extends JsonConnector {
                     json = result;
                 });
 
-                json.xmlElement = recordXml;
-                json.xmlString = xmlString;
-
-                result.push(json);
+                result.push({
+                    json: json,
+                    xml: recordXml,
+                    xmlString: xmlString
+                });
             }
 
             return result;
@@ -61,19 +84,17 @@ export default class CswConnector extends JsonConnector {
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
-        return flatMap(dataset.distributionInfo || [], di =>
-            flatMap(di.MD_Distribution || [], mdd =>
-                flatMap(mdd.transferOptions || [], to =>
-                    flatMap(to.MD_DigitalTransferOptions || [], mddto =>
-                        flatMap(mddto.onLine || [], ol => ol.CI_OnlineResource || [])))));
+        return jsonpath.query(dataset.json, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
     }
 
     protected getIdFromJsonOrganization(jsonOrganization: any): string {
-        return jsonOrganization.id;
+        const name = this.getNameFromJsonOrganization(jsonOrganization);
+        const id = name && name.length > 100 ? crypto.createHash('sha256').update(name, 'utf8').digest('hex') : name;
+        return id
     }
 
     protected getIdFromJsonDataset(jsonDataset: any): string {
-        return jsonDataset.fileIdentifier[0].CharacterString[0]._;
+        return jsonDataset.json.fileIdentifier[0].CharacterString[0]._;
     }
 
     protected getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
@@ -81,70 +102,20 @@ export default class CswConnector extends JsonConnector {
     }
 
     protected getNameFromJsonOrganization(jsonOrganization: any): string {
-        return jsonOrganization.display_name || jsonOrganization.title || jsonOrganization.name || jsonOrganization.id;
+        return jsonpath.value(jsonOrganization, '$.organisationName[0].CharacterString[0]._');
     }
 
     protected getNameFromJsonDataset(jsonDataset: any): string {
-        const {
-            identificationInfo: [
-                {
-                    MD_DataIdentification: [
-                        dataIdentification = <any>undefined
-                    ] = [],
-                    SV_ServiceIdentification: [
-                        serviceIdentification = <any>undefined
-                    ] = []
-                } = {}
-            ] = []
-        } = jsonDataset;
-
+        const dataIdentification = jsonpath.query(jsonDataset.json, '$.identificationInfo[*].MD_DataIdentification[*].dataIdentification[*]');
+        const serviceIdentification = jsonpath.query(jsonDataset.json, '$.identificationInfo[*].SV_ServiceIdentification[*].serviceIdentification[*]');
         const identification = dataIdentification || serviceIdentification || {};
-
-        const {
-            citation: [
-                {
-                    CI_Citation: [
-                        {
-                            title: [
-                                {
-                                    CharacterString: [
-                                        {
-                                            _: title = this.getIdFromJsonDataset(jsonDataset)
-                                        } = {}
-                                    ] = []
-                                } = {}
-                            ] = []
-                        } = {}
-                    ] = []
-                } = {}
-            ] = []
-        } = identification;
-
+        const title = jsonpath.value(identification, '$.citation[*].CI_Citation[*].title[*].CharacterString[*]._') || this.getIdFromJsonDataset(jsonDataset);
         return title;
     }
 
     protected getNameFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
-        const {
-            name: [
-                {
-                    CharacterString: [
-                        {
-                            _: name = <string>undefined
-                        } = {}
-                    ] = []
-                } = {}
-            ] = [],
-            description: [
-                {
-                    CharacterString: [
-                        {
-                            _: description = <string>undefined
-                        } = {}
-                    ] = []
-                } = {}
-            ] = []
-        } = jsonDistribution;
-
+        const name = jsonpath.value(jsonDistribution, '$.name[*].CharacterString[*]._');
+        const description = jsonpath.value(jsonDistribution, '$.description[*].CharacterString[*]._');
         return name || description || this.getIdFromJsonDistribution(jsonDistribution, jsonDataset);
     }
 }

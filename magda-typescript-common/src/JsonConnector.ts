@@ -42,6 +42,7 @@ export default abstract class JsonConnector {
 
         const setupParameters: BuilderSetupFunctionParameters = {
             source: this.source,
+            connector: this,
             registry: this.registry,
             libraries
         };
@@ -49,16 +50,19 @@ export default abstract class JsonConnector {
         const datasetParameters = new DatasetBuilderFunctionParameters();
         datasetParameters.libraries = libraries;
         datasetParameters.source = this.source;
+        datasetParameters.connector = this;
         datasetParameters.registry = this.registry;
 
         const distributionParameters = new DistributionBuilderFunctionParameters();
         distributionParameters.libraries = libraries;
         distributionParameters.source = this.source;
+        distributionParameters.connector = this;
         distributionParameters.registry = this.registry;
 
         const organizationParameters = new OrganizationBuilderFunctionParameters();
         organizationParameters.libraries = libraries;
         organizationParameters.source = this.source;
+        organizationParameters.connector = this;
         organizationParameters.registry = this.registry;
 
         this.datasetAspects = buildersToCompiledAspects(datasetAspectBuilders, setupParameters, datasetParameters);
@@ -104,6 +108,7 @@ export default abstract class JsonConnector {
     protected abstract getJsonOrganizations(): AsyncPage<object[]>;
     protected abstract getJsonDatasets(): AsyncPage<object[]>;
     protected abstract getJsonDistributions(dataset: object): AsyncPage<object[]>;
+    protected abstract getJsonDatasetPublisher(dataset: object): string | object;
 
     protected abstract getIdFromJsonOrganization(jsonOrganization: object): string;
     protected abstract getIdFromJsonDataset(jsonDataset: object): string;
@@ -122,6 +127,22 @@ export default abstract class JsonConnector {
                     id: 'dataset-distributions',
                     name: 'Dataset Distributions',
                     jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
+                },
+                builderFunctionString: undefined
+            },
+            {
+                aspectDefinition: {
+                    id: 'source',
+                    name: 'Source',
+                    jsonSchema: require('@magda/registry-aspects/source.schema.json')
+                },
+                builderFunctionString: undefined
+            },
+            {
+                aspectDefinition: {
+                    id: 'dataset-publisher',
+                    name: 'Dataset Publisher',
+                    jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')
                 },
                 builderFunctionString: undefined
             }
@@ -144,8 +165,8 @@ export default abstract class JsonConnector {
         return this.registry.putRecord(this.organizationJsonToRecord(organizationJson));
     }
 
-    async createDataset(organizationJson: object): Promise<Record | Error> {
-        return this.registry.putRecord(this.datasetJsonToRecord(organizationJson));
+    async createDataset(datasetJson: object): Promise<Record | Error> {
+        return this.registry.putRecord(this.datasetJsonToRecord(datasetJson));
     }
 
     async createDistribution(distributionJson: object, datasetJson: object): Promise<Record | Error> {
@@ -176,7 +197,47 @@ export default abstract class JsonConnector {
 
         const datasets = this.getJsonDatasets();
         await forEachAsync(datasets, this.maxConcurrency, async dataset => {
-            const recordOrError = await this.createDataset(dataset);
+            const record = this.datasetJsonToRecord(dataset);
+
+            const distributions = this.getJsonDistributions(dataset);
+            if (distributions) {
+                const distributionIds: string[] = [];
+                await forEachAsync(distributions, 1, async distribution => {
+                    const recordOrError = await this.createDistribution(distribution, dataset);
+                    if (recordOrError instanceof Error) {
+                        result.distributionFailures.push(new CreationFailure(
+                            this.getIdFromJsonDistribution(distribution, dataset),
+                            this.getIdFromJsonDataset(dataset),
+                            recordOrError));
+                    } else {
+                        ++result.distributionsConnected;
+                        distributionIds.push(this.getIdFromJsonDistribution(distribution, dataset));
+                    }
+                });
+
+                record.aspects['dataset-distributions'] = {
+                    distributions: distributionIds
+                };
+            }
+
+            const publisher = this.getJsonDatasetPublisher(dataset);
+            if (typeof publisher === 'string' || publisher instanceof String) {
+                record.aspects['dataset-publisher'] = {
+                    publisher: publisher
+                };
+            } else if (typeof publisher === 'object') {
+                const recordOrError = await this.createOrganization(publisher);
+                if (recordOrError instanceof Error) {
+                    result.organizationFailures.push(new CreationFailure(
+                        this.getIdFromJsonOrganization(publisher),
+                        undefined,
+                        recordOrError));
+                } else {
+                    ++result.organizationsConnected;
+                }
+            }
+
+            const recordOrError = await this.registry.putRecord(record);
             if (recordOrError instanceof Error) {
                 result.datasetFailures.push(new CreationFailure(
                     this.getIdFromJsonDataset(dataset),
@@ -184,27 +245,6 @@ export default abstract class JsonConnector {
                     recordOrError));
             } else {
                 ++result.datasetsConnected;
-
-                const distributions = this.getJsonDistributions(dataset);
-                if (distributions) {
-                    const distributionIds: string[] = [];
-                    await forEachAsync(distributions, 1, async distribution => {
-                        const recordOrError = await this.createDistribution(distribution, dataset);
-                        if (recordOrError instanceof Error) {
-                            result.distributionFailures.push(new CreationFailure(
-                                this.getIdFromJsonDistribution(distribution, dataset),
-                                this.getIdFromJsonDataset(dataset),
-                                recordOrError));
-                        } else {
-                            distributionIds.push(this.getIdFromJsonDistribution(distribution, dataset));
-                            ++result.distributionsConnected;
-                        }
-                    });
-
-                    await this.registry.putRecordAspect(this.getIdFromJsonDataset(dataset), 'dataset-distributions', {
-                        distributions: distributionIds
-                    });
-                }
             }
         });
 
@@ -333,6 +373,14 @@ interface ReportProblem {
 
 interface BuilderSetupFunctionParameters {
     /**
+     * The connector that is building aspects.
+     *
+     * @type {JsonConnector}
+     * @memberof BuilderFunctionParameters
+     */
+    connector: JsonConnector;
+
+    /**
      * The source of this item for which we are building aspects.
      *
      * @type {Ckan}
@@ -367,6 +415,13 @@ abstract class BuilderFunctionParameters {
      */
     setup: any = undefined;
 
+    /**
+     * The connector that is building aspects.
+     *
+     * @type {JsonConnector}
+     * @memberof BuilderFunctionParameters
+     */
+    connector: JsonConnector;
 
     /**
      * The source of this item for which we are building aspects.

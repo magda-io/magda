@@ -4,7 +4,11 @@ import { forEachAsync } from '@magda/typescript-common/lib/AsyncPage';
 import Registry from '@magda/typescript-common/lib/Registry';
 import * as moment from 'moment';
 import * as URI from 'urijs';
+import * as lodash from 'lodash';
+import * as jsonpath from 'jsonpath';
 import datasetAspectBuilders from './datasetAspectBuilders';
+import distributionAspectBuilders from './distributionAspectBuilders';
+import organizationAspectBuilders from './organizationAspectBuilders';
 
 const csw = new Csw({
     baseUrl: 'http://www.bom.gov.au/geonetwork/srv/eng/csw',
@@ -19,9 +23,13 @@ const connector = new CswConnector({
     source: csw,
     registry: registry,
     datasetAspectBuilders: datasetAspectBuilders,
+    distributionAspectBuilders: distributionAspectBuilders,
+    organizationAspectBuilders: organizationAspectBuilders,
     libraries: {
         moment: moment,
-        URI: URI
+        URI: URI,
+        lodash: lodash,
+        jsonpath: jsonpath
     }
 });
 
