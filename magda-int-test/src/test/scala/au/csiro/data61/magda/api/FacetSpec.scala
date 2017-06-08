@@ -358,9 +358,11 @@ class FacetSpec extends BaseSearchApiSpec {
 
               val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
 
-              facet.options.filterNot(_.value == "Unspecified").foreach { x =>
-                val matchedPublishers = publisherLookup(x.value.toLowerCase)
-                matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+              withClue("publishers " + publisherLookup) {
+                facet.options.filterNot(_.value == "Unspecified").foreach { x =>
+                  val matchedPublishers = publisherLookup(x.value.toLowerCase)
+                  matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                }
               }
             }
           }
