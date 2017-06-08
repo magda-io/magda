@@ -45,6 +45,7 @@ package misc {
     options: Seq[FacetOption])
 
   case class FacetOption(
+    identifier: Option[String],// = None
     value: String,
     hitCount: Long,
     upperBound: Option[Int] = None,
@@ -385,7 +386,7 @@ package misc {
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat5(Agent.apply)
     implicit val dataSetFormat = jsonFormat19(DataSet.apply)
-    implicit val facetOptionFormat = jsonFormat5(FacetOption.apply)
+    implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
   }

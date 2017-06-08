@@ -9,10 +9,10 @@ import au.csiro.data61.magda.api.SearchApi
 import au.csiro.data61.magda.search.elasticsearch.{ DefaultClientProvider, ElasticSearchQueryer }
 
 object MagdaApp extends App {
-  implicit val system = ActorSystem()
+  implicit val config = AppConfig.conf()
+  implicit val system = ActorSystem("search-api", config)
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  implicit val config = AppConfig.conf()
   implicit val clientProvider = new DefaultClientProvider
 
   implicit val logger = Logging(system, getClass)

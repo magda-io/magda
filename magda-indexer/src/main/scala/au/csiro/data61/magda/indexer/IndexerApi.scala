@@ -25,13 +25,16 @@ class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 
+  val crawlerRoutes = new CrawlerApi(crawler, indexer).routes
+  val hookRoutes = new WebhookApi(indexer).routes
+
   val routes =
     magdaRoute {
       pathPrefix("v0") {
         pathPrefix("reindex") {
-          new CrawlerApi(crawler, indexer).routes
+          crawlerRoutes
         } ~ path("registry-hook") {
-          new WebhookApi(indexer).routes
+          hookRoutes
         }
       }
     }

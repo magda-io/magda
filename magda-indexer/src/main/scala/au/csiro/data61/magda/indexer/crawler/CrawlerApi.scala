@@ -39,6 +39,7 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
     magdaRoute {
       path("in-progress") {
         get {
+          println(lastCrawl)
           complete(OK, crawlInProgress.toString)
         }
       } ~
@@ -52,7 +53,11 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
     }
 
   def crawl(): Boolean = {
-    if (!crawlInProgress) {
+    println(lastCrawl)
+
+    if (crawlInProgress) {
+      false
+    } else {
       lastCrawl = Some(crawler.crawl(indexer))
       val future = lastCrawl.get
 
@@ -64,8 +69,6 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
       }
 
       true
-    } else {
-      false
     }
   }
 }

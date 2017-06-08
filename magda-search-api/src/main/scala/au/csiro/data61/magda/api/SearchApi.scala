@@ -20,7 +20,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
       pathPrefix("v0") {
         pathPrefix("facets") {
           path(Segment / "options") { facetId ⇒
-            (get & parameters("facetQuery" ? "", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
+            (get & parameters("facetQuery" ? "*", "start" ? 0, "limit" ? 10, "generalQuery" ? "*")) { (facetQuery, start, limit, generalQuery) ⇒
               FacetType.fromId(facetId) match {
                 case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, queryCompiler.apply(generalQuery), start, limit))
                 case None            ⇒ complete(NotFound)
