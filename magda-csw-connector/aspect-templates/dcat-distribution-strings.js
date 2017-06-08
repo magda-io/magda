@@ -8,12 +8,13 @@ const identification = dataIdentification.concat(serviceIdentification);
 const constraints = jsonpath.query(identification, '$[*].resourceConstraints[*]');
 const licenseName = jsonpath.value(constraints, '$[*].licenseName[*]._');
 const licenseUrl = jsonpath.value(constraints, '$[*].licenseLink[*]._');
-const license = [licenseName, licenseUrl].filter(item => item !== undefined).join(' ');
+const license = licenseName || licenseUrl ? [licenseName, licenseUrl].filter(item => item !== undefined).join(' ') : undefined;
 const rights = jsonpath.value(constraints, '$[*].MD_LegalConstraints[*].useLimitation[*].CharacterString[*]._');
 
 const title = jsonpath.value(distribution, '$.name[*].CharacterString[*]._');
 const description = jsonpath.value(distribution, '$.description[*].CharacterString[*]._');
 const url = jsonpath.value(distribution, '$.linkage[*].URL[*]._');
+const format = jsonpath.value(distribution, '$.protocol[*].CharacterString[*]._');
 const isDownload = jsonpath.value(distribution, '$.function[*].CI_OnlineFunctionCode[*]._') === 'download';
 
 return {
@@ -27,10 +28,5 @@ return {
     downloadURL: isDownload ? url : undefined,
     byteSize: undefined,
     mediaType: undefined,
-    format: jsonpath.value(distribution, '$.protocol[*].CharacterString[*]._')
+    format: format
 };
-
-function isDownloadUrl(url, title, description, format) {
-    // TODO
-    return false;
-}
