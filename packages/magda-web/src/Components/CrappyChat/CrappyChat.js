@@ -75,7 +75,7 @@ export default class CrappyChat extends React.Component {
        * post has finished.
        */
       then: () => {
-        console.log("POSTED");
+        console.log('POSTED');
         this.scrollToBottom();
       }
     });
@@ -99,7 +99,7 @@ export default class CrappyChat extends React.Component {
 
         <div
           ref={this.registerMessagesDiv.bind(this)}
-          className="crappy-chat__messages"
+          className='crappy-chat__messages'
         >
           {this.state.comments.map((comment, index) => {
             return <Message key={comment.key} comment={comment} />;
@@ -109,7 +109,7 @@ export default class CrappyChat extends React.Component {
         {this.state.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
 
         {!this.state.user &&
-          <div><Link to="sign-in">Sign in</Link> to join the discussion!</div>}
+          <div><Link to='sign-in'>Sign in</Link> to join the discussion!</div>}
       </div>
     );
   }

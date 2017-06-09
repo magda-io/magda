@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { connect } from "react-redux";
+import { connect } from 'react-redux';
 
 class ResourcetChart extends Component {
   render(){
-    return <div className="dataset-details container" >
+    return <div className='dataset-details container' >
                 <h2>Chart</h2>
           </div>
   }

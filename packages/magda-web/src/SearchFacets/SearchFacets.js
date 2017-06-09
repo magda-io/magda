@@ -12,7 +12,7 @@ class SearchFacets extends Component {
 
   componentWillMount(){
     const that = this;
-    window.addEventListener("click", that.closeFacet)
+    window.addEventListener('click', that.closeFacet)
   }
 
   closeFacet(){
@@ -23,7 +23,7 @@ class SearchFacets extends Component {
 
   componentWillUnmount(){
     const that = this;
-    window.removeEventListener("click", that.closeFacet)
+    window.removeEventListener('click', that.closeFacet)
   }
 
 
@@ -35,9 +35,9 @@ class SearchFacets extends Component {
 
   render() {
     return (
-      <div className="row search-facets">
+      <div className='clearfix search-facets'>
         {config.facets.map(c=>
-          <div className="col-sm-3 search-facet" key={c.id} onClick={(ev)=>ev.stopPropagation()}>
+          <div className='col-sm-3 search-facet' key={c.id} onClick={(ev)=>ev.stopPropagation()}>
             <c.component
                        updateQuery={this.props.updateQuery}
                        location={this.props.location}

@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import CustomIcons from '../UI/CustomIcons';
-import Star from '../UI/Star';
+// import Star from '../UI/Star';
 import ToggleList from '../UI/ToggleList';
 import renderDistribution from '../UI/Distribution';
 import './DatasetSummary.css';
@@ -31,7 +31,7 @@ export default class DatasetSummary extends Component {
     const self: any = this;
 
     self.onClick = this.onClick.bind(this);
-    self.onClickStar = this.onClickStar.bind(this);
+    // self.onClickStar = this.onClickStar.bind(this);
     this.state ={
       tagsExpanded: false,
       isFav: false
@@ -44,11 +44,11 @@ export default class DatasetSummary extends Component {
   }
 
 
-  onClickStar(){
-    this.setState({
-      isFav: !this.state.isFav
-    })
-  }
+  // onClickStar(){
+  //   this.setState({
+  //     isFav: !this.state.isFav
+  //   })
+  // }
 
 
 
@@ -62,7 +62,7 @@ export default class DatasetSummary extends Component {
               <div className='dataset-summary__content clearfix'>
                 <h5 className='dataset-summary__sub-heading'>Contents</h5>
                 <ToggleList list={this.props.dataset.distributions}
-                            renderFunction={item=>renderDistribution(item.format, item.id, item.title, item.license.name, this.props.dataset.identifier)}
+                            renderFunction={item=>renderDistribution(item.format, item.identifier, item.title, item.license.name, this.props.dataset.identifier)}
                             className={''}
                             defaultLength={3}
                             getKey={item=>item.downloadURL}/>
@@ -71,7 +71,9 @@ export default class DatasetSummary extends Component {
   }
 
   render(){
-    let dataset = this.props.dataset;
+    const dataset = this.props.dataset;
+    const publisher = defined(dataset.publisher) ? dataset.publisher.name ? dataset.publisher.name : dataset.publisher : 'unspecified';
+
     return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
                 <div className='dataset-summary__header'>
                   <div className='dataset-summary__header-top clearfix'>
@@ -82,17 +84,15 @@ export default class DatasetSummary extends Component {
                       </Link>
                     </div>
                     <span className='hidden-xs dataset-summary__toggle'>
-                        {!this.props.isExpanded && <Star onClick={this.onClickStar} isOn={this.state.isFav}/>}
-                        {this.props.onClickDataset && <button className='dataset-summary__toggle-info-btn' onClick={this.props.onClickDataset} type='button'>{this.props.isExpanded ? <span>Close</span> : <i className="fa fa-ellipsis-h" aria-hidden="true"></i>}</button>}
+                        {this.props.onClickDataset && <button className='dataset-summary__toggle-info-btn' onClick={this.props.onClickDataset} type='button'>{this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}</button>}
                     </span>
                   </div>
                   {this.props.isExpanded && <div className='dataset-summary__middle clearfix'>
                       <div><Link className='btn dataset-summary__btn-view-dataset'
                                  to={`/dataset/${dataset.identifier}`}>View dataset</Link></div>
-                      <div><Star onClick={this.onClickStar} isOn={this.state.isFav}/></div>
                       <div>
                         <a className='btn dataset-summary__btn-share' href={``} target='_blank'>
-                          <i className="fa fa-share-alt" aria-hidden="true"></i>
+                          <i className='fa fa-share-alt' aria-hidden='true'></i>
                         </a>
                       </div>
                   </div>}
@@ -100,9 +100,9 @@ export default class DatasetSummary extends Component {
                 <div className='dataset-summary__body'>
 
                   <div className='dataset-summary__dataset-description' onClick={this.props.onClickDataset}>
-                    <MarkdownViewer markdown={this.props.isExpanded ? dataset.description : dataset.description.slice(0, 100) + "..."}/>
+                    <MarkdownViewer markdown={this.props.isExpanded ? dataset.description : dataset.description.slice(0, 100) + '...'}/>
                   </div>
-                  <label className='dataset-summary__search-result--publisher'>{defined(dataset.publisher) ? dataset.publisher.name : 'unspecified'}</label>
+                  <label className='dataset-summary-publisher'>{publisher}</label>
                 </div>
               <div className='dataset-summary__footer'>
                   {this.props.isExpanded && this.renderLinks()}
@@ -110,7 +110,7 @@ export default class DatasetSummary extends Component {
                     <button className='dataset-summary__toggle-info-btn mobile'
                                                        onClick={this.props.onClickDataset}
                                                        type='button'>
-                        {this.props.isExpanded ? <span>Close</span> : <i className="fa fa-ellipsis-h" aria-hidden="true"></i>}
+                        {this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}
                     </button>
                   </div>
               </div>

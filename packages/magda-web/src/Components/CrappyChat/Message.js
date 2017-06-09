@@ -1,6 +1,6 @@
-import React from "react";
-import { EditorState, convertFromRaw } from "draft-js";
-import Editor from "draft-js-plugins-editor";
+import React from 'react';
+import { EditorState, convertFromRaw } from 'draft-js';
+import Editor from 'draft-js-plugins-editor';
 import prettydate from 'pretty-date';
 
 import base from "../../RealtimeData/Base";
@@ -26,11 +26,11 @@ export default class Message extends React.Component {
   componentWillMount() {
     base.syncState(`users/${this.props.comment.uid}/displayName`, {
       context: this,
-      state: "userName"
+      state: 'userName'
     });
     base.syncState(`users/${this.props.comment.uid}/photoURL`, {
       context: this,
-      state: "userAvatar"
+      state: 'userAvatar'
     });
   }
 
@@ -70,7 +70,7 @@ export default class Message extends React.Component {
 
   render() {
     return (
-      <div className="cc-message">
+      <div className='cc-message'>
         <img
           className="cc-message__avatar"
           src={this.filter(this.state.userAvatar) || ""}

@@ -1,4 +1,4 @@
-@import "../variables";
+@import '../variables';
 .record-details__sidebar{
     margin-top: 40px;
     &>div{
@@ -17,4 +17,10 @@
 .dataset-discussion{
   padding-top: 20px;
   padding-bottom: 20px;
+}
+
+
+.section-heading{
+  font-weight: 400;
+  color: $magda-dark-grey;
 }

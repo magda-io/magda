@@ -34,9 +34,6 @@ class ToggleList extends Component {
     }
 }
 
-ToggleList.propTypes = {list: React.PropTypes.array,
-                        defaultLength: React.PropTypes.number,
-                        renderFunction: React.PropTypes.func,
-                        getKey: React.PropTypes.func};
+
 
 export default ToggleList;

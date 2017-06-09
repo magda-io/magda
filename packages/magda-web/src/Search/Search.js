@@ -11,17 +11,19 @@ import defined from '../helpers/defined';
 import Pagination from '../UI/Pagination';
 import Notification from '../UI/Notification';
 import PublisherBox from '../Components/PublisherBox';
-
+import ReactDocumentTitle from 'react-document-title';
 import React, { Component } from 'react';
 import SearchFacets from '../SearchFacets/SearchFacets';
 import Publisher from '../SearchFacets/Publisher';
 import SearchResults from '../SearchResults/SearchResults';
 import MatchingStatus from './MatchingStatus';
-import { bindActionCreators } from "redux";
+import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded } from '../actions/datasetSearchActions';
+import {fetchFeaturedPublishersFromRegistry} from '../actions/featuredPublishersActions';
 import type { SearchState} from '../types';
 import queryString from 'query-string';
 import cripsy from './crispy.gif';
+import ProgressBar from '../UI/ProgressBar';
 
 
 class Search extends Component {
@@ -53,7 +55,12 @@ class Search extends Component {
 
 
   componentWillReceiveProps(nextProps){
-    this.props.fetchSearchResultsIfNeeded(nextProps.location.query);
+    if(nextProps.datasets.length > 0 &&
+       nextProps.publisherOptions.length > 0 &&
+       nextProps.publisherOptions.filter(o=>o.identifier).map(o=>o.identifier).toString() !== this.props.publisherOptions.filter(o=>o.identifier).map(o=>o.identifier).toString()){
+      const featuredPublishersById = nextProps.publisherOptions.filter(o=>o.identifier).map(o=> o.identifier);
+      this.props.fetchFeaturedPublishersFromRegistry(featuredPublishersById);
+    }
   }
 
 
@@ -106,7 +113,9 @@ class Search extends Component {
   render() {
     const searchText = queryString.parse(this.props.location.search).q || '';
     return (
+      <ReactDocumentTitle title={`Searching for ${searchText} | ${config.appName}` }>
       <div>
+      {this.props.isFetching && <ProgressBar/>}
         <div className='search'>
           <div className='search__search-body container'>
           <div className='row'>
@@ -119,11 +128,11 @@ class Search extends Component {
             </div>
             {searchText.length > 0 &&
              !this.props.isFetching &&
-             !this.props.error && <div className="results-count">{this.props.hitCount} results found</div>}
+             !this.props.error && <div className='results-count col-sm-4'>{this.props.hitCount} results found</div>}
           </div>
           <div className='row'>
             <div className='col-sm-8'>
-                {searchText.length === 0 && <div><img className="img-responsive img-rounded img-crispy" src={cripsy} alt="crispy"/></div>}
+                {searchText.length === 0 && <div><img className='img-responsive img-rounded img-crispy' src={cripsy} alt='crispy'/></div>}
                 {searchText.length > 0 &&
                  !this.props.isFetching &&
                  !this.props.error &&
@@ -162,13 +171,14 @@ class Search extends Component {
                }
               </div>
 
-            <div className='col-sm-4 pull-right'>
+            <div className='col-sm-4'>
             {this.props.featuredPublishers.map(p=><PublisherBox key={p.id} publisher={p}/>)}
             </div>
             </div>
           </div>
         </div>
       </div>
+      </ReactDocumentTitle>
     );
   }
 }
@@ -177,35 +187,31 @@ Search.contextTypes ={
   router: React.PropTypes.object.isRequired,
 }
 
-Search.propTypes = {
-  datasets: React.PropTypes.array.isRequired,
-  hitCount: React.PropTypes.number.isRequired,
-  isFetching: React.PropTypes.bool.isRequired,
-  progress: React.PropTypes.number.isRequired,
-  strategy: React.PropTypes.string.isRequired,
-  freeText: React.PropTypes.string,
-  error: React.PropTypes.number
-}
+Search.defaultProps = {
+  featuredPublishers: []
+};
 
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
+    fetchFeaturedPublishersFromRegistry: fetchFeaturedPublishersFromRegistry
   }, dispatch);
 }
 
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
   let { datasetSearch, featuredPublishers } = state;
   return {
     datasets: datasetSearch.datasets,
+    publisherOptions: datasetSearch.publisherOptions.slice(0, 5),
     hitCount: datasetSearch.hitCount,
     isFetching: datasetSearch.isFetching,
     progress: datasetSearch.progress,
     strategy: datasetSearch.strategy,
     error: datasetSearch.error,
     freeText: datasetSearch.freeText,
-    featuredPublishers: featuredPublishers.records
+    featuredPublishers: featuredPublishers.publishers
   }
 }
 

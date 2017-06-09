@@ -1,6 +1,6 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import Editor from "draft-js-plugins-editor";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Editor from 'draft-js-plugins-editor';
 import {
   EditorState,
   ContentState,
@@ -8,14 +8,14 @@ import {
   convertToRaw,
   getDefaultKeyBinding,
   KeyBindingUtil
-} from "draft-js";
+} from 'draft-js';
 const { hasShiftModifier } = KeyBindingUtil;
 import base from "../../RealtimeData/Base";
 
-import pluginsFn from "./Plugins/Plugins";
-import PluginComponents from "./Plugins/PluginComponents";
+import pluginsFn from './Plugins/Plugins';
+import PluginComponents from './Plugins/PluginComponents';
 
-import "./EntryBox.css";
+import './EntryBox.css';
 
 export default class EntryBox extends React.Component {
   constructor(props) {
@@ -39,7 +39,7 @@ export default class EntryBox extends React.Component {
     this.setState({
       editorState: EditorState.push(
         this.state.editorState,
-        ContentState.createFromText("")
+        ContentState.createFromText('')
       )
     });
   }
@@ -65,17 +65,17 @@ export default class EntryBox extends React.Component {
 
   onReturnPressed(e) {
     if (e.shiftKey) {
-      return "not-handled";
+      return 'not-handled';
     } else {
       this.submit();
-      return "handled";
+      return 'handled';
     }
   }
 
   render() {
     return (
-      <form className="entry-box" onSubmit={this.onSubmit.bind(this)}>
-        <div className="entry-box__editor">
+      <form className='entry-box' onSubmit={this.onSubmit.bind(this)}>
+        <div className='entry-box__editor'>
           <Editor
             editorState={this.state.editorState}
             onChange={this.onEditorChange.bind(this)}
@@ -88,7 +88,7 @@ export default class EntryBox extends React.Component {
           userMentionsPlugin={this.plugins.userMentions}
           dataSetMentionsPlugin={this.plugins.dataSetMentions}
         />
-        <input className="entry-box__submit-button" type="submit" />
+        <input className='entry-box__submit-button' type='submit' />
       </form>
     );
   }

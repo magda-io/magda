@@ -51,7 +51,10 @@
     "react-router": "^2.7.0",
     "redux": "^3.6.0",
     "redux-logger": "^2.7.4",
-    "redux-thunk": "^2.1.0"
+    "redux-thunk": "^2.1.0",
+    "rss-parser": "^2.9.0",
+    "uuid": "^3.0.1",
+    "xml-parser": "^1.2.1"
   },
   "scripts": {
     "flow": "flow; test $? -eq 0 -o $? -eq 2",

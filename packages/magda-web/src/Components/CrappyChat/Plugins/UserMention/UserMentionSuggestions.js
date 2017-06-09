@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 import UserMentionSearchResult from "./UserMentionSearchResult";
 import SuggestionsState from "../SuggestionsState";
@@ -6,7 +6,7 @@ import base from "../../../../RealtimeData/Base";
 
 const builtInUsers = [
   {
-    displayName: "Custodian"
+    displayName: 'Custodian'
   }
 ];
 
@@ -21,7 +21,7 @@ export default class UserMentionSuggestions extends React.Component {
 
   onSearchChange(value) {
     base
-      .fetch("users", {
+      .fetch('users', {
         context: this,
         asArray: true
       })

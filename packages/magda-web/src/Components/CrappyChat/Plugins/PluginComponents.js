@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 
-import UserMentionSuggestions from "./UserMention/UserMentionSuggestions";
+import UserMentionSuggestions from './UserMention/UserMentionSuggestions';
 import DataSetMentionSuggestions
-  from "./DataSetMention/DataSetMentionSuggestions";
+  from './DataSetMention/DataSetMentionSuggestions';
 
 export default function PluginComponents(props) {
   return (

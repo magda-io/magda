@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-import "./UserMentionSearchResult.css";
+import './UserMentionSearchResult.css';
 
 export default function Entry(props) {
   const { mention } = props;
@@ -10,11 +10,11 @@ export default function Entry(props) {
       onMouseLeave={props.onMouseLeave}
       onMouseUp={props.onMouseUp}
       role={props.role}
-      className={"user-mention-search-result " + props.className}
+      className={'user-mention-search-result ' + props.className}
       style={props.style}
     >
-      <img className="user-mention-search-result__avatar" src={mention.get("photoURL")} />
-      {mention.get("displayName")}
+      <img className='user-mention-search-result__avatar' src={mention.get('photoURL')} />
+      {mention.get('displayName')}
     </button>
   );
 }

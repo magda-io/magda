@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 export default function DataSetMentionEntry(props) {
   const { mention } = props;
@@ -15,7 +15,7 @@ export default function DataSetMentionEntry(props) {
         border: 'none'
       }}
     >
-      {mention.get("title")}
+      {mention.get('title')}
     </button>
   );
 }

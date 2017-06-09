@@ -1,4 +1,4 @@
-@import "../variables";
+@import '../variables';
 
 .appContainer__nav{
     background: $magda-grey;
@@ -12,8 +12,34 @@
 .navbar-nav{
     float: right;
     a{
-        color: #000000;    
+        color: #000000;
     }
+}
+
+
+.mobile-nav{
+  .navbar-brand{
+    height: auto;
+  }
+  img{
+    height: 40px;
+  }
+  .navbar-toggle{
+    background: $magda-blue;
+    color: #fff;
+    &:hover{
+      background: lighten($magda-blue, 10%);
+    }
+  }
+  .navbar-collapse{
+    width: 100%;
+    margin-bottom: 5px;
+    li{
+      margin-bottom: 1px;
+      background: #fff;
+      border-radius: 3px;
+    }
+  }
 }
 
 
@@ -47,7 +73,7 @@
 .footer{
     background-color: $magda-dark-blue;
     color: #fff;
-    padding: 20px 0;
+    padding: 50px 0;
     a{
         color: #fff;
         text-decoration: underline;

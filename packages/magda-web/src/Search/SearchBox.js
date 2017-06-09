@@ -4,7 +4,7 @@ import {RouterContext } from 'react-router';
 
 import './SearchBox.css';
 import {connect} from 'react-redux';
-import { bindActionCreators } from "redux";
+import { bindActionCreators } from 'redux';
 // import {config} from '../config.js';
 import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
@@ -121,20 +121,20 @@ class SearchBox extends Component {
 
   render() {
     return (
-        <form className="search-box">
+        <form className='search-box'>
           <div className='search-box__input'>
           <input
-            type="text"
-            name="search"
+            type='text'
+            name='search'
             className='form-control search-box__form-control'
-            placeholder="Search"
+            placeholder='Search'
             value={this.getSearchBoxValue()}
             onChange={this.onSearchTextChange}
             onKeyPress={this.handleSearchFieldEnterKeyPress}
             ref={(searchBox)=>{searchBox && searchBox.focus()}}
           />
           </div>
-          <button onClick={this.onClickSearch} type='button' className="btn search-box__icon"><i className="fa fa-search" aria-hidden="true"></i> </button>
+          <button onClick={this.onClickSearch} type='button' className='btn search-box__icon'><i className='fa fa-search' aria-hidden='true'></i> </button>
         </form>
     );
   }
@@ -144,9 +144,6 @@ SearchBox.contextTypes ={
   router: React.PropTypes.object.isRequired,
 }
 
-SearchBox.propTypes = {
-  freeText: React.PropTypes.string,
-}
 
 
 const mapStateToProps = (state, ownProps)=> {

@@ -18,26 +18,23 @@ class OverviewBox extends Component {
     }
 
     renderToggle(isExpanded){
-      return <button onClick={this.toggleExpand} className="overview-toggle btn btn-reset"><i className={`fa fa-chevron-${isExpanded ? "up" : "down"}`} aria-hidden="true"></i></button>;
+      return <button onClick={this.toggleExpand} className='overview-toggle btn btn-reset'><i className={`fa fa-chevron-${isExpanded ? 'up' : 'down'}`} aria-hidden='true'></i></button>;
     }
 
     renderContent(_content){
       let content = _content;
       if(content.length > MAX){
-          content = this.state.isExpanded ?  _content : _content.slice(0, MAX) + "...";
+          content = this.state.isExpanded ?  _content : _content.slice(0, MAX) + '...';
       }
       return <MarkdownViewer markdown={content}/>
     }
     render(){
-      return <div className="white-box overview-box">
+      return <div className='white-box overview-box'>
                 {this.props.content && this.renderContent(this.props.content)}
                 {this.props.content && this.props.content.length > MAX && this.renderToggle(this.state.isExpanded)}
             </div>
     }
 }
 
-OverviewBox.propTypes = {
-  content: React.PropTypes.string
-}
 
 export default OverviewBox;

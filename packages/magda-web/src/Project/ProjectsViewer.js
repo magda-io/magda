@@ -1,12 +1,15 @@
 import React, { Component } from 'react';
-import { connect } from "react-redux";
+import { connect } from 'react-redux';
+import {Link} from 'react-router';
 import {config} from '../config.js';
-import { bindActionCreators } from "redux";
+import { bindActionCreators } from 'redux';
 import { fetchProjectsIfNeeded } from '../actions/projectActions';
+import ReactDocumentTitle from 'react-document-title';
 import ProjectSummary from './ProjectSummary';
 import Pagination from '../UI/Pagination';
 import ErrorHandler from '../Components/ErrorHandler';
 import getPageNumber from '../helpers/getPageNumber';
+import ProgressBar from '../UI/ProgressBar';
 
 
 import './ProjectsViewer.css';
@@ -25,7 +28,7 @@ class ProjectsViewer extends Component {
       if(this.props.error){
         return <ErrorHandler errorCode={this.props.error}/>
       }
-      return (<div className="col-sm-8">
+      return (<div className='col-sm-8'>
                 {this.props.projects.map(p=>
                 <ProjectSummary project={p} key={p.id}/>)}
                 {this.props.hitCount > config.resultsPerPage &&
@@ -39,17 +42,20 @@ class ProjectsViewer extends Component {
     }
 
     render(){
-      return <div className="container projects-viewer">
-              <div className='row'>
-                {!this.props.isFetching && this.renderContent()}
-              </div>
-             </div>
+      return  <ReactDocumentTitle title={'Projects | ' + config.appName}>
+                <div className='container projects-viewer'>
+                  {this.props.isFetching && <ProgressBar/>}
+                  <div className='row'>
+                    {!this.props.isFetching && this.renderContent()}
+                    <div className='col-sm-4'>
+                      <Link className='btn btn-primary' to='/project/new'> Create new project </Link>
+                    </div>
+                  </div>
+               </div>
+             </ReactDocumentTitle>
     }
 }
 
-ProjectsViewer.propTypes = {projects: React.PropTypes.array,
-                            isFetching: React.PropTypes.bool,
-                            error: React.PropTypes.string};
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({

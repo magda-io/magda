@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 class TemporalAspectViewer extends Component {
     renderTable(rows){
-        return  (<table className="table">
+        return  (<table className='table'>
                     <tbody>
                             <tr>
                                 <th>End</th>
@@ -10,8 +10,8 @@ class TemporalAspectViewer extends Component {
                     {
                         rows.map((r)=>
                         <tr key={r}>
-                            <td className="" >{new Date(r.end).toLocaleString()}</td>
-                            <td className="" key={"start"}>{new Date(r.start).toLocaleString()}</td></tr>
+                            <td className='' >{new Date(r.end).toLocaleString()}</td>
+                            <td className='' key={'start'}>{new Date(r.start).toLocaleString()}</td></tr>
                         )
                     }
                     </tbody>
@@ -26,8 +26,5 @@ class TemporalAspectViewer extends Component {
     }
 }
 
-TemporalAspectViewer.propTypes = {
-  data: React.PropTypes.object
-}
 
 export default TemporalAspectViewer;

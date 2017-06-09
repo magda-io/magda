@@ -15,7 +15,7 @@ type PublisherRaw = {
     name: string,
     id: string,
     aspects: {
-        "organization-details": {
+        'organization-details': {
             name: string,
             title: string,
             imageUrl : string,
@@ -26,7 +26,15 @@ type PublisherRaw = {
 
 type ProjectRaw = {
     id: string,
-    name: string
+    name: string,
+    aspects: {
+      project: {
+        status: string,
+        members: string,
+        datasets: Array<string>,
+        description: string
+      }
+    }
 }
 
 export function parseRegion(regionRaw : RegionRaw) : Region {
@@ -41,9 +49,9 @@ export function parseRegion(regionRaw : RegionRaw) : Region {
 
 export function parsePublisher(publisherRaw: PublisherRaw) : Publisher{
     const publisher = {
-        title: publisherRaw.name,
-        description: publisherRaw.aspects["organization-details"]["description"] || "A description of this publisher is not available",
-        image_url: publisherRaw.aspects["organization-details"]["imageUrl"] || "http://placehold.it/100x100?text=Image+unavailable",
+        name: publisherRaw.name,
+        description: publisherRaw.aspects['organization-details']['description'] || 'A description of this publisher is not available',
+        image_url: publisherRaw.aspects['organization-details']['imageUrl'] || 'http://placehold.it/100x100?text=Image+unavailable',
         id: publisherRaw.id
     }
     return publisher
@@ -51,8 +59,11 @@ export function parsePublisher(publisherRaw: PublisherRaw) : Publisher{
 
 export function parseProject(projectRaw: ProjectRaw) : Project {
     return {
-        title: projectRaw.name,
+        name: projectRaw.name,
         id: projectRaw.id,
-        description: "project description"
+        description: projectRaw.aspects.project.description,
+        status: projectRaw.aspects.project.status,
+        members: projectRaw.aspects.project.members,
+        datasets: projectRaw.aspects.project.datasets
     }
 }

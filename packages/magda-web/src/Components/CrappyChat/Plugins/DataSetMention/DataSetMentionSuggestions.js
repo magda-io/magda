@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 
-import { config } from "../../../../config";
-import DataSetMentionSearchResult from "./DataSetMentionSearchResult";
-import SuggestionsState from "../SuggestionsState";
+import { config } from '../../../../config';
+import DataSetMentionSearchResult from './DataSetMentionSearchResult';
+import SuggestionsState from '../SuggestionsState';
 
 export default class DataSetMentionSuggestions extends React.Component {
   constructor(props) {

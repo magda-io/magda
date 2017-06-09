@@ -35,7 +35,7 @@ class Star extends Component {
     render(){
       return <div className='star'>
                 <button onClick={this.onClick} className={`btn star__btn ${this.props.isOn ? 'is-active' : ''}`}>
-                  <i className="fa fa-star" aria-hidden="true"/>
+                  <i className='fa fa-star' aria-hidden='true'/>
                 </button>
                 {this.state.showInfo && <div className='star__info'>
                                             <div className='star__info-text'>

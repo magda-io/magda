@@ -1,16 +1,35 @@
-@import "../variables";
+@import '../variables';
 .tabs{
+    margin-top: 15px;
     display: block;
     border-bottom: 1px solid #ddd;
     .nav-tabs{
         border-bottom: 0;
+        padding-left: 15px;
     }
-    
+
     .active{
         border-bottom: 3px solid $magda-blue;
+        color: #000;
+    }
+
+    a{
+      color: $magda-dark-grey;
+      padding-left: 0;
+    }
+
+    .nav-tabs>li>a{
+      padding: 10px 0;
+      margin-right: 10px;
+      &:hover, &:focus{
+        border-color: #fff;
+        color: #000;
+        border-bottom: 3px solid $magda-blue;
+      }
     }
 }
 
 .tab-content{
     background: $magda-grey;
+    min-height: 400px;
 }

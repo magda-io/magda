@@ -10,7 +10,7 @@ export default function renderDistribution(distributionFormat: string, distribut
           <div className='media-left'>
           <CustomIcons name={distributionFormat}/>
           </div>
-          <div className="media-body">
+          <div className='media-body'>
            <h3><Link to={`/dataset/${datasetId}/distribution/${distributionId}`}>{distributionTitle}({distributionFormat})</Link></h3>
            <div className='distribution__license'>{distributionLicense}</div>
           </div>

@@ -10,7 +10,7 @@ type Query = {
   format: string | Array<string>,
   regionId: string,
   regionType: string,
-  page: string
+  page: number
 
 }
 

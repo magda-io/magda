@@ -17,6 +17,5 @@ class CustomIcons extends Component {
     }
 }
 
-CustomIcons.propTypes = {name: React.PropTypes.string, className: React.PropTypes.string, imageUrl:React.PropTypes.string };
 
 export default CustomIcons;

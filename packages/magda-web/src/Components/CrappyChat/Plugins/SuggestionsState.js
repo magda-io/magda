@@ -1,6 +1,6 @@
-import React from "react";
-import { fromJS } from "immutable";
-import debounce from "lodash.debounce";
+import React from 'react';
+import { fromJS } from 'immutable';
+import debounce from 'lodash.debounce';
 
 export default class SuggestionsState extends React.Component {
   constructor(props) {
@@ -56,8 +56,8 @@ export default class SuggestionsState extends React.Component {
         entryComponent={this.props.entryComponent}
         onClose={this.resetSuggestions.bind(this)}
         onOpen={() => {
-          if (this.state.searchTerm === "") {
-            this.onSearchChange({ value: "" });
+          if (this.state.searchTerm === '') {
+            this.onSearchChange({ value: '' });
           }
         }}
       />

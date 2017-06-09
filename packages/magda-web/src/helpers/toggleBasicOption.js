@@ -1,5 +1,8 @@
 // @flow
-export default function toggleBasicOption(option, activeOptions, key,  removeOption, addOption, updateQuery, dispatch) {
+import type { FacetOption } from '../types';
+
+
+export default function toggleBasicOption(option: FacetOption, activeOptions: Array<FacetOption>, key: string,  removeOption: Function, addOption:Function, updateQuery: Function, dispatch: Function) {
   updateQuery({
     page: undefined
   });

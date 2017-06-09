@@ -104,7 +104,7 @@ export type FacetAction = {
   type: string,
   generalQuery?: string,
   facetQuery?: string,
-  json?: FacetSearchJson
+  json?: FacetSearchJson,
 }
 
 export type DataAction = {
@@ -149,17 +149,33 @@ export type SearchState = {
 }
 
 export type Publisher ={
-  title: string,
+  name: string,
   description: string,
   id: string,
   image_url: string
 }
 
 export type Project ={
-  title: string,
-  description: string,
   id: string,
+  name: string,
+  aspects: {
+    project: {
+      description: string,
+      members: Array<string>,
+      datasets: Array<string>,
+      status: string
+    }
+  }
 }
+
+export type projectAction = {
+  json: Object,
+  error: ?number,
+  type: boolean,
+  project: Project,
+  fieldErrors: Project
+}
+
 
 
 export type FeaturedRecords = {
@@ -172,7 +188,7 @@ export type FeaturedRecords = {
 export type FeaturedAction = {
   type: string,
   json: Array<Object>,
-  error: ?number
+  error: ?number,
 }
 
 export type WMSParser = {
@@ -180,6 +196,35 @@ export type WMSParser = {
 }
 
 
-export type Location = {
+export type StateRecord = {
+  dataset: Dataset,
+  distribution: DatasetDistribution,
+  datasetIsFetching: boolean,
+  distributionIsFetching: boolean,
+  datasetFetchError: ?number,
+  distributionFetchError: ?number
+}
 
+
+export type StatsAction = {
+  type: string,
+  error: ?number,
+  payload: number
+}
+
+
+
+export type Stats = {
+  datasetCount: number,
+  isFetchingDatasetCount: boolean,
+  fetchDatasetCountError: ?number
+}
+
+
+
+export type Dispatch = ()=> Function
+export type GetState = () => {
+  project: {
+    isFetching: boolean
+  }
 }

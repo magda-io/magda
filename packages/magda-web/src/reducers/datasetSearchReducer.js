@@ -28,7 +28,7 @@ const initialData = {
   temporalOptions: [],
   formatOptions: [],
   apiQuery: '',
-  strategy: "match-all",
+  strategy: 'match-all',
   error: null
 }
 

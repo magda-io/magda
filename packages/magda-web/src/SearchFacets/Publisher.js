@@ -31,6 +31,7 @@ class Publisher extends Component {
       publisher: [],
       page: undefined
     })
+    this.props.toggleFacet();
     // update redux
     this.props.dispatch(resetPublisher());
   }
@@ -61,7 +62,7 @@ class Publisher extends Component {
           <Recommendations options={this.props.publisherOptions}
                            onClick={this.onTogglePublisherOption}
                            activeOptions={this.props.activePublishers}
-                           description={"Are you searching for items published by "}
+                           description={'Are you searching for items published by '}
           />
         );
       default:
@@ -69,16 +70,6 @@ class Publisher extends Component {
       }
   }
 }
-
-Publisher.propTypes = {
-  publisherOptions: React.PropTypes.array.isRequired,
-  activePublishers: React.PropTypes.array.isRequired,
-  publisherSearchResults: React.PropTypes.array.isRequired,
-  updateQuery: React.PropTypes.func.isRequired,
-  toggleFacet: React.PropTypes.func,
-  isOpen: React.PropTypes.bool,
-}
-
 
 function mapStateToProps(state) {
   let { datasetSearch , facetPublisherSearch} = state;

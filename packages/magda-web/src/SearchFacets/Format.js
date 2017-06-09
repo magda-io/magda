@@ -32,6 +32,7 @@ class Format extends Component {
       format: [],
       page: undefined
     })
+    this.props.toggleFacet();
     // update redux
     this.props.dispatch(resetFormat());
   }
@@ -62,7 +63,7 @@ class Format extends Component {
           <Recommendations options={this.props.formatOptions}
                            onClick={this.onToggleFormatOption}
                            activeOptions={this.props.activeFormats}
-                           description={"Are you searching for items in the following format "}
+                           description={'Are you searching for items in the following format '}
           />
         );
       default:
@@ -70,16 +71,6 @@ class Format extends Component {
       }
   }
 }
-
-Format.propTypes = {
-  formatOptions: React.PropTypes.array.isRequired,
-  activeFormats: React.PropTypes.array.isRequired,
-  formatSearchResults: React.PropTypes.array.isRequired,
-  updateQuery: React.PropTypes.func.isRequired,
-  toggleFacet: React.PropTypes.func.isRequired,
-  isOpen: React.PropTypes.bool.isRequired,
-}
-
 
 function mapStateToProps(state) {
   let { datasetSearch , facetFormatSearch} = state;

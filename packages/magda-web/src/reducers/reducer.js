@@ -14,8 +14,10 @@ import publisher from "./publisherReducer";
 import project from "./projectReducer";
 import userManagement from "./userManagementReducer";
 
-import featuredDatasets from "./featuredDatasetsReducer";
-import featuredPublishers from "./featuredPublishersReducer";
+import featuredDatasets from './featuredDatasetsReducer';
+import featuredPublishers from './featuredPublishersReducer';
+import news from './newsReducer';
+import stats from './statsReducer';
 
 import { combineReducers } from "redux";
 
@@ -30,7 +32,9 @@ const reducer = combineReducers({
   project,
   userManagement,
   featuredDatasets,
-  featuredPublishers
+  featuredPublishers,
+  news,
+  stats
 });
 
 export default reducer;

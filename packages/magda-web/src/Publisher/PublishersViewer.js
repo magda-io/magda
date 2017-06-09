@@ -1,13 +1,15 @@
 // @flow
 import React, { Component } from 'react';
-import { connect } from "react-redux";
+import { connect } from 'react-redux';
 import {config} from '../config.js';
-import { bindActionCreators } from "redux";
+import { bindActionCreators } from 'redux';
 import { fetchPublishersIfNeeded } from '../actions/publisherActions';
+import ReactDocumentTitle from 'react-document-title';
 import PublisherSummary from './PublisherSummary';
 import Pagination from '../UI/Pagination';
 import ErrorHandler from '../Components/ErrorHandler';
 import getPageNumber from '../helpers/getPageNumber';
+import ProgressBar from '../UI/ProgressBar';
 
 import './PublishersViewer.css';
 class PublishersViewer extends Component {
@@ -34,7 +36,7 @@ class PublishersViewer extends Component {
       if(this.props.error){
         return <ErrorHandler errorCode={this.props.error}/>
       } else{
-        return (<div className="col-sm-8">
+        return (<div className='col-sm-8'>
               {this.props.publishers.map(p=>
                 <PublisherSummary publisher={p} key={p.id}/>
               )}
@@ -49,17 +51,17 @@ class PublishersViewer extends Component {
     }
 
     render(){
-      return <div className="container publishers-viewer">
-              <div className="row">
+      return <ReactDocumentTitle title={'Publishers | ' + config.appName}>
+              <div className='container publishers-viewer'>
+              <div className='row'>
                 {!this.props.isFetching && this.renderContent()}
+                {this.props.isFetching && <ProgressBar/>}
               </div>
              </div>
+             </ReactDocumentTitle>
     }
 }
 
-PublishersViewer.propTypes = {publishers: React.PropTypes.array,
-                              isFetching: React.PropTypes.bool,
-                              error: React.PropTypes.string};
 
 
 function mapDispatchToProps(dispatch: Function) {

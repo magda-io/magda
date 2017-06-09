@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
-import { connect } from "react-redux";
-import generatePreviewData from "../helpers/generatePreviewData";
+import { connect } from 'react-redux';
+import generatePreviewData from '../helpers/generatePreviewData';
 import fetch from 'isomorphic-fetch';
 import ol from 'openlayers';
 import type { DatasetDistribution, WMSParser } from '../types';
@@ -39,8 +39,8 @@ class DistributionMap extends Component {
   }
 
   render(){
-    return <div className="dataset-details container" >
-            {this.state.mapData && <iframe name='FRAME1' src={`https://nationalmap.gov.au/#clean&hideExplorerPanel=1&start=${this.state.mapData}`} width= "100%" height='600px' scrolling='auto' frameBorder='0'/>}
+    return <div className='dataset-details container' >
+            {this.state.mapData && <iframe name='FRAME1' src={`https://nationalmap.gov.au/#clean&hideExplorerPanel=1&start=${this.state.mapData}`} width= '100%' height='600px' scrolling='auto' frameBorder='0'/>}
           </div>
   }
 }

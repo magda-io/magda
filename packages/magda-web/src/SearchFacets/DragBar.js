@@ -122,7 +122,6 @@ class DragBar extends Component {
     }
 }
 
-DragBar.propTypes = {};
 DragBar.defaultProps = {};
 
 export default DragBar;

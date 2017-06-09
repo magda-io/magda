@@ -112,7 +112,6 @@ class Recommendations extends Component {
     }
   }
 }
-Recommendations.propTypes = {};
 
 
 export default Recommendations;

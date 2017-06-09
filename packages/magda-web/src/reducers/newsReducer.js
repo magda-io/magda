@@ -1,30 +1,28 @@
 // @flow
 import type { FeaturedRecords, DataSearchJson, Dataset, FeaturedAction, Query } from '../types';
-import {parsePublisher} from '../helpers/api';
 
 const initialData = {
-  publishers: [],
+  news: [],
   isFetching: false,
   error: null,
-  hitCount: 0
 }
 
-const featuredPublishersReducer = (state: FeaturedRecords = initialData, action: FeaturedAction) => {
+const newsReducer = (state = initialData, action) => {
   switch (action.type) {
-    case 'REQUEST_FEATURED_PUBLISHERS':
+    case 'REQUEST_NEWS':
       return Object.assign({}, state, {
         isFetching: true,
         error: null,
       })
-    case 'REQUEST_FEATURED_PUBLISHERS_ERROR':
+    case 'REQUEST_NEWS_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,
       })
-    case 'RECEIVE_FEATURED_PUBLISHERS':
+    case 'RECEIVE_NEWS':
       return Object.assign({}, state, {
         isFetching: false,
-        publishers: action.publishers.map(p=> parsePublisher(p)),
+        news: action.news,
         error: null
       })
 
@@ -32,4 +30,4 @@ const featuredPublishersReducer = (state: FeaturedRecords = initialData, action:
       return state
   }
 };
-export default featuredPublishersReducer;
+export default newsReducer;

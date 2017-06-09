@@ -3,22 +3,24 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Action } from '../types';
+import {validateProjectName, validateProjectDescription, Dispatch, GetState} from '../helpers/validateInput';
+import type { ProjectAction, Project,  } from '../types';
+import { hashHistory} from 'react-router';
 
-export function requestProjects():Action {
+export function requestProjects():ProjectAction {
   return {
     type: actionTypes.REQUEST_PROJECTS,
   }
 }
 
-export function receiveProjects(json: Object): Action {
+export function receiveProjects(json: Object): ProjectAction {
   return {
     type: actionTypes.RECEIVE_PROJECTS,
     json,
   }
 }
 
-export function requestProjectsError(error: number): Action {
+export function requestProjectsError(error: number): ProjectAction {
   return {
     type: actionTypes.REQUEST_PROJECTS_ERROR,
     error,
@@ -26,10 +28,126 @@ export function requestProjectsError(error: number): Action {
 }
 
 
+export function requestProject():ProjectAction {
+  return {
+    type: actionTypes.REQUEST_PROJECT,
+  }
+}
+
+export function receiveProject(json: Object): ProjectAction {
+  return {
+    type: actionTypes.RECEIVE_PROJECT,
+    json,
+  }
+}
+
+export function requestProjectError(error: number): ProjectAction {
+  return {
+    type: actionTypes.REQUEST_PROJECT_ERROR,
+    error,
+  }
+}
+
+export function validateProjectFields(props: Project): ProjectAction {
+  return {
+    type: actionTypes.VALIDATE_PROJECT_FIELDS,
+  };
+}
+
+export function validateProjectFieldsFailure(fieldErrors: Project): ProjectAction {
+  return {
+    type: actionTypes.VALIDATE_PROJECT_FIELDS_FAILURE,
+    fieldErrors
+  };
+}
+
+export function resetProjectFields(): ProjectAction  {
+  return {
+    type: actionTypes.RESET_PROJECT_FIELDS
+  }
+};
+
+export function createProject(newProject: Project): ProjectAction  {
+  return {
+    type: actionTypes.CREATE_PROJECT,
+    newProject
+  };
+}
+
+export function createProjectSuccess(newProject: Project, showNotification: boolean): ProjectAction  {
+  return {
+    type: actionTypes.CREATE_PROJECT_SUCCESS,
+    newProject,
+    showNotification
+  };
+}
+
+export function createProjectFailure(error: number): ProjectAction {
+  return {
+    type: actionTypes.CREATE_PROJECT_FAILURE,
+    error
+  };
+}
+
+
+export function postNewProject(props: Project){
+  return (dispatch: Dispatch) => {
+    dispatch(createProject(props));
+    const url = config.registryUrl;
+    return fetch(url,
+    {
+      method: 'POST',
+      body: JSON.stringify(props),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+    })
+    .then(response => {
+      if(response.status === 200){
+        return response.json()
+      }
+      return dispatch(createProjectFailure(response.status))
+    })
+    .then((result: Project )=> {
+      if(result.error){
+        return false;
+      }
+      // should change into browserHistory?
+      hashHistory.push(`/projects/${props.id}`);
+      dispatch(createProjectSuccess(result, true))
+      setTimeout(function(){ dispatch(createProjectSuccess(result, false))}, 5000);
+    });
+
+  }
+}
+
+
+
+export function validateFields(props: Project){
+  return (dispatch: Dispatch) =>{
+    dispatch(validateProjectFields(props));
+    const nameError = validateProjectName(props.get('name'));
+    const descriptionError = validateProjectDescription(props.getIn(['aspects', 'project', 'description']));
+    if( !nameError && !descriptionError){
+      dispatch(postNewProject(props.toJS()));
+    } else {
+      dispatch(validateProjectFieldsFailure(
+        Object.assign({}, props, {
+          name: nameError,
+          description: descriptionError
+        })
+      ))
+    }
+  }
+}
+
+
 export function fetchProjectsFromRegistry():Object{
-  return (dispatch: Function)=>{
+  return (dispatch: Dispatch)=>{
     dispatch(requestProjects())
-    let url : string = config.registryUrl + "?aspect=dcat-dataset-strings";
+    let url : string = config.registryUrl + '?aspect=project';
+    console.log(url);
     return fetch(url)
     .then(response => {
         if (response.status >= 400) {
@@ -37,16 +155,44 @@ export function fetchProjectsFromRegistry():Object{
         }
         return response.json();
     })
-    .then((json) => dispatch(receiveProjects(json))
+    .then((json: Object) => dispatch(receiveProjects(json))
     )
   }
 }
 
 
 export function fetchProjectsIfNeeded(){
-  return (dispatch: Function, getState: Function)=>{
+  return (dispatch: Dispatch, getState: getState)=>{
     if(!getState().project.isFetching){
           return dispatch(fetchProjectsFromRegistry())
+      } else{
+          return Promise.resolve();
+      }
+  }
+}
+
+
+export function fetchProjectFromRegistry(projectId):Object{
+  return (dispatch: Dispatch)=>{
+    dispatch(requestProject())
+    let url : string = config.registryUrl + '/' + projectId + '?aspect=project';
+    return fetch(url)
+    .then(response => {
+        if (response.status >= 400) {
+            return dispatch(requestProjectError(response.status));
+        }
+        return response.json();
+    })
+    .then((json: Object) => dispatch(receiveProject(json))
+    )
+  }
+}
+
+
+export function fetchProjectIfNeeded(projectId: string){
+  return (dispatch: Dispatch, getState: getState)=>{
+    if(!getState().project.isFetching){
+          return dispatch(fetchProjectFromRegistry(projectId))
       } else{
           return Promise.resolve();
       }

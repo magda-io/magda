@@ -13,13 +13,15 @@ class Temporal extends Component {
   }
 
   onToggleTemporalOption(datesArray){
+    const dateTo = datesArray[1] ? datesArray[1] : undefined;
+    const dateFrom = datesArray[0] ? datesArray[0] : undefined;
     this.props.updateQuery({
-      dateFrom: defined(datesArray[0]) ? datesArray[0]: undefined,
-      dateTo: defined(datesArray[1]) ? datesArray[1]: undefined,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
       page: undefined
     });
-    this.props.dispatch(setDateTo(datesArray[1]));
-    this.props.dispatch(setDateFrom(datesArray[0]));
+    this.props.dispatch(setDateTo(dateTo));
+    this.props.dispatch(setDateFrom(dateFrom));
   }
 
   onResetTemporalFacet(){
@@ -28,6 +30,7 @@ class Temporal extends Component {
       dateTo: undefined,
       page: undefined
     });
+    this.props.toggleFacet();
     // dispatch event
     this.props.dispatch(resetDateFrom());
     this.props.dispatch(resetDateTo());
@@ -49,16 +52,6 @@ class Temporal extends Component {
     );
   }
 }
-
-Temporal.propTypes = {
-  temporalOptions: React.PropTypes.array,
-  activeDateFrom: React.PropTypes.number,
-  activeDateTo: React.PropTypes.number,
-  updateQuery: React.PropTypes.func.isRequired,
-  toggleFacet: React.PropTypes.func,
-  isOpen: React.PropTypes.bool
-}
-
 
 function mapStateToProps(state) {
   let { datasetSearch} = state;

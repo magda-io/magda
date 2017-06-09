@@ -3,12 +3,12 @@ import { Link } from 'react-router';
 import './Tabs.css';
 class Tabs extends Component {
     render(){
-      return (<div className="tabs">
-            <ul className="nav nav-tabs container">
+      return (<div className='tabs'>
+            <ul className='nav nav-tabs container'>
                   {this.props.list.filter(i=>i.isActive).map(item=>
-                  <li role="presentation"
+                  <li role='presentation'
                       key={item.id}>
-                      <Link activeClassName="active"
+                      <Link activeClassName='active'
                             to={`${this.props.baseUrl}/${item.id}`}>
                             {item.name}
                       </Link>
@@ -18,8 +18,5 @@ class Tabs extends Component {
     }
 }
 
-Tabs.propTypes = {list: React.PropTypes.array,
-                  baseUrl: React.PropTypes.string,
-                };
 
 export default Tabs;
