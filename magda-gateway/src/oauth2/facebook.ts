@@ -42,10 +42,10 @@ router.get(
         })(req, res, next);
     },
     (req: express.Request, res: express.Response, next: express.NextFunction) => {
-        redirectOnSuccess(req.query.redirect, req, res);
+        redirectOnSuccess(req.query.redirect || constants.authHome, req, res);
     },
     (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any => {
-        redirectOnError(err, req.query.redirect, req, res);
+        redirectOnError(err, req.query.redirect || constants.authHome, req, res);
     }
 );
 

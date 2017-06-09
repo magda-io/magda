@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: auth-api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: auth-api
+    spec:
+      containers:
+      - name: auth-api
+        resources:
+          requests:
+            cpu: 0m
+            memory: 0
+        env:
+        - name: NODE_ENV
+          value: minikube
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth-secrets
+              key: jwt-secret
+        image: "data61/magda-auth-api:${version}"
+        imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-api
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: auth-api
+  type: "NodePort"
