@@ -5,16 +5,35 @@ import * as URI from 'urijs';
 import organizationAspectBuilders from './organizationAspectBuilders';
 import datasetAspectBuilders from './datasetAspectBuilders';
 import distributionAspectBuilders from './distributionAspectBuilders';
+import * as yargs from 'yargs';
+
+const argv = yargs
+    .config()
+    .help()
+    .option('name', {
+        describe: 'The name of this connector, to be displayed to users to indicate the source of datasets.',
+        type: 'string',
+        demandOption: true
+    })
+    .option('sourceUrl', {
+        describe: 'The URL of the data.json file.',
+        type: 'string',
+        demandOption: true
+    })
+    .option('registryUrl', {
+        describe: 'The base URL of the registry to which to write data from CSW.',
+        type: 'string',
+        default: 'http://localhost:6100/v0'
+    })
+    .argv;
 
 const registry = new Registry({
-    baseUrl: process.env.REGISTRY_URL || process.env.npm_package_config_registryUrl || 'http://localhost:6100/v0'
+    baseUrl: argv.registryUrl
 });
 
 const connector = new ProjectOpenDataConnector({
-    name: 'Logan City Council',
-    url: 'http://data-logancity.opendata.arcgis.com/data.json',
-    // name: 'US Department of Energy',
-    // url: 'https://www.energy.gov/sites/prod/files/2017/05/f34/doe-pdl-5-19-2017.json',
+    name: argv.name,
+    url: argv.sourceUrl,
     source: null,
     registry: registry,
     libraries: {
