@@ -4,7 +4,7 @@
         "host": "combined-db",
         "port": 5432
     },
-    "externalHost": "http://magda-dev-api.terria.io",
+    "externalHost": "http://magda-api-dev.terria.io",
     "targets": {
         "search": "http://search-api/v0",
         "registry": "http://registry-api/v0",

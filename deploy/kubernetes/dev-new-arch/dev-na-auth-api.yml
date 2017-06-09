@@ -17,7 +17,7 @@ spec:
             memory: 0
         env:
         - name: NODE_ENV
-          value: minikube
+          value: dev-na
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
