@@ -38,7 +38,8 @@ const argv = yargs
 
 const csw = new Csw({
     baseUrl: argv.sourceUrl,
-    name: argv.name
+    name: argv.name,
+    pageSize: argv.pageSize
 });
 
 const registry = new Registry({
