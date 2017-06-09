@@ -9,6 +9,7 @@ import * as yargs from 'yargs';
 
 const argv = yargs
     .config()
+    .help()
     .option('name', {
         describe: 'The name of this connector, to be displayed to users to indicate the source of datasets.',
         type: 'string',

@@ -1,13 +1,16 @@
 {
-  "name": "@magda/scripts",
+  "name": "@magda/deploy",
   "version": "0.0.26-SNAPSHOT",
-  "description": "Scripts for building, running, and deploying MAGDA",
+  "description": "MAGDA deployment configuration.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-connector-jobs-local": "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/local --local",
+    "generate-connector-jobs-prod": "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/prod"
   },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@magda/scripts": "^0.0.26-SNAPSHOT",
     "fs-extra": "^2.1.2",
     "klaw-sync": "^2.1.0",
     "tmp": "0.0.31",

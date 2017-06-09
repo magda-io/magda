@@ -43,7 +43,7 @@ if (!argv.build && !argv.output) {
 
 const componentSrcDir = path.resolve(process.cwd())
 const dockerContextDir = fse.mkdtempSync(path.resolve(__dirname, '..', 'docker-context-'));
-const componentDestDir = path.resolve(dockerContextDir, process.env.npm_package_name);
+const componentDestDir = path.resolve(dockerContextDir, 'component');
 
 fse.emptyDirSync(dockerContextDir);
 fse.ensureDirSync(componentDestDir);
@@ -100,7 +100,7 @@ if (argv.build) {
 
     const dockerProcess = childProcess.spawn(
         'docker',
-        [...extraParameters, 'build', ...tagArgs, '-f', `./${process.env.npm_package_name}/Dockerfile`, '-'], {
+        [...extraParameters, 'build', ...tagArgs, '-f', `./component/Dockerfile`, '-'], {
         stdio: ['pipe', 'inherit', 'inherit'],
         env: env
     });

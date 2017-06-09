@@ -3,6 +3,7 @@
     "name": "data.gov.au",
     "ckanUrl": "https://data.gov.au/",
     "pageSize": 1000,
+    "schedule": "* * */3 * *",
     "ignoreHarvestSources": [
         "FIND (http://find.ga.gov.au) CSW Harvester",
         "Brisbane City Council CKAN Harvester",

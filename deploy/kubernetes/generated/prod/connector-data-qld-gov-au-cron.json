@@ -1,0 +1,62 @@
+{
+  "apiVersion": "batch/v2alpha1",
+  "kind": "CronJob",
+  "metadata": {
+    "name": "connector-data-qld-gov-au"
+  },
+  "spec": {
+    "schedule": "* * */3 * *",
+    "jobTemplate": {
+      "spec": {
+        "template": {
+          "metadata": {
+            "name": "connector-data-qld-gov-au"
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "connector",
+                "image": "data61/magda-ckan-connector:0.0.26-SNAPSHOT",
+                "command": [
+                  "node",
+                  "/usr/src/app/component/bin/index.js",
+                  "--config",
+                  "/etc/config/connector.json",
+                  "--registryUrl",
+                  "http://registry-api/v0"
+                ],
+                "imagePullPolicy": "Always",
+                "resources": {
+                  "requests": {
+                    "cpu": "0m"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "mountPath": "/etc/config",
+                    "name": "config"
+                  }
+                ]
+              }
+            ],
+            "restartPolicy": "OnFailure",
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "connector-config",
+                  "items": [
+                    {
+                      "key": "data-qld-gov-au.json",
+                      "path": "connector.json"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -10,7 +10,7 @@ spec:
       containers:
       - name: ckan-connector
         image: data61/magda-ckan-connector:${version}
-        args: [
+        command: [
             "node", "/usr/src/app/@magda/ckan-connector/bin/index.js",
             "--config", "/etc/config/connector.json",
             "--registryUrl", "http://registry-api/v0"
