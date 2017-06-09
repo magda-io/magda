@@ -1,11 +1,15 @@
-import * as express from "express";
+import { Router } from "express";
 
 import googleAuthRouter from './oauth2/google';
 import fbAuthRouter from './oauth2/facebook';
 import ckanAuthRouter from './oauth2/ckan';
 import { getUser } from '@magda/auth-api/lib/src/client';
+import setupAuth from './setup-auth';
 
-const authRouter = express.Router();
+const authRouter: Router = Router();
+
+setupAuth(authRouter);
+authRouter.use(require("body-parser").urlencoded({ extended: true }));
 
 // Define routes.
 authRouter.get("/", function (req, res) {

@@ -28,7 +28,7 @@ router.get(
     (req, res, next) => {
         passport.authenticate('facebook', {
             scope: ["public_profile", "email"],
-            callbackURL: `${constants.loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(req.query.redirect)}`
+            callbackURL: `${constants.loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(req.query.redirect || constants.authHome)}`
         })(req, res, next)
     }
 );
@@ -37,15 +37,15 @@ router.get(
     "/return",
     function (req: express.Request, res: express.Response, next: express.NextFunction) {
         passport.authenticate("facebook", {
-            callbackURL: `${constants.loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(req.query.redirect)}`,
+            callbackURL: `${constants.loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(req.query.redirect || constants.authHome)}`,
             failWithError: true
         })(req, res, next);
     },
     (req: express.Request, res: express.Response, next: express.NextFunction) => {
-        redirectOnSuccess(req.query.redirect, req, res);
+        redirectOnSuccess(req.query.redirect || constants.authHome, req, res);
     },
     (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any => {
-        redirectOnError(err, req.query.redirect, req, res);
+        redirectOnError(err, req.query.redirect || constants.authHome, req, res);
     }
 );
 

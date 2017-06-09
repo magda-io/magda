@@ -1,17 +1,18 @@
 import * as pg from 'pg';
+const config = require("config");
 
 //   conString: "postgres://postgres@192.168.99.100:30544/postgres"
-const config = {
+const dbConfig = {
   user: 'postgres', //env var: PGUSER
   database: 'session', //env var: PGDATABASE
   password: '', //env var: PGPASSWORD
-  host: '192.168.99.100', // Server hosting the postgres database
-  port: 30545, //env var: PGPORT
+  host: config.get('db.host'), // Server hosting the postgres database
+  port: config.get('db.port'), //env var: PGPORT
   max: 10, // max number of clients in the pool
   idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
 };
 
-const pool = new pg.Pool(config);
+const pool = new pg.Pool(dbConfig);
 
 pool.on('error', function (err, client) {
   // if an error is encountered by a client while it sits idle in the pool
