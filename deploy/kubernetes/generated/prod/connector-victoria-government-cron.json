@@ -2,7 +2,7 @@
   "apiVersion": "batch/v2alpha1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-data-gov-au"
+    "name": "connector-victoria-government"
   },
   "spec": {
     "schedule": "* * */3 * *",
@@ -10,12 +10,12 @@
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-data-gov-au"
+            "name": "connector-victoria-government"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-data-gov-au",
+                "name": "connector-victoria-government",
                 "image": "data61/magda-ckan-connector:0.0.26-SNAPSHOT",
                 "command": [
                   "node",
@@ -47,7 +47,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "data-gov-au.json",
+                      "key": "victoria-government.json",
                       "path": "connector.json"
                     }
                   ]

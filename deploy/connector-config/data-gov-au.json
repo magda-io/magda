@@ -1,7 +1,7 @@
 {
     "type": "magda-ckan-connector",
     "name": "data.gov.au",
-    "ckanUrl": "https://data.gov.au/",
+    "sourceUrl": "https://data.gov.au/",
     "pageSize": 1000,
     "schedule": "* * */3 * *",
     "ignoreHarvestSources": [

@@ -2,7 +2,7 @@
   "apiVersion": "batch/v2alpha1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-data-qld-gov-au"
+    "name": "connector-csiro-marlin"
   },
   "spec": {
     "schedule": "* * */3 * *",
@@ -10,13 +10,13 @@
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-data-qld-gov-au"
+            "name": "connector-csiro-marlin"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector",
-                "image": "data61/magda-ckan-connector:0.0.26-SNAPSHOT",
+                "name": "connector-csiro-marlin",
+                "image": "localhost:5000/data61/magda-csw-connector:latest",
                 "command": [
                   "node",
                   "/usr/src/app/component/bin/index.js",
@@ -47,7 +47,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "data-qld-gov-au.json",
+                      "key": "csiro-marlin.json",
                       "path": "connector.json"
                     }
                   ]

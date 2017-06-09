@@ -1,0 +1,7 @@
+{
+    "type": "magda-ckan-connector",
+    "name": "South Australia Government",
+    "sourceUrl": "https://data.sa.gov.au/data/",
+    "pageSize": 100,
+    "schedule": "* * */3 * *"
+}

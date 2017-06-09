@@ -15,7 +15,7 @@ const argv = yargs
         type: 'string',
         demandOption: true
     })
-    .option('ckanUrl', {
+    .option('sourceUrl', {
         describe: 'The base URL of the CKAN server, without /api/...',
         type: 'string',
         demandOption: true
@@ -38,7 +38,7 @@ const argv = yargs
     .argv;
 
 const ckan = new Ckan({
-    baseUrl: argv.ckanUrl,
+    baseUrl: argv.sourceUrl,
     name: argv.name,
     pageSize: argv.pageSize
 });

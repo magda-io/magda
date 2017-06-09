@@ -1,0 +1,7 @@
+{
+    "type": "magda-ckan-connector",
+    "name": "Victoria Government",
+    "sourceUrl": "https://www.data.vic.gov.au/data/",
+    "pageSize": 100,
+    "schedule": "* * */3 * *"
+}

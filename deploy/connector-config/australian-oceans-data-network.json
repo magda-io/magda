@@ -1,0 +1,7 @@
+{
+    "type": "magda-csw-connector",
+    "name": "Australian Oceans Data Network",
+    "sourceUrl": "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw",
+    "pageSize": 100,
+    "schedule": "* * */3 * *"
+}

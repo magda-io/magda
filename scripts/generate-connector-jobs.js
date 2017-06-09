@@ -47,7 +47,7 @@ files.forEach(function(connectorConfigFile) {
             spec: {
                 containers: [
                     {
-                        name: 'connector',
+                        name: 'connector-' + basename,
                         image: image,
                         command: [
                             'node', '/usr/src/app/component/bin/index.js',

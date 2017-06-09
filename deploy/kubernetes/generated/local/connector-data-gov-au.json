@@ -12,7 +12,7 @@
       "spec": {
         "containers": [
           {
-            "name": "connector",
+            "name": "connector-data-gov-au",
             "image": "localhost:5000/data61/magda-ckan-connector:latest",
             "command": [
               "node",

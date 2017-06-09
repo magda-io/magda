@@ -2,18 +2,18 @@
   "apiVersion": "batch/v1",
   "kind": "Job",
   "metadata": {
-    "name": "connector-data-gov-au"
+    "name": "connector-tasmania-thelist"
   },
   "spec": {
     "template": {
       "metadata": {
-        "name": "connector-data-gov-au"
+        "name": "connector-tasmania-thelist"
       },
       "spec": {
         "containers": [
           {
-            "name": "connector-data-gov-au",
-            "image": "data61/magda-ckan-connector:0.0.26-SNAPSHOT",
+            "name": "connector-tasmania-thelist",
+            "image": "data61/magda-csw-connector:0.0.26-SNAPSHOT",
             "command": [
               "node",
               "/usr/src/app/component/bin/index.js",
@@ -44,7 +44,7 @@
               "name": "connector-config",
               "items": [
                 {
-                  "key": "data-gov-au.json",
+                  "key": "tasmania-thelist.json",
                   "path": "connector.json"
                 }
               ]

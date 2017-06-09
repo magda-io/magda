@@ -2,18 +2,18 @@
   "apiVersion": "batch/v1",
   "kind": "Job",
   "metadata": {
-    "name": "connector-data-qld-gov-au"
+    "name": "connector-terrestrial-ecosystem-research-network"
   },
   "spec": {
     "template": {
       "metadata": {
-        "name": "connector-data-qld-gov-au"
+        "name": "connector-terrestrial-ecosystem-research-network"
       },
       "spec": {
         "containers": [
           {
-            "name": "connector",
-            "image": "data61/magda-ckan-connector:0.0.26-SNAPSHOT",
+            "name": "connector-terrestrial-ecosystem-research-network",
+            "image": "data61/magda-csw-connector:0.0.26-SNAPSHOT",
             "command": [
               "node",
               "/usr/src/app/component/bin/index.js",
@@ -44,7 +44,7 @@
               "name": "connector-config",
               "items": [
                 {
-                  "key": "data-qld-gov-au.json",
+                  "key": "terrestrial-ecosystem-research-network.json",
                   "path": "connector.json"
                 }
               ]

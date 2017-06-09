@@ -1,0 +1,7 @@
+{
+    "type": "magda-csw-connector",
+    "name": "CSIRO Marlin",
+    "sourceUrl": "http://www.marlin.csiro.au/geonetwork/srv/eng/csw",
+    "pageSize": 50,
+    "schedule": "* * */3 * *"
+}

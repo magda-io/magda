@@ -2,17 +2,17 @@
   "apiVersion": "batch/v1",
   "kind": "Job",
   "metadata": {
-    "name": "connector-data-gov-au"
+    "name": "connector-south-australia-government"
   },
   "spec": {
     "template": {
       "metadata": {
-        "name": "connector-data-gov-au"
+        "name": "connector-south-australia-government"
       },
       "spec": {
         "containers": [
           {
-            "name": "connector-data-gov-au",
+            "name": "connector-south-australia-government",
             "image": "data61/magda-ckan-connector:0.0.26-SNAPSHOT",
             "command": [
               "node",
@@ -44,7 +44,7 @@
               "name": "connector-config",
               "items": [
                 {
-                  "key": "data-gov-au.json",
+                  "key": "south-australia-government.json",
                   "path": "connector.json"
                 }
               ]
