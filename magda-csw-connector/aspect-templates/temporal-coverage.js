@@ -40,12 +40,12 @@ if (!beginValue && !endValue && !beginIndeterminate && !endIndeterminate) {
     return undefined;
 }
 
-return {
+return [{
     start: beginValue,
     startIndeterminate: beginIndeterminate,
     end: endValue,
     endIndeterminate: endIndeterminate
-};
+}];
 
 function findDatesWithType(dates, type) {
     if (!dates) {
