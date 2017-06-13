@@ -43,8 +43,8 @@ export default class CswConnector extends JsonConnector {
     protected getJsonDatasets(): AsyncPage<any[]> {
         const recordPages = this.csw.getRecords();
         return recordPages.map(pageXml => {
-            const searchResults = pageXml.documentElement.getElementsByTagNameNS('http://www.opengis.net/cat/csw/2.0.2', 'SearchResults')[0];
-            const records = searchResults.getElementsByTagNameNS('http://www.isotc211.org/2005/gmd', 'MD_Metadata');
+            const searchResults = pageXml.documentElement.getElementsByTagNameNS('*', 'SearchResults')[0];
+            const records = searchResults.getElementsByTagNameNS('*', 'MD_Metadata');
 
             const result = [];
 

@@ -44,15 +44,17 @@ export default class Csw implements IConnectorSource {
 
         return AsyncPage.create<any>(previous => {
             if (previous) {
-                const searchResults = previous.documentElement.getElementsByTagNameNS('http://www.opengis.net/cat/csw/2.0.2', 'SearchResults')[0];
+                const searchResults = previous.documentElement.getElementsByTagNameNS('*', 'SearchResults')[0];
                 const numberOfRecordsMatched = parseInt(searchResults.attributes.getNamedItem('numberOfRecordsMatched').value, 10);
                 const nextRecord = parseInt(searchResults.attributes.getNamedItem('nextRecord').value, 10);
 
-                startIndex = nextRecord - 1;
+                const nextStartIndex = nextRecord - 1;
 
-                if (startIndex >= numberOfRecordsMatched) {
+                if (nextRecord >= numberOfRecordsMatched || nextStartIndex === startIndex) {
                     return undefined;
                 }
+
+                startIndex = nextStartIndex;
             }
 
             return this.requestRecordsPage(url, startIndex);

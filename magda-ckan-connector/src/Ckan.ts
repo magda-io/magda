@@ -108,7 +108,7 @@ export default class Ckan {
                 startIndex += previous.result.length;
             }
 
-            return this.requestOrganizationListPage(url, startIndex);
+            return this.requestOrganizationListPage(url, startIndex, previous);
         });
     }
 
@@ -149,7 +149,11 @@ export default class Ckan {
         return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
     }
 
-    private requestOrganizationListPage(url: uri.URI, startIndex: number): Promise<CkanOrganizationListResponse> {
+    private requestOrganizationListPage(
+        url: uri.URI,
+        startIndex: number,
+        previous: CkanOrganizationListResponse): Promise<CkanOrganizationListResponse> {
+
         const pageUrl = url.clone();
         pageUrl.addSearch('offset', startIndex);
         pageUrl.addSearch('limit', this.pageSize);
@@ -162,6 +166,18 @@ export default class Ckan {
                     return;
                 }
                 console.log('Received@' + startIndex);
+
+                // Older versions of CKAN ignore the offset and limit parameters and just return all orgs.
+                // To avoid paging forever in that scenario, we check if this page is identical to the last one
+                // and ignore the items if so.
+                if (previous && body &&
+                    previous.result && body.result &&
+                    previous.result.length === body.result.length &&
+                    JSON.stringify(previous.result) === JSON.stringify(body.result)) {
+
+                    body.result.length = 0;
+                }
+
                 resolve(body);
             });
         });
