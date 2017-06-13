@@ -15,7 +15,8 @@ node bin/index.js --config ../deploy/connector-config/data-gov-au.json --registr
 Running the connectors as jobs on the Kubernetes cluster requires a few more steps.  First, you need to create a Kubernetes ConfigMap from the connector configuration files:
 
 ```
-kubectl create configmap connector-config --from-file ./deploy/connector-config/
+cd deploy
+npm run create-connector-configmap
 ```
 
 Then, you need to build a Docker image for each type of connector.  For use on a local minikube cluster, run:
