@@ -40,7 +40,6 @@ export function lookupUser(source: string, sourceId: string): Promise<Maybe<User
 }
 
 export function createUser(user: User): Promise<User> {
-    console.log(user);
     return fetch(`${baseUrl}/private/users`, {
         method: "POST",
         headers: {

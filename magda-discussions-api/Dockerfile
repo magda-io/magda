@@ -6,6 +6,6 @@ RUN npm update && \
 
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app
-WORKDIR /usr/src/app/@magda/discussions-api
+WORKDIR /usr/src/app/component
 
 CMD [ "ts-node", "./index.ts" ]

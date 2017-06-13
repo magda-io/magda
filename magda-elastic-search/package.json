@@ -1,0 +1,21 @@
+{
+  "name": "@magda/elastic-search",
+  "version": "0.0.26-SNAPSHOT",
+  "description": "MAGDA's custom elasticsearch docker image.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "config": {
+    "docker": {
+      "name": "data61/magda-elasticsearch",
+      "include": "Dockerfile elasticsearch.yml setup-snapshot-dir.sh"
+    }
+  },
+  "devDependencies": {
+    "@magda/scripts": "^0.0.26-SNAPSHOT"
+  }
+}

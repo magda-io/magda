@@ -22,6 +22,7 @@
     "magda-combined-db/",
     "magda-discussions-db/",
     "magda-discussions-api/",
+    "magda-elastic-search/",
     "scripts/"
   ],
   "version": "0.0.26-SNAPSHOT",

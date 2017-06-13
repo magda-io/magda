@@ -6,7 +6,7 @@ RUN /elasticsearch/bin/elasticsearch-plugin install repository-s3
 	
 ENV REPO /snapshots
 
-ADD elasticsearch.yml /elasticsearch/config/elasticsearch.yml
-ADD setup-snapshot-dir.sh /setup-snapshot-dir.sh
+ADD component/elasticsearch.yml /elasticsearch/config/elasticsearch.yml
+ADD component/setup-snapshot-dir.sh /setup-snapshot-dir.sh
 
 CMD ["/setup-snapshot-dir.sh"]
