@@ -18,7 +18,8 @@ proxy.on('proxyReq', function (proxyReq: any, req: any, res: Response, options: 
 });
 
 const configuredCors = cors({
-    origin: true
+    origin: true,
+    credentials: true
 });
 
 router.use(configuredCors);
