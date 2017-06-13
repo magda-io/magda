@@ -29,6 +29,9 @@
             "protocol": "inspector",
             "name": "Launch CSW Connector",
             "program": "${workspaceRoot}/magda-csw-connector/bin/index.js",
+            "args":[
+                "--config", "${workspaceRoot}/deploy/connector-config/australian-institute-of-marine-science.json"
+            ],
             "cwd": "${workspaceRoot}/magda-csw-connector"
         },
         {
