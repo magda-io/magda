@@ -4,50 +4,43 @@ import Editor from "draft-js-plugins-editor";
 import { fromJS } from "immutable";
 import { Editor as DraftEditor, EditorState, ContentState } from "draft-js";
 import { Link } from "react-router";
+import { connect } from "react-redux";
 
-import base from "../../RealtimeData/Base";
 import Message from "./Message";
 import EntryBox from "./EntryBox";
 import "draft-js-mention-plugin/lib/plugin.css";
 import "./CrappyChat.css";
 
-export default class CrappyChat extends React.Component {
+class CrappyChat extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      comments: [],
-      user: base.auth().currentUser
+      comments: []
     };
   }
 
   componentDidMount() {
-    this.subscribeDiscussionsListener = base.listenTo(
-      `dataset-discussions/${this.props.datasetId}`,
-      {
-        context: this,
-        asArray: true,
-        then: comments => {
-          this.setState({
-            comments: comments
-          });
-        }
-      }
-    );
 
-    this.unsubscribeOnAuthChanged = base.auth().onAuthStateChanged(user => {
-      if (user) {
-        this.setState({ user });
-      } else {
-        this.setState({ user: null });
-      }
-    });
+
+    // this.subscribeDiscussionsListener = base.listenTo(
+    //   `dataset-discussions/${this.props.datasetId}`,
+    //   {
+    //     context: this,
+    //     asArray: true,
+    //     then: comments => {
+    //       this.setState({
+    //         comments: comments
+    //       });
+    //     }
+    //   }
+    // );
   }
 
   componentWillUnmount() {
     this.unsubscribeOnAuthChanged();
 
-    base.removeBinding(this.subscribeDiscussionsListener);
+    // base.removeBinding(this.subscribeDiscussionsListener);
   }
 
   _newChat(message) {
@@ -63,22 +56,22 @@ export default class CrappyChat extends React.Component {
      * to return a mutated copy of your state)
     */
 
-    base.push(`dataset-discussions/${this.props.datasetId}`, {
-      data: {
-        uid: this.state.user.uid,
-        date: new Date().toISOString(),
-        message
-      },
-      context: this,
-      /*
-       * This 'then' method will run after the
-       * post has finished.
-       */
-      then: () => {
-        console.log('POSTED');
-        this.scrollToBottom();
-      }
-    });
+    // base.push(`dataset-discussions/${this.props.datasetId}`, {
+    //   data: {
+    //     uid: this.props.user.uid,
+    //     date: new Date().toISOString(),
+    //     message
+    //   },
+    //   context: this,
+    //   /*
+    //    * This 'then' method will run after the
+    //    * post has finished.
+    //    */
+    //   then: () => {
+    //     console.log('POSTED');
+    //     this.scrollToBottom();
+    //   }
+    // });
   }
 
   registerMessagesDiv(messagesRef) {
@@ -106,11 +99,22 @@ export default class CrappyChat extends React.Component {
           })}
         </div>
 
-        {this.state.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
+        {this.props.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
 
-        {!this.state.user &&
+        {!this.props.user &&
           <div><Link to='sign-in'>Sign in</Link> to join the discussion!</div>}
       </div>
     );
   }
 }
+
+function mapStateToProps(state) {
+  let { userManagement, discussions } = state;
+
+  return {
+    user: userManagement.user,
+    discussions
+  };
+}
+
+export default connect(mapStateToProps)(CrappyChat);

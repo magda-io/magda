@@ -18,17 +18,11 @@ const getParams = query => {
     }, {});
 };
 
-class SignInRedirect extends React.Component {
+export default class SignInRedirect extends React.Component {
   constructor(props) {
     super(props);
 
     const qs = getParams(window.location.search);
-    
-    if (qs.result === 'success') {
-        props.signedIn({
-            displayName: 'hello'
-        });
-    }
 
     this.state = {};
   }
@@ -43,17 +37,3 @@ class SignInRedirect extends React.Component {
   }
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators(
-    {
-      signedIn
-    },
-    dispatch
-  );
-}
-
-function mapStateToProps(state) {
-  return {};
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SignInRedirect);

@@ -4,10 +4,17 @@ import Format from './SearchFacets/Format';
 import Region from './SearchFacets/Region';
 import Temporal from './SearchFacets/Temporal';
 
+// const apiHost = 'http://104.199.180.124/';
+// const apiHost = 'http://minikube.data.gov.au:30016/';
+const apiHost = 'http://localhost:3016/';
+
 export const config = {
         appName: 'data.gov.au',
-        searchApiBaseUrl: 'http://104.199.180.124/api/v0/search/',
-        registryUrl: 'http://104.199.180.124/api/v0/registry/records',
+        apiHost,
+        searchApiBaseUrl: apiHost + 'api/v0/search/',
+        registryUrl: apiHost + 'api/v0/registry/records',
+        authApiUrl: apiHost + 'api/v0/auth',
+        discussionsApiUrl: apiHost + 'api/v0/discussions',
         rssUrl: 'https://nationalmap.gov.au/proxy/_0d/https://blog.data.gov.au/blogs/rss.xml',
         facetListSize: 5,
         resultsPerPage: 10,

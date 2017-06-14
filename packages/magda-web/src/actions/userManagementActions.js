@@ -4,16 +4,8 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import type { Action, FacetSearchJson } from "../types";
 
-// export function signIn(): Action{
-//   return {
-//     type: actionTypes.SIGN_IN,
-//   }
-// }
-
 export function requestWhoAmI(): Action {
   return (dispatch: Function, getState: Function) => {
-    console.log("requestWhoAmI");
-
     if (getState().userManagement.isFetchingWhoAmI) {
       return false;
     }
@@ -22,14 +14,14 @@ export function requestWhoAmI(): Action {
       type: actionTypes.REQUEST_WHO_AM_I
     });
 
-    fetch("http://localhost:3000/api/v0/auth/users/whoami", {
+    fetch(config.authApiUrl + "/users/whoami", {
       credentials: "include"
     })
       .then(response => {
         if (response.status === 200) {
           return response.json();
         } else {
-          return dispatch(receiveWhoAmI());
+          throw new Error("Error when fetching current user: " + response.body);
         }
       })
       .then(user => dispatch(receiveWhoAmI(user)))
@@ -50,41 +42,3 @@ export function receiveWhoAmIError(err): Action {
     err
   };
 }
-
-export function signedIn(user): Action {
-  return {
-    type: actionTypes.SIGNED_IN,
-    user
-  };
-}
-
-// export function signUp(): Action{
-//   return {
-//     type: actionTypes.SIGN_UP,
-//   }
-// }
-
-// export function signOut(): Action{
-//   return {
-//     type: actionTypes.SIGN_OUT,
-//   }
-// }
-
-// export function receiveRegionMapping(json: Object): Action{
-//   console.log(actionTypes.RECEIVE_REGION_MAPPING);
-//   return {
-//     type: actionTypes.RECEIVE_REGION_MAPPING,
-//     json: json,
-//   }
-// }
-
-// export function fetchRegionMapping() {
-//   return (dispatch: Function)=>{
-//     dispatch(requestRegionMapping())
-//     return fetch(config.searchApiBaseUrl + 'region-types')
-//     .then(response => response.json())
-//     .then((json: FacetSearchJson) =>
-//       dispatch(receiveRegionMapping(json))
-//     )
-//   }
-// }

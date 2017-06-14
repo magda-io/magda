@@ -1,7 +1,7 @@
 import React from "react";
 
-// const baseUrl = "http://minikube.data.gov.au:30016";
-const baseUrl = "http://localhost:3000";
+import { config } from "../../config";
+const { apiHost: baseUrl } = config;
 
 export default class Login extends React.Component {
   render() {
@@ -11,7 +11,9 @@ export default class Login extends React.Component {
       "sign-in-redirect"
     );
     const makeLoginUrl = type =>
-      `${baseUrl}/auth/login/${type}?redirect=${encodeURIComponent(rawRedirectUrl)}`;
+      `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
+        rawRedirectUrl
+      )}`;
 
     return (
       <div>

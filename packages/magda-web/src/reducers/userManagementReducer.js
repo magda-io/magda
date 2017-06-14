@@ -23,10 +23,6 @@ const userManagementMapping = (state = initialData, action: Action) => {
         whoAmIError: action.err,
         user: null
       });
-    case "SIGNED_IN":
-      return Object.assign({}, state, {
-        user: action.user
-      });
     default:
       return state;
   }
