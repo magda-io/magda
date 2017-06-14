@@ -5,9 +5,11 @@ import { fromJS } from "immutable";
 import { Editor as DraftEditor, EditorState, ContentState } from "draft-js";
 import { Link } from "react-router";
 import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
 
 import Message from "./Message";
 import EntryBox from "./EntryBox";
+import { fetchMessages } from "../../actions/discussionActions";
 import "draft-js-mention-plugin/lib/plugin.css";
 import "./CrappyChat.css";
 
@@ -16,31 +18,28 @@ class CrappyChat extends React.Component {
     super(props);
 
     this.state = {
-      comments: []
+      messages: []
     };
   }
 
-  componentDidMount() {
-
-
-    // this.subscribeDiscussionsListener = base.listenTo(
-    //   `dataset-discussions/${this.props.datasetId}`,
-    //   {
-    //     context: this,
-    //     asArray: true,
-    //     then: comments => {
-    //       this.setState({
-    //         comments: comments
-    //       });
-    //     }
-    //   }
-    // );
+  componentWillMount() {
+    this.setup(this.props);
   }
 
-  componentWillUnmount() {
-    this.unsubscribeOnAuthChanged();
+  componentWillReceiveProps(newProps) {
+    this.setup(newProps);
+  }
 
-    // base.removeBinding(this.subscribeDiscussionsListener);
+  setup(props) {
+    const discussion = props.discussionsLookup[props.discussionId];
+
+    if (!discussion) {
+      props.fetchMessages(props.discussionId);
+    }
+
+    this.setState({
+      messages: (discussion && discussion.messages) || []
+    });
   }
 
   _newChat(message) {
@@ -55,7 +54,6 @@ class CrappyChat extends React.Component {
      * the data in your Firebase (ie, use concat
      * to return a mutated copy of your state)
     */
-
     // base.push(`dataset-discussions/${this.props.datasetId}`, {
     //   data: {
     //     uid: this.props.user.uid,
@@ -92,9 +90,9 @@ class CrappyChat extends React.Component {
 
         <div
           ref={this.registerMessagesDiv.bind(this)}
-          className='crappy-chat__messages'
+          className="crappy-chat__messages"
         >
-          {this.state.comments.map((comment, index) => {
+          {this.state.messages.map((comment, index) => {
             return <Message key={comment.key} comment={comment} />;
           })}
         </div>
@@ -102,19 +100,31 @@ class CrappyChat extends React.Component {
         {this.props.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
 
         {!this.props.user &&
-          <div><Link to='sign-in'>Sign in</Link> to join the discussion!</div>}
+          <div><Link to="sign-in">Sign in</Link> to join the discussion!</div>}
       </div>
     );
   }
 }
 
 function mapStateToProps(state) {
-  let { userManagement, discussions } = state;
+  let {
+    discussions: { discussions: discussionsLookup = {} },
+    userManagement: { user }
+  } = state;
 
   return {
-    user: userManagement.user,
-    discussions
+    discussionsLookup,
+    user
   };
 }
 
-export default connect(mapStateToProps)(CrappyChat);
+const mapDispatchToProps = (dispatch: Dispatch<*>) => {
+  return bindActionCreators(
+    {
+      fetchMessages
+    },
+    dispatch
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CrappyChat);

@@ -52,7 +52,7 @@ export default class EntryBox extends React.Component {
 
   submit() {
     this.props.onSubmit(
-      JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()))
+      convertToRaw(this.state.editorState.getCurrentContent())
     );
 
     this.resetState();

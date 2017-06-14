@@ -3,10 +3,6 @@ const initialData = {
   discussionsForType: {}
 };
 
-const placeholderDiscussion = {
-  loading: true
-};
-
 function mergeIntoDiscussionsForType(state, action, newValue) {
   return {
     ...state,
@@ -35,24 +31,29 @@ const discussionMapping = (state = initialData, action: Action) => {
       return mergeIntoDiscussionsForType(state, action, {
         error: action.error
       });
-    case "REQUEST_DISCUSSION":
+    case "REQUEST_MESSAGES":
       return {
         ...state,
         discussions: {
-          [action.discussionId]: { ...placeholderDiscussion }
+          [action.discussionId]: {
+            ...(state.discussions[action.discussionId] || {}),
+            loading: true,
+            error: null
+          }
         }
       };
-    case "RECEIVE_DISCUSSION":
+    case "RECEIVE_MESSAGES":
       return {
         ...state,
         discussions: {
-          [action.discussion.id]: {
-            ...action.discussion,
+          [action.discussionId]: {
+            ...(state.discussions[action.discussionId] || {}),
+            messages: action.messages,
             loading: false
           }
         }
       };
-    case "RECEIVE_DISCUSSION_ERROR":
+    case "RECEIVE_MESSAGES_ERROR":
       return {
         ...state,
         discussions: {

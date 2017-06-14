@@ -39,9 +39,8 @@ class DatasetDiscussion extends Component {
   render() {
     return (
       <div className="dataset-discussion container">
-        {this.state.discussionId}
-        {/*{this.state.discussionId &&
-          <CrappyChat discussionId={this.state.discussionId} />}*/}
+        {this.state.discussionId &&
+          <CrappyChat discussionId={this.state.discussionId} />}
       </div>
     );
   }

@@ -18,7 +18,7 @@ export default class Message extends React.Component {
     this.state = {
       ...comment,
       editorState: EditorState.createWithContent(
-        convertFromRaw(JSON.parse(comment.message))
+        convertFromRaw(comment.message)
       )
     };
   }
@@ -49,7 +49,7 @@ export default class Message extends React.Component {
     this.setState({
       editorState: EditorState.push(
         this.state.editorState,
-        convertFromRaw(JSON.parse(props.comment.message))
+        convertFromRaw(props.comment.message)
       )
     });
   }
