@@ -8,8 +8,8 @@
     "build": "npm run compile",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node bin/index.js",
-    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "docker-build-local": "npm run build && create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "npm run build && create-docker-context-for-node-component --build --push --tag auto",
     "lint": "tslint -p tsconfig.json -e \"**/generated/**"
   },
   "author": "",

@@ -2,5 +2,8 @@
     "db": {
         "host": "combined-db"
     },
-    "externalHost": "http://minikube.data.gov.au:30016"
+    "externalHost": "http://minikube.data.gov.au:30016",
+    "targets": {
+        "discussions": "http://192.168.99.1:3001/v0/"
+    }
 }

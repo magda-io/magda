@@ -73,7 +73,8 @@ spec:
         hostPath:
           path: /tmp/snapshots
       - name: "storage"
-        emptyDir: {}
+        hostPath:
+          path: /var/elasticSearchData
 ---
 apiVersion: v1
 kind: Service

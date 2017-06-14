@@ -1,20 +1,35 @@
 import * as express from "express";
-const httpProxy = require('http-proxy');
-const jwt = require('jsonwebtoken');
+const httpProxy = require("http-proxy");
+const jwt = require("jsonwebtoken");
 const config = require("config");
-const cors = require('cors')
+const cors = require("cors");
 
-import setupAuth from './setup-auth';
+import setupAuth from "./setup-auth";
 
 var proxy = httpProxy.createProxyServer({ prependUrl: false });
 
 const router = express.Router();
 
-proxy.on('proxyReq', function (proxyReq: any, req: any, res: Response, options: any) {
-    if (req.user) {
-        const token = jwt.sign({ userId: req.user }, process.env.JWT_SECRET)
-        proxyReq.setHeader('X-Magda-Session', token);
-    }
+proxy.on("proxyReq", function(
+  proxyReq: any,
+  req: any,
+  res: Response,
+  options: any
+) {
+  if (req.user) {
+    const token = jwt.sign({ userId: req.user }, process.env.JWT_SECRET);
+    proxyReq.setHeader("X-Magda-Session", token);
+  }
+});
+
+proxy.on("error", function(err: any, req: any, res: any) {
+  res.writeHead(500, {
+    "Content-Type": "text/plain"
+  });
+
+  console.error(err);
+
+  res.end("Something went wrong.");
 });
 
 const configuredCors = cors({
@@ -26,27 +41,34 @@ router.use(configuredCors);
 
 router.options("*", configuredCors);
 
-function proxyRoute(baseRoute: string, target: string, verbs: string[] = ['all'], auth = false) {
-    const routeRouter: any = express.Router();
+function proxyRoute(
+  baseRoute: string,
+  target: string,
+  verbs: string[] = ["all"],
+  auth = false
+) {
+  const routeRouter: any = express.Router();
 
-    if (auth) {
-        setupAuth(routeRouter);
-    }
+  if (auth) {
+    setupAuth(routeRouter);
+  }
 
-    verbs.forEach((verb: string) =>
-        routeRouter[verb.toLowerCase()]("*", (req: express.Request, res: express.Response) => {
-            proxy.web(req, res, { target });
-        })
-    );
+  verbs.forEach((verb: string) =>
+    routeRouter[
+      verb.toLowerCase()
+    ]("*", (req: express.Request, res: express.Response) => {
+      proxy.web(req, res, { target });
+    })
+  );
 
-    router.use(baseRoute, routeRouter);
+  router.use(baseRoute, routeRouter);
 
-    return routeRouter;
+  return routeRouter;
 }
 
-proxyRoute('/search', config.get("targets.search"));
-proxyRoute('/registry', config.get("targets.registry"), undefined, true);
-proxyRoute('/auth', config.get("targets.auth"), ['get'], true);
-proxyRoute('/discussions', config.get("targets.discussions"), undefined, true);
+proxyRoute("/search", config.get("targets.search"));
+proxyRoute("/registry", config.get("targets.registry"), undefined, true);
+proxyRoute("/auth", config.get("targets.auth"), ["get"], true);
+proxyRoute("/discussions", config.get("targets.discussions"), undefined, true);
 
 export default router;

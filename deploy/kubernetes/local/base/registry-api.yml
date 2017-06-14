@@ -30,8 +30,9 @@ metadata:
 spec:
   ports:
   - name: http
-    port: 30010
+    port: 80
     targetPort: 80
+    nodePort: 30010
   selector:
     service: registry-api
   type: "NodePort"

@@ -3,6 +3,7 @@
   "version": "0.0.26-SNAPSHOT",
   "scripts": {
     "start": "npm run build:live",
+    "dev": "JWT_SECRET=squirrel SESSION_SECRET=squirrel FACEBOOK_CLIENT_ID=blah FACEBOOK_CLIENT_SECRET=blah GOOGLE_CLIENT_ID=blah GOOGLE_CLIENT_SECRET=blah npm run build:live",
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
