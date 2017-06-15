@@ -1,6 +1,4 @@
 // @flow
-import type { FeaturedRecords, DataSearchJson, Dataset, FeaturedAction, Query } from '../types';
-
 const initialData = {
   news: [],
   isFetching: false,

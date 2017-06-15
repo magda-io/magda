@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
-import CustomIcons from '../UI/CustomIcons';
 // import Star from '../UI/Star';
 import ToggleList from '../UI/ToggleList';
 import renderDistribution from '../UI/Distribution';
@@ -14,10 +13,6 @@ type Props = {
   onClickDataset: Function,
   dataset: Object,
   isExpanded: boolean
-}
-
-type DefaultProps = {
-  datasets: Object
 }
 
 export default class DatasetSummary extends Component {
@@ -53,7 +48,6 @@ export default class DatasetSummary extends Component {
 
 
   renderLinks(){
-    const distribution = this.props.dataset.distributions;
     return <div className='dataset-summary__more-info'>
               <div className='dataset-summary__source clearfix'>
               <h5 className='dataset-summary__sub-heading'>Source</h5>

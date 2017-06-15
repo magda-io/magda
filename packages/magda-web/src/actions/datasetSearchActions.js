@@ -3,7 +3,7 @@ import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { DataAction, Action, DataSearchJson } from '../types';
+import type {Action, DataSearchJson } from '../types';
 
 
 export function requestResults(apiQuery: string ): Action{
@@ -25,6 +25,12 @@ export function transferFailed(error: number): Action{
   return {
     type: actionTypes.FETCH_ERROR,
     error
+  }
+}
+
+export function resetDatasetSearch(): Action{
+  return {
+    type: actionTypes.RESET_DATASET_SEARCH
   }
 }
 

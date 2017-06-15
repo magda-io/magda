@@ -29,7 +29,7 @@ class PublisherDetails extends Component {
     }
 
     renderContent(){
-      const publisher = this.props.publisher;
+      const publisher= this.props.publisher;
       return <div className='publisher-details container'>
                 {this.props.isFetching && <ProgressBar/>}
                 <div className='row'>
@@ -49,7 +49,7 @@ class PublisherDetails extends Component {
 
     render(){
         if(this.props.error){
-            return <ErrorHandler errorCode ={this.props.error} />
+            return <ErrorHandler errorCode={this.props.error} />
         }
         return <ReactDocumentTitle title={this.props.publisher.name + ' | ' + config.appName}>{this.renderContent()}</ReactDocumentTitle>;
     }
@@ -64,9 +64,9 @@ function mapDispatchToProps(dispatch: Function) {
 
 function mapStateToProps(state: Object, ownProps: Object) {
   const publisher: Object= state.publisher.publisher;
-  const isFetching: boolean = state.publisher.isFetchingPublisher;
-  const error: number = state.publisher.errorFetchingPublisher;
-  const location: Location = ownProps.location;
+  const isFetching: boolean= state.publisher.isFetchingPublisher;
+  const error: number= state.publisher.errorFetchingPublisher;
+  const location: Location= ownProps.location;
   return {
     publisher, isFetching, location, error
   };

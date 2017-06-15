@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Rebase from 're-base';
 
 const devConfig = {

@@ -13,7 +13,7 @@ export default function Entry(props) {
       className={'user-mention-search-result ' + props.className}
       style={props.style}
     >
-      <img className='user-mention-search-result__avatar' src={mention.get('photoURL')} />
+      <img className='user-mention-search-result__avatar' src={mention.get('photoURL')} alt={mention.get('displayName')}/>
       {mention.get('displayName')}
     </button>
   );

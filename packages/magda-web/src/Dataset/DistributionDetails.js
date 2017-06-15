@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import TemporalAspectViewer from '../UI/TemporalAspectViewer';
 import SpatialAspectViewer from '../UI/SpatialAspectViewer';
 import OverviewBox from '../UI/OverviewBox';
-import CustomIcons from '../UI/CustomIcons';
 import Social from '../Components/Social';
 import { Link } from 'react-router';
 import './RecordDetails.css';
@@ -12,7 +11,7 @@ import './RecordDetails.css';
 
 class DistributionDetails extends Component {
   render(){
-    const distribution = this.props.distribution;
+    const distribution =this.props.distribution;
     return <div className='distribution-details container' >
                 <div className='row'>
                 <div className='distribution-details__body col-sm-8'>
@@ -42,7 +41,7 @@ class DistributionDetails extends Component {
 }
 
 function mapStateToProps(state) {
-  const distribution = state.record.distribution;
+  const distribution =state.record.distribution;
   return {
     distribution
   };

@@ -1,6 +1,5 @@
 // @flow
-import React, { Component } from 'react';
-import { Link } from 'react-router';
+import React from 'react';
 import type { Stats } from '../types';
 import './Statistics.css';
 

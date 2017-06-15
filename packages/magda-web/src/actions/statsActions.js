@@ -1,8 +1,6 @@
-import {config} from '../config'
 import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
 import type { Action, Dispatch, GetState } from '../types';
-import parser from 'rss-parser'
 
 
 export function requestDatasetCount():Action {

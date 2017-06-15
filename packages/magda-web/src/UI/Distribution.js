@@ -1,7 +1,6 @@
 // @flow
 import CustomIcons from '../UI/CustomIcons';
 import React from 'react';
-import defined from '../helpers/defined';
 import { Link } from 'react-router';
 import './Distribution.css';
 

@@ -2,7 +2,6 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type {Dataset } from '../types';
 
 export function requestDatasets(ids: Array<string>) {
   return {

@@ -8,7 +8,7 @@ import {config} from '../config.js';
 import { bindActionCreators } from 'redux';
 import { validateFields, resetProjectFields } from '../actions/projectActions';
 import { fetchDatasetFromRegistry } from '../actions/recordActions';
-
+import Notification from '../UI/Notification';
 import { Link } from 'react-router';
 import Immutable from 'immutable';
 const uuidV1 = require('uuid/v1');

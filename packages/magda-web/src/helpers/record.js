@@ -1,14 +1,24 @@
 // @flow
 import getDateString from './getDateString';
 
-
-
 type dcatDistributionStrings = {
   format: string,
   downloadURL: string,
   modified: string,
   license: string,
   description: string,
+}
+
+
+type Distribution = {
+  description: string,
+  title: string,
+  id: string,
+  downloadURL: string,
+  format: string,
+  aspects: {
+    'dcat-distribution-strings': dcatDistributionStrings
+  }
 }
 
 type dcatDatasetStrings = {
@@ -33,16 +43,6 @@ type datasetPublisher = {
 }
 
 
-type Distribution = {
-  description: string,
-  title: string,
-  id: string,
-  downloadURL: string,
-  format: string,
-  aspects: {
-    'dcat-distribution-strings': dcatDistributionStrings
-  }
-}
 
 type aspects = {
   'dcat-distribution-strings'?: dcatDistributionStrings,

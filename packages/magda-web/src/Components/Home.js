@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {fetchFeaturedDatasetsFromRegistry} from '../actions/featuredDatasetsActions';
 import {fetchDatasetCount} from '../actions/statsActions';
-import {fetchNewsfromRss} from '../actions/NewsActions';
+import {fetchNewsfromRss} from '../actions/newsActions';
 import DatasetSummary from '../Dataset/DatasetSummary';
 import ReactDocumentTitle from 'react-document-title';
 import './Home.css';
@@ -33,7 +33,7 @@ class Home extends React.Component {
           </div>
           <div className='col-sm-4'>
             <h2>data.gov.au statistics</h2>
-            <Statistics stats = {this.props.stats}/>
+            <Statistics stats={this.props.stats}/>
           </div>
         </div>
       </div>
@@ -42,18 +42,18 @@ class Home extends React.Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  const datasets= state.featuredDatasets.records;
-  const isFetching= state.featuredDatasets.isFetching;
-  const error = state.featuredDatasets.error;
-  const isNewsFetching = state.news.isFetching;
-  const newsItems = state.news.news;
-  const newsFetchingError = state.news.error;
-  const stats = state.stats;
+const mapStateToProps=(state)=> {
+  const datasets=state.featuredDatasets.records;
+  const isFetching=state.featuredDatasets.isFetching;
+  const error=state.featuredDatasets.error;
+  const isNewsFetching=state.news.isFetching;
+  const newsItems=state.news.news;
+  const newsFetchingError=state.news.error;
+  const stats=state.stats;
   return {datasets, isFetching, error, isNewsFetching, newsItems, newsFetchingError, stats}
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const mapDispatchToProps=(dispatch: Dispatch<*>)=> {
   return bindActionCreators({
     fetchFeaturedDatasets: fetchFeaturedDatasetsFromRegistry,
     fetchNewsfromRss: fetchNewsfromRss,

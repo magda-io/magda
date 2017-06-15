@@ -63,6 +63,7 @@ export default class Message extends React.Component {
     return (
       <div className='cc-message'>
         <img
+          alt={'avatar'}
           className="cc-message__avatar"
           src={this.filter(this.state.user.photoURL) || ""}
         />

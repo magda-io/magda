@@ -1,9 +1,7 @@
 // @flow
-import type { FeaturedRecords, DataSearchJson, Dataset, FeaturedAction, Query } from '../types';
+import type { FeaturedRecords, FeaturedAction } from '../types';
 import {parseDataset} from '../helpers/record';
 
-import findIndex from 'lodash.findindex';
-import findMatchingObjs from '../helpers/findMatchingObjs';
 
 const initialData = {
   records: [],

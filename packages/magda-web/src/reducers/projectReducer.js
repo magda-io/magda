@@ -31,7 +31,7 @@ type ProjectsResult = {
 }
 
 
-const projects = (state: ProjectsResult = initialData, action: projectAction) => {
+const projects = (state: ProjectsResult = initialData, action: ProjectAction) => {
   switch (action.type) {
     case 'REQUEST_PROJECTS':
       return Object.assign({}, state, {

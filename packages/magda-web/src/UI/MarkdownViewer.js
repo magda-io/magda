@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import marked from 'marked';
-import {config} from '../config';
 import './MarkdownViewer.css';
 
 const LIST = ['blockquote',

@@ -67,17 +67,23 @@ export default class Account extends React.Component {
 
   render() {
     const title = this.state.user ? 'Sign in ' : 'Sign up';
+    debugger
     return (
       <ReactDocumentTitle title={title + ' | ' + config.appName}>
       <div className='container account'>
-        <h2>Account</h2>
+        <h2>Account details</h2>
         {!this.state.user && (
           <div id='firebaseui-auth' />
         )}
         {this.state.user && (
-          <div>
-            <p>Display Name: {this.state.user.displayName}</p>
-            <p>Email: {this.state.user.email}</p>
+          <div className='media'>
+            <div className='media-left'>
+              <img className='media-object' alt={this.state.user.displayName} src={this.state.user.photoURL}/>
+            </div>
+            <div className='meida-body'>
+              <div className='media-heading'>Display Name: {this.state.user.displayName}</div>
+              <p>Email: {this.state.user.email}</p>
+            </div>
           </div>
         )}
       </div>

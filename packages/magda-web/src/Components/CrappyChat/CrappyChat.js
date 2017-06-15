@@ -61,10 +61,9 @@ class CrappyChat extends React.Component {
   render() {
     return (
       <div>
-
         <div
           ref={this.registerMessagesDiv.bind(this)}
-          className="crappy-chat__messages"
+          className='crappy-chat__messages white-box'
         >
           {this.state.messages.map((message, index) => {
             return <Message key={message.id || index} message={message} />;

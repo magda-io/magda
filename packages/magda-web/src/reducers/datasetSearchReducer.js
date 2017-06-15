@@ -40,19 +40,19 @@ const datasetSearchReducer = (state: SearchState= initialData, action: DataActio
         error: null,
         apiQuery: action.apiQuery && action.apiQuery
       })
-
-    case 'UPDATE_PROGRESS':
-      return Object.assign({}, state, {
-        isFetching: true,
-        progress: action.progress && action.progress
-      })
-
     case 'FETCH_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,
       })
-
+    case 'RESET_DATASET_SEARCH':
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: null,
+        datasets: [],
+        hitCount: 0,
+        apiQuery: ''
+      })
     case 'RECEIVE_RESULTS':
       let data: DataSearchJson  = action.json;
       let query : Query = data && data.query && data.query;

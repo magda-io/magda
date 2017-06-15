@@ -1,5 +1,5 @@
 // @flow
-import type { FeaturedRecords, DataSearchJson, Dataset, FeaturedAction, Query } from '../types';
+import type { FeaturedRecords, FeaturedAction } from '../types';
 import {parsePublisher} from '../helpers/api';
 
 const initialData = {

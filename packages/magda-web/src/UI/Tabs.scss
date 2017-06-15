@@ -33,3 +33,10 @@
     background: $magda-grey;
     min-height: 400px;
 }
+
+@media (max-width: 768px) {
+  .tabs li {
+    display: block;
+    clear: both;
+  }
+}

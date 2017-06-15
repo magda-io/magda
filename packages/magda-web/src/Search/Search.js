@@ -6,7 +6,6 @@ import {RouterContext } from 'react-router';
 import './Search.css';
 import {connect} from 'react-redux';
 import {config} from '../config.js';
-import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
 import Pagination from '../UI/Pagination';
 import Notification from '../UI/Notification';
@@ -18,9 +17,8 @@ import Publisher from '../SearchFacets/Publisher';
 import SearchResults from '../SearchResults/SearchResults';
 import MatchingStatus from './MatchingStatus';
 import { bindActionCreators } from 'redux';
-import { fetchSearchResultsIfNeeded } from '../actions/datasetSearchActions';
+import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../actions/datasetSearchActions';
 import {fetchFeaturedPublishersFromRegistry} from '../actions/featuredPublishersActions';
-import type { SearchState} from '../types';
 import queryString from 'query-string';
 import cripsy from './crispy.gif';
 import ProgressBar from '../UI/ProgressBar';
@@ -50,11 +48,13 @@ class Search extends Component {
 
 
   componentWillMount(){
+    this.props.resetDatasetSearch();
     this.props.fetchSearchResultsIfNeeded(queryString.parse(this.props.location.search));
   }
 
 
   componentWillReceiveProps(nextProps){
+    nextProps.fetchSearchResultsIfNeeded(queryString.parse(nextProps.location.search));
     if(nextProps.datasets.length > 0 &&
        nextProps.publisherOptions.length > 0 &&
        nextProps.publisherOptions.filter(o=>o.identifier).map(o=>o.identifier).toString() !== this.props.publisherOptions.filter(o=>o.identifier).map(o=>o.identifier).toString()){
@@ -63,6 +63,9 @@ class Search extends Component {
     }
   }
 
+  componentWillUnmount(){
+    this.props.resetDatasetSearch()
+  }
 
   onClickTag(tag: string){
     this.setState({
@@ -102,12 +105,17 @@ class Search extends Component {
   onDismissError(){
     // remove all current configurations
     this.updateSearchText('');
+    this.props.resetDatasetSearch();
   }
 
   onToggleDataset(datasetIdentifier){
     this.updateQuery({
       open: datasetIdentifier === queryString.parse(this.props.location.search).open ? '' : datasetIdentifier
     })
+  }
+
+  searchBoxEmpty(){
+    return !defined(queryString.parse(this.props.location.search).q) || queryString.parse(this.props.location.search).q.length === 0
   }
 
   render() {
@@ -141,8 +149,7 @@ class Search extends Component {
                             component={'recommendations'}
                  />
 
-                 {defined(queryString.parse(this.props.location.search).q) &&
-                  queryString.parse(this.props.location.search).q.length > 0 &&
+                 {!this.searchBoxEmpty() &&
                     <MatchingStatus datasets={this.props.datasets}
                                     strategy={this.props.strategy}
                     />
@@ -172,7 +179,7 @@ class Search extends Component {
               </div>
 
             <div className='col-sm-4'>
-            {this.props.featuredPublishers.map(p=><PublisherBox key={p.id} publisher={p}/>)}
+            {(!this.searchBoxEmpty() && this.props.datasets.length > 0) && this.props.featuredPublishers.map(p=><PublisherBox key={p.id} publisher={p}/>)}
             </div>
             </div>
           </div>
@@ -195,7 +202,8 @@ Search.defaultProps = {
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
-    fetchFeaturedPublishersFromRegistry: fetchFeaturedPublishersFromRegistry
+    fetchFeaturedPublishersFromRegistry: fetchFeaturedPublishersFromRegistry,
+    resetDatasetSearch: resetDatasetSearch
   }, dispatch);
 }
 

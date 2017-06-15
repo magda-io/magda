@@ -4,20 +4,19 @@ import { Link } from 'react-router';
 import OverviewBox from '../UI/OverviewBox';
 
 class DatasetPublisher extends Component {
-  renderPublisher(publisher){
+  renderPublisher(publisherName, publisherDetails){
       return (<div className='col-sm-8'>
-                <h2>{publisher.name}</h2>
+                <h2>{publisherName}</h2>
                 <h3 className='section-heading'>Overview</h3>
-                <OverviewBox content={publisher.description}/>
-                <Link to={`/search?publisher=${encodeURIComponent(publisher.name)}&q=${encodeURIComponent('*')}`}>View all datasets from {publisher.name}</Link>
+                <OverviewBox content={publisherDetails.description}/>
+                <Link to={`/search?publisher=${encodeURIComponent(publisherName)}&q=${encodeURIComponent('*')}`}>View all datasets from {publisherName}</Link>
               </div>)
   }
 
   render(){
-    const publisher = this.props.dataset.publisher || '';
     return <div className='dataset-publisher container' >
             <div className='row'>
-                {this.props.dataset.publisher && this.renderPublisher(this.props.dataset.publisherDetails)}
+                {this.props.dataset.publisher && this.renderPublisher(this.props.dataset.publisher, this.props.dataset.publisherDetails)}
             </div>
           </div>
   }

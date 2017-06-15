@@ -9,7 +9,7 @@ import { Link } from 'react-router';
 import ErrorHandler from '../Components/ErrorHandler';
 import ReactDocumentTitle from 'react-document-title';
 import CustomIcons from '../UI/CustomIcons';
-import type { Dataset, DatasetDistribution, StateRecord } from '../types';
+import type {StateRecord } from '../types';
 
 class RecordHandler extends React.Component {
   props: {

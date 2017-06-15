@@ -5,7 +5,7 @@ import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import {validateProjectName, validateProjectDescription, Dispatch, GetState} from '../helpers/validateInput';
 import type { ProjectAction, Project,  } from '../types';
-import { hashHistory} from 'react-router';
+import {browserHistory} from 'react-router';
 
 export function requestProjects():ProjectAction {
   return {
@@ -94,6 +94,8 @@ export function postNewProject(props: Project){
   return (dispatch: Dispatch) => {
     dispatch(createProject(props));
     const url = config.registryUrl;
+    console.log(props);
+
     return fetch(url,
     {
       method: 'POST',
@@ -114,7 +116,7 @@ export function postNewProject(props: Project){
         return false;
       }
       // should change into browserHistory?
-      hashHistory.push(`/projects/${props.id}`);
+      // browserHistory.push(`/projects/${props.id}`);
       dispatch(createProjectSuccess(result, true))
       setTimeout(function(){ dispatch(createProjectSuccess(result, false))}, 5000);
     });
@@ -162,7 +164,7 @@ export function fetchProjectsFromRegistry():Object{
 
 
 export function fetchProjectsIfNeeded(){
-  return (dispatch: Dispatch, getState: getState)=>{
+  return (dispatch: Dispatch, getState: GetState)=>{
     if(!getState().project.isFetching){
           return dispatch(fetchProjectsFromRegistry())
       } else{
@@ -190,7 +192,7 @@ export function fetchProjectFromRegistry(projectId):Object{
 
 
 export function fetchProjectIfNeeded(projectId: string){
-  return (dispatch: Dispatch, getState: getState)=>{
+  return (dispatch: Dispatch, getState: GetState)=>{
     if(!getState().project.isFetching){
           return dispatch(fetchProjectFromRegistry(projectId))
       } else{

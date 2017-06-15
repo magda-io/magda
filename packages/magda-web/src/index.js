@@ -1,10 +1,9 @@
 // @flow
 // eslint-disable-next-line
-import createLogger from "redux-logger";
-import "./index.css";
-// import {browserHistory} from 'react-router';
+import createLogger from 'redux-logger'
+import './index.css';
+import { Router, Route, IndexRoute, IndexRedirect, browserHistory} from 'react-router';
 import {config} from './config'
-import { Router, Route, IndexRoute, IndexRedirect, hashHistory} from 'react-router';
 
 import thunkMiddleware from 'redux-thunk'
 import React from 'react';
@@ -51,7 +50,7 @@ const store: Store = createStore(
   )
 );
 
-hashHistory.listen(location => {
+browserHistory.listen(location => {
   window.ga("set", "location", document.location);
   window.ga("send", "pageview");
 });
@@ -62,8 +61,8 @@ function loadDefaultData(store) {
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={hashHistory}>
-      <Route path={baseurl} component={AppContainer} onEnter={loadDefaultData(store)}>
+    <Router history={browserHistory}>
+      <Route path='/' component={AppContainer} onEnter={loadDefaultData(store)}>
         <IndexRoute component={Home}/>
         <Route path='search' component={Search} />
         <Route path='feedback' component={Feedback} />

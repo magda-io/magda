@@ -10,7 +10,6 @@ import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
 import React, { Component } from 'react';
 import {fetchRegionMapping} from '../actions/regionMappingActions';
-import { fetchSearchResultsIfNeeded } from '../actions/datasetSearchActions';
 import queryString from 'query-string';
 
 
@@ -131,7 +130,6 @@ class SearchBox extends Component {
             value={this.getSearchBoxValue()}
             onChange={this.onSearchTextChange}
             onKeyPress={this.handleSearchFieldEnterKeyPress}
-            ref={(searchBox)=>{searchBox && searchBox.focus()}}
           />
           </div>
           <button onClick={this.onClickSearch} type='button' className='btn search-box__icon'><i className='fa fa-search' aria-hidden='true'></i> </button>
