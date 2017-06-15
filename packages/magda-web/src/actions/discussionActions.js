@@ -114,3 +114,51 @@ export function receiveMessagesError(discussionId, error): Action {
     error
   };
 }
+
+export function sendNewMessage(discussionId, message, user): Action {
+  return (dispatch: Function, getState: Function) => {
+    dispatch(sendMessage(discussionId, message, user));
+
+    return fetch(
+      config.discussionsApiUrl + `/discussions/${discussionId}/messages`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(message)
+      }
+    )
+      .then(response => {
+        if (response.status === 201) {
+          return response.json();
+        } else {
+          throw new Error(
+            `Error when sending message ${JSON.stringify(
+              message
+            )} for ${discussionId}: ${response.body}`
+          );
+        }
+      })
+      .then(messages => dispatch(receiveMessages(discussionId, messages)))
+      .catch(error => dispatch(sendMessageError(discussionId, error)));
+  };
+}
+
+export function sendMessage(discussionId, message, user): Action {
+  return {
+    type: actionTypes.SEND_MESSAGE,
+    discussionId,
+    message,
+    user
+  };
+}
+
+export function sendMessageError(discussionId, error): Action {
+  return {
+    type: actionTypes.SEND_MESSAGE_ERROR,
+    discussionId,
+    error
+  };
+}

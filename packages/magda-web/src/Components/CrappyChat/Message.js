@@ -13,25 +13,16 @@ export default class Message extends React.Component {
 
     this.plugins = pluginsFn();
 
-    const comment = props.comment;
+    const message = props.message;
+
+    console.log(props);
 
     this.state = {
-      ...comment,
+      ...message,
       editorState: EditorState.createWithContent(
-        convertFromRaw(comment.message)
+        convertFromRaw(message.message)
       )
     };
-  }
-
-  componentWillMount() {
-    base.syncState(`users/${this.props.comment.uid}/displayName`, {
-      context: this,
-      state: 'userName'
-    });
-    base.syncState(`users/${this.props.comment.uid}/photoURL`, {
-      context: this,
-      state: 'userAvatar'
-    });
   }
 
   componentDidMount() {
@@ -49,7 +40,7 @@ export default class Message extends React.Component {
     this.setState({
       editorState: EditorState.push(
         this.state.editorState,
-        convertFromRaw(props.comment.message)
+        convertFromRaw(props.message.message)
       )
     });
   }
@@ -73,12 +64,12 @@ export default class Message extends React.Component {
       <div className='cc-message'>
         <img
           className="cc-message__avatar"
-          src={this.filter(this.state.userAvatar) || ""}
+          src={this.filter(this.state.user.photoURL) || ""}
         />
 
         <div className="cc-message__right-of-avatar">
-          <strong>{this.filter(this.state.userName) || "Unknown"}</strong>{" "}
-          <small>{this.props.comment.date && prettydate.format(new Date(this.props.comment.date))}</small>
+          <strong>{this.filter(this.state.user.displayName) || "Unknown"}</strong>{" "}
+          <small>{this.state.modified && prettydate.format(new Date(this.state.modified))}</small>
           <Editor
             onChange={this.onEditorChange.bind(this)}
             readOnly={true}

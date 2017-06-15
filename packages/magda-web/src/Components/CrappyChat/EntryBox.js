@@ -10,7 +10,6 @@ import {
   KeyBindingUtil
 } from 'draft-js';
 const { hasShiftModifier } = KeyBindingUtil;
-import base from "../../RealtimeData/Base";
 
 import pluginsFn from './Plugins/Plugins';
 import PluginComponents from './Plugins/PluginComponents';

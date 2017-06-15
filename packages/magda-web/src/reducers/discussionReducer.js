@@ -16,6 +16,19 @@ function mergeIntoDiscussionsForType(state, action, newValue) {
   };
 }
 
+function mergeIntoDiscussions(state, action, newValue) {
+  return {
+    ...state,
+    discussions: {
+      ...state.discussions,
+      [action.discussionId]: {
+        ...(state.discussions[action.discussionId] || {}),
+        ...newValue
+      }
+    }
+  };
+}
+
 const discussionMapping = (state = initialData, action: Action) => {
   switch (action.type) {
     case "REQUEST_DISCUSSION_FOR_TYPE":
@@ -32,48 +45,36 @@ const discussionMapping = (state = initialData, action: Action) => {
         error: action.error
       });
     case "REQUEST_MESSAGES":
-      return {
-        ...state,
-        discussions: {
-          [action.discussionId]: {
-            ...(state.discussions[action.discussionId] || {}),
-            loading: true,
-            error: null
-          }
-        }
-      };
+      return mergeIntoDiscussions(state, action, {
+        loading: true,
+        error: null
+      });
     case "RECEIVE_MESSAGES":
-      return {
-        ...state,
-        discussions: {
-          [action.discussionId]: {
-            ...(state.discussions[action.discussionId] || {}),
-            messages: action.messages,
-            loading: false
-          }
-        }
-      };
+      return mergeIntoDiscussions(state, action, {
+        messages: action.messages,
+        loading: false
+      });
     case "RECEIVE_MESSAGES_ERROR":
-      return {
-        ...state,
-        discussions: {
-          [action.discussionId]: {
-            ...(state.discussions[action.discussionId] || {}),
-            error: action.error
-          }
-        }
-      };
-    // case "SEND_MESSAGE":
-    //   return {
-    //     ...state,
-    //     discussions: {
-    //       ...discussions,
-    //       discussionId: {
-    //         ...discussion,
-    //         messages: discussion.messages.concat([message])
-    //       }
-    //     }
-    //   };
+      return mergeIntoDiscussions(state, action, {
+        error: action.error,
+        loading: false
+      });
+    case "SEND_MESSAGE":
+      return mergeIntoDiscussions(state, action, {
+        messages: (state.discussions[action.discussionId].messages || []).concat([{
+          message: action.message,
+          user: action.user
+        }]),
+        loading: true
+      });
+    case "SEND_MESSAGE_ERROR":
+      const messages = (state.discussions[action.discussionId].messages || []);
+
+      return mergeIntoDiscussions(state, action, {
+        messages: messages.length ? messages.slice(0, messages.length - 1) : [],
+        error: state.error,
+        loading: false
+      });
     default:
       return state;
   }

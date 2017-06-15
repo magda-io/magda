@@ -9,7 +9,7 @@ import { bindActionCreators } from "redux";
 
 import Message from "./Message";
 import EntryBox from "./EntryBox";
-import { fetchMessages } from "../../actions/discussionActions";
+import { fetchMessages, sendNewMessage } from "../../actions/discussionActions";
 import "draft-js-mention-plugin/lib/plugin.css";
 import "./CrappyChat.css";
 
@@ -43,33 +43,7 @@ class CrappyChat extends React.Component {
   }
 
   _newChat(message) {
-    /*
-     * Here, we call .post on the '/chats' ref
-     * of our Firebase.  This will do a one-time 'set' on
-     * that ref, replacing it with the data prop in the
-     * options object.
-     *
-     * Keeping with the immutable data paradigm in React,
-     * you should never mutate, but only replace,
-     * the data in your Firebase (ie, use concat
-     * to return a mutated copy of your state)
-    */
-    // base.push(`dataset-discussions/${this.props.datasetId}`, {
-    //   data: {
-    //     uid: this.props.user.uid,
-    //     date: new Date().toISOString(),
-    //     message
-    //   },
-    //   context: this,
-    //   /*
-    //    * This 'then' method will run after the
-    //    * post has finished.
-    //    */
-    //   then: () => {
-    //     console.log('POSTED');
-    //     this.scrollToBottom();
-    //   }
-    // });
+    this.props.sendNewMessage(this.props.discussionId, message, this.props.user);
   }
 
   registerMessagesDiv(messagesRef) {
@@ -92,8 +66,8 @@ class CrappyChat extends React.Component {
           ref={this.registerMessagesDiv.bind(this)}
           className="crappy-chat__messages"
         >
-          {this.state.messages.map((comment, index) => {
-            return <Message key={comment.key} comment={comment} />;
+          {this.state.messages.map((message, index) => {
+            return <Message key={message.id || index} message={message} />;
           })}
         </div>
 
@@ -121,7 +95,8 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch: Dispatch<*>) => {
   return bindActionCreators(
     {
-      fetchMessages
+      fetchMessages,
+      sendNewMessage
     },
     dispatch
   );
