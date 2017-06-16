@@ -31,7 +31,7 @@ You'll need to run this in each new shell.
 Finally, deploy the kube registry to the Minikube cluster:
 
 ```bash
-kubectl create -f deploy/kubernetes/registry.yml
+kubectl create -f deploy/kubernetes/local/base/kube-registry.yml
 ```
 
 ## Set up the databases
