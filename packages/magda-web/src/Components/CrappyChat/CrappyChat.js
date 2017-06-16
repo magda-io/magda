@@ -31,10 +31,10 @@ class CrappyChat extends React.Component {
   }
 
   setup(props) {
-    const discussion = props.discussionsLookup[props.discussionId];
+    const discussion = props.discussionsLookup[props.typeName + '|' + props.typeId];
 
     if (!discussion) {
-      props.fetchMessages(props.discussionId);
+      props.fetchMessages(props.typeName, props.typeId);
     }
 
     this.setState({
@@ -43,7 +43,7 @@ class CrappyChat extends React.Component {
   }
 
   _newChat(message) {
-    this.props.sendNewMessage(this.props.discussionId, message, this.props.user);
+    this.props.sendNewMessage(this.props.typeName, this.props.typeId, message, this.props.user);
   }
 
   registerMessagesDiv(messagesRef) {
