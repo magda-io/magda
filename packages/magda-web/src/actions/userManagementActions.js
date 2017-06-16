@@ -19,20 +19,29 @@ export function requestWhoAmI(): Action {
     })
       .then(response => {
         if (response.status === 200) {
-          return response.json();
+          return response
+            .json()
+            .then(user => dispatch(receiveWhoAmISignedIn(user)));
+        } else if (response.status === 401) {
+          dispatch(receiveWhoAmISignedOut());
         } else {
           throw new Error("Error when fetching current user: " + response.body);
         }
       })
-      .then(user => dispatch(receiveWhoAmI(user)))
       .catch(err => dispatch(receiveWhoAmIError(err)));
   };
 }
 
-export function receiveWhoAmI(user): Action {
+export function receiveWhoAmISignedIn(user): Action {
   return {
-    type: actionTypes.RECEIVE_WHO_AM_I,
+    type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_IN,
     user
+  };
+}
+
+export function receiveWhoAmISignedOut(): Action {
+  return {
+    type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_OUT
   };
 }
 

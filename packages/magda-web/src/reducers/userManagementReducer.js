@@ -11,11 +11,17 @@ const userManagementMapping = (state = initialData, action: Action) => {
         isFetchingWhoAmI: true,
         whoAmIError: null
       });
-    case "RECEIVE_WHO_AM_I":
+    case "RECEIVE_WHO_AM_I_SIGNED_IN":
       return Object.assign({}, state, {
         isFetchingWhoAmI: false,
         whoAmIError: null,
         user: action.user
+      });
+    case "RECEIVE_WHO_AM_I_SIGNED_OUT":
+      return Object.assign({}, state, {
+        isFetchingWhoAmI: false,
+        whoAmIError: null,
+        user: null
       });
     case "RECEIVE_WHO_AM_I_ERROR":
       return Object.assign({}, state, {
