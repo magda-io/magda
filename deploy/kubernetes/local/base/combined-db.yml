@@ -21,7 +21,7 @@ spec:
       volumes:
       - name: data
         hostPath:
-          path: /var/combinedDbData
+          path: /data/combinedDbData
 ---
 apiVersion: v1
 kind: Service

@@ -52,7 +52,7 @@ ALTER TABLE public.linkeddiscussions
 
 CREATE INDEX x
     ON public.linkeddiscussions USING btree
-    (discussionId)
+    ("discussionId")
     TABLESPACE pg_default;
 CREATE TABLE public.messages
 (

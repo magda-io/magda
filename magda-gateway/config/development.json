@@ -6,8 +6,8 @@
     },
     "externalHost": "http://localhost:3016",
     "targets": {
-        "search": "http://192.168.99.100:30009/v0",
-        "registry": "http://192.168.99.100:30010/v0",
+        "search": "http://magda-api-dev.terria.io/api/v0/search",
+        "registry": "http://magda-api-dev.terria.io/api/v0/registry",
         "auth": "http://192.168.99.100:30015/v0/public",
         "discussions": "http://localhost:3001/v0"
     }
