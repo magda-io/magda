@@ -75,9 +75,9 @@ export function getLinkedMessages(
   linkedType: string,
   linkedId: string
 ): Promise<Message[]> {
-  return pool
-    .query(messagesForDatasetSql, [linkedType, linkedId])
-    .then(res => res.rows);
+  return pool.query(messagesForDatasetSql, [linkedType, linkedId]).then(res => {
+    return res.rows;
+  });
 }
 
 export function addMessageToLinkedDiscussion(
@@ -85,14 +85,20 @@ export function addMessageToLinkedDiscussion(
   linkedType: string,
   linkedId: string,
   message: Object
-): Promise<Message> {
+): Promise<{ message: Message; discussion: Discussion }> {
   const addMessage = (discussion: Discussion) =>
-    addMessageToDiscussion(userId, discussion.id, message);
+    addMessageToDiscussion(userId, discussion.id, message).then(message => ({
+      message,
+      discussion
+    }));
 
   return getLinkedDiscussion(linkedType, linkedId).then(maybe =>
     maybe.caseOf({
       just: discussion => addMessage(discussion),
-      nothing: () => addLinkedDiscussion(linkedType, linkedId).then(discussion => addMessage(discussion))
+      nothing: () =>
+        addLinkedDiscussion(linkedType, linkedId).then(discussion =>
+          addMessage(discussion)
+        )
     })
   );
 }

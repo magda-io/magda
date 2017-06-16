@@ -5,10 +5,10 @@ import * as _ from "lodash";
 import {
   getMessagesForDiscussion,
   addMessageToDiscussion,
-  // getLinkedMessages,
+  getLinkedMessages,
   getLinkedDiscussion,
-  addLinkedDiscussion
-  // addMessageToLinkedDiscussion
+  addLinkedDiscussion,
+  addMessageToLinkedDiscussion
 } from "./db";
 import { getUserIdHandling } from "@magda/typescript-common/lib/session/GetUserId";
 import { getUserPublic } from "@magda/auth-api/lib/src/client";
@@ -52,29 +52,33 @@ router.get("/linked/:linkedType/:linkedId", (req, res) => {
     });
 });
 
-// router.get("/linked/:linkedType/:linkedId/messages", (req, res) => {
-//   handleMessages(
-//     getLinkedMessages(req.params.linkedType, req.params.linkedId),
-//     res
-//   );
-// });
+router.get("/linked/:linkedType/:linkedId/messages", (req, res) => {
+  return handleMessages(
+    getLinkedMessages(req.params.linkedType, req.params.linkedId),
+    res
+  );
+});
 
-// router.post("/linked/:linkedType/:linkedId/messages", (req, res) => {
-//   const userId = getUserId(req);
-//   const message: Object = req.body;
+router.post("/linked/:linkedType/:linkedId/messages", (req, res) => {
+  getUserIdHandling(req, res, (userId: string) => {
+    const message: Object = req.body;
 
-//   addMessageToLinkedDiscussion(
-//     userId,
-//     req.params.linkedType,
-//     req.params.linkedId,
-//     message
-//   )
-//     .then(messages => res.json(messages).status(201).send())
-//     .catch(e => {
-//       console.error(e);
-//       res.status(500).send();
-//     });
-// });
+    addMessageToLinkedDiscussion(
+      userId,
+      req.params.linkedType,
+      req.params.linkedId,
+      message
+    )
+      .then(({ message, discussion }) => {
+        res.status(201);
+        return getMessages(discussion.id, res);
+      })
+      .catch(e => {
+        console.error(e);
+        res.status(500).send("Error");
+      });
+  });
+});
 
 function getMessages(discussionId: string, res: express.Response) {
   return handleMessages(getMessagesForDiscussion(discussionId), res);
@@ -85,8 +89,12 @@ function handleMessages(
   res: express.Response
 ): Promise<void> {
   return promise
-    .then(messages => addUsers(messages))
-    .then(messages => res.json(messages).send())
+    .then(messages => {
+      return addUsers(messages);
+    })
+    .then(messages => {
+      return res.json(messages).send();
+    })
     .catch(e => {
       console.error(e);
       res.status(500).send();
