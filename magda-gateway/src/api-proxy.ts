@@ -2,7 +2,6 @@ import * as express from "express";
 const httpProxy = require("http-proxy");
 const jwt = require("jsonwebtoken");
 const config = require("config");
-const cors = require("cors");
 
 import setupAuth from "./setup-auth";
 
@@ -31,15 +30,6 @@ proxy.on("error", function(err: any, req: any, res: any) {
 
   res.end("Something went wrong.");
 });
-
-const configuredCors = cors({
-    origin: true,
-    credentials: true
-});
-
-router.use(configuredCors);
-
-router.options("*", configuredCors);
 
 function proxyRoute(
   baseRoute: string,

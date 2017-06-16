@@ -10,7 +10,7 @@ import {
   addLinkedDiscussion
   // addMessageToLinkedDiscussion
 } from "./db";
-import getUserId from "@magda/typescript-common/lib/session/GetUserId";
+import { getUserIdHandling } from "@magda/typescript-common/lib/session/GetUserId";
 import { getUserPublic } from "@magda/auth-api/lib/src/client";
 
 const router = express.Router();
@@ -20,18 +20,19 @@ router.get("/discussions/:discussionId/messages", (req, res) =>
 );
 
 router.post("/discussions/:discussionId/messages", (req, res) => {
-  const userId = getUserId(req);
-  const message: Object = req.body;
+  getUserIdHandling(req, res, (userId: string) => {
+    const message: Object = req.body;
 
-  addMessageToDiscussion(userId, req.params.discussionId, message)
-    .then(message => {
-      res.status(201);
-      return getMessages(req.params.discussionId, res);
-    })
-    .catch(e => {
-      console.error(e);
-      res.status(500).send("Error");
-    });
+    addMessageToDiscussion(userId, req.params.discussionId, message)
+      .then(message => {
+        res.status(201);
+        return getMessages(req.params.discussionId, res);
+      })
+      .catch(e => {
+        console.error(e);
+        res.status(500).send("Error");
+      });
+  });
 });
 
 router.get("/linked/:linkedType/:linkedId", (req, res) => {
