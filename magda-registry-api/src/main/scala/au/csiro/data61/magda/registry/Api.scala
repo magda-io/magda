@@ -10,14 +10,19 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.{HttpMethod, HttpMethods, StatusCodes}
+import akka.http.scaladsl.model.{HttpMethod, HttpMethods, StatusCodes, headers}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import akka.util.Timeout
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.interfaces.DecodedJWT
 import scalikejdbc.config._
 import scalikejdbc._
+
+import scala.util.control.NonFatal
 
 class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends CorsDirectives with Protocols {
   val logger = Logging(system, getClass)
@@ -69,14 +74,45 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
 
   webHookActor ! WebHookActor.Process
 
+  import java.io.UnsupportedEncodingException
+
+  val algorithm = Algorithm.HMAC256(System.getenv("JWT_SECRET"))
+  val jwt = JWT.require(algorithm).build
+
+//  try {
+//    //Reusable verifier instance
+//    val jwt = verifier.verify(token)
+//  } catch {
+//    case exception: UnsupportedEncodingException =>
+//
+//    //UTF-8 encoding not supported
+//    case exception: Nothing =>
+//
+//    //Invalid signature/claims
+//  }
+
   def checkCredentials(allowAnonymous: Seq[HttpMethod], allowAuthenticated: Seq[HttpMethod]) = (request: RequestContext) => {
     if (allowAnonymous.contains(request.request.method)) {
       true
     } else {
-      val user = getUserDetails(request)
-      if (allowAuthenticated.contains(request.request.method) && userIsAuthenticated(user)) {
+      val sessionToken = request.request.headers.filter {
+        case headers.RawHeader("X-Magda-Session", value) => true
+        case _ => false
+      }.map { header =>
+        try {
+          Some(jwt.verify(header.value()))
+        } catch {
+          case NonFatal(_) => None
+        }
+      }.filter {
+        case Some(token) => true
+        case None => false
+      }.map(_.get).headOption
+
+//        println(jwt.verify(request.request.header[headers.Authorization].map(_.credentials.token()).getOrElse("")))
+      if (allowAuthenticated.contains(request.request.method) && userIsAuthenticated(sessionToken)) {
         true
-      } else if (userIsAdmin(user)) {
+      } else if (userIsAdmin(sessionToken)) {
         true
       } else {
         false
@@ -84,16 +120,14 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
     }
   }
 
-  def getUserDetails(request: RequestContext): String = {
-    ""
+  def userIsAuthenticated(user: Option[DecodedJWT]): Boolean = user match {
+    case Some(_) => true
+    case None => false
   }
 
-  def userIsAuthenticated(user: String): Boolean = {
-    true
-  }
-
-  def userIsAdmin(user: String): Boolean = {
-    false
+  def userIsAdmin(user: Option[DecodedJWT]): Boolean = user match {
+    case Some(token) => token.getClaim("isAdmin").asBoolean()
+    case None => false
   }
 
   def checkAuthorization(allowAnonymous: Seq[HttpMethod], allowAuthenticated: Seq[HttpMethod]) = authorize(checkCredentials(allowAnonymous, allowAuthenticated))

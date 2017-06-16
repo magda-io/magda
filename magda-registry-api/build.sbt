@@ -25,7 +25,8 @@ libraryDependencies ++= {
     "io.circe" %% "circe-generic" % "0.8.0",
     "io.circe" %% "circe-java8" % "0.8.0",
     "org.gnieh" %% "diffson-spray-json" % "2.1.2",
-    "net.virtual-void" %%  "json-lenses" % "0.6.2"
+    "net.virtual-void" %%  "json-lenses" % "0.6.2",
+    "com.auth0" % "java-jwt" % "3.2.0"
   )
 }
 
