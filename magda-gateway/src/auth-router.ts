@@ -25,7 +25,7 @@ authRouter.use('/login/facebook', fbAuthRouter);
 authRouter.use('/login/ckan', ckanAuthRouter);
 
 authRouter.get("/profile", require("connect-ensure-login").ensureLoggedIn(), function (req, res) {
-    getUser(req.user).then(user =>
+    getUser(req.user.id).then(user =>
         res.render("profile", { user: user.valueOrThrow() })
     );
 });

@@ -1,13 +1,11 @@
 import * as passport from 'passport';
 import { lookupUser, createUser } from '@magda/auth-api/lib/src/client';
-import { User } from '@magda/auth-api/lib/src/model';
+import { User, UserToken } from '@magda/auth-api/lib/src/model';
 
-export default function createOrGet(profile: passport.Profile, source: string): Promise<String> {
-    const user = profileToUser(profile, source);
-
-    return lookupUser(user.source, user.sourceId).then(maybe => maybe.caseOf({
-        just: user => Promise.resolve(<string>user.id),
-        nothing: () => createUser(user).then(user => <string>user.id)
+export default function createOrGet(profile: passport.Profile, source: string): Promise<UserToken> {
+    return lookupUser(source, profile.id).then(maybe => maybe.caseOf({
+        just: user => Promise.resolve(userToUserToken(user)),
+        nothing: () => createUser(profileToUser(profile, source)).then(userToUserToken)
     }));
 };
 
@@ -21,6 +19,14 @@ function profileToUser(profile: passport.Profile, source: string): User {
         email: profile.emails[0].value,
         photoURL: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : undefined,
         source: source,
-        sourceId: profile.id
+        sourceId: profile.id,
+        isAdmin: false
     }
+}
+
+function userToUserToken(user: User): UserToken {
+    return {
+        id: <string>user.id,
+        isAdmin: <boolean>user.isAdmin
+    };
 }
