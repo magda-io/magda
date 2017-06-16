@@ -4,9 +4,9 @@ import Format from './SearchFacets/Format';
 import Region from './SearchFacets/Region';
 import Temporal from './SearchFacets/Temporal';
 
-const apiHost = 'http://104.199.180.124/';
+// const apiHost = 'http://104.199.180.124/';
 // const apiHost = 'http://minikube.data.gov.au:30016/';
-// const apiHost = 'http://localhost:3016/';
+const apiHost = 'http://localhost:3016/';
 
 export const config = {
         appName: 'data.gov.au',

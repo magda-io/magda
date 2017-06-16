@@ -5,12 +5,12 @@ import ReactDocumentTitle from "react-document-title";
 import { config } from "../config.js";
 import { Link } from "react-router";
 import SearchBox from "../Search/SearchBox";
+import AccountNavbar from "./Account/AccountNavbar";
 
 import { ExtraSmall, Small } from "../UI/Responsive";
-import { connect } from "react-redux";
 import "./AppContainer.css";
 
-class AppContainer extends React.Component {
+export default class AppContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = { isOpen: false };
@@ -50,18 +50,7 @@ class AppContainer extends React.Component {
                     </div>
                   </div>
                   <div className="col-sm-10 nav-links">
-                    <ul className="nav navbar-nav navbar-account">
-                      {this.props.user
-                        ? <li>You are {this.props.user.displayName}</li>
-                        : [
-                            <li>
-                              <Link to={`account/sign-in`}>
-                                Create an account
-                              </Link>
-                            </li>,
-                            <li><Link to={`account/sign-in`}>Sign in</Link></li>
-                          ]}
-                    </ul>
+                    <AccountNavbar />
 
                     <ul className="nav navbar-nav">
                       {headerNavs.map(nav =>
@@ -156,13 +145,3 @@ class AppContainer extends React.Component {
     );
   }
 }
-
-function mapStateToProps(state) {
-  let { userManagement } = state;
-
-  return {
-    user: userManagement.user
-  };
-}
-
-export default connect(mapStateToProps)(AppContainer);

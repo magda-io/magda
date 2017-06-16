@@ -23,6 +23,20 @@ const userManagementMapping = (state = initialData, action: Action) => {
         whoAmIError: action.err,
         user: null
       });
+    case "REQUEST_SIGN_OUT":
+      return Object.assign({}, state, {
+        isSigningOut: true
+      });
+    case "COMPLETED_SIGN_OUT":
+      return Object.assign({}, state, {
+        isSigningOut: false,
+        user: null
+      });
+    case "SIGN_OUT_ERROR":
+      return Object.assign({}, state, {
+        isSigningOut: false,
+        signOutError: action.error
+      });
     default:
       return state;
   }

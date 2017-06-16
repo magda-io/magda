@@ -3,7 +3,6 @@ import { EditorState, convertFromRaw } from 'draft-js';
 import Editor from 'draft-js-plugins-editor';
 import prettydate from 'pretty-date';
 
-import base from "../../RealtimeData/Base";
 import pluginsFn from "./Plugins/Plugins";
 import "./Message.css";
 
@@ -14,8 +13,6 @@ export default class Message extends React.Component {
     this.plugins = pluginsFn();
 
     const message = props.message;
-
-    console.log(props);
 
     this.state = {
       ...message,

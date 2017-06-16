@@ -2,7 +2,6 @@ import React from 'react';
 
 import UserMentionSearchResult from "./UserMentionSearchResult";
 import SuggestionsState from "../SuggestionsState";
-import base from "../../../../RealtimeData/Base";
 
 const builtInUsers = [
   {

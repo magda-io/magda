@@ -65,6 +65,10 @@ class CrappyChat extends React.Component {
           ref={this.registerMessagesDiv.bind(this)}
           className='crappy-chat__messages white-box'
         >
+          {this.state.messages.length === 0 &&
+            <span>Be the first to comment!</span>
+          }
+
           {this.state.messages.map((message, index) => {
             return <Message key={message.id || index} message={message} />;
           })}

@@ -42,3 +42,41 @@ export function receiveWhoAmIError(err): Action {
     err
   };
 }
+
+export function requestSignOut(): Action {
+  return (dispatch: Function, getState: Function) => {
+    if (getState().userManagement.isSigningOut) {
+      return false;
+    }
+
+    dispatch({
+      type: actionTypes.REQUEST_SIGN_OUT
+    });
+
+    fetch(config.apiHost + "auth/logout", {
+      credentials: "include"
+    }).then(response => {
+      if (response.status <= 400) {
+        dispatch(completedSignOut());
+        return;
+      } else {
+        dispatch(
+          signOutError(new Error("Error signing out: " + response.body))
+        );
+      }
+    });
+  };
+}
+
+export function completedSignOut(): Action {
+  return {
+    type: actionTypes.COMPLETED_SIGN_OUT
+  };
+}
+
+export function signOutError(err): Action {
+  return {
+    type: actionTypes.SIGN_OUT_ERROR,
+    err
+  };
+}

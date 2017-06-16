@@ -1,17 +1,23 @@
 // @flow
 // eslint-disable-next-line
-import createLogger from 'redux-logger'
-import './index.css';
-import { Router, Route, IndexRoute, IndexRedirect, browserHistory} from 'react-router';
-import {config} from './config'
+import createLogger from "redux-logger";
+import "./index.css";
+import {
+  Router,
+  Route,
+  IndexRoute,
+  IndexRedirect,
+  browserHistory
+} from "react-router";
+import { config } from "./config";
 
-import thunkMiddleware from 'redux-thunk'
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Home from './Components/Home';
-import Search from './Search/Search';
-import RecordHandler from './Components/RecordHandler';
-import AppContainer from './Components/AppContainer';
+import thunkMiddleware from "redux-thunk";
+import React from "react";
+import ReactDOM from "react-dom";
+import Home from "./Components/Home";
+import Search from "./Search/Search";
+import RecordHandler from "./Components/RecordHandler";
+import AppContainer from "./Components/AppContainer";
 
 import Feedback from "./Components/Feedback";
 import Contact from "./Components/Contact";
@@ -26,9 +32,9 @@ import DatasetDetails from "./Dataset/DatasetDetails";
 import DatasetDiscussion from "./Dataset/DatasetDiscussion";
 import DatasetPublisher from "./Dataset/DatasetPublisher";
 
-import ProjectsViewer from './Project/ProjectsViewer';
-import ProjectDetails from './Project/ProjectDetails';
-import CreateProject from './Project/CreateProject';
+import ProjectsViewer from "./Project/ProjectsViewer";
+import ProjectDetails from "./Project/ProjectDetails";
+import CreateProject from "./Project/CreateProject";
 
 import PublishersViewer from "./Publisher/PublishersViewer";
 import PublisherDetails from "./Publisher/PublisherDetails";
@@ -62,35 +68,38 @@ function loadDefaultData(store) {
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
-      <Route path='/' component={AppContainer} onEnter={loadDefaultData(store)}>
-        <IndexRoute component={Home}/>
-        <Route path='search' component={Search} />
-        <Route path='feedback' component={Feedback} />
-        <Route path='contact' component={Contact} />
-        <Route path='sign-in' component={Account} />
-        <Route path="account">
-          <Route path="sign-in" component={Account} />
+      <Route path="/" component={AppContainer} onEnter={loadDefaultData(store)}>
+        <IndexRoute component={Home} />
+        <Route path="search" component={Search} />
+        <Route path="feedback" component={Feedback} />
+        <Route path="contact" component={Contact} />
+        <Route path="account" component={Account}>
           <Route path="sign-in-redirect" component={SignInRedirect} />
         </Route>
 
-        <Route path='dataset/:datasetId' component={RecordHandler}>
-          <IndexRedirect to='details'/>
-          <Route path='details' component={DatasetDetails}/>
-          <Route path='discussion' component={DatasetDiscussion}/>
-          <Route path='publisher' component={DatasetPublisher}/>
+        <Route path="dataset/:datasetId" component={RecordHandler}>
+          <IndexRedirect to="details" />
+          <Route path="details" component={DatasetDetails} />
+          <Route path="discussion" component={DatasetDiscussion} />
+          <Route path="publisher" component={DatasetPublisher} />
         </Route>
-        <Route path='dataset/:datasetId/distribution/:distributionId' component={RecordHandler}>
-            <IndexRedirect to='details'/>
-            <Route path='details' component={DistributionDetails}/>
-            <Route path='map' component={DistributionMap}/>
-            <Route path='chart' component={DistributionChart}/>
+        <Route
+          path="dataset/:datasetId/distribution/:distributionId"
+          component={RecordHandler}
+        >
+          <IndexRedirect to="details" />
+          <Route path="details" component={DistributionDetails} />
+          <Route path="map" component={DistributionMap} />
+          <Route path="chart" component={DistributionChart} />
         </Route>
-        <Route path='projects' component={ProjectsViewer}/>
-        <Route path='projects/:projectId' component={ProjectDetails}/>
-        <Route path='project/new' component={CreateProject}/>
-        <Route path='publishers' component={PublishersViewer}/>
-        <Route path='publishers/:publisherId' component={PublisherDetails}/>
-        { staticPageRegister.map( item => <Route path={`page/:id`} key={item.path} component={item.component}/>)}
+        <Route path="projects" component={ProjectsViewer} />
+        <Route path="projects/:projectId" component={ProjectDetails} />
+        <Route path="project/new" component={CreateProject} />
+        <Route path="publishers" component={PublishersViewer} />
+        <Route path="publishers/:publisherId" component={PublisherDetails} />
+        {staticPageRegister.map(item =>
+          <Route path={`page/:id`} key={item.path} component={item.component} />
+        )}
       </Route>
     </Router>
   </Provider>,
