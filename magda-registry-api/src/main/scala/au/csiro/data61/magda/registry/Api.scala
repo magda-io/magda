@@ -72,11 +72,28 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
   def checkCredentials(allowAnonymous: Seq[HttpMethod], allowAuthenticated: Seq[HttpMethod]) = (request: RequestContext) => {
     if (allowAnonymous.contains(request.request.method)) {
       true
-    } else if (allowAuthenticated.contains(request.request.method)) {
-      true // TODO: check that this is an authenticated user
     } else {
-      false // TODO: check if we're admin
+      val user = getUserDetails(request)
+      if (allowAuthenticated.contains(request.request.method) && userIsAuthenticated(user)) {
+        true
+      } else if (userIsAdmin(user)) {
+        true
+      } else {
+        false
+      }
     }
+  }
+
+  def getUserDetails(request: RequestContext): String = {
+    ""
+  }
+
+  def userIsAuthenticated(user: String): Boolean = {
+    true
+  }
+
+  def userIsAdmin(user: String): Boolean = {
+    false
   }
 
   def checkAuthorization(allowAnonymous: Seq[HttpMethod], allowAuthenticated: Seq[HttpMethod]) = authorize(checkCredentials(allowAnonymous, allowAuthenticated))
