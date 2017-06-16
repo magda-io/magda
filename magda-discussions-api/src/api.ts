@@ -7,7 +7,6 @@ import {
   addMessageToDiscussion,
   getLinkedMessages,
   getLinkedDiscussion,
-  addLinkedDiscussion,
   addMessageToLinkedDiscussion
 } from "./db";
 import { getUserIdHandling } from "@magda/typescript-common/lib/session/GetUserId";
@@ -41,11 +40,10 @@ router.get("/linked/:linkedType/:linkedId", (req, res) => {
   getLinkedDiscussion(linkedType, linkedId)
     .then(maybe =>
       maybe.caseOf({
-        just: discussion => Promise.resolve(discussion),
-        nothing: () => addLinkedDiscussion(linkedType, linkedId)
+        just: discussion => res.json(discussion).send(),
+        nothing: () => res.status(404).send("Not found")
       })
     )
-    .then(discussion => res.json(discussion).send())
     .catch(e => {
       console.error(e);
       res.status(500).send("Error");
