@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import { bindActionCreators } from "redux";
 import { requestSignOut } from "../../actions/userManagementActions";
 
-class AccountNavBar extends React.Component {
+class AccountNavbar extends React.Component {
   signOut() {
     this.props.requestSignOut();
   }
@@ -26,7 +26,7 @@ class AccountNavBar extends React.Component {
               </li>
             ]
           : <li>
-              <Link to={`/account/sign-in`}>Sign in</Link>
+              <Link to={`/account`}>Sign in</Link>
             </li>}
       </ul>
     );
@@ -50,4 +50,4 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(AccountNavBar);
+export default connect(mapStateToProps, mapDispatchToProps)(AccountNavbar);

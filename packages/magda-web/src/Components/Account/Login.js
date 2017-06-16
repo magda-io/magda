@@ -1,22 +1,29 @@
 import React from "react";
+import { browserHistory } from "react-router";
 
 import { config } from "../../config";
 const { apiHost: baseUrl } = config;
 
 export default class Login extends React.Component {
   render() {
-    // FIXME: Make this less hacky.
-    const rawRedirectUrl = window.location.href.replace(
-      "sign-in",
-      "sign-in-redirect"
-    );
+    const { pathname: prevPath } =
+      browserHistory.lastLocation || browserHistory.getCurrentLocation();
+
+    const baseRedirectUrl = `${window.location.protocol}//${window.location
+      .host}`;
+    const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${prevPath}`;
+
     const makeLoginUrl = type =>
       `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
-        rawRedirectUrl
+        oauthRedirect
       )}`;
 
     return (
       <div>
+        {this.props.signInError &&
+          <div>
+            Sign In Failed: {this.props.signInError}
+          </div>}
         <div>
           <a href={makeLoginUrl("facebook")}>
             Login with Facebook

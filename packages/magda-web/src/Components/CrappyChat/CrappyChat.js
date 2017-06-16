@@ -77,7 +77,7 @@ class CrappyChat extends React.Component {
         {this.props.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
 
         {!this.props.user &&
-          <div><Link to="sign-in">Sign in</Link> to join the discussion!</div>}
+          <div><Link to="/account">Sign in</Link> to join the discussion!</div>}
       </div>
     );
   }

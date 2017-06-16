@@ -1,39 +1,18 @@
 import React from "react";
-import { bindActionCreators } from "redux";
-import { connect } from "react-redux";
-import { signedIn } from "../../actions/userManagementActions";
 
-// TODO: Get rid of this when we move to proper HTML5 urls.
-const getParams = query => {
-  if (!query) {
-    return {};
-  }
+import { browserHistory } from "react-router";
 
-  return (/^[?#]/.test(query) ? query.slice(1) : query)
-    .split("&")
-    .reduce((params, param) => {
-      let [key, value] = param.split("=");
-      params[key] = value ? decodeURIComponent(value.replace(/\+/g, " ")) : "";
-      return params;
-    }, {});
-};
+import parseQueryString from "../../helpers/parseQueryString";
 
-export default class SignInRedirect extends React.Component {
-  constructor(props) {
-    super(props);
+export default function signInRedirect() {
+  const params = parseQueryString(window.location.search);
 
-    const qs = getParams(window.location.search);
-
-    this.state = {};
-  }
-
-  render() {
-    return (
-      <div className="container account">
-        <h2>Account</h2>
-
-      </div>
-    );
+  if (params.result === "success") {
+    browserHistory.replace(params.redirectTo || "/");
+  } else {
+    browserHistory.replace({
+      pathname: "/account",
+      state: { signInError: params.errorMessage }
+    });
   }
 }
-

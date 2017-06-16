@@ -22,7 +22,7 @@ import AppContainer from "./Components/AppContainer";
 import Feedback from "./Components/Feedback";
 import Contact from "./Components/Contact";
 import Account from "./Components/Account/Account";
-import SignInRedirect from "./Components/Account/SignInRedirect";
+import signInRedirect from "./Components/Account/SignInRedirect";
 
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
@@ -56,10 +56,14 @@ const store: Store = createStore(
   )
 );
 
-browserHistory.listen(location => {
+const recordNewRoute = location => {
   window.ga("set", "location", document.location);
   window.ga("send", "pageview");
-});
+  browserHistory.lastLocation = browserHistory.currentLocation;
+  browserHistory.currentLocation = location;
+};
+recordNewRoute(browserHistory.getCurrentLocation());
+browserHistory.listen(recordNewRoute);
 
 function loadDefaultData(store) {
   store.dispatch(requestWhoAmI());
@@ -73,9 +77,8 @@ ReactDOM.render(
         <Route path="search" component={Search} />
         <Route path="feedback" component={Feedback} />
         <Route path="contact" component={Contact} />
-        <Route path="account" component={Account}>
-          <Route path="sign-in-redirect" component={SignInRedirect} />
-        </Route>
+        <Route path="account" component={Account} />
+        <Route path="sign-in-redirect" onEnter={signInRedirect} />
 
         <Route path="dataset/:datasetId" component={RecordHandler}>
           <IndexRedirect to="details" />
