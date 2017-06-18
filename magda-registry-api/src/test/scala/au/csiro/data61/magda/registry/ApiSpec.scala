@@ -11,8 +11,11 @@ import scalikejdbc._
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport {
   case class FixtureParam(api: Api, webHookActorProbe: TestProbe)
 
-  override def testConfigSource = "db.default.url = \"jdbc:postgresql://localhost/postgres?currentSchema=test\""
-//  override def testConfigSource = "db.default.url = \"jdbc:postgresql://192.168.99.100:30545/postgres?currentSchema=test\""
+  override def testConfigSource =
+    """
+      |db.default.url = "jdbc:postgresql://minikube.data.gov.au:30545/postgres?currentSchema=test"
+      |authorization.skip = true
+    """.stripMargin
 
   override def withFixture(test: OneArgTest) = {
     val webHookActorProbe = TestProbe()

@@ -74,25 +74,15 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
 
   webHookActor ! WebHookActor.Process
 
-  import java.io.UnsupportedEncodingException
+  val skipAuthorization = if (config.hasPath("authorization.skip")) config.getBoolean("authorization.skip") else false
 
   val algorithm = Algorithm.HMAC256(System.getenv("JWT_SECRET"))
   val jwt = JWT.require(algorithm).build
 
-//  try {
-//    //Reusable verifier instance
-//    val jwt = verifier.verify(token)
-//  } catch {
-//    case exception: UnsupportedEncodingException =>
-//
-//    //UTF-8 encoding not supported
-//    case exception: Nothing =>
-//
-//    //Invalid signature/claims
-//  }
-
   def checkCredentials(allowAnonymous: Seq[HttpMethod], allowAuthenticated: Seq[HttpMethod]) = (request: RequestContext) => {
-    if (allowAnonymous.contains(request.request.method)) {
+    if (skipAuthorization) {
+      true
+    } else if (allowAnonymous.contains(request.request.method)) {
       true
     } else {
       val sessionToken = request.request.headers.filter {
