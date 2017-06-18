@@ -1,5 +1,5 @@
 CREATE DATABASE auth
-    WITH 
+    WITH
     OWNER = postgres
     ENCODING = 'UTF8'
     LC_COLLATE = 'en_US.utf8'
@@ -19,6 +19,7 @@ CREATE TABLE public.users
     "photoURL" character varying(200) COLLATE pg_catalog."default" NOT NULL,
     source character varying(20) COLLATE pg_catalog."default" NOT NULL,
     "sourceId" character varying(200) COLLATE pg_catalog."default" NOT NULL,
+    "isAdmin" boolean default false NOT NULL,
     CONSTRAINT users_pkey PRIMARY KEY (id),
     CONSTRAINT source_unique UNIQUE ("sourceId", source)
 )
