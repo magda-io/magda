@@ -49,10 +49,12 @@ private class WebhookRegisterer(interface: RegistryExternalInterface)(implicit c
       config = WebHookConfig(
         aspects = Some(List(
           "dcat-dataset-strings",
+          "dataset-distributions",
           "source"
         )),
         optionalAspects = Some(List(
-          "dataset-distributions"
+          "temporal-coverage",
+          "dataset-publisher"
         )),
         includeRecords = Some(true),
         dereference = Some(true)
