@@ -99,7 +99,6 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
         case None => false
       }.map(_.get).headOption
 
-//        println(jwt.verify(request.request.header[headers.Authorization].map(_.credentials.token()).getOrElse("")))
       if (allowAuthenticated.contains(request.request.method) && userIsAuthenticated(sessionToken)) {
         true
       } else if (userIsAdmin(sessionToken)) {
