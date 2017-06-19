@@ -233,6 +233,9 @@ export default abstract class JsonConnector {
                         undefined,
                         recordOrError));
                 } else {
+                    record.aspects['dataset-publisher'] = {
+                        publisher: this.getIdFromJsonOrganization(publisher)
+                    };
                     ++result.organizationsConnected;
                 }
             }
