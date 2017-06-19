@@ -104,6 +104,7 @@ export function postNewProject(props: Project){
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
+      credentials: "include"
     })
     .then(response => {
       if(response.status === 200){
