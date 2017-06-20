@@ -1,4 +1,4 @@
-import '../../node_modules/leaflet/dist/leaflet.css';
+import 'leaflet/dist/leaflet.css';
 import './FacetRegion.css';
 import React, { Component } from 'react';
 import DropDown from '../UI/DropDown';
@@ -121,7 +121,7 @@ class FacetRegion extends Component {
                                           options={this.getDropDownOptions()}
                                           select={this.selectRegionType}/>
                       }
-                    <RegionSummray regionMapping={this.props.regionMapping} 
+                    <RegionSummray regionMapping={this.props.regionMapping}
                                  region={this.state._activeRegion}/>
                     <div className='facet-region__preview'>
                         <RegionMap title='region'
