@@ -1,13 +1,12 @@
 require("isomorphic-fetch");
 const config = require("config");
-const cors = require("cors");
 const path = require('path');
 
 import * as express from "express";
 
 var app = express();
 
-app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, '..', 'build')));
 
 // URLs in this list will load index.html and be handled by React routing.
 const topLevelRoutes = [
@@ -23,10 +22,10 @@ const topLevelRoutes = [
 
 topLevelRoutes.forEach(topLevelRoute => {
     app.get('/' + topLevelRoute, function (req, res) {
-        res.sendFile(path.join(__dirname, 'build', 'index.html'));
+        res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
     });
     app.get('/' + topLevelRoute + '/*', function (req, res) {
-        res.sendFile(path.join(__dirname, 'build', 'index.html'));
+        res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
     });
 });
 
