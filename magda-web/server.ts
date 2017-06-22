@@ -5,12 +5,29 @@ const path = require('path');
 
 import * as express from "express";
 
-// Create a new Express application.
 var app = express();
 
 app.use(express.static(path.join(__dirname, 'build')));
-app.get(/^\/search(\/.*)?/, function (req, res) {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+
+// URLs in this list will load index.html and be handled by React routing.
+const topLevelRoutes = [
+    'search',
+    'feedback',
+    'contact',
+    'account',
+    'sign-in-redirect',
+    'dataset',
+    'projects',
+    'publishers'
+];
+
+topLevelRoutes.forEach(topLevelRoute => {
+    app.get('/' + topLevelRoute, function (req, res) {
+        res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    });
+    app.get('/' + topLevelRoute + '/*', function (req, res) {
+        res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    });
 });
 
 app.listen(config.get("listenPort"));

@@ -69,6 +69,8 @@ function loadDefaultData(store) {
   store.dispatch(requestWhoAmI());
 }
 
+// If you add a new top-level route below, you must also add it to ../server.ts!
+
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
