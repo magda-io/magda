@@ -1,0 +1,15 @@
+@import '../variables';
+.facet-header__title{
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  border-radius: 15px;
+  text-align: left;
+  background: #fff;
+  &.not-empty{
+    background: $magda-grey;
+  }
+  .caret{
+    margin-left: 3px;
+  }
+}

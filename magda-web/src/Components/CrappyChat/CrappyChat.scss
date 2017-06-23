@@ -1,0 +1,6 @@
+.crappy-chat {
+    &__messages {
+        max-height: 20em;
+        overflow-y: auto;
+    }
+}

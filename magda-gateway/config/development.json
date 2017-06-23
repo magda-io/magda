@@ -9,6 +9,7 @@
         "search": "http://192.168.99.100:30009/v0",
         "registry": "http://192.168.99.100:30010/v0",
         "auth": "http://192.168.99.100:30015/v0/public",
-        "discussions": "http://localhost:3001/v0"
+        "discussions": "http://localhost:3001/v0",
+        "web": "http://localhost:3017"
     }
 }
