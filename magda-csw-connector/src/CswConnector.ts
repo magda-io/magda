@@ -1,7 +1,6 @@
-import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
-import JsonConnector, { JsonConnectorOptions } from '@magda/typescript-common/lib/JsonConnector';
+import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
+import JsonConnector, { JsonConnectorOptions } from '@magda/typescript-common/dist/JsonConnector';
 import Csw from './Csw';
-import { flatMap } from 'lodash';
 import * as xmldom from 'xmldom';
 import * as xml2js from 'xml2js';
 import * as jsonpath from 'jsonpath';

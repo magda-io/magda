@@ -1,12 +1,11 @@
-import Registry from '@magda/typescript-common/lib/Registry';
+import Registry from '@magda/typescript-common/dist/Registry';
 import * as request from 'request';
 import * as http from 'http';
 import * as Client from 'ftp';
 import * as LRU from 'lru-cache';
 import * as URI from 'urijs';
-import retryBackoff from '@magda/typescript-common/lib/retryBackoff';
-import formatServiceError from '@magda/typescript-common/lib/formatServiceError';
-import AsyncPage, { forEachAsync } from '@magda/typescript-common/lib/AsyncPage';
+import retryBackoff from '@magda/typescript-common/dist/retryBackoff';
+import AsyncPage, { forEachAsync } from '@magda/typescript-common/dist/AsyncPage';
 
 const aspectDefinition = {
     id: 'source-link-status',
@@ -108,6 +107,7 @@ export default class BrokenLinkSleuther {
                     return this.registry.putRecordAspect(record.id, 'source-link-status', {status: 'broken', errorDetails: `Unrecognised URL: ${url}`}).then(() => {});
                 }
             }
+            return undefined;
         });
 
         FTPHandler.lru.reset();

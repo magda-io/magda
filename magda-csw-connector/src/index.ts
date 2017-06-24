@@ -1,7 +1,6 @@
 import Csw from './Csw';
 import CswConnector from './CswConnector';
-import { forEachAsync } from '@magda/typescript-common/lib/AsyncPage';
-import Registry from '@magda/typescript-common/lib/Registry';
+import Registry from '@magda/typescript-common/dist/Registry';
 import * as moment from 'moment';
 import * as URI from 'urijs';
 import * as lodash from 'lodash';

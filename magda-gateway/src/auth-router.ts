@@ -3,7 +3,7 @@ import { Router } from "express";
 import googleAuthRouter from './oauth2/google';
 import fbAuthRouter from './oauth2/facebook';
 import ckanAuthRouter from './oauth2/ckan';
-import { getUser } from '@magda/auth-api/lib/src/client';
+import { getUser } from '@magda/auth-api/dist/client';
 import setupAuth from './setup-auth';
 
 const authRouter: Router = Router();

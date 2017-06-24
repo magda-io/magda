@@ -43,7 +43,7 @@
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-typescript-common",
             "args": [
-               "${workspaceRoot}/magda-typescript-common/lib/test"
+               "${workspaceRoot}/magda-typescript-common/dist/test"
             ]
         },
         {

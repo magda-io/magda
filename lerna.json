@@ -18,7 +18,6 @@
     "magda-registry-api/",
     "magda-registry-aspects/",
     "magda-registry-datastore/",
-    "magda-reverse-proxy/",
     "magda-scala-common/",
     "magda-search-api/",
     "magda-session-store/",

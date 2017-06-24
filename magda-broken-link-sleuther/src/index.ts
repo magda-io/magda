@@ -1,4 +1,4 @@
-import Registry from '@magda/typescript-common/lib/Registry';
+import Registry from '@magda/typescript-common/dist/Registry';
 import BrokenLinkSleuther from './BrokenLinkSleuther';
 
 const registry = new Registry({

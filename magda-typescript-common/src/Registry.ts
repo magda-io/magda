@@ -2,7 +2,6 @@ import { AspectDefinition, AspectDefinitionsApi, Record, RecordsApi, RecordAspec
 import * as URI from 'urijs';
 import retry from './retry';
 import formatServiceError from './formatServiceError';
-import * as http from 'http';
 import createServiceError from './createServiceError';
 
 export interface RegistryOptions {

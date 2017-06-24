@@ -10,8 +10,8 @@ import { redirectOnSuccess, redirectOnError } from './redirect';
 passport.use(
     new GoogleStrategy(
         {
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientID: process.env.GOOGLE_CLIENT_ID || process.env.npm_package_config_GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.npm_package_config_GOOGLE_CLIENT_SECRET,
             callbackURL: `${constants.loginBaseUrl}/google/return`
         },
         function (accessToken: string, refreshToken: string, profile: Profile, cb: (error: any, user?: any, info?: any) => void) {

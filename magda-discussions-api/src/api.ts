@@ -9,8 +9,8 @@ import {
   getLinkedDiscussion,
   addMessageToLinkedDiscussion
 } from "./db";
-import { getUserIdHandling } from "@magda/typescript-common/lib/session/GetUserId";
-import { getUserPublic } from "@magda/auth-api/lib/src/client";
+import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
+import { getUserPublic } from "@magda/auth-api/dist/client";
 
 const router = express.Router();
 

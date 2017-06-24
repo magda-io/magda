@@ -1,17 +1,19 @@
 {
   "name": "@magda/gateway",
+  "description": "The public gateway to all of MAGDA, including the API and web front end.",
   "version": "0.0.26-SNAPSHOT",
+  "license": "Apache-2.0",
   "scripts": {
-    "start": "npm run build:live",
-    "dev": "JWT_SECRET=squirrel SESSION_SECRET=squirrel FACEBOOK_CLIENT_ID=blah FACEBOOK_CLIENT_SECRET=blah GOOGLE_CLIENT_ID=blah GOOGLE_CLIENT_SECRET=blah npm run build:live",
-    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
+    "build": "npm run compile",
+    "compile": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "run-typescript-in-nodemon",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "compile": "tsc"
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
     "@magda/auth-api": "^0.0.26-SNAPSHOT",
-    "@types/pg": "^6.1.40",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "connect-ensure-login": "^0.1.1",
@@ -40,14 +42,16 @@
     "@types/node": "^7.0.22",
     "@types/passport": "^0.3.3",
     "@types/passport-facebook": "^2.1.4",
-    "nodemon": "^1.11.0",
-    "ts-node": "^3.0.4",
-    "typescript": "^2.3.3"
+    "typescript": "^2.3.4"
   },
   "config": {
     "docker": {
       "name": "data61/magda-gateway",
-      "include": "node_modules index.ts src views config tsconfig.json Dockerfile"
-    }
+      "include": "node_modules dist config views Dockerfile"
+    },
+    "JWT_SECRET": "squirrel",
+    "SESSION_SECRET": "keyboard cat",
+    "FACEBOOK_CLIENT_ID": "blah",
+    "GOOGLE_CLIENT_ID": "blah"
   }
 }

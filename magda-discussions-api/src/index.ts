@@ -1,6 +1,6 @@
 import * as express from 'express';
 
-import apiRouter from './src/api';
+import apiRouter from './api';
 const nodeConfig = require('config');
 
 const app = express();

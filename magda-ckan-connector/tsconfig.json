@@ -1,12 +1,7 @@
 {
+    "extends": "../tsconfig-global.json",
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
-        "noImplicitAny": true,
-        "sourceMap": true,
-        "allowJs": true,
-        "alwaysStrict": true,
-        "outDir": "bin"
+        "outDir": "dist"
     },
-    "exclude": ["aspect-templates", "node_modules", "bin"]
+    "include": ["src"]
 }

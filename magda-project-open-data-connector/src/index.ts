@@ -1,5 +1,5 @@
 import ProjectOpenDataConnector from './ProjectOpenDataConnector';
-import Registry from '@magda/typescript-common/lib/Registry';
+import Registry from '@magda/typescript-common/dist/Registry';
 import * as moment from 'moment';
 import * as URI from 'urijs';
 import organizationAspectBuilders from './organizationAspectBuilders';

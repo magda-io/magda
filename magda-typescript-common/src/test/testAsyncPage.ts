@@ -40,7 +40,6 @@ describe('AsyncPage', function() {
 
         it('can be mapped', function() {
             const page = AsyncPage.none<number>().map(v => v + 1);
-            let calls = 0;
             return page.forEach(item => {
                 expect.fail('no items', 'an item');
             });

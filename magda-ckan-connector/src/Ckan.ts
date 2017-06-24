@@ -1,6 +1,6 @@
-import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
-import formatServiceError from '@magda/typescript-common/lib/formatServiceError';
-import retry from '@magda/typescript-common/lib/retry';
+import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
+import formatServiceError from '@magda/typescript-common/dist/formatServiceError';
+import retry from '@magda/typescript-common/dist/retry';
 import * as request from 'request';
 import * as URI from 'urijs';
 

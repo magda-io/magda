@@ -11,8 +11,8 @@ import { redirectOnSuccess, redirectOnError } from "./redirect";
 passport.use(
   new FBStrategy(
     {
-      clientID: process.env.FACEBOOK_CLIENT_ID,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      clientID: process.env.FACEBOOK_CLIENT_ID || process.env.npm_package_config_FACEBOOK_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || process.env.npm_package_config_FACEBOOK_CLIENT_SECRET,
       profileFields: ["displayName", "picture", "email"]
     },
     function(

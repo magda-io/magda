@@ -1,7 +1,7 @@
 import pool from "./pool";
 import { Maybe } from "tsmonad";
 import { Discussion, Message } from "./model";
-import arrayToMaybe from "@magda/typescript-common/lib/util/array-to-maybe";
+import arrayToMaybe from "@magda/typescript-common/dist/util/array-to-maybe";
 
 export function getDiscussion(
   discussionId: string

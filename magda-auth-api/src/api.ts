@@ -3,7 +3,7 @@ import { Maybe } from "tsmonad";
 
 import { getUser, getUserByExternalDetails, createUser } from "./db";
 import { PublicUser } from "./model";
-import { getUserIdHandling } from "@magda/typescript-common/lib/session/GetUserId";
+import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
 
 const router: express.Router = express.Router();
 

@@ -1,6 +1,6 @@
 import * as passport from 'passport';
-import { lookupUser, createUser } from '@magda/auth-api/lib/src/client';
-import { User, UserToken } from '@magda/auth-api/lib/src/model';
+import { lookupUser, createUser } from '@magda/auth-api/dist/client';
+import { User, UserToken } from '@magda/auth-api/dist/model';
 
 export default function createOrGet(profile: passport.Profile, source: string): Promise<UserToken> {
     return lookupUser(source, profile.id).then(maybe => maybe.caseOf({

@@ -1,11 +1,6 @@
-FROM node:6
-
-RUN npm update && \
-  npm i -g typescript ts-node && \
-  npm cache clean
+FROM node:8
 
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app
 WORKDIR /usr/src/app/component
-
-CMD [ "ts-node", "./index.ts" ]
+ENTRYPOINT [ "node", "/usr/src/app/component/dist/index.js" ]

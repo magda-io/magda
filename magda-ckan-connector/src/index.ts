@@ -1,7 +1,7 @@
-import AspectBuilder from '@magda/typescript-common/lib/AspectBuilder';
+import AspectBuilder from '@magda/typescript-common/dist/AspectBuilder';
 import Ckan from './Ckan';
 import CkanConnector from './CkanConnector';
-import Registry from '@magda/typescript-common/lib/Registry';
+import Registry from '@magda/typescript-common/dist/Registry';
 import * as fs from 'fs';
 import * as moment from 'moment';
 import * as URI from 'urijs';

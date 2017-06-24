@@ -1,12 +1,10 @@
-import { AspectDefinition, Record } from './generated/registry/api';
+import { Record } from './generated/registry/api';
 import AspectBuilder from './AspectBuilder';
 import AsyncPage, { forEachAsync } from './AsyncPage';
 import ConnectionResult from './ConnectionResult';
 import createServiceError from './createServiceError';
 import CreationFailure from './CreationFailure';
-import CreationFailuresError from './CreationFailuresError';
 import Registry from './Registry';
-import * as fs from 'fs';
 
 /**
  * A base class for connectors for most any JSON-based catalog source.

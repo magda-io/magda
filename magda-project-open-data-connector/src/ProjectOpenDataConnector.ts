@@ -1,8 +1,8 @@
-import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
-import formatServiceError from '@magda/typescript-common/lib/formatServiceError';
-import JsonConnector from '@magda/typescript-common/lib/JsonConnector';
-import { JsonConnectorOptions } from '@magda/typescript-common/lib/JsonConnector';
-import retry from '@magda/typescript-common/lib/retry';
+import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
+import formatServiceError from '@magda/typescript-common/dist/formatServiceError';
+import JsonConnector from '@magda/typescript-common/dist/JsonConnector';
+import { JsonConnectorOptions } from '@magda/typescript-common/dist/JsonConnector';
+import retry from '@magda/typescript-common/dist/retry';
 import * as request from 'request';
 
 export default class ProjectOpenDataConnector extends JsonConnector {

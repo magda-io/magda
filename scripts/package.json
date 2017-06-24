@@ -2,20 +2,19 @@
   "name": "@magda/scripts",
   "version": "0.0.26-SNAPSHOT",
   "description": "Scripts for building, running, and deploying MAGDA",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
   "license": "Apache-2.0",
   "dependencies": {
     "fs-extra": "^2.1.2",
     "klaw-sync": "^2.1.0",
+    "nodemon": "^1.11.0",
     "tmp": "0.0.31",
+    "ts-node": "^3.0.4",
     "yargs": "^8.0.1"
   },
   "bin": {
     "generate-registry-typescript": "generate-registry-typescript.js",
     "create-docker-context-for-node-component": "create-docker-context-for-node-component.js",
-    "generate-connector-jobs": "generate-connector-jobs.js"
+    "generate-connector-jobs": "generate-connector-jobs.js",
+    "run-typescript-in-nodemon": "run-typescript-in-nodemon.js"
   }
 }

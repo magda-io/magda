@@ -1,15 +1,21 @@
 {
   "name": "magda-web",
+  "description": "The MAGDA web front end.",
   "version": "0.0.26-SNAPSHOT",
-  "private": true,
-  "config": {
-    "awsProfile": "terria",
-    "awsS3BasePath": "s3://magda-dev.terria.io",
-    "awsS3Dir": "$(git rev-parse --abbrev-ref HEAD)",
-    "docker": {
-      "name": "data61/magda-web",
-      "include": "node_modules build bin Dockerfile config"
-    }
+  "license": "Apache-2.0",
+  "scripts": {
+    "flow": "flow; test $? -eq 0 -o $? -eq 2",
+    "build-css": "node-sass src/ -o src/",
+    "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
+    "start-js": "react-scripts start",
+    "start": "npm-run-all -p watch-css start-js",
+    "surge-build": "react-scripts build",
+    "compile": "tsc",
+    "build": "npm run compile && npm run build-css && react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.26-SNAPSHOT",
@@ -19,7 +25,7 @@
     "npm-run-all": "^4.0.1",
     "react-scripts": "0.7.0",
     "redux-mock-store": "^1.2.1",
-    "typescript": "^2.3.3"
+    "typescript": "^2.3.4"
   },
   "dependencies": {
     "d3-drag": "^1.0.1",
@@ -61,24 +67,10 @@
     "uuid": "^3.0.1",
     "xml-parser": "^1.2.1"
   },
-  "scripts": {
-    "flow": "flow; test $? -eq 0 -o $? -eq 2",
-    "build-css": "node-sass src/ -o src/",
-    "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
-    "start-js": "react-scripts start",
-    "start": "npm-run-all -p watch-css start-js",
-    "surge-build": "react-scripts build",
-    "compile": "tsc",
-    "build": "npm run compile && npm run build-css && react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "deploy": "rm -rf node_modules && npm install && npm run deploy-without-reinstall",
-    "deploy-without-reinstall": "npm run build && npm run deploy-current",
-    "deploy-current": "aws $([ -n \"$npm_package_config_awsProfile\" ] && expr $npm_package_config_awsProfile) s3 sync --delete ./build/ $npm_package_config_awsS3BasePath/$(eval echo $npm_package_config_awsS3Dir)",
-    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
-  },
-  "eslintConfig": {
-    "extends": "./node_modules/react-scripts/config/eslint.js"
+  "config": {
+    "docker": {
+      "name": "data61/magda-web",
+      "include": "node_modules build dist Dockerfile config"
+    }
   }
 }

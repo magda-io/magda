@@ -1,7 +1,7 @@
 import pool from "./pool";
 import { User } from './model';
 import { Maybe } from 'tsmonad';
-import arrayToMaybe from '@magda/typescript-common/lib/util/array-to-maybe';
+import arrayToMaybe from '@magda/typescript-common/dist/util/array-to-maybe';
 
 function getUser(id: string): Promise<Maybe<User>> {
   return pool

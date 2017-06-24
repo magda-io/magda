@@ -19,7 +19,7 @@ const cookieParserMiddleware = require("cookie-parser")();
 
 const sessionMiddleware = session({
   store,
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || process.env.npm_package_config_SESSION_SECRET,
   cookie: { maxAge: 7 * 60 * 60 * 1000 },
   resave: false,
   saveUninitialized: false,
@@ -30,10 +30,10 @@ const passportMiddleware = passport.initialize();
 const passportSessionMiddleware = passport.session();
 
 export default function setupAuth(router: express.Router) {
-  if (!process.env.JWT_SECRET) {
+  if (!process.env.JWT_SECRET && !process.env.npm_package_config_JWT_SECRET) {
     throw new Error("No JWT_SECRET env variable passed");
   }
-  if (!process.env.SESSION_SECRET) {
+  if (!process.env.SESSION_SECRET && !process.env.npm_package_config_SESSION_SECRET) {
     throw new Error("No SESSION_SECRET env variable passed");
   }
   router.use(cookieParserMiddleware);

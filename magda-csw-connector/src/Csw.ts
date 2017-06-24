@@ -1,9 +1,9 @@
-import { IConnectorSource } from '@magda/typescript-common/lib/JsonConnector';
+import { IConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
 import * as URI from 'urijs';
 import * as request from 'request';
-import AsyncPage from '@magda/typescript-common/lib/AsyncPage';
-import retry from '@magda/typescript-common/lib/retry';
-import formatServiceError from '@magda/typescript-common/lib/formatServiceError';
+import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
+import retry from '@magda/typescript-common/dist/retry';
+import formatServiceError from '@magda/typescript-common/dist/formatServiceError';
 import * as xmldom from 'xmldom';
 
 export default class Csw implements IConnectorSource {

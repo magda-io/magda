@@ -29,3 +29,4 @@ regions
 snapshots
 .cache-tests
 node_modules/
+dist/

@@ -1,9 +1,14 @@
 {
   "name": "@magda/discussions-api",
+  "description": "MAGDA Discussions API",
   "version": "0.0.26-SNAPSHOT",
+  "license": "Apache-2.0",
   "scripts": {
-    "start": "npm run build:live",
-    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
+    "build": "npm run compile",
+    "compile": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "run-typescript-in-nodemon",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
@@ -25,14 +30,12 @@
     "@types/node": "^7.0.22",
     "@types/passport": "^0.3.3",
     "@types/passport-facebook": "^2.1.4",
-    "nodemon": "^1.11.0",
-    "ts-node": "^3.0.4",
-    "typescript": "^2.3.3"
+    "typescript": "^2.3.4"
   },
   "config": {
     "docker": {
       "name": "data61/magda-discussions-api",
-      "include": "node_modules package.json index.ts src config tsconfig.json Dockerfile"
+      "include": "node_modules dist config Dockerfile"
     }
   }
 }

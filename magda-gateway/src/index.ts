@@ -4,9 +4,9 @@ const cors = require("cors");
 
 import * as express from "express";
 
-import reverseProxy from "./src/api-proxy";
-import authRouter from "./src/auth-router";
-import webProxy from './src/web-proxy';
+import reverseProxy from "./api-proxy";
+import authRouter from "./auth-router";
+import webProxy from './web-proxy';
 
 // Create a new Express application.
 var app = express();
