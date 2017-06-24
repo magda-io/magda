@@ -1,6 +1,6 @@
 {
-  "name": "magda-web",
-  "description": "The MAGDA web front end.",
+  "name": "@magda/web-client",
+  "description": "The MAGDA in-browser web front end.",
   "version": "0.0.26-SNAPSHOT",
   "license": "Apache-2.0",
   "scripts": {
@@ -10,12 +10,9 @@
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
     "surge-build": "react-scripts build",
-    "compile": "tsc",
-    "build": "npm run compile && npm run build-css && react-scripts build",
+    "build": "npm run build-css && react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+    "eject": "react-scripts eject"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.26-SNAPSHOT",
@@ -66,11 +63,5 @@
     "rss-parser": "^2.9.0",
     "uuid": "^3.0.1",
     "xml-parser": "^1.2.1"
-  },
-  "config": {
-    "docker": {
-      "name": "data61/magda-web",
-      "include": "node_modules build dist Dockerfile config"
-    }
   }
 }

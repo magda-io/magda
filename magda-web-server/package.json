@@ -1,0 +1,31 @@
+{
+  "name": "@magda/web-server",
+  "description": "The server that serves the MAGDA web front end.",
+  "version": "0.0.26-SNAPSHOT",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "npm run compile",
+    "compile": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "run-typescript-in-nodemon",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+  },
+  "devDependencies": {
+    "@magda/scripts": "^0.0.26-SNAPSHOT",
+    "@types/config": "0.0.32",
+    "typescript": "^2.3.4"
+  },
+  "dependencies": {
+    "@magda/web-client": "^0.0.26-SNAPSHOT",
+    "config": "^1.26.1",
+    "express": "^4.15.3"
+  },
+  "config": {
+    "docker": {
+      "name": "data61/magda-web-server",
+      "include": "node_modules dist Dockerfile config"
+    }
+  }
+}

@@ -1,12 +1,12 @@
-require("isomorphic-fetch");
-const config = require("config");
-const path = require('path');
-
-import * as express from "express";
+import * as config from 'config';
+import * as express from 'express';
+import * as path from 'path';
 
 var app = express();
 
-app.use(express.static(path.join(__dirname, '..', 'build')));
+const clientBuild = path.join(__dirname, '..', 'node_modules', '@magda', 'web-client', 'build');
+console.log(clientBuild);
+app.use(express.static(clientBuild));
 
 // URLs in this list will load index.html and be handled by React routing.
 const topLevelRoutes = [
@@ -22,10 +22,10 @@ const topLevelRoutes = [
 
 topLevelRoutes.forEach(topLevelRoute => {
     app.get('/' + topLevelRoute, function (req, res) {
-        res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+        res.sendFile(path.join(clientBuild, 'index.html'));
     });
     app.get('/' + topLevelRoute + '/*', function (req, res) {
-        res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+        res.sendFile(path.join(clientBuild, 'index.html'));
     });
 });
 

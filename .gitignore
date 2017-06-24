@@ -30,3 +30,4 @@ snapshots
 .cache-tests
 node_modules/
 dist/
+package-lock.json
