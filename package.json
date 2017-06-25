@@ -1,4 +1,5 @@
 {
+  "version": "0.0.27-SNAPSHOT",
   "devDependencies": {
     "lerna": "^2.0.0-rc.5"
   },
