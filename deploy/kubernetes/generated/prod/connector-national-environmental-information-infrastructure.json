@@ -13,7 +13,7 @@
         "containers": [
           {
             "name": "connector-national-environmental-information-infrastructure",
-            "image": "data61/magda-csw-connector:0.0.26-SNAPSHOT",
+            "image": "data61/magda-csw-connector:0.0.27-SNAPSHOT",
             "command": [
               "node",
               "/usr/src/app/component/bin/index.js",
