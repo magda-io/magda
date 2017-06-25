@@ -3,8 +3,11 @@
   "version": "0.0.26-SNAPSHOT",
   "description": "The search API.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run compile",
+    "test": "cd .. && sbt searchApi/test",
+    "compile": "cd .. && sbt searchApi/compile",
+    "docker-build-local": "cd .. && sbt searchApi/dockerBuildAndPush",
+    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" searchApi/dockerBuildAndPush"
   },
-  "author": "",
   "license": "Apache-2.0"
 }

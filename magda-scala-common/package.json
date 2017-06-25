@@ -3,8 +3,9 @@
   "version": "0.0.26-SNAPSHOT",
   "description": "Common Scala code shared between components.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run compile",
+    "test": "cd .. && sbt common/test",
+    "compile": "cd .. && sbt common/compile"
   },
-  "author": "",
   "license": "Apache-2.0"
 }

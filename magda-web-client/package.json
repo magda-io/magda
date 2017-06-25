@@ -10,7 +10,8 @@
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
     "surge-build": "react-scripts build",
-    "build": "npm run build-css && react-scripts build",
+    "build": "npm run compile",
+    "compile": "npm run build-css && react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },

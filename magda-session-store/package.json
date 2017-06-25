@@ -1,13 +1,11 @@
 {
   "name": "@magda/session-store",
   "version": "0.0.26-SNAPSHOT",
-  "description": "",
+  "description": "The database storing session information.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
-  "author": "",
   "license": "Apache-2.0",
   "config": {
     "docker": {
