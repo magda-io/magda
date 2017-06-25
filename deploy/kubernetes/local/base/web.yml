@@ -17,7 +17,7 @@ spec:
         env:
         - name: NODE_ENV
           value: minikube
-        image: "localhost:5000/data61/magda-web:latest"
+        image: "localhost:5000/data61/magda-web-server:latest"
         imagePullPolicy: Always
 ---
 apiVersion: v1
@@ -29,7 +29,7 @@ spec:
   - name: http
     port: 80
     targetPort: 80
-    nodePort: 30017
+    nodePort: 30018
   selector:
     service: web
   type: "NodePort"

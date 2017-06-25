@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.27-SNAPSHOT",
+    "@types/config": "0.0.32",
     "@types/express": "^4.0.35",
     "@types/node": "^7.0.22",
     "@types/pg": "^6.1.41",

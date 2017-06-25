@@ -15,21 +15,24 @@
   "dependencies": {
     "@magda/auth-api": "^0.0.27-SNAPSHOT",
     "@magda/typescript-common": "^0.0.27-SNAPSHOT",
-    "@types/lodash": "^4.14.64",
-    "@types/pg": "^6.1.40",
     "body-parser": "^1.13.2",
+    "config": "^1.26.1",
     "express": "^4.13.1",
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-form-data": "^1.0.0",
     "lodash": "^4.17.4",
+    "pg": "^6.4.0",
     "tsmonad": "^0.7.2"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.27-SNAPSHOT",
+    "@types/config": "0.0.32",
     "@types/express": "^4.0.35",
+    "@types/lodash": "^4.14.64",
     "@types/node": "^7.0.22",
     "@types/passport": "^0.3.3",
     "@types/passport-facebook": "^2.1.4",
+    "@types/pg": "^6.1.40",
     "typescript": "^2.3.4"
   },
   "config": {
