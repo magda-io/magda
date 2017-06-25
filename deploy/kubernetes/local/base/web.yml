@@ -29,7 +29,7 @@ spec:
   - name: http
     port: 80
     targetPort: 80
-    nodePort: 30016
+    nodePort: 30017
   selector:
     service: web
   type: "NodePort"
