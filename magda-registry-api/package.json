@@ -3,8 +3,11 @@
   "version": "0.0.26-SNAPSHOT",
   "description": "The registry API.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run compile",
+    "test": "cd .. && sbt registryApi/test",
+    "compile": "cd .. && sbt registryApi/compile",
+    "docker-build-local": "cd .. && sbt registryApi/dockerBuildAndPush",
+    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" registryApi/dockerBuildAndPush"
   },
-  "author": "",
   "license": "Apache-2.0"
 }
