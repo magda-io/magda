@@ -15,11 +15,13 @@
   "devDependencies": {
     "@magda/scripts": "^0.0.26-SNAPSHOT",
     "@types/jsonpath": "^0.1.29",
+    "@types/lodash": "^4.14.66",
     "@types/node": "^7.0.5",
     "@types/request": "0.0.39",
     "@types/urijs": "^1.15.31",
     "@types/xml2js": "0.0.33",
     "@types/xmldom": "^0.1.29",
+    "@types/yargs": "^6.6.0",
     "typescript": "^2.3.4"
   },
   "dependencies": {
@@ -31,7 +33,8 @@
     "request": "^2.79.0",
     "urijs": "^1.18.7",
     "xml2js": "^0.4.17",
-    "xmldom": "^0.1.27"
+    "xmldom": "^0.1.27",
+    "yargs": "^8.0.1"
   },
   "config": {
     "registryUrl": "http://localhost:6100/v0",

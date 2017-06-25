@@ -17,6 +17,7 @@
     "@types/node": "^7.0.5",
     "@types/request": "0.0.39",
     "@types/urijs": "^1.15.31",
+    "@types/yargs": "^6.6.0",
     "typescript": "^2.3.4"
   },
   "dependencies": {
@@ -24,7 +25,8 @@
     "@magda/typescript-common": "^0.0.26-SNAPSHOT",
     "moment": "^2.17.1",
     "request": "^2.79.0",
-    "urijs": "^1.18.7"
+    "urijs": "^1.18.7",
+    "yargs": "^8.0.1"
   },
   "config": {
     "registryUrl": "http://localhost:6100/v0",

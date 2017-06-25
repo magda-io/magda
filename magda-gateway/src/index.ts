@@ -1,8 +1,8 @@
 require("isomorphic-fetch");
-const config = require("config");
-const cors = require("cors");
-
+import * as config from 'config';
+import * as cors from 'cors';
 import * as express from "express";
+import * as path from 'path';
 
 import reverseProxy from "./api-proxy";
 import authRouter from "./auth-router";
@@ -20,7 +20,7 @@ app.options("*", configuredCors);
 app.use(configuredCors);
 
 // Configure view engine to render EJS templates.
-app.set("views", __dirname + "/views");
+app.set("views", path.join(__dirname, '..', 'views'));
 app.set("view engine", "ejs");
 app.use(require("morgan")("combined"));
 
