@@ -4,9 +4,12 @@ import DefaultJsonProtocol._
 name := "magda-metadata"
 
 lazy val packageJson = {
-  val source = scala.io.Source.fromFile("package.json").mkString
+  // Ideally, the version of each component would come from the component's own
+  // package.json.  But for now our version number's are synchronized anyway, so
+  // just use the version in lerna.json.
+  val source = scala.io.Source.fromFile("lerna.json").mkString
   val jsonAst = source.parseJson.asJsObject
-  
+
    Map(
     "version" -> jsonAst.getFields("version").head.asInstanceOf[JsString].value
   )
