@@ -1,6 +1,6 @@
 {
   "name": "@magda/session-store",
-  "version": "0.0.26-SNAPSHOT",
+  "version": "0.0.27-SNAPSHOT",
   "description": "The database storing session information.",
   "scripts": {
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
@@ -14,6 +14,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.26-SNAPSHOT"
+    "@magda/scripts": "^0.0.27-SNAPSHOT"
   }
 }

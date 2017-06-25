@@ -1,6 +1,6 @@
 {
   "name": "@magda/registry-api",
-  "version": "0.0.26-SNAPSHOT",
+  "version": "0.0.27-SNAPSHOT",
   "description": "The registry API.",
   "scripts": {
     "build": "npm run compile",

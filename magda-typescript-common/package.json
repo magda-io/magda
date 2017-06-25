@@ -1,7 +1,7 @@
 {
   "name": "@magda/typescript-common",
   "description": "Common TypeScript code shared between components.",
-  "version": "0.0.26-SNAPSHOT",
+  "version": "0.0.27-SNAPSHOT",
   "license": "Apache-2.0",
   "scripts": {
     "build": "npm run generate && npm run compile",
@@ -11,7 +11,7 @@
     "test": "mocha lib/test"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.26-SNAPSHOT",
+    "@magda/scripts": "^0.0.27-SNAPSHOT",
     "@types/chai": "^4.0.0",
     "@types/express": "^4.0.35",
     "@types/mocha": "^2.2.41",
@@ -23,7 +23,7 @@
     "typescript": "^2.3.4"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.26-SNAPSHOT",
+    "@magda/registry-aspects": "^0.0.27-SNAPSHOT",
     "jsonwebtoken": "^7.4.1",
     "moment": "^2.17.1",
     "request": "^2.79.0",
