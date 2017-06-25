@@ -16,7 +16,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.26-SNAPSHOT",
-    "@magda/gateway": "^0.0.26-SNAPSHOT"
+    "@magda/scripts": "^0.0.26-SNAPSHOT"
   }
 }
