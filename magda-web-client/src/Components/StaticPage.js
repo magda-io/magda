@@ -5,6 +5,7 @@ import ReactDocumentTitle from 'react-document-title';
 
 export default class StaticPage extends React.Component {
   render() {
+    debugger
     const id = this.props.params.id;
     const content = contents.get(id);
     return (
