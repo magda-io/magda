@@ -50,7 +50,7 @@ files.forEach(function(connectorConfigFile) {
                         name: 'connector-' + basename,
                         image: image,
                         command: [
-                            'node', '/usr/src/app/component/bin/index.js',
+                            'node', '/usr/src/app/component/dist/index.js',
                             '--config', "/etc/config/connector.json",
                             "--registryUrl", "http://registry-api/v0"
                         ],

@@ -12,7 +12,7 @@ spec:
       containers:
       - name: web
         command: [
-            'node', '/usr/src/app/component/bin/index.js',
+            'node', '/usr/src/app/component/dist/index.js',
             '--config', "/etc/config.json"
         ]
         resources:
