@@ -45,7 +45,7 @@ class Pagination extends Component {
                 Next
                 <i className='fa fa-angle-right' aria-hidden='true'></i>
               </button>
-              <div className='pagination__secondary-info hidden-xs'>Page {currentPage + 1} of {this.props.maxPage}</div>
+              <div className='pagination__secondary-info hidden-xs'>Page {currentPage} of {this.props.maxPage}</div>
           </li>}
         </ul>
       );

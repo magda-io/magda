@@ -46,7 +46,7 @@ export const config = {
                     {category: 'Search', links: [['Data sources', 'page/data-sources'], ['Search syntax', 'page/search-syntax']]},
                     {category: 'Projects', links: [['Browse projects', 'projects'], ['Start a project', 'project/new']]},
                     {category: 'Publishers', links: [['Publisher index', 'publishers'], ['Open data toolkit', 'https://toolkit.data.gov.au/']]},
-                    {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API doc', 'http://104.199.180.124/api/v0/registry/swagger/index.html']]},
+                    {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API doc', 'http://magda-dev.terria.io/api/v0/registry/swagger/index.html']]},
                     {category: 'About', links: [['About data.gov.au', 'page/about'], ['Blog', 'https://blog.data.gov.au/']]},
                     {category: 'Feedback', links: [['Feedback', 'feedback']]}]
         }

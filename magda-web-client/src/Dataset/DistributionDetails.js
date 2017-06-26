@@ -19,11 +19,6 @@ class DistributionDetails extends Component {
                     <h3>Overview</h3>
                     <OverviewBox content={distribution.description}/>
                   </div>
-
-                  <div className='distribution-details-spatial-coverage'>
-                      <h3>Spatial coverage</h3>
-                      <SpatialAspectViewer data={distribution.spatialCoverage}/>
-                  </div>
                   <div className='distribution-details-temporal-coverage'>
                       <h3>Temporal coverage</h3>
                       <TemporalAspectViewer data={distribution.temporalCoverage}/>

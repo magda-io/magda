@@ -30,10 +30,6 @@ class DatasetDetails extends Component {
                         dataset.source && dataset.source.map(s=> renderDistribution(s.format, s.id, s.title, s.license, datasetId))
                       }</div>
                   </div>
-                  <div className='dataset-details-spatial-coverage'>
-                      <h3 className='section-heading'>Spatial coverage</h3>
-                      <SpatialAspectViewer data={dataset.spatialCoverage}/>
-                  </div>
                   <div className='dataset-details-temporal-coverage'>
                       <h3 className='section-heading'>Temporal coverage</h3>
                       <TemporalAspectViewer data={dataset.temporalCoverage}/>
