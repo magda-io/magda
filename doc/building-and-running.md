@@ -1,3 +1,25 @@
+## Prerequisites
+
+You need the following in order to build and run MAGDA:
+
+* [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts.  Please install version 6, as version 8 includes npm 5 which currently doesn't work well with lerna.
+* [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
+* [sbt](http://www.scala-sbt.org/) - To build and run the Scala components.
+* [lerna](https://lernajs.io/) - To manage our multiple-project repo.  Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
+* [Minikube](https://github.com/kubernetes/minikube) - To run a Kubernetes cluster on your local development machine.  It is possible to run all of the Magda microservices directly on your local machine instead of on a Kubernetes cluster, in which case you don't, strictly speaking, need Minikube.  However, you will probably want to run at least some of the services, such as the databases, on a cluster for ease of setup.
+* [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster.  You will also need to this to deploy to our test and production environment on Google Cloud.
+
+## Building
+
+Once the above prerequisites are in place, building MAGDA is easy.  From the MAGDA root directory, simply run:
+
+```
+npm run build
+```
+
+You can also run the same command in an individual component's directory to build just that component.
+
+
 MAGDA can be run in two main ways:
 
 * Kubernetes - Each component is built into a Docker container and run on a Kubernetes cluster, which may be a robust production environment or a simple local cluster like Minikube.  This is good for production environments and for testing in a more production-like environment on your development machine.  It also creates a more consistent environment, potentially avoiding configuration quirks of your development machine.

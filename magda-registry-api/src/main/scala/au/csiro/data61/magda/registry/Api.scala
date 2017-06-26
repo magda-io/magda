@@ -74,7 +74,7 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
 
   webHookActor ! WebHookActor.Process
 
-  val skipAuthorization = if (config.hasPath("authorization.skip")) config.getBoolean("authorization.skip") else false
+  val skipAuthorization = Option(System.getenv("npm_package_config_skipAuthorization")).map(_.toBoolean).getOrElse(if (config.hasPath("authorization.skip")) config.getBoolean("authorization.skip") else false)
 
   val algorithm = if (skipAuthorization) null else Algorithm.HMAC256(System.getenv("JWT_SECRET"))
   val jwt = if (skipAuthorization) null else JWT.require(algorithm).build
