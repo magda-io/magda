@@ -30,11 +30,11 @@ export default function Statistics(props: {stats: Stats}){
                   discoverable datasets
               </li>
               <li>
-                  <strong><span>773</span></strong>
+                  <strong><span>18</span></strong>
                   harvested sources
               </li>
               <li>
-                  <strong><span>23,000</span></strong>
+                  <strong><span>2</span></strong>
                   spatial datasets
               </li>
           </ul>

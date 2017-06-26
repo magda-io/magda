@@ -1,7 +1,7 @@
 // @flow
 
 // eslint-disable-next-line
-import {RouterContext } from 'react-router';
+import {RouterContext, Link } from 'react-router';
 
 import './Search.css';
 import {connect} from 'react-redux';
@@ -118,6 +118,10 @@ class Search extends Component {
     return !defined(queryString.parse(this.props.location.search).q) || queryString.parse(this.props.location.search).q.length === 0
   }
 
+  renderSuggestions(){
+    return <div><h3> Try search for </h3><ul>{config.exampleSearch.map(item=><li><Link to={`search?q=${item}`} key={item}> {item}</Link></li>)}</ul></div>
+  }
+
   render() {
     const searchText = queryString.parse(this.props.location.search).q || '';
     return (
@@ -140,7 +144,7 @@ class Search extends Component {
           </div>
           <div className='row'>
             <div className='col-sm-8'>
-                {searchText.length === 0 && <div><img className='img-responsive img-rounded img-crispy' src={cripsy} alt='crispy'/></div>}
+                {searchText.length === 0 && <div>{this.renderSuggestions()}</div>}
                 {searchText.length > 0 &&
                  !this.props.isFetching &&
                  !this.props.error &&

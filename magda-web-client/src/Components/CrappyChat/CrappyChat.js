@@ -63,8 +63,7 @@ class CrappyChat extends React.Component {
       <div className='white-box'>
         <div
           ref={this.registerMessagesDiv.bind(this)}
-          className='crappy-chat__messages'
-        >
+          className='crappy-chat__messages'>
           {this.state.messages.length === 0 &&
             <span>Be the first to comment!</span>
           }
