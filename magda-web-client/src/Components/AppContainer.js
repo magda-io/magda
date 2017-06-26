@@ -6,6 +6,7 @@ import { config } from '../config.js';
 import { Link } from 'react-router';
 import SearchBox from '../Search/SearchBox';
 import AccountNavbar from './Account/AccountNavbar';
+import d61logo from './data61-logo.png';
 
 import { ExtraSmall, Small } from '../UI/Responsive';
 import './AppContainer.css';
@@ -141,7 +142,9 @@ export default class AppContainer extends React.Component {
                   </li>
                 )}
               </ul>
+              <div className='copyright'> Developed by <img src={d61logo} alt='data61-logo'/></div>
             </div>
+
           </footer>
         </div>
       </ReactDocumentTitle>
