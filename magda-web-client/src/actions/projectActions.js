@@ -117,7 +117,7 @@ export function postNewProject(props: Project){
         return false;
       }
       // should change into browserHistory?
-      // browserHistory.push(`/projects/${props.id}`);
+      browserHistory.push(`/projects/${props.id}`);
       dispatch(createProjectSuccess(result, true))
       setTimeout(function(){ dispatch(createProjectSuccess(result, false))}, 5000);
     });
@@ -175,7 +175,7 @@ export function fetchProjectsIfNeeded(){
 }
 
 
-export function fetchProjectFromRegistry(projectId):Object{
+export function fetchProjectFromRegistry(projectId: string):Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestProject())
     let url : string = config.registryUrl + '/' + projectId + '?aspect=project';
