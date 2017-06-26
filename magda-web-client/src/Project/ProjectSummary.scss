@@ -5,23 +5,9 @@
   .project-title{
     padding-left: 50px;
   }
-}
-
-.project-status{
-  display: inline-block;
-  border-radius: 3px;
-  line-height: 10px;
-  font-size: 11px;
-  padding: 3px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  &.open{
-    border: 1px solid $magda-green;
-    color: $magda-green;
-  }
-  &.closed{
-    border: 1px solid $magda-dark-grey;
-    color: $magda-dark-grey;
+  .project-status{
+    position: absolute;
+    left: 0;
+    top: 0;
   }
 }

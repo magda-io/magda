@@ -37,6 +37,7 @@ class ProjectDetails extends Component {
                     Project successfully created
                   </div>}
                 <h1>{this.props.project.name}</h1>
+                  <div className={`project-status ${this.props.project.status}`}>{this.props.project.status}</div>
                   <h3 className='section-heading'> Description </h3>
                 <div className="white-box">
                   {this.props.project.description}

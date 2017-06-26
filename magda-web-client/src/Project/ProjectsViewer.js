@@ -10,9 +10,8 @@ import Pagination from '../UI/Pagination';
 import ErrorHandler from '../Components/ErrorHandler';
 import getPageNumber from '../helpers/getPageNumber';
 import ProgressBar from '../UI/ProgressBar';
-
-
 import './ProjectsViewer.css';
+
 class ProjectsViewer extends Component {
     componentWillMount(){
       this.props.fetchProjectsIfNeeded(getPageNumber(this.props)|| 1);
