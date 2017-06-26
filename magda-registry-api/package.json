@@ -7,7 +7,13 @@
     "test": "cd .. && sbt registryApi/test",
     "compile": "cd .. && sbt registryApi/compile",
     "docker-build-local": "cd .. && sbt registryApi/dockerBuildAndPush",
-    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" registryApi/dockerBuildAndPush"
+    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" registryApi/dockerBuildAndPush",
+    "start": "cd .. && sbt registryApi/run"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "config":{
+      "port": 6100,
+      "databaseUrl": "jdbc:postgresql://minikube.data.gov.au:30545/postgres",
+      "skipAuthorization": true
+  }
 }
