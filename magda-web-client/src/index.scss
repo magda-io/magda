@@ -74,6 +74,11 @@ input[type=text].form-control{
   padding: 10px 15px;
 }
 
+#content{
+  min-height: 400px;
+  padding-bottom: 30px;
+}
+
 @media (max-width: 768px) {
   .form-control:focus {
     border: none;

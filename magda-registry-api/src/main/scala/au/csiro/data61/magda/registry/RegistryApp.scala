@@ -33,5 +33,9 @@ object RegistryApp extends App {
   val webHookActor = system.actorOf(WebHookActor.props, name = "WebHookActor")
 
   val api = new Api(webHookActor, config, system, executor, materializer)
-  Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
+
+  val interface = Option(System.getenv("npm_package_config_interface")).orElse(Option(config.getString("http.interface"))).getOrElse("127.0.0.1")
+  val port = Option(System.getenv("npm_package_config_port")).map(_.toInt).orElse(Option(config.getInt("http.port"))).getOrElse(6100)
+
+  Http().bindAndHandle(api.routes, interface, port)
 }

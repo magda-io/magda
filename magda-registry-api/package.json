@@ -2,6 +2,7 @@
   "name": "@magda/registry-api",
   "version": "0.0.27-SNAPSHOT",
   "description": "The registry API.",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "npm run compile",
     "test": "cd .. && sbt registryApi/test",
@@ -10,8 +11,8 @@
     "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" registryApi/dockerBuildAndPush",
     "start": "cd .. && sbt registryApi/run"
   },
-  "license": "Apache-2.0",
   "config":{
+      "interface": "0.0.0.0",
       "port": 6100,
       "databaseUrl": "jdbc:postgresql://minikube.data.gov.au:30545/postgres",
       "skipAuthorization": true

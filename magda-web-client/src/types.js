@@ -168,7 +168,7 @@ export type Project ={
   }
 }
 
-export type projectAction = {
+export type ProjectAction = {
   json: Object,
   error: ?number,
   type: boolean,

@@ -84,11 +84,6 @@ export default class DatasetSummary extends Component {
                   {this.props.isExpanded && <div className='dataset-summary__middle clearfix'>
                       <div><Link className='btn dataset-summary__btn-view-dataset'
                                  to={`/dataset/${dataset.identifier}`}>View dataset</Link></div>
-                      <div>
-                        <a className='btn dataset-summary__btn-share' href={``} target='_blank'>
-                          <i className='fa fa-share-alt' aria-hidden='true'></i>
-                        </a>
-                      </div>
                   </div>}
                 </div>
                 <div className='dataset-summary__body'>

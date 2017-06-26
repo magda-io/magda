@@ -59,13 +59,6 @@ export default class AppContainer extends React.Component {
                         </li>
                       )}
                     </ul>
-                    <ul className="nav navbar-nav">
-                      {headerNavs.map(nav =>
-                        <li key={nav[1]}>
-                          <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
-                        </li>
-                      )}
-                    </ul>
                   </div>
                 </Small>
                 <ExtraSmall>

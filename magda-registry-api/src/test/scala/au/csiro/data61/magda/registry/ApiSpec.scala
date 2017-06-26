@@ -11,8 +11,7 @@ import scalikejdbc._
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport {
   case class FixtureParam(api: Api, webHookActorProbe: TestProbe)
 
-  val npmDatabaseUrl = System.getenv("npm_package_config_databaseUrl")
-  val databaseUrl = if (npmDatabaseUrl != null) npmDatabaseUrl else "jdbc:postgresql://localhost:5432/postgres"
+  val databaseUrl = Option(System.getenv("npm_package_config_databaseUrl")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
   override def testConfigSource =
     s"""

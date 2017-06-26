@@ -30,10 +30,6 @@ class DatasetDetails extends Component {
                         dataset.source && dataset.source.map(s=> renderDistribution(s.format, s.id, s.title, s.license, datasetId))
                       }</div>
                   </div>
-                  <div className='dataset-details-spatial-coverage'>
-                      <h3 className='section-heading'>Spatial coverage</h3>
-                      <SpatialAspectViewer data={dataset.spatialCoverage}/>
-                  </div>
                   <div className='dataset-details-temporal-coverage'>
                       <h3 className='section-heading'>Temporal coverage</h3>
                       <TemporalAspectViewer data={dataset.temporalCoverage}/>
@@ -41,7 +37,6 @@ class DatasetDetails extends Component {
               </div>
 
               <div className='record-details__sidebar col-sm-4'>
-                  <div><Link to={`project/new?dataset=${datasetId}`} className='btn btn-primary'>Add to project</Link></div>
                   <Social/>
                   <div className='tags'>
                     <h5>Tags</h5>
