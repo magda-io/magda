@@ -37,12 +37,12 @@ class ProjectDetails extends Component {
                     Project successfully created
                   </div>}
                 <h1>{this.props.project.name}</h1>
+                  <h3 className='section-heading'> Description </h3>
                 <div className="white-box">
-                  <h2> Description </h2>
                   {this.props.project.description}
                 </div>
                 <div className="">
-                  <h2> Discussion</h2>
+                  <h3 className='section-heading'> Discussion</h3>
                   <CrappyChat typeName="project" typeId={this.props.project.id} />
                 </div>
               </div>

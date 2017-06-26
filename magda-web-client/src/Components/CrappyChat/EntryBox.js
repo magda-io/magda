@@ -68,7 +68,7 @@ export default class EntryBox extends React.Component {
 
   render() {
     return (
-      <div className='clearfix white-box'>
+      <div className='clearfix'>
         <form className='entry-box' onSubmit={this.onSubmit.bind(this)}>
           <div className='entry-box__editor'>
             <Editor
