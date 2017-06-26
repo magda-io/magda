@@ -18,7 +18,7 @@ spec:
         env:
         - name: NODE_ENV
           value: dev-na
-        image: "data61/magda-web:${version}"
+        image: "data61/magda-web-server:${version}"
         imagePullPolicy: Always
 ---
 apiVersion: v1
