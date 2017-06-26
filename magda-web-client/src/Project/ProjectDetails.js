@@ -41,10 +41,7 @@ class ProjectDetails extends Component {
                   <h2> Description </h2>
                   {this.props.project.description}
                 </div>
-                <CrappyChat
-                  typeName="project"
-                  typeId={this.props.project.projectId}
-                />
+                <CrappyChat typeName="project" typeId={this.props.project.id} />
               </div>
               <div className="col-sm-4">
                 <Link className="btn btn-primary" to="/project/new">
