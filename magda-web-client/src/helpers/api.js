@@ -57,7 +57,7 @@ export function parsePublisher(publisherRaw: PublisherRaw) : Publisher{
     return publisher
 }
 
-export function parseProject(projectRaw: ProjectRaw) : Project {
+export function parseProject(projectRaw: ProjectRaw) {
     return {
         name: projectRaw.name,
         id: projectRaw.id,
