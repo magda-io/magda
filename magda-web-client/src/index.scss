@@ -79,6 +79,26 @@ input[type=text].form-control{
   padding-bottom: 30px;
 }
 
+.prototype-warning{
+  background-color: #3498db;
+  color: #fff;
+  padding: 5px;
+  text-align: center;
+  a{
+    color: #2c3e50;
+    font-weight: 800;
+  }
+  .prototype-warning-dismiss{
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: transparent;
+    border: 0;
+    padding: 6px 10px;
+  }
+}
+
+
 @media (max-width: 768px) {
   .form-control:focus {
     border: none;

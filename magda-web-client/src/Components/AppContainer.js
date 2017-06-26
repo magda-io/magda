@@ -1,26 +1,26 @@
 //@flow
-import React from "react";
-import logo from "../assets/logo.svg";
-import ReactDocumentTitle from "react-document-title";
-import { config } from "../config.js";
-import { Link } from "react-router";
-import SearchBox from "../Search/SearchBox";
-import AccountNavbar from "./Account/AccountNavbar";
+import React from 'react';
+import logo from '../assets/logo.svg';
+import ReactDocumentTitle from 'react-document-title';
+import { config } from '../config.js';
+import { Link } from 'react-router';
+import SearchBox from '../Search/SearchBox';
+import AccountNavbar from './Account/AccountNavbar';
 
-import { ExtraSmall, Small } from "../UI/Responsive";
-import "./AppContainer.css";
+import { ExtraSmall, Small } from '../UI/Responsive';
+import './AppContainer.css';
 
 export default class AppContainer extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { isOpen: false };
+    this.state = { isOpen: false, showPrototypeWarning: true };
   }
   renderLink(link: string) {
     const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
     if (!regex.test(link[1])) {
       return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
     }
-    return <a target="_blank" href={link[1]}>{link[0]}</a>;
+    return <a target='_blank' href={link[1]}>{link[0]}</a>;
   }
 
   toggleMenu() {
@@ -28,31 +28,41 @@ export default class AppContainer extends React.Component {
       isOpen: !this.state.isOpen
     });
   }
+
+  dismissPrototypeWarning(){
+    this.setState({
+      showPrototypeWarning: false
+    })
+  }
   render() {
     const headerNavs: Array<string> = config.headerNavigation;
     const footerNavs: Array<string> = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
         <div>
-          <nav className="appContainer__nav">
-            <div className="container">
-              <div className="row">
+        {this.state.showPrototypeWarning && <div className='prototype-warning'>
+          <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <Link to='feedback'>your feedback</Link>.</div>
+          <button className='prototype-warning-dismiss btn' onClick={()=>this.dismissPrototypeWarning()}><i className="fa fa-times" aria-hidden="true"></i></button>
+        </div>}
+          <nav className='appContainer__nav'>
+            <div className='container'>
+              <div className='row'>
                 <Small>
-                  <div className="col-sm-2">
-                    <div className="navbar-header">
-                      <a className="navbar-brand" href="/">
+                  <div className='col-sm-2'>
+                    <div className='navbar-header'>
+                      <a className='navbar-brand' href='/'>
                         <img
-                          className="logo"
-                          alt="data.gov.au-alpha"
+                          className='logo'
+                          alt='data.gov.au-alpha'
                           src={logo}
                         />
                       </a>
                     </div>
                   </div>
-                  <div className="col-sm-10 nav-links">
+                  <div className='col-sm-10 nav-links'>
                     <AccountNavbar />
 
-                    <ul className="nav navbar-nav">
+                    <ul className='nav navbar-nav'>
                       {headerNavs.map(nav =>
                         <li key={nav[1]}>
                           <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
@@ -62,29 +72,29 @@ export default class AppContainer extends React.Component {
                   </div>
                 </Small>
                 <ExtraSmall>
-                  <div className="mobile-nav">
+                  <div className='mobile-nav'>
                     <button
-                      className="btn navbar-toggle"
+                      className='btn navbar-toggle'
                       onClick={() => this.toggleMenu()}
                     >
-                      {" "}<span className="sr-only">Toggle navigation</span>
-                      {" "}MENU
-                      {" "}
+                      {' '}<span className='sr-only'>Toggle navigation</span>
+                      {' '}MENU
+                      {' '}
                     </button>
-                    <a className="navbar-brand" href="/">
+                    <a className='navbar-brand' href='/'>
                       <img
-                        className="logo"
-                        alt="data.gov.au-alpha"
+                        className='logo'
+                        alt='data.gov.au-alpha'
                         src={logo}
                       />
                     </a>
                     <div
                       className={`navbar-collapse collapse ${this.state.isOpen
-                        ? "in"
-                        : ""}`}
-                      aria-expanded={`${this.state.isOpen ? "true" : "false"}`}
+                        ? 'in'
+                        : ''}`}
+                      aria-expanded={`${this.state.isOpen ? 'true' : 'false'}`}
                     >
-                      <ul className="nav nav-pills nav-stacked">
+                      <ul className='nav nav-pills nav-stacked'>
                         {headerNavs.map(nav =>
                           <li key={nav[1]}>
                             <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
@@ -96,17 +106,17 @@ export default class AppContainer extends React.Component {
                 </ExtraSmall>
 
               </div>
-              <div className="row nav_second">
-                <div className="col-sm-8">
+              <div className='row nav_second'>
+                <div className='col-sm-8'>
                   <SearchBox location={this.props.location} />
-                  {" "}
+                  {' '}
                 </div>
                 <Small>
-                  <div className="col-sm-4">
-                    <div className="appContainer__suggestion">
-                      {" "}Try Search for
-                      {" "}
-                      <Link to={"/search?q=" + encodeURI(config.suggestion)}>
+                  <div className='col-sm-4'>
+                    <div className='appContainer__suggestion'>
+                      {' '}Try Search for
+                      {' '}
+                      <Link to={'/search?q=' + encodeURI(config.suggestion)}>
                         {config.suggestion}
                       </Link>
                     </div>
@@ -116,14 +126,14 @@ export default class AppContainer extends React.Component {
             </div>
           </nav>
 
-          <div id="content" className="clearfix">{this.props.children}</div>
-          <footer className="footer clearfix">
-            <div className="container">
-              <ul className="nav row">
+          <div id='content' className='clearfix'>{this.props.children}</div>
+          <footer className='footer clearfix'>
+            <div className='container'>
+              <ul className='nav row'>
                 {footerNavs.map(item =>
-                  <li key={item.category} className="col-md-2 col-sm-4">
-                    <span className="nav-title">{item.category}</span>
-                    <ul className="nav nav-pills nav-stacked">
+                  <li key={item.category} className='col-md-2 col-sm-4'>
+                    <span className='nav-title'>{item.category}</span>
+                    <ul className='nav nav-pills nav-stacked'>
                       {item.links.map(link =>
                         <li key={link[1]}>{this.renderLink(link)}</li>
                       )}
