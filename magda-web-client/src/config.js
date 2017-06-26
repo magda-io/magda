@@ -44,9 +44,9 @@ export const config = {
         headerNavigation: [['Search', 'search'], ['Projects', 'projects'], ['Publishers', 'publishers'], ['About', 'page/about']],
         footerNavigation: [
                     {category: 'Search', links: [['Data sources', 'page/data-sources'], ['Search syntax', 'page/search-syntax']]},
-                    {category: 'Projects', links: [['Browse projects', 'projects']]},
-                    {category: 'Publishers', links: [['Publisher index', 'publishers'], ['Open data toolkit', 'https://toolkit.data.gov.au/index.php?title=Main_Page']]},
+                    {category: 'Projects', links: [['Browse projects', 'projects'], ['Start a project', 'project/new']]},
+                    {category: 'Publishers', links: [['Publisher index', 'publishers'], ['Open data toolkit', 'https://toolkit.data.gov.au/']]},
                     {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API doc', 'http://104.199.180.124/api/v0/registry/swagger/index.html']]},
-                    {category: 'About', links: [['About data.gov.au', 'page/about'], ['Contact us', 'contact'], ['Blog', 'https://blog.data.gov.au/']]},
-                    {category: 'Feedback', links: [['How can we improve data.gov.au', 'feedback']]}]
+                    {category: 'About', links: [['About data.gov.au', 'page/about'], ['Blog', 'https://blog.data.gov.au/']]},
+                    {category: 'Feedback', links: [['Feedback', 'feedback']]}]
         }

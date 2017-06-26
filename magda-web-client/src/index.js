@@ -7,7 +7,8 @@ import {
   Route,
   IndexRoute,
   IndexRedirect,
-  browserHistory
+  browserHistory,
+  Redirect
 } from "react-router";
 import { config } from "./config";
 
@@ -105,6 +106,7 @@ ReactDOM.render(
         {staticPageRegister.map(item =>
           <Route path={`page/:id`} key={item.path} component={item.component} />
         )}
+        <Redirect from="/about" to="page/about" />
       </Route>
     </Router>
   </Provider>,

@@ -41,7 +41,6 @@ class DatasetDetails extends Component {
               </div>
 
               <div className='record-details__sidebar col-sm-4'>
-                  <div><Link to={`project/new?dataset=${datasetId}`} className='btn btn-primary'>Add to project</Link></div>
                   <Social/>
                   <div className='tags'>
                     <h5>Tags</h5>

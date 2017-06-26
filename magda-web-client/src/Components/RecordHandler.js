@@ -61,8 +61,8 @@ class RecordHandler extends React.Component {
                   <div className='updated-date'>Updated {this.props.distribution.updatedDate}</div>
                 </div>
               </div>
-                <Tabs list={tabList} baseUrl={`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
             </div>
+            <Tabs list={tabList} baseUrl={`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
             <div className='tab-content'>{this.props.children}</div>
             </div>
       )
