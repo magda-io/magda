@@ -44,12 +44,17 @@ export const config = {
                  {id: 'temporal', component: Temporal},
                  {id: 'format', component: Format}
                ],
-        headerNavigation: [['Search', 'search'], ['Projects', 'projects'], ['Publishers', 'publishers'], ['About', 'page/about']],
+        headerNavigation: [
+            ['Search', 'search'],
+            ['Projects', 'projects'],
+            ...(serverConfig.disableAuthenticationFeatures ? [] : [['Publishers', 'publishers']]),
+            ['About', 'page/about']
+        ],
         footerNavigation: [
-                    {category: 'Search', links: [['Data sources', 'page/data-sources'], ['Search syntax', 'page/search-syntax']]},
-                    {category: 'Projects', links: [['Browse projects', 'projects'], ['Start a project', 'project/new']]},
-                    {category: 'Publishers', links: [['Publisher index', 'publishers'], ['Open data toolkit', 'https://toolkit.data.gov.au/']]},
-                    {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API doc', 'http://magda-dev.terria.io/api/v0/registry/swagger/index.html']]},
-                    {category: 'About', links: [['About data.gov.au', 'page/about'], ['Blog', 'https://blog.data.gov.au/']]},
-                    {category: 'Feedback', links: [['Feedback', 'feedback']]}]
+            {category: 'Search', links: [['Data sources', 'page/data-sources'], ['Search syntax', 'page/search-syntax']]},
+            ...(serverConfig.disableAuthenticationFeatures ? [] : [{category: 'Projects', links: [['Browse projects', 'projects'], ['Start a project', 'project/new']]}]),
+            {category: 'Publishers', links: [['Publisher index', 'publishers'], ['Open data toolkit', 'https://toolkit.data.gov.au/']]},
+            {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API doc', 'http://magda-dev.terria.io/api/v0/registry/swagger/index.html']]},
+            {category: 'About', links: [['About data.gov.au', 'page/about'], ['Blog', 'https://blog.data.gov.au/']]},
+            {category: 'Feedback', links: [['Feedback', 'feedback']]}]
         }
