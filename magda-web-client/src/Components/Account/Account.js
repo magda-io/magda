@@ -19,10 +19,15 @@ class Account extends React.Component {
   render() {
     return (
       <div className="container account">
-        <h2>Account</h2>
-        {!this.props.user && <Login signInError={this.props.location.state && this.props.location.state.signInError} />}
+        {!this.props.user &&
+          <Login
+            signInError={
+              this.props.location.state && this.props.location.state.signInError
+            }
+          />}
         {this.props.user &&
           <div>
+            <h2>Account</h2>
             <p>Display Name: {this.props.user.displayName}</p>
             <p>Email: {this.props.user.email}</p>
           </div>}
