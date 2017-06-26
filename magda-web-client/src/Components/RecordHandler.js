@@ -50,6 +50,7 @@ class RecordHandler extends React.Component {
               <ul className='breadcrumb'>
                 <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
                 <li className='breadcrumb-item'><Link to={`/dataset/${this.props.params.datasetId}`}>Dataset</Link></li>
+                <li className='breadcrumb-item'>Distribution</li>
               </ul>
               <div className='media'>
                 <div className='media-left'>
