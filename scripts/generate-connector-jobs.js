@@ -65,7 +65,8 @@ files.forEach(function(connectorConfigFile) {
                                 mountPath: '/etc/config',
                                 name: 'config'
                             }
-                        ]
+                        ],
+                        env: []
                     }
                 ],
                 restartPolicy: 'OnFailure',
@@ -86,6 +87,27 @@ files.forEach(function(connectorConfigFile) {
             },
         }
     };
+
+    if (argv.local) {
+        // TODO: there's not any _really_ good reason to avoid
+        // use k8s secrets in a local/minikube deployment too.  If we did use secrets,
+        // we could get rid of this special logic here, and our minikube deployments
+        // would be a bit more secure, too.
+        jobSpec.template.spec.containers[0].env.push({
+            name: 'JWT_SECRET',
+            value: 'squirrel'
+        });
+    } else {
+        jobSpec.template.spec.containers[0].env.push({
+            name: 'JWT_SECRET',
+            valueFrom: {
+                secretKeyRef: {
+                    name: 'oauth-secrets',
+                    key: 'jwt-secret'
+                }
+            }
+        });
+    }
 
     const job = {
         apiVersion: 'batch/v1',

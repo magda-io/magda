@@ -36,6 +36,12 @@
                     "mountPath": "/etc/config",
                     "name": "config"
                   }
+                ],
+                "env": [
+                  {
+                    "name": "JWT_SECRET",
+                    "value": "squirrel"
+                  }
                 ]
               }
             ],

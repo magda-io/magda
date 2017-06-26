@@ -36,6 +36,17 @@
                     "mountPath": "/etc/config",
                     "name": "config"
                   }
+                ],
+                "env": [
+                  {
+                    "name": "JWT_SECRET",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "oauth-secrets",
+                        "key": "jwt-secret"
+                      }
+                    }
+                  }
                 ]
               }
             ],

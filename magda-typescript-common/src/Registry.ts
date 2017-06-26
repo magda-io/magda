@@ -3,11 +3,13 @@ import * as URI from 'urijs';
 import retry from './retry';
 import formatServiceError from './formatServiceError';
 import createServiceError from './createServiceError';
+import * as jwt from 'jsonwebtoken';
 
 export interface RegistryOptions {
     baseUrl: string,
     maxRetries?: number,
-    secondsBetweenRetries?: number
+    secondsBetweenRetries?: number,
+    jwtSecret?: string
 }
 
 export interface PutResult {
@@ -22,11 +24,13 @@ export default class Registry {
     private recordAspectsApi: RecordAspectsApi;
     private maxRetries: number;
     private secondsBetweenRetries: number;
+    private sessionHeaderValue: string;
 
     constructor({
         baseUrl,
         maxRetries = 10,
-        secondsBetweenRetries = 10
+        secondsBetweenRetries = 10,
+        jwtSecret = process.env.JWT_SECRET || process.env.npm_package_config_JWT_SECRET
     }: RegistryOptions) {
         this.baseUrl = new URI(baseUrl);
         this.maxRetries = maxRetries;
