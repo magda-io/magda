@@ -52,7 +52,7 @@ export function requestDistributionError(error: number): Action {
 export function fetchDatasetFromRegistry(id: string):Function{
   return (dispatch: Function)=>{
     dispatch(requestDataset(id))
-    let url : string = config.registryUrl + `/${encodeURIComponent(id)}?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=spatial&dereference=true&optionalAspect=dataset-publisher`;
+    let url : string = config.registryUrl + `/records/${encodeURIComponent(id)}?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=spatial&dereference=true&optionalAspect=dataset-publisher`;
     console.log(url);
     return fetch(url)
     .then(response => {
@@ -74,7 +74,7 @@ export function fetchDatasetFromRegistry(id: string):Function{
 export function fetchDistributionFromRegistry(id: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestDistribution(id))
-    let url : string = config.registryUrl + `/${encodeURIComponent(id)}?aspect=dcat-distribution-strings`;
+    let url : string = config.registryUrl + `/records/${encodeURIComponent(id)}?aspect=dcat-distribution-strings`;
     console.log(url);
     return fetch(url)
     .then(response => {

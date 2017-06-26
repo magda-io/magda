@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "create-connector-configmap": "kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file ./connector-config/",
     "generate-connector-jobs-local": "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/local --local",
-    "generate-connector-jobs-prod": "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/prod"
+    "generate-connector-jobs-prod": "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/prod",
+    "create-config-configmap": "kubectl delete configmap config --ignore-not-found && kubectl create configmap config --from-file ./kubernetes/config/"
   },
   "author": "",
   "license": "Apache-2.0",

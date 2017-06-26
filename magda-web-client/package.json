@@ -9,6 +9,7 @@
     "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
+    "dev": "npm run start",
     "surge-build": "react-scripts build",
     "build": "npm run compile",
     "compile": "npm run build-css && react-scripts build",

@@ -24,7 +24,7 @@ export function fetchFeaturedPublishersFromRegistry(ids: Array<string>):Object{
       return false
     }
     dispatch(requestPublishers(ids))
-    const fetches = ids.map(id=>fetch(config.registryUrl + `/${id}?aspect=organization-details`).then(response=>response.json()));
+    const fetches = ids.map(id=>fetch(config.registryUrl + `/records/${id}?aspect=organization-details`).then(response=>response.json()));
     Promise.all(fetches).then(jsons=>dispatch(receivePublishers(jsons)))
   }
 }

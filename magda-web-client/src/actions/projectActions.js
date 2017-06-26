@@ -93,7 +93,7 @@ export function createProjectFailure(error: number): ProjectAction {
 export function postNewProject(props: Project){
   return (dispatch: Dispatch) => {
     dispatch(createProject(props));
-    const url = config.registryUrl;
+    const url = config.registryUrl + '/records';
     console.log(props);
 
     return fetch(url,
@@ -149,7 +149,7 @@ export function validateFields(props: Project){
 export function fetchProjectsFromRegistry():Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestProjects())
-    let url : string = config.registryUrl + '?aspect=project';
+    let url : string = config.registryUrl + '/records?aspect=project';
     console.log(url);
     return fetch(url)
     .then(response => {
@@ -178,7 +178,7 @@ export function fetchProjectsIfNeeded(){
 export function fetchProjectFromRegistry(projectId: string):Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestProject())
-    let url : string = config.registryUrl + '/' + projectId + '?aspect=project';
+    let url : string = config.registryUrl + '/records/' + projectId + '?aspect=project';
     return fetch(url)
     .then(response => {
         if (response.status >= 400) {

@@ -61,7 +61,7 @@ export default class AppContainer extends React.Component {
                     </div>
                   </div>
                   <div className='col-sm-10 nav-links'>
-                    <AccountNavbar />
+                    {config.disableAuthenticationFeatures || <AccountNavbar />}
 
                     <ul className='nav navbar-nav'>
                       {headerNavs.map(nav =>

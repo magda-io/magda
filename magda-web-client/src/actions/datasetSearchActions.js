@@ -37,7 +37,7 @@ export function resetDatasetSearch(): Action{
 
 export function fetchSearchResults(query: string): Store {
   return (dispatch: Dispatch)=>{
-    let url : string = config.searchApiBaseUrl + `datasets?query=${query}`;
+    let url : string = config.searchApiBaseUrl + `/datasets?query=${query}`;
     console.log(url);
     dispatch(requestResults(query))
     return fetch(url)

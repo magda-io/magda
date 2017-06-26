@@ -15,7 +15,7 @@ export default class DataSetMentionSuggestions extends React.Component {
 
   onSearchChange(value) {
     let url: string =
-      config.searchApiBaseUrl + `datasets?query=${value}`;
+      config.searchApiBaseUrl + `/datasets?query=${value}`;
 
     this.latestUrl = url;
 

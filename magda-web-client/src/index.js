@@ -70,7 +70,7 @@ function loadDefaultData(store) {
   store.dispatch(requestWhoAmI());
 }
 
-// If you add a new top-level route below, you must also add it to ../server.ts!
+// If you add a new top-level route below, you must also add it to src/index.ts in magda-web-server!
 
 ReactDOM.render(
   <Provider store={store}>

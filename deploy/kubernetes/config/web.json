@@ -1,0 +1,4 @@
+{
+    "disableAuthenticationFeatures": true,
+    "apiBaseUrl": "/api"
+}
