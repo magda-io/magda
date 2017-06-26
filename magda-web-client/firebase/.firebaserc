@@ -1,6 +1,0 @@
-{
-  "projects": {
-    "default": "terriajs",
-    "dev": "terriajs-dev"
-  }
-}
