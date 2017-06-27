@@ -1,4 +1,4 @@
 {
-    "disableAuthenticationFeatures": true,
-    "apiBaseUrl": "/api"
+    "disableAuthenticationFeatures": false,
+    "apiBaseUrl": "http://magda-api-dev.terria.io/api"
 }
