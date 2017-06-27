@@ -46,8 +46,8 @@ export const config = {
                ],
         headerNavigation: [
             ['Search', 'search'],
-            ['Projects', 'projects'],
-            ...(serverConfig.disableAuthenticationFeatures ? [] : [['Publishers', 'publishers']]),
+            ...(serverConfig.disableAuthenticationFeatures ? [] : [['Projects', 'projects']]),
+            ['Publishers', 'publishers'],
             ['About', 'page/about']
         ],
         footerNavigation: [
