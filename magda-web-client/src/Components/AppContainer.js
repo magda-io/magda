@@ -109,17 +109,22 @@ export default class AppContainer extends React.Component {
               </div>
               <div className='row nav_second'>
                 <div className='col-sm-8'>
+                  <h1 className='search-heading'> Australia open data search</h1>
                   <SearchBox location={this.props.location} />
                   {' '}
                 </div>
                 <Small>
                   <div className='col-sm-4'>
                     <div className='appContainer__suggestion'>
-                      {' '}Try Search for
-                      {' '}
-                      <Link to={'/search?q=' + encodeURI(config.suggestion)}>
-                        {config.suggestion}
-                      </Link>
+                      Try Search for
+                      <ul className='list-unstyled'>
+                      {config.suggestion.map(s=>
+                        <li key={s}><Link to={'/search?q=' + encodeURI(s)}>
+                        {s}
+                        </Link></li>)}
+                    </ul>
+
+                      <Link to={'page/search-syntax'}> Learn about the new search</Link>
                     </div>
                   </div>
                 </Small>

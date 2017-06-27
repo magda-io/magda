@@ -38,7 +38,7 @@ export const config = {
           'Budget from 2016 to 2017 by Department of Finance',
           'Planning as WMS'
         ],
-        suggestion: 'Business names by ASIC as CSV',
+        suggestion: ['Business names by ASIC as CSV','Taxation Statistics from 2013', 'Trees in Victoria'],
         facets: [{id: 'publisher', component: Publisher},
                  {id: 'region', component: Region},
                  {id: 'temporal', component: Temporal},
@@ -54,7 +54,7 @@ export const config = {
             {category: 'Search', links: [['Data sources', 'page/data-sources'], ['Search syntax', 'page/search-syntax']]},
             ...(serverConfig.disableAuthenticationFeatures ? [] : [{category: 'Projects', links: [['Browse projects', 'projects'], ['Start a project', 'project/new']]}]),
             {category: 'Publishers', links: [['Publisher index', 'publishers'], ['Open data toolkit', 'https://toolkit.data.gov.au/']]},
-            {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API doc', 'http://magda-dev.terria.io/api/v0/registry/swagger/index.html']]},
+            {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API Docs', 'http://magda-dev.terria.io/api/v0/registry/swagger/index.html']]},
             {category: 'About', links: [['About data.gov.au', 'page/about'], ['Blog', 'https://blog.data.gov.au/']]},
             {category: 'Feedback', links: [['Feedback', 'feedback']]}]
         }
