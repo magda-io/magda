@@ -13,7 +13,7 @@
 
 .facet-body{
     width: 300px;
-    max-width: 100vw;
+    max-width:calc(100vw - 40px);
     margin-top: 10px;
     box-shadow: 0 0 5px rgba(0,0,0,.2);
     background: #fff;
