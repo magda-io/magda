@@ -110,7 +110,7 @@ class FacetRegion extends Component {
 
 
     renderBox(){
-        return (<div className='facet-body'>
+        return (<div className='facet-body facet-region'>
                     <FacetSearchBox renderOption={this.renderOption}
                                     onToggleOption={this.onToggleOption}
                                     options={this.props.facetSearchResults}

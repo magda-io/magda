@@ -1,7 +1,11 @@
 .facet-region__preview{
-    height: 300px;
+    height: 400px;
 }
 
 .facet-region__preview .map{
     height: 100%;
+}
+
+.facet-region.facet-body {
+  width: 600px;
 }
