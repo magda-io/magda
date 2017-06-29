@@ -1,0 +1,6 @@
+{
+    "type": "magda-project-open-data-connector",
+    "name": "City of Launceston Open Data",
+    "sourceUrl": "http://opendata.launceston.tas.gov.au/data.json",
+    "schedule": "* * */3 * *"
+}

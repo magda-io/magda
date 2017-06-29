@@ -1,0 +1,6 @@
+{
+    "type": "magda-project-open-data-connector",
+    "name": "Moreton Bay Regional Council Data Portal",
+    "sourceUrl": "http://data.moretonbay.qld.gov.au/data.json",
+    "schedule": "* * */3 * *"
+}

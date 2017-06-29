@@ -19,7 +19,7 @@
                 "image": "localhost:5000/data61/magda-csw-connector:latest",
                 "command": [
                   "node",
-                  "/usr/src/app/component/bin/index.js",
+                  "/usr/src/app/component/dist/index.js",
                   "--config",
                   "/etc/config/connector.json",
                   "--registryUrl",

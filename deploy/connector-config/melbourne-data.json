@@ -1,0 +1,6 @@
+{
+    "type": "magda-project-open-data-connector",
+    "name": "Melbourne Data",
+    "sourceUrl": "https://data.melbourne.vic.gov.au/data.json",
+    "schedule": "* * */3 * *"
+}
