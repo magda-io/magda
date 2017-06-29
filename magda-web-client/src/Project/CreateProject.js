@@ -102,7 +102,7 @@ class CreateProject extends Component {
       return <div>
           <h2>Datasets</h2>
             <div>
-              <h3><Link className={`${this.datasetActive() ? 'dataset-active' : 'dataset-non-active'}`} to={`/dataset/${this.props.dataset.identifier}`}>{this.props.dataset.title}</Link></h3>
+              <h3><Link className={`${this.datasetActive() ? 'dataset-active' : 'dataset-non-active'}`} to={`/dataset/${encodeURIComponent(this.props.dataset.identifier)}`}>{this.props.dataset.title}</Link></h3>
               <button onClick={()=>this.toggleDataset()} className='btn btn-primary'>{this.datasetActive() ? 'Remove' : 'Add'}</button>
             </div>
       </div>

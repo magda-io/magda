@@ -49,7 +49,7 @@ class RecordHandler extends React.Component {
           <div className='container'>
               <ul className='breadcrumb'>
                 <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
-                <li className='breadcrumb-item'><Link to={`/dataset/${this.props.params.datasetId}`}>Dataset</Link></li>
+                <li className='breadcrumb-item'><Link to={`/dataset/${encodeURIComponent(this.props.params.datasetId)}`}>Dataset</Link></li>
                 <li className='breadcrumb-item'>Distribution</li>
               </ul>
               <div className='media'>
@@ -63,7 +63,7 @@ class RecordHandler extends React.Component {
                 </div>
               </div>
             </div>
-            <Tabs list={tabList} baseUrl={`/dataset/${this.props.params.datasetId}/distribution/${this.props.params.distributionId}`}/>
+            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}/distribution/${encodeURIComponent(this.props.params.distributionId)}`}/>
             <div className='tab-content'>{this.props.children}</div>
             </div>
       )
@@ -88,7 +88,7 @@ class RecordHandler extends React.Component {
                   <div className='updated-date'>Updated {this.props.dataset.updatedDate}</div>
               </div>
             </div>
-            <Tabs list={datasetTabs} baseUrl={`/dataset/${this.props.params.datasetId}`}/>
+            <Tabs list={datasetTabs} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}`}/>
             <div className='tab-content'>{this.props.children}</div>
         </div>
       );

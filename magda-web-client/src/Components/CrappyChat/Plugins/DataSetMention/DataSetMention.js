@@ -7,7 +7,7 @@ export default function DataSetMentionSearch(props) {
     <Link
       key={props.mention.get('identifier')}
       className={props.className}
-      to={`/dataset/${props.mention.get('identifier')}`}
+      to={`/dataset/${encodeURIComponent(props.mention.get('identifier'))}`}
       contentEditable={false}
     >
       #{props.mention.get('title')}
