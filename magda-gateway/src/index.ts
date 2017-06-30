@@ -6,7 +6,7 @@ import * as path from 'path';
 
 import reverseProxy from "./api-proxy";
 import authRouter from "./auth-router";
-import webProxy from './web-proxy';
+import genericProxy from './generic-proxy';
 
 // Create a new Express application.
 var app = express();
@@ -28,7 +28,8 @@ app.use("/auth", authRouter);
 app.use("/api/v0", reverseProxy);
 
 // Proxy any other URL to magda-web
-app.use("/", webProxy);
+app.use("/", genericProxy(config.get("targets.web")));
+app.use("/preview-map", genericProxy(config.get("targets.preview-map")));
 
 app.listen(config.get("listenPort"));
 console.log("Listening on port " + config.get("listenPort"));
