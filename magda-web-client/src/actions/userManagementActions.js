@@ -32,7 +32,7 @@ export function requestWhoAmI(): Action {
   };
 }
 
-export function receiveWhoAmISignedIn(user): Action {
+export function receiveWhoAmISignedIn(user): Action{
   return {
     type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_IN,
     user
