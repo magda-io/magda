@@ -20,7 +20,7 @@ The filter words can appear in any order as long as they appear after the free t
 
 You can also do an OR filter for publisher or format by repeating it, e.g. `as KMZ as KML as SHP`.
 
-The publisher filter doesn’t have to match an exact publisher… e.g. `by Council` will filter by everything published by any publisher with the word ‘Council’ in it.
+The publisher filter doesn’t have to match an exact publisher. E.g. `by Council` will filter by everything published by any publisher with the word ‘Council’ in it.
 
 Examples:
 * `water from 2001 to 2010` searches for all datasets with a temporal span overlapping 2001-2010 that have the word ‘water’ in their metadata somewhere.
