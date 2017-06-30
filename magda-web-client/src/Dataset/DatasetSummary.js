@@ -91,7 +91,7 @@ export default class DatasetSummary extends Component {
                   <div className='dataset-summary__dataset-description' onClick={this.props.onClickDataset}>
                     <MarkdownViewer markdown={this.props.isExpanded ? dataset.description : dataset.description.slice(0, 100) + '...'}/>
                   </div>
-                  <label className='dataset-summary-publisher'>{publisher}</label>
+                  <label className='dataset-summary-publisher'>Source: <span>{publisher}</span></label>
                 </div>
               <div className='dataset-summary__footer'>
                   {this.props.isExpanded && this.renderLinks()}
