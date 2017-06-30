@@ -10,11 +10,13 @@ const apiHost = 'http://magda-api-dev.terria.io/';
 
 const serverConfig = window.magda_server_config || {};
 
+const registryUrl = serverConfig.registryApiBaseUrl || (apiHost + 'api/v0/registry');
+
 export const config = {
         appName: 'data.gov.au',
         apiHost,
         searchApiBaseUrl: serverConfig.searchApiBaseUrl || (apiHost + 'api/v0/search'),
-        registryUrl: serverConfig.registryApiBaseUrl || (apiHost + 'api/v0/registry'),
+        registryUrl: registryUrl,
         authApiUrl: serverConfig.authApiBaseUrl || (apiHost + 'api/v0/auth'),
         discussionsApiUrl: serverConfig.discussionsApiBaseUrl || (apiHost + 'api/v0/discussions'),
         rssUrl: 'https://nationalmap.gov.au/proxy/_0d/https://blog.data.gov.au/blogs/rss.xml',
@@ -54,7 +56,7 @@ export const config = {
             {category: 'Search', links: [['Data sources', 'page/data-sources'], ['Search syntax', 'page/search-syntax']]},
             ...(serverConfig.disableAuthenticationFeatures ? [] : [{category: 'Projects', links: [['Browse projects', 'projects'], ['Start a project', 'project/new']]}]),
             {category: 'Publishers', links: [['Publisher index', 'publishers'], ['Open data toolkit', 'https://toolkit.data.gov.au/']]},
-            {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API Docs', 'http://magda-dev.terria.io/api/v0/registry/swagger/index.html']]},
+            {category: 'Developers', links: [['Architecture', 'page/architecture'], ['API Docs', registryUrl + '/swagger/index.html']]},
             {category: 'About', links: [['About data.gov.au', 'page/about'], ['Blog', 'https://blog.data.gov.au/']]},
             {category: 'Feedback', links: [['Feedback', 'feedback']]}]
         }
