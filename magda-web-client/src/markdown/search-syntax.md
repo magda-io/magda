@@ -24,7 +24,7 @@ The publisher filter doesn’t have to match an exact publisher. E.g. `by Counci
 
 Examples:
 * `water from 2001 to 2010` searches for all datasets with a temporal span overlapping 2001-2010 that have the word ‘water’ in their metadata somewhere.
-* `water as PDF as DOC by City of Melbourne` searches for all datasets that either have a PDF or DOC file in them and are by City of Melbourne.
+* `water as PDF as DOC by City of Melbourne` searches for all datasets that either have a PDF or DOC file in them and are published by City of Melbourne.
 * `water by City of Melbourne as PDF as DOC` does exactly the same thing
 * `"water by City of Melbourne as PDF as DOC"` searches for the exact phrase ‘water as City of Melbourne as PDF as DOC’ with no filtering at all
 * `as PDF by City of Melbourne` searches for all datasets from the City of Melbourne publisher that have a PDF
