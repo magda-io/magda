@@ -67,6 +67,7 @@ export default class DatasetSummary extends Component {
   render(){
     const dataset = this.props.dataset;
     const publisher = defined(dataset.publisher) ? dataset.publisher.name ? dataset.publisher.name : dataset.publisher : 'unspecified';
+    const source = this.props.dataset.catalog;
 
     return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
                 <div className='dataset-summary__header'>
@@ -76,6 +77,7 @@ export default class DatasetSummary extends Component {
                             to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>
                         {dataset.title}
                       </Link>
+                      <label className='dataset-summary-publisher'>{publisher}</label>
                     </div>
                     <span className='hidden-xs dataset-summary__toggle'>
                         {this.props.onClickDataset && <button className='dataset-summary__toggle-info-btn' onClick={this.props.onClickDataset} type='button'>{this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}</button>}
@@ -91,7 +93,8 @@ export default class DatasetSummary extends Component {
                   <div className='dataset-summary__dataset-description' onClick={this.props.onClickDataset}>
                     <MarkdownViewer markdown={this.props.isExpanded ? dataset.description : dataset.description.slice(0, 100) + '...'}/>
                   </div>
-                  <label className='dataset-summary-publisher'>Source: <span>{publisher}</span></label>
+
+                  <label className='dataset-summary-source'>Source: {source}</label>
                 </div>
               <div className='dataset-summary__footer'>
                   {this.props.isExpanded && this.renderLinks()}
