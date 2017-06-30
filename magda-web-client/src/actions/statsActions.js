@@ -1,6 +1,7 @@
 import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
 import type { Action, Dispatch, GetState } from '../types';
+import {config} from '../config'
 
 
 export function requestDatasetCount():Action {
@@ -33,7 +34,7 @@ export function fetchDatasetCount(){
         return false;
       }
       dispatch(requestDatasetCount())
-      const url = "http://104.199.180.124/api/v0/registry/records?limit=0&aspect=dcat-dataset-strings";
+      const url = `${config.registryUrl}/records?limit=0&aspect=dcat-dataset-strings`;
       fetch(url)
       .then(response=>{
         if (response.status !== 200) {

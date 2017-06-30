@@ -57,7 +57,7 @@ files.forEach(function(connectorConfigFile) {
                         imagePullPolicy: 'Always',
                         resources: {
                             requests: {
-                                cpu: '0m'
+                                cpu: '100m'
                             }
                         },
                         volumeMounts: [
@@ -98,19 +98,19 @@ files.forEach(function(connectorConfigFile) {
 
     fs.writeFileSync(path.join(argv.out, 'connector-' + basename + '.json'), JSON.stringify(job, undefined, '  '), 'utf8');
 
-    const cron = {
-        apiVersion: 'batch/v2alpha1',
-        kind: 'CronJob',
-        metadata: {
-            name: 'connector-' + basename
-        },
-        spec: {
-            schedule: configFile.schedule || '* * */3 * *',
-            jobTemplate: {
-                spec: jobSpec
-            }
-        }
-    };
+    // const cron = {
+    //     apiVersion: 'batch/v2alpha1',
+    //     kind: 'CronJob',
+    //     metadata: {
+    //         name: 'connector-' + basename
+    //     },
+    //     spec: {
+    //         schedule: configFile.schedule || '* * */3 * *',
+    //         jobTemplate: {
+    //             spec: jobSpec
+    //         }
+    //     }
+    // };
 
-    fs.writeFileSync(path.join(argv.out, 'connector-' + basename + '-cron.json'), JSON.stringify(cron, undefined, '  '), 'utf8');
+    // fs.writeFileSync(path.join(argv.out, 'connector-' + basename + '-cron.json'), JSON.stringify(cron, undefined, '  '), 'utf8');
 });
