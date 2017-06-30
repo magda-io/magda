@@ -101,17 +101,16 @@ const projects = (state: ProjectsResult = initialData, action: ProjectAction) =>
         error: null,
         fieldErrors: action.fieldErrors
       })
-
     case 'UPDATE_PROJECT':
       return Object.assign({}, state, {
-        isFetching: true,
         error: null,
       })
     case 'UPDATE_PROJECT_SUCCESS':
+      const newProject = Object.assign({}, state.project, action.json)
       return Object.assign({}, state, {
         isFetching: false,
         error: null,
-        project: action.project,
+        project: newProject,
       })
     case 'UPDATE_PROJECT_FAILURE':
       return Object.assign({}, state, {

@@ -76,7 +76,10 @@ export default class Ckan {
 
         let fqComponent = '';
         if (options && options.ignoreHarvestSources && options.ignoreHarvestSources.length > 0) {
-            const solrQueries = options.ignoreHarvestSources.map(title => `-harvest_source_title:${encodeURIComponent('"' + title + '"')}`);
+            const solrQueries = options.ignoreHarvestSources.map(title => {
+                const encoded = title === '*' ? title : encodeURIComponent('"' + title + '"');
+                return `-harvest_source_title:${encoded}`
+            });
             fqComponent = '&fq=' + solrQueries.join('+');
         }
 

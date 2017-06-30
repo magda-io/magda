@@ -96,10 +96,10 @@ export function updateProject(){
 }
 
 
-export function updateProjectSuccess(project: Project){
+export function updateProjectSuccess(json){
   return {
     type: actionTypes.UPDATE_PROJECT_SUCCESS,
-    project
+    json
   }
 }
 
@@ -115,7 +115,7 @@ export function updateProjectStatus(project: Project){
   return (dispatch: Dispatch) => {
     dispatch(updateProject());
     const url = `${config.registryUrl}/records/${project.id}/aspects/project`;
-    const body = { "op": "replace", "path": "/status", "value": project.status === 'open' ? 'closed' : 'open' }
+    const body = [{ "op": "replace", "path": "/status", "value": project.status === 'open' ? 'closed' : 'open' }]
       return fetch(url,
       {
         method: 'PATCH',
@@ -136,7 +136,7 @@ export function updateProjectStatus(project: Project){
         if(result.error){
           return false;
         }
-        dispatch(updateProjectSuccess(project))
+        dispatch(updateProjectSuccess(result))
       })
   }
 
