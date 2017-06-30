@@ -38,6 +38,7 @@
     "firebaseui": "^1.0.1",
     "immutable": "^3.8.1",
     "isomorphic-fetch": "^2.2.1",
+    "jsonpath": "^0.2.11",
     "leaflet": "^0.7.7",
     "leaflet-mapbox-vector-tile": "TerriaJS/Leaflet.MapboxVectorTile",
     "lodash.debounce": "^4.0.8",
@@ -51,7 +52,6 @@
     "markdown-with-front-matter-loader": "^0.1.0",
     "marked": "^0.3.6",
     "node-sass": "^4.5.0",
-    "openlayers": "^4.1.1",
     "pretty-date": "^0.2.0",
     "query-string": "^4.3.4",
     "re-base": "^2.7.0",
@@ -66,6 +66,7 @@
     "redux-thunk": "^2.1.0",
     "rss-parser": "^2.9.0",
     "uuid": "^3.0.1",
-    "xml-parser": "^1.2.1"
+    "xml-parser": "^1.2.1",
+    "xml2js": "^0.4.17"
   }
 }

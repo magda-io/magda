@@ -10,6 +10,7 @@ import ErrorHandler from '../Components/ErrorHandler';
 import ReactDocumentTitle from 'react-document-title';
 import CustomIcons from '../UI/CustomIcons';
 import type {StateRecord } from '../types';
+import createMapPreviewForDistribution from '../helpers/createMapPreviewForDistribution';
 
 class RecordHandler extends React.Component {
   props: {
@@ -41,7 +42,7 @@ class RecordHandler extends React.Component {
        }
        const tabList = [
          {id: 'details', name: 'Details', isActive: true},
-         {id: 'map', name: 'Maps', isActive: this.props.distribution.format && (this.props.distribution.format.toLowerCase() === 'wms' || this.props.distribution.format.toLowerCase() === 'wfs')},
+         {id: 'map', name: 'Maps', isActive: createMapPreviewForDistribution(this.props.distribution)},
          {id: 'chart', name: 'Chart', isActive: this.props.distribution.format && (this.props.distribution.format.toLowerCase() === 'csv' || this.props.distribution.format.toLowerCase() === 'json')}
        ]
       return (

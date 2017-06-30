@@ -3,10 +3,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import generatePreviewData from '../helpers/generatePreviewData';
 import fetch from 'isomorphic-fetch';
-import ol from 'openlayers';
-import type { DatasetDistribution, WMSParser } from '../types';
-
-
+import type { DatasetDistribution } from '../types';
+import * as xml2js from 'xml2js';
 
 class DistributionMap extends Component {
   props: {
@@ -23,14 +21,21 @@ class DistributionMap extends Component {
     }
   }
   componentWillMount(){
-    const parser: WMSParser=new ol.format.WMSCapabilities();
     if(this.props.distribution.id){
       // preload the data to figure out how to display
       // generate url config
       fetch(this.props.distribution.downloadURL).then(response=> response.text()).then((text: string)=>{
-        const result: Object=parser.read(text);
+        let json: Object;
+        xml2js.parseString(text, {
+            xmlns: true,
+            tagNameProcessors: [ xml2js.processors.stripPrefix ],
+            async: false,
+            explicitRoot: false
+        }, function(err, result) {
+            json = result;
+        });
         this.setState({
-          mapData: generatePreviewData(this.props.distribution.downloadURL, result)
+          mapData: generatePreviewData(this.props.distribution.downloadURL, json)
         })
       })
 
