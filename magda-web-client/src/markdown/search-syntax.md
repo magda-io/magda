@@ -12,7 +12,7 @@ You can also use special filter keywords in the search box to do a more structur
 
 The query for `by` or `as` can be anything including spaces as long as it doesn’t include another filter word.
 
-The query for ‘from’ or ‘to’ can be a date or time or both. It supports a wide variety of date and time formats. When in doubt, use an ISO8601 date and time, such as `2017-06-30T12:00:00Z`.
+The query for `from` or `to` can be a date or time or both. It supports a wide variety of date and time formats. When in doubt, use an ISO8601 date and time, such as `2017-06-30T12:00:00Z`.
 
 You can also use double-quotes (`""`) to escape the filter parsing. So if I wanted to search for the exact phrase `From Earth to the Stars` I could put it quotes (`"From Earth to the Stars"`) and the parser wouldn’t try to look for a date of ‘earth’ or ‘to the stars’, it’d just search for that phrase.
 
