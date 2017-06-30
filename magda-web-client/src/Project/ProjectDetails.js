@@ -38,6 +38,7 @@ class ProjectDetails extends Component {
                   </div>}
                 <h1>{this.props.project.name}</h1>
                 <div className={`project-status ${this.props.project.status}`}>{this.props.project.status}</div>
+                {this.props.user.isAdmin ? <button className='project-status-toggle'>{this.props.props.status === 'open' ? 'close' : 'open'}</button>: null}
                 <h3 className='section-heading'> Description </h3>
                 <div className="white-box">
                   {this.props.project.description}
@@ -75,12 +76,14 @@ function mapStateToProps(state, ownProps) {
   const error = state.project.error;
   const location = ownProps.location;
   const showNotification = state.project.showNotification;
+  const user = state.userManagement.user;
   return {
     project,
     isFetching,
     location,
     error,
-    showNotification
+    showNotification,
+    user
   };
 }
 

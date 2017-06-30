@@ -86,7 +86,7 @@ export function parseDataset(dataset: Record) {
   const temporalCoverage = aspects['temporal-coverage'];
   const spatialCoverage = aspects['spatial-coverage'];
   const description = datasetInfo.description || 'No description provided';
-  const publisher = datasetInfo.publisher || 'Unknown publisher';
+  const publisher = datasetInfo.publisher || undefined;
   const tags = datasetInfo.keywords || [];
   const landingPage = datasetInfo.landingPage;
   const title = datasetInfo.title;

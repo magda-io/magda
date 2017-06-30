@@ -5,6 +5,7 @@ import OverviewBox from '../UI/OverviewBox';
 
 class DatasetPublisher extends Component {
   renderPublisher(publisherName, publisherDetails){
+    debugger
       return (<div className='col-sm-8'>
                 <h2>{publisherName}</h2>
                 <h3 className='section-heading'>Overview</h3>

@@ -119,7 +119,7 @@ class Search extends Component {
   }
 
   renderSuggestions(){
-    return <div><h3> Try search for </h3><ul>{config.exampleSearch.map(item=><li><Link to={`search?q=${item}`} key={item}> {item}</Link></li>)}</ul></div>
+    return <div><h3> Try search for </h3><ul>{config.exampleSearch.map(item=><li key={item}><Link to={`search?q=${item}`} key={item}> {item}</Link></li>)}</ul></div>
   }
 
   render() {
