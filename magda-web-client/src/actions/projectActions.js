@@ -146,10 +146,10 @@ export function validateFields(props: Project){
 }
 
 
-export function fetchProjectsFromRegistry():Object{
+export function fetchProjectsFromRegistry(start: number):Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestProjects())
-    let url : string = config.registryUrl + '/records?aspect=project';
+    let url : string = `${config.registryUrl}/records?aspect=project&limit=${config.resultsPerPage}&start=${(start-1)*config.resultsPerPage}`;
     console.log(url);
     return fetch(url)
     .then(response => {
@@ -164,10 +164,10 @@ export function fetchProjectsFromRegistry():Object{
 }
 
 
-export function fetchProjectsIfNeeded(){
+export function fetchProjectsIfNeeded(start: number){
   return (dispatch: Dispatch, getState: GetState)=>{
     if(!getState().project.isFetching){
-          return dispatch(fetchProjectsFromRegistry())
+          return dispatch(fetchProjectsFromRegistry(start))
       } else{
           return Promise.resolve();
       }
