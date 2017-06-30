@@ -72,11 +72,12 @@ class CrappyChat extends React.Component {
             return <Message key={message.id || index} message={message} />;
           })}
         </div>
+        <div className="crappy-chat__footer">
+          {this.props.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
 
-        {this.props.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
-
-        {!this.props.user &&
-          <div className='sign-in-prompt'><Link to="/account">Sign in</Link> to join the discussion!</div>}
+          {!this.props.user &&
+            <div className='sign-in-prompt'><Link to="/account">Sign in</Link> to join the discussion!</div>}
+        </div>
       </div>
     );
   }

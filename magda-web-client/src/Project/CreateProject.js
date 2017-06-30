@@ -107,7 +107,7 @@ class CreateProject extends Component {
             </div>
       </div>
     }
-    render(){
+    renderCreateProject(){
       const datasetIdfromUrl: string = queryString.parse(this.props.location.search).dataset;
       return <ReactDocumentTitle title={'New project | ' + config.appName}>
               <div className='create-project container'>
@@ -141,6 +141,16 @@ class CreateProject extends Component {
              </div>
              </ReactDocumentTitle>
     }
+   render(){
+     if(this.props.user){
+       return this.renderCreateProject();
+     }
+     return <ReactDocumentTitle title={'New project | ' + config.appName}>
+              <div className='container'>
+                <div className='sign-in-prompt'><Link to="/account">Sign in</Link> to create project!</div>
+              </div>
+            </ReactDocumentTitle>
+   }
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<*>)=>{
@@ -157,8 +167,9 @@ function mapStateToProps(state, ownProps) {
   const fieldErrors = state.project.fieldErrors;
   const record = state.record;
   const dataset =record.dataset;
+  const user = state.userManagement.user
   return {
-    isFetching, error, fieldErrors, dataset
+    isFetching, error, fieldErrors, dataset, user
   };
 }
 

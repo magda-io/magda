@@ -14,12 +14,12 @@ class AccountNavbar extends React.Component {
       <ul className="nav navbar-nav navbar-account">
         {this.props.user
           ? [
-              <li>
+              <li key='user'>
                 <Link to={`/account`}>
                   {this.props.user.displayName}
                 </Link>
               </li>,
-              <li>
+              <li key='signout'>
                 <a href="#1" onClick={this.signOut.bind(this)}>
                   Sign Out
                 </a>

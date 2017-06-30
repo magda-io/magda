@@ -37,15 +37,11 @@ class ProjectDetails extends Component {
                     Project successfully created
                   </div>}
                 <h1>{this.props.project.name}</h1>
-                  <div className={`project-status ${this.props.project.status}`}>{this.props.project.status}</div>
-                  <h3 className='section-heading'> Description </h3>
                 <div className="white-box">
+                  <h2> Description </h2>
                   {this.props.project.description}
                 </div>
-                <div className="">
-                  <h3 className='section-heading'> Discussion</h3>
-                  <CrappyChat typeName="project" typeId={this.props.project.id} />
-                </div>
+                <CrappyChat typeName="project" typeId={this.props.project.id} />
               </div>
               <div className="col-sm-4">
                 <Link className="btn btn-primary" to="/project/new">
