@@ -1,0 +1,22 @@
+{
+    "homeCamera": {
+        "west": 143.7,
+        "south": -43.7,
+        "east": 148.6,
+        "north": -39.4
+    },
+    "services": [],
+    "catalog": [
+        {
+            "name": "Tasmanian Government",
+            "type": "group",
+            "isPromoted": true,
+            "isOpen": true
+        },
+        {
+            "name": "National Data Sets",
+            "type": "group",
+            "isOpen": false
+        }
+    ]
+}

@@ -1,0 +1,489 @@
+{
+  "catalog": [
+    {
+      "name": "Test Data",
+      "type": "group",
+      "items": [
+        {
+          "name": "Tile Sets",
+          "type": "group",
+          "items": [
+            {
+              "name": "Topography",
+              "type": "esri-mapServer",
+              "url": "http://services.thelist.tas.gov.au/arcgis/rest/services/Basemaps/Topographic/ImageServer",
+              "legendUrl": "http://services.thelist.tas.gov.au/arcgis/rest/services/Basemaps/Topographic/ImageServer/legend",
+              "rectangle": [
+                140,
+                -44,
+                150,
+                -40
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Temporal",
+          "type": "group",
+          "items": [
+            {
+              "name": "Chlorophyll-a concentration (monthly)",
+              "type": "wms",
+              "url": "http://ereeftds.bom.gov.au/ereefs/tds/wms/ereefs/mwq_gridAgg_P1M",
+              "description": "...",
+              "abstract": "Chlorophyll-a, reflecting wavelengths in the green part of the visible light spectrum, is the substance that helps plants capture the sun’s energy. In the water, it indicates the presence of microscopic green algae (phytoplankton). While these plants are a natural part of the reef ecosystem, elevated numbers (a bloom) of phytoplankton signal elevated nutrient levels, especially nitrogen, in the water. Typical sources are runoff from excess fertiliser being applied to crops and, to a lesser extent in the Great Barrier Reef region, sewage contamination from urban areas.",
+              "layers": "Chl_MIM_mean",
+              "getFeatureInfoAsGeoJson": false,
+              "parameters": {
+                "ABOVEMAXCOLOR": "0xAF324B",
+                "BELOWMINCOLOR": "transparent",
+                "COLORSCALERANGE": "0,1",
+                "FORMAT": "image/png",
+                "LOGSCALE": "false",
+                "NUMCOLORBANDS": "16",
+                "PALETTE": "mwq_chl",
+                "STYLES": "boxfill/mwq_chl",
+                "TRANSPARENT": "true",
+                "VERSION": "1.1.1"
+              }
+            },
+            {
+              "name": "Pacific Earthquakes (CSV)",
+              "type": "csv",
+              "url": "test/earthquakes.csv",
+              "disableUserChanges": true,
+              "tableStyle": {
+                "dataVariable": "Magnitude",
+                "scaleByValue": true
+              },
+              "displayDuration": 2880
+            },
+            {
+              "name": "Auto Incidents (CSV)",
+              "type": "csv",
+              "url": "test/incidents.csv",
+              "tableStyle": {
+                "colorMap": [
+                  {
+                    "color": "rgba(0,0,200,1.0)",
+                    "offset": 0
+                  },
+                  {
+                    "color": "rgba(200,200,200,1.00)",
+                    "offset": 0.5
+                  },
+                  {
+                    "color": "rgba(200,0,0,1.00)",
+                    "offset": 1
+                  }
+                ],
+                "dataVariable": "incident_duration",
+                "scale": 1.2,
+                "scaleByValue": true,
+                "imageUrl": "test/images/pow32.png",
+                "minDisplayValue": 0,
+                "maxDisplayValue": 1500,
+                "legendTicks": 4,
+                "featureInfoFields": {
+                  "incident_date": "Date",
+                  "incident_severity": "Severity"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Region mapping (CSV)",
+          "type": "group",
+          "items": [
+            {
+              "name": "SEIFA 2011 (POA)",
+              "type": "csv",
+              "url": "test/SEIFA_POA_2011.csv",
+              "tableStyle": {
+                "colorMap": [
+                  {
+                    "color": "rgba(0,0,0,1.00)",
+                    "offset": 0
+                  },
+                  {
+                    "color": "rgba(0,200,0,1.0)",
+                    "offset": 1
+                  }
+                ],
+                "dataVariable": "Socio-economic_Disadvantage",
+                "regionVariable": "POA_CODE",
+                "regionType": "POA"
+              }
+            },
+            {
+              "name": "NEXIS NSW 2012 (LGA)",
+              "type": "csv",
+              "url": "test/NSW_LGA_NEXIS_201212.csv"
+            },
+            {
+              "name": "2011 Census AUST (STE)",
+              "type": "csv",
+              "url": "test/2011Census_AUST_STE.csv"
+            },
+            {
+              "name": "2011 Census AUST (CED)",
+              "type": "csv",
+              "url": "test/2011Census_AUST_CED.csv"
+            },
+            {
+              "name": "2011 Census AUST (SA4)",
+              "type": "csv",
+              "url": "test/2011Census_AUST_SA4.csv"
+            },
+            {
+              "name": "States STEM 2013",
+              "type": "csv",
+              "url": "test/states_stem_2013.csv"
+            },
+            {
+              "name": "Country Regions",
+              "type": "csv",
+              "url": "test/countries.csv",
+              "tableStyle": {
+                "dataVariable": "ITU-T Telephone Code"
+              }
+            },
+            {
+              "name": "Droughts by Country",
+              "type": "csv",
+              "url": "test/droughts.csv",
+              "tableStyle": {
+                "featureInfoFields": {
+                  "Country name": "Country",
+                  "date": "Date",
+                  "Total deaths": "Deaths",
+                  "Total damage": "Cost"
+                },
+                "dataVariable": "Total affected",
+                "displayDuration": 525600
+              }
+            },
+            {
+              "name": "State Mask Test",
+              "type": "csv",
+              "url": "test/states_stem_2013.csv",
+              "tableStyle": {
+                "colorMap": [
+                  {
+                    "color": "rgba(0,0,0,0.0)",
+                    "offset": 0
+                  },
+                  {
+                    "color": "rgba(0,0,0,1.0)",
+                    "offset": 1
+                  }
+                ],
+                "dataVariable": "Mask"
+              },
+              "keepOnTop": true,
+              "opacity": 1
+            }
+          ]
+        },
+        {
+          "name": "KML/KMZ files",
+          "type": "group",
+          "items": [
+            {
+              "name": "Simple Test (KML)",
+              "type": "kml",
+              "url": "test/simple.kml"
+            },
+            {
+              "name": "Vic Police (KML)",
+              "type": "kml",
+              "url": "test/vic_police.kml"
+            },
+            {
+              "name": "Vic Police (KMZ)",
+              "type": "kml",
+              "url": "test/vic_police.kmz"
+            }
+          ]
+        },
+        {
+          "name": "CZML files",
+          "type": "group",
+          "items": [
+            {
+              "name": "Simple Test (CZML)",
+              "type": "czml",
+              "url": "test/simple.czml"
+            },
+            {
+              "name": "Large feature info box (CZML)",
+              "type": "czml",
+              "url": "test/bigInfobox.czml"
+            },
+            {
+                "name": "Embedded CZML",
+                "type": "czml",
+                "data": [
+                    {
+                        "id": "document",
+                        "version": "1.0"
+                    },
+                    {
+                        "position": {
+                            "cartographicDegrees": [133.0, -25.0, 0.0]
+                        },
+                        "point": {
+                            "pixelSize": 5,
+                            "color": {
+                                "rgba": [255, 0, 0, 255]
+                            }
+                        }
+                    }
+                ]
+            }
+          ]
+        },
+        {
+          "name": "WMS",
+          "type": "group",
+          "items": [
+            {
+              "layers": "mybroadband:MyBroadband_Map",
+              "parameters": {
+                "tiled": true
+              },
+              "dataUrlType": "none",
+              "clipToRectangle": true,
+              "description": "[MyBroadband Map](https://www.mybroadband.communications.gov.au)",
+              "name": "Broadband with html feature info",
+              "rectangle": [
+                96.79939,
+                -43.59821,
+                153.63925,
+                -9.21592
+              ],
+              "getFeatureInfoFormats": [{"type": "html"}],
+              "dataCustodian": "[Department of Communications](http://www.communications.gov.au/)",
+              "url": "https://programs.communications.gov.au/geoserver/ows",
+              "type": "wms",
+              "info": [
+                {
+                  "name": "Licence",
+                  "content": "[Creative Commons Attribution 3.0 Australia (CC BY 3.0 AU)](http://creativecommons.org/licenses/by/3.0/au/)"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "GeoJSON files",
+          "type": "group",
+          "items": [
+            {
+              "name": "Cemeteries (GeoJSON)",
+              "type": "geojson",
+              "url": "test/cemeteries.geojson",
+              "initialMessage": {
+                "title": "title",
+                "content": "testing",
+                "key": "MyTestingKey"
+              }
+            },
+            {
+              "name": "Centrelink Sites (GME->GeoJSON)",
+              "type": "geojson",
+              "url": "test/gme.geojson"
+            },
+            {
+              "name": "Bike Racks (GeoJSON:reproj)",
+              "type": "geojson",
+              "url": "test/bike_racks.geojson"
+            },
+            {
+              "name": "Ferry Routes (GeoJSON via WFS)",
+              "type": "wfs",
+              "url": "http://www.ga.gov.au/gis/services/topography/Australian_Topography/MapServer/WFSServer",
+              "typeNames": "topography_Australian_Topography:Ferry_Routes"
+            },
+            {
+              "name": "Airports (OGR->GeoJSON, zipped)",
+              "type": "ogr",
+              "url": "test/airports.zip"
+            }
+          ]
+        },
+        {
+          "name": "Miscellaneous files",
+          "type": "group",
+          "items": [
+            {
+              "name": "Auto Incidents No Time (CSV)",
+              "type": "csv",
+              "url": "test/incidents_notime.csv",
+              "tableStyle": {
+                "colorMap": [
+                  {
+                    "color": "hsla(60,80%,80%,1.00)",
+                    "offset": 0
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Route in England (GPX)",
+              "type": "gpx",
+              "url": "test/sample.gpx"
+            }
+          ]
+        }
+      ],
+      "isOpen": true
+    },
+    {
+      "name": "Test Providers",
+      "type": "group",
+      "isOpen": true,
+      "items": [
+        {
+          "name": "Topography (GA)",
+          "type": "wfs-getCapabilities",
+          "url": "http://www.ga.gov.au/gis/services/topography/Australian_Topography/MapServer/WFSServer"
+        },
+        {
+          "name": "data.gov.au",
+          "type": "wfs-getCapabilities",
+          "url": "http://data.gov.au/geoserver/ows"
+        },
+        {
+          "name": "Western Australia",
+          "type": "wfs-getCapabilities",
+          "url": "http://www2.landgate.wa.gov.au/ows/wfspublic_4326/wfs"
+        }
+      ]
+    },
+    {
+      "name": "TerriaJS test data",
+      "type": "group",
+      "isOpen": true,
+      "items": [
+        {
+          "name": "GeoJSON",
+          "type": "group",
+          "items": [
+            {
+              "name": "Test styled and unstyled features",
+              "type": "geojson",
+              "url": "build/TerriaJS/test/GeoJSON/test-styles.geojson"
+            },
+            {
+              "name": "Test overriding styled and unstyled features",
+              "type": "geojson",
+              "url": "build/TerriaJS/test/GeoJSON/test-styles.geojson",
+              "style": {
+                "marker-size": "200",
+                "marker-color": "#ff3333",
+                "marker-symbol": "rail"
+              }
+            },
+            {
+              "name": "Testing stroke styles applied to embedded unstyled point.",
+              "type": "geojson",
+              "url": "build/TerriaJS/test/GeoJSON/test-styles.geojson",
+              "style": {
+                "stroke-width": "20",
+                "stroke": "red",
+                "marker-size": 200
+              },
+              "data": {
+                "type": "FeatureCollection",
+                "features": [
+                  {
+                    "type": "Feature",
+                    "properties": { "name": "Thick red border, unspecified centre"},
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        146.469,
+                        -40.830
+                      ]
+                    }
+                  }
+                ]
+              }              
+            }
+          ]
+        },
+
+        {
+          "name": "Csv-geo-au",
+          "type": "group",
+          "items": [
+            { "name": "Commonwealth Electoral District (CED) 2011", "type": "csv", "url": "test/csv-geo-au/ced_code_2011.csv" },
+            { "name": "Commonwealth Electoral District (CED) 2013", "type": "csv", "url": "test/csv-geo-au/ced_code_2013.csv" },
+            { "name": "Greater capital city statistical area (GCCSA)", "type": "csv", "url": "test/csv-geo-au/gccsa.csv" },
+            { "name": "Indigenous area (IARE)", "type": "csv", "url": "test/csv-geo-au/iare.csv" },
+            { "name": "Indigenous location (ILOC)", "type": "csv", "url": "test/csv-geo-au/iloc.csv" },
+            { "name": "Indigenous region (IREG)", "type": "csv", "url": "test/csv-geo-au/ireg.csv" },
+            { "name": "Local government area 2011 (LGA_2011)", "type": "csv", "url": "test/csv-geo-au/lga_code_2011.csv" },
+            { "name": "Local government area 2013 (LGA_2013)", "type": "csv", "url": "test/csv-geo-au/lga_code_2013.csv" },
+            { "name": "Local government area 2015 (LGA_2015)", "type": "csv", "url": "test/csv-geo-au/lga_code_2015.csv" },
+            { "name": "Primary Health Network (PHN)", "type": "csv", "url": "test/csv-geo-au/phn.csv" },
+            { "name": "Remoteness area (RA)", "type": "csv", "url": "test/csv-geo-au/ra.csv" },
+            { "name": "Section of state (SOS)", "type": "csv", "url": "test/csv-geo-au/sos.csv" },
+            { "name": "Section of state range (SOSR)", "type": "csv", "url": "test/csv-geo-au/sosr.csv" },
+            { "name": "Significant urban area (SUA)", "type": "csv", "url": "test/csv-geo-au/sua.csv" },
+            { "name": "Significant urban area by name (SUA_NAME)", "type": "csv", "url": "test/csv-geo-au/sua_name.csv" },
+            { "name": "Tourism region (TR) 2015", "type": "csv", "url": "test/csv-geo-au/tr_code_2015.csv" },
+            { "name": "Tourism region (TR) 2013", "type": "csv", "url": "test/csv-geo-au/tr_code_2013.csv" },
+            { "name": "Urban centre and locality (UCL)", "type": "csv", "url": "test/csv-geo-au/ucl.csv" },
+            { "name": "Statistical local area (SLA, obsolete)", "type": "csv", "url": "test/csv-geo-au/sla.csv" },
+            { "name": "Census collection district (CD, obsolete)", "type": "csv", "url": "test/csv-geo-au/cd.csv" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Terria Analytics",
+      "type": "group",
+      "preserveOrder": true,
+      "items": [
+        {
+          "name": "Regions like this",
+          "type": "places-like-me-function",
+          "url": "http://parlmap.terria.io:31113/jobs"
+        },
+        {
+          "name": "What makes this region unique or special?",
+          "type": "why-am-i-special-function",
+          "url": "http://parlmap.terria.io:31113/jobs"
+        },
+        {
+          "name": "Spatial Detailing",
+          "type": "spatial-detailing-function",
+          "url": "http://parlmap.terria.io:31113/jobs"
+        },
+        {
+          "name": "Sample Data",
+          "type": "group",
+          "items": [
+            {
+              "name": "NSW NEXIS 2012 (LGA)",
+              "type": "csv",
+              "url": "test/NSW_LGA_NEXIS_201212.csv"
+            },
+            {
+              "name": "Victoria Crime (LGA)",
+              "type": "csv",
+              "url": "test/vic_assault.csv"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty Group",
+      "type": "group"
+    }
+  ]
+}

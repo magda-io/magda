@@ -1,0 +1,266 @@
+{
+  "homeCamera": {
+    "north": -8,
+    "east": 158,
+    "south": -45,
+    "west": 109
+  },
+  "catalog": [
+    {
+      "name": "Example Datasets",
+      "type": "group",
+      "preserveOrder": true,
+      "isOpen": true,
+      "items": [
+        {
+          "name": "ABC News Stories",
+          "type": "group",
+          "preserveOrder": true,
+          "items": [
+            {
+              "name": "ABC Photo Stories (2009-2014)",
+              "type": "csv",
+              "url": "test/localphotostories20092014.csv",
+              "featureInfoTemplate": {
+                "template": "<div class='abc'><small>{{Date}}</small>{{#Primary image}}<figure><img src='{{Primary image}}'/><figcaption>{{Primary image caption}}</figcaption></figure>{{/Primary image}}<p><a target='_blank' href={{URL}}>Read More</a></div>"
+              },
+              "tableStyle": {
+                "dataVariable": "State",
+                "timeColumn": null
+              }
+            },
+            {
+              "name": "ABC Photo Stories by date",
+              "type": "csv",
+              "url": "test/localphotostories20092014.csv",
+              "featureInfoTemplate": {
+                "template": "<div class='abc'><small>{{Date}}</small>{{#Primary image}}<figure><img src='{{Primary image}}'/><figcaption>{{Primary image caption}}</figcaption></figure>{{/Primary image}}<p><a target='_blank' href={{URL}}>Read More</a></div>"
+              },
+              "tableStyle": {
+                "dataVariable": "State",
+                "displayDuration": 1440
+              }
+            }
+          ]
+        },
+        {
+          "name": "3D Demos",
+          "type": "group",
+          "items": [
+            {
+              "name": "Smooth Geelong Buildings GLTF Mini Demo",
+              "description": "geelong_mini_demo_bin_linux_v1.0-draft_x64.gltf was created using data made available from the [City of Greater Geelong](mailto:gis@geelongcity.vic.gov.au) under a Creative Commons license. The data used to create this demo was originally obtained via email in .skp format (> 100MB so not suitable for inclusion in this repo), however there is also a lower quality dataset of the same region available on data.gov.au in .kml/.dae format (this dataset does not seem to contain building textures).\n\nSee [readme.txt](test/3d/geelong/readme.txt) for more information.",
+              "attribution": "geelong_mini_demo_bin_linux_v1.0-draft_x64.gltf was created using a dataset obtained from the City of Greater Geelong. The original dataset is licensed under the CC BY 3.0 AU.",
+              "type": "czml",
+              "url": "test/3d/geelong/smooth.czml",
+              "rectangle": [
+                144.354,
+                -38.147,
+                144.358,
+                -38.150
+              ]
+            },
+            {
+              "name": "Terrain Geelong Buildings GLTF Mini Demo",
+              "description": "geelong_mini_demo_bin_linux_v1.0-draft_x64.gltf was created using data made available from the [City of Greater Geelong](mailto:gis@geelongcity.vic.gov.au) under a Creative Commons license. The data used to create this demo was originally obtained via email in .skp format (> 100MB so not suitable for inclusion in this repo), however there is also a lower quality dataset of the same region available on data.gov.au in .kml/.dae format (this dataset does not seem to contain building textures).\n\nSee [readme.txt](test/3d/geelong/readme.txt) for more information.",
+              "attribution": "geelong_mini_demo_bin_linux_v1.0-draft_x64.gltf was created using a dataset obtained from the City of Greater Geelong. The original dataset is licensed under the CC BY 3.0 AU.",
+              "type": "czml",
+              "url": "test/3d/geelong/terrain.czml",
+              "rectangle": [
+                144.354,
+                -38.147,
+                144.358,
+                -38.150
+              ]
+            }
+          ]
+        },
+        {
+          "id": "54a553b4",
+          "name": "NEM Current Power Generation - All generation types",
+          "url": "http://services.aremi.nicta.com.au/aemo/v3/csv/all",
+          "type": "csv",
+          "cacheDuration": "5m",
+          "featureInfoTemplate": {
+            "name": "{{DUID}} - {{Station Name}}: {{Current % of Max Cap}}%",
+            "template": "<h3>{{Station Name}} ({{DUID}})</h3>\n\n<p><strong>{{Participant}}</strong>\n<div><strong>{{Current Output (MW)}}MW</strong> at {{Most Recent Output Time (AEST)}}</div>\n<div><strong>{{Current % of Reg Cap}}%</strong> of {{Reg Cap (MW)}}MW registered capacity</div>\n<div><strong>{{Current % of Max Cap}}%</strong> of {{Max Cap (MW)}}MW maximum capacity</div>\n</p>\n<table>\n  <tbody>\n    <tr>\n      <td>Category</td>\n      <td class='strong'>{{Category}}</td>\n    </tr>\n    <tr>\n      <td>Classification</td>\n      <td class='strong'>{{Classification}}</td>\n    </tr>\n    <tr>\n      <td>Fuel Source</td>\n      <td class='strong'>{{Fuel Source - Primary}} ({{Fuel Source - Descriptor}})</td>\n    </tr>\n    <tr>\n      <td>Technology Type</td>\n      <td class='strong'>{{Technology Type - Primary}} ({{Technology Type - Descriptor}})</td>\n    </tr>\n    <tr>\n      <td>Physical Unit No.</td>\n      <td class='strong'>{{Physical Unit No_}}</td>\n    </tr>\n    <tr>\n      <td>Aggregation</td>\n      <td class='strong'>{{Aggregation}}</td>\n    </tr>\n    <tr>\n      <td>Unit Size (MW)</td>\n      <td class='strong'>{{Unit Size (MW)}}</td>\n    </tr>\n    <tr><td>Power generation</td><td><chart sources='http://services.aremi.nicta.com.au/aemo/v4/duidcsv/{{DUID}}?offset=1D,http://services.aremi.nicta.com.au/aemo/v4/duidcsv/{{DUID}}?offset=5D,http://services.aremi.nicta.com.au/aemo/v4/duidcsv/{{DUID}}?offset=30D,http://services.aremi.nicta.com.au/aemo/v4/duidcsv/{{DUID}}?offset=3M' source-names='1d,5d,30d,3m' preview-x-label='Last 24 hours' column-names='Time,Power Generation' column-units='Date,MW'></chart></td></tr>\n  </tbody>\n</table>"
+          },
+          "rectangle": [
+            "134.0",
+            "-47.0",
+            "155.0",
+            "-13.0"
+          ],
+          "tableStyle": {
+            "dataVariable": "Current % of Max Cap",
+            "timeColumn": null,
+            "replaceWithZeroValues": [],
+            "replaceWithNullValues": [
+              "-"
+            ],
+            "nullColor": "rgba(255,255,255,0.1)",
+            "nullLabel": "No value",
+            "colorBins": 10,
+            "colorMap": "rgb(94,79,162)-rgb(50,136,189)-rgb(102,194,165)-rgb(171,221,164)-rgb(230,245,152)-rgb(254,224,139)-rgb(253,174,97)-rgb(244,109,67)-rgb(213,62,79)-rgb(158,1,66)"
+          },
+          "info": [
+            {
+              "name": "Description",
+              "content": "The AEMO Actual Generation and Load data represents actual generation data for each scheduled generation unit, semi-scheduled generation unit, and non-scheduled generating systems (a non-scheduled generating system comprising non-scheduled generating units) for registered units in the National Electricity Market (NEM). The data is given in MegaWatt (MW). <br/> <br/>Detailed information about the AEMO Generation and Load data is available here: <br/> <br/>[http://aemo.com.au/Electricity/Data/Market-Management-System-MMS/Generation-and-Load](http://aemo.com.au/Electricity/Data/Market-Management-System-MMS/Generation-and-Load) <br/> <br/>Visualisation of AEMO current generation data is based on data files generated every 5 minutes available here: <br/> <br/>[http://www.nemweb.com.au/REPORTS/CURRENT/Dispatch_SCADA/](http://www.nemweb.com.au/REPORTS/CURRENT/Dispatch_SCADA/) <br/> <br/>Visualisation of AEMO historic data is based on daily data files available here: <br/> <br/>[http://www.nemweb.com.au/REPORTS/ARCHIVE/Dispatch_SCADA/](http://www.nemweb.com.au/REPORTS/ARCHIVE/Dispatch_SCADA/) <br/> <br/>AEMO provides a range of data. Raw data is provided in Comma Separated Values (CSV) flat file format to enable access to a range of market data. Recent files are stored in a directory for current reports, and older files are moved into the respective archive reports directory. <br/> <br/>All electricity data provided by AEMO is available here: <br/> <br/>[http://aemo.com.au/Electricity/Data](http://aemo.com.au/Electricity/Data)"
+            },
+            {
+              "name": "Updates",
+              "content": "The Actual Generation and Load data is updated in 5-minute intervals."
+            },
+            {
+              "name": "Data Custodian",
+              "content": "AEMO is the data custodian of electricity generation data displayed on AREMI. Please refer to attribution, licensing and copyrights provisions further on this page. <br/> <br/>The Australian Energy Market Operator (AEMO) was established by the Council of Australian Governments (COAG) to manage the National Electricity Market (NEM) and gas markets from 1 July 2009. <br/> <br/>AEMO’s core functions can be grouped into the following areas: 1) Electricity Market Operator; 2) Gas Markets Operator; 3) National Transmission Planner; 4) Transmission Services; 5) Energy Market Development. <br/> <br/>AEMO operates on a cost recovery basis as a corporate entity limited by guarantee under the Corporations Law. Its membership structure is split between government and industry, respectively 60 and 40 percent. Government members of AEMO include the Queensland, New South Wales, Victorian, South Australian and Tasmanian state governments, the Commonwealth and the Australian Capital Territory. <br/> <br/>As part of the role of managing the NEM and assisting industry, AEMO publishes electricity market data updated in 5 minute intervals and on a daily, monthly and annual basis. Categories of data published are: <br/> <br/>1) Price and demand; <br/>2) Forecast supply and demand; <br/>3) Market notices; <br/>4) Ancillary services; <br/>5) Network data; <br/>6) Pre-dispatch demand forecasting performance; <br/>7) Settlements; <br/>8) Market management system (MMS) (which includes Generation & Load data). <br/> <br/>More information on AEMO and services provided is available here: <br/> <br/>[http://aemo.com.au/About-AEMO](http://aemo.com.au/About-AEMO)"
+            },
+            {
+              "name": "Licensing, Terms & Conditions",
+              "content": "Australian Energy Market Operator (AEMO) is the data custodian for Generation & Load data sets, available on AEMO’s website. <br/><br/>AREMI is displaying the data under AEMO’s licencing and copyright conditions detailed below. <br/><br/>The data is provided for information only and is not intended for commercial use. AEMO does not guarantee the accuracy of the data or its availability at all times.<br/><br/>AEMO, or its licensors, are the owners of all copyright and all other intellectual property rights in the contents of the AEMO website (including text and images). Users may only use such contents for personal use or as authorised by AEMO. Here are the details of the AEMO’s copyright permissions: <br/><br/>AEMO Material comprises documents, reports, sound and video recordings and any other material created by or on behalf of AEMO and made publicly available by AEMO. All AEMO Material is protected by copyright under Australian law. A publication is protected even if it does not display the © symbol.  <br/><br/>In addition to the uses permitted under copyright laws, AEMO confirms its general permission for anyone to use AEMO Material for any purpose, but only with accurate and appropriate attribution of the relevant AEMO Material and AEMO as its author. There is no need to obtain specific permission to use AEMO Material in this way. Confidential documents and any reports commissioned by another person or body who may own the copyright in them and NOT AEMO Material, and these permissions do not apply to those documents. <br/><br/>More information on conditions of use of AEMO generated data and information is available on the AEMO website: [http://aemo.com.au/About-AEMO/Legal-Notices](http://aemo.com.au/About-AEMO/Legal-Notices)"
+            }
+          ]
+        },
+        {
+          "name": "Bird migration paths",
+          "description": "Geographic centers of occurrence estimated daily for 118 migratory bird species using eBird occurrence information for the combined period 2002 to 2014. Additional details on the data and methods can be found here:\nLa Sorte, F.A., Fink, D., Hochachka, W.M. & Kelling, S. (2016) Convergence of broad-scale migration strategies in terrestrial birds. Proceedings of the Royal Society of London B: Biological Sciences, 283, 20152588.",
+          "type": "czml",
+          "url": "test/all_birds.czml",
+          "ignoreUnknownTileErrors": true,
+          "zoomOnEnable": true,
+          "rectangle": [
+            -160,
+            -20,
+            -30,
+            60
+          ]
+        },
+        {
+          "layers": "mybroadband:MyBroadband_ADSL_Quality",
+          "parameters": {
+            "tiled": true
+          },
+          "dataUrlType": "none",
+          "clipToRectangle": true,
+          "description": "[MyBroadband ADSL Quality Map](https://www.mybroadband.communications.gov.au)",
+          "name": "Broadband ADSL Quality",
+          "rectangle": [
+            96.79939,
+            -43.59821,
+            153.63925,
+            -9.21592
+          ],
+          "dataCustodian": "[Department of Communications](http://www.communications.gov.au/)",
+          "url": "https://programs.communications.gov.au/geoserver/ows",
+          "type": "wms",
+          "info": [
+            {
+              "name": "Licence",
+              "content": "[Creative Commons Attribution 3.0 Australia (CC BY 3.0 AU)](http://creativecommons.org/licenses/by/3.0/au/)"
+            }
+          ]
+        },
+        {
+          "name": "Catchment Scale Land Use 2015",
+          "type": "ckan-resource",
+          "url": "https://data.gov.au",
+          "resourceId": "7d326ba9-492d-4d32-a893-9d45936bc0af",
+          "datasetId": "catchment-scale-land-use-of-australia-update-march-2015"
+        },
+        {
+          "url": "http://services.ga.gov.au/gis/rest/services/GA_Surface_Geology/MapServer",
+          "type": "esri-mapServer",
+          "dataCustodian": "[Geoscience Australia](http://www.ga.gov.au/)",
+          "name": "Surface Geology",
+          "rectangle": [
+            106,
+            -52,
+            172,
+            -8
+          ],
+          "info": [
+            {
+              "name": "Licence",
+              "content": "[Creative Commons Attribution 4.0 International (CC BY 4.0)](http://creativecommons.org/licenses/by/4.0/)"
+            }
+          ]
+        },
+        {
+          "layers": "WaterSummary",
+          "url": "http://eos.ga.gov.au/geoserver/NFRIP-WOfS/wms",
+          "type": "wms",
+          "rectangle": [
+            111,
+            -45,
+            155,
+            -10
+          ],
+          "dataCustodian": "[Geoscience Australia](http://www.ga.gov.au/)\n\n[nfrip@ga.gov.au](mailto:nfrip@ga.gov.au)",
+          "name": "Water Observations from Space - Summary",
+          "dataUrlType": "direct",
+          "dataUrl": "http://www.ga.gov.au/scientific-topics/hazards/flood/wofs",
+          "info": [
+            {
+              "name": "Licence",
+              "content": "[Creative Commons Attribution 4.0 International (CC BY 4.0)](http://creativecommons.org/licenses/by/4.0/)"
+            }
+          ]
+        },
+        {
+          "description": "Chlorophyll-a, reflecting wavelengths in the green part of the visible light spectrum, is the substance that helps plants capture the sun’s energy. In the water, it indicates the presence of microscopic green algae (phytoplankton). While these plants are a natural part of the reef ecosystem, elevated numbers (a bloom) of phytoplankton signal elevated nutrient levels, especially nitrogen, in the water. Typical sources are runoff from excess fertiliser being applied to crops and, to a lesser extent in the Great Barrier Reef region, sewage contamination from urban areas.",
+          "layers": "Chl_MIM_mean",
+          "name": "Chlorophyll-a concentration (annual)",
+          "parameters": {
+            "ABOVEMAXCOLOR": "0xAF324B",
+            "BELOWMINCOLOR": "transparent",
+            "COLORSCALERANGE": "0,1",
+            "FORMAT": "image/png",
+            "LAYERS": "Chl_MIM_median",
+            "LOGSCALE": "false",
+            "NUMCOLORBANDS": "16",
+            "PALETTE": "mwq_chl",
+            "STYLES": "boxfill/mwq_chl",
+            "TRANSPARENT": "true",
+            "VERSION": "1.1.1"
+          },
+          "type": "wms",
+          "url": "http://ereeftds.bom.gov.au/ereefs/tds/wms/ereefs/mwq_gridAgg_P1A"
+        },
+        {
+          "name": "BAMS C4ISR",
+          "type": "czml",
+          "description": "Cesium example CZML showing a mission planning exercise involving optimizing the flight path for a reconnaissance UAV over the Persian Gulf.",
+          "url": "http://cesiumjs.org/Gallery/BAMS_C4ISR.czml",
+          "rectangle": [
+            46.5,
+            26.2,
+            53.7,
+            30.4
+          ],
+          "zoomOnEnable": true
+        },
+        {
+          "nowViewingMessage": "Look here for the *legend* and to *interactively filter* the data.",
+          "name": "Census 2011 - Country of Birth",
+          "description": "[More about ABS Data](http://www.abs.gov.au/websitedbs/censushome.nsf/home/data?opendocument&navpos=200)<br>[Licence](http://creativecommons.org/licenses/by/2.5/au/)",
+          "dataCustodian": "[Australian Bureau of Statistics](http://www.abs.gov.au/)",
+          "rectangle": [
+            112.93529,
+            -38.20880,
+            152.06206,
+            -11.05104
+          ],
+          "type": "abs-itt",
+          "url": "http://stat.abs.gov.au/itt/query.jsp",
+          "datasetId": "ABS_CENSUS2011_B09",
+          "filter": [
+            "BPLP.1101",
+            "MEASURE.3",
+            "REGIONTYPE.SA4"
+          ]
+        }
+      ]
+    }
+  ]
+}

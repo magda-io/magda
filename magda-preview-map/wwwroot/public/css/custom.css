@@ -1,0 +1,292 @@
+/*!
+ * Start Bootstrap - Shop Item HTML Template (http://startbootstrap.com)
+ * Code licensed under the Apache License v2.0.
+ * For details, see http://www.apache.org/licenses/LICENSE-2.0.
+ */
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    padding-top: 100px; /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+    padding-bottom: 20px;
+    margin-bottom: 60px; /* Margin bottom by footer height */
+}
+
+.container {
+	padding: 0;
+}
+
+.logo-block {
+	margin-top: 35px;
+}
+
+a {
+  outline: none;
+}
+
+ul {
+	padding-left: 20px;
+}
+
+.anchor {
+  padding-top: 30px;
+}
+
+.anchor:focus {
+  outline: 0;
+}
+
+/* footer */
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 90px;
+  background-color: #f5f5f5;
+}
+
+.footer p {
+  margin-top: 10px;
+}
+
+@media (min-width: 768px) {
+	.footer {
+		height: 90px;
+		padding-top: 10px;
+	}
+}
+
+/* navbar */
+
+.navbar {
+	min-height: 60px;
+}
+
+.navbar-inverse {
+  background-color: #353B43;
+  border-color: #080808;
+}
+
+.navbar-brand {
+  padding-top: 10px;
+}
+
+.navbar-brand img {
+  height: 40px;
+}
+
+.navbar-inverse .navbar-text {
+  color: #ccc;
+}
+.navbar-inverse .navbar-nav > li > a {
+  color: #ccc;
+}
+
+.navbar-inverse .navbar-nav> .active > a {
+	background-color: #202428;
+}
+
+.navbar-nav > li > a {
+	padding-top: 15px;
+	padding-bottom: 15px;
+}
+
+@media (min-width: 768px) {
+  .navbar-toggle {
+    display: none;
+  }
+
+  .navbar-nav > li > a {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	}
+}
+
+/* navbar toggle (mobile) */
+
+
+.navbar-header {
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.navbar-nav {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.navbar-toggle {
+	margin-top: 13px;
+}
+
+
+/* headings */
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 300;
+	font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+	font-size: 24px;
+	margin-top: 0;
+	margin-bottom: 20px;
+}
+
+h2 {
+	font-size: 20px;
+}
+
+h3 {
+	font-size: 18px;
+}
+
+/* sub nav */
+
+.list-group-item:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+}
+
+.list-group-item:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+}
+
+/* terms */
+
+.terms {
+	text-decoration: none;
+}
+
+/* sidebar */
+
+#sidebar {
+	margin-bottom: 40px;
+}
+
+#sidebar p {
+	font-size: 15px;
+}
+
+#sidebar expl {
+	font-size: 12px;
+}
+
+.sidebar-list {
+	list-style: none;
+	padding-left: 0;
+}
+
+.sidebar-list li {
+	font-size: 13px;
+}
+
+@media (min-width: 768px) {
+	#sidebar {
+		margin-top: 48px;
+	}
+}
+
+/* logos */
+
+.logo {
+	margin-bottom: 20px;
+}
+
+/* First level of nav */
+.sidenav {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  padding-top:    10px;
+  padding-bottom: 10px;
+}
+
+/* Responsive iframe fix */
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    margin-bottom: 15px;
+    padding-top: 35px;
+    height: 0;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* help and faq */
+
+.faq-grouping {
+	color: #b1b1b1;
+	margin-top: 30px;
+	margin-bottom: 20px;
+}
+
+.panel-title {
+	line-height: 1.5em;
+}
+
+.text-indent p {
+	margin-left: 10px;
+}
+
+p.no-indent {
+	margin-left: 0;
+}
+
+.img-group {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.howto {
+  margin-bottom: 13px;
+}
+
+/* lists */
+
+.starter-template ul li {
+	padding-bottom: 10px;
+}
+
+/* accordion */
+
+#accordion {
+	margin-bottom: 30px;
+}
+
+.panel-default {
+	border: none;
+}
+
+.panel-heading {
+	padding: 15px 0;
+}
+
+.panel-group {
+	margin-top: -10px;
+	z-index: 100;
+}
+
+.panel-group a {
+	z-index: 1000;
+}
+
+.panel-default>.panel-heading {
+	background-color: #FFFFFF;
+}
+
+.panel-group .panel-heading+.panel-collapse>.panel-body, .panel-group .panel-heading+.panel-collapse>.list-group {
+	border-top: none;
+}

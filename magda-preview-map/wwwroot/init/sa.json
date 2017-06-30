@@ -1,0 +1,22 @@
+{
+    "homeCamera": {
+        "west": 129,
+        "south": -38,
+        "east": 141,
+        "north": -25
+    },
+    "services": [],
+    "catalog": [
+        {
+            "name": "South Australian Government",
+            "type": "wms-getCapabilities",
+            "isPromoted": true,
+            "isOpen": true
+        },
+        {
+            "name": "National Data Sets",
+            "type": "group",
+            "isOpen": false
+        }
+    ]
+}

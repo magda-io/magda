@@ -1,0 +1,66 @@
+{
+    /* Names of init files (in wwwroot/init), without the .json extension, to load by default */
+    initializationUrls: [
+        "terria"
+    ],
+    parameters: {
+        bingMapsKey: "AkaOmRFtjAb71cXgLwAGtLbj2RpkPKtVqAIroFQsocfurCBILxIeAWPkil7hhRy_",
+        googleUrlShortenerKey: null,
+        googleAnalyticsKey: null,
+        googleAnalyticsOptions: null,
+        /* Text that appears at the bottom of the map */
+        disclaimer: {
+            text: "Disclaimer: This map must not be used for navigation or precise spatial analysis",
+            url: ""
+        },
+        /*
+        // Text that will be added to any pages printed from your site.
+        printDisclaimer:{
+            text:"Put your print disclaimer here.",
+            url: "#"
+        },
+        */
+         
+        // Pop-up disclaimer that will be shown at the start
+        // The text of the disclaimer is in lib/Views/GlobalDisclaimer.html
+        globalDisclaimer: {
+            confirmationRequired: true,
+            buttonTitle: "I agree",
+            title: "Disclaimer",
+            // If the current browser location is not prod, or is dev, then show a "not the real site" warning.
+            // The text of that is in lib/Views/DevelopmentDisclaimerPreamble.html
+            //prodHostRegex: "gov.\\.au$",
+            //devHostRegex: "\\b(staging|preview|test|dev)\\.",
+            enableOnLocalhost: true // If false, don't show this when running on localhost
+        },
+        
+        /*
+        developerAttribution: {
+            text: "Your organisation",
+            link: "http://www.example.com"
+        },*/
+        // This is used in various text messages. You should also set <title> in index.html
+        appName: "Terria Map",
+
+        // See comments in lib/Views/global.scss for further information about customising colors, logos, fonts etc.
+        brandBarElements: [
+            "",
+            "<a target=\"_blank\" href=\"http://www.nicta.com.au\"><img src=\"images/terria_logo.png\" height=\"52\" title=\"Version: {{version}}\" /></a>",
+            ""
+        ],
+        // Shown when things go wrong.
+        supportEmail: "help@example.com",
+        // You probably shouldn't change this.
+        proj4ServiceBaseUrl: "proj4def/",
+        // Or this
+        feedbackUrl: "feedback",
+
+        // Default mobile viewer mode when loading the map for the first time on mobile platforms.
+        // Options are: "3DTerrain", "3DSmooth", "2D"
+        mobileDefaultViewerMode: "2d",
+        // Enable experimental features, since its nice to have the bleeding edge.
+        // Disable it if things go wrong with the experimental features or your users aren't robust to features which might change or disapear completly.
+        "experimentalFeatures": true
+    }
+}
+

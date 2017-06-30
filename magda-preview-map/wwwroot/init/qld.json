@@ -1,0 +1,21 @@
+{
+    "homeCamera": {
+        "west": 137,
+        "south": -31,
+        "east": 153,
+        "north": -10
+    },
+    "catalog": [
+        {
+            "name": "Queensland Government",
+            "type": "group",
+            "isPromoted": true,
+            "isOpen": true
+        },
+        {
+            "name": "National Data Sets",
+            "type": "group",
+            "isOpen": false
+        }
+    ]
+}

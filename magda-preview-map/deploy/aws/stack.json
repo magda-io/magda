@@ -1,0 +1,373 @@
+{
+  "Conditions": {
+    "UseSpotInstances": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "SpotPrice"
+            },
+            "0"
+          ]
+        }
+      ]
+    }
+  },
+  "Outputs": {
+    "URL": {
+      "Value": {
+        "Fn::Join": [
+          ".",
+          [
+            {
+              "Ref": "AWS::StackName"
+            },
+            {
+              "Ref": "HostedZoneName"
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "HostedZoneName": {
+      "Default": "terria.io.",
+      "Type": "String"
+    },
+    "ImageId": {
+      "Type": "String"
+    },
+    "InstanceType": {
+      "Type": "String"
+    },
+    "KeyName": {
+      "Type": "String"
+    },
+    "MaxSize": {
+      "Type": "Number",
+      "Default": "2"
+    },
+    "MinSize": {
+      "Type": "Number",
+      "Default": "1"
+    },
+    "RootVolumeSize": {
+      "Default": "8",
+      "Type": "Number"
+    },
+    "SpotPrice": {
+      "Default": "0",
+      "Type": "Number"
+    },
+    "StartupGracePeriod": {
+      "Default": "600",
+      "Type": "Number"
+    },
+    "UserDataBase64": {
+        "Type": "String"
+    },
+    "WebServerPort": {
+      "Default": "80",
+      "Type": "Number"
+    }
+  },
+  "Resources": {
+    "AutoScalingGroup": {
+      "Properties": {
+        "AvailabilityZones": {
+          "Fn::GetAZs": ""
+        },
+        "DesiredCapacity": {
+          "Ref": "MinSize"
+        },
+        "HealthCheckGracePeriod": {
+          "Ref": "StartupGracePeriod"
+        },
+        "HealthCheckType": "ELB",
+        "LaunchConfigurationName": {
+          "Ref": "LaunchConfiguration"
+        },
+        "LoadBalancerNames": [
+          {
+            "Ref": "ElasticLoadBalancer"
+          }
+        ],
+        "MaxSize": {
+          "Ref": "MaxSize"
+        },
+        "MinSize": {
+          "Ref": "MinSize"
+        },
+        "Tags": [
+          {
+            "Key": "Stack",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MaxBatchSize": "1",
+          "MinInstancesInService": {
+            "Fn::If": [
+              "UseSpotInstances",
+              0,
+              1
+            ]
+          },
+          "PauseTime": "PT0M5S"
+        }
+      }
+    },
+    "ElasticLoadBalancer": {
+      "Properties": {
+        "AvailabilityZones": {
+          "Fn::GetAZs": ""
+        },
+        "ConnectionDrainingPolicy": {
+          "Enabled": "true",
+          "Timeout": "300"
+        },
+        "CrossZone": "true",
+        "HealthCheck": {
+          "HealthyThreshold": "2",
+          "Interval": "30",
+          "Target": {
+            "Fn::Join": [
+              "",
+              [
+                "HTTP:",
+                {
+                  "Ref": "WebServerPort"
+                },
+                "/ping"
+              ]
+            ]
+          },
+          "Timeout": "10",
+          "UnhealthyThreshold": "5"
+        },
+        "Listeners": [
+          {
+            "InstancePort": {
+              "Ref": "WebServerPort"
+            },
+            "LoadBalancerPort": "80",
+            "Protocol": "HTTP"
+          },
+          {
+            "InstancePort": "80",
+            "LoadBalancerPort": "443",
+            "Protocol": "HTTPS",
+            "SSLCertificateId": "arn:aws:iam::278900443360:server-certificate/terra.io-20151208"
+          }
+        ]
+      },
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer"
+    },
+    "LaunchConfiguration": {
+      "Properties": {
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeSize": {
+                "Ref": "RootVolumeSize"
+              },
+              "VolumeType": "gp2"
+            }
+          },
+          {
+            "DeviceName": "/dev/sdb",
+            "VirtualName": "ephemeral0"
+          },
+          {
+            "DeviceName": "/dev/sdc",
+            "VirtualName": "ephemeral1"
+          },
+          {
+            "DeviceName": "/dev/sdd",
+            "VirtualName": "ephemeral2"
+          },
+          {
+            "DeviceName": "/dev/sde",
+            "VirtualName": "ephemeral3"
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "S3InstanceProfile"
+        },
+        "ImageId": {
+          "Ref": "ImageId"
+        },
+        "InstanceMonitoring": "false",
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "SecurityGroup"
+          }
+        ],
+        "SpotPrice": {
+          "Fn::If": [
+            "UseSpotInstances",
+            {
+              "Ref": "SpotPrice"
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        },
+        "UserData": {
+            "Ref": "UserDataBase64"
+        }
+      },
+      "Type": "AWS::AutoScaling::LaunchConfiguration"
+    },
+    "RecordSetGroup": {
+      "Properties": {
+        "HostedZoneName": {
+          "Ref": "HostedZoneName"
+        },
+        "RecordSets": [
+          {
+            "AliasTarget": {
+              "DNSName": {
+                "Fn::GetAtt": [
+                  "ElasticLoadBalancer",
+                  "CanonicalHostedZoneName"
+                ]
+              },
+              "HostedZoneId": {
+                "Fn::GetAtt": [
+                  "ElasticLoadBalancer",
+                  "CanonicalHostedZoneNameID"
+                ]
+              }
+            },
+            "Name": {
+              "Fn::Join": [
+                ".",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  {
+                    "Ref": "HostedZoneName"
+                  }
+                ]
+              ]
+            },
+            "Type": "A"
+          }
+        ]
+      },
+      "Type": "AWS::Route53::RecordSetGroup"
+    },
+    "S3InstanceProfile": {
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "S3Role"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::InstanceProfile"
+    },
+    "S3Role": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "s3:Get*",
+                    "s3:List*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws:s3:::terriamap-sharing",
+                    "arn:aws:s3:::terriamap-sharing/*"
+                  ]
+                }
+              ]
+            },
+            "PolicyName": "S3Read"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "SecurityGroup": {
+      "Properties": {
+        "GroupDescription": "SecurityGroup",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "22",
+            "IpProtocol": "tcp",
+            "ToPort": "22"
+          },
+          {
+            "FromPort": {
+              "Ref": "WebServerPort"
+            },
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupName": {
+              "Fn::GetAtt": [
+                "ElasticLoadBalancer",
+                "SourceSecurityGroup.GroupName"
+              ]
+            },
+            "SourceSecurityGroupOwnerId": {
+              "Fn::GetAtt": [
+                "ElasticLoadBalancer",
+                "SourceSecurityGroup.OwnerAlias"
+              ]
+            },
+            "ToPort": {
+              "Ref": "WebServerPort"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    }
+  }
+}
