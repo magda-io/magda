@@ -3,7 +3,7 @@ title: Search Syntax
 ---
 Search for text in dataset and distribution metadata by simply typing it in the search box. Search results will include all of the terms you type. If you search for `water`, the results will also include `waters`, and vice-versa. To search for a word exactly, enclose it in quotes, e.g. `"water"`.
 
-You can also use special keywords in the search box to do a more structured search. The keywords must be _after_ the free text. The keywords are:
+You can also use special filter keywords in the search box to do a more structured search. The keywords must be _after_ the free text. The filter keywords are:
 
 * `by`: publisher, such as `Geoscience Australia`
 * `as`: format, such as `CSV`
