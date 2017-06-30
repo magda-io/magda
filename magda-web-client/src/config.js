@@ -41,18 +41,18 @@ export const config = {
     "bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
   ],
   exampleSearch: [
-    "Business Names by ASIC as CSV",
+    "Business names as CSV",
     "Geocoded National Address File",
     "By Australian Charities and Not-for-profits Commission",
-    "Taxation Statistics from 2013",
-    "Trees in Victoria",
+    "Statistics from 2013 by Australian Taxation Office",
+    "Trees in SA2:201011002",
     "Budget from 2016 to 2017 by Department of Finance",
     "Planning as WMS"
   ],
   suggestion: [
-    "Business names by ASIC as CSV",
-    "Taxation Statistics from 2013",
-    "Trees in Victoria"
+    "Business names as CSV",
+    "Statistics  by Australian Taxation Office from 2013",
+    "Trees in SA2:201011002"
   ],
   facets: [
     { id: "publisher", component: Publisher },

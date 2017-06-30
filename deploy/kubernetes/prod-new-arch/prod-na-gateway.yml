@@ -59,6 +59,7 @@ spec:
   selector:
     service: gateway
   type: "LoadBalancer"
+  loadBalancerIP: "35.189.8.102"
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
