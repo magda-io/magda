@@ -89,12 +89,64 @@ export function createProjectFailure(error: number): ProjectAction {
   };
 }
 
+export function updateProject(){
+  return {
+    type: actionTypes.UPDATE_PROJECT
+  }
+}
+
+
+export function updateProjectSuccess(json){
+  return {
+    type: actionTypes.UPDATE_PROJECT_SUCCESS,
+    json
+  }
+}
+
+export function updateProjectFailure(){
+  return {
+    type: actionTypes.UPDATE_PROJECT_FAILURE
+  }
+}
+
+
+
+export function updateProjectStatus(project: Project){
+  return (dispatch: Dispatch) => {
+    dispatch(updateProject());
+    const url = `${config.registryUrl}/records/${project.id}/aspects/project`;
+    const body = [{ "op": "replace", "path": "/status", "value": project.status === 'open' ? 'closed' : 'open' }]
+      return fetch(url,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: "include"
+      })
+      .then(response => {
+        if(response.status === 200){
+          return response.json()
+        }
+        return dispatch(updateProjectFailure(response.status))
+      })
+      .then((result:Project)=>{
+        if(result.error){
+          return false;
+        }
+        dispatch(updateProjectSuccess(result))
+      })
+  }
+
+}
+
 
 export function postNewProject(props: Project){
   return (dispatch: Dispatch) => {
     dispatch(createProject(props));
     const url = config.registryUrl + '/records';
-    console.log(props);
 
     return fetch(url,
     {

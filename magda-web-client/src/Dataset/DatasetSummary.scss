@@ -238,12 +238,14 @@
   vertical-align: baseline;
 }
 
-.dataset-summary-publisher{
+.dataset-summary-publisher, .dataset-summary-source{
   font-weight: 400;
   font-size: 0.9rem;
-  span{
-    color: $magda-green;
-  }
+  display: block;
+}
+
+.dataset-summary-publisher{
+  color: $magda-green;
 }
 
 .dataset-summary__mobile-footer{
