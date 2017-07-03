@@ -16,6 +16,7 @@ class DatasetDetails extends Component {
   render(){
     const dataset = this.props.dataset;
     const datasetId = this.props.params.datasetId;
+    const source = `This dataset was originally found on ${this.props.dataset.catalog}: \n\n  ${dataset.landingPage}`
     return <div className='dataset-details container'>
               <div className='row'>
                 <div className='dataset-details__body col-sm-8'>
@@ -23,7 +24,10 @@ class DatasetDetails extends Component {
                     <h3 className='section-heading'>Overview</h3>
                     <OverviewBox content={dataset.description}/>
                   </div>
-
+                  <div className='dataset-details-source'>
+                    <h3 className='section-heading'>Source</h3>
+                    <OverviewBox content={source}/>
+                  </div>
                   <div className='dataset-details-source'>
                       <h3 className='section-heading'>Data and APIs</h3>
                       <div className='white-box'>{

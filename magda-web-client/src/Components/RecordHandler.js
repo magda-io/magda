@@ -58,7 +58,7 @@ class RecordHandler extends React.Component {
                 </div>
                 <div className='media-body'>
                   <h1>{this.props.distribution.title}</h1>
-                  <a className='dont-break-out' href={this.props.distribution.downloadURL} >{this.props.distribution.downloadURL}</a>
+                  <div className='publisher'>{this.props.dataset.publisher}</div>
                   <div className='updated-date'>Updated {this.props.distribution.updatedDate}</div>
                 </div>
               </div>
@@ -84,7 +84,7 @@ class RecordHandler extends React.Component {
               </div>
                <div className='media-body'>
                   <h1>{this.props.dataset.title}</h1>
-                  <a className='dont-break-out' href={this.props.dataset.landingPage}>{this.props.dataset.landingPage}</a>
+                  <div className='publisher'>{this.props.dataset.publisher}</div>
                   <div className='updated-date'>Updated {this.props.dataset.updatedDate}</div>
               </div>
             </div>
