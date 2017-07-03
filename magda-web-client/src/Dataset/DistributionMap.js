@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { config } from "../config";
 import generatePreviewData from '../helpers/generatePreviewData';
 import fetch from 'isomorphic-fetch';
 import ol from 'openlayers';
@@ -39,7 +40,7 @@ class DistributionMap extends Component {
 
   render(){
     return <div className='dataset-details container' >
-            {this.state.mapData && <iframe name='FRAME1' src={`https://nationalmap.gov.au/#clean&hideExplorerPanel=1&start=${this.state.mapData}`} width='100%' height='600px' scrolling='auto' frameBorder='0'/>}
+            {this.state.mapData && <iframe name='FRAME1' src={`${config.previewMapUrl}/#hideExplorerPanel=1&start=${this.state.mapData}`} width='100%' height='600px' scrolling='auto' frameBorder='0'/>}
           </div>
   }
 }

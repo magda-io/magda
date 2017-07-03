@@ -26,10 +26,10 @@ app.use(require("morgan")("combined"));
 
 app.use("/auth", authRouter);
 app.use("/api/v0", reverseProxy);
+app.use("/preview-map", genericProxy(config.get("targets.preview-map")));
 
 // Proxy any other URL to magda-web
 app.use("/", genericProxy(config.get("targets.web")));
-app.use("/preview-map", genericProxy(config.get("targets.preview-map")));
 
 app.listen(config.get("listenPort"));
 console.log("Listening on port " + config.get("listenPort"));
