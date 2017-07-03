@@ -34,6 +34,15 @@ class RecordHandler extends React.Component {
       }
   }
 
+  renderBreadCrumbs(dataset, distribution){
+    return (
+    <ul className='breadcrumb'>
+      <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
+      <li className='breadcrumb-item'>{distribution ? <Link to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>{dataset.title}</Link>:dataset.title}</li>
+      {distribution && <li className='breadcrumb-item'>{distribution.title}</li>}
+    </ul>)
+  }
+
   renderByState(){
      if (this.props.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
@@ -46,12 +55,9 @@ class RecordHandler extends React.Component {
        ]
       return (
         <div>
+
           <div className='container'>
-              <ul className='breadcrumb'>
-                <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
-                <li className='breadcrumb-item'><Link to={`/dataset/${encodeURIComponent(this.props.params.datasetId)}`}>Dataset</Link></li>
-                <li className='breadcrumb-item'>Distribution</li>
-              </ul>
+            {this.renderBreadCrumbs(this.props.dataset, this.props.distribution)}
               <div className='media'>
                 <div className='media-left'>
                   <CustomIcons imageUrl={this.props.dataset.publisherDetails && this.props.dataset.publisherDetails.imageUrl}/>
@@ -78,7 +84,9 @@ class RecordHandler extends React.Component {
       ];
       return (
         <div>
+
             <div className='container media'>
+              {this.renderBreadCrumbs(this.props.dataset)}
               <div className='media-left'>
                 <CustomIcons imageUrl={this.props.dataset.publisherDetails && this.props.dataset.publisherDetails.imageUrl}/>
               </div>
