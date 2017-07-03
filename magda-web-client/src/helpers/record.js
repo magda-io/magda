@@ -95,6 +95,8 @@ export function parseDataset(dataset: Record) {
 
   const publisherDetails=aspects['dataset-publisher'] && aspects['dataset-publisher']['publisher']['aspects'] ? aspects['dataset-publisher']['publisher']['aspects']['organization-details'] : {}
 
+  const catalog = aspects['source'] ? aspects['source']['name'] : '';
+
   const source = distributions.map(d=> {
       const distributionAspects = d['aspects'] || {};
       const info = distributionAspects['dcat-distribution-strings'] || {};
@@ -109,6 +111,6 @@ export function parseDataset(dataset: Record) {
       }
   });
   return {
-      identifier, title, issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source, temporalCoverage, spatialCoverage, publisherDetails
+      identifier, title, issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source, temporalCoverage, spatialCoverage, publisherDetails, catalog
   }
 };

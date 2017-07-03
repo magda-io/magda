@@ -77,11 +77,11 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
   def tokenCrawl(nextFuture: Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
     val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching from {}, retries left: {}", interface.getInterfaceConfig().name, retryCount + 1)
 
-    val safeFuture = ErrorHandling.retry(() => nextFuture, 30 seconds, 10, onRetry)
+    val safeFuture = ErrorHandling.retry(() => nextFuture, 30 seconds, 30, onRetry)
       .recover {
         case e: Throwable =>
           log.error(e, "Failed completely while fetching from {}. This means we can't go any further!!", interface.getInterfaceConfig().name)
-          (None, Nil)
+          throw e
       }
 
     Source.fromFuture(safeFuture).flatMapConcat {
@@ -104,8 +104,7 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
       .filterNot(_.distributions.isEmpty)
       .map(dataSet => dataSet.copy(publisher =
         dataSet.publisher.orElse(
-          interfaceDef.defaultPublisherName.map(defaultPublisher => Agent(name = Some(defaultPublisher)))
-        )))
+          interfaceDef.defaultPublisherName.map(defaultPublisher => Agent(name = Some(defaultPublisher))))))
       .alsoTo(Sink.fold(0) {
         case (count, y) =>
           val newCount = count + 1

@@ -55,13 +55,16 @@ spec:
     spec:
       containers:
       - name: es-master
+        resources:
+          requests:
+            cpu: 0m
+            memory: 0Mi
         securityContext:
           privileged: true
           capabilities:
             add:
               - IPC_LOCK
         image: data61/magda-elasticsearch:${version}
-        imagePullPolicy: Always
         env:
         - name: NAMESPACE
           valueFrom:
