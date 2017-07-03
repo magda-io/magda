@@ -25,6 +25,7 @@ spec:
             cpu: 200m
             memory: 500Mi
         image: "data61/magda-indexer:${version}"
+        imagePullPolicy: Always
         volumeMounts:
         - mountPath: /usr/regions
           name: regions
