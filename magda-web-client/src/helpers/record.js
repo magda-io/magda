@@ -42,7 +42,11 @@ type datasetPublisher = {
   }
 }
 
-
+type source = {
+  "url": string,
+  "name": string,
+  "type": string,
+}
 
 type aspects = {
   'dcat-distribution-strings'?: dcatDistributionStrings,
@@ -50,8 +54,72 @@ type aspects = {
   'dataset-distributions'?:datasetDistributions,
   'temporal-coverage'?: string,
   'spatial-coverage'?: string,
-  'dataset-publisher'?: datasetPublisher
+  'dataset-publisher'?: {publisher: datasetPublisher},
+  'source'?: source
 }
+
+type publisher = {
+  id: string,
+  name: string,
+  aspects:{
+    source: {
+      url: string,
+      type: string,
+    },
+    'organization-details': {
+      name: string,
+      title: string,
+      imageUrl: string,
+      description: string
+    }
+  }
+}
+
+const defaultPublisher: publisher = {
+  id: null,
+  name: null,
+  aspects:{
+    source: {
+      url: '',
+      type: '',
+    },
+    'organization-details': {
+      name: '',
+      title: '',
+      imageUrl: '',
+      description: ''
+    }
+  }
+}
+
+const defaultAspects = {
+  'dcat-distribution-strings': {
+    format: undefined,
+    downloadURL: undefined,
+    modified: undefined,
+    license: undefined,
+    description: undefined,
+  },
+  'dcat-dataset-strings':{
+    description: undefined,
+    keywords: [],
+    landingPage: undefined,
+    title: undefined,
+    issued: undefined,
+    modified: undefined
+  },
+  'dataset-distributions':[],
+  'temporal-coverage': undefined,
+  'spatial-coverage': undefined,
+  'dataset-publisher': {publisher: defaultPublisher},
+  'catalog': {
+    "url": undefined,
+    "name": undefined,
+    "type": undefined,
+  }
+}
+
+
 
 type Record = {
   id: string,
@@ -59,11 +127,21 @@ type Record = {
   aspects: aspects
 }
 
-export function parseDistribution(record: Record) {
-  const id = record['id'];
-  const title = record['name'];
+const defaultDistributionAspect = {
+  'dcat-distribution-strings': {
+    format: undefined,
+    downloadURL: undefined,
+    modified: undefined,
+    license: undefined,
+    description: undefined,
+  }
+}
 
-  const aspects = record['aspects'] || {};
+export function parseDistribution(record: Record) {
+  const id = record ? record['id']: null;
+  const title = record ? record['name'] : null;
+
+  const aspects = record ? record['aspects'] : defaultDistributionAspect;
 
   const info = aspects['dcat-distribution-strings'] || {};
 
@@ -78,22 +156,20 @@ export function parseDistribution(record: Record) {
 
 
 export function parseDataset(dataset: Record) {
-  const aspects = dataset['aspects'] || {};
-  const identifier =dataset.id;
+  const aspects = dataset ? dataset['aspects'] : defaultAspects;
+  const identifier =dataset ? dataset.id : null;
   const datasetInfo = aspects['dcat-dataset-strings'] || {};
   const distribution = aspects['dataset-distributions'] || {};
   const distributions = distribution['distributions'] || [];
   const temporalCoverage = aspects['temporal-coverage'];
   const spatialCoverage = aspects['spatial-coverage'];
   const description = datasetInfo.description || 'No description provided';
-  const publisher = datasetInfo.publisher || undefined;
   const tags = datasetInfo.keywords || [];
   const landingPage = datasetInfo.landingPage;
   const title = datasetInfo.title;
   const issuedDate= datasetInfo.issued || 'Unknown issued date';
   const updatedDate = datasetInfo.modified ? getDateString(datasetInfo.modified) : 'unknown date';
-
-  const publisherDetails=aspects['dataset-publisher'] && aspects['dataset-publisher']['publisher']['aspects'] ? aspects['dataset-publisher']['publisher']['aspects']['organization-details'] : {}
+  const publisher=aspects['dataset-publisher'] ? aspects['dataset-publisher']['publisher'] : defaultPublisher
 
   const catalog = aspects['source'] ? aspects['source']['name'] : '';
 
@@ -111,6 +187,6 @@ export function parseDataset(dataset: Record) {
       }
   });
   return {
-      identifier, title, issuedDate, updatedDate, landingPage, tags, publisher, description, distribution, source, temporalCoverage, spatialCoverage, publisherDetails, catalog
+      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distribution, source, temporalCoverage, spatialCoverage, publisher, catalog
   }
 };

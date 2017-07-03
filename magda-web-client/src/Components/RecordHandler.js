@@ -44,6 +44,9 @@ class RecordHandler extends React.Component {
   }
 
   renderByState(){
+    const publisherName = this.props.dataset.publisher.name;
+    const publisherLogo = this.props.dataset.publisher ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
+    const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
      if (this.props.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
          return <ErrorHandler errorCode={this.props.distributionFetchError}/>;
@@ -55,16 +58,15 @@ class RecordHandler extends React.Component {
        ]
       return (
         <div>
-
           <div className='container'>
             {this.renderBreadCrumbs(this.props.dataset, this.props.distribution)}
               <div className='media'>
                 <div className='media-left'>
-                  <CustomIcons imageUrl={this.props.dataset.publisherDetails && this.props.dataset.publisherDetails.imageUrl}/>
+                  <CustomIcons imageUrl={publisherLogo}/>
                 </div>
                 <div className='media-body'>
                   <h1>{this.props.distribution.title}</h1>
-                  <div className='publisher'>{this.props.dataset.publisher}</div>
+                  <div className='publisher'>{publisherName}</div>
                   <div className='updated-date'>Updated {this.props.distribution.updatedDate}</div>
                 </div>
               </div>
@@ -80,7 +82,7 @@ class RecordHandler extends React.Component {
       const datasetTabs = [
         {id: 'details', name: 'Details', isActive: true},
         {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
-        {id: 'publisher', name: 'About ' + this.props.dataset.publisher, isActive: this.props.dataset.publisher}
+        {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId}
       ];
       return (
         <div>
@@ -88,11 +90,11 @@ class RecordHandler extends React.Component {
             <div className='container media'>
               {this.renderBreadCrumbs(this.props.dataset)}
               <div className='media-left'>
-                <CustomIcons imageUrl={this.props.dataset.publisherDetails && this.props.dataset.publisherDetails.imageUrl}/>
+                <CustomIcons imageUrl={publisherLogo}/>
               </div>
                <div className='media-body'>
                   <h1>{this.props.dataset.title}</h1>
-                  <div className='publisher'>{this.props.dataset.publisher}</div>
+                  <div className='publisher'>{publisherName}</div>
                   <div className='updated-date'>Updated {this.props.dataset.updatedDate}</div>
               </div>
             </div>
@@ -115,9 +117,6 @@ class RecordHandler extends React.Component {
     );
   }
 }
-
-
-
 
 function mapStateToProps(state: {record: StateRecord}) {
   const record = state.record;

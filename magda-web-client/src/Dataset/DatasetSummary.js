@@ -38,15 +38,6 @@ export default class DatasetSummary extends Component {
     this.props.onClickTag(tag);
   }
 
-
-  // onClickStar(){
-  //   this.setState({
-  //     isFav: !this.state.isFav
-  //   })
-  // }
-
-
-
   renderLinks(){
     return <div className='dataset-summary__more-info'>
               <div className='dataset-summary__source clearfix'>
@@ -66,7 +57,7 @@ export default class DatasetSummary extends Component {
 
   render(){
     const dataset = this.props.dataset;
-    const publisher = defined(dataset.publisher) ? dataset.publisher.name ? dataset.publisher.name : dataset.publisher : 'unspecified';
+    const publisher = dataset.publisher.name;
     const source = this.props.dataset.catalog;
 
     return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
@@ -96,7 +87,7 @@ export default class DatasetSummary extends Component {
 
                   <label className='dataset-summary-source'>Source: {source}</label>
                 </div>
-              <div className='dataset-summary__footer'>
+              {this.props.onClickDataset && <div className='dataset-summary__footer'>
                   {this.props.isExpanded && this.renderLinks()}
                   <div className='dataset-summary__mobile-footer visible-xs clearfix'>
                     <button className='dataset-summary__toggle-info-btn mobile'
@@ -105,7 +96,7 @@ export default class DatasetSummary extends Component {
                         {this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}
                     </button>
                   </div>
-              </div>
+              </div>}
           </div>
   }
 }
