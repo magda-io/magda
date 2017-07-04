@@ -4,8 +4,8 @@ import {parseDataset, parseDistribution} from '../helpers/record';
 const initialData = {
     datasetIsFetching: false,
     distributionIsFetching: false,
-    dataset: {},
-    distribution: {},
+    dataset: parseDataset(),
+    distribution: parseDistribution(),
     datasetFetchError: null,
     distributionFetchError: null,
 }

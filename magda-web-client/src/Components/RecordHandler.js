@@ -34,7 +34,19 @@ class RecordHandler extends React.Component {
       }
   }
 
+  renderBreadCrumbs(dataset, distribution){
+    return (
+    <ul className='breadcrumb'>
+      <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
+      <li className='breadcrumb-item'>{distribution ? <Link to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>{dataset.title}</Link>:dataset.title}</li>
+      {distribution && <li className='breadcrumb-item'>{distribution.title}</li>}
+    </ul>)
+  }
+
   renderByState(){
+    const publisherName = this.props.dataset.publisher.name;
+    const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
+    const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
      if (this.props.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
          return <ErrorHandler errorCode={this.props.distributionFetchError}/>;
@@ -47,18 +59,14 @@ class RecordHandler extends React.Component {
       return (
         <div>
           <div className='container'>
-              <ul className='breadcrumb'>
-                <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
-                <li className='breadcrumb-item'><Link to={`/dataset/${encodeURIComponent(this.props.params.datasetId)}`}>Dataset</Link></li>
-                <li className='breadcrumb-item'>Distribution</li>
-              </ul>
+            {this.renderBreadCrumbs(this.props.dataset, this.props.distribution)}
               <div className='media'>
                 <div className='media-left'>
-                  <CustomIcons imageUrl={this.props.dataset.publisherDetails && this.props.dataset.publisherDetails.imageUrl}/>
+                  <CustomIcons imageUrl={publisherLogo}/>
                 </div>
                 <div className='media-body'>
                   <h1>{this.props.distribution.title}</h1>
-                  <a className='dont-break-out' href={this.props.distribution.downloadURL} >{this.props.distribution.downloadURL}</a>
+                  <div className='publisher'>{publisherName}</div>
                   <div className='updated-date'>Updated {this.props.distribution.updatedDate}</div>
                 </div>
               </div>
@@ -74,17 +82,19 @@ class RecordHandler extends React.Component {
       const datasetTabs = [
         {id: 'details', name: 'Details', isActive: true},
         {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
-        {id: 'publisher', name: 'About ' + this.props.dataset.publisher, isActive: this.props.dataset.publisher}
+        {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId}
       ];
       return (
         <div>
+
             <div className='container media'>
+              {this.renderBreadCrumbs(this.props.dataset)}
               <div className='media-left'>
-                <CustomIcons imageUrl={this.props.dataset.publisherDetails && this.props.dataset.publisherDetails.imageUrl}/>
+                <CustomIcons imageUrl={publisherLogo}/>
               </div>
                <div className='media-body'>
                   <h1>{this.props.dataset.title}</h1>
-                  <a className='dont-break-out' href={this.props.dataset.landingPage}>{this.props.dataset.landingPage}</a>
+                  <div className='publisher'>{publisherName}</div>
                   <div className='updated-date'>Updated {this.props.dataset.updatedDate}</div>
               </div>
             </div>
@@ -107,9 +117,6 @@ class RecordHandler extends React.Component {
     );
   }
 }
-
-
-
 
 function mapStateToProps(state: {record: StateRecord}) {
   const record = state.record;

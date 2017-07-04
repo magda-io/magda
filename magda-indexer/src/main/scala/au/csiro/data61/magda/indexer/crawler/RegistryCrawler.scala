@@ -77,7 +77,7 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
   def tokenCrawl(nextFuture: Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
     val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching from registry, retries left: {}", retryCount + 1)
 
-    val safeFuture = ErrorHandling.retry(() => nextFuture, 30 seconds, 10, onRetry)
+    val safeFuture = ErrorHandling.retry(() => nextFuture, 30 seconds, 30, onRetry)
       .recover {
         case e: Throwable =>
           log.error(e, "Failed completely while fetching from registry. This means we can't go any further!!")
