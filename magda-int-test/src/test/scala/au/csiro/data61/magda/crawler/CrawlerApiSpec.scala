@@ -7,7 +7,6 @@ import au.csiro.data61.magda.indexer.crawler.CrawlerApi;
 import au.csiro.data61.magda.test.util.IndexerGenerators
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.Gen
-import au.csiro.data61.magda.indexer.external.ExternalInterface
 import scala.concurrent.Future
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
@@ -27,11 +26,16 @@ import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.indexer.crawler.Crawler
-import au.csiro.data61.magda.indexer.crawler.CrawlerImpl
+import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.indexer.external.HttpFetcher
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
+  implicit val ec = system.dispatcher
 
   // When shrinking, shrink the datasets only and put them in a new index.
   implicit def shrinker2(implicit s: Shrink[List[DataSet]], s3: Shrink[InterfaceConfig]): Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] =
@@ -50,41 +54,47 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     dataSetsNew <- Generators.listSizeBetween(0, 20, Generators.dataSetGen)
     dataSetsAfter = dataSetsRemaining.toList ++ dataSetsNew
     interfaceConf <- IndexerGenerators.interfaceConfGen
-    sources <- Generators.listSizeBetween(0, 5, (dataSetsInitial, dataSetsAfter, interfaceConf)).suchThat { tuples =>
-      val interfaceConfs = tuples.map(_._2)
-      interfaceConfs.distinct == interfaceConfs
-    }
-  } yield sources
+    source = (dataSetsInitial, dataSetsAfter, interfaceConf)
+  } yield source
 
   it("should correctly store new datasets when reindexed") {
 
     forAll(gen) {
-      case (sources) =>
+      case (source) =>
         val indexId = UUID.randomUUID().toString
 
-        doTest(indexId, sources, true)
-        doTest(indexId, sources, false)
+        doTest(indexId, source, true)
+        doTest(indexId, source, false)
 
         deleteIndex(indexId)
     }
   }
 
-  def doTest(indexId: String, sources: List[(List[DataSet], List[DataSet], InterfaceConfig)], firstIndex: Boolean) = {
-    val filteredSources = sources.map {
+  def doTest(indexId: String, source: (List[DataSet], List[DataSet], InterfaceConfig), firstIndex: Boolean) = {
+    val filteredSource = source match {
       case (initialDataSets, afterDataSets, interfaceConfig) =>
         (if (firstIndex) initialDataSets else afterDataSets, interfaceConfig)
     }
 
-    val externalInterfaces = filteredSources.map {
+    val externalInterface = filteredSource match {
       case (dataSets, interfaceConfig) =>
-        new ExternalInterface {
+        val fetcher = new HttpFetcher(interfaceConfig, system, materializer, ec)
+        new RegistryExternalInterface(fetcher, interfaceConfig) {
           override def getInterfaceConfig(): InterfaceConfig = interfaceConfig
-          override def getDataSets(start: Long = 0, number: Int = 10): Future[List[DataSet]] =
-            Future(dataSets.drop(start.toInt).take(number))
+          override def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
+            if (pageToken.toInt < dataSets.length) {
+              Future(Some((pageToken.toInt + number).toString), dataSets.drop(pageToken.toInt).take(Math.min(number, dataSets.length - pageToken.toInt)))
+            } else {
+              Future(None, Nil)
+            }
+          }
+          override def getDataSetsReturnToken(start: Long = 0, number: Int = 10): Future[(Option[String], List[DataSet])] = {
+            Future(Some((start.toInt + number).toString), dataSets.drop(start.toInt).take(number))
+          }
           override def getTotalDataSetCount(): Future[Long] = Future(dataSets.length)
         }
     }
-    val crawler = CrawlerImpl(externalInterfaces)
+    val crawler = new RegistryCrawler(externalInterface)
     val indices = new FakeIndices(indexId.toString)
     val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
     val crawlerApi = new CrawlerApi(crawler, indexer)
@@ -108,7 +118,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     }
 
     // Combine all the datasets but keep what interface they come from
-    val allDataSets = filteredSources.flatMap { case (dataSets, interfaceConfig) => dataSets.map((_, interfaceConfig)) }
+    val allDataSets = filteredSource match { case (dataSets, interfaceConfig) => dataSets.map((_, interfaceConfig)) }
 
     refresh(indexId)
 
