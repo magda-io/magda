@@ -45,7 +45,7 @@ class RecordHandler extends React.Component {
 
   renderByState(){
     const publisherName = this.props.dataset.publisher.name;
-    const publisherLogo = this.props.dataset.publisher ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
+    const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
     const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
      if (this.props.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
