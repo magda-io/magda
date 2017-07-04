@@ -57,7 +57,7 @@ function proxyRoute(
 }
 
 proxyRoute("/search", config.get("targets.search"));
-proxyRoute("/registry", config.get("targets.registry"), undefined, true);
+proxyRoute("/registry", config.get("targets.registry"), ["get"], true);
 proxyRoute("/auth", config.get("targets.auth"), ["get"], true);
 proxyRoute("/discussions", config.get("targets.discussions"), undefined, true);
 
