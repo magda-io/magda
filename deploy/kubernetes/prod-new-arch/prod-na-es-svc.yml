@@ -6,7 +6,6 @@ metadata:
     component: elasticsearch
     role: client
 spec:
-  type: NodePort
   selector:
     component: elasticsearch
     role: client

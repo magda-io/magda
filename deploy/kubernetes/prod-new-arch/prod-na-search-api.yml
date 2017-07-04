@@ -34,4 +34,3 @@ spec:
     targetPort: 80
   selector:
     service: search-api
-  type: "NodePort"
