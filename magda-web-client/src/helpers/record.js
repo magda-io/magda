@@ -1,9 +1,15 @@
 // @flow
 import getDateString from './getDateString';
+// dataset query:
+//aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
+
+
+type temporalCoverage= [];
 
 type dcatDistributionStrings = {
   format: string,
-  downloadURL: string,
+  downloadUrl: string,
+  accessUrl: string,
   modified: string,
   license: string,
   description: string,
@@ -14,7 +20,7 @@ type Distribution = {
   description: string,
   title: string,
   id: string,
-  downloadURL: string,
+  downloadUrl: string,
   format: string,
   aspects: {
     'dcat-distribution-strings': dcatDistributionStrings
@@ -48,31 +54,69 @@ type source = {
   "type": string,
 }
 
-type aspects = {
-  'dcat-distribution-strings'?: dcatDistributionStrings,
-  'dcat-dataset-strings'?:dcatDatasetStrings,
-  'dataset-distributions'?:datasetDistributions,
-  'temporal-coverage'?: string,
-  'spatial-coverage'?: string,
-  'dataset-publisher'?: {publisher: datasetPublisher},
-  'source'?: source
-}
-
 type publisher = {
-  id: string,
-  name: string,
+  id: ?string,
+  name:?string,
   aspects:{
-    source: {
+    source?: {
       url: string,
       type: string,
     },
-    'organization-details': {
+    'organization-details'?: {
       name: string,
       title: string,
       imageUrl: string,
       description: string
     }
   }
+}
+
+
+type RawDataset = {
+  id: string,
+  name: string,
+  aspects: {
+    'dcat-dataset-strings': dcatDatasetStrings,
+    source?: source,
+    'dataset-publisher'?: datasetPublisher,
+    'dataset-distributions'?: datasetDistributions,
+    'temporal-coverage'?: temporalCoverage
+  }
+}
+//aspect=dcat-distribution-strings
+type RawDistribution = {
+  id: string,
+  name: string,
+  aspects: {
+    'dcat-distribution-strings': dcatDistributionStrings
+  }
+}
+
+type ParsedDistribution = {
+  id: ?string,
+  title: ?string,
+  description: string,
+  format: string,
+  downloadUrl: ?string,
+  accessUrl: ?string,
+  updatedDate: string,
+  license: string
+};
+
+// all aspects become required and must have value
+type ParsedDataset = {
+  identifier: string,
+  title: string,
+  issuedDate: string,
+  updatedDate: string,
+  landingPage: string,
+  tags: Array<string>,
+  description: string,
+  distribution: Array<datasetDistributions>,
+  source: source,
+  temporalCoverage: temporalCoverage,
+  publisher: publisher,
+  catalog: string
 }
 
 const defaultPublisher: publisher = {
@@ -95,7 +139,7 @@ const defaultPublisher: publisher = {
 const defaultAspects = {
   'dcat-distribution-strings': {
     format: undefined,
-    downloadURL: undefined,
+    downloadUrl: undefined,
     modified: undefined,
     license: undefined,
     description: undefined,
@@ -120,42 +164,37 @@ const defaultAspects = {
 }
 
 
-
-type Record = {
-  id: string,
-  name: string,
-  aspects: aspects
-}
-
 const defaultDistributionAspect = {
   'dcat-distribution-strings': {
     format: undefined,
-    downloadURL: undefined,
+    downloadUrl: undefined,
+    accessUrl: undefined,
     modified: undefined,
     license: undefined,
     description: undefined,
   }
 }
 
-export function parseDistribution(record: Record) {
+export function parseDistribution(record: RawDistribution) : ParsedDistribution {
   const id = record ? record['id']: null;
   const title = record ? record['name'] : null;
 
   const aspects = record ? record['aspects'] : defaultDistributionAspect;
 
-  const info = aspects['dcat-distribution-strings'] || {};
+  const info = aspects['dcat-distribution-strings'];
 
   const format = info.format || 'Unknown format';
-  const downloadURL = info.downloadURL || 'No downloads available';
+  const downloadUrl = info.downloadUrl || null;
   const updatedDate = info.modified ? getDateString(info.modified) : 'unknown date';
   const license = info.license || 'License restrictions unknown';
   const description = info.description || 'No description provided';
+  const accessUrl = info.accessUrl || null;
 
-  return { id, title, description, format, downloadURL, updatedDate, license }
+  return { id, title, description, format, downloadUrl, accessUrl, updatedDate, license }
 };
 
 
-export function parseDataset(dataset: Record) {
+export function parseDataset(dataset: RawDataset): ParsedDataset {
   const aspects = dataset ? dataset['aspects'] : defaultAspects;
   const identifier =dataset ? dataset.id : null;
   const datasetInfo = aspects['dcat-dataset-strings'] || {};
@@ -179,7 +218,7 @@ export function parseDataset(dataset: Record) {
 
       return {
           id: d['id'] || '',
-          downloadURL: info.downloadURL || 'No download url provided',
+          downloadUrl: info.downloadUrl || 'No download url provided',
           format: info.format || 'Unknown format',
           license: (!info.license || info.license === 'notspecified') ? 'License restrictions unknown' : info.license,
           title: info.title || '',
