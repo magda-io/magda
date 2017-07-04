@@ -3,8 +3,8 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import {validateProjectName, validateProjectDescription, Dispatch, GetState} from '../helpers/validateInput';
-import type { ProjectAction, Project,  } from '../types';
+import {validateProjectName, validateProjectDescription} from '../helpers/validateInput';
+import type { ProjectAction, Project, Dispatch, GetState } from '../types';
 import {browserHistory} from 'react-router';
 
 export function requestProjects():ProjectAction {

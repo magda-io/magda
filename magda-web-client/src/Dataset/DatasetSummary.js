@@ -57,7 +57,7 @@ export default class DatasetSummary extends Component {
 
   render(){
     const dataset = this.props.dataset;
-    const publisher = dataset.publisher.name;
+    const publisher = dataset.publisher && dataset.publisher.name;
     const source = this.props.dataset.catalog;
 
     return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
