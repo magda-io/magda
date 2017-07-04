@@ -6,9 +6,7 @@ metadata:
     component: elasticsearch
     role: client
 spec:
-  type: LoadBalancer
-  loadBalancerSourceRanges:
-  - 10.0.0.0/8
+  type: NodePort
   selector:
     component: elasticsearch
     role: client
