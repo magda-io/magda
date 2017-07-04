@@ -108,6 +108,6 @@ export const config = {
         ["Blog", "https://blog.data.gov.au/"]
       ]
     },
-    { category: "Feedback", links: [["Feedback", "feedback"]] }
+    { category: "Feedback", links: [["Feedback", "http://preview.data.gov.au/feedback.html"]] }
   ]
 };
