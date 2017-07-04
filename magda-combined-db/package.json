@@ -1,6 +1,6 @@
 {
   "name": "@magda/combined-db",
-  "version": "0.0.27-SNAPSHOT",
+  "version": "0.0.27",
   "description": "A container that combined all MAGDA's Postgres databases, for use locally or in resource-constrained environments",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -16,10 +16,10 @@
     }
   },
   "devDependencies": {
-    "@magda/auth-db": "^0.0.27-SNAPSHOT",
-    "@magda/discussions-db": "^0.0.27-SNAPSHOT",
-    "@magda/registry-datastore": "^0.0.27-SNAPSHOT",
-    "@magda/scripts": "^0.0.27-SNAPSHOT",
-    "@magda/session-store": "^0.0.27-SNAPSHOT"
+    "@magda/auth-db": "^0.0.27",
+    "@magda/discussions-db": "^0.0.27",
+    "@magda/registry-datastore": "^0.0.27",
+    "@magda/scripts": "^0.0.27",
+    "@magda/session-store": "^0.0.27"
   }
 }

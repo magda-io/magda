@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.27-SNAPSHOT",
+  "version": "0.0.27",
   "license": "Apache-2.0",
   "scripts": {
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
@@ -17,7 +17,7 @@
     "eject": "react-scripts eject"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.27-SNAPSHOT",
+    "@magda/scripts": "^0.0.27",
     "deep-freeze": "0.0.1",
     "expect": "^1.20.2",
     "flow-bin": "^0.39.0",

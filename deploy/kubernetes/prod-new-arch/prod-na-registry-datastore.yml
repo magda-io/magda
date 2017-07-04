@@ -49,4 +49,3 @@ spec:
     targetPort: 5432
   selector:
     service: registry-datastore
-  type: "NodePort"

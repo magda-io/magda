@@ -1,6 +1,6 @@
 {
   "name": "@magda/search-api",
-  "version": "0.0.27-SNAPSHOT",
+  "version": "0.0.27",
   "description": "The search API.",
   "license": "Apache-2.0",
   "scripts": {
@@ -10,8 +10,8 @@
     "docker-build-local": "cd .. && sbt searchApi/dockerBuildAndPush",
     "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" searchApi/dockerBuildAndPush"
   },
-  "config":{
-      "interface": "0.0.0.0",
-      "port": 6101
+  "config": {
+    "interface": "0.0.0.0",
+    "port": 6101
   }
 }
