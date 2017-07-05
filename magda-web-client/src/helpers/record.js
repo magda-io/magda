@@ -3,13 +3,16 @@ import getDateString from './getDateString';
 // dataset query:
 //aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
 
-
-type temporalCoverage= [];
+type TemporalCoverage = {
+  data: {
+    intervals: ?Array<Object>
+  }
+};
 
 type dcatDistributionStrings = {
   format: string,
-  downloadUrl: string,
-  accessUrl: string,
+  downloadURL: string,
+  accessURL: string,
   modified: string,
   license: string,
   description: string,
@@ -20,14 +23,14 @@ type Distribution = {
   description: string,
   title: string,
   id: string,
-  downloadUrl: string,
+  downloadURL: string,
   format: string,
   aspects: {
     'dcat-distribution-strings': dcatDistributionStrings
   }
 }
 
-type dcatDatasetStrings = {
+type DcatDatasetStrings = {
   description: string,
   keywords: Array<string>,
   landingPage: string,
@@ -36,26 +39,13 @@ type dcatDatasetStrings = {
   modified: string
 }
 
-type datasetDistributions = {
-  distributions: Array<Distribution>
+type DatasetPublisher = {
+  publisher: Publisher
 }
 
-type datasetPublisher = {
-  publisher: {
-    aspects: {
-      'organization-details': Object
-    }
-  }
-}
 
-type source = {
-  "url": string,
-  "name": string,
-  "type": string,
-}
-
-type publisher = {
-  id: ?string,
+type Publisher = {
+  id:?string,
   name:?string,
   aspects:{
     source?: {
@@ -76,11 +66,17 @@ type RawDataset = {
   id: string,
   name: string,
   aspects: {
-    'dcat-dataset-strings': dcatDatasetStrings,
-    source?: source,
-    'dataset-publisher'?: datasetPublisher,
-    'dataset-distributions'?: datasetDistributions,
-    'temporal-coverage'?: temporalCoverage
+    'dcat-dataset-strings': DcatDatasetStrings,
+    source?: {
+      "url": string,
+      "name": string,
+      "type": string,
+    },
+    'dataset-publisher'?: DatasetPublisher,
+    'dataset-distributions'?: {
+      distributions: Array<RawDistribution>
+    },
+    'temporal-coverage'?: TemporalCoverage
   }
 }
 //aspect=dcat-distribution-strings
@@ -97,29 +93,28 @@ type ParsedDistribution = {
   title: ?string,
   description: string,
   format: string,
-  downloadUrl: ?string,
-  accessUrl: ?string,
+  downloadURL: ?string,
+  accessURL: ?string,
   updatedDate: string,
   license: string
 };
 
 // all aspects become required and must have value
 type ParsedDataset = {
-  identifier: string,
+  identifier: ?string,
   title: string,
   issuedDate: string,
   updatedDate: string,
   landingPage: string,
   tags: Array<string>,
   description: string,
-  distribution: Array<datasetDistributions>,
-  source: source,
-  temporalCoverage: temporalCoverage,
-  publisher: publisher,
-  catalog: string
+  distributions: Array<ParsedDistribution>,
+  temporalCoverage: ? TemporalCoverage,
+  publisher: Publisher,
+  source: string
 }
 
-const defaultPublisher: publisher = {
+const defaultPublisher: Publisher = {
   id: null,
   name: null,
   aspects:{
@@ -136,14 +131,8 @@ const defaultPublisher: publisher = {
   }
 }
 
-const defaultAspects = {
-  'dcat-distribution-strings': {
-    format: undefined,
-    downloadUrl: undefined,
-    modified: undefined,
-    license: undefined,
-    description: undefined,
-  },
+const defaultDatasetAspects = {
+  'dataset-distributions': [],
   'dcat-dataset-strings':{
     description: undefined,
     keywords: [],
@@ -152,26 +141,27 @@ const defaultAspects = {
     issued: undefined,
     modified: undefined
   },
-  'dataset-distributions':[],
-  'temporal-coverage': undefined,
-  'spatial-coverage': undefined,
+  'dataset-distributions':{
+    distributions: []
+  },
+  'temporal-coverage': null,
   'dataset-publisher': {publisher: defaultPublisher},
-  'catalog': {
-    "url": undefined,
-    "name": undefined,
-    "type": undefined,
+  'source': {
+    "url": '',
+    "name": '',
+    "type": '',
   }
 }
 
 
 const defaultDistributionAspect = {
   'dcat-distribution-strings': {
-    format: undefined,
-    downloadUrl: undefined,
-    accessUrl: undefined,
-    modified: undefined,
-    license: undefined,
-    description: undefined,
+    format: null,
+    downloadURL: null,
+    accessURL: null,
+    updatedDate: null,
+    license: null,
+    description: null,
   }
 }
 
@@ -184,48 +174,48 @@ export function parseDistribution(record: RawDistribution) : ParsedDistribution 
   const info = aspects['dcat-distribution-strings'];
 
   const format = info.format || 'Unknown format';
-  const downloadUrl = info.downloadUrl || null;
+  const downloadURL = info.downloadURL || null;
+  const accessURL = info.accessURL || null;
   const updatedDate = info.modified ? getDateString(info.modified) : 'unknown date';
   const license = info.license || 'License restrictions unknown';
   const description = info.description || 'No description provided';
-  const accessUrl = info.accessUrl || null;
 
-  return { id, title, description, format, downloadUrl, accessUrl, updatedDate, license }
+
+  return { id, title, description, format, downloadURL, accessURL, updatedDate, license }
 };
 
 
 export function parseDataset(dataset: RawDataset): ParsedDataset {
-  const aspects = dataset ? dataset['aspects'] : defaultAspects;
+  const aspects = dataset ? dataset['aspects'] : defaultDatasetAspects;
   const identifier =dataset ? dataset.id : null;
-  const datasetInfo = aspects['dcat-dataset-strings'] || {};
-  const distribution = aspects['dataset-distributions'] || {};
-  const distributions = distribution['distributions'] || [];
+  const datasetInfo = aspects['dcat-dataset-strings'];
+  const distribution = aspects['dataset-distributions'] || defaultDatasetAspects['dataset-distributions'];
   const temporalCoverage = aspects['temporal-coverage'];
-  const spatialCoverage = aspects['spatial-coverage'];
   const description = datasetInfo.description || 'No description provided';
   const tags = datasetInfo.keywords || [];
-  const landingPage = datasetInfo.landingPage;
-  const title = datasetInfo.title;
+  const landingPage = datasetInfo.landingPage || '';
+  const title = datasetInfo.title || '';
   const issuedDate= datasetInfo.issued || 'Unknown issued date';
   const updatedDate = datasetInfo.modified ? getDateString(datasetInfo.modified) : 'unknown date';
-  const publisher=aspects['dataset-publisher'] ? aspects['dataset-publisher']['publisher'] : defaultPublisher
+  const publisher =aspects['dataset-publisher'] ? aspects['dataset-publisher']['publisher'] : defaultPublisher;
 
-  const catalog = aspects['source'] ? aspects['source']['name'] : '';
+  const source: string = aspects['source'] ? aspects['source']['name'] : defaultDatasetAspects['source']['name'];
 
-  const source = distributions.map(d=> {
-      const distributionAspects = d['aspects'] || {};
-      const info = distributionAspects['dcat-distribution-strings'] || {};
-
+  const distributions = distribution['distributions'].map(d=> {
+      const distributionAspects = d['aspects'];
+      const info = distributionAspects['dcat-distribution-strings'] || defaultDistributionAspect['dcat-distribution-strings'];
       return {
-          id: d['id'] || '',
-          downloadUrl: info.downloadUrl || 'No download url provided',
+          id: d['id'],
+          title: d['name'],
+          downloadURL: info.downloadURL || null,
+          accessURL : info.accessURL || null,
           format: info.format || 'Unknown format',
           license: (!info.license || info.license === 'notspecified') ? 'License restrictions unknown' : info.license,
-          title: info.title || '',
-          description: info.description || 'No description provided'
+          description: info.description || 'No description provided',
+          updatedDate: info.modified ? getDateString(info.modified) : 'unknown date'
       }
   });
   return {
-      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distribution, source, temporalCoverage, spatialCoverage, publisher, catalog
+      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher
   }
 };
