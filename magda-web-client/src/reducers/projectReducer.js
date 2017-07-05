@@ -1,17 +1,18 @@
 // @flow
-import {parseProject} from '../helpers/api';
-import type {Project, ProjectAction } from '../types';
+import {parseProject} from '../helpers/project';
+import type {ProjectAction, ParsedProject, RawProject, RawProjects, ProjectProps } from '../helpers/project';
 
 
-const noFieldError = {
-  title: null,
-  description: null
+const noFieldError: ProjectProps = {
+  name: null,
+  description: null,
+  id: ''
 }
 
 const initialData = {
     isFetching: false,
     projects: [],
-    project: null,
+    project: parseProject(),
     error: null,
     notFound:  false,
     hitCount: 0,
@@ -22,11 +23,11 @@ const initialData = {
 
 type ProjectsResult = {
   isFetching : boolean,
-  projects: Array<Project>,
-  project: ?Project,
+  projects: Array<ParsedProject>,
+  project: ?ParsedProject,
   error: ?number,
   hitCount: number,
-  fieldErrors: Project,
+  fieldErrors: ProjectProps,
   showNotification?: boolean
 }
 
@@ -42,7 +43,7 @@ const projects = (state: ProjectsResult = initialData, action: ProjectAction) =>
       return Object.assign({}, state, {
         isFetching: false,
         projects: action.json && action.json.records && action.json.records.map(r=>parseProject(r)),
-        hitCount: action.json.totalCount
+        hitCount: action.json && action.json.totalCount
       })
     case 'REQUEST_PROJECTS_ERROR':
       return Object.assign({}, state, {
@@ -69,13 +70,12 @@ const projects = (state: ProjectsResult = initialData, action: ProjectAction) =>
     	return Object.assign({}, state, {
         isFetching: false,
         error: null,
-        project: action.newProject
       })
     case 'CREATE_PROJECT_SUCCESS':
       return Object.assign({}, state, {
         isFetching: false,
         error: null,
-        project: action.newProject,
+        project: action.json && parseProject(action.json),
         showNotification: action.showNotification
       })
     case 'CREATE_PROJECT_FAILURE':
