@@ -12,7 +12,14 @@ import { ExtraSmall, Small } from '../UI/Responsive';
 import './AppContainer.css';
 
 export default class AppContainer extends React.Component {
-  constructor(props) {
+  state :{
+    isOpen: boolean,
+    showPrototypeWarning: boolean
+  }
+  constructor(props: {
+    location: Location,
+    children: React$Element<any>
+  }) {
     super(props);
     this.state = { isOpen: false, showPrototypeWarning: true };
   }

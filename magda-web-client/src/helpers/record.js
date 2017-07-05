@@ -173,8 +173,8 @@ const defaultDistributionAspect = {
 }
 
 export function parseDistribution(record?: RawDistribution) : ParsedDistribution {
-  const id = record ? record['id']: null;
-  const title = record ? record['name'] : null;
+  const id = record ? record['id']: '';
+  const title = record ? record['name'] : '';
 
   const aspects = record ? record['aspects'] : defaultDistributionAspect;
 
@@ -194,7 +194,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const aspects = dataset ? dataset['aspects'] : defaultDatasetAspects;
-  const identifier =dataset ? dataset.id : null;
+  const identifier =dataset ? dataset.id : '';
   const datasetInfo = aspects['dcat-dataset-strings'];
   const distribution = aspects['dataset-distributions'] || defaultDatasetAspects['dataset-distributions'];
   const temporalCoverage = aspects['temporal-coverage'];

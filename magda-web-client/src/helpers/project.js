@@ -29,7 +29,7 @@ export type RawProject = {
     aspects: {
       project: {
         status: string,
-        members: string,
+        members: Array<string>,
         datasets: Array<string>,
         description: string
       }
@@ -60,8 +60,8 @@ export function parseProject(rawProject?: RawProject): ParsedProject {
      }
    }
    return {
-     name: null,
-     id: null,
+     name: '',
+     id: '',
      description: '',
      status: '',
      members: [],
