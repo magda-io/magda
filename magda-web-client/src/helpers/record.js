@@ -52,8 +52,8 @@ type DatasetPublisher = {
 
 
 type Publisher = {
-  id:?string,
-  name:?string,
+  id:string,
+  name:string,
   aspects:{
     source?: {
       url: string,
@@ -96,8 +96,8 @@ export type RawDistribution = {
 }
 
 export type ParsedDistribution = {
-  id: ?string,
-  title: ?string,
+  id: string,
+  title: string,
   description: string,
   format: string,
   downloadURL: ?string,
@@ -108,7 +108,7 @@ export type ParsedDistribution = {
 
 // all aspects become required and must have value
 export type ParsedDataset = {
-  identifier: ?string,
+  identifier: string,
   title: string,
   issuedDate: string,
   updatedDate: string,
@@ -122,8 +122,8 @@ export type ParsedDataset = {
 }
 
 const defaultPublisher: Publisher = {
-  id: null,
-  name: null,
+  id: '',
+  name: '',
   aspects:{
     source: {
       url: '',
