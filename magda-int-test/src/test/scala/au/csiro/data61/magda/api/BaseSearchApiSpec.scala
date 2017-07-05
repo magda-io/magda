@@ -80,25 +80,25 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
       }
     }
 
-  def genIndexForSize(size: Int): (String, List[DataSet], Route) =
-    getFromIndexCache(size) match {
-      case (cacheKey, None) ⇒
-        val future = Future {
-          val dataSets = Gen.listOfN(size, Generators.dataSetGen).retryUntil(_ => true).sample.get
-          putDataSetsInIndex(dataSets)
-        }
-
-        BaseSearchApiSpec.genCache.put(cacheKey, future)
-        logger.debug("Cache miss for {}", cacheKey)
-
-        future.await(INSERTION_WAIT_TIME)
-      case (cacheKey, Some(cachedValue)) ⇒
-        logger.debug("Cache hit for {}", cacheKey)
-
-        val value = cachedValue.await(INSERTION_WAIT_TIME)
-
-        value
+  def genIndexForSize(size: Int): (String, List[DataSet], Route) = {
+    //    getFromIndexCache(size) match {
+    //      case (cacheKey, None) ⇒
+    val future = Future {
+      val dataSets = Gen.listOfN(size, Generators.dataSetGen).retryUntil(_ => true).sample.get
+      putDataSetsInIndex(dataSets)
     }
+
+    //        BaseSearchApiSpec.genCache.put(cacheKey, future)
+//    logger.debug("Cache miss for {}", cacheKey)
+
+    future.await(INSERTION_WAIT_TIME)
+    //      case (cacheKey, Some(cachedValue)) ⇒
+    //        logger.debug("Cache hit for {}", cacheKey)
+    //
+    //        val value = cachedValue.await(INSERTION_WAIT_TIME)
+    //
+    //        value
+  }
 
   def getFromIndexCache(size: Int): (Int, Option[Future[(String, List[DataSet], Route)]]) = {
     val cacheKey = if (size < 10) size
@@ -125,7 +125,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
     indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), stream).await(INSERTION_WAIT_TIME)
     refresh(indexName)
 
-//    System.gc()
+    //    System.gc()
 
     blockUntilExactCount(dataSets.size, indexName, fakeIndices.getType(Indices.DataSetsIndexType))
 
@@ -141,8 +141,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
           client.execute(ElasticDsl.deleteIndex(indexName)).await()
           cleanUpQueue.remove()
         }
-      }
-    )
+      })
   }
 
   override def afterEach() {

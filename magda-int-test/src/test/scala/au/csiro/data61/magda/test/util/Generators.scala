@@ -254,19 +254,19 @@ object Generators {
   } yield new Location(text, geoJson)
 
   def cachedListGen[T](gen: Gen[T], size: Int) = {
-    var cache: Option[List[T]] = None
-
-    Gen.delay {
-      cache match {
-        case Some(cacheInner) =>
-          Gen.const(cacheInner)
-        case None =>
-          listSizeBetween(size, size, gen).map { words =>
-            cache = Some(words)
-            words
-          }
-      }
+    //    var cache: Option[List[T]] = None
+    //
+    //    Gen.delay {
+    //      cache match {
+    //        case Some(cacheInner) =>
+    //          Gen.const(cacheInner)
+    //        case None =>
+    listSizeBetween(size, size, gen).map { words =>
+      //      cache = Some(words)
+      words
     }
+    //      }
+    //    }
   }
 
   val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50).trim), 1000)

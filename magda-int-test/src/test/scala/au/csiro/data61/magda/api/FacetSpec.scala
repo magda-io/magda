@@ -346,8 +346,10 @@ class FacetSpec extends BaseSearchApiSpec {
 
         it("in general") {
           try {
-            forAll(indexGen, textQueryGen(queryGen), Gen.posNum[Int], Generators.publisherAgentGen) { (tuple, textQuery, facetSize, publishers) ⇒
+            forAll(indexGen, textQueryGen(queryGen), Gen.posNum[Int]) { (tuple, textQuery, facetSize) ⇒
               val (indexName, dataSets, routes) = tuple
+
+              val publishers = dataSets.flatMap(_.publisher).distinct
 
               val publisherLookup = publishers
                 .groupBy(_.name.get.toLowerCase)
