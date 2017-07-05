@@ -155,28 +155,6 @@ export type Publisher ={
   image_url: string
 }
 
-export type Project ={
-  id: string,
-  name: string,
-  aspects: {
-    project: {
-      description: string,
-      members: Array<string>,
-      datasets: Array<string>,
-      status: string
-    }
-  }
-}
-
-export type ProjectAction = {
-  json: Object,
-  error: ?number,
-  type: boolean,
-  project: Project,
-  fieldErrors: Project
-}
-
-
 
 export type FeaturedRecords = {
   records: Array<any>,

@@ -9,14 +9,13 @@ import type { DatasetDistribution, WMSParser } from '../types';
 
 
 class DistributionMap extends Component {
-  props: {
-    distribution: DatasetDistribution
-  }
   state: {
     mapData: ?string
   }
 
-  constructor(props: props){
+  constructor(props:{
+    distribution: DatasetDistribution
+  }){
     super(props)
     this.state={
       mapData : null

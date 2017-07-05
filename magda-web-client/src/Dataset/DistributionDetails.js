@@ -10,16 +10,27 @@ import './RecordDetails.css';
 
 
 class DistributionDetails extends Component {
+
+  renderLinkText(distribution){
+    const downloadText = distribution.downloadURL ? `This dataset can be downloaded from: \n\n ${distribution.downloadURL}` : '';
+    const accessText = distribution.accessUrl ? `This dataset can be accessed from: \n\n ${distribution.accessUrl}` : '';
+    return downloadText + accessText;
+  }
+
   render(){
     const distribution =this.props.distribution;
+    const overview = `This dataset can be downloaded from: \n\n ${distribution.downloadURL}, `
     return <div className='distribution-details container' >
                 <div className='row'>
                 <div className='distribution-details__body col-sm-8'>
                   <div className='distribution-details-overview'>
                     <h3>Overview</h3>
                     <OverviewBox content={distribution.description}/>
-                    <h3>Download</h3>
-                    <OverviewBox content={`This dataset can be downloaded from: \n\n ${distribution.downloadURL}`}/>
+                    {this.renderLinkText(distribution).length > 0 &&
+                      (<div> <h3>Download</h3>
+                       <OverviewBox content={this.renderLinkText(distribution)}/>
+                      </div>)
+                    }
                   </div>
                   <div className='distribution-details-temporal-coverage'>
                       <h3>Temporal coverage</h3>

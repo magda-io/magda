@@ -14,10 +14,6 @@ import {Link} from 'react-router';
 import './PublisherDetails.css';
 
 class PublisherDetails extends Component {
-    props:{
-      error: number,
-      publisher: Publisher,
-    }
     componentWillMount(){
         this.props.fetchPublisherIfNeeded(this.props.params.publisherId);
     }

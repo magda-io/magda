@@ -40,10 +40,6 @@ export default class DatasetSummary extends Component {
 
   renderLinks(){
     return <div className='dataset-summary__more-info'>
-              <div className='dataset-summary__source clearfix'>
-              <h5 className='dataset-summary__sub-heading'>Source</h5>
-                  {this.props.dataset.catalog}
-              </div>
               <div className='dataset-summary__content clearfix'>
                 <h5 className='dataset-summary__sub-heading'>Contents</h5>
                 <ToggleList list={this.props.dataset.distributions}
