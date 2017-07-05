@@ -68,7 +68,7 @@ class ProjectDetails extends Component {
   }
 }
 
-function mapDispatchToProps(dispatch) {
+const mapDispatchToProps = (dispatch: Dispatch<*>)=>{ 
   return bindActionCreators(
     {
       fetchProjectIfNeeded: fetchProjectIfNeeded,

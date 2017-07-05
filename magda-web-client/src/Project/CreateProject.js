@@ -2,7 +2,11 @@
 import React, { Component } from 'react';
 import ReactDocumentTitle from 'react-document-title';
 import queryString from 'query-string';
-import type {Project } from '../types';
+import Immutable from 'immutable';
+const uuidV1 = require('uuid/v1');
+
+
+import type {RawProject } from '../helpers/project';
 import { connect } from 'react-redux';
 import {config} from '../config.js';
 import { bindActionCreators } from 'redux';
@@ -10,32 +14,35 @@ import { validateFields, resetProjectFields } from '../actions/projectActions';
 import { fetchDatasetFromRegistry } from '../actions/recordActions';
 import Notification from '../UI/Notification';
 import { Link } from 'react-router';
-import Immutable from 'immutable';
-const uuidV1 = require('uuid/v1');
+
+
 import './CreateProject.css';
 
 
 class CreateProject extends Component {
-    state: Project
-    props: {
-      location: Location
+    state: {
+      project: Object
     }
-    constructor(props: props) {
+    constructor(props: {location: Location}) {
       super(props);
 
-      const project = Immutable.Map({
+      // use immutable here for easy manipulation
+      const projectProps = Immutable.Map({
         description: '',
         members: [],
         datasets: [],
         status: 'open'
       })
-      this.state = {project: Immutable.Map({
-        id: uuidV1(),
-        name: '',
-        aspects: Immutable.Map({
-          project: project
-        })
-      })}
+
+      this.state = {
+        project:
+        Immutable.Map({
+          id: uuidV1(),
+          name: '',
+          aspects: Immutable.Map({
+            project: projectProps
+          })
+        })}
     }
 
     componentWillMount(){
@@ -66,7 +73,7 @@ class CreateProject extends Component {
     }
 
     handleChange(event: MouseEvent, id: string){
-      const value = event.target.value;
+      const value = event.target.value && event.target.value;
 
       if(id === 'name'){
         this.setState({
@@ -123,12 +130,12 @@ class CreateProject extends Component {
                     <label className='input-group'>
                       Project title * :
                       {this.props.fieldErrors.name && <div className='field-error'>{this.props.fieldErrors.name}</div>}
-                      <input type='text' name='name' className={`form-control ${this.props.fieldErrors.name ? 'form-error' : ''}`} value={this.state.name} onChange={(e: MouseEvent)=>this.handleChange(e, 'name')}/>
+                      <input type='text' name='name' className={`form-control ${this.props.fieldErrors.name ? 'form-error' : ''}`} value={this.state.project.get('name')} onChange={(e: MouseEvent)=>this.handleChange(e, 'name')}/>
                     </label>
                     <label className='input-group'>
                       Project description * :
                       {this.props.fieldErrors.description && <div className='field-error'>{this.props.fieldErrors.description}</div>}
-                      <input type='text' name='description' className={`form-control ${this.props.fieldErrors.description ? 'form-error' : ''}`} value={this.state.description} onChange={(e: MouseEvent)=>this.handleChange(e, 'description')}/>
+                      <input type='text' name='description' className={`form-control ${this.props.fieldErrors.description ? 'form-error' : ''}`} value={this.state.project.get('description')} onChange={(e: MouseEvent)=>this.handleChange(e, 'description')}/>
                     </label>
 
                     <input type='submit' value='Submit' className='btn btn-primary'  onClick={(e: MouseEvent)=>this.handleSubmit(e)}/>

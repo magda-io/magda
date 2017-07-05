@@ -40,7 +40,7 @@ export type ProjectProps = {
   description: ?string,
   name: ?string,
   status?: ?string,
-  id:?string,
+  id:string,
   datasets?: Array<string>,
   members?: Array<string>
 }
