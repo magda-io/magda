@@ -4,7 +4,7 @@ You need the following in order to build and run MAGDA:
 
 * [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts.  Please install version 6, as version 8 includes npm 5 which currently doesn't work well with lerna.
 * [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
-* [sbt](http://www.scala-sbt.org/) - To build and run the Scala components.
+* [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 * [lerna](https://lernajs.io/) - To manage our multiple-project repo.  Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
 * [Minikube](https://github.com/kubernetes/minikube) - To run a Kubernetes cluster on your local development machine.  It is possible to run all of the Magda microservices directly on your local machine instead of on a Kubernetes cluster, in which case you don't, strictly speaking, need Minikube.  However, you will probably want to run at least some of the services, such as the databases, on a cluster for ease of setup.
 * [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster.  You will also need to this to deploy to our test and production environment on Google Cloud.
@@ -17,8 +17,21 @@ Once the above prerequisites are in place, building MAGDA is easy.  From the MAG
 npm run build
 ```
 
-You can also run the same command in an individual component's directory to build just that component.
+You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
 
+## Running on your local machine
+
+For a quick development cycle on any component, run:
+
+```
+npm run dev
+```
+
+This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected.
+
+| Note: In the Scala projects, this will automatically rebuild on source changes in dependencies as well (e.g. changes to `magda-scala-common`).  However, it does _not_ automatically handle changes in dependencies of Node.js / TypeScript projects (e.g. changes to `magda-typescript-common`).  You should run `npm run dev` in dependency directories as well. |
+
+# Older stuff below, use at your own risk
 
 MAGDA can be run in two main ways:
 

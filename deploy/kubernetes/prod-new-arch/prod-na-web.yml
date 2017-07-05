@@ -46,7 +46,6 @@ spec:
     targetPort: 80
   selector:
     service: web
-  type: "LoadBalancer"
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler

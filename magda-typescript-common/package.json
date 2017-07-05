@@ -8,7 +8,8 @@
     "compile": "tsc",
     "watch": "tsc --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
-    "test": "mocha lib/test"
+    "test": "mocha lib/test",
+    "dev": "npm run watch"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.27",

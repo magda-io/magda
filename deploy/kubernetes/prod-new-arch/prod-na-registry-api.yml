@@ -34,4 +34,3 @@ spec:
     targetPort: 80
   selector:
     service: registry-api
-  type: "NodePort"
