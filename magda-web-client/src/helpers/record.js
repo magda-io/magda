@@ -169,6 +169,9 @@ const defaultDistributionAspect = {
     updatedDate: null,
     license: null,
     description: null,
+  },
+  'source-link-status': {
+    status: null
   }
 }
 
@@ -211,6 +214,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const distributions = distribution['distributions'].map(d=> {
       const distributionAspects = d['aspects'];
       const info = distributionAspects['dcat-distribution-strings'] || defaultDistributionAspect['dcat-distribution-strings'];
+      const linkStatus = distributionAspects['source-link-status'] || {};
       return {
           id: d['id'],
           title: d['name'],
@@ -219,6 +223,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
           format: info.format || 'Unknown format',
           license: (!info.license || info.license === 'notspecified') ? 'License restrictions unknown' : info.license,
           description: info.description || 'No description provided',
+          linkStatusAvailable: Boolean(linkStatus.status), // Link status is available if status is non-empty string
+          linkActive: linkStatus.status === 'active',
           updatedDate: info.modified ? getDateString(info.modified) : 'unknown date'
       }
   });

@@ -30,7 +30,7 @@ class DatasetDetails extends Component {
                   </div>
                   <div className='dataset-details-source'>
                       <h3 className='section-heading'>Data and APIs</h3>
-                      <div className='white-box'>{dataset.distributions.map(s=> renderDistribution(s.format, s.id, s.title, s.license, datasetId))}</div>
+                      <div className='white-box'>{dataset.distributions.map(s=> renderDistribution(s.format, s.id, s.title, s.license, datasetId, s.linkStatusAvailable, s.linkActive))}</div>
                   </div>
                   <div className='dataset-details-temporal-coverage'>
                       <h3 className='section-heading'>Temporal coverage</h3>
