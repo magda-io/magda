@@ -3,6 +3,13 @@ import getDateString from './getDateString';
 // dataset query:
 //aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
 
+export type RecordAction = {
+  json?: Object,
+  error?: number,
+  type?: string
+}
+
+
 type TemporalCoverage = {
   data: {
     intervals: ?Array<Object>
@@ -62,7 +69,7 @@ type Publisher = {
 }
 
 
-type RawDataset = {
+export type RawDataset = {
   id: string,
   name: string,
   aspects: {
@@ -80,7 +87,7 @@ type RawDataset = {
   }
 }
 //aspect=dcat-distribution-strings
-type RawDistribution = {
+export type RawDistribution = {
   id: string,
   name: string,
   aspects: {
@@ -88,7 +95,7 @@ type RawDistribution = {
   }
 }
 
-type ParsedDistribution = {
+export type ParsedDistribution = {
   id: ?string,
   title: ?string,
   description: string,
@@ -100,7 +107,7 @@ type ParsedDistribution = {
 };
 
 // all aspects become required and must have value
-type ParsedDataset = {
+export type ParsedDataset = {
   identifier: ?string,
   title: string,
   issuedDate: string,
@@ -165,7 +172,7 @@ const defaultDistributionAspect = {
   }
 }
 
-export function parseDistribution(record: RawDistribution) : ParsedDistribution {
+export function parseDistribution(record?: RawDistribution) : ParsedDistribution {
   const id = record ? record['id']: null;
   const title = record ? record['name'] : null;
 
@@ -185,7 +192,7 @@ export function parseDistribution(record: RawDistribution) : ParsedDistribution 
 };
 
 
-export function parseDataset(dataset: RawDataset): ParsedDataset {
+export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const aspects = dataset ? dataset['aspects'] : defaultDatasetAspects;
   const identifier =dataset ? dataset.id : null;
   const datasetInfo = aspects['dcat-dataset-strings'];
