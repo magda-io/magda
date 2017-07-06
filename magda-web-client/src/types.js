@@ -156,13 +156,6 @@ export type Publisher ={
 }
 
 
-export type FeaturedRecords = {
-  records: Array<any>,
-  isFetching: boolean,
-  error: ?number,
-}
-
-
 export type FeaturedAction = {
   type: string,
   json: Array<Object>,
@@ -201,8 +194,4 @@ export type Stats = {
 
 
 export type Dispatch = ()=> Function
-export type GetState = () => {
-  project: {
-    isFetching: boolean
-  }
-}
+export type GetState = () => Object

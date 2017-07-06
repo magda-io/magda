@@ -13,7 +13,17 @@ import {Link} from 'react-router';
 
 import './PublisherDetails.css';
 
-class PublisherDetails extends Component {
+type Props = {
+  fetchPublisherIfNeeded: Function,
+  params: {
+    publisherId: string
+  },
+  publisher: Publisher,
+  error: number
+}
+
+
+class PublisherDetails extends Component<void, Props, void> {
     componentWillMount(){
         this.props.fetchPublisherIfNeeded(this.props.params.publisherId);
     }
@@ -52,7 +62,7 @@ class PublisherDetails extends Component {
 }
 
 
-function mapDispatchToProps(dispatch: Function) {
+function mapDispatchToProps(dispatch: Dispatch) {
   return bindActionCreators({
     fetchPublisherIfNeeded: fetchPublisherIfNeeded,
   }, dispatch);

@@ -2,7 +2,7 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import type { Action } from "../types";
+import type { Action, Dispatch, GetState } from "../types";
 
 // export function fetchDiscussionForType(type, id): Action {
 //   return (dispatch: Function, getState: Function) => {
@@ -62,8 +62,8 @@ import type { Action } from "../types";
 //   };
 // }
 
-export function fetchMessages(typeName, typeId): Action {
-  return (dispatch: Function, getState: Function) => {
+export function fetchMessages(typeName: string, typeId: string) {
+  return (dispatch: Dispatch, getState: ()=>Object) => {
     const startState = getState();
     const {
       discussions: { [typeName + "|" + typeId]: existingDiscussion = {} } = {}
@@ -84,7 +84,7 @@ export function fetchMessages(typeName, typeId): Action {
           return response.json();
         } else {
           throw new Error(
-            `Error when fetching messages for discussion ${typeName}/${typeId}: ${response.body}`
+            `Error when fetching messages for discussion ${typeName}/${typeId}: ${response.status}`
           );
         }
       })
@@ -93,7 +93,7 @@ export function fetchMessages(typeName, typeId): Action {
   };
 }
 
-export function requestMessages(typeName, typeId): Action {
+export function requestMessages(typeName: string, typeId: string): Action {
   return {
     type: actionTypes.REQUEST_MESSAGES,
     typeName,
@@ -101,7 +101,7 @@ export function requestMessages(typeName, typeId): Action {
   };
 }
 
-export function receiveMessages(typeName, typeId, messages): Action {
+export function receiveMessages(typeName: string, typeId: string, messages: string): Action {
   return {
     type: actionTypes.RECEIVE_MESSAGES,
     typeName,
@@ -110,7 +110,7 @@ export function receiveMessages(typeName, typeId, messages): Action {
   };
 }
 
-export function receiveMessagesError(typeName, typeId, error): Action {
+export function receiveMessagesError(typeName: string , typeId: string, error: string) {
   return {
     type: actionTypes.RECEIVE_MESSAGES_ERROR,
     typeName,
@@ -119,8 +119,8 @@ export function receiveMessagesError(typeName, typeId, error): Action {
   };
 }
 
-export function sendNewMessage(typeName, typeId, message, user): Action {
-  return (dispatch: Function, getState: Function) => {
+export function sendNewMessage(typeName: string, typeId: string, message: string, user: Object) {
+  return (dispatch: Dispatch, getState: GetState) => {
     dispatch(sendMessage(typeName, typeId, message, user));
 
     return fetch(
@@ -142,7 +142,7 @@ export function sendNewMessage(typeName, typeId, message, user): Action {
           throw new Error(
             `Error when sending message ${JSON.stringify(
               message
-            )} for ${typeName} ${typeId}: ${response.body}`
+            )} for ${typeName} ${typeId}: ${response.status}`
           );
         }
       })
@@ -151,7 +151,7 @@ export function sendNewMessage(typeName, typeId, message, user): Action {
   };
 }
 
-export function sendMessage(typeName, typeId, message, user): Action {
+export function sendMessage(typeName: string, typeId: string, message: string, user: Object) {
   return {
     type: actionTypes.SEND_MESSAGE,
     typeName,
@@ -161,7 +161,7 @@ export function sendMessage(typeName, typeId, message, user): Action {
   };
 }
 
-export function sendMessageError(typeName, typeId, error): Action {
+export function sendMessageError(typeName: string, typeId: string, error: string) {
   return {
     type: actionTypes.SEND_MESSAGE_ERROR,
     typeName,

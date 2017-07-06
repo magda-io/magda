@@ -1,7 +1,7 @@
 //@flow
+import ReactDocumentTitle from 'react-document-title';
 import React from 'react';
 import logo from '../assets/logo.svg';
-import ReactDocumentTitle from 'react-document-title';
 import { config } from '../config.js';
 import { Link } from 'react-router';
 import SearchBox from '../Search/SearchBox';
@@ -43,8 +43,8 @@ export default class AppContainer extends React.Component {
     })
   }
   render() {
-    const headerNavs: Array<string> = config.headerNavigation;
-    const footerNavs: Array<string> = config.footerNavigation;
+    const headerNavs: Array<Array<string>> = config.headerNavigation;
+    const footerNavs: Array<Object> = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
         <div>

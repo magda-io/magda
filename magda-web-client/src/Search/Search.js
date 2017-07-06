@@ -198,18 +198,13 @@ Search.contextTypes ={
   router: React.PropTypes.object.isRequired,
 }
 
-Search.defaultProps = {
-  featuredPublishers: []
-};
 
-
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({
+const mapDispatchToProps = (dispatch: Dispatch<*>) =>
+ bindActionCreators({
     fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
     fetchFeaturedPublishersFromRegistry: fetchFeaturedPublishersFromRegistry,
     resetDatasetSearch: resetDatasetSearch
   }, dispatch);
-}
 
 
 function mapStateToProps(state, ownProps) {
