@@ -3,7 +3,7 @@
   "version": "0.0.27",
   "description": "MAGDA's custom elasticsearch docker image.",
   "scripts": {
-    "dev": "bash -c \"npm run docker-build-local && kubectl config use-context minikube && eval $(minikube docker-env) && kubectl apply -f ../deploy/kubernetes/local/base/elasticsearch.yml && kubectl port-forward $(kubectl get pods -l component=elasticsearch -o=custom-columns=NAME:.metadata.name --no-headers) 9300\"",
+    "dev": "bash -c \"eval $(minikube docker-env) && kubectl config use-context minikube && npm run docker-build-local && kubectl apply -f ../deploy/kubernetes/local/base/elasticsearch.yml && kubectl port-forward $(kubectl get pods -l component=elasticsearch -o=custom-columns=NAME:.metadata.name --no-headers) 9300\"",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
