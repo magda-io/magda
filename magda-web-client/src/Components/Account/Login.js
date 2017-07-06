@@ -32,13 +32,13 @@ export default class Login extends React.Component {
           <ul className="login__providers">
             <li className="login__provider">
               <a href={makeLoginUrl("facebook")}>
-                <img src={fbLogo} className="login__logo" />
+                <img src={fbLogo} className="login__logo" alt="logo" />
                 Facebook
               </a>
             </li>
             <li className="login__provider">
               <a href={makeLoginUrl("google")}>
-                <img src={googleLogo} className="login__logo" />
+                <img src={googleLogo} className="login__logo" alt="logo"/>
                 Google
               </a>
             </li>

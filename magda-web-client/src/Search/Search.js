@@ -20,7 +20,6 @@ import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../actions/datasetSearchActions';
 import {fetchFeaturedPublishersFromRegistry} from '../actions/featuredPublishersActions';
 import queryString from 'query-string';
-import cripsy from './crispy.gif';
 import ProgressBar from '../UI/ProgressBar';
 
 

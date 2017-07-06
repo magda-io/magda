@@ -1,5 +1,3 @@
-import React from "react";
-
 import { browserHistory } from "react-router";
 
 import parseQueryString from "../../helpers/parseQueryString";

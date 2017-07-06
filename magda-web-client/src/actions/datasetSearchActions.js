@@ -3,17 +3,16 @@ import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type {Action, DataSearchJson } from '../types';
+import type {DataSearchJson, FacetAction, SearchAction } from '../types';
 
-
-export function requestResults(apiQuery: string ): Action{
+export function requestResults(apiQuery: string ): SearchAction{
   return {
     type: actionTypes.REQUEST_RESULTS,
     apiQuery
   }
 }
 
-export function receiveResults(apiQuery: string, json: DataSearchJson): Action{
+export function receiveResults(apiQuery: string, json: DataSearchJson): SearchAction{
   return {
     type: actionTypes.RECEIVE_RESULTS,
     apiQuery,
@@ -21,14 +20,14 @@ export function receiveResults(apiQuery: string, json: DataSearchJson): Action{
   }
 }
 
-export function transferFailed(error: number): Action{
+export function transferFailed(error: number): SearchAction{
   return {
     type: actionTypes.FETCH_ERROR,
     error
   }
 }
 
-export function resetDatasetSearch(): Action{
+export function resetDatasetSearch(): SearchAction{
   return {
     type: actionTypes.RESET_DATASET_SEARCH
   }
@@ -78,81 +77,81 @@ export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
   }
 }
 
-export function addPublisher(publisher: string): Action{
+export function addPublisher(publisher: string): FacetAction{
   return {
     type: actionTypes.ADD_PUBLISHER,
     item: publisher
   }
 }
 
-export function removePublisher(publisher: string): Action{
+export function removePublisher(publisher: string): FacetAction{
   return {
     type: actionTypes.REMOVE_PUBLISHER,
     item: publisher
   }
 }
 
-export function resetPublisher(): Action{
+export function resetPublisher(): FacetAction{
   return {
     type: actionTypes.RESET_PUBLISHER,
   }
 }
 
-export function addFormat(format: string): Action {
+export function addFormat(format: string): FacetAction {
   return {
     type: actionTypes.ADD_FORMAT,
     item: format
   }
 }
 
-export function removeFormat(format: string): Action{
+export function removeFormat(format: string): FacetAction{
   return {
     type: actionTypes.REMOVE_FORMAT,
     item: format
   }
 }
 
-export function resetFormat(): Action{
+export function resetFormat(): FacetAction{
   return {
     type: actionTypes.RESET_FORMAT,
   }
 }
 
-export function addRegion(region: string): Action{
+export function addRegion(region: string): FacetAction{
   return {
     type: actionTypes.ADD_REGION,
     item: region
   }
 }
 
-export function resetRegion(): Action{
+export function resetRegion(): FacetAction{
   return {
     type: actionTypes.RESET_REGION,
   }
 }
 
 
-export function setDateFrom(date: string): Action{
+export function setDateFrom(date: string): FacetAction{
   return {
     type: actionTypes.SET_DATE_FROM,
     item: date
   }
 }
 
-export function setDateTo(date: string): Action{
+export function setDateTo(date: string): FacetAction{
   return {
     type: actionTypes.SET_DATE_TO,
     item: date
   }
 }
 
-export function resetDateFrom(): Action{
+export function resetDateFrom(): FacetAction{
   return {
     type: actionTypes.RESET_DATE_FROM
   }
 }
 
-export function resetDateTo(): Action{
+export function resetDateTo(): FacetAction{
   return {
     type: actionTypes.RESET_DATE_TO
   }

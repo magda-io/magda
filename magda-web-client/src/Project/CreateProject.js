@@ -4,9 +4,6 @@ import ReactDocumentTitle from 'react-document-title';
 import queryString from 'query-string';
 import Immutable from 'immutable';
 const uuidV1 = require('uuid/v1');
-
-
-import type {RawProject } from '../helpers/project';
 import { connect } from 'react-redux';
 import {config} from '../config.js';
 import { bindActionCreators } from 'redux';

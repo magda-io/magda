@@ -2,7 +2,7 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import type { Action, Dispatch, GetState } from "../types";
+import type {Dispatch, GetState } from "../types";
 
 // export function fetchDiscussionForType(type, id): Action {
 //   return (dispatch: Function, getState: Function) => {
@@ -93,7 +93,7 @@ export function fetchMessages(typeName: string, typeId: string) {
   };
 }
 
-export function requestMessages(typeName: string, typeId: string): Action {
+export function requestMessages(typeName: string, typeId: string) {
   return {
     type: actionTypes.REQUEST_MESSAGES,
     typeName,
@@ -101,7 +101,7 @@ export function requestMessages(typeName: string, typeId: string): Action {
   };
 }
 
-export function receiveMessages(typeName: string, typeId: string, messages: string): Action {
+export function receiveMessages(typeName: string, typeId: string, messages: string){
   return {
     type: actionTypes.RECEIVE_MESSAGES,
     typeName,

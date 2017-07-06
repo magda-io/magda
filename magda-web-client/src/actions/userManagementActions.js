@@ -2,7 +2,7 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import type { Action, Dispatch, GetState } from "../types";
+import type { FacetAction, Dispatch, GetState } from "../types";
 
 export function requestWhoAmI() {
   return (dispatch: Dispatch, getState: GetState) => {
@@ -32,20 +32,20 @@ export function requestWhoAmI() {
   };
 }
 
-export function receiveWhoAmISignedIn(user: Object): Action{
+export function receiveWhoAmISignedIn(user: Object): FacetAction{
   return {
     type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_IN,
     user
   };
 }
 
-export function receiveWhoAmISignedOut(): Action {
+export function receiveWhoAmISignedOut(): FacetAction {
   return {
     type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_OUT
   };
 }
 
-export function receiveWhoAmIError(err: Object): Action {
+export function receiveWhoAmIError(err: Object): FacetAction {
   return {
     type: actionTypes.RECEIVE_WHO_AM_I_ERROR,
     err
@@ -77,13 +77,13 @@ export function requestSignOut() {
   };
 }
 
-export function completedSignOut(): Action {
+export function completedSignOut(): FacetAction {
   return {
     type: actionTypes.COMPLETED_SIGN_OUT
   };
 }
 
-export function signOutError(err: Object): Action {
+export function signOutError(err: Object): FacetAction {
   return {
     type: actionTypes.SIGN_OUT_ERROR,
     err
