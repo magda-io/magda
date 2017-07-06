@@ -10,9 +10,15 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch CKAN Connector",
-            "program": "${workspaceRoot}/magda-ckan-connector/bin/index.js",
-            "args": [
-                "--config", "${workspaceRoot}/deploy/connector-config/data-gov-au.json"
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs":[
+                "src/index.ts"
+            ],
+            "args":[
+                "--name", "foo", "--sourceUrl", "bar"
             ],
             "cwd": "${workspaceRoot}/magda-ckan-connector"
         },
