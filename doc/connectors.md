@@ -2,14 +2,13 @@ Running MAGDA Connectors on your local machine is straightforward.
 
 ```
 cd magda-ckan-connector
-npm run build
-node bin/index.js --config ../deploy/connector-config/data-gov-au.json
+npm run dev -- --config ../deploy/connector-config/data-gov-au.json
 ```
 
 That will create new organizations, datasets, and distributions on the registry running on `http://localhost:6100/v0/`.  You can use a different registry by specifying it on the command-line:
 
 ```
-node bin/index.js --config ../deploy/connector-config/data-gov-au.json --registryUrl "http://some.other.host.example.com/api/v0/"
+npm run dev -- --config ../deploy/connector-config/data-gov-au.json --registryUrl "http://some.other.host.example.com/api/v0/"
 ```
 
 Running the connectors as jobs on the Kubernetes cluster requires a few more steps.  First, you need to create a Kubernetes ConfigMap from the connector configuration files:

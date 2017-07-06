@@ -77,16 +77,49 @@ cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/da
 
 If you get an error like `error: unable to forward port because pod is not running. Current status=Pending` when running `npm run dev` in the database directories, it means the database pod has not yet started up on Minikube.  Wait a couple of seconds and try again.
 
-## But what do I need to run?
+See [connectors](connectors) for more detailed information about running connectors.
 
-Running individual components is easy enough, but how do I get a fully working system?  It is rarely necessary to run _all_ of MAGDA, but various components depend on other components as follows:
+## What do I need to run?
+
+Running individual components is easy enough, but how do we get a fully working system?  It is rarely necessary to run _all_ of MAGDA locally, but various components depend on other components as follows:
 
 | Component | Dependencies |
+| --------- | ------------ |
 | magda-registry-api | magda-combined-db |
 | magda-indexer | magda-elastic-search |
-| magda-search-pi | magda-elastic-search |
+| magda-search-api | magda-elastic-search |
 | magda-*-connector | magda-registry-api |
 | magda-*-sleuther | magda-registry-api |
+
+# Debugging TypeScript / Node.js components
+
+# Debugging Scala components
+
+# Running on Minikube
+
+To run all of MAGDA on Minikube, you first need to build all components, and 
+
+```bash
+npm run build
+```
+
+Then, build and push Docker containers for each by running the following in the root MAGDA directory:
+
+```bash
+npm run docker-build-local
+```
+
+Next, create all the pods and services by running:
+
+```bash
+kubectl apply -f deploy/kubernetes/local/base
+```
+
+Once everything starts up, you can access the web front end on http://192.168.99.100:30018.  The IP address may be different on your system.  Get the real IP address by running:
+
+```bash
+minikube ip
+```
 
 # Older stuff below, use at your own risk
 
