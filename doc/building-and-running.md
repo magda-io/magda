@@ -50,7 +50,7 @@ npm run build
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
 
-To run a built component, run:
+To run a built component, run the following in a component directory:
 
 ```bash
 npm start
