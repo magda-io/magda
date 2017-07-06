@@ -9,25 +9,84 @@ You need the following in order to build and run MAGDA:
 * [Minikube](https://github.com/kubernetes/minikube) - To run a Kubernetes cluster on your local development machine.  It is possible to run all of the Magda microservices directly on your local machine instead of on a Kubernetes cluster, in which case you don't, strictly speaking, need Minikube.  However, you will probably want to run at least some of the services, such as the databases, on a cluster for ease of setup.
 * [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster.  You will also need to this to deploy to our test and production environment on Google Cloud.
 
-## Building
+These instructions assume you are using a Bash shell.  You can easily get a Bash shell on Windows by installing the [git](https://git-scm.com/downloads) client.
+
+## Setting up Minikube
+
+As mentioned above, Minikube is optional.  However, you will probably find it easier to run at least the databases (PostgreSQL and ElasticSearch) on Minikube, rather than installing them on your development machine.
+
+After you [install Minikube](https://github.com/kubernetes/minikube/releases), start it with:
+
+```bash
+minikube config set memory 4096
+minikube start
+```
+
+This reserves 4 GB of RAM for Minikube and starts it up.  If you're low on RAM and only intend to run the databases on Minikube, you can likely get away with a smaller number, like 2048.
+
+More detailed instructions for setting up Minikube can be found [here](https://github.com/kubernetes/minikube) if that doesn't work.
+
+To set up the environment variables necessary for Docker to interact with the Minikube VM, run:
+
+```bash
+eval $(minikube docker-env)
+```
+
+You'll need to run this in each new shell.
+
+Finally, deploy the kube registry to the Minikube cluster:
+
+```bash
+kubectl create -f deploy/kubernetes/local/kube-registry.yml
+```
+
+## Building and running components
 
 Once the above prerequisites are in place, building MAGDA is easy.  From the MAGDA root directory, simply run:
 
-```
+```bash
 npm run build
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
 
+To run a built component, run:
+
+```bash
+npm start
+```
+
 ## Running on your local machine
 
 For a quick development cycle on any component, run:
 
-```
+```bash
 npm run dev
 ```
 
-This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected.
+This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected.  In some cases (e.g. code generation), it is necessary to run `npm run build` at least once before `npm run dev` will work.  Typically it is _not_ necessary to run `npm run build` again in the course of development, though, unless you're changing something other than source code.
+
+This even works in `magda-combined-db` and `magda-elastic-search`, so you can start up the database (on Minikube), the registry API, and a connector by executing the following three commands in three separate windows:
+
+```bash
+# these three commands don't terminate, so run them in separate terminals
+cd magda-combined-db && npm run dev
+cd magda-registry-api && npm run dev
+cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/data-gov-au.json
+```
+
+If you get an error like `error: unable to forward port because pod is not running. Current status=Pending` when running `npm run dev` in the database directories, it means the database pod has not yet started up on Minikube.  Wait a couple of seconds and try again.
+
+## But what do I need to run?
+
+Running individual components is easy enough, but how do I get a fully working system?  It is rarely necessary to run _all_ of MAGDA, but various components depend on other components as follows:
+
+| Component | Dependencies |
+| magda-registry-api | magda-combined-db |
+| magda-indexer | magda-elastic-search |
+| magda-search-pi | magda-elastic-search |
+| magda-*-connector | magda-registry-api |
+| magda-*-sleuther | magda-registry-api |
 
 # Older stuff below, use at your own risk
 
