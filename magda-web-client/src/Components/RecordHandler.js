@@ -90,8 +90,7 @@ class RecordHandler extends React.Component {
       const datasetTabs = [
         {id: 'details', name: 'Details', isActive: true},
         {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
-        {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
-        {id: 'visualisation', name: 'Visualization', isActive: true}
+        {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId}
       ];
       return (
         <div>
