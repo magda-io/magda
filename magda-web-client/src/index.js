@@ -31,7 +31,6 @@ import { staticPageRegister } from "./content/register";
 import DatasetDetails from "./Dataset/DatasetDetails";
 import DatasetDiscussion from "./Dataset/DatasetDiscussion";
 import DatasetPublisher from "./Dataset/DatasetPublisher";
-import DatasetVisualisation from './Dataset/DatasetVisualisation';
 
 import ProjectsViewer from "./Project/ProjectsViewer";
 import ProjectDetails from "./Project/ProjectDetails";
@@ -87,7 +86,6 @@ ReactDOM.render(
           <Route path="details" component={DatasetDetails} />
           <Route path="discussion" component={DatasetDiscussion} />
           <Route path="publisher" component={DatasetPublisher} />
-          <Route path="visualisation" component={DatasetVisualisation} />
         </Route>
         <Route
           path="dataset/:datasetId/distribution/:distributionId"
