@@ -77,7 +77,7 @@ cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/da
 
 If you get an error like `error: unable to forward port because pod is not running. Current status=Pending` when running `npm run dev` in the database directories, it means the database pod has not yet started up on Minikube.  Wait a couple of seconds and try again.
 
-See [connectors](connectors) for more detailed information about running connectors.
+See [connectors](connectors.md) for more detailed information about running connectors.
 
 ## What do I need to run?
 
