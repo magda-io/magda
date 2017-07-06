@@ -29,8 +29,6 @@ npm run dev
 
 This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected.
 
-> Note: In the Scala projects, this will automatically rebuild on source changes in dependencies as well (e.g. changes to `magda-scala-common`).  However, it does _not_ automatically handle changes in dependencies of Node.js / TypeScript projects (e.g. changes to `magda-typescript-common`).  You should run `npm run dev` in dependency directories as well.
-
 # Older stuff below, use at your own risk
 
 MAGDA can be run in two main ways:

@@ -2,7 +2,6 @@
   "name": "@magda/broken-link-sleuther",
   "description": "MAGDA Broken Link Sleuther",
   "version": "0.0.27",
-  "main": "dist/index.js",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc",
