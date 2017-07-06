@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 
 import TemporalAspectViewer from '../UI/TemporalAspectViewer';
-import SpatialAspectViewer from '../UI/SpatialAspectViewer';
 import OverviewBox from '../UI/OverviewBox';
 import Social from '../Components/Social';
 import { Link } from 'react-router';

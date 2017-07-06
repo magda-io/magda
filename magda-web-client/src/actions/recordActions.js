@@ -3,7 +3,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { RecordAction, RawDataset, RawDistribution } from '../helpers/record';
+import type { RecordAction, RawDataset } from '../helpers/record';
 
 export function requestDataset(id: string):RecordAction {
   return {

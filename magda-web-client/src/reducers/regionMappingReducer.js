@@ -1,12 +1,12 @@
-// @flow 
-import type { Action, RegionMappingState } from '../types';
+// @flow
+import type { FacetAction, RegionMappingState } from '../types';
 
 const initialData = {
   isFetching: false,
   data: {}
 }
 
-const regionMapping = (state: RegionMappingState = initialData, action: Action) => {
+const regionMapping = (state: RegionMappingState = initialData, action: FacetAction) => {
   switch (action.type) {
     case 'REQUEST_REGION_MAPPING':
       return Object.assign({}, state, {

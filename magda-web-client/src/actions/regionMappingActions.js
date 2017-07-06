@@ -2,16 +2,16 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Action, FacetSearchJson } from '../types';
+import type { FacetAction, FacetSearchJson } from '../types';
 
 
-export function requestRegionMapping(): Action{
+export function requestRegionMapping(): FacetAction{
   return {
     type: actionTypes.REQUEST_REGION_MAPPING,
   }
 }
 
-export function receiveRegionMapping(json: Object): Action{
+export function receiveRegionMapping(json: Object): FacetAction{
   console.log(actionTypes.RECEIVE_REGION_MAPPING);
   return {
     type: actionTypes.RECEIVE_REGION_MAPPING,

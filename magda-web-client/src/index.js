@@ -10,7 +10,6 @@ import {
   browserHistory,
   Redirect
 } from "react-router";
-import { config } from "./config";
 
 import thunkMiddleware from "redux-thunk";
 import React from "react";
@@ -45,7 +44,6 @@ import DistributionMap from "./Dataset/DistributionMap";
 import DistributionChart from "./Dataset/DistributionChart";
 import { requestWhoAmI } from "./actions/userManagementActions";
 
-let baseurl = location.pathname;
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
 

@@ -10,10 +10,10 @@ export function requestPublishers(ids: Array<string>) {
   }
 }
 
-export function receivePublishers(publishers: Array<Object>) {
+export function receivePublishers(json: Array<Object>) {
   return {
     type: actionTypes.RECEIVE_FEATURED_PUBLISHERS,
-    publishers,
+    json,
   }
 }
 

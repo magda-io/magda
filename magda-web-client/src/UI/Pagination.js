@@ -56,7 +56,4 @@ Pagination.contextTypes ={
   router: React.PropTypes.object.isRequired,
 }
 
-
-Pagination.defaultProps = { currentPage: 1, maxPage: 10};
-
 export default Pagination;

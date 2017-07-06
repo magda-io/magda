@@ -1,4 +1,26 @@
 // @flow
+export type ProjectProps = {
+  description: ?string,
+  name: ?string,
+  status?: ?string,
+  id:string,
+  datasets?: Array<string>,
+  members?: Array<string>
+}
+
+
+export type RawProject = {
+    id: string,
+    name: string,
+    aspects: {
+      project: {
+        status: string,
+        members: Array<string>,
+        datasets: Array<string>,
+        description: string
+      }
+    }
+}
 
 export type RawProjects = {
   totalCount: number,
@@ -23,27 +45,8 @@ export type ProjectAction = {
   showNotification?: boolean
 }
 
-export type RawProject = {
-    id: string,
-    name: string,
-    aspects: {
-      project: {
-        status: string,
-        members: Array<string>,
-        datasets: Array<string>,
-        description: string
-      }
-    }
-}
 
-export type ProjectProps = {
-  description: ?string,
-  name: ?string,
-  status?: ?string,
-  id:string,
-  datasets?: Array<string>,
-  members?: Array<string>
-}
+
 
 
 

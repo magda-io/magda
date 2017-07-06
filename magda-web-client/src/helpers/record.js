@@ -26,17 +26,6 @@ type dcatDistributionStrings = {
 }
 
 
-type Distribution = {
-  description: string,
-  title: string,
-  id: string,
-  downloadURL: string,
-  format: string,
-  aspects: {
-    'dcat-distribution-strings': dcatDistributionStrings
-  }
-}
-
 type DcatDatasetStrings = {
   description: string,
   keywords: Array<string>,
@@ -46,9 +35,6 @@ type DcatDatasetStrings = {
   modified: string
 }
 
-type DatasetPublisher = {
-  publisher: Publisher
-}
 
 
 type Publisher = {
@@ -68,6 +54,18 @@ type Publisher = {
   }
 }
 
+type DatasetPublisher = {
+  publisher: Publisher
+}
+
+//aspect=dcat-distribution-strings
+export type RawDistribution = {
+  id: string,
+  name: string,
+  aspects: {
+    'dcat-distribution-strings': dcatDistributionStrings
+  }
+}
 
 export type RawDataset = {
   id: string,
@@ -86,14 +84,7 @@ export type RawDataset = {
     'temporal-coverage'?: TemporalCoverage
   }
 }
-//aspect=dcat-distribution-strings
-export type RawDistribution = {
-  id: string,
-  name: string,
-  aspects: {
-    'dcat-distribution-strings': dcatDistributionStrings
-  }
-}
+
 
 export type ParsedDistribution = {
   id: string,
@@ -139,7 +130,6 @@ const defaultPublisher: Publisher = {
 }
 
 const defaultDatasetAspects = {
-  'dataset-distributions': [],
   'dcat-dataset-strings':{
     description: undefined,
     keywords: [],
