@@ -2,10 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import TemporalAspectViewer from '../UI/TemporalAspectViewer';
-import SpatialAspectViewer from '../UI/SpatialAspectViewer';
 import OverviewBox from '../UI/OverviewBox';
 import Social from '../Components/Social';
-import { Link } from 'react-router';
 import './RecordDetails.css';
 
 
@@ -19,7 +17,6 @@ class DistributionDetails extends Component {
 
   render(){
     const distribution =this.props.distribution;
-    const overview = `This dataset can be downloaded from: \n\n ${distribution.downloadURL}, `
     return <div className='distribution-details container' >
                 <div className='row'>
                 <div className='distribution-details__body col-sm-8'>

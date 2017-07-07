@@ -3,7 +3,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { RecordAction, RawDataset, RawDistribution } from '../helpers/record';
+import type { RecordAction, RawDataset } from '../helpers/record';
 
 export function requestDataset(id: string):RecordAction {
   return {
@@ -52,7 +52,7 @@ export function requestDistributionError(error: number): RecordAction {
 export function fetchDatasetFromRegistry(id: string):Function{
   return (dispatch: Function)=>{
     dispatch(requestDataset(id))
-    let url : string = config.registryUrl + `/records/${encodeURIComponent(id)}?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source`;
+    let url : string = config.registryUrl + `/records/${encodeURIComponent(id)}?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=link-status`;
     console.log(url);
     return fetch(url)
     .then(response => {

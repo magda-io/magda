@@ -1,6 +1,6 @@
 // @flow
 import {parseProject} from '../helpers/project';
-import type {ProjectAction, ParsedProject, RawProject, RawProjects, ProjectProps } from '../helpers/project';
+import type {ProjectAction, ProjectProps, ParsedProject } from '../helpers/project';
 
 
 const noFieldError: ProjectProps = {

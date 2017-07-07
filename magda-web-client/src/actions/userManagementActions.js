@@ -2,10 +2,10 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import type { Action, FacetSearchJson } from "../types";
+import type { FacetAction, Dispatch, GetState } from "../types";
 
-export function requestWhoAmI(): Action {
-  return (dispatch: Function, getState: Function) => {
+export function requestWhoAmI() {
+  return (dispatch: Dispatch, getState: GetState) => {
     if (getState().userManagement.isFetchingWhoAmI) {
       return false;
     }
@@ -25,35 +25,35 @@ export function requestWhoAmI(): Action {
         } else if (response.status === 401) {
           dispatch(receiveWhoAmISignedOut());
         } else {
-          throw new Error("Error when fetching current user: " + response.body);
+          throw new Error("Error when fetching current user: " + response.status);
         }
       })
       .catch(err => dispatch(receiveWhoAmIError(err)));
   };
 }
 
-export function receiveWhoAmISignedIn(user): Action{
+export function receiveWhoAmISignedIn(user: Object): FacetAction{
   return {
     type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_IN,
     user
   };
 }
 
-export function receiveWhoAmISignedOut(): Action {
+export function receiveWhoAmISignedOut(): FacetAction {
   return {
     type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_OUT
   };
 }
 
-export function receiveWhoAmIError(err): Action {
+export function receiveWhoAmIError(err: Object): FacetAction {
   return {
     type: actionTypes.RECEIVE_WHO_AM_I_ERROR,
     err
   };
 }
 
-export function requestSignOut(): Action {
-  return (dispatch: Function, getState: Function) => {
+export function requestSignOut() {
+  return (dispatch: Dispatch, getState: GetState) => {
     if (getState().userManagement.isSigningOut) {
       return false;
     }
@@ -70,20 +70,20 @@ export function requestSignOut(): Action {
         return;
       } else {
         dispatch(
-          signOutError(new Error("Error signing out: " + response.body))
+          signOutError(new Error("Error signing out: " + response.status))
         );
       }
     });
   };
 }
 
-export function completedSignOut(): Action {
+export function completedSignOut(): FacetAction {
   return {
     type: actionTypes.COMPLETED_SIGN_OUT
   };
 }
 
-export function signOutError(err): Action {
+export function signOutError(err: Object): FacetAction {
   return {
     type: actionTypes.SIGN_OUT_ERROR,
     err

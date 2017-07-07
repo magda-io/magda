@@ -4,7 +4,7 @@ import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import {validateProjectName, validateProjectDescription} from '../helpers/project';
-import type {ProjectAction, ParsedProject, RawProject, RawProjects, ProjectProps} from '../helpers/project';
+import type {ProjectAction, RawProject, RawProjects, ProjectProps} from '../helpers/project';
 import type { Dispatch, GetState } from '../types';
 import {browserHistory} from 'react-router';
 

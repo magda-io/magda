@@ -54,6 +54,7 @@ class RecordHandler extends React.Component {
     const publisherName = this.props.dataset.publisher.name;
     const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
     const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
+    const distributionIdAsUrl = this.props.params.distributionId ? encodeURIComponent(this.props.params.distributionId) : '';
      if (this.props.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
          return <ErrorHandler errorCode={this.props.distributionFetchError}/>;
@@ -78,7 +79,7 @@ class RecordHandler extends React.Component {
                 </div>
               </div>
             </div>
-            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}/distribution/${encodeURIComponent(this.props.params.distributionId)}`}/>
+            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}/distribution/${distributionIdAsUrl}`}/>
             <div className='tab-content'>{this.props.children}</div>
             </div>
       )
