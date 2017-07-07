@@ -126,7 +126,7 @@ Scala components can easily be debugged using the IntelliJ debugger.  Create a d
 
 # Running on Minikube
 
-To run all of MAGDA on Minikube, you first need to build all components, and 
+To run all of MAGDA on Minikube, you first need to build all components:
 
 ```bash
 npm run build
