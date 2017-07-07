@@ -4,14 +4,14 @@ It is not necessary to allocate ports to microservices when running on a Kuberne
 
 | Component | Port |
 | --------- | ---- |
-| magda-combined-db | 5432 |
-| magda-elastic-search | 9300 |
-| magda-gateway | 6100 |
-| magda-registry-api | 6101 |
-| magda-search-api | 6102 |
-| magda-indexer | 6103 |
-| magda-auth-api | 6104 |
-| magda-discussions-api | 6105 |
-| magda-preview-map | 6106 |
-| magda-web-server | 6107 |
-| magda-web-client | 6108 |
+| `magda-combined-db` | 5432 |
+| `magda-elastic-search` | 9300 |
+| `magda-gateway` | 6100 |
+| `magda-registry-api` | 6101 |
+| `magda-search-api` | 6102 |
+| `magda-indexer` | 6103 |
+| `magda-auth-api` | 6104 |
+| `magda-discussions-api` | 6105 |
+| `magda-preview-map` | 6106 |
+| `magda-web-server` | 6107 |
+| `magda-web-client` | 6108 |
