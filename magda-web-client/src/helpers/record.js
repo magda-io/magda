@@ -65,7 +65,7 @@ export type RawDistribution = {
   aspects: {
     'dcat-distribution-strings': dcatDistributionStrings,
     'source-link-status': {
-      status: ?boolean
+      status: ?string
     }
   }
 }
@@ -212,7 +212,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const distributions = distribution['distributions'].map(d=> {
       const distributionAspects = d['aspects'];
       const info = distributionAspects['dcat-distribution-strings'] || defaultDistributionAspect['dcat-distribution-strings'];
-      const linkStatus = distributionAspects['source-link-status'] || {};
+      const linkStatus = distributionAspects['source-link-status'] || defaultDistributionAspect['source-link-status'];
       return {
           id: d['id'],
           title: d['name'],
