@@ -30,7 +30,7 @@
     "yargs": "^8.0.1"
   },
   "config": {
-    "registryUrl": "http://localhost:6100/v0",
+    "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-ckan-connector",
       "include": "node_modules aspect-templates dist Dockerfile"

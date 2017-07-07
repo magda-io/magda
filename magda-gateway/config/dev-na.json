@@ -9,6 +9,7 @@
         "search": "http://search-api/v0",
         "registry": "http://registry-api/v0",
         "auth": "http://auth-api/v0/public",
-        "discussions": "http://discussions-api/v0"
+        "discussions": "http://discussions-api/v0",
+        "web": "http://web"
     }
 }

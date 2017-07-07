@@ -1,0 +1,6 @@
+{
+    "listenPort": 80,
+    "db": {
+        "host": "discussions-db"
+    }
+}

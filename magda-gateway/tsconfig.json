@@ -4,7 +4,7 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@magda/typescript-common/dist/*": ["@magda/typescript-common/src/*"]
+            "@magda/auth-api/dist/*": ["@magda/auth-api/src/*"]
         }
     },
     "include": ["src"]

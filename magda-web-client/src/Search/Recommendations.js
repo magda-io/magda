@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import find from 'lodash.find';
+import './Recommendations.css';
 
 type Option = {
   value: string,
@@ -15,8 +16,6 @@ type Props = {
   options: Array<Option>
 }
 
-
-import './Recommendations.css';
 class Recommendations extends Component {
   state: {
     isOpen: boolean,

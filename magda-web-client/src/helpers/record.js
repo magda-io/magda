@@ -194,7 +194,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
 
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
-  const aspects = dataset ? dataset['aspects'] : defaultDatasetAspects;
+  const aspects = dataset && dataset.aspects ? dataset['aspects'] : defaultDatasetAspects;
   const identifier =dataset ? dataset.id : '';
   const datasetInfo = aspects['dcat-dataset-strings'];
   const distribution = aspects['dataset-distributions'] || defaultDatasetAspects['dataset-distributions'];

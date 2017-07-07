@@ -85,11 +85,16 @@ Running individual components is easy enough, but how do we get a fully working 
 
 | Component | Dependencies |
 | --------- | ------------ |
-| magda-registry-api | magda-combined-db |
-| magda-indexer | magda-elastic-search |
-| magda-search-api | magda-elastic-search |
 | magda-*-connector | magda-registry-api |
 | magda-*-sleuther | magda-registry-api |
+| magda-auth-api | magda-combined-db |
+| magda-discussions-api | magda-combined-db |
+| magda-gateway | magda-registry-api, magda-search-api, magda-web-client, magda-auth-api, magda-discussions-api |
+| magda-indexer | magda-elastic-search |
+| magda-registry-api | magda-combined-db |
+| magda-search-api | magda-elastic-search |
+| magda-web-client | magda-web-server, but uses API at http://magda-dev.terria.io if server is not running. |
+| magda-web-server | none, but if this is running then magda-gateway and its dependencies must be too or API calls will fail. |
 
 # Debugging Node.js / TypeScript components
 
@@ -143,4 +148,10 @@ Once everything starts up, you can access the web front end on http://192.168.99
 
 ```bash
 minikube ip
+```
+
+It's a good idea to add an entry for `minikube.data.gov.au` to your `hosts` file (`C:\Windows\System32\drivers\etc\hosts` on Windows), mapping it to your Minikube IP address.  Some services may assume this is in place.  For example:
+
+```
+192.168.99.100	minikube.data.gov.au
 ```

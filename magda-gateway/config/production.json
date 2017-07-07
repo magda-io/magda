@@ -1,0 +1,15 @@
+{
+    "listenPort": 80,
+    "db": {
+        "host": "session-store",
+        "port": 5432
+    },
+    "externalHost": "http://magda-api-dev.terria.io",
+    "targets": {
+        "search": "http://search-api/v0",
+        "registry": "http://registry-api/v0",
+        "auth": "http://auth-api/v0/public",
+        "discussions": "http://discussions-api/v0",
+        "web": "http://web"
+    }
+}
