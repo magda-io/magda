@@ -138,6 +138,12 @@ Then, build and push Docker containers for each by running the following in the 
 npm run docker-build-local
 ```
 
+If you get an error, make sure your Docker environment is set up:
+
+```bash
+eval $(minikube docker-env)
+```
+
 Next, create all the pods and services by running:
 
 ```bash
