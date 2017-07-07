@@ -64,6 +64,7 @@
     "redux-thunk": "^2.1.0",
     "rss-parser": "^2.9.0",
     "uuid": "^3.0.1",
-    "xml-parser": "^1.2.1"
+    "xml-parser": "^1.2.1",
+    "react-json": "git@github.com:chloeleichen/react-json.git"
   }
 }
