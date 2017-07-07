@@ -345,26 +345,34 @@ class FacetSpec extends BaseSearchApiSpec {
         }
 
         it("in general") {
-          forAll(indexGen, textQueryGen(queryGen), Gen.posNum[Int], Generators.publisherAgentGen) { (tuple, textQuery, facetSize, publishers) ⇒
-            val (indexName, dataSets, routes) = tuple
+          try {
+            forAll(indexGen, textQueryGen(queryGen), Gen.posNum[Int]) { (tuple, textQuery, facetSize) ⇒
+              val (indexName, dataSets, routes) = tuple
 
-            val publisherLookup = publishers
-              .groupBy(_.name.get.toLowerCase)
+              val publishers = dataSets.flatMap(_.publisher).distinct
 
-            Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
-              status shouldBe OK
+              val publisherLookup = publishers
+                .groupBy(_.name.get.toLowerCase)
 
-              val result = responseAs[SearchResult]
+              Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
+                status shouldBe OK
 
-              val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
+                val result = responseAs[SearchResult]
 
-              withClue("publishers " + publisherLookup) {
-                facet.options.filterNot(_.value == "Unspecified").foreach { x =>
-                  val matchedPublishers = publisherLookup(x.value.toLowerCase)
-                  matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
+
+                withClue("publishers " + publisherLookup) {
+                  facet.options.filterNot(_.value == "Unspecified").foreach { x =>
+                    val matchedPublishers = publisherLookup(x.value.toLowerCase)
+                    matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                  }
                 }
               }
             }
+          } catch {
+            case e: Throwable =>
+              e.printStackTrace
+              throw e
           }
         }
 

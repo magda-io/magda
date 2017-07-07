@@ -7,7 +7,7 @@ import akka.event.Logging
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
-import au.csiro.data61.magda.indexer.external.{ ExternalInterface, HttpFetcher, InterfaceConfig }
+import au.csiro.data61.magda.indexer.external.{ HttpFetcher, InterfaceConfig }
 import au.csiro.data61.magda.model.misc.DataSet
 import com.typesafe.config.Config
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -19,7 +19,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import akka.http.scaladsl.model.HttpResponse
 import java.time.ZoneOffset
 
-class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: InterfaceConfig)(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends RegistryIndexerProtocols with ExternalInterface with RegistryConverters {
+class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: InterfaceConfig)(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends RegistryIndexerProtocols with RegistryConverters {
   def this(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
     this(new HttpFetcher(interfaceConfig, system, materializer, executor), interfaceConfig)(config, system, executor, materializer)
   }
@@ -28,7 +28,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
   implicit val fetcher = httpFetcher
   implicit val logger = Logging(system, getClass)
 
-  override def getInterfaceConfig = interfaceConfig
+  def getInterfaceConfig = interfaceConfig
 
   val path = if (interfaceConfig.raw.hasPath("path")) interfaceConfig.raw.getString("path") else ""
   val baseUrl = s"${path}records?aspect=dcat-dataset-strings&aspect=dataset-distributions&aspect=source"
@@ -45,8 +45,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
             { hit => registryDataSetConv(interfaceConfig)(hit) },
-            { (e, item) => logger.error(e, "Could not parse item for {}: {}", interfaceConfig.name, item.toString) }
-          ))
+            { (e, item) => logger.error(e, "Could not parse item for {}: {}", interfaceConfig.name, item.toString) }))
         }
         case _ => Unmarshal(response.entity).to[String].flatMap(onError(response))
       }
@@ -59,17 +58,14 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
             { hit => registryDataSetConv(interfaceConfig)(hit) },
-            { (e, item) => logger.error(e, "Could not parse item for {}: {}", interfaceConfig.name, item.toString) }
-          ))
+            { (e, item) => logger.error(e, "Could not parse item for {}: {}", interfaceConfig.name, item.toString) }))
         }
         case _ => Unmarshal(response.entity).to[String].flatMap(onError(response))
       }
     }
   }
 
-  override def getDataSets(start: Long, number: Int): scala.concurrent.Future[List[DataSet]] = getDataSetsReturnToken(start, number).map(_._2)
-
-  override def getTotalDataSetCount(): Future[Long] =
+  def getTotalDataSetCount(): Future[Long] =
     fetcher.get(s"${baseUrl}&limit=0").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map(_.totalCount)

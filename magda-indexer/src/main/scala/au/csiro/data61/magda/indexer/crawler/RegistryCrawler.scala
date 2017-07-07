@@ -6,7 +6,7 @@ import akka.event.Logging
 import akka.stream.{ Materializer, ThrottleMode }
 import akka.stream.scaladsl.{ Merge, Sink, Source }
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.indexer.external.{ ExternalInterface, InterfaceConfig }
+import au.csiro.data61.magda.indexer.external.{ InterfaceConfig }
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import com.typesafe.config.Config
@@ -35,7 +35,7 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
       .flatMap { result =>
         log.info("Indexed {} datasets from {} with {} failures", result.successes, interface.getInterfaceConfig.name, result.failures.length)
 
-        val futureOpt = if (result.successes >= result.failures.length) { // does this need to be tunable?
+        val futureOpt = if (result.failures.length == 0) { // does this need to be tunable?
           log.info("Trimming datasets from {} indexed before {}", interface.getInterfaceConfig.name, startInstant)
           Some(indexer.trim(interface.getInterfaceConfig, startInstant))
         } else {
@@ -75,13 +75,13 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
   }
 
   def tokenCrawl(nextFuture: Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
-    val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching from {}, retries left: {}", interface.getInterfaceConfig().name, retryCount + 1)
+    val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching from registry, retries left: {}", retryCount + 1)
 
     val safeFuture = ErrorHandling.retry(() => nextFuture, 30 seconds, 30, onRetry)
       .recover {
         case e: Throwable =>
-          log.error(e, "Failed completely while fetching from {}. This means we can't go any further!!", interface.getInterfaceConfig().name)
-          throw e
+          log.error(e, "Failed completely while fetching from registry. This means we can't go any further!!")
+          (None, Nil)
       }
 
     Source.fromFuture(safeFuture).flatMapConcat {

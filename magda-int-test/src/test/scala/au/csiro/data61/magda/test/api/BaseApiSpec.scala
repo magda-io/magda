@@ -58,7 +58,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   implicit val config = buildConfig
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
   val logger = Logging(system, getClass)
-  val indexedRegions = BaseApiSpec.indexedRegions
+  implicit val indexedRegions = BaseApiSpec.indexedRegions
 
   override def beforeAll() {
     if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
