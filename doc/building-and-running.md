@@ -144,7 +144,14 @@ If you get an error, make sure your Docker environment is set up:
 eval $(minikube docker-env)
 ```
 
-Next, create all the pods and services by running:
+Next, create the configmaps defining the cluster configuration:
+
+```bash
+kubectl create configmap config --from-file deploy/kubernetes/config
+kubectl create configmap connector-config --from-file deploy/connector-config
+```
+
+Then, create all the pods and services by running:
 
 ```bash
 kubectl apply -f deploy/kubernetes/local/base
