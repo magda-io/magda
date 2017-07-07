@@ -189,7 +189,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const linkActive = linkStatus.status === 'active';
 
 
-  return { id, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive, linkStatusAvailable }
+  return { id, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive }
 };
 
 
