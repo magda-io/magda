@@ -84,15 +84,15 @@ object ApiGenerators {
   val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
     .suchThat(validFilter)
   def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
-  def innerRegionQueryGen(implicit config: Config): Gen[Region] = indexedRegionsGen.flatMap(Gen.oneOf(_)).map {
-    case (regionSource, regionObject) => Region(regionJsonToQueryRegion(regionSource, regionObject))
-  }
-  def regionQueryGen(implicit config: Config) = filterValueGen(innerRegionQueryGen)
+  def innerRegionQueryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]): Gen[Region] = Gen.oneOf(regions)
+    .map {
+      case (regionSource, regionObject) => Region(regionJsonToQueryRegion(regionSource, regionObject))
+    }
+  def regionQueryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]) = filterValueGen(innerRegionQueryGen)
 
   def regionJsonToQueryRegion(regionSource: RegionSource, regionObject: JsObject): QueryRegion = QueryRegion(
     regionType = regionSource.name,
-    regionId = regionObject.fields("properties").asJsObject.fields(regionSource.idProperty).asInstanceOf[JsString].value
-  )
+    regionId = regionObject.fields("properties").asJsObject.fields(regionSource.idProperty).asInstanceOf[JsString].value)
 
   def dateFromGen(implicit config: Config) = filterValueGen(periodOfTimeGen.map(_.start.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
   def dateToGen(implicit config: Config) = filterValueGen(periodOfTimeGen.map(_.end.flatMap(_.date)).suchThat(_.isDefined).map(_.get))
@@ -116,7 +116,7 @@ object ApiGenerators {
     (freeTextCount + quoteCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
   }
 
-  def queryGen(implicit config: Config) = (for {
+  def queryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
     publishers <- probablyEmptySet(publisherQueryGen)
@@ -131,10 +131,9 @@ object ApiGenerators {
     dateFrom = dateFrom,
     dateTo = dateTo,
     formats = formats,
-    regions = regions
-  )).suchThat(queryIsSmallEnough)
+    regions = regions)).suchThat(queryIsSmallEnough)
 
-  def exactQueryGen(implicit config: Config) = (for {
+  def exactQueryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
     freeText <- Gen.option(queryTextGen)
     quotes <- probablyEmptySet(queryTextGen)
     publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.map(Specified(_).asInstanceOf[FilterValue[String]]).toSet)
@@ -149,10 +148,9 @@ object ApiGenerators {
     dateFrom = dateFrom,
     dateTo = dateTo,
     formats = formats,
-    regions = regions
-  )).suchThat(queryIsSmallEnough)
+    regions = regions)).suchThat(queryIsSmallEnough)
 
-  def unspecificQueryGen(implicit config: Config) = (for {
+  def unspecificQueryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
     freeText <- noneBiasedOption(queryTextGen)
     quotes <- smallSet(queryTextGen)
     publishers <- smallSet(publisherQueryGen)
@@ -167,8 +165,7 @@ object ApiGenerators {
     dateFrom = dateFrom,
     dateTo = dateTo,
     formats = formats,
-    regions = regions
-  )).flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
+    regions = regions)).flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
     .suchThat(queryIsSmallEnough)
 
   def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>

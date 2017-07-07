@@ -21,14 +21,12 @@ import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
-import au.csiro.data61.magda.indexer.external.ExternalInterface
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import akka.http.scaladsl.Http
 import scala.concurrent.duration._
 import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
-import au.csiro.data61.magda.indexer.crawler.CrawlerImpl
 
 object IndexerApp extends App {
   implicit val config = AppConfig.conf()
@@ -49,11 +47,7 @@ object IndexerApp extends App {
   logger.debug("Starting Crawler")
 
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
-  val crawler = if (config.hasPath("featureFlags.registryOnly") && config.getBoolean("featureFlags.registryOnly")) {
-    new RegistryCrawler(new RegistryExternalInterface(interfaceConfigs("registry")))
-  } else {
-    CrawlerImpl(interfaceConfigs.values.toSeq.map(ExternalInterface(_)))
-  }
+  val crawler = new RegistryCrawler(new RegistryExternalInterface(interfaceConfigs("registry")))
 
   if (config.getBoolean("registry.registerForWebhooks")) {
     val registryConfig = interfaceConfigs("registry")
