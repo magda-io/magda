@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import fetch from 'isomorphic-fetch'
 import VegaLite from 'react-vega-lite';
 import ReactTable from 'react-table';
 import JsonForm from 'react-json';
@@ -7,7 +8,7 @@ import '../UI/ReactTable.css';
 import './DatasetVisualisation.css'
 
 const defaultSpec = {
-  "description": "Example data.",
+  "description": "Example data",
   "mark": "bar",
   "encoding": {
     "x": {"field": "a", "type": "ordinal"},
@@ -19,9 +20,10 @@ class DatasetVisualisation extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {spec: defaultSpec};
+    this.state = {spec: defaultSpec, loading: true, loadDataSuccess: false};
     this.logChange = this.logChange.bind(this);
   }
+
 
   logChange(data){
     // need to validate data
@@ -54,14 +56,13 @@ class DatasetVisualisation extends Component {
     return <div className='dataset-visualization container' >
               <div className='vis'>
                 <div className="row">
-
                   <div className="col-sm-6">
                     <h2>{this.state.spec.description}</h2>
                     <VegaLite spec={this.state.spec} data={barData} />
                   </div>
                   <div className="col-sm-6"><div className='json'>
                     <h2>Customise visualisation</h2>
-                    <JsonForm value={ this.state.spec } onChange={ this.logChange } settings={settings}/>,
+                    <JsonForm value={ this.state.spec } onChange={ this.logChange } settings={settings}/>
                   </div>
                   </div>
                 </div>

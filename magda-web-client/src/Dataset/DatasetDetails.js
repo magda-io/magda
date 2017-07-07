@@ -10,8 +10,6 @@ import renderDistribution from '../UI/Distribution';
 import './RecordDetails.css';
 
 class DatasetDetails extends Component {
-
-
   render(){
     const dataset = this.props.dataset;
     const datasetId = this.props.params.datasetId;
