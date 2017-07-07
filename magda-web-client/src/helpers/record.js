@@ -63,7 +63,10 @@ export type RawDistribution = {
   id: string,
   name: string,
   aspects: {
-    'dcat-distribution-strings': dcatDistributionStrings
+    'dcat-distribution-strings': dcatDistributionStrings,
+    'source-link-status': {
+      status: ?string
+    }
   }
 }
 
@@ -94,7 +97,9 @@ export type ParsedDistribution = {
   downloadURL: ?string,
   accessURL: ?string,
   updatedDate: string,
-  license: string
+  license: string,
+  linkActive:boolean,
+  linkStatusAvailable:boolean
 };
 
 // all aspects become required and must have value
@@ -179,9 +184,12 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const updatedDate = info.modified ? getDateString(info.modified) : 'unknown date';
   const license = info.license || 'License restrictions unknown';
   const description = info.description || 'No description provided';
+  const linkStatus = aspects['source-link-status'] || {};
+  const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
+  const linkActive = linkStatus.status === 'active';
 
 
-  return { id, title, description, format, downloadURL, accessURL, updatedDate, license }
+  return { id, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive }
 };
 
 
@@ -204,7 +212,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const distributions = distribution['distributions'].map(d=> {
       const distributionAspects = d['aspects'];
       const info = distributionAspects['dcat-distribution-strings'] || defaultDistributionAspect['dcat-distribution-strings'];
-      const linkStatus = distributionAspects['source-link-status'] || {};
+      const linkStatus = distributionAspects['source-link-status'] || defaultDistributionAspect['source-link-status'];
       return {
           id: d['id'],
           title: d['name'],
