@@ -157,7 +157,7 @@ Then, create all the pods and services by running:
 kubectl apply -f deploy/kubernetes/local/base
 ```
 
-Once everything starts up, you can access the web front end on http://192.168.99.100:30018.  The IP address may be different on your system.  Get the real IP address by running:
+Once everything starts up, you can access the web front end on http://192.168.99.100:30016.  The IP address may be different on your system.  Get the real IP address by running:
 
 ```bash
 minikube ip
