@@ -174,7 +174,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const id = record ? record['id']: '';
   const title = record ? record['name'] : '';
 
-  const aspects = record ? record['aspects'] : defaultDistributionAspect;
+  const aspects = record ? Object.assign({}, record['aspects'], defaultDistributionAspect) : defaultDistributionAspect;
 
   const info = aspects['dcat-distribution-strings'];
 
@@ -184,7 +184,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const updatedDate = info.modified ? getDateString(info.modified) : 'unknown date';
   const license = info.license || 'License restrictions unknown';
   const description = info.description || 'No description provided';
-  const linkStatus = aspects['source-link-status'] || {};
+  const linkStatus = aspects['source-link-status'];
   const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
   const linkActive = linkStatus.status === 'active';
 
@@ -194,10 +194,10 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
 
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
-  const aspects = dataset ? dataset['aspects'] : defaultDatasetAspects;
+  const aspects = dataset ? Object.assign({}, dataset['aspects'], defaultDatasetAspects) : defaultDatasetAspects;
   const identifier =dataset ? dataset.id : '';
   const datasetInfo = aspects['dcat-dataset-strings'];
-  const distribution = aspects['dataset-distributions'] || defaultDatasetAspects['dataset-distributions'];
+  const distribution = aspects['dataset-distributions'];
   const temporalCoverage = aspects['temporal-coverage'];
   const description = datasetInfo.description || 'No description provided';
   const tags = datasetInfo.keywords || [];
@@ -210,9 +210,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const source: string = aspects['source'] ? aspects['source']['name'] : defaultDatasetAspects['source']['name'];
 
   const distributions = distribution['distributions'].map(d=> {
-      const distributionAspects = d['aspects'];
-      const info = distributionAspects['dcat-distribution-strings'] || defaultDistributionAspect['dcat-distribution-strings'];
-      const linkStatus = distributionAspects['source-link-status'] || defaultDistributionAspect['source-link-status'];
+      const distributionAspects = Object.assign({}, d['aspects'], defaultDistributionAspect);
+      const info = distributionAspects['dcat-distribution-strings'];
+      const linkStatus = distributionAspects['source-link-status'];
       return {
           id: d['id'],
           title: d['name'],
