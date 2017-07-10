@@ -1,5 +1,5 @@
-// @flow 
-import {parsePublisher} from '../helpers/api';
+// @flow
+import {parsePublisher} from '../helpers/publisher';
 
 const initialData = {
     isFetchingPublishers: false,

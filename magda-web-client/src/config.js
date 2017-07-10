@@ -4,7 +4,7 @@ import Format from "./SearchFacets/Format";
 import Region from "./SearchFacets/Region";
 import Temporal from "./SearchFacets/Temporal";
 
-const fallbackApiHost = "http://magda-api-dev.terria.io/";
+const fallbackApiHost = "http://search.data.gov.au/";
 // const apiHost = 'http://minikube.data.gov.au:30016/';
 // const apiHost = 'http://localhost:3016/';
 
@@ -38,8 +38,8 @@ export const config = {
   },
   appTitle: 'Australian open data search',
   featuredDatasets: [
-    "19432f89-dc3a-4ef3-b943-5326ef1dbecc",
-    "bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
+    "not react-document-title",
+    "0ff854cc-a621-4929-89d3-f0370c3dd344"
   ],
   exampleSearch: [
     "Business names as CSV",
