@@ -39,7 +39,7 @@ export const config = {
   appTitle: 'Australian open data search',
   featuredDatasets: [
     "19432f89-dc3a-4ef3-b943-5326ef1dbecc",
-    "0ff854cc-a621-4929-89d3-f0370c3dd344"
+    "bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
   ],
   exampleSearch: [
     "Business names as CSV",

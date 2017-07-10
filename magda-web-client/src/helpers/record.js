@@ -197,9 +197,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
   let error = null;
-  debugger
   if(dataset && !dataset.id){
-    debugger
     error = dataset.message || 'Error occurred';
   }
   const aspects = dataset ? Object.assign({}, defaultDatasetAspects, dataset['aspects']) : defaultDatasetAspects;

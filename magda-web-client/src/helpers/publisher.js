@@ -28,13 +28,13 @@ type PublisherRaw = {
 export function parsePublisher(publisherRaw: PublisherRaw) : Publisher{
     let error = null;
     if(publisherRaw && !publisherRaw.id){
-      error = publisherRaw.message || 'an error occuered';
+      error = publisherRaw.message || 'an error occurred';
     }
     const publisher = {
-        name: publisherRaw.name || '',
+        name: publisherRaw.name,
         description: publisherRaw.aspects['organization-details']['description'] || 'A description of this publisher is not available',
         image_url: publisherRaw.aspects['organization-details']['imageUrl'] || 'http://placehold.it/100x100?text=Image+unavailable',
-        id: publisherRaw.id || '',
+        id: publisherRaw.id,
         error: error
     }
     return publisher
