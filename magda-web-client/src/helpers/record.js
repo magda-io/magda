@@ -176,7 +176,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const id = record ? record['id']: '';
   const title = record ? record['name'] : '';
 
-  const aspects = record ? Object.assign({}, record['aspects'], defaultDistributionAspect) : defaultDistributionAspect;
+  const aspects = record ? Object.assign({}, defaultDistributionAspect, record['aspects']) : defaultDistributionAspect;
 
   const info = aspects['dcat-distribution-strings'];
 
@@ -218,7 +218,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const source: string = aspects['source'] ? aspects['source']['name'] : defaultDatasetAspects['source']['name'];
 
   const distributions = distribution['distributions'].map(d=> {
-      const distributionAspects = Object.assign({}, d['aspects'], defaultDistributionAspect);
+      const distributionAspects = Object.assign({}, defaultDistributionAspect, d['aspects']);
       const info = distributionAspects['dcat-distribution-strings'];
       const linkStatus = distributionAspects['source-link-status'];
       return {
