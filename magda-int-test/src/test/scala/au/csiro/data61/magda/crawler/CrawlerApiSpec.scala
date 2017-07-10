@@ -47,11 +47,13 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
         }
     }
 
+  val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
+
   // Gen these as a tuple so that they're shrunk together instead of separately
   val gen = for {
-    dataSetsInitial <- Generators.listSizeBetween(0, 20, Generators.dataSetGen)
+    dataSetsInitial <- Generators.listSizeBetween(0, 20, Generators.dataSetGen(cachedListCache))
     dataSetsRemaining <- Gen.someOf(dataSetsInitial)
-    dataSetsNew <- Generators.listSizeBetween(0, 20, Generators.dataSetGen)
+    dataSetsNew <- Generators.listSizeBetween(0, 20, Generators.dataSetGen(cachedListCache))
     dataSetsAfter = dataSetsRemaining.toList ++ dataSetsNew
     interfaceConf <- IndexerGenerators.interfaceConfGen
     source = (dataSetsInitial, dataSetsAfter, interfaceConf)
