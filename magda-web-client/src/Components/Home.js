@@ -26,7 +26,7 @@ class Home extends React.Component {
           <div className='col-sm-8'>
             <h2>Featured datasets</h2>
             <div className='white-box'>
-              {this.props.datasets.map(d=><DatasetSummary key={d.identifier} dataset={d}/>)}
+              {this.props.datasets.map((d, i )=><DatasetSummary key={d.identifier || i} dataset={d}/>)}
             </div>
             <h2>News</h2>
             <News isFetching={this.props.isNewsFetching} error={this.props.newsFetchingError} newsItems={this.props.newsItems}/>

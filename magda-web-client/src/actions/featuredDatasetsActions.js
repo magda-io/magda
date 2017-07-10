@@ -31,6 +31,6 @@ export function fetchFeaturedDatasetsFromRegistry(ids: Array<string>):Object{
     }
     dispatch(requestDatasets(ids))
     const fetches = ids.map(id=>fetch(config.registryUrl + `/records/${encodeURIComponent(id)}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`).then(response=>response.json()));
-    Promise.all(fetches).then(jsons=>dispatch(receiveDatasets(jsons)))
+    Promise.all(fetches).then(jsons=>dispatch(receiveDatasets(jsons))).catch(error=>dispatch(requestDatasetsError(error)))
   }
 }

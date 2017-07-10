@@ -114,7 +114,8 @@ export type ParsedDataset = {
   distributions: Array<ParsedDistribution>,
   temporalCoverage: ? TemporalCoverage,
   publisher: Publisher,
-  source: string
+  source: string,
+  error: ?string
 }
 
 const defaultPublisher: Publisher = {
@@ -152,7 +153,8 @@ const defaultDatasetAspects = {
     "url": '',
     "name": '',
     "type": '',
-  }
+  },
+  error: null
 }
 
 
@@ -174,7 +176,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const id = record ? record['id']: '';
   const title = record ? record['name'] : '';
 
-  const aspects = record ? Object.assign({}, record['aspects'], defaultDistributionAspect) : defaultDistributionAspect;
+  const aspects = record ? Object.assign({}, defaultDistributionAspect, record['aspects']) : defaultDistributionAspect;
 
   const info = aspects['dcat-distribution-strings'];
 
@@ -194,7 +196,11 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
 
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
-  const aspects = dataset ? Object.assign({}, dataset['aspects'], defaultDatasetAspects) : defaultDatasetAspects;
+  let error = null;
+  if(dataset && !dataset.id){
+    error = dataset.message || 'Error occurred';
+  }
+  const aspects = dataset ? Object.assign({}, defaultDatasetAspects, dataset['aspects']) : defaultDatasetAspects;
   const identifier =dataset ? dataset.id : '';
   const datasetInfo = aspects['dcat-dataset-strings'];
   const distribution = aspects['dataset-distributions'];
@@ -210,7 +216,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const source: string = aspects['source'] ? aspects['source']['name'] : defaultDatasetAspects['source']['name'];
 
   const distributions = distribution['distributions'].map(d=> {
-      const distributionAspects = Object.assign({}, d['aspects'], defaultDistributionAspect);
+      const distributionAspects = Object.assign({}, defaultDistributionAspect, d['aspects']);
       const info = distributionAspects['dcat-distribution-strings'];
       const linkStatus = distributionAspects['source-link-status'];
       return {
@@ -227,6 +233,6 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
       }
   });
   return {
-      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher
+      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher, error
   }
 };
