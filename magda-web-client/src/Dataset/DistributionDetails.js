@@ -2,14 +2,19 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import TemporalAspectViewer from '../UI/TemporalAspectViewer';
-import SpatialAspectViewer from '../UI/SpatialAspectViewer';
 import OverviewBox from '../UI/OverviewBox';
 import Social from '../Components/Social';
-import { Link } from 'react-router';
 import './RecordDetails.css';
 
 
 class DistributionDetails extends Component {
+
+  renderLinkText(distribution){
+    const downloadText = distribution.downloadURL ? `This dataset can be downloaded from: \n\n ${distribution.downloadURL}` : '';
+    const accessText = distribution.accessUrl ? `This dataset can be accessed from: \n\n ${distribution.accessUrl}` : '';
+    return downloadText + accessText;
+  }
+
   render(){
     const distribution =this.props.distribution;
     return <div className='distribution-details container' >
@@ -18,8 +23,11 @@ class DistributionDetails extends Component {
                   <div className='distribution-details-overview'>
                     <h3>Overview</h3>
                     <OverviewBox content={distribution.description}/>
-                    <h3>Download</h3>
-                    <OverviewBox content={`This dataset can be downloaded from: \n\n ${distribution.downloadURL}`}/>
+                    {this.renderLinkText(distribution).length > 0 &&
+                      (<div> <h3>Download</h3>
+                       <OverviewBox content={this.renderLinkText(distribution)}/>
+                      </div>)
+                    }
                   </div>
                   <div className='distribution-details-temporal-coverage'>
                       <h3>Temporal coverage</h3>

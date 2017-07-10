@@ -3,9 +3,9 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Action, FacetSearchJson } from '../types';
+import type { FacetAction, FacetSearchJson } from '../types';
 
-export function requestFormats(generalQuery: string, facetQuery: string):Action {
+export function requestFormats(generalQuery: string, facetQuery: string):FacetAction {
   return {
     type: actionTypes.FACET_REQUEST_FORMATS,
     generalQuery,
@@ -13,7 +13,7 @@ export function requestFormats(generalQuery: string, facetQuery: string):Action 
   }
 }
 
-export function receiveFormats(generalQuery: string, facetQuery: string, json: Object): Action {
+export function receiveFormats(generalQuery: string, facetQuery: string, json: Object): FacetAction {
   return {
     type: actionTypes.FACET_RECEIVE_FORMATS,
     json: json,

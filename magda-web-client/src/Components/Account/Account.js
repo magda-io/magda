@@ -2,7 +2,6 @@ import React from "react";
 import "./Account.css";
 import Login from "./Login";
 import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
 import parseQueryString from "../../helpers/parseQueryString";
 
 class Account extends React.Component {

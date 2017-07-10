@@ -1,6 +1,5 @@
 //  @flow
 import React, { Component } from 'react';
-import defined from '../helpers/defined';
 import MarkdownViewer from '../UI/MarkdownViewer';
 // import Star from '../UI/Star';
 import ToggleList from '../UI/ToggleList';
@@ -40,14 +39,10 @@ export default class DatasetSummary extends Component {
 
   renderLinks(){
     return <div className='dataset-summary__more-info'>
-              <div className='dataset-summary__source clearfix'>
-              <h5 className='dataset-summary__sub-heading'>Source</h5>
-                  {this.props.dataset.catalog}
-              </div>
               <div className='dataset-summary__content clearfix'>
                 <h5 className='dataset-summary__sub-heading'>Contents</h5>
                 <ToggleList list={this.props.dataset.distributions}
-                            renderFunction={item=>renderDistribution(item.format, item.identifier, item.title, item.license ? item.license.name : 'License restrictions unknown', this.props.dataset.identifier)}
+                            renderFunction={item=>renderDistribution(item.format, item.identifier,item.title, item.license ? item.license.name : 'License restrictions unknown', this.props.dataset.identifier,item.linkStatusAvailable, item.linkActive)}
                             className={''}
                             defaultLength={3}
                             getKey={item=>item.downloadURL}/>

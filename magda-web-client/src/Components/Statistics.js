@@ -14,7 +14,7 @@ function renderStats(error: ?number, loading: boolean, value: ?number){
   } else if(loading){
     return <i className="fa fa-spinner fa-spin fa-fw"></i>
   }
-    return value.toLocaleString()
+    return value && value.toLocaleString()
 }
 
 

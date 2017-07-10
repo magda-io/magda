@@ -1,15 +1,16 @@
 // @flow
 import React from 'react';
 import { connect } from 'react-redux';
+import ReactDocumentTitle from 'react-document-title';
 import { bindActionCreators } from 'redux';
 import { fetchDatasetFromRegistry, fetchDistributionFromRegistry } from '../actions/recordActions';
 import Tabs from '../UI/Tabs';
 import {config} from '../config';
 import { Link } from 'react-router';
 import ErrorHandler from '../Components/ErrorHandler';
-import ReactDocumentTitle from 'react-document-title';
 import CustomIcons from '../UI/CustomIcons';
 import type {StateRecord } from '../types';
+import type { ParsedDataset, ParsedDistribution } from '../helpers/record';
 
 class RecordHandler extends React.Component {
   props: {
@@ -17,7 +18,13 @@ class RecordHandler extends React.Component {
     datasetFetchError: number,
     children: React$Element<any>,
     fetchDataset: Function,
-    fetchDistribution: Function
+    fetchDistribution: Function,
+    dataset: ParsedDataset,
+    distribution: ParsedDistribution,
+    params: {
+      datasetId: string,
+      distributionId? : string
+    }
   }
   componentWillMount(){
     this.props.fetchDataset(this.props.params.datasetId);
@@ -34,7 +41,7 @@ class RecordHandler extends React.Component {
       }
   }
 
-  renderBreadCrumbs(dataset, distribution){
+  renderBreadCrumbs(dataset: ParsedDataset, distribution? :ParsedDistribution){
     return (
     <ul className='breadcrumb'>
       <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
@@ -47,6 +54,7 @@ class RecordHandler extends React.Component {
     const publisherName = this.props.dataset.publisher.name;
     const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
     const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
+    const distributionIdAsUrl = this.props.params.distributionId ? encodeURIComponent(this.props.params.distributionId) : '';
      if (this.props.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
          return <ErrorHandler errorCode={this.props.distributionFetchError}/>;
@@ -54,7 +62,7 @@ class RecordHandler extends React.Component {
        const tabList = [
          {id: 'details', name: 'Details', isActive: true},
          {id: 'map', name: 'Maps', isActive: this.props.distribution.format && (this.props.distribution.format.toLowerCase() === 'wms' || this.props.distribution.format.toLowerCase() === 'wfs')},
-         {id: 'chart', name: 'Chart', isActive: this.props.distribution.format && (this.props.distribution.format.toLowerCase() === 'csv' || this.props.distribution.format.toLowerCase() === 'json')}
+         {id: 'chart', name: 'Chart', isActive: false}
        ]
       return (
         <div>
@@ -71,13 +79,13 @@ class RecordHandler extends React.Component {
                 </div>
               </div>
             </div>
-            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}/distribution/${encodeURIComponent(this.props.params.distributionId)}`}/>
+            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}/distribution/${distributionIdAsUrl}`}/>
             <div className='tab-content'>{this.props.children}</div>
             </div>
       )
     } else if(this.props.params.datasetId && !this.props.datasetIsFetching){
       if(this.props.datasetFetchError){
-        return <ErrorHandler errorCode={this.props.error}/>;
+        return <ErrorHandler errorCode={this.props.datasetFetchError}/>;
       }
       const datasetTabs = [
         {id: 'details', name: 'Details', isActive: true},
@@ -125,7 +133,7 @@ function mapStateToProps(state: {record: StateRecord}) {
   const datasetIsFetching =record.datasetIsFetching;
   const distributionIsFetching = record.distributionIsFetching;
   const datasetFetchError = record.datasetFetchError;
-  const distributionFetchError= record.distributionFetchError
+  const distributionFetchError= record.distributionFetchError;
 
   return {
     dataset, distribution, datasetIsFetching, distributionIsFetching, distributionFetchError, datasetFetchError

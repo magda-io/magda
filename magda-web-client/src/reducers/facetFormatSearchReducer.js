@@ -1,5 +1,5 @@
-// @flow 
-import type { Action, FacetSearchState } from '../types';
+// @flow
+import type { FacetAction, FacetSearchState } from '../types';
 
 const initialData = {
   isFetching: false,
@@ -8,7 +8,7 @@ const initialData = {
   facetQuery: ''
 }
 
-const facetFormatSearch = (state: FacetSearchState=initialData, action: Action) => {
+const facetFormatSearch = (state: FacetSearchState=initialData, action: FacetAction) => {
   switch (action.type) {
     case 'FACET_REQUEST_FORMATS':
       return Object.assign({}, state, {
