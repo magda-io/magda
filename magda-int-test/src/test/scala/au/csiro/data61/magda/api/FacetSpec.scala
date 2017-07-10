@@ -267,7 +267,6 @@ class FacetSpec extends BaseSearchApiSpec {
             val result = responseAs[SearchResult]
             val groupedResult = groupResult(dataSets)
 
-            println(groupedResult)
             whenever(facetSize >= groupedResult.size + queryCounter(result.query)) {
               val facet = getFacet(result)
 
@@ -411,6 +410,11 @@ class FacetSpec extends BaseSearchApiSpec {
         }
 
         it("for exact match facets") {
+          implicit def indexShrinker(implicit a: Shrink[(String, List[DataSet], Route)], b: Shrink[Int], c: Shrink[(String, Query)], d: Shrink[Seq[Agent]]) = Shrink[((String, List[DataSet], Route), Int, (String, Query), Seq[Agent])] {
+            case _ =>
+              Stream.empty
+          }
+
           val exactMatchMerges = for {
             tuple <- mediumIndexGen
             (indexName, dataSets, routes) = tuple
@@ -434,12 +438,13 @@ class FacetSpec extends BaseSearchApiSpec {
 
                 val exactMatchFacets = facet.options.filter(option => option.matched && option.hitCount == 0)
 
-                val publisherLookup = publishers
+                val publisherLookup = dataSets
+                  .flatMap(_.publisher)
                   .groupBy(_.name.get.toLowerCase)
 
                 whenever(exactMatchFacets.size > 0) {
-                  facet.options.filterNot(_.value == "Unspecified").foreach { filterValue =>
-                    withClue(s"with publishers ${publisherLookup.keys} and facet ${filterValue.toString}") {
+                  exactMatchFacets.foreach { filterValue =>
+                    withClue(s"with publishers ${publisherLookup.map(x => (x._1, x._2.map(_.identifier)))} and facet ${filterValue.toString}") {
                       filterValue.identifier should not be (None)
                       publisherLookup.contains(filterValue.value.toLowerCase) should be(true)
                       val matchedPublishers = publisherLookup(filterValue.value.toLowerCase)
@@ -467,7 +472,6 @@ class FacetSpec extends BaseSearchApiSpec {
     describe("year") {
       describe("should generate non-overlapping facets") {
         checkFacetsBoth(facetSizeGen = Gen.choose(2, 20)) { (dataSets, facetSize) ⇒
-          println(facetSize)
           val result = responseAs[SearchResult]
           val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
 
@@ -477,8 +481,6 @@ class FacetSpec extends BaseSearchApiSpec {
             facet1 ← options
             facet2 ← options.filterNot(_ == facet1)
           } yield ((facet1.lowerBound.get, facet1.upperBound.get), (facet2.lowerBound.get, facet2.upperBound.get))
-
-          println(options)
 
           whenever(!allFacetPairings.isEmpty) {
             allFacetPairings.foreach { pair ⇒

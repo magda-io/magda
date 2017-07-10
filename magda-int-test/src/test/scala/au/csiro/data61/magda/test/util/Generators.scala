@@ -71,7 +71,7 @@ object Generators {
   val filterWordRegex = s"(?i)(${filterWords.mkString("|")})(\\s|$$)"
   def removeFilterWords(s: String) = s.replaceAll(filterWordRegex, " ").trim
 
-  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (1, Gen.oneOf(stopWords)))
+  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (2, Gen.oneOf(stopWords)))
 
   val textGen = Gen.frequency((15, nonEmptyTextWithStopWordsGen), (1, Gen.const("")))
 
@@ -274,12 +274,8 @@ object Generators {
   def descWordGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("descWord", nonEmptyTextGen.map(_.take(50).mkString.trim), 200)(inputCache)
   def publisherAgentGen(inputCache: mutable.Map[String, List[_]]) =
     cachedListGen("publisherAgent",
-      agentGen(
-        listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(
-          removeFilterWords).map(
-            _.take(50).mkString.trim))
-          .map(
-            _.mkString(" "))), 50)(inputCache)
+      agentGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(_.take(50).mkString.trim)).map(_.mkString(" "))),
+      50)(inputCache)
   def publisherGen(inputCache: mutable.Map[String, List[_]]) = publisherAgentGen(inputCache).map(_.filter(_.name.isDefined).map(_.name.get))
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
