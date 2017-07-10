@@ -124,6 +124,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
       def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
         .flatMap(MagdaMatchers.tokenize)
+        .view
         .map(_.trim)
         .filterNot(_.contains("."))
         .filterNot(_.contains("'"))
@@ -156,7 +157,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def doTest(innerTermExtractor: DataSet => Seq[String]) = {
       def getIndividualTerms(terms: Seq[String]) = terms.flatMap(MagdaMatchers.tokenize)
 
-      val indexAndTermsGen = indexGen.flatMap {
+      val indexAndTermsGen = smallIndexGen.flatMap {
         case (indexName, dataSetsRaw, routes) ⇒
           val indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ innerTermExtractor(dataSet).isEmpty)
 
