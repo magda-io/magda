@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.test.api
 
 import java.net.URL
+import scala.collection.mutable
 import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -65,7 +66,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
       client.execute(
         IndexDefinition.regions.definition(DefaultIndices, config)
-      ).await
+      ).await(90 seconds)
 
       val fakeRegionLoader = new RegionLoader {
         override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => BaseApiSpec.indexedRegions.toIterator)
@@ -90,7 +91,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     blockUntil("Expected cluster to have green status") { () =>
       val status = client.execute {
         clusterHealth()
-      }.await.getStatus
+      }.await(90 seconds).getStatus
       status != ClusterHealthStatus.RED
     }
   }
@@ -140,5 +141,5 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 }
 
 object BaseApiSpec {
-  val indexedRegions = Generators.indexedRegionsGen.retryUntil(_ => true).sample.get
+  val indexedRegions = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get
 }

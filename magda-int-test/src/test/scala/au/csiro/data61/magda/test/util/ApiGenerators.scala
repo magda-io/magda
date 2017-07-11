@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.test.util
 
 import java.time.Duration
+import scala.collection.mutable
 import java.time.temporal.ChronoUnit
 
 import org.scalacheck.{ Gen, Shrink }
@@ -41,26 +42,75 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.test.util.Generators._
 
 object ApiGenerators {
-  val queryTextGen = (for {
-    allDescWords <- descWordGen
-    safeDescWords = allDescWords.filterNot(x => Generators.filterWords.contains(x.toLowerCase))
-    someDescWords <- listSizeBetween(1, 5, Gen.oneOf(allDescWords))
-    concated = someDescWords.mkString(" ")
-  } yield concated).suchThat(validFilter)
+  def queryTextGen(dataSets: List[DataSet]) = {
+    val allDescWords = dataSets.flatMap(_.description.toSeq.flatMap(_.split(" ")))
+
+    allDescWords match {
+      case Nil => Gen.const("")
+      case _ =>
+        val safeDescWords = allDescWords.filterNot(x => Generators.filterWords.contains(x.toLowerCase))
+        val result = (for {
+          someDescWords <- listSizeBetween(1, 5, Gen.oneOf(allDescWords))
+          concated = someDescWords.mkString(" ")
+        } yield concated).suchThat(validFilter)
+
+        result
+    }
+  }
+  def quoteTextGen(dataSets: List[DataSet]) = {
+    val dataSetsWithDesc = dataSets.filter(_.description.isDefined)
+
+    val wordsGen = dataSetsWithDesc match {
+      case Nil => Gen.const(List[String]())
+      case _ =>
+        for {
+          dataSet <- Gen.oneOf(dataSetsWithDesc)
+          description = dataSet.description.get
+          words = description.split(" ").toList
+        } yield words
+    }
+
+    wordsGen.flatMap { words =>
+      words match {
+        case Nil => Gen.const("")
+        case _ => for {
+          subWords <- Generators.subListGen(words)
+        } yield subWords.mkString(" ")
+      }
+    }
+  }
   def unspecifiedGen(implicit config: Config) = Gen.const(Unspecified())
   def filterValueGen[T](innerGen: Gen[T])(implicit config: Config): Gen[FilterValue[T]] = Gen.frequency((3, innerGen.map(Specified.apply)), (1, unspecifiedGen))
 
   def set[T](gen: Gen[T]): Gen[Set[T]] = Gen.containerOf[Set, T](gen)
   def probablyEmptySet[T](gen: Gen[T]): Gen[Set[T]] = Gen.frequency((1, smallSet(gen)), (3, Gen.const(Set())))
 
-  val partialFormatGen = formatGen.map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
-  val formatQueryGenInner = Gen.frequency((5, formatGen.map(_._2)), (3, partialFormatGen), (1, nonEmptyTextGen))
-    .suchThat(validFilter)
-  def formatQueryGen(implicit config: Config) = filterValueGen(formatQueryGenInner)
+  def specifiedPublisherQueryGen(dataSets: List[DataSet]) = {
+    dataSets.flatMap(_.publisher.flatMap(_.name)) match {
+      case Nil =>
+        nonEmptyTextGen.suchThat(validFilter)
+      case publishers =>
+        val publisherPicker = Gen.oneOf(publishers)
 
-  val partialPublisherGen = publisherGen.filter(!_.isEmpty).flatMap(Gen.oneOf(_)).flatMap { publisher =>
-    Gen.choose(publisher.length / 2, publisher.length).map(length => publisher.substring(Math.min(publisher.length - 1, length)).trim)
+        Gen.frequency((5, publisherPicker), (3, publisherPicker.flatMap(partialStringGen)), (1, nonEmptyTextGen))
+          .suchThat(validFilter)
+    }
   }
+  def publisherQueryGen(dataSets: List[DataSet])(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen(dataSets))
+
+  def partialFormatGen(inputCache: mutable.Map[String, List[_]]) = formatGen(inputCache).map(_._2).flatMap(format => Gen.choose(format.length / 2, format.length).map(length => format.substring(Math.min(format.length - 1, length))))
+  def formatQueryGenInner(dataSets: List[DataSet]) = {
+    dataSets.flatMap(_.distributions.flatMap(_.format)) match {
+      case Nil =>
+        nonEmptyTextGen.suchThat(validFilter)
+      case formats =>
+        val formatPicker = Gen.oneOf(formats)
+
+        Gen.frequency((5, formatPicker), (3, formatPicker.flatMap(partialStringGen)), (1, nonEmptyTextGen))
+          .suchThat(validFilter)
+    }
+  }
+  def formatQueryGen(dataSets: List[DataSet])(implicit config: Config) = filterValueGen(formatQueryGenInner(dataSets))
 
   def partialStringGen(string: String): Gen[String] = {
     val split = string.split("[\\s-]+")
@@ -81,9 +131,6 @@ object ApiGenerators {
     word.exists(_.isLetterOrDigit) && // GOtta have at least one letter
     word.length > 1
 
-  val specifiedPublisherQueryGen = Gen.frequency((5, publisherGen.flatMap(Gen.oneOf(_))), (3, partialPublisherGen), (1, nonEmptyTextGen))
-    .suchThat(validFilter)
-  def publisherQueryGen(implicit config: Config): Gen[FilterValue[String]] = filterValueGen(specifiedPublisherQueryGen)
   def innerRegionQueryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]): Gen[Region] = Gen.oneOf(regions)
     .map {
       case (regionSource, regionObject) => Region(regionJsonToQueryRegion(regionSource, regionObject))
@@ -116,13 +163,13 @@ object ApiGenerators {
     (freeTextCount + quoteCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
   }
 
-  def queryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
-    freeText <- Gen.option(queryTextGen)
-    quotes <- probablyEmptySet(queryTextGen)
-    publishers <- probablyEmptySet(publisherQueryGen)
-    dateFrom <- Gen.option(dateToGen)
-    dateTo <- Gen.option(dateFromGen)
-    formats <- probablyEmptySet(formatQueryGen)
+  def queryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
+    freeText <- Generators.noneBiasedOption(queryTextGen(dataSets))
+    quotes <- probablyEmptySet(quoteTextGen(dataSets))
+    publishers <- probablyEmptySet(publisherQueryGen(dataSets))
+    dateFrom <- Generators.noneBiasedOption(dateToGen)
+    dateTo <- Generators.noneBiasedOption(dateFromGen)
+    formats <- probablyEmptySet(formatQueryGen(dataSets))
     regions <- probablyEmptySet(regionQueryGen)
   } yield Query(
     freeText = freeText,
@@ -131,41 +178,13 @@ object ApiGenerators {
     dateFrom = dateFrom,
     dateTo = dateTo,
     formats = formats,
-    regions = regions)).suchThat(queryIsSmallEnough)
+    regions = regions)).suchThat(query => queryIsSmallEnough(query) && query != Query())
 
-  def exactQueryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
-    freeText <- Gen.option(queryTextGen)
-    quotes <- probablyEmptySet(queryTextGen)
-    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.map(Specified(_).asInstanceOf[FilterValue[String]]).toSet)
-    dateFrom <- Gen.option(dateFromGen)
-    dateTo <- Gen.option(dateToGen)
-    formats <- probablyEmptySet(formatGen.map(formatTuple => Specified(formatTuple._2).asInstanceOf[FilterValue[String]]))
-    regions <- probablyEmptySet(regionQueryGen)
+  def exactQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = queryGen(dataSets)
+  def unspecificQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
+    freeText <- queryTextGen(dataSets)
   } yield Query(
-    freeText = freeText,
-    quotes = quotes,
-    publishers = publishers,
-    dateFrom = dateFrom,
-    dateTo = dateTo,
-    formats = formats,
-    regions = regions)).suchThat(queryIsSmallEnough)
-
-  def unspecificQueryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
-    freeText <- noneBiasedOption(queryTextGen)
-    quotes <- smallSet(queryTextGen)
-    publishers <- smallSet(publisherQueryGen)
-    dateFrom <- noneBiasedOption(dateFromGen)
-    dateTo <- noneBiasedOption(dateToGen)
-    formats <- smallSet(formatQueryGen)
-    regions <- smallSet(regionQueryGen)
-  } yield Query(
-    freeText = freeText,
-    quotes = quotes,
-    publishers = publishers,
-    dateFrom = dateFrom,
-    dateTo = dateTo,
-    formats = formats,
-    regions = regions)).flatMap(query => if (query.equals(Query())) for { freeText <- queryTextGen } yield Query(Some(freeText)) else Gen.const(query))
+    freeText = Some(freeText)))
     .suchThat(queryIsSmallEnough)
 
   def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>

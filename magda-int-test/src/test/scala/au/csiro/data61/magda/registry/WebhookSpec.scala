@@ -36,8 +36,9 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
 
   describe("records.changed") {
     it("should index new datasets") {
+      val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
       try {
-        val dataSetsGen = Generators.listSizeBetween(0, 20, Generators.dataSetGen)
+        val dataSetsGen = Generators.listSizeBetween(0, 20, Generators.dataSetGen(cachedListCache))
         val dataSetsBatchesGen = Generators.listSizeBetween(0, 3, dataSetsGen)
 
         forAll(dataSetsBatchesGen) { dataSetsBatches =>
@@ -60,9 +61,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
               lastEventId = 104856,
               events = None, // Not needed yet - soon?
               records = Some(dataSets.map(dataSetToRecord)),
-              aspectDefinitions = None
-            )
-          )
+              aspectDefinitions = None))
 
           val posts = payloads.map { payload =>
             new RequestBuilder(POST).apply("/", payload)
@@ -91,17 +90,14 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
                 Agent(
                   identifier = publisher.identifier,
                   name = publisher.name,
-                  imageUrl = publisher.imageUrl
-                )
-              ),
+                  imageUrl = publisher.imageUrl)),
 
               distributions = dataSet.distributions.map(distribution => distribution.copy(
                 // Distribution only takes into account the name
                 license = distribution.license.flatMap(_.name).map(name => License(Some(name))),
 
                 // Code derives media type from the format rather than reading it directly.
-                mediaType = None
-              )),
+                mediaType = None)),
 
               source = None,
 
@@ -125,8 +121,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
                   case other                    => Some(other)
                 }
                 case other => other
-              }
-            ))
+              }))
 
             val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
               // We don't care about this. 
@@ -135,9 +130,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
 
               distributions = dataSet.distributions.map(distribution => distribution.copy(
                 // This will be derived from the format so might not match the input 
-                mediaType = None
-              ))
-            ))
+                mediaType = None))))
 
             withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
               cleanedOutputDataSets should equal(cleanedInputDataSets)
@@ -179,8 +172,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
             dataSet.copy(
               distributions = Seq(),
               publisher = None,
-              accrualPeriodicity = None
-            ).toJson.asJsObject, Map(
+              accrualPeriodicity = None).toJson.asJsObject, Map(
               "accrualPeriodicity" -> dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => duration.get(ChronoUnit.SECONDS) * 1000 + " ms").toJson,
               "contactPoint" -> dataSet.contactPoint.flatMap(_.name).map(_.toJson).getOrElse(JsNull),
               "temporal" -> dataSet.temporal.map {
@@ -188,12 +180,9 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
                 case PeriodOfTime(start, end) =>
                   removeNulls(JsObject(
                     "start" -> start.map(_.text).toJson,
-                    "end" -> end.map(_.text).toJson
-                  ))
+                    "end" -> end.map(_.text).toJson))
               }.getOrElse(JsNull),
-              "spatial" -> dataSet.spatial.map(_.text).toJson
-            )
-          ),
+              "spatial" -> dataSet.spatial.map(_.text).toJson)),
           "dataset-distributions" -> JsObject(
             "distributions" -> dataSet.distributions.map(dist =>
               JsObject(
@@ -202,15 +191,9 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
                 "aspects" -> JsObject(
                   "dcat-distribution-strings" ->
                     modifyJson(dist.toJson.asJsObject, Map(
-                      "license" -> dist.license.flatMap(_.name).map(_.toJson).getOrElse(JsNull)
-                    ))
-                )
-              )
-            ).toJson
-          ),
+                      "license" -> dist.license.flatMap(_.name).map(_.toJson).getOrElse(JsNull)))))).toJson),
           "source" -> JsObject(
-            "name" -> dataSet.catalog.toJson
-          ),
+            "name" -> dataSet.catalog.toJson),
           "dataset-publisher" -> dataSet.publisher.map(publisher => JsObject(
             "publisher" -> JsObject(
               "id" -> publisher.identifier.toJson,
@@ -218,12 +201,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
               "aspects" -> JsObject(
                 "organization-details" -> removeNulls(JsObject(
                   "title" -> publisher.name.toJson,
-                  "imageUrl" -> publisher.imageUrl.toJson
-                ))
-              )
-            )
-          )).toJson
-        ).filter { case (_, value) => value.isInstanceOf[JsObject] }
+                  "imageUrl" -> publisher.imageUrl.toJson)))))).toJson).filter { case (_, value) => value.isInstanceOf[JsObject] }
           .asInstanceOf[Map[String, JsObject]]
 
         val temporal = dataSet.temporal
@@ -235,18 +213,14 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
                 "intervals" -> Seq(
                   removeNulls(JsObject(
                     "start" -> from.toJson,
-                    "end" -> to.toJson
-                  ))
-                ).toJson
-              ))
+                    "end" -> to.toJson))).toJson))
           }.map(_.toJson.asJsObject)
 
         temporal match {
           case Some(innerTemporal) => aspects + (("temporal-coverage", innerTemporal))
           case None                => aspects
         }
-      }
-    )
+      })
 
     record
   }
