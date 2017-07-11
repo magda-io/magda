@@ -55,6 +55,9 @@ export default class DatasetSummary extends Component {
     const publisher = dataset.publisher && dataset.publisher.name;
     const source = this.props.dataset.catalog;
 
+     if(dataset.error){
+       return <div className='error dataset-summary'><div className='dataset-summary__body'>{dataset.error}</div></div>
+     }
     return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
                 <div className='dataset-summary__header'>
                   <div className='dataset-summary__header-top clearfix'>

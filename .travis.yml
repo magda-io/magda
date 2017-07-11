@@ -1,7 +1,6 @@
 dist: trusty
 sudo: true
 language: scala
-group: deprecated-2017Q2
 scala:
   - 2.11.8
 jdk:

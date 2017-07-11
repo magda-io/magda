@@ -1,6 +1,7 @@
 // @flow
-import {parsePublisher} from '../helpers/api';
-import type {Publisher, FeaturedAction} from  '../types';
+import {parsePublisher} from '../helpers/publisher';
+import type {FeaturedAction} from  '../types';
+import type {Publisher} from  '../helpers/publisher';
 
 type FeaturedPublisher = {
   publishers: Array<Publisher>,

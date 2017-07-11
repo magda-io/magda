@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.api
 
 import java.net.URL
+import org.scalacheck.Arbitrary._
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Consumer
@@ -25,6 +26,7 @@ import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
 import com.sksamuel.elastic4s.Indexes
+import scala.collection.mutable
 
 trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
   val INSERTION_WAIT_TIME = 90 seconds
@@ -54,58 +56,76 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
       }
   }
 
-  def indexGen: Gen[(String, List[DataSet], Route)] =
-    Gen.delay {
-      Gen.size.flatMap { size ⇒
-        genIndexForSize(size)
-      }
-    }
+  //  def indexGen: Gen[(String, List[DataSet], Route)] =
+  //    Gen.delay {
+  //      Gen.size.flatMap { size ⇒
+  //        genIndexForSize(size)
+  //      }
+  //    }
 
   def emptyIndexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
       genIndexForSize(0)
     }
 
+  //  def smallIndexGen: Gen[(String, List[DataSet], Route)] =
+  //    Gen.delay {
+  //      Gen.size.flatMap { size ⇒
+  //        genIndexForSize(Math.round(Math.sqrt(size.toDouble).toFloat))
+  //      }
+  //    }
+
+  def indexGen: Gen[(String, List[DataSet], Route)] =
+    Gen.delay {
+      Gen.choose(50, 60).flatMap { size =>
+        genIndexForSize(size)
+      }
+    }
   def smallIndexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
-      Gen.size.flatMap { size ⇒
-        genIndexForSize(Math.round(Math.sqrt(size.toDouble).toFloat))
+      Gen.choose(0, 10).flatMap { size =>
+        genIndexForSize(size)
       }
     }
+  def mediumIndexGen: Gen[(String, List[DataSet], Route)] = indexGen
+//    Gen.delay {
+//      Gen.choose(45, 55).flatMap { size =>
+//        genIndexForSize(size)
+//      }
+//    }
 
-  def mediumIndexGen: Gen[(String, List[DataSet], Route)] =
-    Gen.delay {
-      Gen.size.flatMap { size ⇒
-        genIndexForSize(Math.round(Math.sqrt(size.toDouble).toFloat) * 5)
-      }
+  def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
+    val size = rawSize % 100
+
+    getFromIndexCache(size) match {
+      case (cacheKey, None) ⇒
+        val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
+
+        val future = Future {
+          val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
+          putDataSetsInIndex(dataSets)
+        }
+
+        BaseSearchApiSpec.genCache.put(cacheKey, future)
+        logger.debug("Cache miss for {}", cacheKey)
+
+        future.await(INSERTION_WAIT_TIME)
+      case (cacheKey, Some(cachedValue)) ⇒
+        logger.debug("Cache hit for {}", cacheKey)
+
+        val value = cachedValue.await(INSERTION_WAIT_TIME)
+
+        value
     }
-
-  def genIndexForSize(size: Int): (String, List[DataSet], Route) = {
-    //    getFromIndexCache(size) match {
-    //      case (cacheKey, None) ⇒
-    val future = Future {
-      val dataSets = Gen.listOfN(size, Generators.dataSetGen).retryUntil(_ => true).sample.get
-      putDataSetsInIndex(dataSets)
-    }
-
-    //        BaseSearchApiSpec.genCache.put(cacheKey, future)
-//    logger.debug("Cache miss for {}", cacheKey)
-
-    future.await(INSERTION_WAIT_TIME)
-    //      case (cacheKey, Some(cachedValue)) ⇒
-    //        logger.debug("Cache hit for {}", cacheKey)
-    //
-    //        val value = cachedValue.await(INSERTION_WAIT_TIME)
-    //
-    //        value
   }
 
   def getFromIndexCache(size: Int): (Int, Option[Future[(String, List[DataSet], Route)]]) = {
-    val cacheKey = if (size < 10) size
-    else if (size < 50) size - size % 5
-    else if (size < 100) size - size % 10
-    else size - size % 25
-    //    val cacheKey = size
+    //    val cacheKey = if (size < 20) size
+    //    else if (size < 50) size - size % 3
+    //    else if (size < 100) size - size % 4
+    //    else size - size % 25
+    val cacheKey = size
+    logger.debug(cacheKey.toString)
     (cacheKey, Option(BaseSearchApiSpec.genCache.get(cacheKey)))
   }
 
@@ -138,7 +158,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
       new Consumer[String] {
         override def accept(indexName: String) = {
           logger.debug(s"Deleting index $indexName")
-          client.execute(ElasticDsl.deleteIndex(indexName)).await()
+          client.execute(ElasticDsl.deleteIndex(indexName)).await(INSERTION_WAIT_TIME)
           cleanUpQueue.remove()
         }
       })
