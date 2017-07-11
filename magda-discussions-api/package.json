@@ -1,7 +1,7 @@
 {
   "name": "@magda/discussions-api",
   "description": "MAGDA Discussions API",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "license": "Apache-2.0",
   "scripts": {
     "build": "npm run compile",
@@ -13,8 +13,8 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
-    "@magda/auth-api": "^0.0.27",
-    "@magda/typescript-common": "^0.0.27",
+    "@magda/auth-api": "^0.0.28-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.28-SNAPSHOT",
     "body-parser": "^1.13.2",
     "config": "^1.26.1",
     "express": "^4.13.1",
@@ -25,7 +25,7 @@
     "tsmonad": "^0.7.2"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.27",
+    "@magda/scripts": "^0.0.28-SNAPSHOT",
     "@types/config": "0.0.32",
     "@types/express": "^4.0.35",
     "@types/lodash": "^4.14.64",

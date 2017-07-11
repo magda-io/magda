@@ -1,6 +1,6 @@
 {
   "name": "@magda/scala-common",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "Common Scala code shared between components.",
   "scripts": {
     "build": "npm run compile",

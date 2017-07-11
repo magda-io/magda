@@ -1,6 +1,6 @@
 {
   "name": "@magda/deploy",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "MAGDA deployment configuration.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,7 +12,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@magda/scripts": "^0.0.27",
+    "@magda/scripts": "^0.0.28-SNAPSHOT",
     "fs-extra": "^2.1.2",
     "klaw-sync": "^2.1.0",
     "tmp": "0.0.31",

@@ -1,6 +1,6 @@
 {
   "name": "@magda/indexer",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "Indexes the registry for searching.",
   "scripts": {
     "build": "npm run compile",
