@@ -283,7 +283,7 @@ object Generators {
     MediaTypes.`text/csv`,
     MediaTypes.`application/json`,
     MediaTypes.`application/octet-stream`))
-  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" "))
+  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" ")).suchThat(!_.trim.isEmpty())
   def randomFormatGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("randomFormat", formatNameGen, 5)(inputCache)
 
   def textGen(inner: Gen[List[String]]) = inner
