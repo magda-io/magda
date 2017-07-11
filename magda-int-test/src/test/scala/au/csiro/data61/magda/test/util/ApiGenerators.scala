@@ -54,8 +54,6 @@ object ApiGenerators {
           concated = someDescWords.mkString(" ")
         } yield concated).suchThat(validFilter)
 
-        //        println(result)
-
         result
     }
   }
@@ -183,42 +181,10 @@ object ApiGenerators {
     regions = regions)).suchThat(query => queryIsSmallEnough(query) && query != Query())
 
   def exactQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = queryGen(dataSets)
-  //  def unspecificQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = queryGen(dataSets)
-
-  //  def exactQueryGen(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
-  //    freeText <- Gen.option(queryTextGen)
-  //    quotes <- probablyEmptySet(queryTextGen)
-  //    publishers <- publisherGen.flatMap(Gen.someOf(_)).map(_.map(Specified(_).asInstanceOf[FilterValue[String]]).toSet)
-  //    dateFrom <- Gen.option(dateFromGen)
-  //    dateTo <- Gen.option(dateToGen)
-  //    formats <- probablyEmptySet(formatGen.map(formatTuple => Specified(formatTuple._2).asInstanceOf[FilterValue[String]]))
-  //    regions <- probablyEmptySet(regionQueryGen)
-  //  } yield Query(
-  //    freeText = freeText,
-  //    quotes = quotes,
-  //    publishers = publishers,
-  //    dateFrom = dateFrom,
-  //    dateTo = dateTo,
-  //    formats = formats,
-  //    regions = regions)).suchThat(queryIsSmallEnough)
-  //
   def unspecificQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
-    //    freeText <- noneBiasedOption(queryTextGen(dataSets))
     freeText <- queryTextGen(dataSets)
-    //    quotes <- smallSet(queryTextGen(dataSets))
-    //    publishers <- smallSet(publisherQueryGen(dataSets))
-    //    dateFrom <- noneBiasedOption(dateFromGen)
-    //    dateTo <- noneBiasedOption(dateToGen)
-    //    formats <- smallSet(formatQueryGen(dataSets))
-    //    regions <- smallSet(regionQueryGen)
   } yield Query(
-    freeText = Some(freeText) //    quotes = quotes,
-    //    publishers = publishers,
-    //    dateFrom = dateFrom,
-    //    dateTo = dateTo,
-    //    formats = formats,
-    //    regions = regions)
-    ))
+    freeText = Some(freeText)))
     .suchThat(queryIsSmallEnough)
 
   def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>
