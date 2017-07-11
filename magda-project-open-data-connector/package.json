@@ -29,7 +29,7 @@
     "yargs": "^8.0.1"
   },
   "config": {
-    "registryUrl": "http://localhost:6100/v0",
+    "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-project-open-data-connector",
       "include": "aspect-templates dist Dockerfile node_modules"

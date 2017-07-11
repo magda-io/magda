@@ -14,8 +14,8 @@
   },
   "config": {
     "interface": "0.0.0.0",
-    "port": 6100,
-    "databaseUrl": "jdbc:postgresql://minikube.data.gov.au:30545/postgres",
+    "port": 6101,
+    "databaseUrl": "jdbc:postgresql://localhost:5432/postgres",
     "skipAuthorization": true
   }
 }

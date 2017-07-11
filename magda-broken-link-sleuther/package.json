@@ -2,7 +2,6 @@
   "name": "@magda/broken-link-sleuther",
   "description": "MAGDA Broken Link Sleuther",
   "version": "0.0.27",
-  "main": "dist/index.js",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc",
@@ -32,7 +31,7 @@
     "urijs": "^1.18.7"
   },
   "config": {
-    "registryUrl": "http://localhost:6100/v0",
+    "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-broken-link-sleuther",
       "include": "node_modules dist Dockerfile"

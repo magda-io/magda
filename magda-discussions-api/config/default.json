@@ -1,7 +1,7 @@
 {
-    "listenPort": 80,
+    "listenPort": 6105,
     "db": {
-        "host": "discussions-db",
+        "host": "localhost",
         "port": 5432
     }
 }

@@ -1,7 +1,11 @@
 {
     "extends": "../tsconfig-global.json",
     "compilerOptions": {
-        "outDir": "dist"
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "@magda/auth-api/dist/*": ["@magda/auth-api/src/*"]
+        }
     },
     "include": ["src"]
 }

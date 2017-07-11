@@ -1,15 +1,2 @@
 {
-    "listenPort": 3016,
-    "db": {
-        "host": "192.168.99.100",
-        "port": 30545
-    },
-    "externalHost": "http://localhost:3016",
-    "targets": {
-        "search": "http://192.168.99.100:30009/v0",
-        "registry": "http://192.168.99.100:30010/v0",
-        "auth": "http://localhost:3015/v0/public",
-        "discussions": "http://localhost:3001/v0",
-        "web": "http://localhost:3017"
-    }
 }

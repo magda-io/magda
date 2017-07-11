@@ -1,14 +1,14 @@
 {
-    "listenPort": 80,
+    "listenPort": 6100,
     "db": {
-        "host": "session-store",
+        "host": "localhost",
         "port": 5432
     },
     "targets": {
-        "search": "http://search-api/v0",
-        "registry": "http://registry-api/v0",
-        "auth": "http://auth-api/v0/public",
-        "discussions": "http://discussions-api/v0",
-        "web": "http://web"
+        "search": "http://localhost:6102/v0",
+        "registry": "http://localhost:6101/v0",
+        "auth": "http://localhost:6104/v0/public",
+        "discussions": "http://localhost:6105/v0",
+        "web": "http://localhost:6108"
     }
 }

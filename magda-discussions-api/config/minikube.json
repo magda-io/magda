@@ -1,4 +1,5 @@
 {
+    "listenPort": 80,
     "db": {
         "host": "combined-db"
     }

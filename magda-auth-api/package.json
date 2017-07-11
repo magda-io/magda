@@ -1,7 +1,6 @@
 {
   "name": "@magda/auth-api",
   "version": "0.0.27",
-  "main": "dist/index.js",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc",

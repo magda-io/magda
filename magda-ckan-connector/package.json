@@ -2,7 +2,6 @@
   "name": "@magda/ckan-connector",
   "description": "MAGDA CKAN Connector",
   "version": "0.0.27",
-  "main": "dist/index.js",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc",
@@ -31,7 +30,7 @@
     "yargs": "^8.0.1"
   },
   "config": {
-    "registryUrl": "http://localhost:6100/v0",
+    "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-ckan-connector",
       "include": "node_modules aspect-templates dist Dockerfile"
