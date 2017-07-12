@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "license": "Apache-2.0",
   "scripts": {
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
@@ -14,15 +14,16 @@
     "build": "npm run compile",
     "compile": "npm run build-css && react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "watch": "react-scripts build --watch"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.27",
+    "@magda/scripts": "^0.0.28-SNAPSHOT",
     "deep-freeze": "0.0.1",
     "expect": "^1.20.2",
     "flow-bin": "^0.39.0",
     "npm-run-all": "^4.0.1",
-    "react-scripts": "0.7.0",
+    "react-scripts": "^1.0.10",
     "redux-mock-store": "^1.2.1",
     "typescript": "2.3.4"
   },
@@ -64,7 +65,11 @@
     "redux-thunk": "^2.1.0",
     "rss-parser": "^2.9.0",
     "uuid": "^3.0.1",
-    "xml-parser": "^1.2.1",
-    "react-json": "git@github.com:chloeleichen/react-json.git"
+    "xml-parser": "^1.2.1"
+  },
+  "proxy": {
+    "/server-config.js": {
+      "target": "http://localhost:6107/"
+    }
   }
 }
