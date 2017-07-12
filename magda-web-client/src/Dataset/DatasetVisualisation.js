@@ -22,7 +22,15 @@ class DatasetVisualisation extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {spec: undefined}
+    this.state = {spec: {
+        "description": "",
+        "mark": "bar",
+        "encoding": {
+          "x": {"field": "", "type": "ordinal"},
+          "y": {"field": "", "type": "quantitative"}
+        }
+      }
+    }
     this.logChange = this.logChange.bind(this);
   }
 
@@ -51,11 +59,13 @@ class DatasetVisualisation extends Component {
         mark: {type: 'select', settings: {options: ['bar', 'line']}},
       }
     }
+    function renderVegaChart(spec, data){
+      return <div className="col-sm-8"><VegaLite spec={spec} data={data}/></div>
+    }
     return (
       <div className="clearfix">
         <h3 className='section-heading'>{this.state.spec.description}</h3>
         <div className='vis row'>
-          <div className="col-sm-8"><VegaLite spec={this.state.spec} data={this.props.data}/></div>
           <div className="col-sm-4"><JsonForm value={ this.state.spec } onChange={ this.logChange } settings={settings}/></div>
         </div>
       </div>
@@ -89,6 +99,7 @@ class DatasetVisualisation extends Component {
   render(){
     return (<div className='dataset-preview container'>
                   {this.visualisable() && this.renderTable()}
+                  {this.visualisable() && this.renderCharts()}
                   {this.props.error && <div> Error</div>}
             </div>)
   }
