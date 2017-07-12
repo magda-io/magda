@@ -63,7 +63,10 @@ export type RawDistribution = {
   id: string,
   name: string,
   aspects: {
-    'dcat-distribution-strings': dcatDistributionStrings
+    'dcat-distribution-strings': dcatDistributionStrings,
+    'source-link-status': {
+      status: ?string
+    }
   }
 }
 
@@ -94,7 +97,9 @@ export type ParsedDistribution = {
   downloadURL: ?string,
   accessURL: ?string,
   updatedDate: string,
-  license: string
+  license: string,
+  linkActive:boolean,
+  linkStatusAvailable:boolean
 };
 
 // all aspects become required and must have value
@@ -109,7 +114,8 @@ export type ParsedDataset = {
   distributions: Array<ParsedDistribution>,
   temporalCoverage: ? TemporalCoverage,
   publisher: Publisher,
-  source: string
+  source: string,
+  error: ?string
 }
 
 const defaultPublisher: Publisher = {
@@ -147,7 +153,8 @@ const defaultDatasetAspects = {
     "url": '',
     "name": '',
     "type": '',
-  }
+  },
+  error: null
 }
 
 
@@ -169,7 +176,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const id = record ? record['id']: '';
   const title = record ? record['name'] : '';
 
-  const aspects = record ? record['aspects'] : defaultDistributionAspect;
+  const aspects = record ? Object.assign({}, defaultDistributionAspect, record['aspects']) : defaultDistributionAspect;
 
   const info = aspects['dcat-distribution-strings'];
 
@@ -179,17 +186,24 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const updatedDate = info.modified ? getDateString(info.modified) : 'unknown date';
   const license = info.license || 'License restrictions unknown';
   const description = info.description || 'No description provided';
+  const linkStatus = aspects['source-link-status'];
+  const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
+  const linkActive = linkStatus.status === 'active';
 
 
-  return { id, title, description, format, downloadURL, accessURL, updatedDate, license }
+  return { id, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive }
 };
 
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
-  const aspects = dataset ? dataset['aspects'] : defaultDatasetAspects;
+  let error = null;
+  if(dataset && !dataset.id){
+    error = dataset.message || 'Error occurred';
+  }
+  const aspects = dataset ? Object.assign({}, defaultDatasetAspects, dataset['aspects']) : defaultDatasetAspects;
   const identifier =dataset ? dataset.id : '';
   const datasetInfo = aspects['dcat-dataset-strings'];
-  const distribution = aspects['dataset-distributions'] || defaultDatasetAspects['dataset-distributions'];
+  const distribution = aspects['dataset-distributions'];
   const temporalCoverage = aspects['temporal-coverage'];
   const description = datasetInfo.description || 'No description provided';
   const tags = datasetInfo.keywords || [];
@@ -202,9 +216,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
   const source: string = aspects['source'] ? aspects['source']['name'] : defaultDatasetAspects['source']['name'];
 
   const distributions = distribution['distributions'].map(d=> {
-      const distributionAspects = d['aspects'];
-      const info = distributionAspects['dcat-distribution-strings'] || defaultDistributionAspect['dcat-distribution-strings'];
-      const linkStatus = distributionAspects['source-link-status'] || {};
+      const distributionAspects = Object.assign({}, defaultDistributionAspect, d['aspects']);
+      const info = distributionAspects['dcat-distribution-strings'];
+      const linkStatus = distributionAspects['source-link-status'];
       return {
           id: d['id'],
           title: d['name'],
@@ -219,6 +233,6 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
       }
   });
   return {
-      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher
+      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher, error
   }
 };

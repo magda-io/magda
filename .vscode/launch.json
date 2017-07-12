@@ -10,9 +10,15 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch CKAN Connector",
-            "program": "${workspaceRoot}/magda-ckan-connector/bin/index.js",
-            "args": [
-                "--config", "${workspaceRoot}/deploy/connector-config/data-gov-au.json"
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs":[
+                "src/index.ts"
+            ],
+            "args":[
+                "--name", "foo", "--sourceUrl", "bar"
             ],
             "cwd": "${workspaceRoot}/magda-ckan-connector"
         },
@@ -77,6 +83,19 @@
                 "GOOGLE_CLIENT_ID": "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
                 "GOOGLE_CLIENT_SECRET": "none"
             }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "create-pod-and-forward",
+            "program": "${workspaceRoot}/scripts/create-pod-and-forward.js",
+            "cwd": "${workspaceRoot}/scripts",
+            "args": [
+               "--configuration", "../deploy/kubernetes/local/base/combined-db.yml",
+               "--selector", "service=combined-db",
+               "--port", "5432"
+            ]
         }
     ]
 }

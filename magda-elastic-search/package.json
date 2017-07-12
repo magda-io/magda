@@ -1,8 +1,9 @@
 {
   "name": "@magda/elastic-search",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "MAGDA's custom elasticsearch docker image.",
   "scripts": {
+    "dev": "create-pod-and-forward --configuration ../deploy/kubernetes/local/base/elasticsearch.yml --selector component=elasticsearch --port 9300",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
@@ -15,6 +16,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.27"
+    "@magda/scripts": "^0.0.28-SNAPSHOT"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@magda/search-api",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "The search API.",
   "license": "Apache-2.0",
   "scripts": {
@@ -8,10 +8,12 @@
     "test": "cd .. && sbt searchApi/test",
     "compile": "cd .. && sbt searchApi/compile",
     "docker-build-local": "cd .. && sbt searchApi/dockerBuildAndPush",
-    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" searchApi/dockerBuildAndPush"
+    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" searchApi/dockerBuildAndPush",
+    "start": "cd .. && sbt searchApi/run",
+    "dev": "cd .. && sbt ~searchApi/relaunch"
   },
   "config": {
     "interface": "0.0.0.0",
-    "port": 6101
+    "port": 6102
   }
 }

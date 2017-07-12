@@ -1,9 +1,9 @@
 {
   "name": "@magda/combined-db",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "A container that combined all MAGDA's Postgres databases, for use locally or in resource-constrained environments",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "create-pod-and-forward --configuration ../deploy/kubernetes/local/base/combined-db.yml --selector service=combined-db --port 5432",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
@@ -16,10 +16,10 @@
     }
   },
   "devDependencies": {
-    "@magda/auth-db": "^0.0.27",
-    "@magda/discussions-db": "^0.0.27",
-    "@magda/registry-datastore": "^0.0.27",
-    "@magda/scripts": "^0.0.27",
-    "@magda/session-store": "^0.0.27"
+    "@magda/auth-db": "^0.0.28-SNAPSHOT",
+    "@magda/discussions-db": "^0.0.28-SNAPSHOT",
+    "@magda/registry-datastore": "^0.0.28-SNAPSHOT",
+    "@magda/scripts": "^0.0.28-SNAPSHOT",
+    "@magda/session-store": "^0.0.28-SNAPSHOT"
   }
 }

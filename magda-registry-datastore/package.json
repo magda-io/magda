@@ -1,8 +1,9 @@
 {
   "name": "@magda/registry-datastore",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "The registry's PostgreSQL database.",
   "scripts": {
+    "dev": "echo \"No dev mode available, use `magda-combined-db` instead.\"",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
@@ -15,6 +16,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.27"
+    "@magda/scripts": "^0.0.28-SNAPSHOT"
   }
 }

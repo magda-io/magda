@@ -1,6 +1,6 @@
 {
   "name": "@magda/registry-aspects",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "Common aspects for use with the registry.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

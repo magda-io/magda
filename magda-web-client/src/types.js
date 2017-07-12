@@ -150,13 +150,6 @@ export type SearchState = {
   strategy: string,
 }
 
-export type Publisher ={
-  name: string,
-  description: string,
-  id: string,
-  image_url: string
-}
-
 
 export type FeaturedAction = {
   type: string,

@@ -7,7 +7,7 @@ import {config} from '../config.js';
 import ReactDocumentTitle from 'react-document-title';
 import { fetchPublisherIfNeeded } from '../actions/publisherActions';
 import OverviewBox from '../UI/OverviewBox';
-import type { Publisher } from '../types';
+import type { Publisher } from '../helpers/publisher';
 import ProgressBar from '../UI/ProgressBar';
 import {Link} from 'react-router';
 

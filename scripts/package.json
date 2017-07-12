@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "dependencies": {
@@ -16,6 +16,7 @@
     "generate-registry-typescript": "generate-registry-typescript.js",
     "create-docker-context-for-node-component": "create-docker-context-for-node-component.js",
     "generate-connector-jobs": "generate-connector-jobs.js",
-    "run-typescript-in-nodemon": "run-typescript-in-nodemon.js"
+    "run-typescript-in-nodemon": "run-typescript-in-nodemon.js",
+    "create-pod-and-forward": "create-pod-and-forward.js"
   }
 }

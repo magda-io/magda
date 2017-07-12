@@ -1,9 +1,9 @@
 {
   "name": "@magda/discussions-db",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "Magda auth's PostgreSQL database.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "echo \"No dev mode available, use `magda-combined-db` instead.\"",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
@@ -16,6 +16,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.27"
+    "@magda/scripts": "^0.0.28-SNAPSHOT"
   }
 }

@@ -1,13 +1,15 @@
 {
   "name": "@magda/indexer",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "description": "Indexes the registry for searching.",
   "scripts": {
     "build": "npm run compile",
     "test": "cd .. && sbt indexer/test",
     "compile": "cd .. && sbt indexer/compile",
     "docker-build-local": "cd .. && sbt indexer/dockerBuildAndPush",
-    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" indexer/dockerBuildAndPush"
+    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" indexer/dockerBuildAndPush",
+    "start": "cd .. && sbt indexer/run",
+    "dev": "cd .. && sbt ~indexer/relaunch"
   },
   "license": "Apache-2.0"
 }

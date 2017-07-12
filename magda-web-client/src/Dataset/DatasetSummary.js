@@ -42,7 +42,7 @@ export default class DatasetSummary extends Component {
               <div className='dataset-summary__content clearfix'>
                 <h5 className='dataset-summary__sub-heading'>Contents</h5>
                 <ToggleList list={this.props.dataset.distributions}
-                            renderFunction={item=>renderDistribution(item.format, item.identifier, item.title, item.license ? item.license.name : 'License restrictions unknown', this.props.dataset.identifier)}
+                            renderFunction={item=>renderDistribution(item.format, item.identifier,item.title, item.license ? item.license.name : 'License restrictions unknown', this.props.dataset.identifier,item.linkStatusAvailable, item.linkActive)}
                             className={''}
                             defaultLength={3}
                             getKey={item=>item.downloadURL}/>
@@ -55,6 +55,9 @@ export default class DatasetSummary extends Component {
     const publisher = dataset.publisher && dataset.publisher.name;
     const source = this.props.dataset.catalog;
 
+     if(dataset.error){
+       return <div className='error dataset-summary'><div className='dataset-summary__body'>{dataset.error}</div></div>
+     }
     return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
                 <div className='dataset-summary__header'>
                   <div className='dataset-summary__header-top clearfix'>

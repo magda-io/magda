@@ -1,9 +1,9 @@
 // @flow
+import './CreateProject.css';
 import React, { Component } from 'react';
 import ReactDocumentTitle from 'react-document-title';
 import queryString from 'query-string';
 import Immutable from 'immutable';
-const uuidV1 = require('uuid/v1');
 import { connect } from 'react-redux';
 import {config} from '../config.js';
 import { bindActionCreators } from 'redux';
@@ -12,9 +12,7 @@ import { fetchDatasetFromRegistry } from '../actions/recordActions';
 import Notification from '../UI/Notification';
 import { Link } from 'react-router';
 
-
-import './CreateProject.css';
-
+const uuidV1 = require('uuid/v1');
 
 class CreateProject extends Component {
     state: {

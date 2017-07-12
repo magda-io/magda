@@ -1,7 +1,7 @@
 {
   "name": "@magda/project-open-data-connector",
   "description": "MAGDA Project Open Data (data.json) Connector",
-  "version": "0.0.27",
+  "version": "0.0.28-SNAPSHOT",
   "license": "Apache-2.0",
   "scripts": {
     "build": "npm run compile",
@@ -13,7 +13,7 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.27",
+    "@magda/scripts": "^0.0.28-SNAPSHOT",
     "@types/node": "^7.0.5",
     "@types/request": "0.0.39",
     "@types/urijs": "^1.15.31",
@@ -21,15 +21,15 @@
     "typescript": "2.3.4"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.27",
-    "@magda/typescript-common": "^0.0.27",
+    "@magda/registry-aspects": "^0.0.28-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.28-SNAPSHOT",
     "moment": "^2.17.1",
     "request": "^2.79.0",
     "urijs": "^1.18.7",
     "yargs": "^8.0.1"
   },
   "config": {
-    "registryUrl": "http://localhost:6100/v0",
+    "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-project-open-data-connector",
       "include": "aspect-templates dist Dockerfile node_modules"

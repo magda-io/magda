@@ -72,6 +72,7 @@ class ElasticSearchIndexer(
         case (source, dataSet, promise) => (buildDatasetIndexDefinition(source, dataSet), (source, dataSet, promise))
       }
       .batch(1000, Seq(_))(_ :+ _)
+      .initialDelay(500 milliseconds)
       .mapAsync(1) { batch =>
         val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index {} records with {}, retrying", batch.length, e.getMessage)
 
