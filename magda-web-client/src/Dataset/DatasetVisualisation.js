@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import fetch from 'isomorphic-fetch'
+import {fetchPreviewData} from '../actions/previewDataActions'
+import { bindActionCreators } from 'redux';
 import VegaLite from 'react-vega-lite';
 import ReactTable from 'react-table';
 import JsonForm from 'react-json';
@@ -32,6 +34,15 @@ class DatasetVisualisation extends Component {
     })
   }
 
+  componentWillMount(){
+    this.props.fetchPreviewData(this.props.dataset.distributions);
+
+  }
+
+  componentWillReceiveProps(nextProps){
+
+  }
+
   renderCharts(){
     const settings = {
       form: true,
@@ -52,19 +63,18 @@ class DatasetVisualisation extends Component {
   }
 
   renderTable(){
-    // calculate column heading
-    const columns = [
-      {Header: 'a', accessor: 'a'},
-      {Header: 'b', accessor: 'b'}
-    ]
+    const columns = this.props.data.meta.fields.map((item)=> ({
+      Header: item, accessor: item
+    }))
+    debugger
 
     return (
       <div className="clearfix">
-        <h3 className='section-heading'>{this.state.spec.description}</h3>
+        <h3 className='section-heading'>{'data table'}</h3>
         <div className='vis'>
           <ReactTable
             minRows={3}
-            data={this.props.data.values}
+            data={this.props.data.data}
             columns={columns}
           />
         </div>
@@ -73,12 +83,11 @@ class DatasetVisualisation extends Component {
   }
 
   visualisable(){
-    return !this.props.isFetching && !this.props.error && this.state.spec;
+    return !this.props.isFetching && !this.props.error && this.props.data;
   }
 
   render(){
     return (<div className='dataset-preview container'>
-                  {this.visualisable() && this.renderCharts()}
                   {this.visualisable() && this.renderTable()}
                   {this.props.error && <div> Error</div>}
             </div>)
@@ -86,13 +95,20 @@ class DatasetVisualisation extends Component {
 }
 
 function mapStateToProps(state) {
+  const dataset = state.record.dataset;
   const previewData= state.previewData;
   const data = previewData.previewData;
   const loading = previewData.isFetching;
   const error = previewData.error;
   return {
-    data, loading, error
+    data, loading, error, dataset
   };
 }
 
-export default connect(mapStateToProps)(DatasetVisualisation);
+const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
+  return bindActionCreators({
+    fetchPreviewData: fetchPreviewData,
+  }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(DatasetVisualisation);

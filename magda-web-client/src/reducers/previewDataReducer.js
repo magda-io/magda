@@ -1,6 +1,6 @@
 // @flow
 const initialData = {
-  previewData: {},
+  previewData: null,
   isFetching: false,
   error: null,
 }
@@ -13,26 +13,26 @@ type previewDataState = {
 
 type previewDataAction = {
   type: string,
-  previewData?: Object,
+  previewData?: ?Object,
   error: number
 }
 
 const previewDataReducer = (state: previewDataState = initialData, action: previewDataAction) => {
   switch (action.type) {
-    case 'REQUEST_PREVIEW_DATA':
+    case 'REQUEST_DATASET_PREVIEW_DATA':
       return Object.assign({}, state, {
         isFetching: true,
         error: null,
       })
-    case 'REQUEST_PREVIEW_DATA_ERROR':
+    case 'REQUEST_DATASET_PREVIEW_DATA_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,
       })
-    case 'RECEIVE_PREVIEW_DATA':
+    case 'RECEIVE_DATASET_PREVIEW_DATA':
       return Object.assign({}, state, {
         isFetching: false,
-        previewData: action.previewData,
+        previewData: action.data,
         error: null
       })
 
