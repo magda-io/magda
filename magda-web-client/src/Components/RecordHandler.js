@@ -91,7 +91,7 @@ class RecordHandler extends React.Component {
         {id: 'details', name: 'Details', isActive: true},
         {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
         {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
-        {id: 'visualisation', name: 'Visualization', isActive: true}
+        {id: 'preview', name: 'Preview', isActive: true}
       ];
       return (
         <div>

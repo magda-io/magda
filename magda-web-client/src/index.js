@@ -87,7 +87,7 @@ ReactDOM.render(
           <Route path="details" component={DatasetDetails} />
           <Route path="discussion" component={DatasetDiscussion} />
           <Route path="publisher" component={DatasetPublisher} />
-          <Route path="visualisation" component={DatasetVisualisation} />
+          <Route path="preview" component={DatasetVisualisation} />
         </Route>
         <Route
           path="dataset/:datasetId/distribution/:distributionId"

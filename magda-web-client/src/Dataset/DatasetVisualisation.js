@@ -53,27 +53,25 @@ class DatasetVisualisation extends Component {
         mark: {type: 'select', settings: {options: ['bar', 'line']}},
       }
     }
-    return <div className='dataset-visualization container' >
-              <div className='vis'>
-                <div className="row">
-                  <div className="col-sm-6">
-                    <h2>{this.state.spec.description}</h2>
-                    <VegaLite spec={this.state.spec} data={barData} />
+    return (<div className='dataset-preview container'>
+                  <div className="clearfix">
+                    <h3 className='section-heading'>{this.state.spec.description}</h3>
+                    <div className='vis row'>
+                      <div className="col-sm-8"><VegaLite spec={this.state.spec} data={barData}/></div>
+                      <div className="col-sm-4"><JsonForm value={ this.state.spec } onChange={ this.logChange } settings={settings}/></div>
+                    </div>
                   </div>
-                  <div className="col-sm-6"><div className='json'>
-                    <h2>Customise visualisation</h2>
-                    <JsonForm value={ this.state.spec } onChange={ this.logChange } settings={settings}/>
-                  </div>
-                  </div>
+                  <div className="clearfix">
+                    <h3 className='section-heading'>{this.state.spec.description}</h3>
+                    <div className='vis'>
+                      <ReactTable
+                        minRows={3}
+                        data={barData.values}
+                        columns={columns}
+                      />
+                    </div>
                 </div>
-                <h2>{this.state.spec.description}</h2>
-                <ReactTable
-                  minRows={3}
-                  data={barData.values}
-                  columns={columns}
-                />
-              </div>
-          </div>
+            </div>)
   }
 }
 
