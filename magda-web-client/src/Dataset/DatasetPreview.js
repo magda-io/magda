@@ -8,7 +8,7 @@ import DataPreviewTable from '../UI/DataPreviewTable';
 
 import JsonForm from 'react-json';
 
-import './DatasetVisualisation.css'
+import './DatasetPreview.css'
 
 const defaultSpec = {
   "description": "Example data",
@@ -19,7 +19,7 @@ const defaultSpec = {
   }
 }
 
-class DatasetVisualisation extends Component {
+class DatasetPreview extends Component {
 
   constructor(props) {
     super(props);
@@ -48,7 +48,7 @@ class DatasetVisualisation extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-      if(nextProps.dataset.identifier !== nextProps.dataset.id){
+      if(nextProps.dataset.identifier !== nextProps.dataset.identifier){
         this.props.fetchPreviewData(nextProps.dataset.distributions);
       }
   }
@@ -80,6 +80,7 @@ class DatasetVisualisation extends Component {
   }
 
   render(){
+    debugger
     return (<div className='dataset-preview container'>
                   {this.visualisable() && <DataPreviewTable data={this.props.data} fileName= {this.props.fileName}/>}
                   {this.props.error && <div> Error</div>}
@@ -91,11 +92,11 @@ function mapStateToProps(state) {
   const dataset = state.record.dataset;
   const previewData= state.previewData;
   const data = previewData.previewData;
-  const loading = previewData.isFetching;
+  const isFetching = previewData.isFetching;
   const error = previewData.error;
   const fileName = previewData.fileName;
   return {
-    data, loading, error, dataset, fileName
+    data, isFetching, error, dataset, fileName
   };
 }
 
@@ -105,4 +106,4 @@ const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
   }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(DatasetVisualisation);
+export default connect(mapStateToProps, mapDispatchToProps)(DatasetPreview);

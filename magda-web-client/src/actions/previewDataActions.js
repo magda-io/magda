@@ -28,12 +28,18 @@ export function requestPreviewDataError(error: number){
 }
 
 function getPreviewDataUrl(distributions){
+  debugger
   if(distributions.some(d=>d.format.toLowerCase() === 'csv')){
     // 1. is csv
     // 2. link status available
     // 3. link is active
-    const url = distributions.filter(d=>d.format.toLowerCase() === 'csv' && d.linkStatusAvailable && d.linkActive)[0].downloadURL;
-    return url;
+    const viewableDistribution = distributions.filter(d=>d.format.toLowerCase() === 'csv' && d.linkStatusAvailable && d.linkActive);
+    if(viewableDistribution){
+      return viewableDistribution[0].downloadURL;
+    } else{
+      return false;
+    }
+    return false;
   }
 }
 

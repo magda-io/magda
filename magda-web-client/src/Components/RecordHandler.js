@@ -62,7 +62,7 @@ class RecordHandler extends React.Component {
        const tabList = [
          {id: 'details', name: 'Details', isActive: true},
          {id: 'map', name: 'Maps', isActive: this.props.distribution.format && (this.props.distribution.format.toLowerCase() === 'wms' || this.props.distribution.format.toLowerCase() === 'wfs')},
-         {id: 'chart', name: 'Chart', isActive: false}
+         {id: 'preview', name: 'Preview', isActive: true}
        ]
       return (
         <div>
