@@ -4,9 +4,10 @@ import fetch from 'isomorphic-fetch'
 import {fetchPreviewData} from '../actions/previewDataActions'
 import { bindActionCreators } from 'redux';
 import VegaLite from 'react-vega-lite';
-import ReactTable from 'react-table';
+import DataPreviewTable from '../UI/DataPreviewTable';
+
 import JsonForm from 'react-json';
-import '../UI/ReactTable.css';
+
 import './DatasetVisualisation.css'
 
 const defaultSpec = {
@@ -73,24 +74,6 @@ class DatasetVisualisation extends Component {
       )
   }
 
-  renderTable(){
-    const columns = this.props.data.meta.fields.map((item)=> ({
-      Header: item, accessor: item
-    }))
-    debugger
-    return (
-      <div className="clearfix">
-        <h3 className='section-heading'>{this.props.fileName}</h3>
-        <div className='vis'>
-          <ReactTable
-            minRows={3}
-            data={this.props.data.data}
-            columns={columns}
-          />
-        </div>
-    </div>
-    )
-  }
 
   visualisable(){
     return !this.props.isFetching && !this.props.error && this.props.data;
@@ -98,7 +81,7 @@ class DatasetVisualisation extends Component {
 
   render(){
     return (<div className='dataset-preview container'>
-                  {this.visualisable() && this.renderTable()}
+                  {this.visualisable() && <DataPreviewTable data={this.props.data} fileName= {this.props.fileName}/>}
                   {this.props.error && <div> Error</div>}
             </div>)
   }
