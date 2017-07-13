@@ -80,7 +80,6 @@ class DatasetPreview extends Component {
   }
 
   render(){
-    debugger
     return (<div className='dataset-preview container'>
                   {this.visualisable() && <DataPreviewTable data={this.props.data} fileName= {this.props.fileName}/>}
                   {this.props.error && <div> Error</div>}
