@@ -28,7 +28,10 @@ export function requestPreviewDataError(error: number){
 
 function getPreviewDataUrl(distributions){
   if(distributions.some(d=>d.format.toLowerCase() === 'csv')){
-    const url = distributions.filter(d=>d.format.toLowerCase() === 'csv')[0].downloadURL;
+    // 1. is csv
+    // 2. link status available
+    // 3. link is active
+    const url = distributions.filter(d=>d.format.toLowerCase() === 'csv' && d.linkStatusAvailable && d.linkActive)[0].downloadURL;
     return url;
   }
 }
@@ -43,20 +46,14 @@ export function fetchPreviewData(distributions){
       if(!url){
         return false;
       }
-      fetch('https://nationalmap.gov.au/proxy/_0d/' + url)
-      .then(response=>{
-        if (response.status !== 200) {
-          dispatch(requestPreviewDataError());
-        }
-        else {
-          return response.text()
-        }
-      }).then(result=>{
-          if(result.error){
-            return false
-          } else {
-            dispatch(receivePreviewData(papa.parse(result, {header: true})))
-          }
+      papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
+      	download: true,
+        header: true,
+      	complete: function(data) {
+          dispatch(receivePreviewData(data))
+      	},
+        error: (error)=>{dispatch(requestPreviewDataError(error))}
       });
+
   }
 }

@@ -44,11 +44,12 @@ class DatasetVisualisation extends Component {
 
   componentWillMount(){
     this.props.fetchPreviewData(this.props.dataset.distributions);
-
   }
 
   componentWillReceiveProps(nextProps){
-
+      if(nextProps.dataset.identifier !== nextProps.dataset.id){
+        this.props.fetchPreviewData(nextProps.dataset.distributions);
+      }
   }
 
   renderCharts(){
@@ -77,7 +78,6 @@ class DatasetVisualisation extends Component {
       Header: item, accessor: item
     }))
     debugger
-
     return (
       <div className="clearfix">
         <h3 className='section-heading'>{'data table'}</h3>
@@ -99,7 +99,6 @@ class DatasetVisualisation extends Component {
   render(){
     return (<div className='dataset-preview container'>
                   {this.visualisable() && this.renderTable()}
-                  {this.visualisable() && this.renderCharts()}
                   {this.props.error && <div> Error</div>}
             </div>)
   }
