@@ -5,9 +5,10 @@ import parser from 'rss-parser'
 import papa from 'papaparse';
 
 
-export function requestPreviewData(){
+export function requestPreviewData(fileName){
   return {
     type: actionTypes.REQUEST_DATASET_PREVIEW_DATA,
+    fileName
   }
 }
 
@@ -15,7 +16,7 @@ export function receivePreviewData(data: Object) {
   return {
     type: actionTypes.RECEIVE_DATASET_PREVIEW_DATA,
     fetchPreviewData,
-    data: data
+    previewData: data
   }
 }
 
@@ -39,6 +40,7 @@ function getPreviewDataUrl(distributions){
 export function fetchPreviewData(distributions){
   return (dispatch: Function, getState: Function)=>{
       const url = getPreviewDataUrl(distributions);
+
       // check if we need to fetch
       if(getState().previewData.isFetching || getState().previewData.previewData){
         return false;
@@ -46,6 +48,8 @@ export function fetchPreviewData(distributions){
       if(!url){
         return false;
       }
+      const fileName =  url.substring(url.lastIndexOf('/')+1);
+      dispatch(requestPreviewData(fileName));
       papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
       	download: true,
         header: true,

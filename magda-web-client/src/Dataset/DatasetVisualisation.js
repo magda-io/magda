@@ -80,7 +80,7 @@ class DatasetVisualisation extends Component {
     debugger
     return (
       <div className="clearfix">
-        <h3 className='section-heading'>{'data table'}</h3>
+        <h3 className='section-heading'>{this.props.fileName}</h3>
         <div className='vis'>
           <ReactTable
             minRows={3}
@@ -110,8 +110,9 @@ function mapStateToProps(state) {
   const data = previewData.previewData;
   const loading = previewData.isFetching;
   const error = previewData.error;
+  const fileName = previewData.fileName;
   return {
-    data, loading, error, dataset
+    data, loading, error, dataset, fileName
   };
 }
 
