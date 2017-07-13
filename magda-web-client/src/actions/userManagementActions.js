@@ -25,14 +25,16 @@ export function requestWhoAmI() {
         } else if (response.status === 401) {
           dispatch(receiveWhoAmISignedOut());
         } else {
-          throw new Error("Error when fetching current user: " + response.status);
+          throw new Error(
+            "Error when fetching current user: " + response.status
+          );
         }
       })
       .catch(err => dispatch(receiveWhoAmIError(err)));
   };
 }
 
-export function receiveWhoAmISignedIn(user: Object): FacetAction{
+export function receiveWhoAmISignedIn(user: Object): FacetAction {
   return {
     type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_IN,
     user
@@ -62,7 +64,7 @@ export function requestSignOut() {
       type: actionTypes.REQUEST_SIGN_OUT
     });
 
-    fetch(config.apiHost + "auth/logout", {
+    fetch(config.baseUrl + "auth/logout", {
       credentials: "include"
     }).then(response => {
       if (response.status <= 400) {
@@ -86,6 +88,46 @@ export function completedSignOut(): FacetAction {
 export function signOutError(err: Object): FacetAction {
   return {
     type: actionTypes.SIGN_OUT_ERROR,
+    err
+  };
+}
+
+export function requestAuthProviders() {
+  return (dispatch: Dispatch, getState: GetState) => {
+    if (getState().userManagement.isFetchingAuthProviders) {
+      return false;
+    }
+
+    dispatch({
+      type: actionTypes.REQUEST_AUTH_PROVIDERS
+    });
+    
+    fetch(config.baseUrl + "auth/providers")
+      .then(response => {
+        if (response.status === 200) {
+          return response
+            .json()
+            .then(providers => dispatch(receiveAuthProviders(providers)));
+        } else {
+          throw new Error(
+            "Error when fetching auth providers: " + response.status
+          );
+        }
+      })
+      .catch(err => dispatch(receiveAuthProvidersError(err)));
+  };
+}
+
+export function receiveAuthProviders(providers: Object): FacetAction {
+  return {
+    type: actionTypes.RECEIVE_AUTH_PROVIDERS,
+    providers
+  };
+}
+
+export function receiveAuthProvidersError(err: Object): FacetAction {
+  return {
+    type: actionTypes.RECEIVE_AUTH_PROVIDERS_ERROR,
     err
   };
 }
