@@ -50,8 +50,17 @@ export class DeleteResult {
 /**
 * The type of a registry modification event.
 */
-export class EventType {
-}
+export type EventType =
+    'CreateRecord' |
+    'CreateAspectDefinition' |
+    'CreateRecordAspect' |
+    'PatchRecord' |
+    'PatchAspectDefinition' |
+    'PatchRecordAspect' |
+    'DeleteRecord' |
+    'DeleteAspectDefinition' |
+    'DeleteRecordAspect' 
+;
 
 /**
 * A page of events.
