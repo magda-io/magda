@@ -1,0 +1,33 @@
+{
+  "name": "@magda/broken-link-sleuther",
+  "description": "MAGDA Broken Link Sleuther",
+  "version": "0.0.28-SNAPSHOT",
+  "scripts": {
+    "build": "npm run compile",
+    "compile": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "run-typescript-in-nodemon src/index.ts",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@magda/scripts": "^0.0.28-SNAPSHOT",
+    "@types/express": "^4.0.36",
+    "typescript": "2.3.4"
+  },
+  "dependencies": {
+    "@magda/registry-aspects": "^0.0.28-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.28-SNAPSHOT",
+    "express": "^4.15.3"
+  },
+  "config": {
+    "registryUrl": "http://localhost:6101/v0",
+    "docker": {
+      "name": "data61/magda-broken-link-sleuther",
+      "include": "node_modules dist Dockerfile"
+    }
+  }
+}

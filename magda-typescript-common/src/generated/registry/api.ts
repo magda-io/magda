@@ -1409,7 +1409,7 @@ export class WebHooksApi {
      * 
      * @param hook The definition of the new web hook.
      */
-    public create (hook: string) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
+    public create (hook: WebHook) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
         const localVarPath = this.basePath + '/hooks';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
