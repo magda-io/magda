@@ -3,6 +3,8 @@ import "./Account.css";
 import Login from "./Login";
 import { connect } from "react-redux";
 import parseQueryString from "../../helpers/parseQueryString";
+import { requestAuthProviders } from "../../actions/userManagementActions";
+import { bindActionCreators } from "redux";
 
 class Account extends React.Component {
   constructor(props) {
@@ -15,6 +17,10 @@ class Account extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.props.requestAuthProviders();
+  }
+
   render() {
     return (
       <div className="container account">
@@ -23,12 +29,17 @@ class Account extends React.Component {
             signInError={
               this.props.location.state && this.props.location.state.signInError
             }
+            providers={this.props.providers}
           />}
         {this.props.user &&
           <div>
             <h2>Account</h2>
-            <p>Display Name: {this.props.user.displayName}</p>
-            <p>Email: {this.props.user.email}</p>
+            <p>
+              Display Name: {this.props.user.displayName}
+            </p>
+            <p>
+              Email: {this.props.user.email}
+            </p>
           </div>}
       </div>
     );
@@ -36,11 +47,22 @@ class Account extends React.Component {
 }
 
 function mapStateToProps(state) {
-  let { userManagement: { user } } = state;
+  let { userManagement: { user, providers, providersError } } = state;
 
   return {
-    user
+    user,
+    providers,
+    providersError
   };
 }
 
-export default connect(mapStateToProps)(Account);
+const mapDispatchToProps = (dispatch: Dispatch<*>) => {
+  return bindActionCreators(
+    {
+      requestAuthProviders
+    },
+    dispatch
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Account);
