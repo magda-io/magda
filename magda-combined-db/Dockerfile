@@ -1,10 +1,13 @@
 FROM postgres
 
 # Copy the init scripts from the other databases into their own dirs in initdb.d
+COPY component/flyway-commandline-4.2.0-linux-x64.tar.gz /flyway
 COPY component/node_modules/@magda/auth-db/scripts/init/* /docker-entrypoint-initdb.d/auth-db/
 COPY component/node_modules/@magda/registry-datastore/scripts/init/* /docker-entrypoint-initdb.d/registry-datastore/
 COPY component/node_modules/@magda/session-store/scripts/init/* /docker-entrypoint-initdb.d/session-store/
 COPY component/node_modules/@magda/discussions-db/scripts/init/* /docker-entrypoint-initdb.d/discussions-db/
-
+COPY component/migrate-and-start.sh /usr/local/bin/
 # Flatten them such that the directory path is part of the new filenames (so we can have multiple init.sqls)
-RUN find /docker-entrypoint-initdb.d/*/ -type f -exec bash -c 'file=${1#./}; mv "$file" "/docker-entrypoint-initdb.d/${file//\//_}"' _ '{}' \; && find /docker-entrypoint-initdb.d/*/ -depth -type d -exec rmdir '{}' \;
+#RUN find /docker-entrypoint-initdb.d/*/ -type f -exec bash -c 'file=${1#./}; mv "$file" "/docker-entrypoint-initdb.d/${file//\//_}"' _ '{}' \; && find /docker-entrypoint-initdb.d/*/ -depth -type d -exec rmdir '{}' \;
+
+CMD ["migrate-and-start.sh", "postgres"]

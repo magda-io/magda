@@ -12,7 +12,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-combined-db",
-      "include": "Dockerfile node_modules/@magda/auth-db/scripts node_modules/@magda/registry-datastore/scripts node_modules/@magda/session-store/scripts node_modules/@magda/discussions-db/scripts"
+      "include": "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate-and-start.sh node_modules/@magda/auth-db/scripts node_modules/@magda/registry-datastore/scripts node_modules/@magda/session-store/scripts node_modules/@magda/discussions-db/scripts"
     }
   },
   "devDependencies": {

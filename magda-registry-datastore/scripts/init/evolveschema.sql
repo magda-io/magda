@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS WebHooks (
     name varchar(100) NOT NULL,
     active boolean NOT NULL,
     lastEvent bigserial REFERENCES Events NOT NULL,
+    isWaitingForResponse boolean NOT NULL DEFAULT FALSE,
     url text NOT NULL,
     config jsonb NOT NULL
 );
