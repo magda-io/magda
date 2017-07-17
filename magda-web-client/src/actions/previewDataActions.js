@@ -8,14 +8,14 @@ import xmlToTabular from '../helpers/xmlToTabular';
 
 export function requestPreviewData(fileName){
   return {
-    type: actionTypes.REQUEST_DATASET_PREVIEW_DATA,
+    type: actionTypes.REQUEST_PREVIEW_DATA,
     fileName
   }
 }
 
 export function receivePreviewData(data: Object) {
   return {
-    type: actionTypes.RECEIVE_DATASET_PREVIEW_DATA,
+    type: actionTypes.RECEIVE_PREVIEW_DATA,
     fetchPreviewData,
     previewData: data
   }
@@ -23,8 +23,14 @@ export function receivePreviewData(data: Object) {
 
 export function requestPreviewDataError(error: number){
   return {
-    type: actionTypes.REQUEST_DATASET_PREVIEW_DATA_ERROR,
+    type: actionTypes.REQUEST_PREVIEW_DATA_ERROR,
     error,
+  }
+}
+
+export function resetPreviewData(){
+  return {
+    type: actionTypes.RESET_PREVIEW_DATA,
   }
 }
 
@@ -53,7 +59,7 @@ export function fetchPreviewData(distributions){
         return false;
       }
       if(!prop){
-        return false;
+        return dispatch(resetPreviewData())
       }
       const url = prop.url;
       const format = prop.format;
@@ -79,9 +85,9 @@ export function fetchPreviewData(distributions){
           }
         ).then(xmlData=>{
           if(xmlToTabular(xmlData)){
-            dispatch(receivePreviewData(xmlToTabular(xmlData)));
+            return dispatch(receivePreviewData(xmlToTabular(xmlData)));
           } else{
-            dispatch(requestPreviewDataError('failed to parse xml'))
+            return dispatch(requestPreviewDataError('failed to parse xml'))
           }
         })
       }

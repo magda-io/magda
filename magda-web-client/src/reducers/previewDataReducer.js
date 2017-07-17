@@ -22,23 +22,25 @@ type previewDataAction = {
 
 const previewDataReducer = (state: previewDataState = initialData, action: previewDataAction) => {
   switch (action.type) {
-    case 'REQUEST_DATASET_PREVIEW_DATA':
+    case 'REQUEST_PREVIEW_DATA':
       return Object.assign({}, state, {
         isFetching: true,
         error: null,
         fileName: action.fileName
       })
-    case 'REQUEST_DATASET_PREVIEW_DATA_ERROR':
+    case 'REQUEST_PREVIEW_DATA_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,
       })
-    case 'RECEIVE_DATASET_PREVIEW_DATA':
+    case 'RECEIVE_PREVIEW_DATA':
       return Object.assign({}, state, {
         isFetching: false,
         previewData: action.previewData,
         error: null
       })
+    case 'RESET_PREVIEW_DATA':
+      return Object.assign({}, state, initialData)
 
     default:
       return state
