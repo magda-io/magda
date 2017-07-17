@@ -4,6 +4,7 @@ import {actionTypes} from '../constants/ActionTypes';
 import parser from 'rss-parser'
 import papa from 'papaparse';
 import xmlToTabular from '../helpers/xmlToTabular';
+import jsonToTabular from '../helpers/jsonToTabular';
 
 
 export function requestPreviewData(fileName){
@@ -41,12 +42,16 @@ function getPreviewDataUrl(distributions){
     const csv = viewableDistribution.filter(d=> d.format.toLowerCase() === 'csv');
     if(csv.length > 0){
       return {url: csv[0].downloadURL, format: 'csv'}
-    }else{
+    } else {
       const xml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xml');
       if(xml.length > 0){
         return {url: xml[0].downloadURL, format: 'xml'}
+      } else {
+        const json = viewableDistribution.filter(d=> d.format.toLowerCase() === 'json');
+        if(json.length > 0){
+          return {url: json[0].downloadURL, format: 'json'}
+        }
       }
-      return false;
     }
     return false;
   }
@@ -88,6 +93,20 @@ export function fetchPreviewData(distributions){
             return dispatch(receivePreviewData(xmlToTabular(xmlData)));
           } else{
             return dispatch(requestPreviewDataError('failed to parse xml'))
+          }
+        })
+      } else if(format === 'json'){
+        fetch(url)
+        .then(response=>
+          {
+            if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
+            return response.json();
+          }
+        ).then(json=>{
+          if(jsonToTabular(json)){
+            return dispatch(receivePreviewData(jsonToTabular(json)));
+          } else{
+            return dispatch(requestPreviewDataError('failed to parse json'))
           }
         })
       }

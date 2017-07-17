@@ -4,6 +4,7 @@ import fetch from 'isomorphic-fetch'
 import {fetchPreviewData} from '../actions/previewDataActions'
 import { bindActionCreators } from 'redux';
 import DataPreviewer from '../UI/DataPreviewer';
+import ProgressBar from "../UI/ProgressBar";
 
 import JsonForm from 'react-json';
 
@@ -27,6 +28,7 @@ class DatasetPreview extends Component {
 
   render(){
     return (<div className='dataset-preview container'>
+                  {this.props.isFetching && <ProgressBar/>}
                   {this.visualisable() && <DataPreviewer data={this.props.data} fileName= {this.props.fileName}/>}
                   {(!this.props.isFetching && !this.props.data) && <div>No preview available</div>}
                   {this.visualisable() && this.props.error && <div> Error</div>}
