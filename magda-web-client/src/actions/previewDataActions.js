@@ -5,6 +5,7 @@ import parser from 'rss-parser'
 import papa from 'papaparse';
 import xmlToTabular from '../helpers/xmlToTabular';
 import jsonToTabular from '../helpers/jsonToTabular';
+import xlsToTabular from '../helpers/xlsToTabular';
 
 
 export function requestPreviewData(fileName){
@@ -40,19 +41,29 @@ function getPreviewDataUrl(distributions){
     // 2. link is active
     const viewableDistribution = distributions.filter(d=>d.linkStatusAvailable && d.linkActive && d.downloadURL);
     const csv = viewableDistribution.filter(d=> d.format.toLowerCase() === 'csv');
+    const xml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xml');
+    const json = viewableDistribution.filter(d=> d.format.toLowerCase() === 'json');
+    const xls = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xls');
+    const excel = viewableDistribution.filter(d=> d.format.toLowerCase() === 'excel');
+
     if(csv.length > 0){
       return {url: csv[0].downloadURL, format: 'csv'}
-    } else {
-      const xml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xml');
-      if(xml.length > 0){
-        return {url: xml[0].downloadURL, format: 'xml'}
-      } else {
-        const json = viewableDistribution.filter(d=> d.format.toLowerCase() === 'json');
-        if(json.length > 0){
-          return {url: json[0].downloadURL, format: 'json'}
-        }
-      }
     }
+    if(xml.length > 0){
+      return {url: xml[0].downloadURL, format: 'xml'}
+    }
+    if(json.length > 0){
+      return {url: json[0].downloadURL, format: 'json'}
+    }
+
+    if(xls.length > 0){
+      return {url: xls[0].downloadURL, format: 'xls'}
+    }
+
+    if(excel.length > 0){
+      return {url: excel[0].downloadURL, format: 'excel'}
+    }
+
     return false;
   }
 
@@ -60,7 +71,7 @@ export function fetchPreviewData(distributions){
   return (dispatch: Function, getState: Function)=>{
       const prop = getPreviewDataUrl(distributions);
       // check if we need to fetch
-      if(getState().previewData.isFetching || getState().previewData.previewData){
+      if(getState().previewData.isFetching){
         return false;
       }
       if(!prop){
@@ -72,43 +83,66 @@ export function fetchPreviewData(distributions){
       const fileName =  url.substring(url.lastIndexOf('/')+1);
       dispatch(requestPreviewData(fileName));
 
-      if(format === 'csv'){
-        papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
-        	download: true,
-          header: true,
-        	complete: function(data) {
-            dispatch(receivePreviewData(data))
-        	},
-          error: (error)=>{dispatch(requestPreviewDataError(error))}
-        });
-      }else if(format === 'xml'){
-        fetch(url)
-        .then(response=>
-          {
-            if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
-            return response.text();
-          }
-        ).then(xmlData=>{
-          if(xmlToTabular(xmlData)){
-            return dispatch(receivePreviewData(xmlToTabular(xmlData)));
-          } else{
-            return dispatch(requestPreviewDataError('failed to parse xml'))
-          }
-        })
-      } else if(format === 'json'){
-        fetch(url)
-        .then(response=>
-          {
-            if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
-            return response.json();
-          }
-        ).then(json=>{
-          if(jsonToTabular(json)){
-            return dispatch(receivePreviewData(jsonToTabular(json)));
-          } else{
-            return dispatch(requestPreviewDataError('failed to parse json'))
-          }
-        })
+      const proxy = "https://nationalmap.gov.au/proxy/_0d/";
+
+      switch (format) {
+        case 'csv':
+          papa.parse(proxy + url, {
+            download: true,
+            header: true,
+            complete: function(data) {
+              dispatch(receivePreviewData(data))
+            },
+            error: (error)=>{dispatch(requestPreviewDataError(error))}
+          });
+          break;
+        case 'xml':
+          fetch(proxy + url)
+          .then(response=>
+            {
+              if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
+              return response.text();
+            }
+          ).then(xmlData=>{
+            const data = xmlToTabular(xmlData);
+            if(data){
+              return dispatch(receivePreviewData(data));
+            } else{
+              return dispatch(requestPreviewDataError('failed to parse xml'))
+            }
+          });
+          break;
+        case 'json':
+          fetch(proxy + url)
+          .then(response=>
+            {
+              if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
+              return response.json();
+            }
+          ).then(json=>{
+            const data = jsonToTabular(json);
+            if(data){
+              return dispatch(receivePreviewData(data));
+            } else{
+              return dispatch(requestPreviewDataError('failed to parse json'))
+            }
+          })
+          break;
+        case 'xls':
+          xlsToTabular(proxy + url).then(data=>{
+            return dispatch(receivePreviewData(data));
+          }, error=>{
+            return dispatch(requestPreviewDataError('failed to parse xls'));
+          });
+        case 'excel':
+          xlsToTabular(proxy + url).then(data=>{
+            return dispatch(receivePreviewData(data));
+          }, error=>{
+            return dispatch(requestPreviewDataError('failed to parse xls'));
+          });
+
+        default:
+          dispatch(resetPreviewData());
       }
   }
 }
