@@ -38,13 +38,14 @@ class DistributionPreview extends Component {
     })
   }
 
+
   componentWillMount(){
     this.props.fetchPreviewData([this.props.distribution]);
 
   }
 
   componentWillReceiveProps(nextProps){
-      if(nextProps.distribution.downloadURL && nextProps.distribution.downloadURL !== nextProps.distribution.downloadURL){
+      if(nextProps.distribution.downloadURL && nextProps.distribution.downloadURL !== this.props.distribution.downloadURL){
         this.props.fetchPreviewData([nextProps.distribution]);
       }
   }

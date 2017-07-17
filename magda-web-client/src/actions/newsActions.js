@@ -37,7 +37,7 @@ export function fetchNewsfromRss(){
       fetch(url)
       .then(response=>{
         if (response.status !== 200) {
-          console.log("error")
+          return dispatch(requestNewsError(response.status));
         }
         else {
           return response.text()

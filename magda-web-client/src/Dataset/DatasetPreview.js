@@ -48,7 +48,7 @@ class DatasetPreview extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-      if(nextProps.dataset.identifier !== nextProps.dataset.identifier){
+      if(nextProps.dataset.identifier !== this.props.dataset.identifier){
         this.props.fetchPreviewData(nextProps.dataset.distributions);
       }
   }
