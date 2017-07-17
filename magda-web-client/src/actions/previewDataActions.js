@@ -1,8 +1,6 @@
 import {config} from '../config'
 import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
-import parser from 'rss-parser'
-import papa from 'papaparse';
 import xmlToTabular from '../helpers/xmlToTabular';
 import jsonToTabular from '../helpers/jsonToTabular';
 import xlsToTabular from '../helpers/xlsToTabular';
@@ -87,15 +85,11 @@ export function fetchPreviewData(distributions){
 
       switch (format) {
         case 'csv':
-          papa.parse(proxy + url, {
-            download: true,
-            header: true,
-            complete: function(data) {
-              dispatch(receivePreviewData(data))
-            },
-            error: (error)=>{dispatch(requestPreviewDataError(error))}
+          xlsToTabular(proxy + url).then(data=>{
+            return dispatch(receivePreviewData(data));
+          }, error=>{
+            return dispatch(requestPreviewDataError('failed to parse xls'));
           });
-          break;
         case 'xml':
           fetch(proxy + url)
           .then(response=>

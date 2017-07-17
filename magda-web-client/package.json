@@ -51,7 +51,6 @@
     "marked": "^0.3.6",
     "node-sass": "^4.5.0",
     "openlayers": "^4.1.1",
-    "papaparse": "^4.3.3",
     "pretty-date": "^0.2.0",
     "query-string": "^4.3.4",
     "re-base": "^2.7.0",
