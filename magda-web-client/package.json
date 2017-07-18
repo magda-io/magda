@@ -25,7 +25,7 @@
     "npm-run-all": "^4.0.1",
     "react-scripts": "^1.0.10",
     "redux-mock-store": "^1.2.1",
-    "typescript": "2.3.4"
+    "typescript": "~2.4.0"
   },
   "dependencies": {
     "d3-drag": "^1.0.1",

@@ -1,8 +1,7 @@
 {
-  "name": "@magda/web-server",
-  "description": "The server that serves the MAGDA web front end.",
+  "name": "@magda/ld-rating-sleuther",
+  "description": "MAGDA Linked Data Rating Sleuther",
   "version": "0.0.28-SNAPSHOT",
-  "license": "Apache-2.0",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -12,25 +11,24 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
+  "author": "",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@magda/scripts": "^0.0.28-SNAPSHOT",
-    "@types/config": "0.0.32",
-    "@types/express": "^4.0.35",
-    "@types/urijs": "^1.15.33",
-    "@types/yargs": "^6.6.0",
+    "@types/lodash": "^4.14.68",
     "typescript": "~2.4.0"
   },
   "dependencies": {
-    "@magda/web-client": "^0.0.28-SNAPSHOT",
-    "config": "^1.26.1",
-    "express": "^4.15.3",
-    "urijs": "^1.18.10",
-    "yargs": "^8.0.2"
+    "@magda/registry-aspects": "^0.0.28-SNAPSHOT",
+    "@magda/sleuther-framework": "^0.0.28-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.28-SNAPSHOT",
+    "lodash": "^4.17.4"
   },
   "config": {
+    "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-web-server",
-      "include": "node_modules dist Dockerfile config"
+      "name": "data61/magda-ld-rating-sleuther",
+      "include": "node_modules dist Dockerfile"
     }
   }
 }

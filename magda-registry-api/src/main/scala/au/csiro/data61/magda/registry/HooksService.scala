@@ -29,7 +29,7 @@ class HooksService(system: ActorSystem, materializer: Materializer) extends Prot
 
   @ApiOperation(value = "Create a new web hook", nickname = "create", httpMethod = "POST", response = classOf[WebHook])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.registry.WebHook", paramType = "body", value = "The definition of the new web hook.")
+    new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHook", paramType = "body", value = "The definition of the new web hook.")
   ))
   def create = post { pathEnd { entity(as[WebHook]) { hook =>
     DB localTx { session =>
