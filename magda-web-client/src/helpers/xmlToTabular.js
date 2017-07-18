@@ -2,6 +2,7 @@
 import  fastXmlParser from 'fast-xml-parser';
 import traverse from 'traverse';
 import jsonToArray from './jsonToArray';
+import type {PreviewData} from './previewData';
 
 export default function(xmlData: string){
   // when a tag has attributes
@@ -19,7 +20,7 @@ export default function(xmlData: string){
       //optional
       const jsonObj = fastXmlParser.parse(xmlData,options);
       var array = jsonToArray(jsonObj);
-      const data = {
+      const data: PreviewData = {
         data: array,
         meta: {
           fields: ['name', 'value']

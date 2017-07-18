@@ -4,7 +4,7 @@ import {actionTypes} from '../constants/ActionTypes';
 import xmlToTabular from '../helpers/xmlToTabular';
 import jsonToTabular from '../helpers/jsonToTabular';
 import xlsToTabular from '../helpers/xlsToTabular';
-
+import type {PreviewData} from '../helpers/previewData';
 
 export function requestPreviewData(fileName){
   return {
@@ -13,7 +13,7 @@ export function requestPreviewData(fileName){
   }
 }
 
-export function receivePreviewData(data: Object) {
+export function receivePreviewData(data: PreviewData) {
   return {
     type: actionTypes.RECEIVE_PREVIEW_DATA,
     fetchPreviewData,

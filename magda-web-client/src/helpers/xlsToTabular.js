@@ -1,5 +1,6 @@
 //@flow
 import XLSX from 'xlsx';
+import type {PreviewData} from './previewData';
 
 export default function(url: string){
 
@@ -13,7 +14,7 @@ export default function(url: string){
 
       /* convert data to binary string */
       var data = new Uint8Array(arraybuffer);
-      var arr = new Array();
+      var arr = [];
       for(var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
       var bstr = arr.join("");
 
@@ -30,7 +31,7 @@ export default function(url: string){
             result[_sheetName] = roa;
           }
         });
-      const tabularData = {
+      const tabularData: PreviewData = {
         data: result[sheetName],
         meta: {
           fields: Object.keys(result[sheetName][0])
