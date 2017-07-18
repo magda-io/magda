@@ -121,14 +121,29 @@ export function fetchPreviewData(distributions){
             }));
             break;
           case 'pdf':
-              const data = {
+              dispatch(receivePreviewData({
                 data: proxy + url,
                 meta: {
                   type: 'pdf'
                 }
-              }
-              dispatch(receivePreviewData(data));
+              }));
               break;
+          case 'txt':
+          fetch(proxy + url)
+          .then(response=>
+            {
+              if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
+              return response.text();
+            }
+          ).then(text=>{
+            dispatch(receivePreviewData({
+              data: text,
+              meta: {
+                type: 'txt'
+              }
+            }));
+          })
+          break;
         default:
           dispatch(resetPreviewData());
       }
