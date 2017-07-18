@@ -5,7 +5,7 @@ import googleLogo from "./google-logo.svg";
 import "./Login.css";
 
 import { config } from "../../config";
-const { apiHost: baseUrl } = config;
+const { baseUrl } = config;
 
 export default class Login extends React.Component {
   render() {
@@ -30,59 +30,64 @@ export default class Login extends React.Component {
         <div className="col-sm-6 col-md-5 col-md-offset-1">
           <h2>Sign In / Register through External Provider</h2>
           <ul className="login__providers">
-            <li className="login__provider">
-              <a href={makeLoginUrl("facebook")}>
-                <img src={fbLogo} className="login__logo" alt="logo" />
-                Facebook
-              </a>
-            </li>
-            <li className="login__provider">
-              <a href={makeLoginUrl("google")}>
-                <img src={googleLogo} className="login__logo" alt="logo"/>
-                Google
-              </a>
-            </li>
+            {this.props.providers.includes("facebook") &&
+              <li className="login__provider">
+                <a href={makeLoginUrl("facebook")}>
+                  <img src={fbLogo} className="login__logo" alt="logo" />
+                  Facebook
+                </a>
+              </li>}
+            {this.props.providers.includes("google") &&
+              <li className="login__provider">
+                <a href={makeLoginUrl("google")}>
+                  <img src={googleLogo} className="login__logo" alt="logo" />
+                  Google
+                </a>
+              </li>}
           </ul>
         </div>
-        <div className="col-sm-6 col-md-5">
-          <h2>Sign In with Data.gov.au</h2>
-          <p>
-            This will use your existing data.gov.au account. To register a new
-            data.gov.au account,{" "}
-            <a href="http://data.gov.au/user/register" target="_blank">click here</a>.
-          </p>
-          <form
-            action={makeLoginUrl("ckan")}
-            method="post"
-            className="login__form"
-          >
-            <div className="login__input-group input-group">
-              <div className="input-group-addon">
-                <span className="glyphicon glyphicon-user" />
+        {this.props.providers.includes("ckan") &&
+          <div className="col-sm-6 col-md-5">
+            <h2>Sign In with Data.gov.au</h2>
+            <p>
+              This will use your existing data.gov.au account. To register a new
+              data.gov.au account,{" "}
+              <a href="http://data.gov.au/user/register" target="_blank">
+                click here
+              </a>.
+            </p>
+            <form
+              action={makeLoginUrl("ckan")}
+              method="post"
+              className="login__form"
+            >
+              <div className="login__input-group input-group">
+                <div className="input-group-addon">
+                  <span className="glyphicon glyphicon-user" />
+                </div>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Username"
+                  name="username"
+                />
               </div>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Username"
-                name="username"
-              />
-            </div>
-            <div className="login__input-group input-group">
-              <div className="input-group-addon">
-                <span className="glyphicon glyphicon-lock" />
+              <div className="login__input-group input-group">
+                <div className="input-group-addon">
+                  <span className="glyphicon glyphicon-lock" />
+                </div>
+                <input
+                  type="password"
+                  name="password"
+                  className="form-control"
+                  placeholder="Password"
+                />
               </div>
-              <input
-                type="password"
-                name="password"
-                className="form-control"
-                placeholder="Password"
-              />
-            </div>
-            <div className="pull-right">
-              <input type="submit" className="btn btn-primary" />
-            </div>
-          </form>
-        </div>
+              <div className="pull-right">
+                <input type="submit" className="btn btn-primary" />
+              </div>
+            </form>
+          </div>}
       </div>
     );
   }

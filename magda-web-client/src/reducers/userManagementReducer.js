@@ -1,7 +1,10 @@
 const initialData = {
   user: null,
   isFetchingWhoAmI: false,
-  whoAmIError: null
+  whoAmIError: null,
+  providers: [],
+  isFetchingProviders: false,
+  providersError: null
 };
 
 const userManagementMapping = (state = initialData, action: Action) => {
@@ -42,6 +45,23 @@ const userManagementMapping = (state = initialData, action: Action) => {
       return Object.assign({}, state, {
         isSigningOut: false,
         signOutError: action.error
+      });
+    case "REQUEST_AUTH_PROVIDERS":
+      return Object.assign({}, state, {
+        isFetchingProviders: true,
+        providersError: null
+      });
+    case "RECEIVE_AUTH_PROVIDERS":
+      return Object.assign({}, state, {
+        isFetchingProviders: false,
+        providersError: null,
+        providers: action.providers
+      });
+    case "RECEIVE_AUTH_PROVIDERS_ERROR":
+      return Object.assign({}, state, {
+        isFetchingProviders: false,
+        providersError: action.err,
+        providers: initialData.providers
       });
     default:
       return state;
