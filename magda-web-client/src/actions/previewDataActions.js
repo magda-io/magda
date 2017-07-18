@@ -8,10 +8,10 @@ import {getPreviewDataUrl} from '../helpers/previewData';
 import type {PreviewData} from '../helpers/previewData';
 
 
-export function requestPreviewData(fileName){
+export function requestPreviewData(url: string){
   return {
     type: actionTypes.REQUEST_PREVIEW_DATA,
-    fileName
+    url
   }
 }
 
@@ -42,17 +42,19 @@ export function fetchPreviewData(distributions){
   return (dispatch: Function, getState: Function)=>{
       const prop = getPreviewDataUrl(distributions);
       // check if we need to fetch
-      if(getState().previewData.isFetching){
-        return false;
-      }
+
       if(!prop){
         return dispatch(resetPreviewData())
       }
+
+      if(getState().previewData.isFetching && prop.url === getState().previewData.url){
+        return false;
+      }
+      
       const url = prop.url;
       const format = prop.format;
 
-      const fileName =  url.substring(url.lastIndexOf('/')+1);
-      dispatch(requestPreviewData(fileName));
+      dispatch(requestPreviewData(url));
 
       const proxy = "https://nationalmap.gov.au/proxy/_0d/";
 

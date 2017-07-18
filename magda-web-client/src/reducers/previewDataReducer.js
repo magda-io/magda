@@ -3,21 +3,21 @@ const initialData = {
   previewData: null,
   isFetching: false,
   error: null,
-  fileName: undefined
+  url: ''
 }
 
 type previewDataState = {
   isFetching: boolean,
   error: ?number,
   previewData: ?Object,
-  fileName: ?string
+  url: string
 }
 
 type previewDataAction = {
   type: string,
   previewData?: ?Object,
   error: number,
-  fileName?: ?string
+  url?: string
 }
 
 const previewDataReducer = (state: previewDataState = initialData, action: previewDataAction) => {
@@ -26,7 +26,8 @@ const previewDataReducer = (state: previewDataState = initialData, action: previ
       return Object.assign({}, state, {
         isFetching: true,
         error: null,
-        fileName: action.fileName
+        url: action.url,
+        previewData: null
       })
     case 'REQUEST_PREVIEW_DATA_ERROR':
       return Object.assign({}, state, {

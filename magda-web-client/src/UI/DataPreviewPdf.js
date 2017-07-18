@@ -57,7 +57,6 @@ class DataPreviewPdf extends Component {
         pagination = this.renderPagination(this.state.page, this.state.pages);
       }
       return <div className="clearfix">
-            <h3 className='section-heading'>{this.props.fileName}</h3>
             <PDF file={this.props.data.data} onDocumentComplete={this.onDocumentComplete} onPageComplete={this.onPageComplete} page={this.state.page} />
             {pagination}
       </div>

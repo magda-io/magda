@@ -19,7 +19,6 @@ class DataPreviewTable  extends Component {
       }))
       return (
         <div className="clearfix">
-            <h3 className='section-heading'>{this.props.fileName}</h3>
             <div className='vis'>
               <ReactTable
                 minRows={3}

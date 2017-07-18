@@ -31,7 +31,9 @@ export default function(url: string){
             result[_sheetName] = roa;
           }
         });
-
+      // only preview the first sheet
+      // should we allow preview all sheets?
+      
       if(request.status === 200 && result[sheetName]){
         const tabularData: PreviewData = {
           data: result[sheetName],

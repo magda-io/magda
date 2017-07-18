@@ -23,10 +23,9 @@ class DistributionPreview extends Component {
   }
 
   render(){
-    debugger
     return (<div className='dataset-preview container'>
                   {this.props.isFetching && <ProgressBar/>}
-                  {this.visualisable() && <DataPreviewer data={this.props.data} fileName= {this.props.fileName}/>}
+                  {this.visualisable() && <DataPreviewer data={this.props.data} url= {this.props.url}/>}
                   {(!this.props.isFetching && !this.props.data && !this.props.error) && <div>No preview available</div>}
                   {this.props.error && <div> {this.props.error}</div>}
             </div>)
@@ -39,9 +38,9 @@ function mapStateToProps(state) {
   const data = previewData.previewData;
   const isFetching = previewData.isFetching;
   const error = previewData.error;
-  const fileName = previewData.fileName;
+  const url = previewData.url;
   return {
-    data, isFetching, error, distribution, fileName
+    data, isFetching, error, distribution, url
   };
 }
 
