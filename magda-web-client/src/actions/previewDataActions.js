@@ -50,7 +50,7 @@ export function fetchPreviewData(distributions){
       if(getState().previewData.isFetching && prop.url === getState().previewData.url){
         return false;
       }
-      
+
       const url = prop.url;
       const format = prop.format;
 
@@ -61,9 +61,9 @@ export function fetchPreviewData(distributions){
       switch (format) {
         case 'csv':
           xlsToTabular(proxy + url).then(data=>{
-            return dispatch(receivePreviewData(data));
+            dispatch(receivePreviewData(data));
           }, error=>{
-            return dispatch(requestPreviewDataError('failed to parse xls'));
+            dispatch(requestPreviewDataError('failed to parse xls'));
           });
           break;
         case 'xml':
@@ -76,9 +76,9 @@ export function fetchPreviewData(distributions){
           ).then(xmlData=>{
             const data = xmlToTabular(xmlData);
             if(data){
-              return dispatch(receivePreviewData(data));
+              dispatch(receivePreviewData(data));
             } else{
-              return dispatch(requestPreviewDataError('failed to parse xml'))
+              dispatch(requestPreviewDataError('failed to parse xml'))
             }
           });
           break;
@@ -92,35 +92,43 @@ export function fetchPreviewData(distributions){
           ).then(json=>{
             const data = jsonToTabular(json);
             if(data){
-              return dispatch(receivePreviewData(data));
+              dispatch(receivePreviewData(data));
             } else{
-              return dispatch(requestPreviewDataError('failed to parse json'))
+              dispatch(requestPreviewDataError('failed to parse json'))
             }
           })
           break;
         case 'xls':
           xlsToTabular(proxy + url).then(data=>{
-            return dispatch(receivePreviewData(data));
+             dispatch(receivePreviewData(data));
           }, error=>{
-            return dispatch(requestPreviewDataError('failed to parse xls'));
+             dispatch(requestPreviewDataError('failed to parse xls'));
           });
           break;
         case 'excel':
           xlsToTabular(proxy + url).then(data=>{
-            return dispatch(receivePreviewData(data));
+            dispatch(receivePreviewData(data));
           }, error=>{
-            return dispatch(requestPreviewDataError('failed to parse xls'));
+            dispatch(requestPreviewDataError('failed to parse xls'));
           });
           break;
         case 'pdf':
-            const data = {
+            dispatch(receivePreviewData({
               data: proxy + url,
               meta: {
                 type: 'pdf'
               }
-            }
-            return dispatch(receivePreviewData(data));
+            }));
             break;
+          case 'pdf':
+              const data = {
+                data: proxy + url,
+                meta: {
+                  type: 'pdf'
+                }
+              }
+              dispatch(receivePreviewData(data));
+              break;
         default:
           dispatch(resetPreviewData());
       }

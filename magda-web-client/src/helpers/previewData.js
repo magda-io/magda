@@ -16,9 +16,10 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     const csv = viewableDistribution.filter(d=> d.format.toLowerCase() === 'csv');
     const xml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xml');
     const json = viewableDistribution.filter(d=> d.format.toLowerCase() === 'json');
-    const xls = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xls');
+    const xls = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xls' || d.format.toLowerCase() === 'xlsx');
     const excel = viewableDistribution.filter(d=> d.format.toLowerCase() === 'excel');
     const pdf = viewableDistribution.filter(d=> d.format.toLowerCase() === 'pdf');
+    const txt = viewableDistribution.filter(d=> d.format.toLowerCase() === 'txt');
 
     if(csv.length > 0){
       return {url: csv[0].downloadURL, format: 'csv'}
@@ -40,6 +41,10 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
 
     if(pdf.length > 0){
       return {url: pdf[0].downloadURL, format: 'pdf'}
+    }
+
+    if(txt.length > 0){
+      return {url: txt[0].downloadURL, format: 'txt'}
     }
 
     return false;
