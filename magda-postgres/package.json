@@ -1,0 +1,20 @@
+{
+  "name": "@magda/postgres",
+  "version": "0.0.28-SNAPSHOT",
+  "description": "A base Docker image for PostgreSQL with Flyway for schema migrations.",
+  "scripts": {
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "config": {
+    "docker": {
+      "name": "data61/magda-postgres",
+      "include": "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate-and-start.sh"
+    }
+  },
+  "devDependencies": {
+    "@magda/scripts": "^0.0.28-SNAPSHOT"
+  }
+}
