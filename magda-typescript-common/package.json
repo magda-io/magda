@@ -5,8 +5,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "npm run generate && npm run compile",
-    "compile": "tsc",
-    "watch": "tsc --watch",
+    "compile": "tsc -p tsconfig-build.json",
+    "watch": "tsc -p tsconfig-build.json --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
     "test": "mocha lib/test",
     "dev": "npm run watch"

@@ -1,4 +1,5 @@
 import * as express from "express";
+import { Router} from "express";
 const httpProxy = require("http-proxy");
 const jwt = require("jsonwebtoken");
 const config = require("config");
@@ -7,7 +8,7 @@ import setupAuth from "./setup-auth";
 
 var proxy = httpProxy.createProxyServer({ prependUrl: false });
 
-const router = express.Router();
+const router: Router = express.Router();
 
 proxy.on("proxyReq", function(
   proxyReq: any,

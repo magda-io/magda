@@ -4,8 +4,8 @@
   "version": "0.0.28-SNAPSHOT",
   "scripts": {
     "build": "npm run compile",
-    "compile": "tsc",
-    "watch": "tsc --watch",
+    "compile": "tsc -p tsconfig-build.json",
+    "watch": "tsc -p tsconfig-build.json --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",

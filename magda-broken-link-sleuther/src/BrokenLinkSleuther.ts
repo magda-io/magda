@@ -175,11 +175,11 @@ namespace FTPHandler {
 
 }
 
-interface BrokenLinkSleutherOptions {
+export interface BrokenLinkSleutherOptions {
     registry: Registry
 }
 
-interface BrokenLinkSleutherResult {
+export interface BrokenLinkSleutherResult {
     checkedDistributions: number,
     brokenLinks: number,
     tooManyRequests: number

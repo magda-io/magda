@@ -4,8 +4,8 @@
   "version": "0.0.28-SNAPSHOT",
   "scripts": {
     "build": "npm run compile",
-    "compile": "tsc",
-    "watch": "tsc --watch"
+    "compile": "tsc -p tsconfig-build.json",
+    "watch": "tsc -p tsconfig-build.json --watch"
   },
   "author": "",
   "license": "Apache-2.0",
