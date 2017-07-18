@@ -27,11 +27,12 @@ class DatasetPreview extends Component {
   }
 
   render(){
+    debugger
     return (<div className='dataset-preview container'>
                   {this.props.isFetching && <ProgressBar/>}
                   {this.visualisable() && <DataPreviewer data={this.props.data} fileName= {this.props.fileName}/>}
                   {(!this.props.isFetching && !this.props.data && !this.props.error) && <div>No preview available</div>}
-                  {this.visualisable() && this.props.error && <div> {this.props.error}</div>}
+                  {this.props.error && <div> {this.props.error}</div>}
             </div>)
   }
 }
