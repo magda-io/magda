@@ -6,6 +6,7 @@ import * as LRU from 'lru-cache';
 import * as URI from 'urijs';
 import retryBackoff from '@magda/typescript-common/dist/retryBackoff';
 import AsyncPage, { forEachAsync } from '@magda/typescript-common/dist/AsyncPage';
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 
 const aspectDefinition = {
     id: 'source-link-status',
@@ -13,6 +14,10 @@ const aspectDefinition = {
     jsonSchema: require('@magda/registry-aspects/source-link-status.schema.json')
 };
 
+interface RecordsPage {
+    records: Record[],
+    nextPageToken: string
+}
 
 export default class BrokenLinkSleuther {
     private registry: Registry;
@@ -28,14 +33,14 @@ export default class BrokenLinkSleuther {
         await this.registry.putAspectDefinition(aspectDefinition);
 
 
-        const registryPage = AsyncPage.create<{records: Array<{id: string, aspects: {'dcat-distribution-strings': {downloadURL: string}}}>, nextPageToken: string}>((previous) => {
+        const registryPage = AsyncPage.create<RecordsPage>(previous => {
             if (previous === undefined) {
-                return this.registry.getRecords(['dcat-distribution-strings']);
+                return <Promise<RecordsPage>>this.registry.getRecords(['dcat-distribution-strings']);
             } else if (previous.records.length === 0) {
                 // Last page was an empty page, no more records left
                 return undefined;
             } else {
-                return this.registry.getRecords(['dcat-distribution-strings'], undefined, previous.nextPageToken, undefined);
+                return <Promise<RecordsPage>>this.registry.getRecords(['dcat-distribution-strings'], undefined, previous.nextPageToken, undefined);
             }
         }).map(page => page.records);
 

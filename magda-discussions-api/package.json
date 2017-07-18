@@ -29,11 +29,11 @@
     "@types/config": "0.0.32",
     "@types/express": "^4.0.35",
     "@types/lodash": "^4.14.64",
-    "@types/node": "^7.0.22",
+    "@types/node": "^8.0.14",
     "@types/passport": "^0.3.3",
     "@types/passport-facebook": "^2.1.4",
     "@types/pg": "^6.1.40",
-    "typescript": "2.3.4"
+    "typescript": "~2.4.0"
   },
   "config": {
     "docker": {

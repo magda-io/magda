@@ -9,7 +9,7 @@
     "nodemon": "^1.11.0",
     "tmp": "0.0.31",
     "ts-node": "^3.0.4",
-    "typescript": "2.3.4",
+    "typescript": "~2.4.0",
     "yargs": "^8.0.1"
   },
   "bin": {

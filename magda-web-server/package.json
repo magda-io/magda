@@ -18,7 +18,7 @@
     "@types/express": "^4.0.35",
     "@types/urijs": "^1.15.33",
     "@types/yargs": "^6.6.0",
-    "typescript": "2.3.4"
+    "typescript": "~2.4.0"
   },
   "dependencies": {
     "@magda/web-client": "^0.0.28-SNAPSHOT",
