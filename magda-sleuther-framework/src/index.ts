@@ -12,7 +12,7 @@ import AsyncPage, {
 // import * as _ from "lodash";
 import * as express from "express";
 
-type SleutherOptions = {
+export type SleutherOptions = {
   registry: Registry;
   host: string;
   defaultPort: number;
@@ -23,7 +23,9 @@ type SleutherOptions = {
   onRecordFound: (record: Record) => Promise<void>;
 };
 
-export default async function sleuther(options: SleutherOptions) {
+export default async function sleuther(
+  options: SleutherOptions
+): Promise<void> {
   setupWebhookEndpoint(options);
 
   await putAspectDefsIfNeeded(options);
@@ -136,9 +138,6 @@ async function registerNewWebhook(options: SleutherOptions) {
       "PatchRecord",
       "PatchAspectDefinition",
       "PatchRecordAspect"
-      // "DeleteRecord",
-      // "DeleteAspectDefinition",
-      // "DeleteRecordAspect"
     ],
     config: webHookConfig,
     lastEvent: null

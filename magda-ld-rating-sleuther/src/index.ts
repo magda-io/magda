@@ -1,7 +1,7 @@
 import Registry from "@magda/typescript-common/dist/Registry";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
-import sleuther from "./library/sleuther";
+import sleuther from "@magda/sleuther-framework/dist/index";
 import * as _ from "lodash";
 
 const linkedDataAspectDef = {
@@ -96,7 +96,7 @@ function sleuthLinkedData(registry: Registry) {
     registry,
     host,
     id: ID,
-    defaultPort: 6969,
+    defaultPort: 6109,
     aspects: ["dataset-distributions"],
     optionalAspects: [],
     writeAspectDefs: [linkedDataAspectDef, datasetQualityAspectDef],

@@ -1,11 +1,12 @@
 {
-    "extends": "../tsconfig-global.json",
-    "compilerOptions": {
-        "outDir": "dist",
-        "baseUrl": ".",
-        "paths": {
-            "@magda/typescript-common/dist/*": ["@magda/typescript-common/src/*"]
-        }
-    },
-    "include": ["src"]
+  "extends": "../tsconfig-global.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@magda/typescript-common/dist/*": ["../magda-typescript-common/src/*"],
+      "@magda/sleuther-framework/dist/*": ["../magda-sleuther-framework/src/*"]
+    }
+  },
+  "include": ["src"]
 }

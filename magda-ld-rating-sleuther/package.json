@@ -1,6 +1,6 @@
 {
-  "name": "@magda/broken-link-sleuther",
-  "description": "MAGDA Broken Link Sleuther",
+  "name": "@magda/ld-rating-sleuther",
+  "description": "MAGDA Linked Data Rating Sleuther",
   "version": "0.0.28-SNAPSHOT",
   "scripts": {
     "build": "npm run compile",
@@ -15,20 +15,19 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@magda/scripts": "^0.0.28-SNAPSHOT",
-    "@types/express": "^4.0.36",
+    "@types/lodash": "^4.14.68",
     "typescript": "2.3.4"
   },
   "dependencies": {
     "@magda/registry-aspects": "^0.0.28-SNAPSHOT",
+    "@magda/sleuther-framework": "^0.0.28-SNAPSHOT",
     "@magda/typescript-common": "^0.0.28-SNAPSHOT",
-    "@types/lodash": "^4.14.68",
-    "express": "^4.15.3",
     "lodash": "^4.17.4"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-broken-link-sleuther",
+      "name": "data61/magda-ld-rating-sleuther",
       "include": "node_modules dist Dockerfile"
     }
   }
