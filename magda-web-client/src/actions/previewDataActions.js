@@ -4,8 +4,9 @@ import {actionTypes} from '../constants/ActionTypes';
 import xmlToTabular from '../helpers/xmlToTabular';
 import jsonToTabular from '../helpers/jsonToTabular';
 import xlsToTabular from '../helpers/xlsToTabular';
+import {getPreviewDataUrl} from '../helpers/previewData';
 import type {PreviewData} from '../helpers/previewData';
-import type {ParsedDistribution} from '../helpers/record';
+
 
 export function requestPreviewData(fileName){
   return {
@@ -35,36 +36,7 @@ export function resetPreviewData(){
   }
 }
 
-function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
-    // 1. link status available
-    // 2. link is active
-    const viewableDistribution = distributions.filter(d=>d.linkStatusAvailable && d.linkActive && d.downloadURL);
-    const csv = viewableDistribution.filter(d=> d.format.toLowerCase() === 'csv');
-    const xml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xml');
-    const json = viewableDistribution.filter(d=> d.format.toLowerCase() === 'json');
-    const xls = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xls');
-    const excel = viewableDistribution.filter(d=> d.format.toLowerCase() === 'excel');
 
-    if(csv.length > 0){
-      return {url: csv[0].downloadURL, format: 'csv'}
-    }
-    if(xml.length > 0){
-      return {url: xml[0].downloadURL, format: 'xml'}
-    }
-    if(json.length > 0){
-      return {url: json[0].downloadURL, format: 'json'}
-    }
-
-    if(xls.length > 0){
-      return {url: xls[0].downloadURL, format: 'xls'}
-    }
-
-    if(excel.length > 0){
-      return {url: excel[0].downloadURL, format: 'excel'}
-    }
-
-    return false;
-  }
 
 export function fetchPreviewData(distributions){
   return (dispatch: Function, getState: Function)=>{
@@ -135,7 +107,14 @@ export function fetchPreviewData(distributions){
           }, error=>{
             return dispatch(requestPreviewDataError('failed to parse xls'));
           });
-
+        case 'pdf':
+            const data = {
+              data: proxy + url,
+              meta: {
+                type: 'pdf'
+              }
+            }
+            return dispatch(receivePreviewData(data));
         default:
           dispatch(resetPreviewData());
       }
