@@ -63,6 +63,7 @@ export function fetchPreviewData(distributions){
           }, error=>{
             return dispatch(requestPreviewDataError('failed to parse xls'));
           });
+          break;
         case 'xml':
           fetch(proxy + url)
           .then(response=>
@@ -101,12 +102,14 @@ export function fetchPreviewData(distributions){
           }, error=>{
             return dispatch(requestPreviewDataError('failed to parse xls'));
           });
+          break;
         case 'excel':
           xlsToTabular(proxy + url).then(data=>{
             return dispatch(receivePreviewData(data));
           }, error=>{
             return dispatch(requestPreviewDataError('failed to parse xls'));
           });
+          break;
         case 'pdf':
             const data = {
               data: proxy + url,
@@ -115,6 +118,7 @@ export function fetchPreviewData(distributions){
               }
             }
             return dispatch(receivePreviewData(data));
+            break;
         default:
           dispatch(resetPreviewData());
       }

@@ -19,10 +19,10 @@ export default function(url: string){
       var bstr = arr.join("");
 
       /* Call XLSX */
-      var workbook = XLSX.read(bstr, {type:"binary"});
+      const workbook = XLSX.read(bstr, {type:"binary"});
 
       /* DO SOMETHING WITH workbook HERE */
-      var result = {};
+      let result = {};
       let sheetName = '';
       workbook.SheetNames.forEach(function(_sheetName) {
           var roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[_sheetName]);
@@ -31,14 +31,15 @@ export default function(url: string){
             result[_sheetName] = roa;
           }
         });
-      const tabularData: PreviewData = {
-        data: result[sheetName],
-        meta: {
-          fields: Object.keys(result[sheetName][0]),
-          type: 'tabular'
+
+      if(request.status === 200 && result[sheetName]){
+        const tabularData: PreviewData = {
+          data: result[sheetName],
+          meta: {
+            fields: Object.keys(result[sheetName][0]),
+            type: 'tabular'
+          }
         }
-      }
-      if(request.status === 200){
         resolve(tabularData);
       } else{
         reject(Error('There was a network error.'));
