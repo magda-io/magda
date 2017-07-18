@@ -5,7 +5,7 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 
 import scala.util.Try
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 import java.sql.SQLException
 
 import akka.NotUsed
@@ -94,7 +94,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       _ <- if (id == newRecord.id) Success(newRecord) else Failure(new RuntimeException("The provided ID does not match the record's ID."))
       oldRecordWithoutAspects <- this.getByIdWithAspects(session, id) match {
         case Some(record) => Success(record)
-        case None => createRecord(session, newRecord).map(_.copy(aspects = Map()))
+        case None         => createRecord(session, newRecord).map(_.copy(aspects = Map()))
       }
       recordPatch <- Try {
         // Diff the old record and the new one, ignoring aspects
@@ -104,13 +104,16 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         JsonDiff.diff(oldRecordJson, newRecordJson, false)
       }
       result <- patchRecordById(session, id, recordPatch)
-      patchedAspects <- Try { newRecord.aspects.map { case (aspectId, data) =>
-          (aspectId, this.putRecordAspectById(session, id, aspectId, data))
-      } }
+      patchedAspects <- Try {
+        newRecord.aspects.map {
+          case (aspectId, data) =>
+            (aspectId, this.putRecordAspectById(session, id, aspectId, data))
+        }
+      }
       // Report the first failed aspect, if any
       _ <- patchedAspects.find(_._2.isFailure) match {
         case Some((_, Failure(failure))) => Failure(failure)
-        case _ => Success(result)
+        case _                           => Success(result)
       }
       // No failed aspects, so unwrap the aspects from the Success Trys.
       resultAspects <- Try { patchedAspects.mapValues(_.get) }
@@ -121,11 +124,11 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     for {
       record <- this.getByIdWithAspects(session, id) match {
         case Some(record) => Success(record)
-        case None => Failure(new RuntimeException("No record exists with that ID."))
+        case None         => Failure(new RuntimeException("No record exists with that ID."))
       }
       recordOnlyPatch <- Success(recordPatch.filter(op => op.path match {
         case "aspects" / _ => false
-        case _ => true
+        case _             => true
       }))
       eventId <- Try {
         if (recordOnlyPatch.ops.length > 0) {
@@ -151,7 +154,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       aspectResults <- Try {
         recordPatch.ops.groupBy(op => op.path match {
           case "aspects" / (name / _) => Some(name)
-          case _ => None
+          case _                      => None
         }).filterKeys(!_.isEmpty).map({
           // Create or patch each aspect.
           // We create if there's exactly one ADD operation and it's adding an entire aspect.
@@ -173,8 +176,8 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           // We patch in all other scenarios.
           case (Some(aspectId), operations) => (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(operations.map({
             // Make paths in operations relative to the aspect instead of the record
-            case Add("aspects" / (name / rest), value) => Add(rest, value)
-            case Remove("aspects" / (name / rest), old) => Remove(rest, old)
+            case Add("aspects" / (name / rest), value)          => Add(rest, value)
+            case Remove("aspects" / (name / rest), old)         => Remove(rest, old)
             case Replace("aspects" / (name / rest), value, old) => Replace(rest, value, old)
             case Move("aspects" / (sourceName / sourceRest), "aspects" / (destName / destRest)) => {
               if (sourceName != destName)
@@ -192,7 +195,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                 Copy(sourceRest, destRest)
             }
             case Test("aspects" / (name / rest), value) => Test(rest, value)
-            case _ => throw new RuntimeException("The patch contains an unsupported operation for aspect " + aspectId)
+            case _                                      => throw new RuntimeException("The patch contains an unsupported operation for aspect " + aspectId)
           }))))
           case _ => throw new RuntimeException("Aspect ID is missing (this shouldn't be possible).")
         })
@@ -200,12 +203,12 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       // Report the first failed aspect, if any
       _ <- aspectResults.find(_._2.isFailure) match {
         case Some((_, failure)) => failure
-        case _ => Success(record)
+        case _                  => Success(record)
       }
       // No failed aspects, so unwrap the aspects from the Success Trys.
       aspects <- Success(aspectResults.filter({
         case (_, Success(JsNull)) => false // aspect was deleted
-        case _ => true
+        case _                    => true
       }).map(aspect => (aspect._1, aspect._2.get.asJsObject)))
     } yield Record(patchedRecord.id, patchedRecord.name, aspects)
   }
@@ -214,7 +217,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     for {
       aspect <- this.getRecordAspectById(session, recordId, aspectId) match {
         case Some(aspect) => Success(aspect)
-        case None => Failure(new RuntimeException("No aspect exists on that record with that ID."))
+        case None         => createRecordAspect(session, recordId, aspectId, JsObject())
       }
       eventId <- Try {
         if (aspectPatch.ops.length > 0) {
@@ -245,7 +248,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     for {
       oldAspect <- this.getRecordAspectById(session, recordId, aspectId) match {
         case Some(record) => Success(record)
-        case None => createRecordAspect(session, recordId, aspectId, newAspect)
+        case None         => createRecordAspect(session, recordId, aspectId, newAspect)
       }
       recordAspectPatch <- Try {
         // Diff the old record aspect and the new one
@@ -261,8 +264,8 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   def createRecord(implicit session: DBSession, record: Record): Try[Record] = {
     for {
       eventId <- Try {
-          val eventJson = CreateRecordEvent(record.id, record.name).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+        val eventJson = CreateRecordEvent(record.id, record.name).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
         sql"""insert into Records (recordId, name, lastUpdate) values (${record.id}, ${record.name}, $eventId)""".update.apply()
@@ -273,7 +276,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       }
       hasAspectFailure <- record.aspects.map(aspect => createRecordAspect(session, record.id, aspect._1, aspect._2)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case _ => Success(record)
+        case _                => Success(record)
       }
     } yield hasAspectFailure
   }
@@ -286,7 +289,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       }
       _ <- aspects.map(aspectId => deleteRecordAspect(session, recordId, aspectId)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case _ => Success(aspects)
+        case _                => Success(aspects)
       }
       _ <- Try {
         val eventJson = DeleteRecordEvent(recordId).toJson.compactPrint
@@ -332,7 +335,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     // TODO: can probably simplify some of this with lenses or whatever
     events.fold[JsValue](JsNull)((recordValue, event) => event.eventType match {
       case EventType.CreateRecord => JsObject("id" -> event.data.fields("recordId"), "name" -> event.data.fields("name"), "aspects" -> JsObject())
-      case EventType.PatchRecord => event.data.fields("patch").convertTo[JsonPatch].apply(recordValue)
+      case EventType.PatchRecord  => event.data.fields("patch").convertTo[JsonPatch].apply(recordValue)
       case EventType.DeleteRecord => JsNull
       case EventType.CreateRecordAspect => {
         val createAspectEvent = event.data.convertTo[CreateRecordAspectEvent]
@@ -365,7 +368,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       case _ => recordValue
     }).map {
       case obj: JsObject => Some(obj.convertTo[Record])
-      case _ => None
+      case _             => None
     }
   }
 
@@ -396,8 +399,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     RecordSummariesPage(
       totalCount,
       lastSequence.map(_.toString),
-      pageResults
-    )
+      pageResults)
   }
 
   private def getRecords(implicit session: DBSession,
@@ -444,19 +446,18 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     RecordsPage(
       totalCount,
       lastSequence.map(_.toString),
-      pageResults
-    )
+      pageResults)
   }
 
   private def makeWhereClause(andParts: Seq[Option[SQLSyntax]]) = {
     andParts.filter(!_.isEmpty) match {
-      case Seq() => SQLSyntax.empty
-      case nonEmpty => SQLSyntax.where(SQLSyntax.joinWithAnd(nonEmpty.map(_.get):_*))
+      case Seq()    => SQLSyntax.empty
+      case nonEmpty => SQLSyntax.where(SQLSyntax.joinWithAnd(nonEmpty.map(_.get): _*))
     }
   }
 
   private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = {
-      RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()))
+    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()))
   }
 
   private def rowToRecord(aspectIds: Iterable[String])(rs: WrappedResultSet): Record = {
@@ -486,64 +487,67 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           .map(rs => (rs.string("aspectId"), JsonParser(rs.string("jsonSchema")).asJsObject))
           .list.apply()
 
-      aspects.map { case (aspectId, jsonSchema) =>
-        // This aspect can only have links if it uses hyper-schema
-        if (jsonSchema.fields.getOrElse("$schema", JsString("")).toString().contains("hyper-schema")) {
-          // TODO: support multiple linked properties in an aspect.
+      aspects.map {
+        case (aspectId, jsonSchema) =>
+          // This aspect can only have links if it uses hyper-schema
+          if (jsonSchema.fields.getOrElse("$schema", JsString("")).toString().contains("hyper-schema")) {
+            // TODO: support multiple linked properties in an aspect.
 
-          val properties = jsonSchema.fields.get("properties").flatMap {
-            case JsObject(properties) => Some(properties)
-            case _ => None
-          }.getOrElse(Map())
+            val properties = jsonSchema.fields.get("properties").flatMap {
+              case JsObject(properties) => Some(properties)
+              case _                    => None
+            }.getOrElse(Map())
 
-          val propertyWithLinks = properties.map { case (propertyName, property) =>
-            val linksInProperties = property.extract[JsValue]('links.? / filter { value =>
-              val relPredicate = 'rel.is[String](_ == "item")
-              val hrefPredicate = 'href.is[String](_ == "/api/v0/registry/records/{$}")
-              relPredicate(value) && hrefPredicate(value)
-            })
+            val propertyWithLinks = properties.map {
+              case (propertyName, property) =>
+                val linksInProperties = property.extract[JsValue]('links.? / filter { value =>
+                  val relPredicate = 'rel.is[String](_ == "item")
+                  val hrefPredicate = 'href.is[String](_ == "/api/v0/registry/records/{$}")
+                  relPredicate(value) && hrefPredicate(value)
+                })
 
-            val linksInItems = property.extract[JsValue]('items.? / 'links.? / filter { value =>
-              val relPredicate = 'rel.is[String](_ == "item")
-              val hrefPredicate = 'href.is[String](_ == "/api/v0/registry/records/{$}")
-              relPredicate(value) && hrefPredicate(value)
-            })
+                val linksInItems = property.extract[JsValue]('items.? / 'links.? / filter { value =>
+                  val relPredicate = 'rel.is[String](_ == "item")
+                  val hrefPredicate = 'href.is[String](_ == "/api/v0/registry/records/{$}")
+                  relPredicate(value) && hrefPredicate(value)
+                })
 
-            if (!linksInProperties.isEmpty) {
-              Some(PropertyWithLink(propertyName, false))
-            } else if (!linksInItems.isEmpty) {
-              Some(PropertyWithLink(propertyName, true))
-            } else {
-              None
-            }
-          }.filter(!_.isEmpty).map(_.get)
+                if (!linksInProperties.isEmpty) {
+                  Some(PropertyWithLink(propertyName, false))
+                } else if (!linksInItems.isEmpty) {
+                  Some(PropertyWithLink(propertyName, true))
+                } else {
+                  None
+                }
+            }.filter(!_.isEmpty).map(_.get)
 
-          propertyWithLinks.map(property => (aspectId, property)).headOption
-        } else {
-          None
-        }
+            propertyWithLinks.map(property => (aspectId, property)).headOption
+          } else {
+            None
+          }
       }.filter(!_.isEmpty).map(_.get).toMap
     }
   }
 
   private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink]) = {
-    aspectIds.zipWithIndex.map { case(aspectId, index) =>
-      // Use a simple numbered column name rather than trying to make the aspect name safe.
-      val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
-      val selection = dereferenceDetails.get(aspectId).map {
-        case PropertyWithLink(propertyName, true) => {
-          sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+    aspectIds.zipWithIndex.map {
+      case (aspectId, index) =>
+        // Use a simple numbered column name rather than trying to make the aspect name safe.
+        val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
+        val selection = dereferenceDetails.get(aspectId).map {
+          case PropertyWithLink(propertyName, true) => {
+            sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
                   (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId))))
                    from Records
                    inner join jsonb_array_elements_text(RecordAspects.data->${propertyName}) as aggregatedId on aggregatedId=Records.recordId)"""
-        }
-        case PropertyWithLink(propertyName, false) => {
-          sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+          }
+          case PropertyWithLink(propertyName, false) => {
+            sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
                   (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId)))
                    from Records where Records.recordId=RecordAspects.data->>${propertyName})"""
-        }
-      }.getOrElse(sqls"data")
-      sqls"""(select ${selection} from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
+          }
+        }.getOrElse(sqls"data")
+        sqls"""(select ${selection} from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId) as ${aspectColumnName}"""
     }
   }
 

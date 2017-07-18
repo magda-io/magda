@@ -5,7 +5,8 @@ import {
   RecordsApi,
   RecordAspectsApi,
   WebHooksApi,
-  WebHook
+  WebHook,
+  Operation
 } from "./generated/registry/api";
 import * as URI from "urijs";
 import retry from "./retry";
@@ -84,6 +85,46 @@ export default class Registry {
       .catch(createServiceError);
   }
 
+  getAspectDefinitions(): Promise<AspectDefinition[] | Error> {
+    const operation = () => () => this.aspectDefinitionsApi.getAll();
+    return <any>retry(
+      operation(),
+      this.secondsBetweenRetries,
+      this.maxRetries,
+      (e, retriesLeft) =>
+        console.log(
+          formatServiceError(
+            "Failed to GET aspect definitions.",
+            e,
+            retriesLeft
+          )
+        )
+    )
+      .then(result => result.body)
+      .catch(createServiceError);
+  }
+
+  getRecord(
+    id: string,
+    aspect?: Array<string>,
+    optionalAspect?: Array<string>,
+    dereference?: boolean
+  ): Promise<Record | Error> {
+    const operation = (id: string) => () =>
+      this.recordsApi.getById(id, aspect, optionalAspect, dereference);
+    return <any>retry(
+      operation(id),
+      this.secondsBetweenRetries,
+      this.maxRetries,
+      (e, retriesLeft) =>
+        console.log(
+          formatServiceError("Failed to GET records.", e, retriesLeft)
+        )
+    )
+      .then(result => result.body)
+      .catch(createServiceError);
+  }
+
   getRecords<I>(
     aspect?: Array<string>,
     optionalAspect?: Array<string>,
@@ -142,6 +183,34 @@ export default class Registry {
         encodeURIComponent(recordId),
         aspectId,
         aspect
+      );
+    return retry(
+      operation,
+      this.secondsBetweenRetries,
+      this.maxRetries,
+      (e, retriesLeft) =>
+        console.log(
+          formatServiceError(
+            `Failed to PUT data registry aspect ${aspectId} for record with ID "${recordId}".`,
+            e,
+            retriesLeft
+          )
+        )
+    )
+      .then(result => result.body)
+      .catch(createServiceError);
+  }
+
+  patchRecordAspect(
+    recordId: string,
+    aspectId: string,
+    aspectPatch: Operation[]
+  ): Promise<Record | Error> {
+    const operation = () =>
+      this.recordAspectsApi.patchById(
+        encodeURIComponent(recordId),
+        aspectId,
+        aspectPatch
       );
     return retry(
       operation,
