@@ -1,21 +1,17 @@
 import React, { Component } from 'react';
 import VegaLite from 'react-vega-lite';
 import DataPreviewTable from '../UI/DataPreviewTable';
+import type {PreviewData} from '../helpers/previewData';
 
 
 class DataPreviewer extends Component {
     props: {
-      data: {
-        meta: {
-          field:Array<string>
-        },
-        data: Array<Object> | string
-      },
+      data: PreviewData,
       fileName: string
     }
     render(){
       return <div className='data-previewer'>
-              <DataPreviewTable data={this.props.data} fileName= {this.props.fileName}/>
+              {this.props.data.meta.type === 'tabular' && <DataPreviewTable data={this.props.data} fileName= {this.props.fileName}/>}
              </div>
     }
 }

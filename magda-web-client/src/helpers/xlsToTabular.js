@@ -34,7 +34,8 @@ export default function(url: string){
       const tabularData: PreviewData = {
         data: result[sheetName],
         meta: {
-          fields: Object.keys(result[sheetName][0])
+          fields: Object.keys(result[sheetName][0]),
+          type: 'tabular'
         }
       }
       if(request.status === 200){

@@ -23,7 +23,8 @@ export default function(xmlData: string){
       const data: PreviewData = {
         data: array,
         meta: {
-          fields: ['name', 'value']
+          fields: ['name', 'value'],
+          type: 'tabular'
         }
       }
       return data

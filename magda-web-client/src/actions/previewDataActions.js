@@ -5,6 +5,7 @@ import xmlToTabular from '../helpers/xmlToTabular';
 import jsonToTabular from '../helpers/jsonToTabular';
 import xlsToTabular from '../helpers/xlsToTabular';
 import type {PreviewData} from '../helpers/previewData';
+import type {ParsedDistribution} from '../helpers/record';
 
 export function requestPreviewData(fileName){
   return {
@@ -34,7 +35,7 @@ export function resetPreviewData(){
   }
 }
 
-function getPreviewDataUrl(distributions){
+function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     // 1. link status available
     // 2. link is active
     const viewableDistribution = distributions.filter(d=>d.linkStatusAvailable && d.linkActive && d.downloadURL);
