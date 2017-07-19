@@ -100,7 +100,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     var backoff = 0
     var done = false
 
-    while (backoff <= 10 && !done) {
+    while (backoff <= 20 && !done) {
       backoff = backoff + 1
       try {
         done = predicate()
