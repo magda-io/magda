@@ -6,6 +6,9 @@
             "@magda/registry-aspects/dist/*": [
                 "./node_modules/@magda/registry-aspects/src/*"
             ],
+            "@magda/sleuther-framework/dist/*": [
+                "./node_modules/@magda/sleuther-framework/src/*"
+            ],
             "@magda/typescript-common/dist/*": [
                 "./node_modules/@magda/typescript-common/src/*"
             ]

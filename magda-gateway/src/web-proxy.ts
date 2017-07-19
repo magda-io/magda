@@ -1,8 +1,9 @@
 import * as express from "express";
+import { Router } from "express";
 const httpProxy = require("http-proxy");
 const config = require("config");
 
-const webRouter = express.Router();
+const webRouter: Router = express.Router();
 const proxy = httpProxy.createProxyServer({ prependUrl: false });
 const target = config.get("targets.web");
 

@@ -2,6 +2,7 @@
 const passport = require("passport");
 const FBStrategy = require("passport-facebook").Strategy;
 import * as express from "express";
+import { Router } from "express";
 import { Profile } from "passport";
 
 import createOrGet from "../create-or-get";
@@ -28,7 +29,7 @@ passport.use(
   )
 );
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get("/", (req, res, next) => {
   passport.authenticate("facebook", {
