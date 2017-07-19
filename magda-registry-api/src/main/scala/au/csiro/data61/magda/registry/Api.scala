@@ -19,7 +19,6 @@ import ch.megard.akka.http.cors.scaladsl.CorsDirectives
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
-import org.flywaydb.core.Flyway
 import scalikejdbc.config._
 import scalikejdbc._
 
@@ -72,10 +71,6 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
   }
 
   DBsWithEnvSpecificConfig(config).setupAll()
-
-//  val flyway = new Flyway()
-//  flyway.setDataSource(config.getString("db.default.url"), config.getString("db.default.user"), config.getString("db.default.password"))
-//  flyway.migrate()
 
   webHookActor ! WebHookActor.Process
 
