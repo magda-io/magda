@@ -5,6 +5,7 @@
   "scripts": {
     "build": "lerna run build --stream --concurrency=1",
     "docker-build-local": "lerna run docker-build-local --stream --concurrency=1",
-    "docker-build-prod": "lerna run docker-build-prod --stream --concurrency=1"
+    "docker-build-prod": "lerna run docker-build-prod --stream --concurrency=1",
+    "create-all-tsconfigs": "node ./scripts/create-all-tsconfigs.js"
   }
 }

@@ -1,0 +1,11 @@
+{
+    "extends": "../tsconfig-global.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "dist",
+        "baseUrl": "."
+    },
+    "include": [
+        "src"
+    ]
+}

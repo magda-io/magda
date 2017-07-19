@@ -1,5 +1,6 @@
 const passport = require('passport');
 import * as express from 'express';
+import { Router } from 'express';
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 import { Profile } from 'passport';
 
@@ -20,7 +21,7 @@ passport.use(
     )
 );
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get(
     "/",

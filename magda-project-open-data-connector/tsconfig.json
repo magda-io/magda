@@ -1,11 +1,14 @@
 {
-    "extends": "../tsconfig-global.json",
+    "extends": "./tsconfig-build.json",
     "compilerOptions": {
-        "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@magda/typescript-common/dist/*": ["@magda/typescript-common/src/*"]
+            "@magda/registry-aspects/dist/*": [
+                "./node_modules/@magda/registry-aspects/src/*"
+            ],
+            "@magda/typescript-common/dist/*": [
+                "./node_modules/@magda/typescript-common/src/*"
+            ]
         }
-    },
-    "include": ["src"]
+    }
 }
