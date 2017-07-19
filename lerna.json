@@ -24,6 +24,7 @@
     "magda-typescript-common/",
     "magda-web-client/",
     "magda-web-server/",
+    "magda-visualisation-sleuther/",
     "scripts/"
   ],
   "version": "0.0.28-SNAPSHOT",
