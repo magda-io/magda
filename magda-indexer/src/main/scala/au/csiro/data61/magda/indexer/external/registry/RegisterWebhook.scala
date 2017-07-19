@@ -43,25 +43,15 @@ private class WebhookRegisterer(interface: RegistryExternalInterface)(implicit c
         EventType.DeleteRecord,
         EventType.CreateRecordAspect,
         EventType.PatchRecord,
-        EventType.DeleteRecordAspect
-      ),
+        EventType.DeleteRecordAspect),
       url = config.getString("registry.webhookUrl"),
       config = WebHookConfig(
-        aspects = Some(List(
-          "dcat-dataset-strings",
-          "dataset-distributions",
-          "source"
-        )),
-        optionalAspects = Some(List(
-          "temporal-coverage",
-          "dataset-publisher"
-        )),
+        aspects = Some(RegistryConstants.aspects),
+        optionalAspects = Some(RegistryConstants.optionalAspects),
         includeRecords = Some(true),
-        dereference = Some(true)
-      ),
+        dereference = Some(true)),
       userId = Some(0), // TODO: Will have to change this when it becomes important
-      active = true
-    )
+      active = true)
 
     interface.addWebhook(webhook).map { _ =>
       system.log.info("Successfully added webhook")

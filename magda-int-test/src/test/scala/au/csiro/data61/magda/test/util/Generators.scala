@@ -364,6 +364,7 @@ object Generators {
     contactPoint <- someBiasedOption(agentGen(arbitrary[String].map(_.take(50).mkString.trim)))
     distributions <- listSizeBetween(1, 5, distGen(inputCache))
     landingPage <- someBiasedOption(arbitrary[String].map(_.take(50).mkString.trim))
+    quality <- Gen.choose(0.1d, 1d)
   } yield DataSet(
     identifier = identifier.toString,
     catalog = Some("test-catalog"),
@@ -381,7 +382,8 @@ object Generators {
     keywords = keyword,
     contactPoint = contactPoint,
     distributions = distributions,
-    landingPage = landingPage)
+    landingPage = landingPage,
+    quality = quality)
 
   val INDEXED_REGIONS_COUNT = 12
   def indexedRegionsGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("indexedRegions", regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)(inputCache)

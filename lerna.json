@@ -5,7 +5,7 @@
     "magda-auth-api/",
     "magda-auth-db/",
     "magda-sleuther-framework/",
-    "magda-ld-rating-sleuther/",
+    "magda-sleuther-ld-rating/",
     "magda-broken-link-sleuther/",
     "magda-ckan-connector/",
     "magda-combined-db/",
@@ -30,7 +30,8 @@
   ],
   "version": "0.0.28-SNAPSHOT",
   "hoist": [
-    "tsmonad"
+    "tsmonad",
+    "@types/express"
   ],
   "concurrency": "1"
 }
