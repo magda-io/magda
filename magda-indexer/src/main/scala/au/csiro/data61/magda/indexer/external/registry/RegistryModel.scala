@@ -43,12 +43,14 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
       case Some(qualityAspect) =>
         val ratings = qualityAspect.fields.map {
           case (key, value) =>
-            val rating = value.convertTo[QualityRatingAspect]
-
-            (rating.percentage.toDouble / 100) * (rating.weighting.toDouble / 100)
+            value.convertTo[QualityRatingAspect]
         }
+        val totalWeighting = ratings.map(_.weighting).reduce(_ + _).toDouble / 100
 
-        ratings.reduce(_ + _) / ratings.size
+        val weightedRatings = ratings.map(rating =>
+          (rating.percentage.toDouble / 100) * (rating.weighting.toDouble / 100 / totalWeighting))
+
+        weightedRatings.reduce(_ + _) / totalWeighting
       case None => 1
     }
 

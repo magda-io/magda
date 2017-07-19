@@ -68,7 +68,7 @@ function sleuthLinkedData(registry: Registry) {
       }
     });
 
-    const best = _.max(processed);
+    const best = _.max(processed) || 0;
 
     const starsAspectPromise = registry
       .putRecordAspect(record.id, linkedDataAspectDef.id, {
