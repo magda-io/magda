@@ -22,7 +22,7 @@ case class RegistryRecordsResponse(
   nextPageToken: Option[String],
   records: List[Record])
 
-case class QualityRatingAspect(percentage: Int, weighting: Int)
+case class QualityRatingAspect(score: Double, weighting: Double)
 
 trait RegistryIndexerProtocols extends DefaultJsonProtocol with RegistryProtocols {
   implicit val registryRecordsResponseFormat = jsonFormat3(RegistryRecordsResponse.apply)
@@ -45,10 +45,10 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
           case (key, value) =>
             value.convertTo[QualityRatingAspect]
         }
-        val totalWeighting = ratings.map(_.weighting).reduce(_ + _).toDouble / 100
+        val totalWeighting = ratings.map(_.weighting).reduce(_ + _).toDouble
 
         val weightedRatings = ratings.map(rating =>
-          (rating.percentage.toDouble / 100) * (rating.weighting.toDouble / 100 / totalWeighting))
+          (rating.score) * (rating.weighting / totalWeighting))
 
         weightedRatings.reduce(_ + _) / totalWeighting
       case None => 1

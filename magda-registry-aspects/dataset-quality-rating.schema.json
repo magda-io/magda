@@ -9,15 +9,15 @@
     "rating": {
       "type": "object",
       "properties": {
-        "percentage": {
-          "type": "integer",
+        "score": {
+          "type": "number",
           "minimum": 0,
-          "maximum": 100
+          "maximum": 1
         },
         "weighting": {
-          "type": "integer",
+          "type": "number",
           "minimum": 0,
-          "maximum": 10
+          "maximum": 1
         }
       }
     }

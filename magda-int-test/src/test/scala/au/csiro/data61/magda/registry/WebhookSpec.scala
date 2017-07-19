@@ -133,7 +133,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
                 mediaType = None))))
 
             withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
-              cleanedOutputDataSets should equal(cleanedInputDataSets)
+              cleanedOutputDataSets.toSet should equal(cleanedInputDataSets.toSet)
             }
 
             deleteIndex(indexId)
@@ -201,7 +201,13 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
               "aspects" -> JsObject(
                 "organization-details" -> removeNulls(JsObject(
                   "title" -> publisher.name.toJson,
-                  "imageUrl" -> publisher.imageUrl.toJson)))))).toJson).filter { case (_, value) => value.isInstanceOf[JsObject] }
+                  "imageUrl" -> publisher.imageUrl.toJson)))))).toJson,
+          "dataset-quality-rating" -> JsObject(
+            "blah" -> JsObject(
+              "score" -> dataSet.quality.toJson,
+              "weighting" -> 1d.toJson)))
+
+          .filter { case (_, value) => value.isInstanceOf[JsObject] }
           .asInstanceOf[Map[String, JsObject]]
 
         val temporal = dataSet.temporal
