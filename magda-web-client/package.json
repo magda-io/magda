@@ -34,6 +34,7 @@
     "draft-js-mention-plugin": "TerriaJS/draft-js-mention-plugin#v2.1.0",
     "draft-js-plugins-editor": "2.0.0-rc2",
     "es6-promise": "^4.1.0",
+    "fast-xml-parser": "^2.6.0",
     "fetch-mock": "^5.8.1",
     "immutable": "^3.8.1",
     "isomorphic-fetch": "^2.2.1",
