@@ -11,7 +11,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-postgres",
-      "include": "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate-and-start.sh"
+      "include": "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate-and-start.sh docker-entrypoint.sh.patch"
     }
   },
   "devDependencies": {
