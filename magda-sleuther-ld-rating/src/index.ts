@@ -80,7 +80,7 @@ function sleuthLinkedData(registry: Registry) {
       op: "add",
       path: "/" + linkedDataAspectDef.id,
       value: {
-        score: Math.round(best / 5),
+        score: best / 5,
         weighting: 0.8
       }
     };

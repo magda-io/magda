@@ -39,19 +39,20 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
     val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
 
     val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
-    val quality = qualityAspectOpt match {
-      case Some(qualityAspect) =>
+
+    val quality: Double = qualityAspectOpt match {
+      case Some(qualityAspect) if !qualityAspect.fields.isEmpty =>
         val ratings = qualityAspect.fields.map {
           case (key, value) =>
             value.convertTo[QualityRatingAspect]
         }
-        val totalWeighting = ratings.map(_.weighting).reduce(_ + _).toDouble
+        val totalWeighting = ratings.map(_.weighting).reduce(_ + _)
 
-        val weightedRatings = ratings.map(rating =>
-          (rating.score) * (rating.weighting / totalWeighting))
-
-        weightedRatings.reduce(_ + _) / totalWeighting
-      case None => 1
+        if (totalWeighting > 0) {
+          ratings.map(rating =>
+            (rating.score) * (rating.weighting / totalWeighting)).reduce(_ + _)
+        } else 1d
+      case _ => 1d
     }
 
     val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
