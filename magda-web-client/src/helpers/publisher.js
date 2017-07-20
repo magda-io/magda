@@ -11,8 +11,8 @@ export type Publisher ={
 
 
 type PublisherRaw = {
-    name?: string,
-    id?: string,
+    name: string,
+    id: string,
     message? : ?string,
     aspects: {
         'organization-details': {

@@ -31,6 +31,7 @@ import { staticPageRegister } from "./content/register";
 import DatasetDetails from "./Dataset/DatasetDetails";
 import DatasetDiscussion from "./Dataset/DatasetDiscussion";
 import DatasetPublisher from "./Dataset/DatasetPublisher";
+import DatasetPreview from './Dataset/DatasetPreview';
 
 import ProjectsViewer from "./Project/ProjectsViewer";
 import ProjectDetails from "./Project/ProjectDetails";
@@ -40,8 +41,7 @@ import PublishersViewer from "./Publisher/PublishersViewer";
 import PublisherDetails from "./Publisher/PublisherDetails";
 
 import DistributionDetails from "./Dataset/DistributionDetails";
-import DistributionMap from "./Dataset/DistributionMap";
-import DistributionChart from "./Dataset/DistributionChart";
+import DistributionPreview from "./Dataset/DistributionPreview";
 import { requestWhoAmI } from "./actions/userManagementActions";
 
 // eslint-disable-next-line
@@ -86,6 +86,7 @@ ReactDOM.render(
           <Route path="details" component={DatasetDetails} />
           <Route path="discussion" component={DatasetDiscussion} />
           <Route path="publisher" component={DatasetPublisher} />
+          <Route path="preview" component={DatasetPreview} />
         </Route>
         <Route
           path="dataset/:datasetId/distribution/:distributionId"
@@ -93,8 +94,7 @@ ReactDOM.render(
         >
           <IndexRedirect to="details" />
           <Route path="details" component={DistributionDetails} />
-          <Route path="map" component={DistributionMap} />
-          <Route path="chart" component={DistributionChart} />
+          <Route path="preview" component={DistributionPreview} />
         </Route>
         <Route path="projects" component={ProjectsViewer} />
         <Route path="projects/:projectId" component={ProjectDetails} />

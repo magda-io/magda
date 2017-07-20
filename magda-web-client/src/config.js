@@ -4,7 +4,7 @@ import Format from "./SearchFacets/Format";
 import Region from "./SearchFacets/Region";
 import Temporal from "./SearchFacets/Temporal";
 
-const fallbackApiHost = "/";
+const fallbackApiHost = "http://magda-dev.terria.io/";
 
 const serverConfig = window.magda_server_config || {};
 

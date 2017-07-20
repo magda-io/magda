@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import Statistics from '../Components/Statistics';
-import News from '../Components/News';
+import News from '../UI/News';
 import {config} from '../config'
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';

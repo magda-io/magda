@@ -16,6 +16,7 @@
     "magda-gateway/",
     "magda-indexer/",
     "magda-int-test/",
+    "magda-postgres/",
     "magda-project-open-data-connector/",
     "magda-registry-api/",
     "magda-registry-aspects/",
