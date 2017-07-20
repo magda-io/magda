@@ -22,19 +22,6 @@ private class WebhookRegisterer(interface: RegistryExternalInterface)(implicit c
   }
 
   def registerWebhook(): Future[Unit] = {
-    interface.getWebhooks().map { webHooks =>
-      webHooks.find(hook => hook.url == config.getString("registry.webhookUrl"))
-    } flatMap {
-      case Some(hook) =>
-        system.log.info("Registry webhook is already in place, no need to add one")
-        Future(Unit) //all good
-      case None =>
-        system.log.info("No registry webhook for the indexer - adding one")
-        registerIndexerWebhook()
-    }
-  }
-
-  private def registerIndexerWebhook(): Future[Unit] = {
     val webhook = WebHook(
       name = "Indexer",
       eventTypes = Set(

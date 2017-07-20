@@ -24,18 +24,19 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
   implicit val config = TestActorSystem.config
 
   describe("indexer should register itself") {
+    val interfaceConfigs = InterfaceConfig.all
+    val registryConfig = interfaceConfigs("registry").copy(name = "original-registry")
+
     it("on startup") { param =>
-      registerIndexer(param.api)
+      registerIndexer(param.api, registryConfig)
     }
 
-    it("except if already registered") { param =>
-      registerIndexer(param.api)
-      registerIndexer(param.api)
+    it("even if already registered") { param =>
+      registerIndexer(param.api, registryConfig)
+      registerIndexer(param.api, registryConfig.copy(name = "new-registry"))
     }
 
-    def registerIndexer(registryApi: RegistryApi) = {
-      val interfaceConfigs = InterfaceConfig.all
-      val registryConfig = interfaceConfigs("registry")
+    def registerIndexer(registryApi: RegistryApi, registryConfig: InterfaceConfig) = {
       val mockedFetcher = new MockedHttpFetcher(registryConfig, registryApi)
       val interface = new RegistryExternalInterface(mockedFetcher, registryConfig)(config, system, executor, materializer)
 
@@ -46,6 +47,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
 
         hooks.size should equal(1)
         hooks.head.url should equal(config.getString("registry.webhookUrl"))
+        hooks.head.name should equal(registryConfig.name)
       }
     }
   }
