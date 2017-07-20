@@ -26,7 +26,8 @@ libraryDependencies ++= {
     "io.circe" %% "circe-java8" % "0.8.0",
     "org.gnieh" %% "diffson-spray-json" % "2.1.2",
     "net.virtual-void" %%  "json-lenses" % "0.6.2",
-    "com.auth0" % "java-jwt" % "3.2.0"
+    "com.auth0" % "java-jwt" % "3.2.0",
+    "org.flywaydb" % "flyway-core" % "4.2.0" % "test"
   )
 }
 
@@ -37,4 +38,5 @@ EclipseKeys.withSource := true
 
 setupDocker(stage)
 
-unmanagedResourceDirectories in Test += baseDirectory.value.getParentFile / "magda-registry-datastore" / "scripts" / "init"
+unmanagedResourceDirectories in Test += baseDirectory.value.getParentFile / "magda-registry-datastore"
+includeFilter in (Test, unmanagedResources) := new SimpleFileFilter(file => file.getParentFile() == baseDirectory.value.getParentFile / "magda-registry-datastore" / "sql") && "*.sql"
