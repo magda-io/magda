@@ -3,8 +3,10 @@ package au.csiro.data61.magda.registry
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.TestProbe
+import org.flywaydb.core.Flyway
 import org.scalatest.Matchers
 import org.scalatest.fixture.FunSpec
+
 import scala.concurrent.duration._
 import scalikejdbc._
 
@@ -28,12 +30,13 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     DB localTx { implicit session =>
       sql"DROP SCHEMA IF EXISTS test CASCADE".update.apply()
       sql"CREATE SCHEMA test".update.apply()
-
-      val stream = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/evolveschema.sql"))
-      val initializeSql = SQL(stream.mkString)
-      stream.close()
-      initializeSql.update().apply()
     }
+
+    val flyway = new Flyway()
+    flyway.setDataSource(databaseUrl, "postgres", "")
+    flyway.setSchemas("test")
+    flyway.setLocations("classpath:/sql")
+    flyway.migrate()
 
     super.withFixture(test.toNoArgTest(FixtureParam(api, webHookActorProbe)))
   }
