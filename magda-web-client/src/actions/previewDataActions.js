@@ -6,6 +6,7 @@ import jsonToTabular from '../helpers/jsonToTabular';
 import xlsToTabular from '../helpers/xlsToTabular';
 import {getPreviewDataUrl} from '../helpers/previewData';
 import type {PreviewData} from '../helpers/previewData';
+import parser from 'rss-parser'
 
 
 export function requestPreviewData(url: string){
@@ -151,6 +152,30 @@ export function fetchPreviewData(distributions){
                 type: 'html'
               }
             }));
+            break;
+        case 'rss':
+            fetch(proxy + url)
+            .then(response=>{
+              if (response.status !== 200) {
+                return dispatch(requestPreviewDataError(response.status));
+              }
+              else {
+                return response.text()
+              }
+            }).then(text=>{
+              parser.parseString(text, (err, result)=>{
+                if(err){
+                  dispatch(requestPreviewDataError("error getting rss feed"));
+                } else {
+                  dispatch(receivePreviewData({
+                    data: result.feed.entries,
+                    meta: {
+                      type: 'rss'
+                    }
+                  }))
+                }
+            });
+          })
             break;
         default:
           dispatch(resetPreviewData());

@@ -21,6 +21,7 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     const pdf = viewableDistribution.filter(d=> d.format.toLowerCase() === 'pdf');
     const txt = viewableDistribution.filter(d=> d.format.toLowerCase() === 'txt');
     const html = viewableDistribution.filter(d=> d.format.toLowerCase() === 'html');
+    const rss = viewableDistribution.filter(d=> d.format.toLowerCase() === 'rss');
 
     if(csv.length > 0){
       return {url: csv[0].downloadURL, format: 'csv'}
@@ -50,6 +51,10 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
 
     if(html.length > 0){
       return {url: html[0].downloadURL || html[0].accessURL, format: 'html'}
+    }
+
+    if(rss.length > 0){
+      return {url: rss[0].downloadURL, format: 'rss'}
     }
 
     return false;

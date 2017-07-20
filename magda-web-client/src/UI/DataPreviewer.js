@@ -4,6 +4,7 @@ import DataPreviewTable from '../UI/DataPreviewTable';
 import DataPreviewPdf from '../UI/DataPreviewPdf';
 import DataPreviewTextBox from '../UI/DataPreviewTextBox';
 import type {PreviewData} from '../helpers/previewData';
+import News from './News';
 
 
 class DataPreviewer extends Component {
@@ -20,6 +21,7 @@ class DataPreviewer extends Component {
               {this.props.data.meta.type === 'pdf' && <DataPreviewPdf data={this.props.data}/>}
               {this.props.data.meta.type === 'txt' && <DataPreviewTextBox data ={this.props.data}/>}
               {this.props.data.meta.type === 'html' && <iframe width="100%" height="600px" src={this.props.data.data}></iframe>}
+              {this.props.data.meta.type === 'rss' && <News newsItems={this.props.data.data}/>}
              </div>
     }
 }
