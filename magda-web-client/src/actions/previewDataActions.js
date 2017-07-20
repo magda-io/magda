@@ -166,6 +166,7 @@ export function fetchPreviewData(distributions){
               parser.parseString(text, (err, result)=>{
                 if(err){
                   dispatch(requestPreviewDataError("error getting rss feed"));
+                  console.warn(err);
                 } else {
                   dispatch(receivePreviewData({
                     data: result.feed.entries,
