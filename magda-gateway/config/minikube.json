@@ -1,9 +1,14 @@
 {
+    "listenPort": 80,
     "db": {
         "host": "combined-db"
     },
     "externalHost": "http://minikube.data.gov.au:30016",
     "targets": {
-        "discussions": "http://192.168.99.1:3001/v0/"
+        "search": "http://search-api/v0",
+        "registry": "http://registry-api/v0",
+        "auth": "http://auth-api/v0/public",
+        "discussions": "http://discussions-api/v0",
+        "web": "http://web"
     }
 }

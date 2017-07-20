@@ -1,5 +1,5 @@
 // @flow
-import type { SearchState, DataSearchJson, Dataset, DataAction, Query, FacetOption, Region } from '../types';
+import type { SearchState, DataSearchJson, Dataset, Query, FacetOption, Region, SearchAction} from '../types';
 
 import findIndex from 'lodash.findindex';
 import findMatchingObjs from '../helpers/findMatchingObjs';
@@ -32,7 +32,7 @@ const initialData = {
   error: null
 }
 
-const datasetSearchReducer = (state: SearchState= initialData, action: DataAction) => {
+const datasetSearchReducer = (state: SearchState= initialData, action: SearchAction) => {
   switch (action.type) {
     case 'REQUEST_RESULTS':
       return Object.assign({}, state, {
@@ -54,7 +54,20 @@ const datasetSearchReducer = (state: SearchState= initialData, action: DataActio
         apiQuery: ''
       })
     case 'RECEIVE_RESULTS':
-      let data: DataSearchJson  = action.json;
+      const defaultJson = {
+          query: {
+            "quotes": [],
+            "freeText": '',
+            "regions": [null],
+            "formats": [],
+            "publishers": []
+          },
+          hitCount: 0,
+          dataSets: [],
+          strategy: "",
+          facets: []
+      }
+      let data: DataSearchJson  = action.json ? action.json : defaultJson;
       let query : Query = data && data.query && data.query;
       let datasets : Array<Dataset> = data && data.dataSets && data.dataSets;
       let hitCount : number = data && data.hitCount && data.hitCount;

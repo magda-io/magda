@@ -7,17 +7,23 @@ import {config} from '../config.js';
 import ReactDocumentTitle from 'react-document-title';
 import { fetchPublisherIfNeeded } from '../actions/publisherActions';
 import OverviewBox from '../UI/OverviewBox';
-import type { Publisher } from '../types';
+import type { Publisher } from '../helpers/publisher';
 import ProgressBar from '../UI/ProgressBar';
 import {Link} from 'react-router';
 
 import './PublisherDetails.css';
 
-class PublisherDetails extends Component {
-    props:{
-      error: number,
-      publisher: Publisher,
-    }
+type Props = {
+  fetchPublisherIfNeeded: Function,
+  params: {
+    publisherId: string
+  },
+  publisher: Publisher,
+  error: number
+}
+
+
+class PublisherDetails extends Component<void, Props, void> {
     componentWillMount(){
         this.props.fetchPublisherIfNeeded(this.props.params.publisherId);
     }
@@ -56,7 +62,7 @@ class PublisherDetails extends Component {
 }
 
 
-function mapDispatchToProps(dispatch: Function) {
+function mapDispatchToProps(dispatch: Dispatch) {
   return bindActionCreators({
     fetchPublisherIfNeeded: fetchPublisherIfNeeded,
   }, dispatch);

@@ -1,7 +1,7 @@
 //@flow
+import ReactDocumentTitle from 'react-document-title';
 import React from 'react';
 import logo from '../assets/logo.svg';
-import ReactDocumentTitle from 'react-document-title';
 import { config } from '../config.js';
 import { Link } from 'react-router';
 import SearchBox from '../Search/SearchBox';
@@ -12,7 +12,14 @@ import { ExtraSmall, Small } from '../UI/Responsive';
 import './AppContainer.css';
 
 export default class AppContainer extends React.Component {
-  constructor(props) {
+  state :{
+    isOpen: boolean,
+    showPrototypeWarning: boolean
+  }
+  constructor(props: {
+    location: Location,
+    children: React$Element<any>
+  }) {
     super(props);
     this.state = { isOpen: false, showPrototypeWarning: true };
   }
@@ -36,13 +43,13 @@ export default class AppContainer extends React.Component {
     })
   }
   render() {
-    const headerNavs: Array<string> = config.headerNavigation;
-    const footerNavs: Array<string> = config.footerNavigation;
+    const headerNavs: Array<Array<string>> = config.headerNavigation;
+    const footerNavs: Array<Object> = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
         <div>
         {this.state.showPrototypeWarning && <div className='prototype-warning'>
-          <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <Link to='feedback'>your feedback</Link>.</div>
+          <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <a href='http://preview.data.gov.au/feedback.html' target='_blank'>your feedback</a>.</div>
           <button className='prototype-warning-dismiss btn' onClick={()=>this.dismissPrototypeWarning()}><i className="fa fa-times" aria-hidden="true"></i></button>
         </div>}
           <nav className='appContainer__nav'>
@@ -109,7 +116,7 @@ export default class AppContainer extends React.Component {
               </div>
               <div className='row nav_second'>
                 <div className='col-sm-8'>
-                  <h1 className='search-heading'> Australia open data search</h1>
+                  <h1 className='search-heading'> {config.appTitle}</h1>
                   <SearchBox location={this.props.location} />
                   {' '}
                 </div>

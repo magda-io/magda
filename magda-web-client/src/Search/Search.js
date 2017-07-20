@@ -20,7 +20,6 @@ import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../actions/datasetSearchActions';
 import {fetchFeaturedPublishersFromRegistry} from '../actions/featuredPublishersActions';
 import queryString from 'query-string';
-import cripsy from './crispy.gif';
 import ProgressBar from '../UI/ProgressBar';
 
 
@@ -198,18 +197,13 @@ Search.contextTypes ={
   router: React.PropTypes.object.isRequired,
 }
 
-Search.defaultProps = {
-  featuredPublishers: []
-};
 
-
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({
+const mapDispatchToProps = (dispatch: Dispatch<*>) =>
+ bindActionCreators({
     fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
     fetchFeaturedPublishersFromRegistry: fetchFeaturedPublishersFromRegistry,
     resetDatasetSearch: resetDatasetSearch
   }, dispatch);
-}
 
 
 function mapStateToProps(state, ownProps) {

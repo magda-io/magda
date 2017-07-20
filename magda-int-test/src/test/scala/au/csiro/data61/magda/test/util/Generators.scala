@@ -37,6 +37,7 @@ import org.scalacheck.Gen.freqTuple
 import scala.BigDecimal
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object Generators {
   def someBiasedOption[T](inner: Gen[T]) = Gen.frequency((4, Gen.some(inner)), (1, None))
@@ -70,7 +71,7 @@ object Generators {
   val filterWordRegex = s"(?i)(${filterWords.mkString("|")})(\\s|$$)"
   def removeFilterWords(s: String) = s.replaceAll(filterWordRegex, " ").trim
 
-  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (1, Gen.oneOf(stopWords)))
+  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (2, Gen.oneOf(stopWords)))
 
   val textGen = Gen.frequency((15, nonEmptyTextWithStopWordsGen), (1, Gen.const("")))
 
@@ -86,8 +87,7 @@ object Generators {
     offsetMinutes <- Gen.chooseNum(0, 59).map(_ * offsetHours.signum)
     offsetSeconds <- Gen.chooseNum(0, 59).map(_ * offsetHours.signum)
   } yield dateTime.atOffset(
-    ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds)
-  )
+    ZoneOffset.ofHoursMinutesSeconds(offsetHours, offsetMinutes, offsetSeconds))
 
   val alphaNumRegex = ".*[a-zA-Z0-9].*".r
 
@@ -100,7 +100,7 @@ object Generators {
     startTime <- Gen.frequency((9, Gen.const(defaultTightStartTime)), (1, defaultStartTime))
     endTime <- Gen.frequency((9, Gen.const(defaultTightEndTime)), (1, defaultEndTime))
     start <- someBiasedOption(apiDateGen(startTime, endTime))
-    end <- someBiasedOption(apiDateGen(start.flatMap(_.date).map(_.toInstant).getOrElse(startTime), endTime))
+    end <- someBiasedOption(apiDateGen(start.flatMap(_.date).map(_.toInstant.plusMillis(1)).getOrElse(startTime.plusMillis(1)), endTime))
   } yield new PeriodOfTime(start, end)).suchThat {
     case PeriodOfTime(Some(ApiDate(Some(start), _)), Some(ApiDate(Some(end), _))) => start.isBefore(end)
     case _ => true
@@ -117,8 +117,7 @@ object Generators {
     name = name,
     homePage = homePage,
     email = email,
-    imageUrl = imageUrl
-  )
+    imageUrl = imageUrl)
 
   val durationGen = for {
     number <- Gen.chooseNum(0l, 100l)
@@ -158,8 +157,7 @@ object Generators {
     nameProperty = nameProperty,
     includeIdInName = includeIdInName,
     disabled = false,
-    order = order
-  )
+    order = order)
 
   def nonEmptyListOf[T](gen: Gen[T]) = Gen.size.flatMap { maybeZeroSize =>
     val size = Math.max(maybeZeroSize, 1)
@@ -181,7 +179,24 @@ object Generators {
     generate(Nil)
   }
 
-  val regionSourceGen = cachedListGen(regionSourceGenInner, 3)
+  def cachedListGen[T](key: String, gen: Gen[T], size: Int)(inputCache: mutable.Map[String, List[_]] = new mutable.HashMap) = {
+    val cache: Option[List[T]] = inputCache.get(key).map(_.asInstanceOf[List[T]])
+
+    Gen.delay {
+      arbitrary[Boolean].flatMap(bool =>
+        (bool, cache) match {
+          case (_, None) | (false, _) =>
+            Generators.listSizeBetween(size, size, gen).map { items =>
+              inputCache.put(key, items)
+              items
+            }
+          case (true, Some(cacheInner)) =>
+            Gen.const(cacheInner)
+        })
+    }
+  }
+
+  val regionSourceGen = cachedListGen("regionSource", regionSourceGenInner, 3)(mutable.HashMap.empty)
 
   def regionGen(thisGeometryGen: Gen[Geometry]) = for {
     regionSource <- regionSourceGen.flatMap(Gen.oneOf(_))
@@ -195,9 +210,7 @@ object Generators {
     "order" -> JsNumber(order),
     "properties" -> JsObject(
       regionSource.idProperty -> JsString(id),
-      regionSource.nameProperty -> JsString(name)
-    )
-  ))
+      regionSource.nameProperty -> JsString(name))))
 
   def pointGen(thisCoordGen: Gen[Coordinate] = coordGen()) = thisCoordGen.map(Point.apply)
   def multiPointGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = listSizeBetween(1, max, thisCoordGen).map(MultiPoint.apply)
@@ -226,9 +239,7 @@ object Generators {
       polygonGenInner(
         coordGen(longGen(envelope.getMinX, envelope.getMaxX), latGen(envelope.getMinY, envelope.getMaxY))
           .suchThat(coord => jts.contains(Point(coord).toJTSGeo)),
-        max
-      ).suchThat(hole => jts.contains(Polygon(Seq(hole)).toJTSGeo()))
-    )
+        max).suchThat(hole => jts.contains(Polygon(Seq(hole)).toJTSGeo())))
 
     holeGen.map { holes =>
       Polygon(shell +: holes)
@@ -245,8 +256,7 @@ object Generators {
     lineStringGen(max, thisCoordGen),
     multiLineStringGen(max, thisCoordGen),
     polygonStringGen(max, thisCoordGen),
-    multiPolygonStringGen(max, thisCoordGen)
-  ).suchThat { geometry =>
+    multiPolygonStringGen(max, thisCoordGen)).suchThat { geometry =>
       // Validate the geometry using the same code that ES uses - this means that if ES rejects a geometry we know
       // it's because we've done something stupid to it in our code before it got indexed, and it's not the generators'
       // fault
@@ -261,34 +271,20 @@ object Generators {
     geoJson <- someBiasedOption(geometryGen)
   } yield new Location(text, geoJson)
 
-  def cachedListGen[T](gen: Gen[T], size: Int) = {
-    var cache: Option[List[T]] = None
-
-    Gen.delay {
-      cache match {
-        case Some(cacheInner) =>
-          Gen.const(cacheInner)
-        case None =>
-          listSizeBetween(size, size, gen).map { words =>
-            cache = Some(words)
-            words
-          }
-      }
-    }
-  }
-
-  val descWordGen = cachedListGen(nonEmptyTextGen.map(_.take(50).trim), 1000)
-  val publisherAgentGen = cachedListGen(agentGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" "))), 50)
-  val publisherGen = publisherAgentGen.map(_.filter(_.name.isDefined).map(_.name.get))
+  def descWordGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("descWord", nonEmptyTextGen.map(_.take(50).mkString.trim), 200)(inputCache)
+  def publisherAgentGen(inputCache: mutable.Map[String, List[_]]) =
+    cachedListGen("publisherAgent",
+      agentGen(listSizeBetween(1, 4, nonEmptyTextWithStopWordsGen.map(_.take(50).mkString.trim)).map(_.mkString(" "))),
+      50)(inputCache)
+  def publisherGen(inputCache: mutable.Map[String, List[_]]) = publisherAgentGen(inputCache).map(_.filter(_.name.isDefined).map(_.name.get))
   val mediaTypeGen = Gen.oneOf(Seq(
     MediaTypes.`application/json`,
     MediaTypes.`application/vnd.google-earth.kml+xml`,
     MediaTypes.`text/csv`,
     MediaTypes.`application/json`,
-    MediaTypes.`application/octet-stream`
-  ))
-  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" "))
-  val randomFormatGen = cachedListGen(formatNameGen, 50)
+    MediaTypes.`application/octet-stream`))
+  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" ")).suchThat(!_.trim.isEmpty())
+  def randomFormatGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("randomFormat", formatNameGen, 5)(inputCache)
 
   def textGen(inner: Gen[List[String]]) = inner
     .flatMap(list => Gen.choose(0, Math.min(100, list.length)).map((_, list)))
@@ -317,24 +313,24 @@ object Generators {
     }.mkString
   }
 
-  val formatGen = for {
+  def formatGen(inputCache: mutable.Map[String, List[_]]) = for {
     mediaType <- Gen.option(mediaTypeGen)
     mediaTypeFormat = mediaType.flatMap(_.fileExtensions.headOption)
-    randomFormat <- randomFormatGen.flatMap(Gen.oneOf(_))
+    randomFormat <- randomFormatGen(inputCache).flatMap(Gen.oneOf(_))
     format <- randomCaseGen(mediaTypeFormat.getOrElse(randomFormat))
   } yield (mediaType, format)
 
-  val distGen = for {
+  def distGen(inputCache: mutable.Map[String, List[_]]) = for {
     identifier <- Gen.uuid.map(_.toString).map(Some.apply)
     title <- textGen
-    description <- someBiasedOption(textGen(descWordGen))
+    description <- someBiasedOption(textGen(descWordGen(inputCache)))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
     license <- someBiasedOption(licenseGen)
     rights <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     accessURL <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     byteSize <- someBiasedOption(arbitrary[Int])
-    format <- someBiasedOption(formatGen)
+    format <- someBiasedOption(formatGen(inputCache))
   } yield Distribution(
     identifier = identifier,
     title = title,
@@ -346,29 +342,28 @@ object Generators {
     accessURL = accessURL,
     byteSize = byteSize,
     mediaType = format.flatMap(_._1),
-    format = format.map(_._2)
-  )
+    format = format.map(_._2))
 
   val incrementer: AtomicInteger = new AtomicInteger(0)
 
-  val dataSetGen = for {
+  def dataSetGen(inputCache: mutable.Map[String, List[_]]) = for {
     identifier <- Gen.delay {
       incrementer.incrementAndGet()
     }
     title <- someBiasedOption(textGen.map(_.take(100).trim))
-    description <- someBiasedOption(textGen(descWordGen))
+    description <- someBiasedOption(textGen(descWordGen(inputCache)))
     issued <- someBiasedOption(offsetDateTimeGen())
     modified <- someBiasedOption(offsetDateTimeGen())
-    languages <- Generators.smallSet(arbitrary[String].map(_.take(50).trim))
-    publisher <- someBiasedOption(publisherAgentGen.flatMap(Gen.oneOf(_)))
+    languages <- Generators.smallSet(arbitrary[String].map(_.take(50).mkString.trim))
+    publisher <- someBiasedOption(publisherAgentGen(inputCache).flatMap(Gen.oneOf(_)))
     accrualPeriodicity <- someBiasedOption(periodicityGen)
     spatial <- noneBiasedOption(locationGen(geometryGen(6, coordGen())))
-    temporal <- someBiasedOption(periodOfTimeGen)
+    temporal <- Gen.frequency((9, Gen.some(periodOfTimeGen)), (1, None))
     theme <- Gen.listOf(nonEmptyTextGen)
     keyword <- Gen.listOf(nonEmptyTextGen)
-    contactPoint <- someBiasedOption(agentGen(arbitrary[String].map(_.take(50).trim)))
-    distributions <- listSizeBetween(1, 5, distGen)
-    landingPage <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    contactPoint <- someBiasedOption(agentGen(arbitrary[String].map(_.take(50).mkString.trim)))
+    distributions <- listSizeBetween(1, 5, distGen(inputCache))
+    landingPage <- someBiasedOption(arbitrary[String].map(_.take(50).mkString.trim))
   } yield DataSet(
     identifier = identifier.toString,
     catalog = Some("test-catalog"),
@@ -386,9 +381,17 @@ object Generators {
     keywords = keyword,
     contactPoint = contactPoint,
     distributions = distributions,
-    landingPage = landingPage
-  )
+    landingPage = landingPage)
 
   val INDEXED_REGIONS_COUNT = 12
-  val indexedRegionsGen = cachedListGen(regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)
+  def indexedRegionsGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("indexedRegions", regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)(inputCache)
+
+  def subListGen[T](list: List[T]) = list match {
+    case Nil => Gen.const(Nil)
+    case _ =>
+      for {
+        start <- Gen.chooseNum(0, Math.max(list.size - 2, 0))
+        end <- Gen.chooseNum(start, Math.max(list.size - 1, 0))
+      } yield list.slice(start, end)
+  }
 }

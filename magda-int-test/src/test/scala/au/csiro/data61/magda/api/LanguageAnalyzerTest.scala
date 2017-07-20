@@ -70,7 +70,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   }
 
   describe("should return the right publisher when searching by publisher name") {
-    def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
+    def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
 
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
       Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> routes ~> check {
@@ -113,19 +113,25 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
   def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit) = {
     it("when searching for it directly") {
-      doTest(outerTermExtractor)
+      def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
+        .filterNot(term => Generators.filterWords.contains(term.toLowerCase))
+        .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
+
+      doTest(innerTermExtractor)
     }
 
     it(s"regardless of pluralization/depluralization") {
 
       def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
         .flatMap(MagdaMatchers.tokenize)
+        .view
         .map(_.trim)
         .filterNot(_.contains("."))
         .filterNot(_.contains("'"))
         .filterNot(_.toLowerCase.endsWith("ss"))
         .filterNot(term => Generators.filterWords.contains(term.toLowerCase))
         .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
+        .filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
         .filterNot(_.isEmpty)
         .filterNot(term => term.toLowerCase.endsWith("e") ||
           term.toLowerCase.endsWith("ies") ||
@@ -151,7 +157,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def doTest(innerTermExtractor: DataSet => Seq[String]) = {
       def getIndividualTerms(terms: Seq[String]) = terms.flatMap(MagdaMatchers.tokenize)
 
-      val indexAndTermsGen = indexGen.flatMap {
+      val indexAndTermsGen = smallIndexGen.flatMap {
         case (indexName, dataSetsRaw, routes) ⇒
           val indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ innerTermExtractor(dataSet).isEmpty)
 
@@ -185,7 +191,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         case (dataSet, string) =>
           val shrunk = string.split("\\s").filter(_ != string)
 
-          logger.warning("Shrinking " + string + " to " + shrunk)
+          logger.error("Shrinking " + string + " to " + shrunk)
 
           shrunk.map((dataSet, _)).toStream
       }
@@ -195,6 +201,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         case (indexName, terms, route) ⇒
           Shrink.shrink(terms).map { shrunkTerms ⇒
             val x = putDataSetsInIndex(shrunkTerms.map(_._1))
+            logger.error("Shrinking " + terms.size + " to " + shrunkTerms.size)
 
             (x._1, shrunkTerms, x._3)
           }

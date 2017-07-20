@@ -5,7 +5,19 @@ const initialData = {
   error: null,
 }
 
-const newsReducer = (state = initialData, action) => {
+type newsState = {
+  isFetching: boolean,
+  error: ?number,
+  news: Array<Object>
+}
+
+type newsAction = {
+  type: string,
+  news?: Array<Object>,
+  error: number
+}
+
+const newsReducer = (state: newsState = initialData, action: newsAction) => {
   switch (action.type) {
     case 'REQUEST_NEWS':
       return Object.assign({}, state, {

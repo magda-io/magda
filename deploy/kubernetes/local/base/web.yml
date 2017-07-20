@@ -11,6 +11,10 @@ spec:
     spec:
       containers:
       - name: web
+        command: [
+            'node', '/usr/src/app/component/dist/index.js',
+            '--config', "/etc/config.json"
+        ]
         resources:
           requests:
             memory: 0
@@ -19,6 +23,16 @@ spec:
           value: minikube
         image: "localhost:5000/data61/magda-web-server:latest"
         imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: "/etc"
+          name: config
+      volumes:
+      - name: config
+        configMap:
+          name: config
+          items:
+          - key: web.json
+            path: config.json
 ---
 apiVersion: v1
 kind: Service

@@ -1,6 +1,5 @@
 //@flow
 import React from 'react';
-import {config} from '../config';
 import './Social.css';
 
 

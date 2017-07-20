@@ -1,6 +1,14 @@
 // @flow
-import type { FeaturedRecords, FeaturedAction } from '../types';
+import type {FeaturedAction } from '../types';
 import {parseDataset} from '../helpers/record';
+import type {RawDataset} from '../helpers/record';
+
+
+type FeaturedDatasets = {
+  records: Array<RawDataset>,
+  isFetching: boolean,
+  error: ?number,
+}
 
 
 const initialData = {
@@ -10,7 +18,7 @@ const initialData = {
   hitCount: 0
 }
 
-const featuredDatasetReducer = (state: FeaturedRecords = initialData, action: FeaturedAction) => {
+const featuredDatasetReducer = (state: FeaturedDatasets = initialData, action: FeaturedAction) => {
   switch (action.type) {
     case 'REQUEST_FEATURED_DATASETS':
       return Object.assign({}, state, {

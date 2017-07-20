@@ -37,6 +37,7 @@ export const config = {
     medium: 992,
     large: 1200
   },
+  appTitle: 'Australian open data search',
   featuredDatasets: [
     "19432f89-dc3a-4ef3-b943-5326ef1dbecc",
     "bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
@@ -109,6 +110,6 @@ export const config = {
         ["Blog", "https://blog.data.gov.au/"]
       ]
     },
-    { category: "Feedback", links: [["Feedback", "feedback"]] }
+    { category: "Feedback", links: [["Feedback", "http://preview.data.gov.au/feedback.html"]] }
   ]
 };

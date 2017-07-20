@@ -15,7 +15,7 @@ const argv = yargs
     .option('apiBaseUrl', {
         describe: 'The base URL of the MAGDA API Gateway.',
         type: 'string',
-        default: 'http://magda-dev.terria.io/api/'
+        default: 'http://localhost:6100/api/'
     })
     .option('searchApiBaseUrl', {
         describe: 'The base URL of the MAGDA Search API.  If not specified, the URL is built from the apiBaseUrl.',
@@ -37,7 +37,8 @@ const argv = yargs
 
 var app = express();
 
-const clientBuild = path.join(__dirname, '..', 'node_modules', '@magda', 'web-client', 'build');
+const clientRoot = path.join(__dirname, '..', 'node_modules', '@magda', 'web-client');
+const clientBuild = path.join(clientRoot, 'build');
 console.log(clientBuild);
 
 app.get('/server-config.js', function(req, res) {

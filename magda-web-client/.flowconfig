@@ -1,3 +1,7 @@
+[libs]
+flow-typed/npm
+
+
 [ignore]
 .*/build/.*
 .*/node_modules/.*

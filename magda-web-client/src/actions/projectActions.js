@@ -3,8 +3,9 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import {validateProjectName, validateProjectDescription, Dispatch, GetState} from '../helpers/validateInput';
-import type { ProjectAction, Project,  } from '../types';
+import {validateProjectName, validateProjectDescription} from '../helpers/project';
+import type {ProjectAction, RawProject, RawProjects, ProjectProps} from '../helpers/project';
+import type { Dispatch, GetState } from '../types';
 import {browserHistory} from 'react-router';
 
 export function requestProjects():ProjectAction {
@@ -13,7 +14,7 @@ export function requestProjects():ProjectAction {
   }
 }
 
-export function receiveProjects(json: Object): ProjectAction {
+export function receiveProjects(json: RawProjects): ProjectAction {
   return {
     type: actionTypes.RECEIVE_PROJECTS,
     json,
@@ -34,7 +35,7 @@ export function requestProject():ProjectAction {
   }
 }
 
-export function receiveProject(json: Object): ProjectAction {
+export function receiveProject(json: RawProject): ProjectAction {
   return {
     type: actionTypes.RECEIVE_PROJECT,
     json,
@@ -48,13 +49,13 @@ export function requestProjectError(error: number): ProjectAction {
   }
 }
 
-export function validateProjectFields(props: Project): ProjectAction {
+export function validateProjectFields(props: ProjectProps): ProjectAction {
   return {
     type: actionTypes.VALIDATE_PROJECT_FIELDS,
   };
 }
 
-export function validateProjectFieldsFailure(fieldErrors: Project): ProjectAction {
+export function validateProjectFieldsFailure(fieldErrors: ProjectProps): ProjectAction {
   return {
     type: actionTypes.VALIDATE_PROJECT_FIELDS_FAILURE,
     fieldErrors
@@ -67,17 +68,16 @@ export function resetProjectFields(): ProjectAction  {
   }
 };
 
-export function createProject(newProject: Project): ProjectAction  {
+export function createProject(): ProjectAction  {
   return {
     type: actionTypes.CREATE_PROJECT,
-    newProject
   };
 }
 
-export function createProjectSuccess(newProject: Project, showNotification: boolean): ProjectAction  {
+export function createProjectSuccess(json: RawProject, showNotification: boolean): ProjectAction  {
   return {
     type: actionTypes.CREATE_PROJECT_SUCCESS,
-    newProject,
+    json,
     showNotification
   };
 }
@@ -95,8 +95,7 @@ export function updateProject(){
   }
 }
 
-
-export function updateProjectSuccess(json){
+export function updateProjectSuccess(json: ProjectProps){
   return {
     type: actionTypes.UPDATE_PROJECT_SUCCESS,
     json
@@ -111,7 +110,7 @@ export function updateProjectFailure(){
 
 
 
-export function updateProjectStatus(project: Project){
+export function updateProjectStatus(project: ProjectProps){
   return (dispatch: Dispatch) => {
     dispatch(updateProject());
     const url = `${config.registryUrl}/records/${project.id}/aspects/project`;
@@ -132,7 +131,7 @@ export function updateProjectStatus(project: Project){
         }
         return dispatch(updateProjectFailure(response.status))
       })
-      .then((result:Project)=>{
+      .then((result:ProjectProps)=>{
         if(result.error){
           return false;
         }
@@ -143,9 +142,9 @@ export function updateProjectStatus(project: Project){
 }
 
 
-export function postNewProject(props: Project){
+export function postNewProject(props: ProjectProps){
   return (dispatch: Dispatch) => {
-    dispatch(createProject(props));
+    dispatch(createProject());
     const url = config.registryUrl + '/records';
 
     return fetch(url,
@@ -164,7 +163,7 @@ export function postNewProject(props: Project){
       }
       return dispatch(createProjectFailure(response.status))
     })
-    .then((result: Project )=> {
+    .then((result: RawProject )=> {
       if(result.error){
         return false;
       }
@@ -179,7 +178,7 @@ export function postNewProject(props: Project){
 
 
 
-export function validateFields(props: Project){
+export function validateFields(props: Object){
   return (dispatch: Dispatch) =>{
     dispatch(validateProjectFields(props));
     const nameError = validateProjectName(props.get('name'));
@@ -238,7 +237,7 @@ export function fetchProjectFromRegistry(projectId: string):Object{
         }
         return response.json();
     })
-    .then((json: Object) => dispatch(receiveProject(json))
+    .then((json: RawProject) => dispatch(receiveProject(json))
     )
   }
 }

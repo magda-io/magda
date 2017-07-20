@@ -1,11 +1,13 @@
 // @flow
 import {parseDataset, parseDistribution} from '../helpers/record';
 
+import type { ParsedDataset, ParsedDistribution, RecordAction } from '../helpers/record';
+
 const initialData = {
     datasetIsFetching: false,
     distributionIsFetching: false,
-    dataset: {},
-    distribution: {},
+    dataset: parseDataset(),
+    distribution: parseDistribution(),
     datasetFetchError: null,
     distributionFetchError: null,
 }
@@ -16,17 +18,13 @@ type RecordResult = {
   distributionIsFetching: boolean,
   datasetFetchError: ?number,
   distributionFetchError: ?number,
-  dataset: Object,
-  distribution: Object,
+  dataset: ?ParsedDataset,
+  distribution: ?ParsedDistribution,
 }
 
-type recordAction = {
-  json: Object,
-  error: boolean,
-  type: boolean
-}
 
-const record = (state: RecordResult = initialData, action: recordAction) => {
+
+const record = (state: RecordResult = initialData, action: RecordAction) => {
   switch (action.type) {
     case 'REQUEST_DATASET':
       return Object.assign({}, state, {

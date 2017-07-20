@@ -3,42 +3,42 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Action } from '../types';
+import type { FacetAction } from '../types';
 
-export function requestPublishers():Action {
+export function requestPublishers():FacetAction {
   return {
     type: actionTypes.REQUEST_PUBLISHERS,
   }
 }
 
-export function receivePublishers(json: Object): Action {
+export function receivePublishers(json: Object): FacetAction {
   return {
     type: actionTypes.RECEIVE_PUBLISHERS,
     json,
   }
 }
 
-export function requestPublishersError(error: number): Action {
+export function requestPublishersError(error: number): FacetAction {
   return {
     type: actionTypes.REQUEST_PUBLISHERS_ERROR,
     error,
   }
 }
 
-export function requestPublisher():Action {
+export function requestPublisher():FacetAction {
   return {
     type: actionTypes.REQUEST_PUBLISHER,
   }
 }
 
-export function receivePublisher(json: Object): Action {
+export function receivePublisher(json: Object): FacetAction {
   return {
     type: actionTypes.RECEIVE_PUBLISHER,
     json,
   }
 }
 
-export function requestPublisherError(error: number): Action {
+export function requestPublisherError(error: number): FacetAction {
   return {
     type: actionTypes.REQUEST_PUBLISHER_ERROR,
     error,

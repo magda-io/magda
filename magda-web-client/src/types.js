@@ -64,6 +64,24 @@ export type FacetOption = {
     upperBound? : string
 }
 
+
+export type FacetAction = {
+  type: string,
+  generalQuery?: string,
+  facetQuery?: string,
+  json?: FacetSearchJson,
+}
+
+
+export type SearchAction = {
+  type: string,
+  apiQuery? : string,
+  item?: FacetOption,
+  json?: DataSearchJson,
+  error?: number
+}
+
+
 type Facet = {
   id: string,
   options: Array<FacetOption>
@@ -84,7 +102,7 @@ export type Region = {
 export type Query ={
     quotes: Array<string>,
     freeText: string,
-    regions: Array<Region>,
+    regions: (?Region)[],
     formats: Array<string>,
     publishers: Array<string>,
     dateFrom? : string,
@@ -100,21 +118,6 @@ export type DataSearchJson = {
 }
 
 
-export type FacetAction = {
-  type: string,
-  generalQuery?: string,
-  facetQuery?: string,
-  json?: FacetSearchJson,
-}
-
-export type DataAction = {
-  type: string,
-  apiQuery? : string,
-  item?: FacetOption,
-  json: DataSearchJson,
-  error?: number
-}
-
 export type FacetSearchState = {
   data: Array<Object>,
   facetQuery?: string,
@@ -127,7 +130,6 @@ export type RegionMappingState = {
   isFetching?: boolean
 }
 
-export type Action = DataAction | FacetAction;
 
 export type SearchState = {
   isFetching: boolean,
@@ -146,42 +148,6 @@ export type SearchState = {
   apiQuery: string,
   error: ?number,
   strategy: string,
-}
-
-export type Publisher ={
-  name: string,
-  description: string,
-  id: string,
-  image_url: string
-}
-
-export type Project ={
-  id: string,
-  name: string,
-  aspects: {
-    project: {
-      description: string,
-      members: Array<string>,
-      datasets: Array<string>,
-      status: string
-    }
-  }
-}
-
-export type ProjectAction = {
-  json: Object,
-  error: ?number,
-  type: boolean,
-  project: Project,
-  fieldErrors: Project
-}
-
-
-
-export type FeaturedRecords = {
-  records: Array<any>,
-  isFetching: boolean,
-  error: ?number,
 }
 
 
@@ -223,8 +189,4 @@ export type Stats = {
 
 
 export type Dispatch = ()=> Function
-export type GetState = () => {
-  project: {
-    isFetching: boolean
-  }
-}
+export type GetState = () => Object
