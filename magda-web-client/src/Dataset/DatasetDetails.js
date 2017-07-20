@@ -10,12 +10,10 @@ import renderDistribution from '../UI/Distribution';
 import './RecordDetails.css';
 
 class DatasetDetails extends Component {
-
-
   render(){
     const dataset = this.props.dataset;
     const datasetId = this.props.params.datasetId;
-    const source = `This dataset was originally found on ${this.props.dataset.catalog}: \n\n  ${dataset.landingPage}`
+    const source = `This dataset was originally found on ${this.props.dataset.source}: \n\n  ${dataset.landingPage}`
     return <div className='dataset-details container'>
               <div className='row'>
                 <div className='dataset-details__body col-sm-8'>
