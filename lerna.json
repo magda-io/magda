@@ -31,8 +31,7 @@
   ],
   "version": "0.0.28-SNAPSHOT",
   "hoist": [
-    "tsmonad",
-    "@types/express"
+    "tsmonad"
   ],
   "concurrency": "1"
 }
