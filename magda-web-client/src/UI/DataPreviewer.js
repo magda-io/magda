@@ -19,6 +19,7 @@ class DataPreviewer extends Component {
               {this.props.data.meta.type === 'tabular' && <DataPreviewTable data={this.props.data}/>}
               {this.props.data.meta.type === 'pdf' && <DataPreviewPdf data={this.props.data}/>}
               {this.props.data.meta.type === 'txt' && <DataPreviewTextBox data ={this.props.data}/>}
+              {this.props.data.meta.type === 'html' && <iframe width="100%" height="600px" src={this.props.data.data}></iframe>}
              </div>
     }
 }

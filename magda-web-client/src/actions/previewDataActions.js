@@ -120,7 +120,7 @@ export function fetchPreviewData(distributions){
               }
             }));
             break;
-          case 'pdf':
+        case 'pdf':
               dispatch(receivePreviewData({
                 data: proxy + url,
                 meta: {
@@ -128,7 +128,7 @@ export function fetchPreviewData(distributions){
                 }
               }));
               break;
-          case 'txt':
+        case 'txt':
           fetch(proxy + url)
           .then(response=>
             {
@@ -144,6 +144,14 @@ export function fetchPreviewData(distributions){
             }));
           })
           break;
+        case 'html':
+            dispatch(receivePreviewData({
+              data: url,
+              meta: {
+                type: 'html'
+              }
+            }));
+            break;
         default:
           dispatch(resetPreviewData());
       }
