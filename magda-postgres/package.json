@@ -1,0 +1,20 @@
+{
+  "name": "@magda/postgres",
+  "version": "0.0.28-SNAPSHOT",
+  "description": "A base Docker image for PostgreSQL with Flyway for schema migrations.",
+  "scripts": {
+    "docker-build-and-push": "create-docker-context-for-node-component --build --push --tag auto",
+    "make-latest": "bash -c \"docker tag data61/magda-postgres:$npm_package_version data61/magda-postgres:latest && docker push data61/magda-postgres:latest\""
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "config": {
+    "docker": {
+      "name": "data61/magda-postgres",
+      "include": "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate-and-start.sh docker-entrypoint.sh.patch"
+    }
+  },
+  "devDependencies": {
+    "@magda/scripts": "^0.0.28-SNAPSHOT"
+  }
+}

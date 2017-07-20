@@ -1,3 +1,2 @@
-FROM postgres
-
-COPY component/scripts/init/* /docker-entrypoint-initdb.d
+FROM data61/magda-postgres
+COPY component/sql/* /flyway/sql/session/

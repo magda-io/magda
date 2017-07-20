@@ -1,10 +1,5 @@
-FROM postgres
-
-# Copy the init scripts from the other databases into their own dirs in initdb.d
-COPY component/node_modules/@magda/auth-db/scripts/init/* /docker-entrypoint-initdb.d/auth-db/
-COPY component/node_modules/@magda/registry-datastore/scripts/init/* /docker-entrypoint-initdb.d/registry-datastore/
-COPY component/node_modules/@magda/session-store/scripts/init/* /docker-entrypoint-initdb.d/session-store/
-COPY component/node_modules/@magda/discussions-db/scripts/init/* /docker-entrypoint-initdb.d/discussions-db/
-
-# Flatten them such that the directory path is part of the new filenames (so we can have multiple init.sqls)
-RUN find /docker-entrypoint-initdb.d/*/ -type f -exec bash -c 'file=${1#./}; mv "$file" "/docker-entrypoint-initdb.d/${file//\//_}"' _ '{}' \; && find /docker-entrypoint-initdb.d/*/ -depth -type d -exec rmdir '{}' \;
+FROM data61/magda-postgres
+COPY component/node_modules/@magda/auth-db/sql/* /flyway/sql/auth/
+COPY component/node_modules/@magda/registry-datastore/sql/* /flyway/sql/postgres/
+COPY component/node_modules/@magda/discussions-db/sql/* /flyway/sql/discussions/
+COPY component/node_modules/@magda/session-store/sql/* /flyway/sql/session/
