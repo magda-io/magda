@@ -41,7 +41,6 @@ import PublishersViewer from "./Publisher/PublishersViewer";
 import PublisherDetails from "./Publisher/PublisherDetails";
 
 import DistributionDetails from "./Dataset/DistributionDetails";
-import DistributionMap from "./Dataset/DistributionMap";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import { requestWhoAmI } from "./actions/userManagementActions";
 
@@ -95,7 +94,6 @@ ReactDOM.render(
         >
           <IndexRedirect to="details" />
           <Route path="details" component={DistributionDetails} />
-          <Route path="map" component={DistributionMap} />
           <Route path="preview" component={DistributionPreview} />
         </Route>
         <Route path="projects" component={ProjectsViewer} />
