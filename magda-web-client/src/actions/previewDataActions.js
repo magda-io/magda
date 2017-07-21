@@ -66,8 +66,9 @@ export function fetchPreviewData(distributions){
               {
                 "name": prop.name,
                 "type": "magda-item",
-                "url": window.location.origin + "/preview-map",
-                "distributionId": prop.id
+                "url": config.baseUrl,
+                "distributionId": prop.id,
+                "isEnabled": true
               }
             ]
           }]}
