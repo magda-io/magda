@@ -61,8 +61,8 @@ private class WebhookRegisterer(
         EventType.DeleteRecordAspect),
       url = config.getString("registry.webhookUrl"),
       config = WebHookConfig(
-        aspects = Some(RegistryConstants.aspects),
-        optionalAspects = Some(RegistryConstants.optionalAspects),
+        aspects = Some(aspects),
+        optionalAspects = Some(optionalAspects),
         includeRecords = Some(true),
         dereference = Some(true)),
       userId = Some(0), // TODO: Will have to change this when it becomes important

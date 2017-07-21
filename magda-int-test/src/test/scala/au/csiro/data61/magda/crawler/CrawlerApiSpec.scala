@@ -42,7 +42,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     implicit def shrinker2(implicit s: Shrink[List[DataSet]], s3: Shrink[InterfaceConfig]): Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] =
       Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] {
         case (beforeDataSets, afterDataSets, interfaceConfig) ⇒
-          logger.info("Shrinking")
+          logger.warning("Shrinking")
           Shrink.shrink(beforeDataSets).flatMap(shrunkBefore => Shrink.shrink(afterDataSets).map(shrunkAfter => (shrunkBefore, shrunkAfter))).map {
             case (beforeDataSets, afterDataSets) => (beforeDataSets, afterDataSets, interfaceConfig)
           }
@@ -122,8 +122,16 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
       refresh(indexId)
 
-      withClue(allDataSets.map(_._1.uniqueId)) {
-        blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+      withClue("This might not be just a failure!!!" + allDataSets.map(_._1.uniqueId)) {
+        try {
+          blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+        } catch {
+          case (e: Throwable) =>
+            logger.warning("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
+            logger.warning(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${search(indexId / indices.getType(Indices.DataSetsIndexType)).size(0)}" +
+              s", firstIndex = ${source._1.size}, initialCount=${source}, afterCount = ${source._2.size}")
+            throw e
+        }
       }
 
       Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
