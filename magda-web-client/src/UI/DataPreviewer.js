@@ -14,9 +14,11 @@ class DataPreviewer extends Component {
     }
 
     render(){
+      debugger
       const url = this.props.url;
       return <div className='data-previewer'>
               <h3 className='section-heading'><a href={url} target='_blank'>{url && url.substring(url.lastIndexOf('/')+1)}</a></h3>
+              {this.props.data.meta.type === 'geo' && <iframe name='FRAME1' src={this.props.data.data} width='100%' height='600px' scrolling='auto' frameBorder='0'/>}
               {this.props.data.meta.type === 'tabular' && <DataPreviewTable data={this.props.data}/>}
               {this.props.data.meta.type === 'pdf' && <DataPreviewPdf data={this.props.data}/>}
               {this.props.data.meta.type === 'txt' && <DataPreviewTextBox data ={this.props.data}/>}

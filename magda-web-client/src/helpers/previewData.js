@@ -23,6 +23,17 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     const html = viewableDistribution.filter(d=> d.format.toLowerCase() === 'html');
     const rss = viewableDistribution.filter(d=> d.format.toLowerCase() === 'rss');
 
+    const csvGeoAu = viewableDistribution.filter(d=> d.format.toLowerCase() === 'csv-geo-au');
+    const wfs = viewableDistribution.filter(d=> d.format.toLowerCase() === 'wfs');
+    const wms = viewableDistribution.filter(d=> d.format.toLowerCase() === 'wms');
+    const czml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'czml');
+    const kml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'kml');
+
+    const geo = csvGeoAu || wfs || wms || czml || kml;
+    if(geo.length > 0){
+      return {id: geo[0].id , format: 'geo', name: geo[0].name}
+    }
+
     if(csv.length > 0){
       return {url: csv[0].downloadURL, format: 'csv'}
     }

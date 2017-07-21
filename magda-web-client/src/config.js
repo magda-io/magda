@@ -11,7 +11,7 @@ const serverConfig = window.magda_server_config || {};
 const registryUrl =
   serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry";
 const previewMapUrl = serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map";
-
+const proxy = "https://nationalmap.gov.au";
 export const config = {
   appName: "data.gov.au",
   baseUrl: fallbackApiHost,
@@ -23,7 +23,7 @@ export const config = {
     serverConfig.discussionsApiBaseUrl ||
     fallbackApiHost + "api/v0/discussions",
   previewMapUrl: previewMapUrl,
-  rssUrl: previewMapUrl + "/proxy/_0d/https://blog.data.gov.au/blogs/rss.xml",
+  rssUrl: proxy + "/proxy/_0d/https://blog.data.gov.au/blogs/rss.xml",
   facetListSize: 5,
   resultsPerPage: 10,
   descriptionLength: 50,
