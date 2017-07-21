@@ -59,7 +59,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       interfaceConf <- IndexerGenerators.interfaceConfGen
       source = (dataSetsInitial, dataSetsAfter, interfaceConf)
     } yield source
-    
+
     forAll(gen) {
       case (source) =>
         val indexId = UUID.randomUUID().toString
@@ -78,7 +78,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
       val externalInterface = filteredSource match {
         case (dataSets, interfaceConfig) =>
-          val fetcher = new HttpFetcher(interfaceConfig, system, materializer, ec)
+          val fetcher = new HttpFetcher(interfaceConfig)
           new RegistryExternalInterface(fetcher, interfaceConfig) {
             override def getInterfaceConfig(): InterfaceConfig = interfaceConfig
             override def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {

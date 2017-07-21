@@ -9,16 +9,20 @@ import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.Registry.{ WebHook, EventType, WebHookConfig }
 
 object RegisterWebhook {
-  def registerWebhook(interface: RegistryExternalInterface)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
-    new WebhookRegisterer(interface).registerWebhook
-
-  def registerWebhook(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
-    new WebhookRegisterer(interfaceConfig).registerWebhook()
+  def registerWebhook(interfaceConfig: InterfaceConfig,
+                      aspects: List[String] = RegistryConstants.aspects,
+                      optionalAspects: List[String] = RegistryConstants.optionalAspects)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
+    new WebhookRegisterer(interfaceConfig, aspects, optionalAspects).registerWebhook()
 }
 
-private class WebhookRegisterer(interface: RegistryExternalInterface)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) {
-  def this(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
-    this(new RegistryExternalInterface(interfaceConfig))
+private class WebhookRegisterer(
+    interface: RegistryExternalInterface,
+    aspects: List[String],
+    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) {
+  def this(interfaceConfig: InterfaceConfig,
+           aspects: List[String],
+           optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
+    this(new RegistryExternalInterface(interfaceConfig), aspects, optionalAspects)
   }
 
   def registerWebhook(): Future[Unit] = {
