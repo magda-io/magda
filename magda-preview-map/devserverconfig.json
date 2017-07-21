@@ -1,5 +1,5 @@
 {
-    "port": 3019,
+    "port": 6110,
 
     "allowProxyFor" : [
         "nicta.com.au",
@@ -23,4 +23,3 @@
         "gov.nz"
     ]
 }
-
