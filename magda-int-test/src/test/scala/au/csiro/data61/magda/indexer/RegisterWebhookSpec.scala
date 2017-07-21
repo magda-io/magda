@@ -33,8 +33,8 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
     }
 
     it("even if already registered") { param =>
-      registerIndexer(param.api, List("aspect1", "aspect2"))
-      registerIndexer(param.api, List("aspect3", "aspect4"))
+      registerIndexer(param.api)
+      registerIndexer(param.api)
     }
 
     def registerIndexer(registryApi: RegistryApi, aspects: List[String] = RegistryConstants.aspects, optionalAspects: List[String] = RegistryConstants.optionalAspects) = {
@@ -49,7 +49,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
         hooks.size should equal(1)
         hooks.head.url should equal(config.getString("registry.webhookUrl"))
         hooks.head.config.aspects should equal(Some(aspects))
-        hooks.head.config.optionalAspects should equal(Some(RegistryConstants.optionalAspects))
+        hooks.head.config.optionalAspects should equal(Some(optionalAspects))
       }
     }
   }
