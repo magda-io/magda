@@ -37,11 +37,11 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
       registerIndexer(param.api, List("aspect3", "aspect4"))
     }
 
-    def registerIndexer(registryApi: RegistryApi, aspects: List[String] = RegistryConstants.aspects) = {
+    def registerIndexer(registryApi: RegistryApi, aspects: List[String] = RegistryConstants.aspects, optionalAspects: List[String] = RegistryConstants.optionalAspects) = {
       val mockedFetcher = new MockedHttpFetcher(registryConfig, registryApi)
       val interface = new RegistryExternalInterface(mockedFetcher, registryConfig)(config, system, executor, materializer)
 
-      Await.result(RegisterWebhook.registerWebhook(interface.getInterfaceConfig, aspects), 10 seconds)
+      Await.result(RegisterWebhook.registerWebhook(interface, aspects, optionalAspects), 10 seconds)
 
       Get("/v0/hooks") ~> registryApi.routes ~> check {
         val hooks = responseAs[Seq[WebHook]]

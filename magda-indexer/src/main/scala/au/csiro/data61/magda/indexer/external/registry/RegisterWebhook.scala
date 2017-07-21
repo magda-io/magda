@@ -9,9 +9,33 @@ import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.Registry.{ WebHook, EventType, WebHookConfig }
 
 object RegisterWebhook {
-  def registerWebhook(interfaceConfig: InterfaceConfig,
-                      aspects: List[String] = RegistryConstants.aspects,
-                      optionalAspects: List[String] = RegistryConstants.optionalAspects)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
+  def registerWebhook(interface: RegistryExternalInterface)(
+    implicit config: Config,
+    system: ActorSystem,
+    executor: ExecutionContext,
+    materializer: Materializer): Future[Unit] = registerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+
+  def registerWebhook(
+    interface: RegistryExternalInterface,
+    aspects: List[String],
+    optionalAspects: List[String])(
+      implicit config: Config,
+      system: ActorSystem,
+      executor: ExecutionContext,
+      materializer: Materializer): Future[Unit] =
+    new WebhookRegisterer(interface, aspects, optionalAspects).registerWebhook
+
+  def registerWebhook(interfaceConfig: InterfaceConfig)(
+    implicit config: Config,
+    system: ActorSystem,
+    executor: ExecutionContext,
+    materializer: Materializer): Future[Unit] = registerWebhook(interfaceConfig, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+
+  def registerWebhook(
+    interfaceConfig: InterfaceConfig,
+    aspects: List[String],
+    optionalAspects: List[String])(
+      implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
     new WebhookRegisterer(interfaceConfig, aspects, optionalAspects).registerWebhook()
 }
 
