@@ -48,8 +48,8 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
 
         hooks.size should equal(1)
         hooks.head.url should equal(config.getString("registry.webhookUrl"))
-        hooks.head.config.aspects should equal(aspects)
-        hooks.head.config.optionalAspects should equal(RegistryConstants.optionalAspects)
+        hooks.head.config.aspects should equal(Some(aspects))
+        hooks.head.config.optionalAspects should equal(Some(RegistryConstants.optionalAspects))
       }
     }
   }
