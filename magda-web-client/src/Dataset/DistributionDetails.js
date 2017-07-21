@@ -9,8 +9,15 @@ import './RecordDetails.css';
 
 class DistributionDetails extends Component {
 
+  renderLinkStatus(linkStatusAvailable, linkActive){
+    if(linkStatusAvailable && !linkActive){
+      return '(This link appears to be broken)'
+    }
+    return '';
+  }
+
   renderLinkText(distribution){
-    const downloadText = distribution.downloadURL ? `This dataset can be downloaded from: \n\n ${distribution.downloadURL}` : '';
+    const downloadText = distribution.downloadURL ? `This dataset can be downloaded from: \n\n ${distribution.downloadURL} ${this.renderLinkStatus(distribution.linkStatusAvailable, distribution.linkActive)}` : '';
     const accessText = distribution.accessUrl ? `This dataset can be accessed from: \n\n ${distribution.accessUrl}` : '';
     return downloadText + accessText;
   }

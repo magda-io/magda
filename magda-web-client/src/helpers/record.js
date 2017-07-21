@@ -73,6 +73,7 @@ export type RawDistribution = {
 export type RawDataset = {
   id: string,
   name: string,
+  message? : string,
   aspects: {
     'dcat-dataset-strings': DcatDatasetStrings,
     source?: {

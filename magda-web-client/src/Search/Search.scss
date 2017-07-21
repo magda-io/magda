@@ -1,26 +1,3 @@
-.search__search-header{
-	background-color: #dcdfe1;
-  padding: 23px 0;
-	margin-bottom: 10px;
-}
-.results-count{
-	text-align: right;
-	color: #aaa;
-	line-height: 2;
-}
-
-.search__search-body__header{
-  border-bottom: 1px solid #dcdfe1;
-  margin-bottom: 20px;
-}
-
-.img-crispy{
-	margin-bottom: 20px;
-}
-
-@media (max-width: 768px) {
-	.search__search-header{
-		margin-bottom: 0px;
-		padding-bottom: 0;
-	}
+.search{
+	margin: 20px 0;
 }

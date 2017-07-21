@@ -1,4 +1,5 @@
 import * as express from "express";
+import { Router } from "express";
 import { Message } from "./model";
 import * as _ from "lodash";
 
@@ -12,7 +13,7 @@ import {
 import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
 import { getUserPublic } from "@magda/auth-api/dist/client";
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get("/discussions/:discussionId/messages", (req, res) =>
   getMessages(req.params.discussionId, res)
@@ -96,7 +97,8 @@ function handleMessages(
     .catch(e => {
       console.error(e);
       res.status(500).send();
-    });
+    }).
+    then(() => Promise.resolve())
 }
 
 /**

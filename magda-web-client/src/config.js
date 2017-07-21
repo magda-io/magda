@@ -4,9 +4,7 @@ import Format from "./SearchFacets/Format";
 import Region from "./SearchFacets/Region";
 import Temporal from "./SearchFacets/Temporal";
 
-const fallbackApiHost = "http://magda-api-dev.terria.io/";
-// const apiHost = 'http://minikube.data.gov.au:30016/';
-// const apiHost = 'http://localhost:3016/';
+const fallbackApiHost = "http://magda-dev.terria.io/";
 
 const serverConfig = window.magda_server_config || {};
 
@@ -16,7 +14,7 @@ const previewMapUrl = serverConfig.previewMapBaseUrl || fallbackApiHost + "previ
 
 export const config = {
   appName: "data.gov.au",
-  apiHost: serverConfig.authApiBaseUrl || fallbackApiHost,
+  baseUrl: fallbackApiHost,
   searchApiBaseUrl:
     serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search",
   registryUrl: registryUrl,

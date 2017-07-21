@@ -1,6 +1,7 @@
 
 import * as passport from 'passport';
 import * as express from 'express';
+import { Router } from 'express';
 const LocalStrategy = require("passport-local").Strategy;
 
 import loginToCkan from "./login-to-ckan";
@@ -23,7 +24,7 @@ passport.use(
     })
 );
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get("/", function (req, res) {
     res.render("form");
