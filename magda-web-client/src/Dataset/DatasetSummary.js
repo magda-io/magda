@@ -76,7 +76,7 @@ export default class DatasetSummary extends Component {
                       <div>
                         <Link className='btn dataset-summary__btn-view-dataset'
                                    to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>View dataset</Link>
-                        <a className='btn dataset-summary__btn-go-to-source' href={dataset.landingPage}>Go to Source</a>
+                        {dataset.landingPage && <a className='btn dataset-summary__btn-go-to-source' href={dataset.landingPage}>Go to Source</a>}
                       </div>
                   </div>}
                 </div>
