@@ -21,7 +21,7 @@ import java.time.ZoneOffset
 
 class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: InterfaceConfig)(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends RegistryIndexerProtocols with RegistryConverters {
   def this(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
-    this(new HttpFetcher(interfaceConfig, system, materializer, executor), interfaceConfig)(config, system, executor, materializer)
+    this(new HttpFetcher(interfaceConfig), interfaceConfig)(config, system, executor, materializer)
   }
 
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
@@ -31,7 +31,9 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
   def getInterfaceConfig = interfaceConfig
 
   val path = if (interfaceConfig.raw.hasPath("path")) interfaceConfig.raw.getString("path") else ""
-  val baseUrl = s"${path}records?aspect=dcat-dataset-strings&aspect=dataset-distributions&aspect=source"
+  val aspectQueryString = RegistryConstants.aspects.map("aspect=" + _).mkString("&")
+  val optionalAspectQueryString = RegistryConstants.optionalAspects.map("optionalAspect=" + _).mkString("&")
+  val baseUrl = s"${path}records?$aspectQueryString&$optionalAspectQueryString"
 
   def onError(response: HttpResponse)(entity: String) = {
     val error = s"Registry request failed with status code ${response.status} and entity $entity"
@@ -40,7 +42,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
   }
 
   def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(s"${baseUrl}&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&dereference=true&pageToken=$pageToken&limit=$number").flatMap { response =>
+    fetcher.get(s"${baseUrl}&dereference=true&pageToken=$pageToken&limit=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
@@ -53,7 +55,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: Inter
   }
 
   def getDataSetsReturnToken(start: Long, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(s"${baseUrl}&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&dereference=true&start=$start&limit=$number").flatMap { response =>
+    fetcher.get(s"${baseUrl}&dereference=true&start=$start&limit=$number").flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,

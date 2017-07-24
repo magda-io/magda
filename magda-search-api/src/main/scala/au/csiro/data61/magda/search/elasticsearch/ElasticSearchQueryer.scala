@@ -203,7 +203,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
       .limit(limit)
       .start(start.toInt)
-      .query(queryToQueryDef(query, strategy))
+      .query(buildEsQuery(query, strategy))
   }
 
   /** Same as {@link #buildQuery} but also adds aggregations */
@@ -282,6 +282,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   private def setToOption[X, Y](seq: Set[X])(fn: Set[X] => Y): Option[Y] = seq match {
     case SetExtractor() => None
     case x              => Some(fn(x))
+  }
+  private def buildEsQuery(query: Query, strategy: SearchStrategy): QueryDefinition = {
+    functionScoreQuery().query(queryToQueryDef(query, strategy)).scorers(fieldFactorScore("quality"))
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */

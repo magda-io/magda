@@ -45,7 +45,7 @@ package misc {
     options: Seq[FacetOption])
 
   case class FacetOption(
-    identifier: Option[String],// = None
+    identifier: Option[String], // = None
     value: String,
     hitCount: Long,
     upperBound: Option[Int] = None,
@@ -71,7 +71,8 @@ package misc {
       distributions: Seq[Distribution] = Seq(),
       landingPage: Option[String] = None,
       years: Option[String] = None,
-      indexed: Option[OffsetDateTime] = None) {
+      indexed: Option[OffsetDateTime] = None,
+      quality: Double) {
 
     def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
 
@@ -146,8 +147,7 @@ package misc {
             northEast,
             northWest,
             southWest,
-            southEast
-          )
+            southEast)
         }
         .map { seq => seq.distinct }
         .distinct
@@ -207,16 +207,14 @@ package misc {
 
       "CSV" -> MediaTypes.`text/csv`,
       "JSON" -> MediaTypes.`application/json`,
-      "SHP" -> MediaTypes.`application/octet-stream`
-    )
+      "SHP" -> MediaTypes.`application/octet-stream`)
 
     private val caseInsensitiveFormatToMimeType = formatToMimeType.map {
       case (key: String, mediaType: MediaType) =>
         Map(
           key.toUpperCase -> mediaType,
           key.toLowerCase -> mediaType,
-          key -> mediaType
-        )
+          key -> mediaType)
     }.reduce(_ ++ _)
 
     private val urlToFormat = Map(
@@ -230,8 +228,7 @@ package misc {
       ".*\\.(xml)(\\.zip)?$".r -> "XML",
       ".*\\.(tif)(\\.zip)?$".r -> "TIFF",
       ".*\\.(zip)$".r -> "ZIP",
-      ".*\\.(html|xhtml|php|asp|aspx|jsp)(\\?.*)?".r -> "HTML"
-    )
+      ".*\\.(html|xhtml|php|asp|aspx|jsp)(\\?.*)?".r -> "HTML")
 
     private def mediaTypeFromMimeType(mimeType: String): Option[MediaType] = MediaType.parse(mimeType) match {
       case Right(mediaType) => Some(mediaType)
@@ -322,8 +319,7 @@ package misc {
     implicit object CoordinateFormat extends JsonFormat[Coordinate] {
       def write(obj: Coordinate): JsValue = JsArray(
         JsNumber(obj.x),
-        JsNumber(obj.y)
-      )
+        JsNumber(obj.y))
 
       def read(json: JsValue): Coordinate = json match {
         case JsArray(is) =>
@@ -337,8 +333,7 @@ package misc {
           "type" -> JsString("envelope"),
           "coordinates" -> JsArray(Vector(
             JsArray(Vector(JsNumber(region.west), JsNumber(region.north))),
-            JsArray(Vector(JsNumber(region.east), JsNumber(region.south)))
-          )))
+            JsArray(Vector(JsNumber(region.east), JsNumber(region.south))))))
       }
 
       override def read(jsonRaw: JsValue): BoundingBox = {
@@ -362,8 +357,7 @@ package misc {
         "regionId" -> region.queryRegion.regionId.toJson,
         "regionType" -> region.queryRegion.regionType.toJson,
         "regionName" -> region.regionName.toJson,
-        "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson
-      ).filter(x => !x._2.equals(JsNull)))
+        "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson).filter(x => !x._2.equals(JsNull)))
 
       override def read(jsonRaw: JsValue): Region = {
         val json = jsonRaw.asJsObject
@@ -371,11 +365,9 @@ package misc {
         Region(
           QueryRegion(
             regionId = json.getFields("regionId").head.convertTo[String],
-            regionType = json.getFields("regionType").head.convertTo[String]
-          ),
+            regionType = json.getFields("regionType").head.convertTo[String]),
           regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
-          boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat))
-        )
+          boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat)))
       }
     }
 
@@ -385,7 +377,7 @@ package misc {
     implicit val distributionFormat = jsonFormat12(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat5(Agent.apply)
-    implicit val dataSetFormat = jsonFormat19(DataSet.apply)
+    implicit val dataSetFormat = jsonFormat20(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)

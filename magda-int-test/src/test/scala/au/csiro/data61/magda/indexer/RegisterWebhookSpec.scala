@@ -19,39 +19,43 @@ import akka.http.scaladsl.model.HttpMethods
 import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import au.csiro.data61.magda.indexer.external.registry.RegistryConstants
 
 class RegisterWebhookSpec extends BaseRegistryApiSpec {
   implicit val config = TestActorSystem.config
 
   describe("indexer should register itself") {
+    val interfaceConfigs = InterfaceConfig.all
+    val registryConfig = interfaceConfigs("registry").copy(name = "original-registry")
+
     it("on startup") { param =>
       registerIndexer(param.api)
     }
 
-    it("except if already registered") { param =>
+    it("even if already registered") { param =>
       registerIndexer(param.api)
       registerIndexer(param.api)
     }
 
-    def registerIndexer(registryApi: RegistryApi) = {
-      val interfaceConfigs = InterfaceConfig.all
-      val registryConfig = interfaceConfigs("registry")
+    def registerIndexer(registryApi: RegistryApi, aspects: List[String] = RegistryConstants.aspects, optionalAspects: List[String] = RegistryConstants.optionalAspects) = {
       val mockedFetcher = new MockedHttpFetcher(registryConfig, registryApi)
       val interface = new RegistryExternalInterface(mockedFetcher, registryConfig)(config, system, executor, materializer)
 
-      Await.result(RegisterWebhook.registerWebhook(interface), 10 seconds)
+      Await.result(RegisterWebhook.registerWebhook(interface, aspects, optionalAspects), 10 seconds)
 
       Get("/v0/hooks") ~> registryApi.routes ~> check {
         val hooks = responseAs[Seq[WebHook]]
 
         hooks.size should equal(1)
         hooks.head.url should equal(config.getString("registry.webhookUrl"))
+        hooks.head.config.aspects should equal(Some(aspects))
+        hooks.head.config.optionalAspects should equal(Some(optionalAspects))
       }
     }
   }
 
   class MockedHttpFetcher(interfaceConfig: InterfaceConfig, registryApi: RegistryApi)(override implicit val system: ActorSystem,
-                                                                                      override implicit val materializer: Materializer, override implicit val ec: ExecutionContext) extends HttpFetcher(interfaceConfig, system, materializer, ec) {
+                                                                                      override implicit val materializer: Materializer, override implicit val ec: ExecutionContext) extends HttpFetcher(interfaceConfig) {
     override lazy val connectionFlow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
       Flow[(HttpRequest, Int)].map {
         case (request, int) =>

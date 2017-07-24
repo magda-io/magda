@@ -49,15 +49,14 @@ case class IndexDefinition(
 object IndexDefinition extends DefaultJsonProtocol {
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
     val fields = extraFields ++ Seq(
-      textField("english").analyzer("english")
-    )
+      textField("english").analyzer("english"))
 
     textField(name).fields(fields)
   }
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 27,
+    version = 28,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -65,70 +64,56 @@ object IndexDefinition extends DefaultJsonProtocol {
         .replicas(config.getInt("elasticSearch.replicaCount"))
         .mappings(
           mapping(indices.getType(Indices.DataSetsIndexType)).fields(
-            field("temporal", ObjectType).fields(
-              field("start", ObjectType).fields(
-                field("date", DateType),
-                field("text", TextType)
-              ),
-              field("end", ObjectType).fields(
-                field("date", DateType),
-                field("text", TextType)
-              )
-            ),
-            field("publisher", ObjectType).fields(
-              field("identifier", KeywordType),
+            objectField("temporal").fields(
+              objectField("start").fields(
+                dateField("date"),
+                textField("text")),
+              objectField("end").fields(
+                dateField("date"),
+                textField("text"))),
+            objectField("publisher").fields(
+              keywordField("identifier"),
               magdaTextField("name",
-                field("keyword", KeywordType),
-                field("keyword_lowercase", TextType).analyzer("quote")
-              )
-            ),
+                keywordField("keyword"),
+                textField("keyword_lowercase").analyzer("quote"))),
             nestedField("distributions").fields(
-              field("identifier", KeywordType),
+              keywordField("identifier"),
               magdaTextField("title"),
               magdaTextField("description"),
               magdaTextField("format",
-                field("keyword", KeywordType),
-                field("keyword_lowercase", TextType).analyzer("quote")
-              )
-            ),
-            field("spatial", ObjectType).fields(
-              field("geoJson", GeoShapeType)
-            ),
+                keywordField("keyword"),
+                textField("keyword_lowercase").analyzer("quote"))),
+            objectField("spatial").fields(
+              geoshapeField("geoJson")),
             magdaTextField("title"),
             magdaTextField("description"),
             magdaTextField("keywords"),
             magdaTextField("themes"),
-            field("catalog", KeywordType),
-            field("source", KeywordType),
-            field("years", KeywordType),
-            field("indexed", DateType),
-            textField("english").analyzer("english")
-          ),
+            doubleField("quality"),
+            keywordField("catalog"),
+            keywordField("source"),
+            keywordField("years"),
+            dateField("indexed"),
+            textField("english").analyzer("english")),
           mapping(indices.getType(indices.typeForFacet(Format))).fields(
             magdaTextField("value"),
-            textField("english").analyzer("english")
-          ),
+            textField("english").analyzer("english")),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
             magdaTextField("value"),
-            textField("english").analyzer("english")
-          )
-        )
+            textField("english").analyzer("english")))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
             KeywordTokenizer,
-            LowercaseTokenFilter
-          )
-        )
+            LowercaseTokenFilter))
 
       if (config.hasPath("indexer.refreshInterval")) {
         baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))
       } else {
         baseDefinition
       }
-    }
-  )
+    })
 
   val REGION_LANGUAGE_FIELDS = Seq("regionName")
   val regions: IndexDefinition =
@@ -147,18 +132,13 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("regionName"),
               field("boundingBox", GeoShapeType),
               field("geometry", GeoShapeType),
-              field("order", IntegerType)
-            )
-          )
+              field("order", IntegerType)))
           .analysis(
             CustomAnalyzerDefinition(
               "quote",
               KeywordTokenizer,
-              LowercaseTokenFilter
-            )
-          ),
-      create = Some((client, indices, config) => (materializer, actorSystem) => setupRegions(client, indices)(config, materializer, actorSystem))
-    )
+              LowercaseTokenFilter)),
+      create = Some((client, indices, config) => (materializer, actorSystem) => setupRegions(client, indices)(config, materializer, actorSystem)))
 
   val indices = Seq(dataSets, regions)
 
@@ -230,8 +210,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 "regionName" -> name,
                 "boundingBox" -> createEnvelope(geometry).toJson(EsBoundingBoxFormat),
                 "geometry" -> geometry.toJson,
-                "order" -> JsNumber(regionSource.order)
-              ).toJson))
+                "order" -> JsNumber(regionSource.order)).toJson))
 
       }
       .filter(_.isDefined).map(_.get)
@@ -246,8 +225,7 @@ object IndexDefinition extends DefaultJsonProtocol {
       }
       .map { result =>
         result.failures.foreach(failure =>
-          logger.error("Failure: {}", failure.failureMessage)
-        )
+          logger.error("Failure: {}", failure.failureMessage))
 
         result.successes.length
       }

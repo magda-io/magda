@@ -1,21 +1,29 @@
 package au.csiro.data61.magda.indexer.external
 
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.util.Try
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.model._
-import akka.stream.Materializer
-import akka.stream.scaladsl._
-import au.csiro.data61.magda.util.Http.getPort
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
+import akka.http.scaladsl.model.ContentTypes
+import akka.http.scaladsl.model.HttpEntity
+import akka.http.scaladsl.model.HttpProtocols
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.StatusCodes
+import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.util.Http.getPort
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.Try
+class HttpFetcher(interfaceConfig: InterfaceConfig)(implicit val system: ActorSystem,
+                                                    val materializer: Materializer, val ec: ExecutionContext) {
 
-class HttpFetcher(interfaceConfig: InterfaceConfig, implicit val system: ActorSystem,
-                  implicit val materializer: Materializer, implicit val ec: ExecutionContext) {
-
-  lazy val connectionFlow : Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
+  lazy val connectionFlow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
     val host = interfaceConfig.baseUrl.getHost
     val port = getPort(interfaceConfig.baseUrl)
 

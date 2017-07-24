@@ -74,7 +74,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               val response = responseAs[SearchResult]
 
               response.hitCount shouldEqual dataSets.length
-              MagdaMatchers.dataSetsEqual(response.dataSets, dataSets)
+              MagdaMatchers.dataSetsEqualIgnoreOrder(response.dataSets, dataSets)
             }
         }
       }
@@ -87,7 +87,21 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               val response = responseAs[SearchResult]
 
               response.hitCount shouldEqual dataSets.length
-              MagdaMatchers.dataSetsEqual(response.dataSets, dataSets.take(dataSets.length / 2))
+              MagdaMatchers.dataSetsEqualIgnoreOrder(response.dataSets, dataSets.take(dataSets.length / 2))
+            }
+        }
+      }
+
+      it("should sort results by pure quality") {
+        forAll(indexGen) {
+          case (indexName, dataSets, routes) ⇒
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> routes ~> check {
+              status shouldBe OK
+              contentType shouldBe `application/json`
+              val response = responseAs[SearchResult]
+
+              response.hitCount shouldEqual dataSets.length
+              MagdaMatchers.dataSetsEqual(response.dataSets, sortByQuality(dataSets))
             }
         }
       }
@@ -547,17 +561,22 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(gen) {
         case (indexName, dataSets, routes, start, limit) =>
           whenever(start >= 0 && start <= dataSets.size && limit >= 0 && limit <= dataSets.size) {
-            Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> routes ~> check {
-              status shouldBe OK
-              val result = responseAs[SearchResult]
+            val sortedDataSets =
 
-              val expectedResultIdentifiers = dataSets.drop(start).take(limit).map(_.identifier)
-              expectedResultIdentifiers shouldEqual result.dataSets.map(_.identifier)
-            }
+              Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> routes ~> check {
+                status shouldBe OK
+                val result = responseAs[SearchResult]
+                val sortedDataSets = sortByQuality(dataSets)
+
+                val expectedResultIdentifiers = sortedDataSets.drop(start).take(limit).map(_.identifier)
+                expectedResultIdentifiers shouldEqual result.dataSets.map(_.identifier)
+              }
           }
       }
     }
   }
+
+  def sortByQuality(dataSets: List[DataSet]): List[DataSet] = dataSets.sortWith { case (ds1, ds2) => ds1.quality.compare(ds2.quality) > 0 }
 
   describe("query") {
     def queryEquals(outputQuery: Query, inputQuery: Query) = {

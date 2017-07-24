@@ -346,6 +346,8 @@ object Generators {
 
   val incrementer: AtomicInteger = new AtomicInteger(0)
 
+  val twoDigitDoubleGen = Gen.choose(0, 1d).flatMap(x => Math.round(x * 100).toDouble / 100)
+
   def dataSetGen(inputCache: mutable.Map[String, List[_]]) = for {
     identifier <- Gen.delay {
       incrementer.incrementAndGet()
@@ -364,6 +366,7 @@ object Generators {
     contactPoint <- someBiasedOption(agentGen(arbitrary[String].map(_.take(50).mkString.trim)))
     distributions <- listSizeBetween(1, 5, distGen(inputCache))
     landingPage <- someBiasedOption(arbitrary[String].map(_.take(50).mkString.trim))
+    quality <- twoDigitDoubleGen
   } yield DataSet(
     identifier = identifier.toString,
     catalog = Some("test-catalog"),
@@ -381,7 +384,8 @@ object Generators {
     keywords = keyword,
     contactPoint = contactPoint,
     distributions = distributions,
-    landingPage = landingPage)
+    landingPage = landingPage,
+    quality = quality)
 
   val INDEXED_REGIONS_COUNT = 12
   def indexedRegionsGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("indexedRegions", regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)(inputCache)

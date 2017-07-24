@@ -22,17 +22,38 @@ case class RegistryRecordsResponse(
   nextPageToken: Option[String],
   records: List[Record])
 
+case class QualityRatingAspect(score: Double, weighting: Double)
+
 trait RegistryIndexerProtocols extends DefaultJsonProtocol with RegistryProtocols {
   implicit val registryRecordsResponseFormat = jsonFormat3(RegistryRecordsResponse.apply)
 }
 
 trait RegistryConverters extends RegistryProtocols with ModelProtocols {
+  implicit def qualityRatingAspectFormat = jsonFormat2(QualityRatingAspect.apply)
+
   implicit def registryDataSetConv(interface: InterfaceConfig)(hit: Record)(implicit defaultOffset: ZoneOffset): DataSet = {
     val dcatStrings = hit.aspects("dcat-dataset-strings")
     val source = hit.aspects("source")
     val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
     val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
     val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
+
+    val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
+
+    val quality: Double = qualityAspectOpt match {
+      case Some(qualityAspect) if !qualityAspect.fields.isEmpty =>
+        val ratings = qualityAspect.fields.map {
+          case (key, value) =>
+            value.convertTo[QualityRatingAspect]
+        }
+        val totalWeighting = ratings.map(_.weighting).reduce(_ + _)
+
+        if (totalWeighting > 0) {
+          ratings.map(rating =>
+            (rating.score) * (rating.weighting / totalWeighting)).reduce(_ + _)
+        } else 1d
+      case _ => 1d
+    }
 
     val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
     val coverageEnd = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'end.?)), dcatStrings.extract[String]('temporal.? / 'end.?).getOrElse(""))
@@ -59,8 +80,8 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
       keywords = dcatStrings.extract[String]('keywords.? / *),
       contactPoint = dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
       distributions = distributions.extract[JsObject]('distributions.? / *).map(convertDistribution(_, hit)),
-      landingPage = dcatStrings.extract[String]('landingPage.?)
-    )
+      landingPage = dcatStrings.extract[String]('landingPage.?),
+      quality = quality)
   }
 
   private def convertPublisher(publisher: Record): Agent = {
@@ -68,8 +89,7 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
     Agent(
       identifier = Some(publisher.id),
       name = organizationDetails.extract[String]('title.?),
-      imageUrl = organizationDetails.extract[String]('imageUrl.?)
-    )
+      imageUrl = organizationDetails.extract[String]('imageUrl.?))
   }
 
   private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
@@ -93,8 +113,7 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
       downloadURL = urlString,
       byteSize = dcatStrings.extract[Int]('byteSize.?).flatMap(bs => Try(bs.toInt).toOption),
       mediaType = Distribution.parseMediaType(mediaTypeString, None, None),
-      format = formatString
-    )
+      format = formatString)
   }
 
   private def tryParseDate(dateString: Option[String])(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] = {
@@ -104,4 +123,16 @@ trait RegistryConverters extends RegistryProtocols with ModelProtocols {
 
 object RegistryConverters extends RegistryConverters {
 
+}
+
+object RegistryConstants {
+  val aspects = List(
+    "dcat-dataset-strings",
+    "dataset-distributions",
+    "source")
+
+  val optionalAspects = List(
+    "temporal-coverage",
+    "dataset-publisher",
+    "dataset-quality-rating")
 }

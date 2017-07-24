@@ -68,7 +68,7 @@ function sleuthLinkedData(registry: Registry) {
       }
     });
 
-    const best = _.max(processed);
+    const best = _.max(processed) || 0;
 
     const starsAspectPromise = registry
       .putRecordAspect(record.id, linkedDataAspectDef.id, {
@@ -80,8 +80,8 @@ function sleuthLinkedData(registry: Registry) {
       op: "add",
       path: "/" + linkedDataAspectDef.id,
       value: {
-        percentage: Math.round(best / 5 * 100),
-        weighting: 80
+        score: best / 5,
+        weighting: 0.8
       }
     };
 

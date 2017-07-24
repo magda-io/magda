@@ -9,16 +9,44 @@ import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.Registry.{ WebHook, EventType, WebHookConfig }
 
 object RegisterWebhook {
-  def registerWebhook(interface: RegistryExternalInterface)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
-    new WebhookRegisterer(interface).registerWebhook
+  def registerWebhook(interface: RegistryExternalInterface)(
+    implicit config: Config,
+    system: ActorSystem,
+    executor: ExecutionContext,
+    materializer: Materializer): Future[Unit] = registerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
 
-  def registerWebhook(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
-    new WebhookRegisterer(interfaceConfig).registerWebhook()
+  def registerWebhook(
+    interface: RegistryExternalInterface,
+    aspects: List[String],
+    optionalAspects: List[String])(
+      implicit config: Config,
+      system: ActorSystem,
+      executor: ExecutionContext,
+      materializer: Materializer): Future[Unit] =
+    new WebhookRegisterer(interface, aspects, optionalAspects).registerWebhook
+
+  def registerWebhook(interfaceConfig: InterfaceConfig)(
+    implicit config: Config,
+    system: ActorSystem,
+    executor: ExecutionContext,
+    materializer: Materializer): Future[Unit] = registerWebhook(interfaceConfig, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+
+  def registerWebhook(
+    interfaceConfig: InterfaceConfig,
+    aspects: List[String],
+    optionalAspects: List[String])(
+      implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
+    new WebhookRegisterer(interfaceConfig, aspects, optionalAspects).registerWebhook()
 }
 
-private class WebhookRegisterer(interface: RegistryExternalInterface)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) {
-  def this(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
-    this(new RegistryExternalInterface(interfaceConfig))
+private class WebhookRegisterer(
+    interface: RegistryExternalInterface,
+    aspects: List[String],
+    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) {
+  def this(interfaceConfig: InterfaceConfig,
+           aspects: List[String],
+           optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
+    this(new RegistryExternalInterface(interfaceConfig), aspects, optionalAspects)
   }
 
   def registerWebhook(): Future[Unit] = {
@@ -43,25 +71,15 @@ private class WebhookRegisterer(interface: RegistryExternalInterface)(implicit c
         EventType.DeleteRecord,
         EventType.CreateRecordAspect,
         EventType.PatchRecord,
-        EventType.DeleteRecordAspect
-      ),
+        EventType.DeleteRecordAspect),
       url = config.getString("registry.webhookUrl"),
       config = WebHookConfig(
-        aspects = Some(List(
-          "dcat-dataset-strings",
-          "dataset-distributions",
-          "source"
-        )),
-        optionalAspects = Some(List(
-          "temporal-coverage",
-          "dataset-publisher"
-        )),
+        aspects = Some(aspects),
+        optionalAspects = Some(optionalAspects),
         includeRecords = Some(true),
-        dereference = Some(true)
-      ),
+        dereference = Some(true)),
       userId = Some(0), // TODO: Will have to change this when it becomes important
-      active = true
-    )
+      active = true)
 
     interface.addWebhook(webhook).map { _ =>
       system.log.info("Successfully added webhook")

@@ -27,7 +27,7 @@
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-ld-rating-sleuther",
+      "name": "data61/magda-sleuther-ld-rating",
       "include": "node_modules dist Dockerfile"
     }
   }

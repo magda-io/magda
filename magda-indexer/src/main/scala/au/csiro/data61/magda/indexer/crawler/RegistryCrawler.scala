@@ -74,10 +74,10 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
       }
   }
 
-  def tokenCrawl(nextFuture: Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
+  def tokenCrawl(nextFuture: () => Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
     val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching from registry, retries left: {}", retryCount + 1)
 
-    val safeFuture = ErrorHandling.retry(() => nextFuture, 30 seconds, 30, onRetry)
+    val safeFuture = ErrorHandling.retry(nextFuture, 30 seconds, 30, onRetry)
       .recover {
         case e: Throwable =>
           log.error(e, "Failed completely while fetching from registry. This means we can't go any further!!")
@@ -89,7 +89,7 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
         val dataSetSource = Source.fromIterator(() => dataSets.toIterator)
 
         tokenOption match {
-          case Some(token) => dataSetSource.concat(tokenCrawl(interface.getDataSetsToken(token, batchSize), batchSize))
+          case Some(token) => dataSetSource.concat(tokenCrawl(() => interface.getDataSetsToken(token, batchSize), batchSize))
           case None        => dataSetSource
         }
     }
@@ -98,7 +98,7 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
   def streamForInterface(): Source[DataSet, NotUsed] = {
     val interfaceDef = interface.getInterfaceConfig
 
-    val firstPageFuture = interface.getDataSetsReturnToken(0, interfaceDef.pageSize.toInt)
+    val firstPageFuture = () => interface.getDataSetsReturnToken(0, interfaceDef.pageSize.toInt)
 
     val crawlSource = tokenCrawl(firstPageFuture, interfaceDef.pageSize.toInt)
       .filterNot(_.distributions.isEmpty)

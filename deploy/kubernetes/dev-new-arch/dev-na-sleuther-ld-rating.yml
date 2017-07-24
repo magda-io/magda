@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sleuther-ld-rating
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: sleuther-ld-rating
+    spec:
+      containers:
+      
+      - name: sleuther-ld-rating
+        env:
+        - name: NODE_ENV
+          value: dev-na
+        - name: NODE_PORT
+          value: "80"
+        - name: REGISTRY_URL
+          value: "http://registry-api/v0"
+        image: "data61/magda-sleuther-ld-rating:${version}"
+        resources:
+          requests:
+            cpu: 0m
+            memory: 0Mi
+          limits:
+            cpu: 100m
+            memory: 200Mi
+        imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sleuther-ld-rating
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: sleuther-ld-rating
+  type: "NodePort"
