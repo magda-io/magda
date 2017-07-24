@@ -1,0 +1,29 @@
+{
+    "homeCamera": {
+        "west": 148.751,
+        "south": -35.936,
+        "east": 149.409,
+        "north": -35.111
+    },
+    "services": [],
+    "catalog": [
+        {
+            "name": "ACT Government",
+            "type": "socrata",
+            "isPromoted": true,
+            "isOpen": true
+        },
+    {
+      "type": "socrata",
+      "name": "ACT Government broken?",
+      "groupBy": "category",
+      "filterQuery": ["limitTo=MAPS"],
+      "url": "http://www.data.act.gov.au"
+    },
+        {
+            "name": "National Data Sets",
+            "type": "group",
+            "isOpen": false
+        }
+    ]
+}

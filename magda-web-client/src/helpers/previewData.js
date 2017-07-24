@@ -23,6 +23,14 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     const html = viewableDistribution.filter(d=> d.format.toLowerCase() === 'html');
     const rss = viewableDistribution.filter(d=> d.format.toLowerCase() === 'rss');
 
+    const geoFormat = ["csvGeoAu" , "wfs" , "wms" , "czml" , "kml"];
+
+    const geo = viewableDistribution.filter(d=> geoFormat.indexOf(d.format.toLowerCase()) !== -1) ;
+
+    if(geo.length > 0){
+      return {id: geo[0].id , format: 'geo', name: geo[0].title}
+    }
+
     if(csv.length > 0){
       return {url: csv[0].downloadURL, format: 'csv'}
     }

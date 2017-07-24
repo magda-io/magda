@@ -1,0 +1,110 @@
+#cloud-config
+
+# update and install packages, reboot if necessary
+apt_sources:
+  - source: deb https://deb.nodesource.com/node_4.x trusty main
+    keyid: 1655a0ab68576280
+
+package_upgrade: true
+package_reboot_if_required: true
+packages:
+ - ntp
+ - python-pip
+ - nodejs
+ - varnish
+ - gdal-bin
+
+# any files to create
+write_files:
+
+ - path: /etc/varnish/default.vcl
+   content: |
+    backend default {
+        .host = "127.0.0.1";
+        .port = "3001";
+    }
+
+    acl purge {
+      "localhost";
+      "127.0.0.1";
+    }
+
+    sub vcl_recv {
+      # only cache GET requests
+      if (req.request == "GET") {
+        return (lookup);
+      }
+
+      if (req.request == "PURGE") {
+        if (!client.ip ~ purge) {
+          error 405 "Method Not Allowed";
+        }
+        return(lookup);
+      }
+
+      # let everything else pass the cache
+        return (pass);
+    }
+
+    sub vcl_hit {
+      if (req.request == "PURGE") {
+        purge;
+        error 200 "Purged";
+      }
+    }
+
+    sub vcl_miss {
+      if (req.request == "PURGE") {
+        purge;
+        error 200 "Purged";
+      }
+    }
+
+    sub vcl_fetch
+    {
+      if ( beresp.status >= 400 ) {
+        set beresp.ttl = 0s;
+      }
+    }
+
+ - path: /etc/default/varnish
+   content: |
+    START=yes
+    NFILES=131072
+    MEMLOCK=82000
+    DAEMON_OPTS="-a :80 -T localhost:6082 -f /etc/varnish/default.vcl -S /etc/varnish/secret -s memcache=malloc,2G -s filecache=file,/tmp/varnish_storage.bin,10G"
+
+ - path: /etc/rsyslog.d/30-natmap.conf
+   content: |
+    :syslogtag, isequal, "natmap:" /var/log/natmap.log
+    & ~
+
+ - path: /etc/init/natmap.conf
+   content: |
+    start on (net-device-up and local-filesystems and runlevel [2345])
+    stop on runlevel [016]
+    console log
+    exec bash -c "cd /opt/{{deploymentName}} && /opt/{{deploymentName}}/node_modules/terriajs-server/run_server.sh --config-file /opt/{{deploymentName}}/productionserverconfig.json 2>&1 | logger -t natmap"
+
+# run all the commands to set this instance up
+runcmd:
+ - echo 'APT::Periodic::Unattended-Upgrade "1";' >> /etc/apt/apt.conf.d/10periodic
+ - pip install awscli
+
+# copy and extract the webapps from S3
+ - mkdir /tmp/ramfs
+
+# natmap
+ - mount -t ramfs ramfs /tmp/ramfs
+ - aws s3 cp --region ap-southeast-2 s3://terria-apps/map/{{deploymentName}}.tar.gz /tmp/ramfs/
+ - mkdir /opt/{{deploymentName}}
+ - tar xzf /tmp/ramfs/{{deploymentName}}.tar.gz -C /opt/{{deploymentName}}
+ - ARCHIVE_DIR=`sha256sum /tmp/ramfs/{{deploymentName}}.tar.gz | awk '{print $1}'`
+ - mkdir -p /opt/{{deploymentName}}/wwwroot/$ARCHIVE_DIR
+ - cp /tmp/ramfs/{{deploymentName}}.tar.gz /opt/{{deploymentName}}/wwwroot/$ARCHIVE_DIR
+ - umount /tmp/ramfs
+
+# start/restart services
+ - service rsyslog restart
+ - service varnish restart
+ - service natmap start

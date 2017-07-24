@@ -60,6 +60,28 @@ export function fetchPreviewData(distributions){
       const proxy = "https://nationalmap.gov.au/proxy/_0d/";
 
       switch (format) {
+        case 'geo':
+          const catalog = {"version":"0.0.05","initSources":[{
+            "catalog": [
+              {
+                "name": prop.name,
+                "type": "magda-item",
+                "url": config.baseUrl,
+                "distributionId": prop.id,
+                "isEnabled": true
+              }
+            ]
+          }]}
+
+          const d = {
+            data: window.location.origin + "/preview-map/#start=" + encodeURIComponent(JSON.stringify(catalog)),
+            meta: {
+              type: "geo"
+            }
+          }
+          dispatch(receivePreviewData(d));
+          break;
+
         case 'csv':
           xlsToTabular(proxy + url).then(data=>{
             dispatch(receivePreviewData(data));

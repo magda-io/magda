@@ -47,7 +47,8 @@ app.get('/server-config.js', function(req, res) {
         searchApiBaseUrl: argv.searchApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('search').toString(),
         registryApiBaseUrl: argv.registryApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('registry').toString(),
         authApiBaseUrl: argv.authApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('auth').toString(),
-        discussionsApiBaseUrl: argv.discussionsApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('discussions').toString()
+        discussionsApiBaseUrl: argv.discussionsApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('discussions').toString(),
+        previewMapBaseUrl: argv.previewMapBaseUrl || new URI(argv.apiBaseUrl).segment('..').segment('preview-map').toString(),
     };
     res.type('json');
     res.send('window.magda_server_config = ' + JSON.stringify(config) + ';');

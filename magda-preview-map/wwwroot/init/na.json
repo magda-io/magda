@@ -1,0 +1,53 @@
+{
+    "corsDomains" : [
+        "corsproxy.com",
+        "programs.communications.gov.au",
+        "www.asris.csiro.au"
+    ],
+    "homeCamera": {
+        "west": 116,
+        "south": -27,
+        "east": 149,
+        "north": -8
+    },
+    "baseMapName": "Australian Topography",
+    "initialViewerMode": "3d",
+    "services": [],
+    "catalog": [
+        {
+            "name": "Northern Territory",
+            "description": "[Licence](http://www.ga.gov.au/copyright)",
+            "dataCustodian": "[Geoscience Australia](http://www.ga.gov.au/)",
+            "url": "http://wms1.ntlis.nt.gov.au/ilismap",
+            "type": "wms-getCapabilities"
+        },
+        {
+            "name": "National Data Sets",
+            "isOpen": false,
+            "type": "group",
+            "items": [
+                {
+                    "name": "Framework",
+                    "type": "group",
+                    "items": [
+                        {
+                            "name": "NA Mask",
+                            "rectangle": [
+                                "96.816941408",
+                                "-43.74050960205765",
+                                "159.109219008",
+                                "-9.142175976703609"
+                            ],
+                            "type": "wms",
+                            "url": "http://geoserver.nationalmap.nicta.com.au/admin_bnds_abs/ows",
+                            "layers": "admin_bnds:NA_MASK",
+                            "isShown": true,
+                            "opacity": 0.9,
+                            "keepOnTop": true
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

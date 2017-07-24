@@ -9,6 +9,7 @@
         "registry": "http://localhost:6101/v0",
         "auth": "http://localhost:6104/v0/public",
         "discussions": "http://localhost:6105/v0",
-        "web": "http://localhost:6108"
+        "web": "http://localhost:6108",
+        "preview-map": "http://localhost:6110"
     }
 }

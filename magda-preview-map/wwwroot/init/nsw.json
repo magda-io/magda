@@ -1,0 +1,22 @@
+{
+    "homeCamera": {
+        "west": 140.8,
+        "south": -37.6,
+        "east": 153.8,
+        "north": -28.1
+    },
+    "services": [],
+    "catalog": [
+        {
+            "name": "New South Wales Government",
+            "type": "group",
+            "isPromoted": true,
+            "isOpen": true
+        },
+        {
+            "name": "National Data Sets",
+            "type": "group",
+            "isOpen": false
+        }
+    ]
+}

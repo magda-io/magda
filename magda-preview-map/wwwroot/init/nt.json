@@ -1,0 +1,22 @@
+{
+    "homeCamera": {
+        "west": 128.9,
+        "south": -26.2,
+        "east": 138.2,
+        "north": -10.7
+    },
+    "services": [],
+    "catalog": [
+        {
+            "name": "Northern Territory Government",
+            "type": "group",
+            "isPromoted": true,
+            "isOpen": true
+        },
+        {
+            "name": "National Data Sets",
+            "type": "group",
+            "isOpen": false
+        }
+    ]
+}

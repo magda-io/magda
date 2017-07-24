@@ -1,0 +1,243 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 150px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 100px;
+  background-color: #f5f5f5;
+}
+
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+body > .container {
+  padding: 60px 15px 0;
+}
+.container .text-muted {
+  margin: 20px 0;
+}
+
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+code {
+  font-size: 80%;
+}
+
+/* Custom page CSS: PG
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+body {
+  color: #484848;
+}
+
+.content {
+  margin-top: 20px;
+}
+
+.embed-responsive {
+
+margin-bottom: 20px;
+
+}
+
+ul {
+  margin-left: 20px;
+  padding-left: 0;
+}
+
+.content ul li {
+  margin-bottom: 10px;
+}
+
+.how-to, .key-features, .faq  {
+  list-style: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.side-nav {
+  margin-bottom: 50px;
+}
+
+.side-nav a {
+  text-decoration: none;
+}
+
+
+.side-nav .active {
+  font-weight: bold;
+} 
+
+.nav-header {
+  font-size: 16px;
+  margin-top: 25px;
+  font-weight: 500;
+}
+
+.nav-header:first-of-type {
+  margin-top: 0px;
+}
+
+.navbar-inverse {
+  background-color: #353B43;
+  border-color: #080808; 
+}
+
+.navbar-inverse .navbar-nav > li > a {
+  color: #ccc;
+  border-radius: .2em;
+  margin-right: 5px;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover {
+  background-color: #3c434c;
+}
+
+.navbar-inverse .navbar-nav > .active > a {
+  background-color: #49515c;
+}
+.navbar-inverse .navbar-nav > .active > a:hover {
+  background-color: #49515c;
+}
+
+.navbar-brand {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.navbar-brand img {
+  width: 140px;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 300;
+  font-family: 'Open Sans', sans-serif;
+}
+
+h1:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1 {
+  font-size: 26px;
+  margin-bottom: 30px;
+}
+
+h2 {
+  font-size: 22px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.partners img {
+  width: 160px;
+  margin-bottom: 30px;
+  align-content: center;
+}
+
+.panel-group .panel {
+  border: none;
+  border-radius: 0;
+}
+
+.panel-default>.panel-heading {
+  background-color: #FFFFFF;
+  padding-left: 0;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.panel-body {
+  padding-left: 0;
+}
+
+.affix {
+  position: static;
+}
+
+/* archor styling */
+
+h2 > a {
+  text-decoration: none;
+  color: #484848;
+}
+
+
+/* Extra small devices (phones, less than 768px) */
+/* No media query since this is the default in Bootstrap */
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: @screen-sm-min) {
+
+  .affix {
+      position: fixed;
+      text
+  }
+
+}
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: @screen-md-min) { ... }
+
+/* Large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) { 
+
+.navbar {
+  min-height: 80px;
+}
+
+.navbar-nav>li>a {
+  margin-top: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.navbar-brand {
+  margin-right: 80px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.navbar-brand {
+  height: 80px;
+}
+
+.navbar-brand img {
+  width: 170px;
+}
+
+.content {
+  margin-top: 80px;
+}
+
+.nav-header:first-of-type {
+  margin-top: 25px;
+}
+
+.screenshot {
+  margin-bottom: 20px;
+}
+
+
+}
+
+
+

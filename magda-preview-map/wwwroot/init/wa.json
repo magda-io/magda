@@ -1,0 +1,22 @@
+{
+    "homeCamera": {
+        "west": 112,
+        "south": -35.3,
+        "east": 129,
+        "north": -13.4
+    },
+    "services": [],
+    "catalog": [
+        {
+            "name": "Western Australian Government",
+            "type": "group",
+            "isPromoted": true,
+            "isOpen": true
+        },
+        {
+            "name": "National Data Sets",
+            "type": "group",
+            "isOpen": false
+        }
+    ]
+}
