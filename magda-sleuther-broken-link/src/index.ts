@@ -38,7 +38,8 @@ function sleuthBrokenLinks(registry: Registry) {
       ? record.aspects["dataset-distributions"].distributions
       : [];
 
-    const brokenLinks: Array<
+    // Check each link
+    const linkChecks: Array<
       [string, () => Promise<BrokenLinkSleuthingResult>]
     > = distributions.map((distribution: Record) =>
       checkDistributionLink(
@@ -47,8 +48,9 @@ function sleuthBrokenLinks(registry: Registry) {
       )
     );
 
+    // Group the checks against their host so that we're only making one request per site simultaneously.
     const brokenLinkChecksByHost: Promise<BrokenLinkSleuthingResult[]>[] = _(
-      brokenLinks
+      linkChecks
     )
       .groupBy(tuple => tuple[0])
       .values()
@@ -57,6 +59,7 @@ function sleuthBrokenLinks(registry: Registry) {
           valArray.map(innerValue => innerValue[1])
       )
       .map(checksForHost =>
+        // Make the checks for this host run one after the other but return their results as an array.
         checksForHost.reduce(
           (
             megaPromise: Promise<BrokenLinkSleuthingResult[]>,
@@ -78,6 +81,7 @@ function sleuthBrokenLinks(registry: Registry) {
 
     const allResults = _.flatten(checkResultsPerHost);
 
+    // Record a broken links aspect for each distribution.
     const brokenLinksAspectPromise = Promise.all(
       allResults.map(result => {
         if (result.aspect) {
@@ -90,7 +94,7 @@ function sleuthBrokenLinks(registry: Registry) {
 
     const numberWorking = allResults.reduce(
       (soFar: number, result: BrokenLinkSleuthingResult) =>
-        soFar + (result.aspect && result.aspect.status === "active" ? 1 : 0),
+        soFar + (!result.aspect || result.aspect.status === "active" ? 1 : 0),
       0
     );
 
@@ -103,6 +107,7 @@ function sleuthBrokenLinks(registry: Registry) {
       }
     };
 
+    // Record a single quality aspect for the dataset.
     const qualityPromise = registry
       .patchRecordAspect(record.id, datasetQualityAspectDef.id, [qualityOp])
       .then(result => unionToThrowable(result));
@@ -137,6 +142,12 @@ function recordBrokenLinkAspect(
     .then(unionToThrowable);
 }
 
+/**
+ * Checks a distribution's URL. Returns a tuple of the distribution's host and a no-arg function that when executed will fetch the url, returning a promise.
+ * 
+ * @param distribution The distribution Record
+ * @param distStringsAspect The dcat-distributions-strings aspect for this distribution
+ */
 function checkDistributionLink(
   distribution: Record,
   distStringsAspect: any
@@ -144,6 +155,7 @@ function checkDistributionLink(
   const url = distStringsAspect.downloadURL || distStringsAspect.accessURL;
 
   if (!url) {
+    // If there's no URL for the dataset, just don't return an aspect so nothing gets recorded.
     return [
       "",
       () =>
@@ -209,6 +221,12 @@ function retrieveFtp(parsedURL: uri.URI): Promise<BrokenLinkAspect> {
     );
 }
 
+/**
+ * Retrieves an HTTP/HTTPS url
+ * 
+ * @param url The url to retrieve
+ * @param delaySeconds429 How long to wait before trying again if a 429 Too Many Requests status is encountered.
+ */
 function retrieveHttp(
   url: string,
   delaySeconds429: number = 10
@@ -225,11 +243,6 @@ function retrieveHttp(
             resolve({
               response,
               status: "active"
-            });
-          } else if (response.statusCode === 429) {
-            resolve({
-              response,
-              status: "unknown"
             });
           } else {
             reject(
