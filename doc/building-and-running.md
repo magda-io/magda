@@ -42,7 +42,13 @@ kubectl create -f deploy/kubernetes/local/kube-registry.yml
 
 ## Building and running components
 
-Once the above prerequisites are in place, building MAGDA is easy.  From the MAGDA root directory, simply run:
+First, install `npm` dependencies and set up the links  between components by running:
+
+```bash
+lerna bootstrap
+```
+
+Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.  From the MAGDA root directory, simply run:
 
 ```bash
 npm run build
