@@ -15,5 +15,6 @@ It is not necessary to allocate ports to microservices when running on a Kuberne
 | `magda-preview-map` | 6106 |
 | `magda-web-server` | 6107 |
 | `magda-web-client` | 6108 |
-| `magda-ld-rating-sleuther` | 6109 |
+| `magda-sleuther-ld-rating` | 6109 |
+| `magda-sleuther-broken-links` | 6111 |
 | `magda-preview-map` | 6110 |

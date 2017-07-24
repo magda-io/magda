@@ -6,7 +6,7 @@
     "magda-auth-db/",
     "magda-sleuther-framework/",
     "magda-sleuther-ld-rating/",
-    "magda-broken-link-sleuther/",
+    "magda-sleuther-broken-link/",
     "magda-ckan-connector/",
     "magda-combined-db/",
     "magda-csw-connector/",
