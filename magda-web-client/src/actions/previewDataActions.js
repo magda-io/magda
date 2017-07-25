@@ -4,6 +4,7 @@ import {actionTypes} from '../constants/ActionTypes';
 import xmlToTabular from '../helpers/xmlToTabular';
 import jsonToTabular from '../helpers/jsonToTabular';
 import xlsToTabular from '../helpers/xlsToTabular';
+import papa from 'papaparse';
 import {getPreviewDataUrl} from '../helpers/previewData';
 import type {PreviewData} from '../helpers/previewData';
 import parser from 'rss-parser'
@@ -83,11 +84,15 @@ export function fetchPreviewData(distributions){
           break;
 
         case 'csv':
-          xlsToTabular(proxy + url).then(data=>{
-            dispatch(receivePreviewData(data));
-          }, error=>{
-            dispatch(requestPreviewDataError('failed to parse xls'));
-          });
+        papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
+          download: true,
+          header: true,
+          complete: function(data) {
+            data.meta.type = 'tabular';
+            dispatch(receivePreviewData(data))
+          },
+          error: (error)=>{dispatch(requestPreviewDataError(error))}
+        });
           break;
         case 'xml':
           fetch(proxy + url)

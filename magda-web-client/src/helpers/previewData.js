@@ -16,12 +16,6 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     const csv = viewableDistribution.filter(d=> d.format.toLowerCase() === 'csv');
     const xml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xml');
     const json = viewableDistribution.filter(d=> d.format.toLowerCase() === 'json');
-    // try google doc viwer
-    const xls = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xls' || d.format.toLowerCase() === 'xlsx');
-    const excel = viewableDistribution.filter(d=> d.format.toLowerCase() === 'excel');
-    const pdf = viewableDistribution.filter(d=> d.format.toLowerCase() === 'pdf');
-    //
-
     const txt = viewableDistribution.filter(d=> d.format.toLowerCase() === 'txt');
     const html = viewableDistribution.filter(d=> d.format.toLowerCase() === 'html');
     const rss = viewableDistribution.filter(d=> d.format.toLowerCase() === 'rss');
@@ -43,18 +37,6 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     if(json.length > 0){
       return {url: json[0].downloadURL, format: 'json'}
     }
-
-    // if(xls.length > 0){
-    //   return {url: xls[0].downloadURL, format: 'xls'}
-    // }
-    //
-    // if(excel.length > 0){
-    //   return {url: excel[0].downloadURL, format: 'excel'}
-    // }
-    //
-    // if(pdf.length > 0){
-    //   return {url: pdf[0].downloadURL, format: 'pdf'}
-    // }
 
     if(txt.length > 0){
       return {url: txt[0].downloadURL, format: 'txt'}
