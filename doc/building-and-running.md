@@ -42,7 +42,13 @@ kubectl create -f deploy/kubernetes/local/kube-registry.yml
 
 ## Building and running components
 
-Once the above prerequisites are in place, building MAGDA is easy.  From the MAGDA root directory, simply run:
+First, install `npm` dependencies and set up the links  between components by running:
+
+```bash
+lerna bootstrap
+```
+
+Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.  From the MAGDA root directory, simply run:
 
 ```bash
 npm run build
@@ -74,8 +80,6 @@ cd magda-combined-db && npm run dev
 cd magda-registry-api && npm run dev
 cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/data-gov-au.json
 ```
-
-If you get an error like `error: unable to forward port because pod is not running. Current status=Pending` when running `npm run dev` in the database directories, it means the database pod has not yet started up on Minikube.  Wait a couple of seconds and try again.
 
 See [connectors](connectors.md) for more detailed information about running connectors.
 
