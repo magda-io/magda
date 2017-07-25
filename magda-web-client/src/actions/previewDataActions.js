@@ -126,36 +126,7 @@ export function fetchPreviewData(distributions){
             }
           })
           break;
-        case 'xls':
-          xlsToTabular(proxy + url).then(data=>{
-             dispatch(receivePreviewData(data));
-          }, error=>{
-             dispatch(requestPreviewDataError('failed to parse xls'));
-          });
-          break;
-        case 'excel':
-          xlsToTabular(proxy + url).then(data=>{
-            dispatch(receivePreviewData(data));
-          }, error=>{
-            dispatch(requestPreviewDataError('failed to parse xls'));
-          });
-          break;
-        case 'pdf':
-            dispatch(receivePreviewData({
-              data: proxy + url,
-              meta: {
-                type: 'pdf'
-              }
-            }));
-            break;
-        case 'pdf':
-              dispatch(receivePreviewData({
-                data: proxy + url,
-                meta: {
-                  type: 'pdf'
-                }
-              }));
-              break;
+
         case 'txt':
           fetch(proxy + url)
           .then(response=>
