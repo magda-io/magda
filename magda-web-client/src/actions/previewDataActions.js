@@ -175,6 +175,14 @@ export function fetchPreviewData(distributions){
               }
             }));
             break;
+        case 'googleViewable':
+            dispatch(receivePreviewData({
+              data: url,
+              meta: {
+                type: 'googleViewable'
+              }
+            }));
+            break;
         case 'rss':
             fetch(proxy + url)
             .then(response=>{

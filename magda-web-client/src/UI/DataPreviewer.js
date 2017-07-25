@@ -3,6 +3,7 @@ import VegaLite from 'react-vega-lite';
 import DataPreviewTable from '../UI/DataPreviewTable';
 import DataPreviewPdf from '../UI/DataPreviewPdf';
 import DataPreviewTextBox from '../UI/DataPreviewTextBox';
+import DataPreviewGoogleViewer from '../UI/DataPreviewGoogleViewer';
 import type {PreviewData} from '../helpers/previewData';
 import News from './News';
 
@@ -14,7 +15,6 @@ class DataPreviewer extends Component {
     }
 
     render(){
-      debugger
       const url = this.props.url;
       return <div className='data-previewer'>
               <h3 className='section-heading'><a href={url} target='_blank'>{url && url.substring(url.lastIndexOf('/')+1)}</a></h3>
@@ -24,6 +24,7 @@ class DataPreviewer extends Component {
               {this.props.data.meta.type === 'txt' && <DataPreviewTextBox data ={this.props.data}/>}
               {this.props.data.meta.type === 'html' && <iframe width="100%" height="600px" src={this.props.data.data}></iframe>}
               {this.props.data.meta.type === 'rss' && <News newsItems={this.props.data.data}/>}
+              {this.props.data.meta.type === 'googleViewable' && <DataPreviewGoogleViewer data={this.props.data}/>}
              </div>
     }
 }
