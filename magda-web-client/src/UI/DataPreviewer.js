@@ -14,7 +14,6 @@ class DataPreviewer extends Component {
     }
 
     render(){
-      debugger
       const url = this.props.url;
       return <div className='data-previewer'>
               <h3 className='section-heading'><a href={url} target='_blank'>{url && url.substring(url.lastIndexOf('/')+1)}</a></h3>
