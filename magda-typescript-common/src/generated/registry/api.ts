@@ -135,7 +135,7 @@ export class RegistryEvent {
 }
 
 export class WebHook {
-    'id': any;
+    'id': string;
     'userId': any;
     'name': string;
     'active': boolean;
@@ -1537,6 +1537,65 @@ export class WebHooksApi {
             uri: localVarPath,
             useQuerystring: this._useQuerystring,
             json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: WebHook;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Modify a web hook by ID
+     * Modifies the web hook with a given ID.  If a web hook with the ID does not yet exist, it is created.
+     * @param id ID of the aspect to be saved.
+     * @param hook The web hook to save.
+     */
+    public putById (id: string, hook: WebHook) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
+        const localVarPath = this.basePath + '/hooks/{id}'
+            .replace('{' + 'id' + '}', String(id));
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        // verify required parameter 'id' is not null or undefined
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling putById.');
+        }
+
+        // verify required parameter 'hook' is not null or undefined
+        if (hook === null || hook === undefined) {
+            throw new Error('Required parameter hook was null or undefined when calling putById.');
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'PUT',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+            body: hook,
         };
 
         this.authentications.default.applyToRequest(requestOptions);
