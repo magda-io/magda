@@ -117,8 +117,13 @@ export function fetchPreviewData(distributions){
               return response.json();
             }
           ).then(json=>{
-            const data = jsonToTabular(json);
-            if(data){
+            const data = {
+              data: json,
+              meta: {
+                type: 'json'
+              }
+            }
+            if(!json.error){
               dispatch(receivePreviewData(data));
             } else{
               dispatch(requestPreviewDataError('failed to parse json'))

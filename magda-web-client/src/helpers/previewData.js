@@ -20,7 +20,7 @@ export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     const html = viewableDistribution.filter(d=> d.format.toLowerCase() === 'html');
     const rss = viewableDistribution.filter(d=> d.format.toLowerCase() === 'rss');
 
-    const geoFormat = ["csvGeoAu" , "wfs" , "wms" , "czml" , "kml"];
+    const geoFormat = ["csv-geo-au" , "wfs" , "wms" , "czml" , "kml"];
 
     const geo = viewableDistribution.filter(d=> geoFormat.indexOf(d.format.toLowerCase()) !== -1) ;
 
