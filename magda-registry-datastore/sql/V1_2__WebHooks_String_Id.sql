@@ -1,0 +1,16 @@
+ALTER TABLE WebHookEvents ADD COLUMN newWebHookId VARCHAR(100);
+UPDATE WebHookEvents SET newWebHookId = webHookId;
+ALTER TABLE WebHooks ADD COLUMN newWebHookId VARCHAR(100);
+UPDATE WebHooks SET newWebHookId = webHookId;
+
+ALTER TABLE WebHookEvents ALTER COLUMN newWebHookId SET NOT NULL;
+ALTER TABLE WebHooks ALTER COLUMN newWebHookId SET NOT NULL;
+
+ALTER TABLE WebHookEvents DROP COLUMN webHookId;
+ALTER TABLE WebHooks DROP COLUMN webHookId;
+
+ALTER TABLE WebHookEvents RENAME COLUMN newWebHookId TO webHookId;
+ALTER TABLE WebHooks RENAME COLUMN newWebHookId TO webHookId;
+
+ALTER TABLE WebHooks ADD PRIMARY KEY (webHookId);
+ALTER TABLE WebHookEvents ADD FOREIGN KEY (webHookId) REFERENCES WebHooks;

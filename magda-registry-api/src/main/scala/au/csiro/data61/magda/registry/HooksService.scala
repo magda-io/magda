@@ -47,31 +47,31 @@ class HooksService(system: ActorSystem, materializer: Materializer) extends Prot
   ))
   def getById = get { path(Segment) { (id: String) => {
     DB readOnly { session =>
-      HookPersistence.getById(session, id.toInt) match {
+      HookPersistence.getById(session, id) match {
         case Some(hook) => complete(hook)
         case None => complete(StatusCodes.NotFound, BadRequest("No web hook exists with that ID."))
       }
     }
   } } }
 
-//  @Path("/{id}")
-//  @ApiOperation(value = "Modify an aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[AspectDefinition],
-//    notes = "Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.")
-//  @ApiImplicitParams(Array(
-//    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
-//    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The aspect to save.")
-//  ))
-//  def putById = put { path(Segment) { (id: String) => {
-//    entity(as[AspectDefinition]) { aspect =>
-//      DB localTx { session =>
-//        AspectPersistence.putById(session, id, aspect) match {
-//          case Success(result) => complete(result)
-//          case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-//        }
-//      }
-//    }
-//  } } }
-//
+  @Path("/{id}")
+  @ApiOperation(value = "Modify a web hook by ID", nickname = "putById", httpMethod = "PUT", response = classOf[WebHook],
+    notes = "Modifies the web hook with a given ID.  If a web hook with the ID does not yet exist, it is created.")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
+    new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHook", paramType = "body", value = "The web hook to save.")
+  ))
+  def putById = put { path(Segment) { (id: String) => {
+    entity(as[WebHook]) { hook =>
+      DB localTx { session =>
+        HookPersistence.putById(session, id, hook) match {
+          case Success(result) => complete(result)
+          case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+        }
+      }
+    }
+  } } }
+
 //  @Path("/{id}")
 //  @ApiOperation(value = "Modify an aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
 //    notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
@@ -93,7 +93,7 @@ class HooksService(system: ActorSystem, materializer: Materializer) extends Prot
   def route =
     getAll ~
     create ~
-    getById
-//      putById ~
+    getById ~
+    putById
 //      patchById
 }
