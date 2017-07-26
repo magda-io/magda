@@ -339,7 +339,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def aggregationDefinition(limit: Int): AggregationDefinition =
     nestedAggregation(Format.id, "distributions").subAggregations {
       termsAggregation("nested")
-        .field("distributions.format.keyword")
+        .field("distributions.format.keyword_lowercase")
         .size(limit)
         .includeExclude(Seq(), Seq(""))
         .missing(config.getString("strings.unspecifiedWord"))
