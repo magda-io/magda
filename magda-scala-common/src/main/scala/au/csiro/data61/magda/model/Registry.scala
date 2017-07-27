@@ -53,7 +53,7 @@ object Registry {
   }
 
   case class WebHook(
-    id: Option[Int] = None,
+    id: Option[String] = None,
     userId: Option[Int],
     name: String,
     active: Boolean,
