@@ -1,6 +1,6 @@
 {
   "name": "@magda/auth-db",
-  "version": "0.0.28-SNAPSHOT",
+  "version": "0.0.28",
   "description": "The MAGDA database for storing users and other authorization data.",
   "license": "Apache-2.0",
   "scripts": {
@@ -15,6 +15,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.28-SNAPSHOT"
+    "@magda/scripts": "^0.0.28"
   }
 }

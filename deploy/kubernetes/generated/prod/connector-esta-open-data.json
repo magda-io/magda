@@ -13,7 +13,7 @@
         "containers": [
           {
             "name": "connector-esta-open-data",
-            "image": "data61/magda-project-open-data-connector:0.0.27-SNAPSHOT",
+            "image": "data61/magda-project-open-data-connector:0.0.28",
             "command": [
               "node",
               "/usr/src/app/component/dist/index.js",
@@ -22,10 +22,15 @@
               "--registryUrl",
               "http://registry-api/v0"
             ],
-            "imagePullPolicy": "Always",
+            "imagePullPolicy": "IfNotPresent",
             "resources": {
               "requests": {
-                "cpu": "100m"
+                "cpu": "500m",
+                "memory": "500Mi"
+              },
+              "limits": {
+                "cpu": "1000m",
+                "memory": "1000Mi"
               }
             },
             "volumeMounts": [

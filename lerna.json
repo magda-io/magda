@@ -30,9 +30,17 @@
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.28-SNAPSHOT",
-  "hoist": [
-    "tsmonad"
-  ],
-  "concurrency": "1"
+  "version": "0.0.28",
+  "hoist": ["tsmonad"],
+  "concurrency": "1",
+  "commands": {
+    "docker-build-prod": {
+      "ignore": [
+        "magda-auth-db",
+        "magda-discussions-db",
+        "magda-auth-api",
+        "magda-discussions-api"
+      ]
+    }
+  }
 }

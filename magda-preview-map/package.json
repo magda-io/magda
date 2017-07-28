@@ -1,6 +1,6 @@
 {
   "name": "magda-preview-map",
-  "version": "0.0.28-SNAPSHOT",
+  "version": "0.0.28",
   "description": "Geospatial preview based on TerriaJS.",
   "license": "Apache-2.0",
   "engines": {
@@ -29,7 +29,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.28-SNAPSHOT",
+    "@magda/scripts": "^0.0.28",
     "babel-core": "^6.7.4",
     "babel-eslint": "^7.0.0",
     "babel-loader": "^7.0.0",
@@ -86,7 +86,7 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "compile": "gulp release",
-    "build": "npm run compile",
+    "build": "npm run gulp",
     "dev": "npm start && gulp watch"
   }
 }
