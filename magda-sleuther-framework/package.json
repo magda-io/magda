@@ -5,7 +5,8 @@
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch"
+    "watch": "tsc -p tsconfig-build.json --watch",
+    "test": "jasmine-ts \"spec/**/*.spec.ts\""
   },
   "author": "",
   "license": "Apache-2.0",
@@ -13,7 +14,9 @@
   "devDependencies": {
     "@magda/scripts": "^0.0.28-SNAPSHOT",
     "@types/express": "^4.0.36",
+    "@types/jasmine": "^2.5.53",
     "@types/lodash": "^4.14.68",
+    "jasmine-ts": "^0.2.0",
     "typescript": "~2.4.0"
   },
   "dependencies": {

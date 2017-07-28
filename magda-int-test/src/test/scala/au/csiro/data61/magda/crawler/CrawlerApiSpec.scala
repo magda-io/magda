@@ -127,8 +127,8 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
           blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
         } catch {
           case (e: Throwable) =>
-            logger.warning("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
-            logger.warning(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${search(indexId / indices.getType(Indices.DataSetsIndexType)).size(0)}" +
+            logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
+            logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${search(indexId / indices.getType(Indices.DataSetsIndexType)).size(0)}" +
               s", firstIndex = ${source._1.size}, initialCount=${source}, afterCount = ${source._2.size}")
             throw e
         }

@@ -243,7 +243,7 @@ export default class Registry {
   }
 
   putHook(hook: WebHook): Promise<WebHook | Error> {
-    const operation = () => this.webHooksApi.create(hook);
+    const operation = () => this.webHooksApi.putById(hook.id, hook);
     return retry(
       operation,
       this.secondsBetweenRetries,

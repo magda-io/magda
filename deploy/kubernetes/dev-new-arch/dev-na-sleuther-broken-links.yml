@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: sleuther-broken-links
+  name: sleuther-broken-link
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        service: sleuther-broken-links
+        service: sleuther-broken-link
     spec:
       containers:
       
-      - name: sleuther-broken-links
+      - name: sleuther-broken-link
         env:
         - name: NODE_ENV
           value: dev-na
@@ -19,7 +19,7 @@ spec:
           value: "80"
         - name: REGISTRY_URL
           value: "http://registry-api/v0"
-        image: "data61/magda-sleuther-broken-links:${version}"
+        image: "data61/magda-sleuther-broken-link:${version}"
         resources:
           requests:
             cpu: 0m
@@ -32,12 +32,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: sleuther-broken-links
+  name: sleuther-broken-link
 spec:
   ports:
   - name: http
     port: 80
     targetPort: 80
   selector:
-    service: sleuther-broken-links
+    service: sleuther-broken-link
   type: "NodePort"

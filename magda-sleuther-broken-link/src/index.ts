@@ -239,10 +239,9 @@ function retrieveHttp(
         if (err) {
           reject(err);
         } else {
-          if (response.statusCode >= 200 && response.statusCode <= 299) {
+          if (response.statusCode >= 200 && response.statusCode <= 299 || response.statusCode === 429) {
             resolve({
-              response,
-              status: "active"
+              response
             });
           } else {
             reject(
@@ -278,7 +277,10 @@ function retrieveHttp(
             `429 rate limit detected for ${url}, waiting ${delaySeconds429} seconds`
           );
           return new Promise<BrokenLinkAspect>(resolve =>
-            setTimeout(() => resolve(retrieveHttp(url, delaySeconds429 * 10)))
+            setTimeout(
+              () => resolve(retrieveHttp(url, delaySeconds429 * 10)),
+              delaySeconds429
+            )
           );
         } else {
           console.warn(

@@ -9,7 +9,6 @@ import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwa
 import AsyncPage, {
   forEachAsync
 } from "@magda/typescript-common/dist/AsyncPage";
-// import * as _ from "lodash";
 import * as express from "express";
 
 export type SleutherOptions = {
@@ -21,6 +20,7 @@ export type SleutherOptions = {
   optionalAspects: string[];
   writeAspectDefs: AspectDefinition[];
   onRecordFound: (record: Record) => Promise<void>;
+  express: () => express.Express;
 };
 
 export default async function sleuther(
@@ -28,12 +28,12 @@ export default async function sleuther(
 ): Promise<void> {
   setupWebhookEndpoint(options);
 
-  await putAspectDefsIfNeeded(options);
-  await registerWebhookIfNecessary(options);
+  await putAspectDefs(options);
+  await registerWebhook(options);
   await crawlExistingRecords(options);
 }
 
-async function putAspectDefsIfNeeded(options: SleutherOptions) {
+async function putAspectDefs(options: SleutherOptions) {
   const aspectDefsToAdd = options.writeAspectDefs;
   console.info(`Adding aspect defs ${aspectDefsToAdd.map(def => def.name)}`);
 
@@ -58,7 +58,7 @@ function failIfErrors<T>(results: Array<T | Error>) {
 }
 
 function setupWebhookEndpoint(options: SleutherOptions) {
-  const server = express();
+  const server = options.express();
 
   server.get(
     "/hook",
@@ -91,28 +91,9 @@ function getPort(options: SleutherOptions) {
   return process.env.NODE_PORT || options.defaultPort;
 }
 
-async function registerWebhookIfNecessary(options: SleutherOptions) {
-  console.info("Looking up existing webhooks");
-  const hooks = await options.registry.getHooks();
-
-  if (<WebHook[]>hooks) {
-    const castHooks = <WebHook[]>hooks;
-    console.info("Retrieved webhooks");
-    const alreadyExists = castHooks.some(
-      hook => hook.url === getHookUrl(options)
-    );
-
-    if (alreadyExists) {
-      console.info("Hook already exists, no need to register");
-      return;
-    } else {
-      console.info("No hook - registering a new one");
-      await registerNewWebhook(options);
-    }
-  } else {
-    console.error("Failed when retrieving existing hooks", <Error>hooks);
-    throw <Error>hooks;
-  }
+async function registerWebhook(options: SleutherOptions) {
+  console.info("Registering webhook");
+  await registerNewWebhook(options);
 }
 
 async function registerNewWebhook(options: SleutherOptions) {
@@ -126,7 +107,7 @@ async function registerNewWebhook(options: SleutherOptions) {
   };
 
   const newWebHook: WebHook = {
-    id: null,
+    id: options.id,
     userId: 0, // TODO: When this matters
     name: options.id,
     active: true,
