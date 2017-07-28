@@ -12,7 +12,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-registry-datastore",
-      "include": "Dockerfile scripts"
+      "include": "Dockerfile sql"
     }
   },
   "devDependencies": {

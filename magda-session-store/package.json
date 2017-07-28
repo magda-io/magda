@@ -11,7 +11,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-session-store",
-      "include": "Dockerfile scripts"
+      "include": "Dockerfile sql"
     }
   },
   "devDependencies": {

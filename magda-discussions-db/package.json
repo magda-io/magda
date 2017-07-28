@@ -12,7 +12,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-discussions-db",
-      "include": "Dockerfile scripts"
+      "include": "Dockerfile sql"
     }
   },
   "devDependencies": {
