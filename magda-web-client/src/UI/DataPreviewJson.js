@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
-import JSONTree from 'react-json-tree'
+import LazyComponent from '../Components/LazyComponent';
 
 class DataPreviewJson extends Component {
+    getComponent(){
+      return import('react-json-tree').then(module => module.default)
+    }
+
     render(){
       return <div className='data-preview-json'>
-               <JSONTree data={this.props.data} />
+               <LazyComponent data={this.props.data} getComponent={this.getComponent}/>
              </div>
     }
 }
