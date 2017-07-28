@@ -103,7 +103,9 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
 
               response.status.isSuccess()
             })
-          })
+          }).recover {
+            case _ => false
+          }
         }).runFold(WebHookProcessingResult(0, 0))((results, postResult) => results match {
           // Count successful and failed payload deliveries
           case WebHookProcessingResult(successfulPosts, failedPosts) => if (postResult) WebHookProcessingResult(successfulPosts + 1, failedPosts) else WebHookProcessingResult(successfulPosts, failedPosts + 1)
