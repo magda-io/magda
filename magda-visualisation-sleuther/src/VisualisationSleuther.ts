@@ -1,6 +1,8 @@
 import * as request from 'request';
 import * as URI from 'urijs';
 import * as Baby from 'babyparse';
+import * as moment from 'moment';
+
 import Registry from '@magda/typescript-common/dist/Registry';
 import retryBackoff from '@magda/typescript-common/dist/retryBackoff';
 import AsyncPage, { forEachAsync } from '@magda/typescript-common/dist/AsyncPage';
@@ -13,6 +15,8 @@ const aspectDefinition = {
     jsonSchema: require('@magda/registry-aspects/source-link-status.schema.json')
 };
 
+const timeFormats = [moment.ISO_8601, 'DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-[Q]Q'];
+
 export default class VisualisationSleuther {
     private registry: Registry;
 
@@ -21,12 +25,10 @@ export default class VisualisationSleuther {
     }
     async run(): Promise<VisualisationSleutherResult> {
         let checkedDistributions = 0;
-        let brokenLinks = 0;
-        let tooManyRequests = 0;
+        let csvs = 0;
+        let timeseries = 0;
 
         await this.registry.putAspectDefinition(aspectDefinition);
-
-
         const registryPage = AsyncPage.create<{records: Array<Record>, nextPageToken: string}>((previous) => {
             if (previous === undefined) {
                 return this.registry.getRecords(['dcat-distribution-strings']);
@@ -50,64 +52,77 @@ export default class VisualisationSleuther {
                             if (response.statusCode >= 200 && response.statusCode <= 299) {
                                 resolve({response, body});
                             } else {
-                                reject(new BadHttpResponseError(response.statusMessage, response, response.statusCode));
+                                throw new BadHttpResponseError(response.statusMessage, response, response.statusCode);
                             }
                         }
                     }));
                     return retryBackoff(operation, 1, 5, (err, retries) => {console.log(`Downloading ${downloadURL} failed: ${err.errorDetails || err.httpStatusCode || err} (${retries} retries remaining)`);})
                         .then(({ response, body }) => {
                             checkedDistributions++;
-                            return this.processDistribution(record, body, response);
+                            csvs++;
+                            return this.processCsv(record, body, response).then(({timeseries : isTS}) => {
+                                if (isTS) {
+                                    timeseries++;
+                                }
+                            });
                         }).catch(err => {
                             checkedDistributions++;
                         });
                 } else {
                     console.log(`Unsupported URL: ${downloadURL}`);
-                    return this.registry.putRecordAspect(record.id, 'source-link-status', {status: 'broken', errorDetails: `Unrecognised URL: ${downloadURL}`}).then(() => {});
                 }
             }
             return undefined;
         });
-        return Promise.resolve({checkedDistributions, brokenLinks, tooManyRequests});
+        return Promise.resolve({checkedDistributions, csvs, timeseries});
     }
 
-    async processDistribution(record: Record, body: any, httpResponse: request.RequestResponse) {
+    async processCsv(record: Record, body: any, httpResponse: request.RequestResponse) : Promise<{format: string, wellFormed: boolean, fields?: {[key: string]: Field}, timeseries?: boolean}> {
         // Currently only supports CSV:
         const parsed = Baby.parse(body, {
             header: true,
             dynamicTyping: true
         });
+        let visualisationInfoAspect;
         if (parsed.errors.length === 0) {
-            const fields: {[key: string]: {numeric?: boolean}} = {};
+
+            const fields: {[key: string]: Field} = {};
             parsed.meta.fields.forEach(field => {
+                // Get column values
                 const values = parsed.data.map(row => row[field]);
                 // Try to detect the column type
-                if (values.every(val => typeof val === 'number')) {
+                if (/^(.*[_ ])?(time|date)/i.test(field) && values.every(time => moment(time, timeFormats, true).isValid())) {
+                    // Check every value is a valid time
+                    fields[field] = {
+                        time: true
+                    };
+                } else if (values.every(val => typeof val === 'number')) {
                     fields[field] = {
                         numeric: true
                     };
-                    return;
-                }
-                if (/^(.*[_ ])?(time|date)/i.test(field)) {
-                    // Could be date or time column
-                    values.every(time => )
+                } else {
+                    fields[field] = {};
                 }
 
             });
-            const visualisationInfoAspect = {
+            visualisationInfoAspect = {
                 format: 'CSV',
                 wellFormed: true,
-                fields
+                fields,
+                // At least one time and one numeric column
+                timeseries: Object.keys(fields).reduce((val, key) => val+(fields[key].time ? 1 : 0), 0) > 0 && Object.keys(fields).reduce((val, key) => val+(fields[key].numeric ? 1 : 0), 0) > 0
             };
-            await this.registry.putRecordAspect(record.id, 'visualisation-info', visualisationInfoAspect);
         } else {
-            await this.registry.putRecordAspect(record.id, 'visualisation-info', {
+            visualisationInfoAspect = {
                 format: 'CSV',
                 wellFormed: false
-            });
+            };
         }
+        await this.registry.putRecordAspect(record.id, 'visualisation-info', visualisationInfoAspect);
+        return visualisationInfoAspect;
     }
 }
+
 
 class BadHttpResponseError extends Error  {
     public response: request.RequestResponse;
@@ -122,6 +137,10 @@ class BadHttpResponseError extends Error  {
     }
 }
 
+interface Field {
+    numeric?: boolean,
+    time?: boolean
+};
 
 interface VisualisationSleutherOptions {
     registry: Registry
@@ -129,6 +148,6 @@ interface VisualisationSleutherOptions {
 
 interface VisualisationSleutherResult {
     checkedDistributions: number,
-    brokenLinks: number,
-    tooManyRequests: number
+    csvs: number,
+    timeseries: number
 }

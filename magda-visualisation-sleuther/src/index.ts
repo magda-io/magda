@@ -11,6 +11,6 @@ const sleuther = new VisualisationSleuther({
 
 sleuther.run().then(result => {
     console.log(`Distributions checked: ${result.checkedDistributions}`);
-    console.log(`429 responses: ${result.tooManyRequests}`);
-    console.log(`Broken links found: ${result.brokenLinks}`);
+    console.log(`Number of CSVs: ${result.csvs}`);
+    console.log(`Number of timeserives CSVs: ${result.timeseries}`);
 });
