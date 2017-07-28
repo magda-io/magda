@@ -30,8 +30,8 @@ metadata:
 spec:
   ports:
   - name: http
-    port: 80
-    targetPort: 3019
+    port: 6110
+    targetPort: 6110
   selector:
     service: preview-map
   type: "NodePort"
