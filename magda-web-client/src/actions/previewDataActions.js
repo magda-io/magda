@@ -39,9 +39,9 @@ export function resetPreviewData(){
 
 
 
-export function fetchPreviewData(distributions){
+export function fetchPreviewData(distribution){
   return (dispatch: Function, getState: Function)=>{
-      const prop = getPreviewDataUrl(distributions);
+      const prop = getPreviewDataUrl(distribution);
       // check if we need to fetch
 
       if(!prop){
@@ -73,13 +73,13 @@ export function fetchPreviewData(distributions){
             ]
           }]}
 
-          const d = {
+          let geoData = {
             data: window.location.origin + "/preview-map/#start=" + encodeURIComponent(JSON.stringify(catalog)),
             meta: {
               type: "geo"
             }
           }
-          dispatch(receivePreviewData(d));
+          dispatch(receivePreviewData({[distribution.id]: geoData}));
           break;
 
         case 'csv':
@@ -88,7 +88,7 @@ export function fetchPreviewData(distributions){
           header: true,
           complete: function(data) {
             data.meta.type = 'tabular';
-            dispatch(receivePreviewData(data))
+            dispatch(receivePreviewData({[distribution.id]: data}))
           },
           error: (error)=>{dispatch(requestPreviewDataError(error))}
         });
@@ -101,9 +101,9 @@ export function fetchPreviewData(distributions){
               return response.text();
             }
           ).then(xmlData=>{
-            const data = xmlToTabular(xmlData);
+            let data = xmlToTabular(xmlData);
             if(data){
-              dispatch(receivePreviewData(data));
+              dispatch(receivePreviewData({[distribution.id]: data}));
             } else{
               dispatch(requestPreviewDataError('failed to parse xml'))
             }
@@ -117,14 +117,14 @@ export function fetchPreviewData(distributions){
               return response.json();
             }
           ).then(json=>{
-            const data = {
+            const jsonData = {
               data: json,
               meta: {
                 type: 'json'
               }
             }
             if(!json.error){
-              dispatch(receivePreviewData(data));
+              dispatch(receivePreviewData({[distribution.id]: jsonData}));
             } else{
               dispatch(requestPreviewDataError('failed to parse json'))
             }
@@ -139,29 +139,32 @@ export function fetchPreviewData(distributions){
               return response.text();
             }
           ).then(text=>{
-            dispatch(receivePreviewData({
+            const textData = {
               data: text,
               meta: {
                 type: 'txt'
               }
-            }));
+            }
+            dispatch(receivePreviewData({[distribution.id]: textData}));
           })
           break;
         case 'html':
-            dispatch(receivePreviewData({
+            const htmlData = {
               data: url,
               meta: {
                 type: 'html'
               }
-            }));
+            }
+            dispatch(receivePreviewData({[distribution.id]: htmlData}));
             break;
         case 'googleViewable':
-            dispatch(receivePreviewData({
+            const googleViewableData = {
               data: url,
               meta: {
                 type: 'googleViewable'
               }
-            }));
+            }
+            dispatch(receivePreviewData({[distribution.id]: googleViewableData}));
             break;
         case 'rss':
             fetch(proxy + url)
@@ -178,18 +181,19 @@ export function fetchPreviewData(distributions){
                   dispatch(requestPreviewDataError("error getting rss feed"));
                   console.warn(err);
                 } else {
-                  dispatch(receivePreviewData({
+                  const rssData = {
                     data: result.feed.entries,
                     meta: {
                       type: 'rss'
                     }
-                  }))
+                  }
+                  dispatch(receivePreviewData({[distribution.id]: rssData}))
                 }
             });
           })
             break;
         default:
-          dispatch(resetPreviewData());
+          return dispatch(receivePreviewData({[distribution.id]: null}));
       }
   }
 }
