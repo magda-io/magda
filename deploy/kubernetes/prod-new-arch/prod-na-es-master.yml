@@ -15,44 +15,23 @@ spec:
       labels:
         component: elasticsearch
         role: master
-      annotations:
-        scheduler.alpha.kubernetes.io/affinity: >
-          {
-            "podAntiAffinity": {
-              "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                  "labelSelector": {
-                    "matchExpressions": [
-                      {
-                        "key": "component",
-                        "operator": "In",
-                        "values": ["elasticsearch"]
-                      },
-                      {
-                        "key": "role",
-                        "operator": "In",
-                        "values": ["master"]
-                      }
-                    ]
-                  },
-                  "topologyKey": "kubernetes.io/hostname",
-                  "weight": 50
-               }
-              ]
-             }
-           }
-        # pod.beta.kubernetes.io/init-containers: '[
-        #   {
-        #   "name": "sysctl",
-        #     "image": "busybox",
-        #     "imagePullPolicy": "IfNotPresent",
-        #     "command": ["sysctl", "-w", "vm.max_map_count=262144"],
-        #     "securityContext": {
-        #       "privileged": true
-        #     }
-        #   }
-        # ]'
     spec:
+      affinity:   
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 50
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                  - elasticsearch
+                - key: role
+                  operator: In
+                  values:
+                  - master
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: es-master
         resources:

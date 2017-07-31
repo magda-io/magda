@@ -11,6 +11,6 @@
         "auth": "http://auth-api/v0/public",
         "discussions": "http://discussions-api/v0",
         "web": "http://web",
-        "preview-map": "http://preview-map"
+        "preview-map": "http://preview-map:6110"
     }
 }

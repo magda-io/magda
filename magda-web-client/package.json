@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.28-SNAPSHOT",
+  "version": "0.0.28",
   "license": "Apache-2.0",
   "scripts": {
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
@@ -18,7 +18,7 @@
     "watch": "react-scripts build --watch"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.28-SNAPSHOT",
+    "@magda/scripts": "^0.0.28",
     "deep-freeze": "0.0.1",
     "expect": "^1.20.2",
     "flow-bin": "^0.39.0",
@@ -52,6 +52,7 @@
     "marked": "^0.3.6",
     "node-sass": "^4.5.0",
     "openlayers": "^4.1.1",
+    "papaparse": "^4.3.3",
     "pretty-date": "^0.2.0",
     "query-string": "^4.3.4",
     "re-base": "^2.7.0",
@@ -74,8 +75,7 @@
     "traverse": "^0.6.6",
     "uuid": "^3.0.1",
     "vega": "^3.0.0-rc2",
-    "vega-lite": "^2.0.0-beta.8",
-    "xlsx": "^0.10.8"
+    "vega-lite": "^2.0.0-beta.8"
   },
   "proxy": {
     "/server-config.js": {

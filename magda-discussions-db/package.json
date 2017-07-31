@@ -1,6 +1,6 @@
 {
   "name": "@magda/discussions-db",
-  "version": "0.0.28-SNAPSHOT",
+  "version": "0.0.28",
   "description": "Magda auth's PostgreSQL database.",
   "scripts": {
     "dev": "echo \"No dev mode available, use `magda-combined-db` instead.\"",
@@ -12,10 +12,10 @@
   "config": {
     "docker": {
       "name": "data61/magda-discussions-db",
-      "include": "Dockerfile scripts"
+      "include": "Dockerfile sql"
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.28-SNAPSHOT"
+    "@magda/scripts": "^0.0.28"
   }
 }

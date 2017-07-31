@@ -1,7 +1,7 @@
 {
   "name": "@magda/sleuther-framework",
   "description": "MAGDA Sleuther Framework",
-  "version": "0.0.28-SNAPSHOT",
+  "version": "0.0.28",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "main": "dist",
   "devDependencies": {
-    "@magda/scripts": "^0.0.28-SNAPSHOT",
+    "@magda/scripts": "^0.0.28",
     "@types/express": "^4.0.36",
     "@types/jasmine": "^2.5.53",
     "@types/lodash": "^4.14.68",
@@ -20,8 +20,8 @@
     "typescript": "~2.4.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.28-SNAPSHOT",
-    "@magda/typescript-common": "^0.0.28-SNAPSHOT",
+    "@magda/registry-aspects": "^0.0.28",
+    "@magda/typescript-common": "^0.0.28",
     "express": "^4.15.3",
     "lodash": "^4.17.4"
   }

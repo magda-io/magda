@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: web
 spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   replicas: 1
   template:
     metadata:
@@ -21,9 +24,8 @@ spec:
             memory: 200Mi
         env:
         - name: NODE_ENV
-          value: production
+          value: prod
         image: "data61/magda-web-server:${version}"
-        imagePullPolicy: Always
         volumeMounts:
         - mountPath: "/etc"
           name: config
@@ -43,7 +45,7 @@ spec:
   ports:
   - name: http
     port: 80
-    targetPort: 80
+    targetPort: 6107
   selector:
     service: web
 ---

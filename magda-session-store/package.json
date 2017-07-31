@@ -1,6 +1,6 @@
 {
   "name": "@magda/session-store",
-  "version": "0.0.28-SNAPSHOT",
+  "version": "0.0.28",
   "description": "The database storing session information.",
   "scripts": {
     "dev": "echo \"No dev mode available, use `magda-combined-db` instead.\"",
@@ -11,10 +11,10 @@
   "config": {
     "docker": {
       "name": "data61/magda-session-store",
-      "include": "Dockerfile scripts"
+      "include": "Dockerfile sql"
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.28-SNAPSHOT"
+    "@magda/scripts": "^0.0.28"
   }
 }

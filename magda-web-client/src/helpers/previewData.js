@@ -12,7 +12,7 @@ export type PreviewData = {
 export function getPreviewDataUrl(distributions: Array<ParsedDistribution>){
     // 1. link status available
     // 2. link is active
-    const viewableDistribution = distributions.filter(d=>d.linkStatusAvailable && d.linkActive && d.downloadURL);
+    const viewableDistribution = distributions.filter(d=>((!d.linkStatusAvailable || (d.linkStatusAvailable && d.linkActive)) && (d.downloadURL || d.accessURL)));
     const csv = viewableDistribution.filter(d=> d.format.toLowerCase() === 'csv');
     const xml = viewableDistribution.filter(d=> d.format.toLowerCase() === 'xml');
     const json = viewableDistribution.filter(d=> d.format.toLowerCase() === 'json');

@@ -460,7 +460,7 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("format") {
-      def reducer(dataSet: DataSet) = dataSet.distributions.map(_.format.getOrElse(config.getString("strings.unspecifiedWord"))).toSet
+      def reducer(dataSet: DataSet) = dataSet.distributions.map(_.format.map(_.toLowerCase).getOrElse(config.getString("strings.unspecifiedWord"))).toSet
       def queryToInt(query: Query) = query.formats.size
 
       def filterQueryGen(dataSets: List[DataSet]) = Generators.smallSet(formatQueryGen(dataSets)).flatMap(formats => Query(formats = formats))

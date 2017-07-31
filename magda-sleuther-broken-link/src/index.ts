@@ -239,7 +239,10 @@ function retrieveHttp(
         if (err) {
           reject(err);
         } else {
-          if (response.statusCode >= 200 && response.statusCode <= 299 || response.statusCode === 429) {
+          if (
+            (response.statusCode >= 200 && response.statusCode <= 299) ||
+            response.statusCode === 429
+          ) {
             resolve({
               response
             });
