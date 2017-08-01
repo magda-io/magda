@@ -5,7 +5,8 @@ import { bindActionCreators } from "redux";
 import { requestSignOut } from "../../actions/userManagementActions";
 
 class AccountNavbar extends React.Component {
-  signOut() {
+  signOut(event) {
+    event.preventDefault();
     this.props.requestSignOut();
   }
 
