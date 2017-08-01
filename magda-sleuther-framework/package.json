@@ -21,8 +21,10 @@
     "@types/nock": "^8.2.1",
     "@types/sinon": "^2.3.3",
     "jasmine-ts": "^0.2.0",
+    "mocha-testcheck": "^1.0.0-rc.0",
     "nock": "^9.0.14",
     "sinon": "^2.4.1",
+    "testcheck": "^1.0.0-rc.2",
     "ts-node": "^3.3.0",
     "typescript": "~2.4.0"
   },

@@ -1,8 +1,10 @@
 import {} from "mocha";
-// import { expect } from "chai";
+import { expect } from "chai";
 import sleuther, { SleutherOptions } from "../src/index";
 import * as sinon from "sinon";
 import * as nock from "nock";
+const { check } = require("mocha-testcheck");
+import { gen } from "testcheck";
 import {
   // Record,
   WebHook,
@@ -36,6 +38,13 @@ describe("Sleuther framework", () => {
     nock.disableNetConnect();
     fakeExpress.listen = sinon.spy();
   });
+
+  it(
+    "x",
+    check(gen.int, (x: number) => {
+      expect(x).to.be.a("number");
+    })
+  );
 
   it("Should put aspect definition", function() {
     const aspect: AspectDefinition = {
