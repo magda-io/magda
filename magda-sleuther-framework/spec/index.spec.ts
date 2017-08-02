@@ -1,12 +1,14 @@
-import {} from "jasmine";
+import {} from "mocha";
+// import { expect } from "chai";
 import sleuther, { SleutherOptions } from "../src/index";
+import * as sinon from "sinon";
+import * as nock from "nock";
 import {
   // Record,
-  // WebHook,
-  // WebHookConfig,
+  WebHook,
   AspectDefinition
-} from "@magda/typescript-common/dist/generated/registry/api";
-import Registry from "@magda/typescript-common/dist/Registry";
+} from "@magda/typescript-common/src/generated/registry/api";
+import Registry from "@magda/typescript-common/src/Registry";
 import * as express from "express";
 
 const fakeSchema = {
@@ -24,11 +26,15 @@ const fakeSchema = {
 };
 
 describe("Sleuther framework", () => {
-  const registry: Registry = new Registry({ baseUrl: "" });
+  const registry: Registry = new Registry({
+    baseUrl: "http://example.com:80/registry"
+  });
   const fakeExpress = express();
+  const registryScope = nock("http://example.com/registry");
 
   beforeEach(() => {
-    spyOn(fakeExpress, "listen").and.stub();
+    nock.disableNetConnect();
+    fakeExpress.listen = sinon.spy();
   });
 
   it("Should put aspect definition", function() {
@@ -38,24 +44,51 @@ describe("Sleuther framework", () => {
       jsonSchema: fakeSchema
     };
 
+    const hook: WebHook = {
+      id: "test",
+      name: "test",
+      url: "http://example.com:80/hook",
+      active: true,
+      userId: 0,
+      eventTypes: [
+        "CreateRecord",
+        "CreateAspectDefinition",
+        "CreateRecordAspect",
+        "PatchRecord",
+        "PatchAspectDefinition",
+        "PatchRecordAspect"
+      ],
+      config: {
+        aspects: ["blah", "otherBlah"],
+        optionalAspects: ["optionalBlah1", "optionalBlah2"],
+        includeEvents: false,
+        includeAspectDefinitions: false,
+        dereference: true,
+        includeRecords: true
+      },
+      lastEvent: null
+    };
+
+    registryScope.put("/aspects/blah", aspect).reply(201);
+    registryScope.put("/hooks/test", hook).reply(201, {});
+    registryScope
+      .get(
+        "/records?aspect=blah&aspect=otherBlah&optionalAspect=optionalBlah1&optionalAspect=optionalBlah2&dereference=true"
+      )
+      .reply(200, { records: [] });
+
     const options: SleutherOptions = {
       registry,
       host: "example.com",
       defaultPort: 80,
       id: "test",
-      aspects: [],
-      optionalAspects: [],
+      aspects: hook.config.aspects,
+      optionalAspects: hook.config.optionalAspects,
       writeAspectDefs: [aspect],
       express: () => fakeExpress,
       onRecordFound: record => Promise.resolve()
     };
 
-    spyOn(registry, "putAspectDefinition").and.callFake(
-      (aspect: any) => aspect
-    );
-
-    sleuther(options);
-
-    expect(registry.putAspectDefinition).toHaveBeenCalled();
+    return sleuther(options).then(() => registryScope.done());
   });
 });

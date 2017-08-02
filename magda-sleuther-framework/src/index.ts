@@ -3,12 +3,12 @@ import {
   WebHook,
   WebHookConfig,
   AspectDefinition
-} from "@magda/typescript-common/dist/generated/registry/api";
-import Registry, { RecordsPage } from "@magda/typescript-common/dist/Registry";
+} from "@magda/typescript-common/src/generated/registry/api";
+import Registry, { RecordsPage } from "@magda/typescript-common/src/Registry";
 import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
 import AsyncPage, {
   forEachAsync
-} from "@magda/typescript-common/dist/AsyncPage";
+} from "@magda/typescript-common/src/AsyncPage";
 import * as express from "express";
 
 export type SleutherOptions = {
