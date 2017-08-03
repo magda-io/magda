@@ -59,11 +59,12 @@ function failIfErrors<T>(results: Array<T | Error>) {
 
 function setupWebhookEndpoint(options: SleutherOptions) {
   const server = options.express();
+  server.use(require("body-parser").json());
 
-  server.get(
+  server.post(
     "/hook",
     (request: express.Request, response: express.Response) => {
-      const payload = request.body();
+      const payload = request.body;
       const promises: Promise<void>[] = payload.records.map((record: Record) =>
         options.onRecordFound(record)
       );
@@ -88,7 +89,7 @@ function getHookUrl(options: SleutherOptions) {
 }
 
 function getPort(options: SleutherOptions) {
-  return process.env.NODE_PORT || options.defaultPort;
+  return parseInt(process.env.NODE_PORT) || options.defaultPort;
 }
 
 async function registerWebhook(options: SleutherOptions) {

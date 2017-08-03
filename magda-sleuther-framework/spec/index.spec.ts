@@ -8,6 +8,7 @@ import * as nock from "nock";
 ///<reference path="./jsverify.d.ts" />
 import jsc = require("jsverify");
 import * as express from "express";
+import * as request from "supertest";
 import {
   // Record,
   WebHook,
@@ -35,6 +36,56 @@ function fromCode(code: number) {
 function toCode(c: string) {
   return c.charCodeAt(0);
 }
+
+// function delayPromise(t: number): Promise<void> {
+//   return new Promise(function(resolve) {
+//     setTimeout(resolve, t);
+//   });
+// }
+
+interface QueryablePromise<W> extends Promise<W> {
+  isResolved: () => boolean;
+  isRejected: () => boolean;
+  isFulfilled: () => boolean;
+  isQueryable: boolean;
+}
+
+function makePromiseQueryable<W>(
+  promise: Promise<W> | QueryablePromise<W>
+): QueryablePromise<W> {
+  // Don't create a wrapper for promises that can already be queried.
+  const castPromise = promise as QueryablePromise<W>;
+  if (castPromise.isQueryable) {
+    return castPromise;
+  }
+
+  var isResolved = false;
+  var isRejected = false;
+
+  // Observe the promise, saving the fulfillment in a closure scope.
+  var result: any = promise.then(
+    function(v) {
+      isResolved = true;
+      return v;
+    },
+    function(e) {
+      isRejected = true;
+      throw e;
+    }
+  );
+  result.isQueryable = true;
+  result.isFulfilled = function() {
+    return isResolved || isRejected;
+  };
+  result.isResolved = function() {
+    return isResolved;
+  };
+  result.isRejected = function() {
+    return isRejected;
+  };
+  return result;
+}
+
 // const upperCaseAlphaCharArb = jsc.integer(65, 90).smap(fromCode, toCode);
 const lowerCaseAlphaCharArb = jsc.integer(97, 122).smap(fromCode, toCode);
 const numArb = jsc.integer(48, 57).smap(fromCode, toCode);
@@ -54,16 +105,23 @@ function arraysEqual(a: any[], b: any[]) {
   return true;
 }
 
-describe("Sleuther framework", () => {
-  let fakeExpress: {
-    get: sinon.SinonSpy;
-    listen: sinon.SinonSpy;
-  };
+describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
+  this.timeout(5000);
+  let expressApp: express.Express;
 
-  beforeEach(() => {
-    nock.disableNetConnect();
-    fakeExpress = { get: sinon.spy(), listen: sinon.spy() };
+  before(() => {
+    sinon.stub(console, "info");
   });
+
+  after(() => {
+    sinon.restore(console);
+  });
+
+  const beforeEachProperty = () => {
+    expressApp = express();
+    process.env.NODE_PORT = "";
+    sinon.stub(expressApp, "listen");
+  };
 
   jsc.property(
     "Should register aspects, hooks and start listening for webhook events",
@@ -73,7 +131,7 @@ describe("Sleuther framework", () => {
     lcAlphaNumStringArb,
     jsc.array(jsc.nestring),
     jsc.array(jsc.nestring),
-    jsc.suchthat(jsc.integer, integer => integer > 0),
+    jsc.suchthat(jsc.integer, int => int > 3000 && int < 3100),
     (
       aspectDefs: AspectDefinition[],
       id: string,
@@ -81,8 +139,10 @@ describe("Sleuther framework", () => {
       listenDomain: string,
       aspects: string[],
       optionalAspects: string[],
-      defaultPort
+      defaultPort: number
     ) => {
+      beforeEachProperty();
+
       const registryUrl = `http://${registryDomain}.com:80`;
       const registryScope = nock(registryUrl);
       const registry: Registry = new Registry({
@@ -136,16 +196,12 @@ describe("Sleuther framework", () => {
         aspects: hook.config.aspects,
         optionalAspects: hook.config.optionalAspects,
         writeAspectDefs: aspectDefs,
-        express: () => (fakeExpress as any) as express.Express,
+        express: () => expressApp,
         onRecordFound: record => Promise.resolve()
       };
 
       return sleuther(options).then(() => {
         registryScope.done();
-
-        expect(fakeExpress.listen.calledWith(options.defaultPort)).to.be.true;
-        expect(fakeExpress.get.calledWith("/hook")).to.be.true;
-
         return true;
       });
     }
@@ -156,8 +212,9 @@ describe("Sleuther framework", () => {
     jsc.array(jsc.nestring),
     jsc.array(jsc.nestring),
     jsc.array(recordArb),
-    jsc.suchthat(jsc.integer, int => int > 0),
+    jsc.suchthat(jsc.integer, int => int > 3000 && int < 3100),
     (aspects, optionalAspects, records, pageSize) => {
+      beforeEachProperty();
       const registryDomain = "example";
       const registryUrl = `http://${registryDomain}.com:80`;
       const registryScope = nock(registryUrl);
@@ -201,6 +258,7 @@ describe("Sleuther framework", () => {
           });
       });
 
+      const resolves: (() => void)[] = [];
       const options: SleutherOptions = {
         registry,
         host: `example.com`,
@@ -209,11 +267,24 @@ describe("Sleuther framework", () => {
         aspects: aspects,
         optionalAspects: optionalAspects,
         writeAspectDefs: [],
-        express: () => (fakeExpress as any) as express.Express,
-        onRecordFound: sinon.spy()
+        express: () => expressApp,
+        onRecordFound: sinon.stub().callsFake(
+          () =>
+            new Promise((resolve, reject) => {
+              resolves.push(resolve);
+
+              if (resolves.length === records.length) {
+                expect(sleutherPromise.isFulfilled()).to.be.false;
+
+                resolves.forEach(resolve => resolve());
+              }
+            })
+        )
       };
 
-      return sleuther(options).then(() => {
+      const sleutherPromise = makePromiseQueryable(sleuther(options));
+
+      return sleutherPromise.then(() => {
         records.forEach((record: object) => {
           expect((options.onRecordFound as sinon.SinonSpy).calledWith(record));
         });
@@ -223,7 +294,84 @@ describe("Sleuther framework", () => {
     }
   );
 
-  it("should properly handle incoming webhooks", () => {});
+  jsc.property(
+    "should correctly handle incoming webhooks",
+    jsc.array(jsc.array(recordArb)),
+    jsc.suchthat(jsc.integer, int => int > 0),
+    lcAlphaNumStringArb,
+    jsc.suchthat(jsc.integer, int => int > 0),
+    jsc.integer,
+    (
+      recordsBatches: object[][],
+      pageSize: number,
+      domain: string,
+      defaultPort: number,
+      overridePort: number
+    ) => {
+      beforeEachProperty();
+
+      const registryDomain = "example";
+      const registryUrl = `http://${registryDomain}.com:80`;
+      const registryScope = nock(registryUrl);
+      const registry: Registry = new Registry({
+        baseUrl: registryUrl
+      });
+      const port = overridePort > 0 ? overridePort : defaultPort;
+      if (overridePort > 0) {
+        process.env.NODE_PORT = overridePort.toString();
+      }
+
+      registryScope.put(/\/hooks\/.*/).reply(201);
+
+      const options: SleutherOptions = {
+        registry,
+        host: `${domain}.com`,
+        defaultPort,
+        id: "id",
+        aspects: [],
+        optionalAspects: [],
+        writeAspectDefs: [],
+        express: () => expressApp,
+        onRecordFound: sinon.stub().callsFake(record => Promise.resolve())
+      };
+      registryScope.get("/records").query(true).reply(200, { records: [] });
+
+      return sleuther(options)
+        .then(() => {
+          const listenStub = expressApp.listen as sinon.SinonStub;
+          expect(listenStub.calledWith(port)).to.be.true;
+
+          return Promise.all(
+            recordsBatches.map((records: object[]) => {
+              const test = request(expressApp)
+                .post("/hook")
+                .set("Content-Type", "application/json")
+                .send({
+                  records
+                })
+                .expect(201);
+
+              const queryable = makePromiseQueryable(test);
+
+              expect(queryable.isFulfilled()).to.be.false;
+
+              return queryable.then(() =>
+                records.forEach(record =>
+                  expect(
+                    (options.onRecordFound as sinon.SinonStub).calledWith(
+                      record
+                    )
+                  )
+                )
+              );
+            })
+          );
+        })
+        .then(() => {
+          return true;
+        });
+    }
+  );
 
   describe("error cases", () => {
     it("should handle bad aspect names", () => {});
