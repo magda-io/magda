@@ -30,21 +30,23 @@ const { error: buildError } = childProcess.spawnSync(
   }
 );
 
-if (!buildError) {
-  const { error: testError } = childProcess.spawnSync(
-    "lerna",
-    [
-      ...nonScalaPackages.map(package => "--scope " + package),
-      "--concurrency",
-      "4",
-      "run",
-      "test"
-    ],
-    {
-      stdio: ["pipe", "inherit", "inherit"],
-      shell: true
-    }
-  );
+if (buildError) {
+  process.exit(1);
 }
 
-process.exit(buildError || testError ? 1 : 0);
+const { error: testError } = childProcess.spawnSync(
+  "lerna",
+  [
+    ...nonScalaPackages.map(package => "--scope " + package),
+    "--concurrency",
+    "4",
+    "run",
+    "test"
+  ],
+  {
+    stdio: ["pipe", "inherit", "inherit"],
+    shell: true
+  }
+);
+
+process.exit(testError ? 1 : 0);
