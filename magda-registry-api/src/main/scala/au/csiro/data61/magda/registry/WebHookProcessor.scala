@@ -168,7 +168,7 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
         HookPersistence.getAll(session).filter(hook => hook.lastEvent.getOrElse(0l) < latestEventId)
       }
     }.flatMap(webHooksToProcess => {
-      // Process up to 'webHooksToProcess' in parallel
+      // Process up to 'simultaneousInvocations' in parallel
       var currentWebHooks = webHooksToProcess
 //      Source.unfold(0) { _ =>
 //        if (currentWebHooks.isEmpty) None
@@ -189,7 +189,7 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
         events.grouped(maxEvents).map(events => {
           val relevantEventTypes = webHook.eventTypes
 
-          var changeEvents = events.filter(event => relevantEventTypes.contains(event.eventType))
+          val changeEvents = events.filter(event => relevantEventTypes.contains(event.eventType))
           val recordChangeEvents = events.filter(event => event.eventType.isRecordEvent || event.eventType.isRecordAspectEvent)
           val aspectDefinitionChangeEvents = events.filter(event => event.eventType.isAspectDefinitionEvent)
 
@@ -260,7 +260,9 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
 
               response.status.isSuccess()
             })
-          })
+          }).recover {
+            case _ => false
+          }
         }).runFold(WebHookProcessingResult(0, 0))((results, postResult) => results match {
           // Count successful and failed payload deliveries
           case WebHookProcessingResult(successfulPosts, failedPosts) => if (postResult) WebHookProcessingResult(successfulPosts + 1, failedPosts) else WebHookProcessingResult(successfulPosts, failedPosts + 1)
