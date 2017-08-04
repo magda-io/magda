@@ -3,7 +3,6 @@
   "version": "0.0.28",
   "description": "MAGDA deployment configuration.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "create-connector-configmap": "kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file ./connector-config/",
     "generate-connector-jobs-local": "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/local --local",
     "generate-connector-jobs-dev": "generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod",

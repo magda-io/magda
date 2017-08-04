@@ -1,7 +1,7 @@
-import Registry from "@magda/typescript-common/dist/Registry";
+import Registry from "@magda/typescript-common/src/Registry";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
-import sleuther from "@magda/sleuther-framework/dist/index";
+import sleuther from "@magda/sleuther-framework/src/index";
 import * as _ from "lodash";
 
 const linkedDataAspectDef = {

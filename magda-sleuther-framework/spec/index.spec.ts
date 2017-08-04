@@ -13,8 +13,8 @@ import {
   // Record,
   WebHook,
   AspectDefinition
-} from "@magda/typescript-common/src/generated/registry/api";
-import Registry from "@magda/typescript-common/src/Registry";
+} from "@magda/typescript-common/dist/generated/registry/api";
+import Registry from "@magda/typescript-common/dist/Registry";
 import * as _ from "lodash";
 
 const aspectArb = jsc.record({

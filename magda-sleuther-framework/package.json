@@ -6,7 +6,8 @@
     "build": "npm run compile",
     "compile": "tsc -p tsconfig-build.json",
     "watch": "tsc -p tsconfig-build.json --watch",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register \"spec/**/*.spec.ts\""
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register \"spec/**/*.spec.ts\"",
+    "test-ci": "npm run test"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -15,13 +16,11 @@
     "@magda/scripts": "^0.0.28",
     "@types/chai": "^4.0.1",
     "@types/express": "^4.0.36",
-    "@types/jasmine": "^2.5.53",
     "@types/lodash": "^4.14.68",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
-    "jasmine-ts": "^0.2.0",
     "jsverify": "^0.8.2",
     "mocha-testcheck": "^1.0.0-rc.0",
     "nock": "^9.0.14",

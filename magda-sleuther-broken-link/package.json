@@ -19,6 +19,7 @@
     "@types/lru-cache": "^4.0.0",
     "@types/node": "^8.0.14",
     "@types/request": "^2.0.0",
+    "@types/lodash": "^4.14.71",
     "@types/urijs": "^1.15.31",
     "typescript": "~2.4.0"
   },
@@ -26,7 +27,6 @@
     "@magda/registry-aspects": "^0.0.28",
     "@magda/sleuther-framework": "^0.0.28",
     "@magda/typescript-common": "^0.0.28",
-    "@types/lodash": "^4.14.71",
     "ftp": "^0.3.10",
     "lodash": "^4.17.4",
     "lru-cache": "^4.0.2",

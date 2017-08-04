@@ -5,13 +5,13 @@ import {
   AspectDefinition
 } from "@magda/typescript-common/src/generated/registry/api";
 import Registry, { RecordsPage } from "@magda/typescript-common/src/Registry";
-import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
+import unionToThrowable from "@magda/typescript-common/src/util/union-to-throwable";
 import AsyncPage, {
   forEachAsync
 } from "@magda/typescript-common/src/AsyncPage";
 import * as express from "express";
 
-export type SleutherOptions = {
+export interface SleutherOptions {
   registry: Registry;
   host: string;
   defaultPort: number;
@@ -20,12 +20,13 @@ export type SleutherOptions = {
   optionalAspects: string[];
   writeAspectDefs: AspectDefinition[];
   onRecordFound: (record: Record) => Promise<void>;
-  express: () => express.Express;
-};
+  express?: () => express.Express;
+}
 
 export default async function sleuther(
   options: SleutherOptions
 ): Promise<void> {
+  options.express = options.express || (() => express());
   setupWebhookEndpoint(options);
 
   await putAspectDefs(options);

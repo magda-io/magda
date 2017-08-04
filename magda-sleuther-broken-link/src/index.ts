@@ -1,14 +1,14 @@
-import Registry from "@magda/typescript-common/dist/Registry";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
-import sleuther from "@magda/sleuther-framework/dist/index";
+import Registry from "@magda/typescript-common/src/Registry";
+import { Record } from "@magda/typescript-common/src/generated/registry/api";
+import unionToThrowable from "@magda/typescript-common/src/util/union-to-throwable";
+import sleuther from "@magda/sleuther-framework/src/index";
 import * as _ from "lodash";
 import * as request from "request";
 import * as http from "http";
 import * as Client from "ftp";
 import * as LRU from "lru-cache";
 import * as URI from "urijs";
-import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
+import retryBackoff from "@magda/typescript-common/src/retryBackoff";
 
 const brokenLinkAspectDefinition = {
   id: "source-link-status",
