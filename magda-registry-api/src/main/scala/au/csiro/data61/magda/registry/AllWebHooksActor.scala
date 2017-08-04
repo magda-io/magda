@@ -28,10 +28,12 @@ object AllWebHooksActor {
           this.processAgain = true
         } else {
           this.isProcessing = true
+          println("Getting webhooks")
           this.queryForAllWebHooks().map(GotAllWebHooks(_)).pipeTo(this.self)
         }
       }
       case GotAllWebHooks(webHooks) => {
+        println("Got webhooks")
         // Create a child actor for each WebHook that doesn't already have one.
         // Send a `Process` message to all existing and new WebHook actors.
         val currentHooks = webHooks.map(_.id.get).toSet
@@ -40,6 +42,7 @@ object AllWebHooksActor {
         // Shut down actors for WebHooks that no longer exist
         val obsoleteHooks = existingHooks.diff(currentHooks)
         obsoleteHooks.foreach { id =>
+          println(s"Removing old webhook actor for ${id}")
           this.webHookActors.get(id).get ! "kill"
           this.webHookActors -= id
         }
@@ -50,7 +53,8 @@ object AllWebHooksActor {
           val actorRef = this.webHookActors.get(id) match {
             case Some(actorRef) => actorRef
             case None => {
-              val actorRef = WebHookActor.create(hook)
+              println(s"Creating new webhook actor for ${id}")
+              val actorRef = WebHookActor.create(context.system, hook)
               this.webHookActors += (id -> actorRef)
               actorRef
             }

@@ -72,7 +72,7 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
 
   DBsWithEnvSpecificConfig(config).setupAll()
 
-  webHookActor ! WebHookActor.Process
+  webHookActor ! AllWebHooksActor.Process
 
   val skipAuthorization = Option(System.getenv("npm_package_config_skipAuthorization")).map(_.toBoolean).getOrElse(if (config.hasPath("authorization.skip")) config.getBoolean("authorization.skip") else false)
 

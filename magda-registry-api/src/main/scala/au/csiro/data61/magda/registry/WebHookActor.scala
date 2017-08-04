@@ -9,7 +9,7 @@ import akka.pattern.pipe
 
 object WebHookActor {
   def create(system: ActorSystem, hook: WebHook): ActorRef = {
-    system.actorOf(Props(new TheActor(hook.id.get)), name = "WebHookActor " + hook.id.get)
+    system.actorOf(Props(new TheActor(hook.id.get)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8"))
   }
 
   case object Process
@@ -34,25 +34,30 @@ object WebHookActor {
         } else {
           this.isProcessing = true
 
-          println(s"WebHook Processing for ${this.id}: STARTING")
-          processor.sendNotificationsForOneWebHook(this.id).map {
+          println(s"WebHook ${this.id} Processing: STARTING")
+          processor.sendSomeNotificationsForOneWebHook(this.id).map {
             result => DoneProcessing(Some(result))
           }.recover {
-            case e => DoneProcessing(None, Some(e)
+            case e => DoneProcessing(None, Some(e))
           }.pipeTo(this.self)
         }
       }
       case GetStatus => sender() ! Status(this.isProcessing)
-      case DoneProcessing(_, exception) => {
+      case DoneProcessing(result, exception) => {
         if (exception.isEmpty) {
-          println(s"WebHook Processing ${this.id}: DONE")
+          println(s"WebHook ${this.id} Processing: DONE")
         } else {
-          println(s"WebHook Processing ${this.id}: FAILED")
+          println(s"WebHook ${this.id} Processing: FAILED")
           exception.get.printStackTrace()
         }
 
+        val didSomething = result match {
+          case None => false
+          case Some(processingResult) => processingResult.previousLastEvent != processingResult.newLastEvent
+        }
+
         isProcessing = false
-        if (this.processAgain) {
+        if (this.processAgain || didSomething) {
           this.processAgain = false
           this.self ! Process
         }

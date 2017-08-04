@@ -43,7 +43,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
         case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
       }
     }
-    webHookActor ! WebHookActor.Process
+    webHookActor ! AllWebHooksActor.Process
     result
   } } }
 
@@ -93,7 +93,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
           case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
         }
       }
-      webHookActor ! WebHookActor.Process
+      webHookActor ! AllWebHooksActor.Process
       result
     }
   } } }
@@ -113,7 +113,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
           case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
         }
       }
-      webHookActor ! WebHookActor.Process
+      webHookActor ! AllWebHooksActor.Process
       result
     }
   } } }
