@@ -27,6 +27,8 @@ matrix:
       node_js: node
       cache:
         directories:
+          - $HOME/.ivy2/cache
+          - $HOME/.sbt
           - node_modules
           - magda-auth-api/node_modules
           - magda-broken-link-sleuther/node_modules
@@ -40,6 +42,10 @@ matrix:
           - magda-typescript-common/node_modules
           - magda-web-client/node_modules
           - magda-web-server/node_modules
+      before_cache:
+        # Cleanup the cached directories to avoid unnecessary cache updates
+        - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+        - find $HOME/.sbt        -name "*.lock"               -print -delete
       script: npm install -g lerna && lerna bootstrap && npm run node-ci
       env:
         global:
