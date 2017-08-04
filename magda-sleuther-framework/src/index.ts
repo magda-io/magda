@@ -26,12 +26,41 @@ export interface SleutherOptions {
 export default async function sleuther(
   options: SleutherOptions
 ): Promise<void> {
+  checkOptions(options);
+
   options.express = options.express || (() => express());
   setupWebhookEndpoint(options);
 
   await putAspectDefs(options);
   await registerWebhook(options);
   await crawlExistingRecords(options);
+}
+
+function checkOptions(options: SleutherOptions) {
+  if (options.defaultPort <= 0 || options.defaultPort > 65535) {
+    throw new Error(`Default port of ${options.defaultPort} is invalid`);
+  }
+
+  if (options.id === "") {
+    throw new Error(`id is unspecified`);
+  }
+
+  if (options.host === "") {
+    throw new Error(`Host is unspecified`);
+  }
+
+  const containsBlank = (strings: string[]) =>
+    strings.some(string => string === "");
+
+  if (containsBlank(options.aspects)) {
+    throw new Error(`Aspects ${options.aspects} contains a blank aspect`);
+  }
+
+  if (containsBlank(options.optionalAspects)) {
+    throw new Error(
+      `Aspects ${options.optionalAspects} contains a blank aspect`
+    );
+  }
 }
 
 async function putAspectDefs(options: SleutherOptions) {

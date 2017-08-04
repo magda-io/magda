@@ -91,6 +91,9 @@ const lowerCaseAlphaCharArb = jsc.integer(97, 122).smap(fromCode, toCode);
 const numArb = jsc.integer(48, 57).smap(fromCode, toCode);
 const lcAlphaNumCharArb = jsc.oneof([numArb, lowerCaseAlphaCharArb]);
 const lcAlphaNumStringArb = jsc
+  .array(lcAlphaNumCharArb)
+  .smap(arr => arr.join(""), string => string.split(""));
+const lcAlphaNumStringArbNe = jsc
   .nearray(lcAlphaNumCharArb)
   .smap(arr => arr.join(""), string => string.split(""));
 
@@ -127,8 +130,8 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
     "Should register aspects, hooks and start listening for webhook events",
     jsc.array(aspectArb),
     jsc.nestring,
-    lcAlphaNumStringArb,
-    lcAlphaNumStringArb,
+    lcAlphaNumStringArbNe,
+    lcAlphaNumStringArbNe,
     jsc.array(jsc.nestring),
     jsc.array(jsc.nestring),
     jsc.suchthat(jsc.integer, int => int > 3000 && int < 3100),
@@ -298,7 +301,7 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
     "should correctly handle incoming webhooks",
     jsc.array(jsc.array(recordArb)),
     jsc.suchthat(jsc.integer, int => int > 0),
-    lcAlphaNumStringArb,
+    lcAlphaNumStringArbNe,
     jsc.suchthat(jsc.integer, int => int > 0),
     jsc.integer,
     (
@@ -373,9 +376,54 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
     }
   );
 
-  describe("error cases", () => {
-    it("should handle bad aspect names", () => {});
-    it("should handle bad hook names", () => {});
-    it("should handle bad domains", () => {});
-  });
+  const containsBlanks = (strings: string[]) =>
+    strings.some(string => string === "");
+
+  type input = {
+    port: number;
+    host: string;
+    id: string;
+    aspects: string[];
+    optionalAspects: string[];
+  };
+
+  jsc.property(
+    "should handle bad inputs",
+    jsc.suchthat(
+      jsc.record({
+        port: jsc.integer,
+        host: lcAlphaNumStringArb,
+        id: lcAlphaNumStringArb,
+        aspects: jsc.array(lcAlphaNumStringArb),
+        optionalAspects: jsc.array(lcAlphaNumStringArb)
+      }),
+      (record: input) =>
+        // return true;
+        record.port <= 0 ||
+        record.port >= 65535 ||
+        record.host === "" ||
+        record.id === "" ||
+        containsBlanks(record.aspects) ||
+        containsBlanks(record.optionalAspects)
+    ),
+    ({ port, host, id, aspects, optionalAspects }: input) => {
+      const registry: Registry = new Registry({
+        baseUrl: "http://example.com"
+      });
+
+      const options: SleutherOptions = {
+        registry,
+        host: host,
+        defaultPort: port,
+        id: id,
+        aspects: aspects,
+        optionalAspects: optionalAspects,
+        writeAspectDefs: [],
+        express: () => expressApp,
+        onRecordFound: sinon.stub().callsFake(record => Promise.resolve())
+      };
+
+      return sleuther(options).then(() => false).catch(() => true);
+    }
+  );
 });
