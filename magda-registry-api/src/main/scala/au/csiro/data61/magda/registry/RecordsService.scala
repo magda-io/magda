@@ -56,12 +56,14 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])
   ))
   def deleteById = delete { path(Segment) { (recordId: String) => {
-    DB localTx { session =>
+    val result = DB localTx { session =>
       RecordPersistence.deleteRecord(session, recordId) match {
         case Success(result) => complete(DeleteResult(result))
         case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
       }
     }
+    webHookActor ! AllWebHooksActor.Process
+    result
   } } }
 
   @Path("/{id}")
@@ -125,7 +127,7 @@ class RecordsService(webHookActor: ActorRef, system: ActorSystem, materializer: 
     patchById ~
     create ~
     deleteById ~
-    new RecordAspectsService(system, materializer).route ~
+    new RecordAspectsService(webHookActor, system, materializer).route ~
     new RecordHistoryService(system, materializer).route
 
   private def getAllWithAspects(aspects: Iterable[String],

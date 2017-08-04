@@ -6,11 +6,11 @@ import akka.util.Timeout
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class WebHookActorSpec extends ApiSpec {
-  implicit val timeout = Timeout(5 seconds)
-
-  it("initially is not processing") { param =>
-    val actor = system.actorOf(WebHookActor.props)
-    Await.result(actor ? WebHookActor.GetStatus, 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing shouldBe false
-  }
-}
+//class WebHookActorSpec extends ApiSpec {
+//  implicit val timeout = Timeout(5 seconds)
+//
+//  it("initially is not processing") { param =>
+//    val actor = system.actorOf(WebHookActor.props)
+//    Await.result(actor ? WebHookActor.GetStatus, 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing shouldBe false
+//  }
+//}

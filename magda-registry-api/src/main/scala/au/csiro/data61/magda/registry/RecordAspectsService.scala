@@ -2,7 +2,7 @@ package au.csiro.data61.magda.registry
 
 import javax.ws.rs.Path
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
@@ -18,7 +18,7 @@ import scala.util.Success
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(value = "record aspects", produces = "application/json")
-class RecordAspectsService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class RecordAspectsService(webHookActor: ActorRef, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all aspects of a record", nickname = "getAll", httpMethod = "GET", response = classOf[Aspect], responseContainer = "Map")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch aspects.")
@@ -60,12 +60,14 @@ class RecordAspectsService(system: ActorSystem, materializer: Materializer) exte
   ))
   def putById = put { path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) => {
     entity(as[JsObject]) { aspect =>
-      DB localTx { session =>
+      val result = DB localTx { session =>
         RecordPersistence.putRecordAspectById(session, recordId, aspectId, aspect) match {
           case Success(result) => complete(result)
           case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
         }
       }
+      webHookActor ! AllWebHooksActor.Process
+      result
     }
   } } }
 
