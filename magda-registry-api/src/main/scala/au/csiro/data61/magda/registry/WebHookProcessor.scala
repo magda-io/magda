@@ -119,15 +119,15 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
       case Some(true) => DB readOnly { implicit session => Some(AspectPersistence.getByIds(session, aspectDefinitionIds)) }
     }
 
-    val payload = WebHookPayload(
-      action = "records.changed",
-      lastEventId = events.last.id.get,
-      events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents.toList) else None,
-      records = records.map(_.toList),
-      aspectDefinitions = aspectDefinitions.map(_.toList)
-    )
+    if (events.length > 0) {
+      val payload = WebHookPayload(
+        action = "records.changed",
+        lastEventId = events.last.id.get,
+        events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents.toList) else None,
+        records = records.map(_.toList),
+        aspectDefinitions = aspectDefinitions.map(_.toList)
+      )
 
-    if (payload.lastEventId != webHook.lastEvent.get) {
       Marshal(payload).to[MessageEntity].flatMap(entity => {
         http.singleRequest(HttpRequest(
           uri = Uri(webHook.url),
@@ -151,7 +151,7 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
         })
       })
     } else {
-      Future.successful(WebHookProcessingResult(payload.lastEventId, payload.lastEventId, None))
+      Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, None))
     }
   }
 
