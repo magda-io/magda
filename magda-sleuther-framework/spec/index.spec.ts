@@ -3,9 +3,7 @@ import { expect } from "chai";
 import sleuther, { SleutherOptions } from "../src/index";
 import * as sinon from "sinon";
 import * as nock from "nock";
-// const { check } = require("mocha-testcheck");
-// import { gen } from "testcheck";
-///<reference path="./jsverify.d.ts" />
+///<reference path="@magda/typescript-common/spec/jsverify.d.ts" />
 import jsc = require("jsverify");
 import * as express from "express";
 import * as request from "supertest";
@@ -14,7 +12,6 @@ import {
   WebHook,
   AspectDefinition
 } from "@magda/typescript-common/dist/generated/registry/api";
-import Registry from "@magda/typescript-common/dist/Registry";
 import * as _ from "lodash";
 
 const aspectArb = jsc.record({
@@ -123,34 +120,67 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
   const beforeEachProperty = () => {
     expressApp = express();
     process.env.NODE_PORT = "";
+    process.env.REGISTRY_URL = "";
+    process.env.npm_package_config_registryUrl = "";
     sinon.stub(expressApp, "listen");
+  };
+
+  type RegistryUrlMethod = "env var" | "package.json" | "both" | "none";
+
+  type RegistryUrlArbResult = {
+    domain: string;
+    method: RegistryUrlMethod;
+  };
+
+  const registryUrlArb: jsc.Arbitrary<RegistryUrlArbResult> = jsc.record({
+    domain: lcAlphaNumStringArbNe,
+    method: jsc.oneof([
+      jsc.constant("none"),
+      jsc.constant("env var"),
+      jsc.constant("package.json"),
+      jsc.constant("both")
+    ]) as jsc.Arbitrary<RegistryUrlMethod>
+  });
+
+  const setRegistryUrl = (arbResult: RegistryUrlArbResult) => {
+    if (arbResult.method === "none") {
+      return "http://localhost:6100/v0";
+    } else {
+      const registryUrl = `http://${arbResult.domain}.com`;
+      if (arbResult.method === "env var") {
+        process.env.REGISTRY_URL = registryUrl;
+      } else if (arbResult.method === "package.json") {
+        process.env.npm_package_config_registryUrl = registryUrl;
+      } else if (arbResult.method === "both") {
+        process.env.REGISTRY_URL = registryUrl;
+        process.env.npm_package_config_registryUrl = registryUrl;
+      }
+
+      return registryUrl;
+    }
   };
 
   jsc.property(
     "Should register aspects, hooks and start listening for webhook events",
     jsc.array(aspectArb),
     jsc.nestring,
-    lcAlphaNumStringArbNe,
+    registryUrlArb,
     lcAlphaNumStringArbNe,
     jsc.array(jsc.nestring),
     jsc.array(jsc.nestring),
-    jsc.suchthat(jsc.integer, int => int > 3000 && int < 3100),
+    jsc.suchthat(jsc.integer, int => int > 0 && int < 65000),
     (
       aspectDefs: AspectDefinition[],
       id: string,
-      registryDomain: string,
+      registry: RegistryUrlArbResult,
       listenDomain: string,
       aspects: string[],
       optionalAspects: string[],
       defaultPort: number
     ) => {
       beforeEachProperty();
-
-      const registryUrl = `http://${registryDomain}.com:80`;
+      const registryUrl = setRegistryUrl(registry);
       const registryScope = nock(registryUrl);
-      const registry: Registry = new Registry({
-        baseUrl: registryUrl
-      });
 
       const hook: WebHook = {
         id: id,
@@ -192,7 +222,6 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
       registryScope.get("/records").query(true).reply(200, { records: [] });
 
       const options: SleutherOptions = {
-        registry,
         host: `${listenDomain}.com`,
         defaultPort: defaultPort,
         id,
@@ -212,18 +241,15 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
   jsc.property(
     "should properly crawl existing",
+    registryUrlArb,
     jsc.array(jsc.nestring),
     jsc.array(jsc.nestring),
     jsc.array(recordArb),
     jsc.suchthat(jsc.integer, int => int > 3000 && int < 3100),
-    (aspects, optionalAspects, records, pageSize) => {
+    (registry, aspects, optionalAspects, records, pageSize) => {
       beforeEachProperty();
-      const registryDomain = "example";
-      const registryUrl = `http://${registryDomain}.com:80`;
+      const registryUrl = setRegistryUrl(registry);
       const registryScope = nock(registryUrl);
-      const registry: Registry = new Registry({
-        baseUrl: registryUrl
-      });
       registryScope.put(/\/hooks\/.*/).reply(201);
 
       let index = 0;
@@ -263,7 +289,6 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
       const resolves: (() => void)[] = [];
       const options: SleutherOptions = {
-        registry,
         host: `example.com`,
         defaultPort: 80,
         id: "id",
@@ -315,10 +340,9 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
       const registryDomain = "example";
       const registryUrl = `http://${registryDomain}.com:80`;
+      process.env.REGISTRY_URL = registryUrl;
       const registryScope = nock(registryUrl);
-      const registry: Registry = new Registry({
-        baseUrl: registryUrl
-      });
+
       const port = overridePort > 0 ? overridePort : defaultPort;
       if (overridePort > 0) {
         process.env.NODE_PORT = overridePort.toString();
@@ -327,7 +351,6 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
       registryScope.put(/\/hooks\/.*/).reply(201);
 
       const options: SleutherOptions = {
-        registry,
         host: `${domain}.com`,
         defaultPort,
         id: "id",
@@ -407,12 +430,9 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
         containsBlanks(record.optionalAspects)
     ),
     ({ port, host, id, aspects, optionalAspects }: input) => {
-      const registry: Registry = new Registry({
-        baseUrl: "http://example.com"
-      });
+      beforeEachProperty();
 
       const options: SleutherOptions = {
-        registry,
         host: host,
         defaultPort: port,
         id: id,
