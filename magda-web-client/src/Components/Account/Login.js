@@ -52,7 +52,7 @@ export default class Login extends React.Component {
             <p>
               This will use your existing data.gov.au account. To register a new
               data.gov.au account,{" "}
-              <a href="http://data.gov.au/user/register" target="_blank">
+              <a href="http://data.gov.au/user/register" rel="noopener noreferrer" target="_blank">
                 click here
               </a>.
             </p>

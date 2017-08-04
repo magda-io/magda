@@ -24,11 +24,11 @@ export default class AppContainer extends React.Component {
     this.state = { isOpen: false, showPrototypeWarning: true };
   }
   renderLink(link: string) {
-    const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
+    const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
     if (!regex.test(link[1])) {
       return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
     }
-    return <a target='_blank' href={link[1]}>{link[0]}</a>;
+    return <a target='_blank' rel="noopener noreferrer" href={link[1]}>{link[0]}</a>;
   }
 
   toggleMenu() {
@@ -49,7 +49,7 @@ export default class AppContainer extends React.Component {
       <ReactDocumentTitle title={config.appName}>
         <div>
         {this.state.showPrototypeWarning && <div className='prototype-warning'>
-          <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <a href='http://preview.data.gov.au/feedback.html' target='_blank'>your feedback</a>.</div>
+          <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <a href='http://preview.data.gov.au/feedback.html' rel="noopener noreferrer" target='_blank'>your feedback</a>.</div>
           <button className='prototype-warning-dismiss btn' onClick={()=>this.dismissPrototypeWarning()}><i className="fa fa-times" aria-hidden="true"></i></button>
         </div>}
           <nav className='appContainer__nav'>
@@ -100,7 +100,7 @@ export default class AppContainer extends React.Component {
                       className={`navbar-collapse collapse ${this.state.isOpen
                         ? 'in'
                         : ''}`}
-                      aria-expanded={`${this.state.isOpen ? 'true' : 'false'}`}
+                      aria-expanded={this.state.isOpen ? true : false}
                     >
                       <ul className='nav nav-pills nav-stacked'>
                         {headerNavs.map(nav =>

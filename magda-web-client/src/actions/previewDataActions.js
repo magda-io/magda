@@ -2,7 +2,6 @@ import {config} from '../config'
 import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
 import xmlToTabular from '../helpers/xmlToTabular';
-import jsonToTabular from '../helpers/jsonToTabular';
 import papa from 'papaparse';
 import {getPreviewDataUrl} from '../helpers/previewData';
 import type {PreviewData} from '../helpers/previewData';

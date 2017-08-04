@@ -2,6 +2,7 @@
 
 // eslint-disable-next-line
 import {RouterContext, Link } from 'react-router';
+import propTypes from 'prop-types';
 
 import './Search.css';
 import {connect} from 'react-redux';
@@ -194,7 +195,7 @@ class Search extends Component {
 }
 
 Search.contextTypes ={
-  router: React.PropTypes.object.isRequired,
+  router: propTypes.object.isRequired,
 }
 
 

@@ -54,6 +54,7 @@
     "openlayers": "^4.1.1",
     "papaparse": "^4.3.3",
     "pretty-date": "^0.2.0",
+    "prop-types": "^15.5.10",
     "query-string": "^4.3.4",
     "re-base": "^2.7.0",
     "react": "^15.6.1",

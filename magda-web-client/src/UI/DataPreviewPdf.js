@@ -33,13 +33,13 @@ class DataPreviewPdf extends Component {
     }
 
     renderPagination = (page, pages) => {
-      let previousButton = <li className="previous" onClick={this.handlePrevious}><a href="#"><i className="fa fa-arrow-left"></i> Previous</a></li>;
+      let previousButton = <li className="previous" onClick={this.handlePrevious}><a><i className="fa fa-arrow-left"></i> Previous</a></li>;
       if (page === 1) {
-        previousButton = <li className="previous disabled"><a href="#"><i className="fa fa-arrow-left"></i> Previous</a></li>;
+        previousButton = <li className="previous disabled"><a><i className="fa fa-arrow-left"></i> Previous</a></li>;
       }
-      let nextButton = <li className="next" onClick={this.handleNext}><a href="#">Next <i className="fa fa-arrow-right"></i></a></li>;
+      let nextButton = <li className="next" onClick={this.handleNext}><a>Next <i className="fa fa-arrow-right"></i></a></li>;
       if (page === pages) {
-        nextButton = <li className="next disabled"><a href="#">Next <i className="fa fa-arrow-right"></i></a></li>;
+        nextButton = <li className="next disabled"><a>Next <i className="fa fa-arrow-right"></i></a></li>;
       }
       return (
         <nav>

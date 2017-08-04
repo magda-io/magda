@@ -8,7 +8,7 @@ export default class Feedback extends React.Component {
     <ReactDocumentTitle title={config.appName + ' | feedback'}>
       <div className='container feedback'>
         <h1>Feedback</h1>
-        <a href="http://preview.data.gov.au/feedback.html" target="_blank">Give us feedback</a>
+        <a href="http://preview.data.gov.au/feedback.html" rel="noopener noreferrer" target="_blank">Give us feedback</a>
       </div>
       </ReactDocumentTitle>
     );
