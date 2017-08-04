@@ -30,7 +30,7 @@
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.28",
+  "version": "0.0.29-SNAPSHOT",
   "hoist": ["tsmonad", "urijs", "@types/urijs"],
   "concurrency": "1",
   "commands": {
