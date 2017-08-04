@@ -1,19 +1,17 @@
 package au.csiro.data61.magda.registry
 
-import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MessageEntity, Uri}
-import akka.stream.impl.fusing.MapAsyncUnordered
-import akka.stream.{ActorMaterializer, ClosedShape, OverflowStrategy, SourceShape}
+import akka.stream.{ActorMaterializer, ClosedShape, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, GraphDSL, Keep, RunnableGraph, Sink, Source, SourceQueue, Zip}
 import scalikejdbc._
 import spray.json.JsString
 import au.csiro.data61.magda.model.Registry._
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 
 class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: ExecutionContext) extends Protocols {
   private val http = Http(actorSystem)
@@ -65,6 +63,10 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
     }
 
     RunnableGraph.fromGraph(graph).run()
+  }
+
+  def sendNotificationsForOneWebHook(id: String): Future[WebHookProcessingResult] = {
+    ???
   }
 
   private def processWebHook(webHook: WebHook, queue: SourceQueue[WebHook]): Future[(WebHook, WebHookProcessingResult)] = {

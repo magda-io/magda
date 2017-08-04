@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.registry
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import au.csiro.data61.magda.model.Registry._
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
@@ -8,16 +8,18 @@ import akka.http.scaladsl.model._
 import akka.pattern.pipe
 
 object WebHookActor {
-  def props() = Props(new TheActor())
+  def create(system: ActorSystem, hook: WebHook): ActorRef = {
+    system.actorOf(Props(new TheActor(hook.id.get)), name = "WebHookActor " + hook.id.get)
+  }
 
   case object Process
   case object GetStatus
 
   case class Status(isProcessing: Boolean)
 
-  private case class DoneProcessing(result: Map[WebHook, WebHookProcessingResult])
+  private case class DoneProcessing(result: WebHookProcessingResult)
 
-  private class TheActor extends Actor {
+  private class TheActor(private val id: String) extends Actor {
     import context.dispatcher
 
     private val processor = new WebHookProcessor(context.system, context.dispatcher)
@@ -31,13 +33,13 @@ object WebHookActor {
           this.processAgain = true
         } else {
           this.isProcessing = true
-          println("WebHook Processing: STARTING")
-          processor.sendNotifications().map(DoneProcessing(_)).pipeTo(this.self)
+          println(s"WebHook Processing for ${this.id}: STARTING")
+          processor.sendNotificationsForOneWebHook(this.id).map(DoneProcessing(_)).pipeTo(this.self)
         }
       }
       case GetStatus => sender() ! Status(this.isProcessing)
       case DoneProcessing(_) => {
-        println("WebHook Processing: DONE")
+        println(s"WebHook Processing ${this.id}: DONE")
         isProcessing = false
         if (this.processAgain) {
           this.processAgain = false
