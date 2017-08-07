@@ -76,7 +76,7 @@ class HooksService(webHookActor: ActorRef, system: ActorSystem, materializer: Ma
   @ApiOperation(value = "Acknowledge a previously-deferred web hook", nickname = "ack", httpMethod = "POST", response = classOf[WebHookAcknowledgementResponse],
     notes = "Acknowledges a previously-deferred web hook with a given ID.  Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to be acknowledged."),
     new ApiImplicitParam(name = "acknowledgement", required = true, dataType = "au.csiro.data61.magda.registry.WebHookAcknowledgement", paramType = "body", value = "The details of the acknowledgement.")
   ))
   def ack = post { path(Segment / "ack") { (id: String) =>

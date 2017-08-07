@@ -8,8 +8,8 @@ import akka.http.scaladsl.model._
 import akka.pattern.pipe
 
 object WebHookActor {
-  def create(system: ActorSystem, hook: WebHook): ActorRef = {
-    system.actorOf(Props(new TheActor(hook.id.get)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8"))
+  def create(system: ActorSystem, registryApiBaseUrl: String, hook: WebHook): ActorRef = {
+    system.actorOf(Props(new TheActor(hook.id.get, registryApiBaseUrl)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8"))
   }
 
   case object Process
@@ -19,10 +19,10 @@ object WebHookActor {
 
   private case class DoneProcessing(result: Option[WebHookProcessingResult], exception: Option[Throwable] = None)
 
-  private class TheActor(private val id: String) extends Actor {
+  private class TheActor(val id: String, val registryApiBaseUrl: String) extends Actor {
     import context.dispatcher
 
-    private val processor = new WebHookProcessor(context.system, "http://localhost:6101/v0/", context.dispatcher)
+    private val processor = new WebHookProcessor(context.system, registryApiBaseUrl, context.dispatcher)
 
     private var isProcessing = false
     private var processAgain = false
@@ -44,20 +44,27 @@ object WebHookActor {
       }
       case GetStatus => sender() ! Status(this.isProcessing)
       case DoneProcessing(result, exception) => {
-        if (exception.isEmpty) {
-          println(s"WebHook ${this.id} Processing: DONE")
-        } else {
+        if (exception.nonEmpty) {
           println(s"WebHook ${this.id} Processing: FAILED")
           exception.get.printStackTrace()
         }
 
-        val didSomething = result match {
+        val runAgain = result match {
           case None => false
-          case Some(processingResult) => processingResult.previousLastEvent != processingResult.newLastEvent
+          case Some(WebHookProcessingResult(_, _, true, _)) => {
+            // response deferred
+            println(s"WebHook ${this.id} Processing: DEFERRED")
+            false
+          }
+          case Some(WebHookProcessingResult(previousLastEvent, newLastEvent, false, _)) => {
+            // POST succeeded, is there more to do?
+            println(s"WebHook ${this.id} Processing: SUCCEEDED")
+            previousLastEvent != newLastEvent
+          }
         }
 
         isProcessing = false
-        if (this.processAgain || didSomething) {
+        if (this.processAgain || runAgain) {
           this.processAgain = false
           this.self ! Process
         }

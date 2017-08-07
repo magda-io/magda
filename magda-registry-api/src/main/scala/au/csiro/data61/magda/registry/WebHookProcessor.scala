@@ -93,20 +93,20 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
           case (Success(response), _) => {
             if (response.status.isFailure()) {
               response.discardEntityBytes()
-              Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, Some(response.status)))
+              Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, false, Some(response.status)))
             } else {
               // Try to deserialize the success response as a WebHook response.  It's ok if this fails.
               Unmarshal(response.entity).to[WebHookResponse].map { webHookResponse =>
-                if (webHookResponse.asyncHandling) {
+                if (webHookResponse.deferResponse) {
                   DB localTx { session =>
                     HookPersistence.setIsWaitingForResponse(session, webHook.id.get, true)
                   }
-                  WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, Some(response.status))
+                  WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, true, Some(response.status))
                 } else {
                   DB localTx { session =>
                     HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
                   }
-                  WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, Some(response.status))
+                  WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, false, Some(response.status))
                 }
               }.recover {
                 case _: Throwable => {
@@ -115,12 +115,12 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
                   DB localTx { session =>
                     HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
                   }
-                  WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, Some(response.status))
+                  WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, false, Some(response.status))
                 }
               }
             }
           }
-          case _ => Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, None))
+          case _ => Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, false, None))
         } }
         resultStream.completionTimeout(10 seconds).runWith(Sink.head)
       })
@@ -132,7 +132,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         }
       }
 
-      Future.successful(WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, None))
+      Future.successful(WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, false, None))
     }
   }
 }

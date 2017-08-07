@@ -10,12 +10,12 @@ import scalikejdbc._
 import scala.concurrent.Future
 
 object AllWebHooksActor {
-  def props() = Props(new TheActor())
+  def props(registryApiBaseUrl: String) = Props(new TheActor(registryApiBaseUrl))
 
   case object Process
   private case class GotAllWebHooks(webHooks: List[WebHook])
 
-  private class TheActor extends Actor {
+  private class TheActor(val registryApiBaseUrl: String) extends Actor {
     import context.dispatcher
 
     private var isProcessing = false
@@ -54,7 +54,7 @@ object AllWebHooksActor {
             case Some(actorRef) => actorRef
             case None => {
               println(s"Creating new webhook actor for ${id}")
-              val actorRef = WebHookActor.create(context.system, hook)
+              val actorRef = WebHookActor.create(context.system, registryApiBaseUrl, hook)
               this.webHookActors += (id -> actorRef)
               actorRef
             }
