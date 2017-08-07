@@ -5,20 +5,22 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MessageEntity, Uri}
-import akka.stream.{ActorMaterializer}
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Sink, Source}
 import scalikejdbc._
 import spray.json.JsString
 import au.csiro.data61.magda.model.Registry._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
+import scala.util.Success
 
-class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: ExecutionContext) extends Protocols {
+class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit val executionContext: ExecutionContext) extends Protocols {
   private val http = Http(actorSystem)
   private implicit val materializer: ActorMaterializer = ActorMaterializer()(actorSystem)
 
-  def sendSomeNotificationsForOneWebHook(id: String): Future[WebHookProcessingResult] = {
-    val maxEvents = 100 // TODO: this should be configurable
-
+  def sendSomeNotificationsForOneWebHook(id: String, maxEvents: Int = 100): Future[WebHookProcessingResult] = {
     val (webHook, eventPage) = DB readOnly { implicit session =>
       HookPersistence.getById(session, id) match {
         case None => throw new RuntimeException(s"No WebHook with ID ${id} was found.")
@@ -26,7 +28,7 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
       }
     }
 
-    val events = eventPage.events
+    val events = if (webHook.isWaitingForResponse.getOrElse(false)) List() else eventPage.events
     val relevantEventTypes = webHook.eventTypes
 
     val changeEvents = events.filter(event => relevantEventTypes.contains(event.eventType))
@@ -73,33 +75,54 @@ class WebHookProcessor(actorSystem: ActorSystem, implicit val executionContext: 
     val payload = WebHookPayload(
       action = "records.changed",
       lastEventId = if (events.isEmpty) webHook.lastEvent.get else events.last.id.get,
-      events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents.toList) else None,
-      records = records.map(_.toList),
-      aspectDefinitions = aspectDefinitions.map(_.toList)
+      events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents) else None,
+      records = records,
+      aspectDefinitions = aspectDefinitions,
+      deferredResponseUrl = Some(Uri(s"hooks/${java.net.URLEncoder.encode(webHook.id.get, "UTF-8")}/ack").resolvedAgainst(publicUrl).toString())
     )
 
     if (payload.events.getOrElse(List()).nonEmpty || payload.records.getOrElse(List()).nonEmpty || aspectDefinitions.getOrElse(List()).nonEmpty) {
       Marshal(payload).to[MessageEntity].flatMap(entity => {
-        http.singleRequest(HttpRequest(
+        val singleRequestStream = Source.single(HttpRequest(
           uri = Uri(webHook.url),
           method = HttpMethods.POST,
           entity = entity
-        )).map(response => {
-          // If we get an async response, we're done with this webhook for now, but add
-          // it back to the list of webhooks to process.
-          // If we get any other 2xx, this webhook moves on to the next set of events.
-          // On 4xx or 5xx, we retry a few times and eventually give up (for now).
-
-          // TODO: if we don't get a 200 response, we should retry or something
-          response.discardEntityBytes()
-
-          // Update this WebHook to indicate these events have been processed.
-          DB localTx { session =>
-            HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
+        ))
+        val responseStream = singleRequestStream.map((_, 1)).via(http.superPool())
+        val resultStream = responseStream.mapAsync(1) { response => response match {
+          case (Success(response), _) => {
+            if (response.status.isFailure()) {
+              response.discardEntityBytes()
+              Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, Some(response.status)))
+            } else {
+              // Try to deserialize the success response as a WebHook response.  It's ok if this fails.
+              Unmarshal(response.entity).to[WebHookResponse].map { webHookResponse =>
+                if (webHookResponse.asyncHandling) {
+                  DB localTx { session =>
+                    HookPersistence.setIsWaitingForResponse(session, webHook.id.get, true)
+                  }
+                  WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, Some(response.status))
+                } else {
+                  DB localTx { session =>
+                    HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
+                  }
+                  WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, Some(response.status))
+                }
+              }.recover {
+                case _: Throwable => {
+                  // Success response that can't be unmarshalled to a WebHookResponse.  This is fine!
+                  // It just means the webhook was handled successfully.
+                  DB localTx { session =>
+                    HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
+                  }
+                  WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, Some(response.status))
+                }
+              }
+            }
           }
-
-          WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, Some(response.status))
-        })
+          case _ => Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, None))
+        } }
+        resultStream.completionTimeout(10 seconds).runWith(Sink.head)
       })
     } else {
       // Update this WebHook to indicate these events (if any) have been processed.

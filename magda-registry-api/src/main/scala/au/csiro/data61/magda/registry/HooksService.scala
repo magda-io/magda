@@ -2,7 +2,7 @@ package au.csiro.data61.magda.registry
 
 import javax.ws.rs.Path
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
@@ -17,7 +17,7 @@ import scala.util.{Failure, Success}
 
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
-class HooksService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class HooksService(webHookActor: ActorRef, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all web hooks", nickname = "getAll", httpMethod = "GET", response = classOf[WebHook], responseContainer = "List")
   def getAll = get { pathEnd {
     complete {
@@ -72,6 +72,26 @@ class HooksService(system: ActorSystem, materializer: Materializer) extends Prot
     }
   } } }
 
+  @Path("/{id}/ack")
+  @ApiOperation(value = "Acknowledge a previously-deferred web hook", nickname = "ack", httpMethod = "POST", response = classOf[WebHookAcknowledgementResponse],
+    notes = "Acknowledges a previously-deferred web hook with a given ID.  Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
+    new ApiImplicitParam(name = "acknowledgement", required = true, dataType = "au.csiro.data61.magda.registry.WebHookAcknowledgement", paramType = "body", value = "The details of the acknowledgement.")
+  ))
+  def ack = post { path(Segment / "ack") { (id: String) =>
+    entity(as[WebHookAcknowledgement]) { acknowledgement =>
+      val result = DB localTx { session =>
+        HookPersistence.acknowledgeRaisedHook(session, id, acknowledgement) match {
+          case Success(result) => complete(result)
+          case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+        }
+      }
+      webHookActor ! AllWebHooksActor.Process
+      result
+    }
+  } }
+
 //  @Path("/{id}")
 //  @ApiOperation(value = "Modify an aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
 //    notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
@@ -94,6 +114,7 @@ class HooksService(system: ActorSystem, materializer: Materializer) extends Prot
     getAll ~
     create ~
     getById ~
-    putById
+    putById ~
+    ack
 //      patchById
 }

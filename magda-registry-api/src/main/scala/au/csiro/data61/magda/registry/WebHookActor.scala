@@ -22,7 +22,7 @@ object WebHookActor {
   private class TheActor(private val id: String) extends Actor {
     import context.dispatcher
 
-    private val processor = new WebHookProcessor(context.system, context.dispatcher)
+    private val processor = new WebHookProcessor(context.system, "http://localhost:6101/v0/", context.dispatcher)
 
     private var isProcessing = false
     private var processAgain = false
