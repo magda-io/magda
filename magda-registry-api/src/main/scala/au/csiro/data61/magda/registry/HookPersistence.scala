@@ -98,8 +98,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
   def acknowledgeRaisedHook(implicit session: DBSession, id: String, acknowledgement: WebHookAcknowledgement): Try[WebHookAcknowledgementResponse] = {
     Try {
       if (acknowledgement.succeeded) {
-        sql"update WebHooks set isWaitingForResponse=false, lastEvent=${acknowledgement.lastEvent} where webHookId=$id".update.apply()
-        WebHookAcknowledgementResponse(acknowledgement.lastEvent)
+        sql"update WebHooks set isWaitingForResponse=false, lastEvent=${acknowledgement.lastEventIdReceived} where webHookId=$id".update.apply()
+        WebHookAcknowledgementResponse(acknowledgement.lastEventIdReceived)
       } else {
         sql"update WebHooks set isWaitingForResponse=false where webHookId=$id".update.apply()
         WebHookAcknowledgementResponse(sql"select lastEvent from WebHooks where webHookId=$id".map(rs => rs.long("lastEvent")).single.apply().get)
