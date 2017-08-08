@@ -7,7 +7,7 @@ import com.github.swagger.akka.model.Info
 
 import scala.reflect.runtime.{universe => ru}
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
+import akka.http.scaladsl.model.{HttpEntity, MediaTypes, Uri}
 import akka.stream.ActorMaterializer
 import com.github.swagger.akka._
 import enumeratum.values.IntEnumEntry
@@ -18,7 +18,7 @@ import gnieh.diffson.sprayJson.JsonPatch
 import io.swagger.models.properties.{ArrayProperty, ObjectProperty, RefProperty, StringProperty}
 import spray.json.JsValue
 
-class SwaggerDocService(address: String, port: Int, system: ActorSystem) extends SwaggerHttpService with HasActorSystem {
+class SwaggerDocService(address: String, port: Int, val registryApiBaseUrl: String, system: ActorSystem) extends SwaggerHttpService with HasActorSystem {
   override implicit val actorSystem: ActorSystem = system
   override implicit val materializer: ActorMaterializer = ActorMaterializer()
   override val apiTypes = Seq(
@@ -29,7 +29,7 @@ class SwaggerDocService(address: String, port: Int, system: ActorSystem) extends
     ru.typeOf[HooksService])
   override val host = ""
   override val info = Info(version = "0.1")
-  override val basePath = "/api/v0/registry"
+  override val basePath = Uri(registryApiBaseUrl).path.toString()
   lazy val allRoutes =
     routes ~
       path(apiDocsBase / "json-patch.json") {
