@@ -569,7 +569,7 @@ class RecordsServiceSpec extends ApiSpec {
         responseAs[Record] shouldEqual record
       }
 
-      param.webHookActorProbe.expectMsg(1 millis, AllWebHooksActor.Process)
+      param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process)
     }
   }
 
@@ -713,7 +713,7 @@ class RecordsServiceSpec extends ApiSpec {
         responseAs[Record] shouldEqual record
       }
 
-      param.webHookActorProbe.expectMsg(1 millis, AllWebHooksActor.Process)
+      param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process)
     }
   }
 
@@ -995,7 +995,7 @@ class RecordsServiceSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      param.webHookActorProbe.expectMsg(1 millis, AllWebHooksActor.Process)
+      param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process)
 
       val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
       Patch("/v0/records/testId", patch) ~> param.api.routes ~> check {
@@ -1003,7 +1003,7 @@ class RecordsServiceSpec extends ApiSpec {
         responseAs[Record] shouldEqual Record("testId", "foo", Map())
       }
 
-      param.webHookActorProbe.expectMsg(1 millis, AllWebHooksActor.Process)
+      param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process)
     }
   }
 

@@ -66,7 +66,7 @@ class RecordAspectsService(webHookActor: ActorRef, system: ActorSystem, material
           case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
         }
       }
-      webHookActor ! AllWebHooksActor.Process
+      webHookActor ! WebHookActor.Process
       result
     }
   } } }

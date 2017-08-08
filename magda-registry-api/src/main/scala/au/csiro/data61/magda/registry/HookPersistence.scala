@@ -75,6 +75,13 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     ))
   }
 
+  def delete(implicit session: DBSession, hookId: String): Try[Boolean] = {
+    Try {
+      sql"delete from WebHookEvents where webHookId=$hookId".update.apply()
+      sql"delete from WebHooks where webHookId=$hookId".update.apply() > 0
+    }
+  }
+
   def setLastEvent(implicit session: DBSession, id: String, lastEventId: Long) = {
     sql"update WebHooks set lastEvent=$lastEventId where webHookId=$id".update.apply()
   }
