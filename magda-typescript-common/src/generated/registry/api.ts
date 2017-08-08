@@ -1550,6 +1550,58 @@ export class WebHooksApi {
         });
     }
     /**
+     * Delete a web hook
+     * 
+     * @param hookId ID of the web hook to delete.
+     */
+    public deleteById (hookId: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
+        const localVarPath = this.basePath + '/hooks/{hookId}'
+            .replace('{' + 'hookId' + '}', String(hookId));
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        // verify required parameter 'hookId' is not null or undefined
+        if (hookId === null || hookId === undefined) {
+            throw new Error('Required parameter hookId was null or undefined when calling deleteById.');
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'DELETE',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: DeleteResult;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
      * Get a list of all web hooks
      * 
      */

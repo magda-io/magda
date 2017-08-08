@@ -168,6 +168,7 @@ class WebHookProcessorSpec extends ApiSpec {
         payloads(0).records.get.length shouldBe 0
         payloads(0).aspectDefinitions.get.length shouldBe 1
         payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
+        payloads(0).deferredResponseUrl shouldBe (Some("http://localhost:6101/v0/hooks/test/ack"))
 
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
         Post("/v0/aspects", aspectDefinition2) ~> param.api.routes ~> check {
@@ -176,6 +177,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
         result2.statusCode should be (None)
+        payloads.length shouldBe 1
       }
     }
 
