@@ -1,3 +1,5 @@
-import sleuther from './sleuther';
+import sleuther from "./sleuther";
 
-sleuther();
+sleuther().catch(e => {
+  console.error("Error: " + e.message, e);
+});

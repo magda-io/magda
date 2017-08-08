@@ -3,12 +3,12 @@ import {
   WebHook,
   WebHookConfig,
   AspectDefinition
-} from "@magda/typescript-common/src/generated/registry/api";
-import Registry, { RecordsPage } from "@magda/typescript-common/src/Registry";
-import unionToThrowable from "@magda/typescript-common/src/util/union-to-throwable";
+} from "@magda/typescript-common/dist/generated/registry/api";
+import Registry, { RecordsPage } from "@magda/typescript-common/dist/Registry";
+import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
 import AsyncPage, {
   forEachAsync
-} from "@magda/typescript-common/src/AsyncPage";
+} from "@magda/typescript-common/dist/AsyncPage";
 import * as express from "express";
 
 export interface SleutherOptions {
@@ -22,19 +22,22 @@ export interface SleutherOptions {
   express?: () => express.Express;
 }
 
+export function getRegistry() {
+  return new Registry({
+    baseUrl:
+      process.env.REGISTRY_URL ||
+      process.env.npm_package_config_registryUrl ||
+      "http://localhost:6100/v0"
+  });
+}
+
 export default async function sleuther(
   options: SleutherOptions
 ): Promise<void> {
   checkOptions(options);
 
   options.express = options.express || (() => express());
-
-  const registry = new Registry({
-    baseUrl:
-      process.env.REGISTRY_URL ||
-      process.env.npm_package_config_registryUrl ||
-      "http://localhost:6100/v0"
-  });
+  const registry = getRegistry();
 
   setupWebhookEndpoint();
 

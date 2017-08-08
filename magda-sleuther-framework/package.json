@@ -6,8 +6,7 @@
     "build": "npm run compile",
     "compile": "tsc -p tsconfig-build.json",
     "watch": "tsc -p tsconfig-build.json --watch",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register \"spec/**/*.spec.ts\"",
-    "test-ci": "npm run test"
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register \"spec/**/*.spec.ts\""
   },
   "author": "",
   "license": "Apache-2.0",

@@ -1,44 +1,27 @@
 import {} from "mocha";
 import { expect } from "chai";
-import sleuther, { SleutherOptions } from "../src/index";
 import * as sinon from "sinon";
 import * as nock from "nock";
 ///<reference path="@magda/typescript-common/spec/jsverify.d.ts" />
 import jsc = require("jsverify");
 import * as express from "express";
 import * as request from "supertest";
+import * as _ from "lodash";
+
+import sleuther, { SleutherOptions } from "../src/index";
+import {encodeURIComponentWithApost} from "@magda/typescript-common/spec/util";
+
 import {
-  // Record,
   WebHook,
   AspectDefinition
 } from "@magda/typescript-common/dist/generated/registry/api";
-import * as _ from "lodash";
+import { recordArb } from "@magda/typescript-common/spec/arbitraries";
 
 const aspectArb = jsc.record({
   id: jsc.string,
   name: jsc.string,
   jsonSchema: jsc.json
 });
-
-const recordArb = jsc.record({
-  id: jsc.string,
-  name: jsc.string,
-  aspects: jsc.array(jsc.json)
-});
-
-function fromCode(code: number) {
-  return String.fromCharCode(code);
-}
-
-function toCode(c: string) {
-  return c.charCodeAt(0);
-}
-
-// function delayPromise(t: number): Promise<void> {
-//   return new Promise(function(resolve) {
-//     setTimeout(resolve, t);
-//   });
-// }
 
 interface QueryablePromise<W> extends Promise<W> {
   isResolved: () => boolean;
@@ -83,16 +66,6 @@ function makePromiseQueryable<W>(
   return result;
 }
 
-// const upperCaseAlphaCharArb = jsc.integer(65, 90).smap(fromCode, toCode);
-const lowerCaseAlphaCharArb = jsc.integer(97, 122).smap(fromCode, toCode);
-const numArb = jsc.integer(48, 57).smap(fromCode, toCode);
-const lcAlphaNumCharArb = jsc.oneof([numArb, lowerCaseAlphaCharArb]);
-const lcAlphaNumStringArb = jsc
-  .array(lcAlphaNumCharArb)
-  .smap(arr => arr.join(""), string => string.split(""));
-const lcAlphaNumStringArbNe = jsc
-  .nearray(lcAlphaNumCharArb)
-  .smap(arr => arr.join(""), string => string.split(""));
 
 function arraysEqual(a: any[], b: any[]) {
   if (a === b) return true;
@@ -210,13 +183,13 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
       aspectDefs.forEach(aspectDef => {
         registryScope
           .put(
-            `/aspects/${encodeURIComponent(aspectDef.id).replace("'", "%27")}`,
+            `/aspects/${encodeURIComponentWithApost(aspectDef.id)}`,
             aspectDef
           )
           .reply(201, aspectDef);
       });
       registryScope
-        .put(`/hooks/${encodeURIComponent(hook.id).replace("'", "%27")}`, hook)
+        .put(`/hooks/${encodeURIComponentWithApost(hook.id)}`, hook)
         .reply(201, hook);
 
       registryScope.get("/records").query(true).reply(200, { records: [] });

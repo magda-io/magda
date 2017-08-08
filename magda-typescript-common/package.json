@@ -20,6 +20,7 @@
     "@types/request": "^2.0.0",
     "@types/urijs": "^1.15.31",
     "chai": "^4.0.1",
+    "jsverify": "^0.8.2",
     "mocha": "^3.4.2",
     "typescript": "~2.4.0"
   },
