@@ -15,7 +15,7 @@ const nonScalaPackages = lernaJson.packages
     return packageJson.name;
   });
 
-const { error: buildError } = childProcess.spawnSync(
+const buildResult = childProcess.spawnSync(
   "lerna",
   [
     ...nonScalaPackages.map(package => "--scope " + package),
@@ -30,11 +30,11 @@ const { error: buildError } = childProcess.spawnSync(
   }
 );
 
-if (buildError) {
-  process.exit(1);
+if (buildResult.status > 0) {
+  process.exit(buildResult.status);
 }
 
-const { error: testError } = childProcess.spawnSync(
+const testResult = childProcess.spawnSync(
   "lerna",
   [
     ...nonScalaPackages.map(package => "--scope " + package),
@@ -49,4 +49,4 @@ const { error: testError } = childProcess.spawnSync(
   }
 );
 
-process.exit(testError ? 1 : 0);
+process.exit(testResult.status);
