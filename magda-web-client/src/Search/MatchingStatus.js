@@ -11,7 +11,7 @@ export default function MatchingStatus(
   if(props.datasets.length > 0){
     if(props.strategy === 'match-part'){
       return <div className='no-matching'>
-              Sorry, no dataset match all of your search criteria.
+              Sorry, no dataset matches all of your search criteria.
             </div>
     } else{
       return null

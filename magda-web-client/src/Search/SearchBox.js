@@ -1,5 +1,6 @@
-import { RouterContext } from 'react-router';
+// @flow
 
+import { RouterContext } from 'react-router';
 import './SearchBox.css';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -9,7 +10,6 @@ import defined from '../helpers/defined';
 import React, { Component } from 'react';
 import {fetchRegionMapping} from '../actions/regionMappingActions';
 
-// @flow
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
 

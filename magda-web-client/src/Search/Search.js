@@ -1,5 +1,6 @@
-import { RouterContext, Link } from 'react-router';
+// @flow
 
+import { RouterContext, Link } from 'react-router';
 import './Search.css';
 import {connect} from 'react-redux';
 import {config} from '../config.js';
@@ -17,7 +18,6 @@ import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../actions/datasetSearchActions';
 import {fetchFeaturedPublishersFromRegistry} from '../actions/featuredPublishersActions';
 
-// @flow
 
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
