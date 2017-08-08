@@ -27,7 +27,7 @@ const registry = new Registry({
   baseUrl:
     process.env.REGISTRY_URL ||
     process.env.npm_package_config_registryUrl ||
-    "http://localhost:6100/v0"
+    "http://localhost:6101/v0"
 });
 
 sleuthBrokenLinks(registry);
@@ -144,7 +144,7 @@ function recordBrokenLinkAspect(
 
 /**
  * Checks a distribution's URL. Returns a tuple of the distribution's host and a no-arg function that when executed will fetch the url, returning a promise.
- * 
+ *
  * @param distribution The distribution Record
  * @param distStringsAspect The dcat-distributions-strings aspect for this distribution
  */
@@ -223,7 +223,7 @@ function retrieveFtp(parsedURL: uri.URI): Promise<BrokenLinkAspect> {
 
 /**
  * Retrieves an HTTP/HTTPS url
- * 
+ *
  * @param url The url to retrieve
  * @param delaySeconds429 How long to wait before trying again if a 429 Too Many Requests status is encountered.
  */

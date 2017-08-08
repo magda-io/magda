@@ -5,7 +5,7 @@ cd magda-ckan-connector
 npm run dev -- --config ../deploy/connector-config/data-gov-au.json
 ```
 
-That will create new organizations, datasets, and distributions on the registry running on `http://localhost:6100/v0/`.  You can use a different registry by specifying it on the command-line:
+That will create new organizations, datasets, and distributions on the registry running on `http://localhost:6101/v0/`.  You can use a different registry by specifying it on the command-line:
 
 ```
 npm run dev -- --config ../deploy/connector-config/data-gov-au.json --registryUrl "http://some.other.host.example.com/api/v0/"
