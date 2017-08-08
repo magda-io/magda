@@ -1,7 +1,7 @@
 {
-  "name": "@magda/ld-rating-sleuther",
+  "name": "@magda/sleuther-ld-rating",
   "description": "MAGDA Linked Data Rating Sleuther",
-  "version": "0.0.28-SNAPSHOT",
+  "version": "0.0.29-SNAPSHOT",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -14,14 +14,14 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.28-SNAPSHOT",
+    "@magda/scripts": "^0.0.29-SNAPSHOT",
     "@types/lodash": "^4.14.68",
     "typescript": "~2.4.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.28-SNAPSHOT",
-    "@magda/sleuther-framework": "^0.0.28-SNAPSHOT",
-    "@magda/typescript-common": "^0.0.28-SNAPSHOT",
+    "@magda/registry-aspects": "^0.0.29-SNAPSHOT",
+    "@magda/sleuther-framework": "^0.0.29-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.29-SNAPSHOT",
     "lodash": "^4.17.4"
   },
   "config": {

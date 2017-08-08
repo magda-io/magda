@@ -4,13 +4,13 @@
         "host": "session-store",
         "port": 5432
     },
-    "externalHost": "http://magda-api-dev.terria.io",
+    "externalHost": "http://search.data.gov.au",
     "targets": {
         "search": "http://search-api/v0",
         "registry": "http://registry-api/v0",
         "auth": "http://auth-api/v0/public",
         "discussions": "http://discussions-api/v0",
         "web": "http://web",
-        "preview-map": "http://preview-map"
+        "preview-map": "http://preview-map:6110"
     }
 }

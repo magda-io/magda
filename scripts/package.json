@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "0.0.28-SNAPSHOT",
+  "version": "0.0.29-SNAPSHOT",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "dependencies": {

@@ -14,7 +14,7 @@ const datasetQualityAspectDef = {
   name: "Data Quality Rating",
   jsonSchema: require("@magda/registry-aspects/dataset-quality-rating.schema.json")
 };
-const ID = "ld-rating-sleuther";
+const ID = "sleuther-ld-rating";
 const host = process.env.HOST || ID;
 
 const OPEN_LICENSES = ["Creative Commons", "PDDL", "ODC"];

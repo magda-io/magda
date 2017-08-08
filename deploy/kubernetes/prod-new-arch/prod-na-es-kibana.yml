@@ -14,7 +14,7 @@ spec:
       - env:
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
-        image: kibana
+        image: kibana:5.4.0
         name: kibana
         resources:
           requests:
