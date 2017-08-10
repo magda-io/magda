@@ -17,10 +17,13 @@ import * as URI from "urijs";
 const setupFtp = require("./setup-ftp");
 const dns = require("dns");
 
+const KNOWN_PROTOCOLS = ["https", "http", "ftp"];
+
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   this.timeout(60000);
   nock.disableNetConnect();
   const registryUrl = "http://blah.com";
+  let registryScope: nock.Scope;
   let ftp: any;
 
   before(() => {
@@ -41,6 +44,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
   after(() => {
     dns.lookup.restore();
+    (console.info as any).restore();
 
     ftp.close();
   });
@@ -68,7 +72,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     successes: object;
   }> = jsc.bless({
     generator: recordArb.generator.flatmap(record => {
-      const urls: any[] = _.uniq(urlsFromRecord(record));
+      const urls: any[] = _(urlsFromRecord(record))
+        .filter(url => KNOWN_PROTOCOLS.indexOf(URI(url).scheme()) >= 0)
+        .uniq()
+        .value();
 
       const gens: jsc.Generator<boolean>[] = urls.map(() => jsc.bool.generator);
 
@@ -120,18 +127,28 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         .map(url => new URI(url).path())
         .value();
 
-      console.log(
-        "FTP Paths: " +
-          _.uniq(ftpPaths) +
-          "|" +
-          ftpPaths +
-          "... " +
-          _.isEqual(_.uniq(ftpPaths), ftpPaths)
-      );
+      // console.log(
+      //   "FTP Paths: " +
+      //     _.uniq(ftpPaths) +
+      //     "|" +
+      //     ftpPaths +
+      //     "... " +
+      //     _.isEqual(_.uniq(ftpPaths), ftpPaths)
+      // );
 
       return _.isEqual(_.uniq(ftpPaths), ftpPaths);
     }
   );
+
+  const beforeEachProperty = () => {
+    // sinon.stub(console, "log");
+    registryScope = nock(registryUrl)//.log(console.log);
+  };
+
+  const afterEachProperty = () => {
+    // (console.log as any).restore();
+    nock.cleanAll();
+  };
 
   it("Should correctly record link statuses and quality", function() {
     return jsc.assert(
@@ -144,13 +161,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           record: Record;
           successes: { [x: string]: boolean };
         }) => {
-          const registryScope = nock(registryUrl); //.log(console.log);
+          beforeEachProperty();
+
           ftp.successes = _(successes)
             .pickBy((value, url) => url.startsWith("ftp"))
-            .mapKeys((value: boolean, url: string) => {
-              console.log(url);
-              return new URI(url).path();
-            })
+            .mapKeys((value: boolean, url: string) => new URI(url).path())
             .value();
 
           const allDists =
@@ -183,13 +198,35 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             ];
             const success = successes[downloadURL] || successes[accessURL];
 
-            console.log(
-              `expecting PUT /records/${encodeURIComponentWithApost(
-                dist.id
-              )}/aspects/source-link-status` +
-                ": " +
-                (success ? "active" : "broken")
-            );
+            const isUnknownProtocol = (url: string) => {
+              if (!url) {
+                return false;
+              }
+              const scheme = URI(url).scheme();
+              return !scheme || KNOWN_PROTOCOLS.indexOf(scheme) === -1;
+            };
+
+            const downloadUnknown = isUnknownProtocol(downloadURL);
+            const accessUnknown = isUnknownProtocol(accessURL);
+
+            // console.log(
+            //   "unknowns: " +
+            //     downloadURL +
+            //     ":" +
+            //     downloadUnknown +
+            //     "/" +
+            //     accessURL +
+            //     ":" +
+            //     accessUnknown
+            // );
+
+            // console.log(
+            //   `expecting PUT /records/${encodeURIComponentWithApost(
+            //     dist.id
+            //   )}/aspects/source-link-status` +
+            //     ": " +
+            //     (success ? "active" : "broken")
+            // );
 
             registryScope
               .put(
@@ -197,7 +234,9 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                   dist.id
                 )}/aspects/source-link-status`,
                 {
-                  status: success ? "active" : "broken"
+                  status: success
+                    ? "active"
+                    : downloadUnknown || accessUnknown ? "unknown" : "broken"
                   // httpStatusCode: () => true,
                   // errorDetails: () => true
                 }
@@ -223,8 +262,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
           return onRecordFound(registry, record, 0)
             .then(() => {
-              console.log("FINISHING!!!" + JSON.stringify(record));
-              nock.cleanAll();
+              afterEachProperty();
               distScopes.forEach(scope => scope.done());
               registryScope.done();
 
@@ -238,42 +276,12 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         }
       ),
       {
-        rngState: "81e94f7381205dba6c",
+        rngState: "8980b5214cf3da6e79",
         tests: 500
         // quiet: false
       }
     );
   });
-  // function fromCode(code: number) {
-  //   return String.fromCharCode(code);
-  // }
-
-  // function toCode(c: string) {
-  //   return c.charCodeAt(0);
-  // }
-  // const lowerCaseAlphaCharArb = jsc.integer(97, 122).smap(fromCode, toCode);
-  // const numArb = jsc.integer(48, 57).smap(fromCode, toCode);
-  // const lcAlphaNumCharArb = jsc.oneof([numArb, lowerCaseAlphaCharArb]);
-  // // const lcAlphaNumStringArb = jsc
-  // //   .array(lcAlphaNumCharArb)
-  // //   .smap(arr => arr.join(""), string => string.split(""));
-  // const lcAlphaNumStringArbNe = jsc
-  //   .nearray(lcAlphaNumCharArb)
-  //   .smap(arr => arr.join(""), string => string.split(""));
-
-  // it("Check", function() {
-  //   return jsc.assert(
-  //     jsc.forall(lcAlphaNumStringArbNe(jsc), (integers: any) => {
-  //       console.log(integers);
-  //       return true;
-  //     }),
-  //     {
-  //       rngState: "8ae3adb196f05c8247",
-  //       tests: 1,
-  //       quiet: false
-  //     }
-  //   );
-  // });
 
   const emptyRecordArb = jsc.oneof([
     specificRecordArb(jsc)({
@@ -290,14 +298,15 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     "Should do nothing if no distributions",
     emptyRecordArb,
     record => {
-      const registryScope = nock(registryUrl);
+      beforeEachProperty();
 
       const registry = new Registry({
         baseUrl: registryUrl
       });
 
       return onRecordFound(registry, record).then(() => {
-        nock.cleanAll();
+        afterEachProperty();
+
         registryScope.done();
         return true;
       });

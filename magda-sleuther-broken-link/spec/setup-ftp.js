@@ -12,9 +12,12 @@ module.exports = function createFtpServer() {
     },
     allowUnauthorizedTls: true,
     useWriteFile: false,
-    useReadFile: false
+    useReadFile: false,
+    logLevel: -1
     // uploadMaxSlurpSize: 7000 // N/A unless 'useWriteFile' is true.
   });
+
+  // server.debugging = Number.MAX_SAFE_INTEGER;
 
   server.on("error", function(error) {
     console.error("FTP Server error:", error);
@@ -36,20 +39,6 @@ module.exports = function createFtpServer() {
         success(username, {
           readdir: (path, cb) => {
             const success = server.successes[path];
-
-            console.log(server.successes);
-            console.log(path);
-
-            // console.log(
-            //   _(server.successes)
-            //     .map((value, key) => {
-            //       return {
-            //         path: new URI(key).path(),
-            //         value
-            //       };
-            //     })
-            //     .value()
-            // );
 
             if (success) {
               cb(null, ["file1.txt"]);
@@ -90,7 +79,7 @@ module.exports = function createFtpServer() {
     });
   });
 
-  server.debugging = 4;
+  // server.debugging = 4;
   server.listen(30021);
 
   return server;

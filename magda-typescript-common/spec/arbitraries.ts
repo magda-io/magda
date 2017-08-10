@@ -67,7 +67,8 @@ const urlPartsArb = (jsc: jsc) =>
       scheme: jsc.oneof([
         jsc.constant("http"),
         jsc.constant("https"),
-        jsc.constant("ftp")
+        jsc.constant("ftp"),
+        lcAlphaNumStringArbNe(jsc)
       ]),
       host: jsc.suchthat(
         lcAlphaNumStringArbNe(jsc),

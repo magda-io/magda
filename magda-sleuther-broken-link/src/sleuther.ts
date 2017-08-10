@@ -118,11 +118,11 @@ export async function onRecordFound(
     })
   );
 
-  brokenLinksAspectPromise.then(() =>
-    console.log(
-      "Finished links aspect " + bestResultPerDistribution.length + " links"
-    )
-  );
+  // brokenLinksAspectPromise.then(() =>
+  //   console.log(
+  //     "Finished links aspect " + bestResultPerDistribution.length + " links"
+  //   )
+  // );
 
   const numberWorking = bestResultPerDistribution.reduce(
     (soFar: number, result: BrokenLinkSleuthingResult) =>
@@ -157,11 +157,11 @@ function recordBrokenLinkAspect(
   registry: Registry,
   result: BrokenLinkSleuthingResult
 ): Promise<Record> {
-  console.log(
-    `Putting aspect ${"source-link-status"} for ${encodeURIComponent(
-      result.distribution.id
-    )} with ${JSON.stringify(result.aspect)}`
-  );
+  // console.log(
+  //   `Putting aspect ${"source-link-status"} for ${encodeURIComponent(
+  //     result.distribution.id
+  //   )} with ${JSON.stringify(result.aspect)}`
+  // );
 
   return registry
     .putRecordAspect(
