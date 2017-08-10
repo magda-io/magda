@@ -107,7 +107,8 @@ export type ParsedDistribution = {
   license: string,
   linkActive:boolean,
   linkStatusAvailable:boolean,
-  isTimeSeries: boolean
+  isTimeSeries: boolean,
+  chartFields? : ?Array<string>
 };
 
 // all aspects become required and must have value
@@ -204,9 +205,17 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
   const linkActive = linkStatus.status === 'active';
   const isTimeSeries = aspects['visualisation-info']['timeseries']
+  let chartFields = null;
+
+  if(isTimeSeries){
+    const fields = aspects['visualisation-info'].fields;
+    const timeFields = Object.keys(fields).filter(f=>fields[f].time === true);
+    const numericFields = Object.keys(fields).filter(f=>fields[f].numeric === true);
+    chartFields = timeFields.concat(numericFields);
+  }
 
 
-  return { identifier, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive, isTimeSeries }
+  return { identifier, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive, isTimeSeries, chartFields }
 };
 
 

@@ -59,7 +59,7 @@
     "react": "^15.6.1",
     "react-document-title": "^2.0.3",
     "react-dom": "^15.3.1",
-    "react-json": "^0.2.1",
+    "react-json": "git://github.com/chloeleichen/react-json",
     "react-json-tree": "^0.10.9",
     "react-pdf": "^2.0.0-alpha.7",
     "react-pdf-js": "^1.0.37",

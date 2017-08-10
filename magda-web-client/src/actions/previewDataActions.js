@@ -82,22 +82,14 @@ export function fetchPreviewData(distribution){
           dispatch(receivePreviewData({[distribution.id]: geoData}));
           break;
 
-        case'chart':
-          // make it chart
-          const chartData = {
-            data: url,
-            meta: {
-              type: 'chart'
-            }
-          }
-          dispatch(receivePreviewData({[distribution.id]: chartData}));
-        break;
         case 'csv':
         papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
           download: true,
           header: true,
           complete: function(data) {
-            data.meta.type = 'tabular';
+            data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
+            data.meta.chartFields = distribution.chartFields;
+            
             dispatch(receivePreviewData({[distribution.id]: data}))
           },
           error: (error)=>{dispatch(requestPreviewDataError(error))}
