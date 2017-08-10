@@ -2,22 +2,20 @@ package au.csiro.data61.magda.registry
 
 import javax.ws.rs.Path
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
-import scalikejdbc._
+import scalikejdbc.DB
 import akka.http.scaladsl.model.StatusCodes
 import io.swagger.annotations._
-import spray.json._
-import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry.WebHook
 
 import scala.util.{Failure, Success}
 
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
-class HooksService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class HooksService(webHookActor: ActorRef, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all web hooks", nickname = "getAll", httpMethod = "GET", response = classOf[WebHook], responseContainer = "List")
   def getAll = get { pathEnd {
     complete {
@@ -72,28 +70,50 @@ class HooksService(system: ActorSystem, materializer: Materializer) extends Prot
     }
   } } }
 
-//  @Path("/{id}")
-//  @ApiOperation(value = "Modify an aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
-//    notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
-//  @ApiImplicitParams(Array(
-//    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
-//    new ApiImplicitParam(name = "aspectPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect.")
-//  ))
-//  def patchById = patch { path(Segment) { (id: String) => {
-//    entity(as[JsonPatch]) { aspectPatch =>
-//      DB localTx { session =>
-//        AspectPersistence.patchById(session, id, aspectPatch) match {
-//          case Success(result) => complete(result)
-//          case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-//        }
-//      }
-//    }
-//  } } }
+  @Path("/{hookId}")
+  @ApiOperation(value = "Delete a web hook", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "hookId", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to delete.")
+  ))
+  @ApiResponses(Array(
+    new ApiResponse(code = 400, message = "The web hook could not be deleted.", response = classOf[BadRequest])
+  ))
+  def deleteById = delete { path(Segment) { (hookId: String) => {
+    val result = DB localTx { session =>
+      HookPersistence.delete(session, hookId) match {
+        case Success(result) => complete(DeleteResult(result))
+        case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      }
+    }
+    webHookActor ! WebHookActor.Process
+    result
+  } } }
+
+  @Path("/{id}/ack")
+  @ApiOperation(value = "Acknowledge a previously-deferred web hook", nickname = "ack", httpMethod = "POST", response = classOf[WebHookAcknowledgementResponse],
+    notes = "Acknowledges a previously-deferred web hook with a given ID.  Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to be acknowledged."),
+    new ApiImplicitParam(name = "acknowledgement", required = true, dataType = "au.csiro.data61.magda.registry.WebHookAcknowledgement", paramType = "body", value = "The details of the acknowledgement.")
+  ))
+  def ack = post { path(Segment / "ack") { (id: String) =>
+    entity(as[WebHookAcknowledgement]) { acknowledgement =>
+      val result = DB localTx { session =>
+        HookPersistence.acknowledgeRaisedHook(session, id, acknowledgement) match {
+          case Success(result) => complete(result)
+          case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+        }
+      }
+      webHookActor ! WebHookActor.Process
+      result
+    }
+  } }
 
   def route =
     getAll ~
     create ~
     getById ~
-    putById
-//      patchById
+    putById ~
+    deleteById ~
+    ack
 }

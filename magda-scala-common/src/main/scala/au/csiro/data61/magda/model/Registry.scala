@@ -21,7 +21,8 @@ object Registry {
     lastEventId: Long,
     events: Option[List[RegistryEvent]],
     records: Option[List[Record]],
-    aspectDefinitions: Option[List[AspectDefinition]])
+    aspectDefinitions: Option[List[AspectDefinition]],
+    deferredResponseUrl: Option[String])
 
   case class RegistryEvent(
     id: Option[Long],
@@ -60,6 +61,7 @@ object Registry {
     lastEvent: Option[Long] = None,
     url: String,
     eventTypes: Set[EventType],
+    isWaitingForResponse: Option[Boolean],
     config: WebHookConfig)
 
   case class WebHookConfig(
@@ -93,8 +95,8 @@ object Registry {
     implicit val recordFormat = jsonFormat3(Record.apply)
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
     implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
-    implicit val webHookPayloadFormat = jsonFormat5(WebHookPayload.apply)
+    implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
     implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
-    implicit val webHookFormat = jsonFormat8(WebHook.apply)
+    implicit val webHookFormat = jsonFormat9(WebHook.apply)
   }
 }

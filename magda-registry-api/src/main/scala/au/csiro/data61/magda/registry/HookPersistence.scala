@@ -18,6 +18,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             active,
             lastEvent,
             url,
+            isWaitingForResponse,
             (
               select array_agg(eventTypeId)
               from WebHookEvents
@@ -36,6 +37,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             active,
             lastEvent,
             url,
+            isWaitingForResponse,
             (
               select array_agg(eventTypeId)
               from WebHookEvents
@@ -68,12 +70,24 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       lastEvent = None, // TODO: include real lastEvent
       url = hook.url,
       eventTypes = hook.eventTypes,
+      isWaitingForResponse = None,
       config = hook.config
     ))
   }
 
+  def delete(implicit session: DBSession, hookId: String): Try[Boolean] = {
+    Try {
+      sql"delete from WebHookEvents where webHookId=$hookId".update.apply()
+      sql"delete from WebHooks where webHookId=$hookId".update.apply() > 0
+    }
+  }
+
   def setLastEvent(implicit session: DBSession, id: String, lastEventId: Long) = {
     sql"update WebHooks set lastEvent=$lastEventId where webHookId=$id".update.apply()
+  }
+
+  def setIsWaitingForResponse(implicit session: DBSession, id: String, isWaitingForResponse: Boolean) = {
+    sql"update WebHooks set isWaitingForResponse=$isWaitingForResponse where webHookId=$id".update.apply()
   }
 
   def putById(implicit session: DBSession, id: String, hook: WebHook): Try[WebHook] = {
@@ -88,6 +102,18 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     }
   }
 
+  def acknowledgeRaisedHook(implicit session: DBSession, id: String, acknowledgement: WebHookAcknowledgement): Try[WebHookAcknowledgementResponse] = {
+    Try {
+      if (acknowledgement.succeeded) {
+        sql"update WebHooks set isWaitingForResponse=false, lastEvent=${acknowledgement.lastEventIdReceived} where webHookId=$id".update.apply()
+        WebHookAcknowledgementResponse(acknowledgement.lastEventIdReceived)
+      } else {
+        sql"update WebHooks set isWaitingForResponse=false where webHookId=$id".update.apply()
+        WebHookAcknowledgementResponse(sql"select lastEvent from WebHooks where webHookId=$id".map(rs => rs.long("lastEvent")).single.apply().get)
+      }
+    }
+  }
+
   private def rowToHook(rs: WrappedResultSet): WebHook = WebHook(
     id = Some(rs.string("webhookId")),
     userId = Some(rs.int("userId")),
@@ -96,5 +122,6 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     lastEvent = rs.longOpt("lastEvent"),
     url = rs.string("url"),
     eventTypes = rs.arrayOpt("eventTypes").map(a => a.getArray().asInstanceOf[Array[Integer]].map(EventType.withValue(_)).toSet).getOrElse(Set()),
+    isWaitingForResponse = rs.booleanOpt("isWaitingForResponse"),
     config = JsonParser(rs.string("config")).convertTo[WebHookConfig])
 }

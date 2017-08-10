@@ -128,8 +128,8 @@ class Api(val webHookActor: ActorRef, implicit val config: Config, implicit val 
         path("ping") { complete("OK") } ~
         pathPrefix("aspects") { checkAuthorization(Seq(HttpMethods.GET), Seq()) { new AspectsService(system, materializer).route } } ~
         pathPrefix("records") { checkAuthorization(Seq(HttpMethods.GET), Seq(HttpMethods.POST)) { new RecordsService(webHookActor, system, materializer).route } } ~
-        pathPrefix("hooks") { checkAuthorization(Seq(HttpMethods.GET), Seq()) { new HooksService(system, materializer).route } } ~
-        new SwaggerDocService("localhost", 9001, system).allRoutes ~
+        pathPrefix("hooks") { checkAuthorization(Seq(HttpMethods.GET), Seq()) { new HooksService(webHookActor, system, materializer).route } } ~
+        new SwaggerDocService("localhost", 9001, config.getString("http.externalUrl.v0"), system).allRoutes ~
         pathPrefix("swagger") {
           getFromResourceDirectory("swagger") ~ pathSingleSlash(get(redirect("index.html", StatusCodes.PermanentRedirect)))
         }

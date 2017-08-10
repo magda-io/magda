@@ -31,7 +31,7 @@ const argv = yargs
     .option('registryUrl', {
         describe: 'The base URL of the registry to which to write data from CSW.',
         type: 'string',
-        default: 'http://localhost:6100/v0'
+        default: 'http://localhost:6101/v0'
     })
     .argv;
 
