@@ -1,10 +1,9 @@
 package au.csiro.data61.magda.registry
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import au.csiro.data61.magda.model.Registry._
 import akka.pattern.pipe
 import scalikejdbc.DB
-
 import scala.concurrent.Future
 
 object WebHookActor {
@@ -23,7 +22,7 @@ object WebHookActor {
   private case class GotAllWebHooks(webHooks: List[WebHook])
   private case class DoneProcessing(result: Option[WebHookProcessingResult], exception: Option[Throwable] = None)
 
-  private class AllWebHooksActor(val registryApiBaseUrl: String) extends Actor {
+  private class AllWebHooksActor(val registryApiBaseUrl: String) extends Actor with ActorLogging {
     import context.dispatcher
 
     private var isProcessing = false
@@ -53,7 +52,7 @@ object WebHookActor {
         // Shut down actors for WebHooks that no longer exist
         val obsoleteHooks = existingHooks.diff(currentHooks)
         obsoleteHooks.foreach { id =>
-          println(s"Removing old web hook actor for ${id}")
+          log.info("Removing old web hook actor for {}.", id)
           this.webHookActors.get(id).get ! "kill"
           this.webHookActors -= id
         }
@@ -64,7 +63,7 @@ object WebHookActor {
           val actorRef = this.webHookActors.get(id) match {
             case Some(actorRef) => actorRef
             case None => {
-              println(s"Creating new web hook actor for ${id}")
+              log.info("Creating new web hook actor for {}.", id)
               val actorRef = WebHookActor.createWebHookActor(context.system, registryApiBaseUrl, hook)
               this.webHookActors += (id -> actorRef)
               actorRef
@@ -91,7 +90,7 @@ object WebHookActor {
     }
   }
 
-  private class SingleWebHookActor(val id: String, val registryApiBaseUrl: String) extends Actor {
+  private class SingleWebHookActor(val id: String, val registryApiBaseUrl: String) extends Actor with ActorLogging {
     import context.dispatcher
 
     private val processor = new WebHookProcessor(context.system, registryApiBaseUrl, context.dispatcher)
@@ -106,7 +105,7 @@ object WebHookActor {
         } else {
           this.isProcessing = true
 
-          println(s"WebHook ${this.id} Processing: STARTING")
+          log.info("WebHook {} Processing: STARTING", this.id)
           processor.sendSomeNotificationsForOneWebHook(this.id).map {
             result => DoneProcessing(Some(result))
           }.recover {
@@ -117,7 +116,7 @@ object WebHookActor {
       case GetStatus => sender() ! Status(Some(this.isProcessing))
       case DoneProcessing(result, exception) => {
         if (exception.nonEmpty) {
-          println(s"WebHook ${this.id} Processing: FAILED")
+          log.error("WebHook {} Processing: FAILED.  Exception: {}", this.id, exception.get.getStackTrace.mkString("", "\n", "\n"))
           exception.get.printStackTrace()
         }
 
@@ -125,12 +124,12 @@ object WebHookActor {
           case None => false
           case Some(WebHookProcessingResult(_, _, true, _)) => {
             // response deferred
-            println(s"WebHook ${this.id} Processing: DEFERRED BY RECEIVER")
+            log.info("WebHook {} Processing: DEFERRED BY RECEIVER", this.id)
             false
           }
           case Some(WebHookProcessingResult(previousLastEvent, newLastEvent, false, _)) => {
             // POST succeeded, is there more to do?
-            println(s"WebHook ${this.id} Processing: SUCCEEDED")
+            log.info("WebHook {} Processing: SUCCEEDED", this.id)
             previousLastEvent != newLastEvent
           }
         }
