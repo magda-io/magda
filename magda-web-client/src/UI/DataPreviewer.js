@@ -38,10 +38,11 @@ class DataPreviewer extends Component {
     }
 
     renderByState(previewData){
-      debugger
         switch (previewData.meta.type) {
           case 'geo':
             return <iframe name='FRAME1' src={previewData.data} width='100%' height='600px' scrolling='auto' frameBorder='0'/>
+          case 'chart':
+            return <div>create a chart here</div>
           case 'tabular':
             return <DataPreviewTable data={previewData}/>
           case 'json':

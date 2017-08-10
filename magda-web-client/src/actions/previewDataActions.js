@@ -82,6 +82,16 @@ export function fetchPreviewData(distribution){
           dispatch(receivePreviewData({[distribution.id]: geoData}));
           break;
 
+        case'chart':
+          // make it chart
+          const chartData = {
+            data: url,
+            meta: {
+              type: 'chart'
+            }
+          }
+          dispatch(receivePreviewData({[distribution.id]: chartData}));
+        break;
         case 'csv':
         papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
           download: true,
