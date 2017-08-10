@@ -44,8 +44,8 @@ class DataPreviewVega extends Component {
       "description": "",
       "mark": "bar",
       "encoding": {
-        "x": {"field": this.props.data.meta.fields[0], "type": "temporal"},
-        "y": {"field": this.props.data.meta.fields[1], "type": "quantitative"}
+        "x": {"field": this.props.data.meta.chartFields.time[0], "type": "temporal"},
+        "y": {"field": this.props.data.meta.chartFields.numeric[0], "type": "quantitative"}
       }
     }
 
@@ -57,7 +57,7 @@ class DataPreviewVega extends Component {
       spec: spec,
       data: data
     })
-
+    debugger
   }
 
   renderCharts(){

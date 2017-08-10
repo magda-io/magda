@@ -108,7 +108,7 @@ export type ParsedDistribution = {
   linkActive:boolean,
   linkStatusAvailable:boolean,
   isTimeSeries: boolean,
-  chartFields? : ?Array<string>
+  chartFields? : ?Object
 };
 
 // all aspects become required and must have value
@@ -211,7 +211,10 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
     const fields = aspects['visualisation-info'].fields;
     const timeFields = Object.keys(fields).filter(f=>fields[f].time === true);
     const numericFields = Object.keys(fields).filter(f=>fields[f].numeric === true);
-    chartFields = timeFields.concat(numericFields);
+    chartFields = {
+          time: timeFields,
+          numeric: numericFields
+    }
   }
 
 
