@@ -5,6 +5,7 @@ import DataPreviewPdf from '../UI/DataPreviewPdf';
 import DataPreviewTextBox from '../UI/DataPreviewTextBox';
 import DataPreviewGoogleViewer from '../UI/DataPreviewGoogleViewer';
 import DataPreviewJson from '../UI/DataPreviewJson';
+import DataPreviewVega from '../UI/DataPreviewVega';
 import type {PreviewData} from '../helpers/previewData';
 import {fetchPreviewData} from '../actions/previewDataActions'
 
@@ -38,6 +39,7 @@ class DataPreviewer extends Component {
     }
 
     renderByState(previewData){
+        debugger
         switch (previewData.meta.type) {
           case 'geo':
             return <iframe name='FRAME1' src={previewData.data} width='100%' height='600px' scrolling='auto' frameBorder='0'/>
