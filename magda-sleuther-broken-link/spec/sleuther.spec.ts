@@ -13,30 +13,23 @@ import {
   distStringsArb
 } from "@magda/typescript-common/spec/arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util";
-// import setupFtp from "./setup-ftp";
+import * as URI from "urijs";
 const setupFtp = require("./setup-ftp");
-// const overrideDNS = require("./override-dns");
-// import overrideDNS from "./override-dns";
 const dns = require("dns");
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
-  this.timeout(5000);
+  this.timeout(60000);
   nock.disableNetConnect();
-  const registryUrl = "http://example.com";
-  // let dnsOverride: any;
+  const registryUrl = "http://blah.com";
   let ftp: any;
 
   before(() => {
-    // dnsOverride = overrideDNS();
     const originalDns = dns.lookup;
 
     sinon.stub(dns, "lookup").callsFake((hostname, options, callback) => {
       if (hostname.startsWith("ftp")) {
-        console.log("DNSING:" + hostname);
-
         callback(null, "127.0.0.1", 4);
       } else {
-        console.log("NOT DNSING:" + hostname);
         originalDns(hostname, options, callback);
       }
     });
@@ -49,101 +42,244 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   after(() => {
     dns.lookup.restore();
 
-    // if (dnsOverride) {
-    //   dnsOverride.close();
-    // }
-
     ftp.close();
   });
 
-  const recordArb = specificRecordArb({
+  const recordArb = specificRecordArb(jsc)({
     "dataset-distributions": jsc.record({
       distributions: jsc.array(
-        specificRecordArb({
-          "dcat-distribution-strings": distStringsArb
+        specificRecordArb(jsc)({
+          "dcat-distribution-strings": distStringsArb(jsc)
         })
       )
     })
   });
 
-  jsc.property("Should do a thing", recordArb, (record: Record) => {
-    const registryScope = nock(registryUrl);
-
-    const allDists = record.aspects["dataset-distributions"].distributions;
-
-    const allDistStrings = _(allDists)
+  function urlsFromRecord(record: Record): string[] {
+    return _(record.aspects["dataset-distributions"].distributions)
       .map((dist: any) => dist.aspects["dcat-distribution-strings"])
-      .value();
-
-    const httpDistUrls = _(allDistStrings)
-      .map(_.values)
-      .flatten()
+      .flatMap(_.values)
       .filter(x => !!x)
-      .filter((x: string) => !x.startsWith("ftp"))
-      .map(x => x as string)
       .value();
+  }
 
-    console.log(`Dist urls: ${httpDistUrls}`);
+  const recordArbWithSuccesses: jsc.Arbitrary<{
+    record: Record;
+    successes: object;
+  }> = jsc.bless({
+    generator: recordArb.generator.flatmap(record => {
+      const urls: any[] = _.uniq(urlsFromRecord(record));
 
-    const distScopes = httpDistUrls.map(url =>
-      nock(url).head(url.endsWith("/") ? "/" : "").reply(200)
-    );
+      const gens: jsc.Generator<boolean>[] = urls.map(() => jsc.bool.generator);
 
-    // const allDistsWithUrls = allDists.filter((dist: any) => {
-    //   const strings = dist.aspects["dcat-distribution-strings"];
-    //   return strings.downloadURL || strings.accessURL;
-    // });
+      const gen = jsc.generator.tuple(gens);
 
-    allDists.forEach((dist: Record) => {
-      console.log(
-        `/records/${encodeURIComponentWithApost(
-          dist.id
-        )}/aspects/source-link-status`
-      );
-      registryScope
-        .put(
-          `/records/${encodeURIComponentWithApost(
-            dist.id
-          )}/aspects/source-link-status`,
-          () => true
-        )
-        .reply(201);
-    });
+      return gen.map(successfulArr => {
+        const successes = urls.reduce((soFar, current, index) => {
+          soFar[current] = successfulArr[index];
+          return soFar;
+        }, {});
 
-    if (allDists.length > 0) {
-      console.log(
-        `/records/${encodeURIComponentWithApost(
-          record.id
-        )}/aspects/dataset-quality-rating`
-      );
-      registryScope
-        .patch(
-          `/records/${encodeURIComponentWithApost(
-            record.id
-          )}/aspects/dataset-quality-rating`,
-          () => true
-        )
-        .reply(201);
-    }
+        return { record, successes };
+      });
+    }),
 
-    const registry = new Registry({
-      baseUrl: registryUrl,
-      maxRetries: 0
-    });
+    show: ({ record, successes }: { record: Record; successes: object }) =>
+      recordArb.show(record) + " and " + JSON.stringify(successes),
+    shrink: jsc.shrink.bless(
+      ({ record, successes }: { record: Record; successes: object }) => {
+        const records = recordArb.shrink(record);
 
-    return onRecordFound(registry, record).then(() => {
-      registryScope.done();
-      distScopes.forEach(scope => scope.done());
+        return records.map(record => {
+          const urls = _.uniq(urlsFromRecord(record));
 
-      return true;
-    });
+          const after = {
+            record,
+            successes: _.pickBy(
+              successes,
+              (value: boolean, key: string) => urls.indexOf(key) >= 0
+            )
+          };
+
+          return after;
+        });
+      }
+    )
   });
 
+  const recordArbWithSuccessesNoDupFtpPaths = jsc.suchthat(
+    recordArbWithSuccesses,
+    (result: any) => {
+      const ftpPaths = _(
+        result.record.aspects["dataset-distributions"].distributions
+      )
+        .map((dist: any) => dist.aspects["dcat-distribution-strings"])
+        .flatMap(_.values)
+        .filter(x => !!x)
+        .filter((x: string) => x.startsWith("ftp"))
+        .map(url => new URI(url).path())
+        .value();
+
+      console.log(
+        "FTP Paths: " +
+          _.uniq(ftpPaths) +
+          "|" +
+          ftpPaths +
+          "... " +
+          _.isEqual(_.uniq(ftpPaths), ftpPaths)
+      );
+
+      return _.isEqual(_.uniq(ftpPaths), ftpPaths);
+    }
+  );
+
+  it("Should correctly record link statuses and quality", function() {
+    return jsc.assert(
+      jsc.forall(
+        recordArbWithSuccessesNoDupFtpPaths,
+        ({
+          record,
+          successes
+        }: {
+          record: Record;
+          successes: { [x: string]: boolean };
+        }) => {
+          const registryScope = nock(registryUrl); //.log(console.log);
+          ftp.successes = _(successes)
+            .pickBy((value, url) => url.startsWith("ftp"))
+            .mapKeys((value: boolean, url: string) => {
+              console.log(url);
+              return new URI(url).path();
+            })
+            .value();
+
+          const allDists =
+            record.aspects["dataset-distributions"].distributions;
+
+          const allDistStrings = _(allDists)
+            .map((dist: any) => dist.aspects["dcat-distribution-strings"])
+            .value();
+
+          const httpDistUrls = _(allDistStrings)
+            .flatMap(_.values)
+            .filter(x => !!x)
+            .filter((x: string) => !x.startsWith("ftp"))
+            .map((url: string) => ({
+              url,
+              success: successes[url]
+            }))
+            .value();
+
+          const distScopes = httpDistUrls.map(
+            ({ url, success }: { url: string; success: boolean }) =>
+              nock(url)
+                .head(url.endsWith("/") ? "/" : "")
+                .reply(success ? 200 : 404)
+          );
+
+          allDists.forEach((dist: Record) => {
+            const { downloadURL, accessURL } = dist.aspects[
+              "dcat-distribution-strings"
+            ];
+            const success = successes[downloadURL] || successes[accessURL];
+
+            console.log(
+              `expecting PUT /records/${encodeURIComponentWithApost(
+                dist.id
+              )}/aspects/source-link-status` +
+                ": " +
+                (success ? "active" : "broken")
+            );
+
+            registryScope
+              .put(
+                `/records/${encodeURIComponentWithApost(
+                  dist.id
+                )}/aspects/source-link-status`,
+                {
+                  status: success ? "active" : "broken"
+                  // httpStatusCode: () => true,
+                  // errorDetails: () => true
+                }
+              )
+              .reply(201);
+          });
+
+          if (allDists.length > 0) {
+            registryScope
+              .patch(
+                `/records/${encodeURIComponentWithApost(
+                  record.id
+                )}/aspects/dataset-quality-rating`,
+                () => true
+              )
+              .reply(201);
+          }
+
+          const registry = new Registry({
+            baseUrl: registryUrl,
+            maxRetries: 0
+          });
+
+          return onRecordFound(registry, record, 0)
+            .then(() => {
+              console.log("FINISHING!!!" + JSON.stringify(record));
+              nock.cleanAll();
+              distScopes.forEach(scope => scope.done());
+              registryScope.done();
+
+              return true;
+            })
+            .catch(err => {
+              console.error(err);
+
+              throw err;
+            });
+        }
+      ),
+      {
+        rngState: "81e94f7381205dba6c",
+        tests: 500
+        // quiet: false
+      }
+    );
+  });
+  // function fromCode(code: number) {
+  //   return String.fromCharCode(code);
+  // }
+
+  // function toCode(c: string) {
+  //   return c.charCodeAt(0);
+  // }
+  // const lowerCaseAlphaCharArb = jsc.integer(97, 122).smap(fromCode, toCode);
+  // const numArb = jsc.integer(48, 57).smap(fromCode, toCode);
+  // const lcAlphaNumCharArb = jsc.oneof([numArb, lowerCaseAlphaCharArb]);
+  // // const lcAlphaNumStringArb = jsc
+  // //   .array(lcAlphaNumCharArb)
+  // //   .smap(arr => arr.join(""), string => string.split(""));
+  // const lcAlphaNumStringArbNe = jsc
+  //   .nearray(lcAlphaNumCharArb)
+  //   .smap(arr => arr.join(""), string => string.split(""));
+
+  // it("Check", function() {
+  //   return jsc.assert(
+  //     jsc.forall(lcAlphaNumStringArbNe(jsc), (integers: any) => {
+  //       console.log(integers);
+  //       return true;
+  //     }),
+  //     {
+  //       rngState: "8ae3adb196f05c8247",
+  //       tests: 1,
+  //       quiet: false
+  //     }
+  //   );
+  // });
+
   const emptyRecordArb = jsc.oneof([
-    specificRecordArb({
+    specificRecordArb(jsc)({
       "dataset-distributions": jsc.constant(undefined)
     }),
-    specificRecordArb({
+    specificRecordArb(jsc)({
       "dataset-distributions": jsc.record({
         distributions: jsc.constant([])
       })
@@ -161,6 +297,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       });
 
       return onRecordFound(registry, record).then(() => {
+        nock.cleanAll();
         registryScope.done();
         return true;
       });

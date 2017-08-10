@@ -1,4 +1,6 @@
 const ftpd = require("ftpd");
+const _ = require("lodash");
+const URI = require("urijs");
 
 module.exports = function createFtpServer() {
   const server = new ftpd.FtpServer("127.0.0.1", {
@@ -6,24 +8,21 @@ module.exports = function createFtpServer() {
       return "/";
     },
     getRoot: function() {
-      return process.cwd();
+      return "/";
     },
     allowUnauthorizedTls: true,
     useWriteFile: false,
-    useReadFile: false,
+    useReadFile: false
     // uploadMaxSlurpSize: 7000 // N/A unless 'useWriteFile' is true.
   });
 
   server.on("error", function(error) {
-    console.info("FTP Server error:", error);
+    console.error("FTP Server error:", error);
   });
 
   server.on("client:connected", function(connection) {
-    console.info("FTP connected");
     var username = null;
-    console.info("client connected: " + connection.remoteAddress);
     connection.on("command:user", function(user, success, failure) {
-      console.info("FTP command:user");
       if (user) {
         username = user;
         success();
@@ -33,11 +32,30 @@ module.exports = function createFtpServer() {
     });
 
     connection.on("command:pass", function(pass, success, failure) {
-      console.info("FTP in use!!!!");
       if (pass) {
         success(username, {
           readdir: (path, cb) => {
-            cb(null, ["file1.txt", "file2.txt"]);
+            const success = server.successes[path];
+
+            console.log(server.successes);
+            console.log(path);
+
+            // console.log(
+            //   _(server.successes)
+            //     .map((value, key) => {
+            //       return {
+            //         path: new URI(key).path(),
+            //         value
+            //       };
+            //     })
+            //     .value()
+            // );
+
+            if (success) {
+              cb(null, ["file1.txt"]);
+            } else {
+              cb(null, []);
+            }
           },
 
           stat: (path, callback) => {
@@ -74,7 +92,6 @@ module.exports = function createFtpServer() {
 
   server.debugging = 4;
   server.listen(30021);
-  console.info("Listening on port 21");
 
   return server;
 };

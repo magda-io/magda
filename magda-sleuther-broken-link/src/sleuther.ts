@@ -33,11 +33,20 @@ export default async function sleuthBrokenLinks() {
     aspects: ["dataset-distributions"],
     optionalAspects: [],
     writeAspectDefs: [brokenLinkAspectDefinition, datasetQualityAspectDef],
-    onRecordFound: record => onRecordFound(registry, record)
+    onRecordFound: record =>
+      onRecordFound(
+        registry,
+        record,
+        process.env.RETRIES && parseInt(process.env.RETRIES)
+      )
   });
 }
 
-export async function onRecordFound(registry: Registry, record: Record) {
+export async function onRecordFound(
+  registry: Registry,
+  record: Record,
+  retries: number = 5
+) {
   const distributions: Record[] =
     record.aspects["dataset-distributions"] &&
     record.aspects["dataset-distributions"].distributions;
@@ -52,7 +61,8 @@ export async function onRecordFound(registry: Registry, record: Record) {
     (distribution: Record) =>
       checkDistributionLink(
         distribution,
-        distribution.aspects["dcat-distribution-strings"]
+        distribution.aspects["dcat-distribution-strings"],
+        retries
       )
   );
 
@@ -103,8 +113,14 @@ export async function onRecordFound(registry: Registry, record: Record) {
 
   // Record a broken links aspect for each distribution.
   const brokenLinksAspectPromise = Promise.all(
-    bestResultPerDistribution.map((result: BrokenLinkSleuthingResult) =>
-      recordBrokenLinkAspect(registry, result)
+    bestResultPerDistribution.map((result: BrokenLinkSleuthingResult) => {
+      return recordBrokenLinkAspect(registry, result);
+    })
+  );
+
+  brokenLinksAspectPromise.then(() =>
+    console.log(
+      "Finished links aspect " + bestResultPerDistribution.length + " links"
     )
   );
 
@@ -141,11 +157,11 @@ function recordBrokenLinkAspect(
   registry: Registry,
   result: BrokenLinkSleuthingResult
 ): Promise<Record> {
-  // console.log(
-  //   `Putting aspect ${"source-link-status"} for ${encodeURIComponent(
-  //     result.distribution.id
-  //   )} with ${JSON.stringify(result.aspect)}`
-  // );
+  console.log(
+    `Putting aspect ${"source-link-status"} for ${encodeURIComponent(
+      result.distribution.id
+    )} with ${JSON.stringify(result.aspect)}`
+  );
 
   return registry
     .putRecordAspect(
@@ -169,7 +185,8 @@ type DistributionLinkCheck = {
  */
 function checkDistributionLink(
   distribution: Record,
-  distStringsAspect: any
+  distStringsAspect: any,
+  retries: number
 ): DistributionLinkCheck[] {
   const urls = [
     distStringsAspect.downloadURL,
@@ -195,7 +212,7 @@ function checkDistributionLink(
     return {
       host: (parsedURL && parsedURL.host()) as string,
       op: () =>
-        retrieve(parsedURL)
+        retrieve(parsedURL, retries)
           .then(result => ({
             distribution,
             aspect: {
@@ -213,9 +230,12 @@ function checkDistributionLink(
 }
 
 type RetrieveResult = "active" | "unknown";
-function retrieve(parsedURL: uri.URI): Promise<RetrieveResult> {
+function retrieve(
+  parsedURL: uri.URI,
+  retries: number
+): Promise<RetrieveResult> {
   if (parsedURL.protocol() === "http" || parsedURL.protocol() === "https") {
-    return retrieveHttp(parsedURL.toString());
+    return retrieveHttp(parsedURL.toString(), retries);
   } else if (parsedURL.protocol() === "ftp") {
     return retrieveFtp(parsedURL);
   } else {
@@ -250,6 +270,7 @@ function retrieveFtp(parsedURL: uri.URI): Promise<RetrieveResult> {
  */
 function retrieveHttp(
   url: string,
+  retries: number,
   delaySeconds429: number = 10
 ): Promise<RetrieveResult> {
   const operation = () => {
@@ -274,7 +295,7 @@ function retrieveHttp(
     );
   };
 
-  return retryBackoff(operation, 5, 3, (err, retries) => {
+  return retryBackoff(operation, retries, 3, (err, retries) => {
     console.info(
       `Downloading ${url} failed: ${err.errorDetails ||
         err.httpStatusCode ||
