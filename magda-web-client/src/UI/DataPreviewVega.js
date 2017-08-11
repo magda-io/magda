@@ -4,7 +4,7 @@ import VegaLite from 'react-vega-lite';
 import JsonForm from 'react-json';
 
 const VEGAMARK = ['area', 'bar', 'circle', 'line', 'point', 'rect', 'square', 'text', 'tick'];
-
+const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
 
 const defaultSpec = {
   "description": "Example data",
@@ -64,6 +64,52 @@ class DataPreviewVega extends Component {
     })
   }
 
+  handleConfigChange(spec){
+    this.setState({
+      spec
+    })
+  }
+
+  renderConfigForm(){
+    const currentSpec = this.state.spec;
+    return <div>
+            <h3>Configure chart display</h3>
+            <form>
+              <div>
+                <label>
+                  Type:
+                </label>
+                <select value={currentSpec.mark} onChange={(event)=>{currentSpec.mark = event.target.value; this.handleConfigChange(currentSpec)}}>
+                  {VEGAMARK.map(m => <option value={m} key={m}> {m} </option>)}</select>
+              </div>
+
+              <div>
+                <label>
+                  X Axis Field:
+                </label>
+                <select value={currentSpec.encoding.x.field} onChange={(event)=>{currentSpec.encoding.x.field = event.target.value; this.handleConfigChange(currentSpec)}}>
+                  {this.props.data.meta.chartFields.time.map(m => <option value={m} key={m}> {m} </option>)}</select>
+              </div>
+
+              <div>
+                <label>
+                  Y Axis Field:
+                </label>
+                <select value={currentSpec.encoding.y.field} onChange={(event)=>{currentSpec.encoding.y.field = event.target.value; this.handleConfigChange(currentSpec)}}>
+                  {this.props.data.meta.chartFields.numeric.map(m => <option value={m} key={m}> {m} </option>)}</select>
+              </div>
+              <div>
+                <label>
+                  Y Axis Type:
+                </label>
+                <select value={currentSpec.encoding.y.type} onChange={(event)=>{currentSpec.encoding.y.type = event.target.value; this.handleConfigChange(currentSpec)}}>
+                  {DATATYPE.map(m => <option value={m} key={m}> {m} </option>)}</select>
+              </div>
+
+            </form>
+            </div>
+  }
+
   renderCharts(){
     return (
       <div className="clearfix">
@@ -77,6 +123,7 @@ class DataPreviewVega extends Component {
   render(){
     return <div className='data-preview-vega'>
             {this.renderCharts()}
+            {this.renderConfigForm()}
            </div>
   }
 }
