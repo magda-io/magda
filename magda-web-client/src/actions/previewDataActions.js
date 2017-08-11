@@ -1,12 +1,9 @@
 import {config} from '../config'
 import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
-import xmlToTabular from '../helpers/xmlToTabular';
-import jsonToTabular from '../helpers/jsonToTabular';
-import papa from 'papaparse';
 import {getPreviewDataUrl} from '../helpers/previewData';
 import type {PreviewData} from '../helpers/previewData';
-import parser from 'rss-parser'
+
 
 
 export function requestPreviewData(url: string){
@@ -35,6 +32,27 @@ export function resetPreviewData(){
   return {
     type: actionTypes.RESET_PREVIEW_DATA,
   }
+}
+
+
+function loadPapa(){
+  return import(/* webpackChunkName: "papa" */ 'papaparse').then(papa => {
+     return papa;
+   }).catch(error => 'An error occurred while loading the component');
+
+}
+
+
+function loadXmlParser(){
+  return import(/* webpackChunkName: "xmltoTabular" */ '../helpers/xmlToTabular').then(xmlToTabular => {
+     return xmlToTabular;
+   }).catch(error => 'An error occurred while loading the component');
+}
+
+function loadRssParser(){
+  return import(/* webpackChunkName: "rssParser" */ 'rss-parser').then(rssParser => {
+     return rssParser;
+   }).catch(error => 'An error occurred while loading the component');
 }
 
 
@@ -83,18 +101,21 @@ export function fetchPreviewData(distribution){
           break;
 
         case 'csv':
-        papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
-          download: true,
-          header: true,
-          complete: function(data) {
-            data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
-            data.meta.chartFields = distribution.chartFields;
+        loadPapa().then(papa=>{
+          papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
+            download: true,
+            header: true,
+            complete: function(data) {
+              data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
+              data.meta.chartFields = distribution.chartFields;
 
-            dispatch(receivePreviewData({[distribution.identifier]: data}))
-          },
-          error: (error)=>{dispatch(requestPreviewDataError(error))}
-        });
-          break;
+              dispatch(receivePreviewData({[distribution.identifier]: data}))
+            },
+            error: (error)=>{dispatch(requestPreviewDataError(error))}
+          });
+        })
+
+        break;
         case 'xml':
           fetch(proxy + url)
           .then(response=>
@@ -103,12 +124,15 @@ export function fetchPreviewData(distribution){
               return response.text();
             }
           ).then(xmlData=>{
-            let data = xmlToTabular(xmlData);
-            if(data){
-              dispatch(receivePreviewData({[distribution.identifier]: data}));
-            } else{
-              dispatch(requestPreviewDataError('failed to parse xml'))
-            }
+            loadXmlParser().then(xmlToTabular => {
+              debugger
+              const data = xmlToTabular.default(xmlData);
+              if(data){
+                dispatch(receivePreviewData(data));
+              } else{
+                dispatch(requestPreviewDataError('failed to parse xml'))
+              }
+            })
           });
           break;
         case 'json':
@@ -178,20 +202,21 @@ export function fetchPreviewData(distribution){
                 return response.text()
               }
             }).then(text=>{
-              parser.parseString(text, (err, result)=>{
-                if(err){
-                  dispatch(requestPreviewDataError("error getting rss feed"));
-                  console.warn(err);
-                } else {
-                  const rssData = {
-                    data: result.feed.entries,
-                    meta: {
-                      type: 'rss'
-                    }
+              loadRssParser().then(rssParser=> {
+                rssParser.parseString(text, (err, result)=>{
+                  if(err){
+                    dispatch(requestPreviewDataError("error getting rss feed"));
+                    console.warn(err);
+                  } else {
+                    dispatch(receivePreviewData({
+                      data: result.feed.entries,
+                      meta: {
+                        type: 'rss'
+                      }
+                    }))
                   }
-                  dispatch(receivePreviewData({[distribution.identifier]: rssData}))
-                }
-            });
+              });
+              })
           })
             break;
         default:
