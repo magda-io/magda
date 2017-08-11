@@ -61,17 +61,25 @@ export const specificRecordArb = (jsc: jsc) => (aspectArbs: {
     aspects: jsc.record(aspectArbs)
   });
 
-const urlPartsArb = (jsc: jsc) =>
+const defaultSchemeArb = (jsc: jsc) =>
+  jsc.oneof([
+    jsc.constant("http"),
+    jsc.constant("https"),
+    jsc.constant("ftp"),
+    lcAlphaNumStringArbNe(jsc)
+  ]);
+
+type urlArbOptions = {
+  schemeArb?: jsverify.Arbitrary<string>;
+  hostArb?: jsverify.Arbitrary<string>;
+};
+
+const urlPartsArb = (jsc: jsc, options: urlArbOptions) =>
   jsc
     .record({
-      scheme: jsc.oneof([
-        jsc.constant("http"),
-        jsc.constant("https"),
-        jsc.constant("ftp"),
-        lcAlphaNumStringArbNe(jsc)
-      ]),
+      scheme: options.schemeArb,
       host: jsc.suchthat(
-        lcAlphaNumStringArbNe(jsc),
+        options.hostArb,
         (string: string) => !string.startsWith("ftp")
       ),
       path: jsc.array(lcAlphaNumStringArbNe(jsc))
@@ -90,8 +98,14 @@ const urlPartsArb = (jsc: jsc) =>
       })
     );
 
-export const distUrlArb = (jsc: jsc) =>
-  urlPartsArb(jsc).smap(
+export const distUrlArb = (
+  jsc: jsc,
+  options: urlArbOptions = {
+    schemeArb: defaultSchemeArb(jsc),
+    hostArb: lcAlphaNumStringArbNe(jsc)
+  }
+) =>
+  urlPartsArb(jsc, options).smap(
     urlParts =>
       `${urlParts.scheme}://${urlParts.host}.com:${urlParts.port}/${(urlParts.path ||
         [])
@@ -108,8 +122,11 @@ export const distUrlArb = (jsc: jsc) =>
     }
   );
 
-export const distStringsArb = (jsc: jsc) =>
+export const distStringsArb = (
+  jsc: jsc,
+  customDistUrlArb: jsverify.Arbitrary<String> = distUrlArb(jsc)
+) =>
   jsc.record({
-    downloadURL: jsc.oneof([distUrlArb(jsc), jsc.constant(undefined)]),
-    accessURL: jsc.oneof([distUrlArb(jsc), jsc.constant(undefined)])
+    downloadURL: jsc.oneof([customDistUrlArb, jsc.constant(undefined)]),
+    accessURL: jsc.oneof([customDistUrlArb, jsc.constant(undefined)])
   });

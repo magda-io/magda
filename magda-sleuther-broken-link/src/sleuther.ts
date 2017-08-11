@@ -45,6 +45,7 @@ export default async function sleuthBrokenLinks() {
 export async function onRecordFound(
   registry: Registry,
   record: Record,
+  maxRetryDelay: number = 1,
   retries: number = 5
 ) {
   const distributions: Record[] =
@@ -62,6 +63,7 @@ export async function onRecordFound(
       checkDistributionLink(
         distribution,
         distribution.aspects["dcat-distribution-strings"],
+        maxRetryDelay,
         retries
       )
   );
@@ -186,6 +188,7 @@ type DistributionLinkCheck = {
 function checkDistributionLink(
   distribution: Record,
   distStringsAspect: any,
+  maxRetryDelay: number,
   retries: number
 ): DistributionLinkCheck[] {
   const urls = [
@@ -212,7 +215,7 @@ function checkDistributionLink(
     return {
       host: (parsedURL && parsedURL.host()) as string,
       op: () =>
-        retrieve(parsedURL, retries)
+        retrieve(parsedURL, maxRetryDelay, retries)
           .then(result => ({
             distribution,
             aspect: {
@@ -232,10 +235,11 @@ function checkDistributionLink(
 type RetrieveResult = "active" | "unknown";
 function retrieve(
   parsedURL: uri.URI,
+  maxRetryDelay: number,
   retries: number
 ): Promise<RetrieveResult> {
   if (parsedURL.protocol() === "http" || parsedURL.protocol() === "https") {
-    return retrieveHttp(parsedURL.toString(), retries);
+    return retrieveHttp(parsedURL.toString(), maxRetryDelay, retries);
   } else if (parsedURL.protocol() === "ftp") {
     return retrieveFtp(parsedURL);
   } else {
@@ -270,6 +274,7 @@ function retrieveFtp(parsedURL: uri.URI): Promise<RetrieveResult> {
  */
 function retrieveHttp(
   url: string,
+  maxRetryDelay: number,
   retries: number,
   delaySeconds429: number = 10
 ): Promise<RetrieveResult> {
@@ -295,7 +300,7 @@ function retrieveHttp(
     );
   };
 
-  return retryBackoff(operation, retries, 3, (err, retries) => {
+  return retryBackoff(operation, maxRetryDelay, retries, (err, retries) => {
     console.info(
       `Downloading ${url} failed: ${err.errorDetails ||
         err.httpStatusCode ||
@@ -311,7 +316,8 @@ function retrieveHttp(
           );
           return new Promise<RetrieveResult>(resolve =>
             setTimeout(
-              () => resolve(retrieveHttp(url, delaySeconds429 * 10)),
+              () =>
+                resolve(retrieveHttp(url, delaySeconds429 * 10, retries - 1)),
               delaySeconds429
             )
           );

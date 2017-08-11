@@ -1,5 +1,5 @@
 import {} from "mocha";
-// import { expect } from "chai";
+import { expect } from "chai";
 import * as sinon from "sinon";
 import * as nock from "nock";
 ///<reference path="@magda/typescript-common/spec/jsverify.d.ts" />
@@ -10,7 +10,8 @@ import * as _ from "lodash";
 import { onRecordFound } from "../src/sleuther";
 import {
   specificRecordArb,
-  distStringsArb
+  distStringsArb,
+  distUrlArb
 } from "@magda/typescript-common/spec/arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util";
 import * as URI from "urijs";
@@ -20,9 +21,9 @@ const dns = require("dns");
 const KNOWN_PROTOCOLS = ["https", "http", "ftp"];
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
-  this.timeout(60000);
+  this.timeout(10000);
   nock.disableNetConnect();
-  const registryUrl = "http://blah.com";
+  const registryUrl = "http://example.com";
   let registryScope: nock.Scope;
   let ftp: any;
 
@@ -49,15 +50,33 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     ftp.close();
   });
 
-  const recordArb = specificRecordArb(jsc)({
-    "dataset-distributions": jsc.record({
-      distributions: jsc.array(
-        specificRecordArb(jsc)({
-          "dcat-distribution-strings": distStringsArb(jsc)
-        })
-      )
-    })
-  });
+  const beforeEachProperty = () => {
+    registryScope = nock(registryUrl); //.log(console.log);
+  };
+
+  const afterEachProperty = () => {
+    nock.cleanAll();
+  };
+
+  const recordArb = (distUrlArb?: jsc.Arbitrary<String>) =>
+    specificRecordArb(jsc)({
+      "dataset-distributions": jsc.record({
+        distributions: jsc.suchthat(
+          jsc.array(
+            specificRecordArb(jsc)({
+              "dcat-distribution-strings": distStringsArb(jsc, distUrlArb)
+            })
+          ),
+          (arr: Record[]) => {
+            const ids = arr.map(_ => _.id);
+
+            return _.isEqual(ids, _.uniq(ids));
+          }
+        )
+      })
+    });
+
+  const defaultRecordArb = recordArb();
 
   function urlsFromRecord(record: Record): string[] {
     return _(record.aspects["dataset-distributions"].distributions)
@@ -71,7 +90,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     record: Record;
     successes: object;
   }> = jsc.bless({
-    generator: recordArb.generator.flatmap(record => {
+    generator: defaultRecordArb.generator.flatmap(record => {
       const urls: any[] = _(urlsFromRecord(record))
         .filter(url => KNOWN_PROTOCOLS.indexOf(URI(url).scheme()) >= 0)
         .uniq()
@@ -92,10 +111,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     }),
 
     show: ({ record, successes }: { record: Record; successes: object }) =>
-      recordArb.show(record) + " and " + JSON.stringify(successes),
+      defaultRecordArb.show(record) + " and " + JSON.stringify(successes),
     shrink: jsc.shrink.bless(
       ({ record, successes }: { record: Record; successes: object }) => {
-        const records = recordArb.shrink(record);
+        const records = defaultRecordArb.shrink(record);
 
         return records.map(record => {
           const urls = _.uniq(urlsFromRecord(record));
@@ -140,16 +159,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     }
   );
 
-  const beforeEachProperty = () => {
-    // sinon.stub(console, "log");
-    registryScope = nock(registryUrl)//.log(console.log);
-  };
-
-  const afterEachProperty = () => {
-    // (console.log as any).restore();
-    nock.cleanAll();
-  };
-
   it("Should correctly record link statuses and quality", function() {
     return jsc.assert(
       jsc.forall(
@@ -178,7 +187,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           const httpDistUrls = _(allDistStrings)
             .flatMap(_.values)
             .filter(x => !!x)
-            .filter((x: string) => !x.startsWith("ftp"))
+            .filter((x: string) => x.startsWith("http"))
             .map((url: string) => ({
               url,
               success: successes[url]
@@ -192,7 +201,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                 .reply(success ? 200 : 404)
           );
 
-          allDists.forEach((dist: Record) => {
+          const results = allDists.map((dist: Record) => {
             const { downloadURL, accessURL } = dist.aspects[
               "dcat-distribution-strings"
             ];
@@ -228,20 +237,24 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             //     (success ? "active" : "broken")
             // );
 
+            const result = success
+              ? "active"
+              : downloadUnknown || accessUnknown ? "unknown" : "broken";
+
             registryScope
               .put(
                 `/records/${encodeURIComponentWithApost(
                   dist.id
                 )}/aspects/source-link-status`,
                 {
-                  status: success
-                    ? "active"
-                    : downloadUnknown || accessUnknown ? "unknown" : "broken"
+                  status: result
                   // httpStatusCode: () => true,
                   // errorDetails: () => true
                 }
               )
               .reply(201);
+
+            return result;
           });
 
           if (allDists.length > 0) {
@@ -250,7 +263,18 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                 `/records/${encodeURIComponentWithApost(
                   record.id
                 )}/aspects/dataset-quality-rating`,
-                () => true
+                [
+                  {
+                    op: "add",
+                    path: "/source-link-status",
+                    value: {
+                      score:
+                        results.filter((result: string) => result === "active")
+                          .length / allDists.length,
+                      weighting: 1
+                    }
+                  }
+                ]
               )
               .reply(201);
           }
@@ -260,25 +284,238 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             maxRetries: 0
           });
 
-          return onRecordFound(registry, record, 0)
+          return onRecordFound(registry, record, 0, 0)
             .then(() => {
-              afterEachProperty();
               distScopes.forEach(scope => scope.done());
               registryScope.done();
-
+            })
+            .then(() => {
+              afterEachProperty();
               return true;
             })
-            .catch(err => {
-              console.error(err);
-
-              throw err;
+            .catch(e => {
+              afterEachProperty();
+              throw e;
             });
         }
       ),
       {
-        rngState: "8980b5214cf3da6e79",
-        tests: 500
+        // rngState: "8980b5214cf3da6e79",
+        tests: 1000
         // quiet: false
+      }
+    );
+  });
+
+  const httpOnlyRecordArb = jsc.suchthat(
+    defaultRecordArb,
+    (record: Record) =>
+      record.aspects["dataset-distributions"].distributions.length > 1 &&
+      record.aspects[
+        "dataset-distributions"
+      ].distributions.every((dist: any) => {
+        const aspect = dist.aspects["dcat-distribution-strings"];
+
+        const definedURLs = [aspect.accessURL, aspect.downloadURL].filter(
+          x => !!x
+        );
+
+        return (
+          definedURLs.length > 0 && definedURLs.every(x => x.startsWith("http"))
+        );
+      })
+  );
+
+  const failureCodeArb = jsc.nearray(
+    jsc.oneof([
+      jsc.constant(429),
+      jsc.suchthat(jsc.integer, int => int >= 300 && int <= 600)
+    ])
+  );
+
+  it("Should retry failed HTTP connections", function() {
+    return jsc.assert(
+      jsc.forall(
+        httpOnlyRecordArb,
+        failureCodeArb,
+        (record: Record, failureCodes: number[]) => {
+          beforeEachProperty();
+
+          const registry = new Registry({
+            baseUrl: registryUrl,
+            maxRetries: 0
+          });
+
+          const distScopes = urlsFromRecord(record).map(url => {
+            const scope = nock(url); //.log(console.log);
+
+            failureCodes.forEach(failureCode => {
+              scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
+            });
+            scope.head(url.endsWith("/") ? "/" : "").reply(200);
+            return scope;
+          });
+
+          const allDists =
+            record.aspects["dataset-distributions"].distributions;
+
+          allDists.forEach((dist: Record) => {
+            registryScope
+              .put(
+                `/records/${encodeURIComponentWithApost(
+                  dist.id
+                )}/aspects/source-link-status`,
+                {
+                  status: "active"
+                }
+              )
+              .reply(201);
+          });
+
+          if (allDists.length > 0) {
+            // console.log(
+            //   `/records/${encodeURIComponentWithApost(
+            //     record.id
+            //   )}/aspects/dataset-quality-rating`
+            // );
+            registryScope
+              .patch(
+                `/records/${encodeURIComponentWithApost(
+                  record.id
+                )}/aspects/dataset-quality-rating`,
+                [
+                  {
+                    op: "add",
+                    path: "/source-link-status",
+                    value: {
+                      score: 1,
+                      weighting: 1
+                    }
+                  }
+                ]
+              )
+              .reply(201);
+          }
+
+          return onRecordFound(registry, record, 0, failureCodes.length)
+            .then(() => {
+              registryScope.done();
+              distScopes.forEach(scope => scope.done());
+            })
+            .then(() => {
+              afterEachProperty();
+              return true;
+            })
+            .catch(e => {
+              afterEachProperty();
+              throw e;
+            });
+
+          // promise.catch(() => {}).then(afterEachProperty);
+        }
+      ),
+      {
+        // rngState: "8980b5214cf3da6e79",
+        // tests: 1000
+        // quiet: false
+      }
+    );
+  });
+
+  it("Should only try to hit one domain at a time", function() {
+    const httpOrHttps = jsc.sampler(
+      jsc.oneof([jsc.constant("http"), jsc.constant("https")])
+    )(1);
+
+    const urlArb = distUrlArb(jsc, {
+      schemeArb: jsc.constant(httpOrHttps),
+      hostArb: jsc.oneof([
+        jsc.constant("example1"),
+        jsc.constant("example2"),
+        jsc.constant("example3")
+      ])
+    });
+
+    const thisRecordArb = jsc.suchthat(recordArb(urlArb), record => {
+      const urls: string[] = urlsFromRecord(record);
+      const hosts: string[] = urls.map(url => {
+        const uri = new URI(url);
+
+        return uri.scheme() + "://" + uri.host();
+      });
+
+      return !_.isEqual(_.uniq(hosts), hosts);
+    });
+
+    return jsc.assert(
+      jsc.forall(
+        thisRecordArb,
+        failureCodeArb,
+        jsc.suchthat(jsc.integer, number => number >= 0 && number <= 100),
+        (record: Record, failures: number[], delayMs: number) => {
+          beforeEachProperty();
+
+          const registry = new Registry({
+            baseUrl: registryUrl,
+            maxRetries: 0
+          });
+
+          const distScopes = urlsFromRecord(
+            record
+          ).reduce((scopeLookup, url) => {
+            const uri = new URI(url);
+            const base = uri.scheme() + "://" + uri.host();
+
+            if (!scopeLookup[base]) {
+              scopeLookup[base] = nock(base);
+            }
+
+            const scope = scopeLookup[base];
+
+            failures.forEach(failureCode =>
+              scope.head(uri.path()).delay(delayMs).reply(failureCode)
+            );
+
+            scope.head(uri.path()).delay(delayMs).reply(200);
+            return scopeLookup;
+          }, {} as { [host: string]: nock.Scope });
+
+          _.forEach(distScopes, (scope: nock.Scope, host: string) => {
+            let countForThisScope = 0;
+
+            scope.on("request", () => {
+              countForThisScope++;
+              expect(countForThisScope).to.equal(1);
+            });
+
+            scope.on("replied", () => {
+              countForThisScope--;
+              expect(countForThisScope).to.equal(0);
+            });
+          });
+
+          const allDists =
+            record.aspects["dataset-distributions"].distributions;
+
+          registryScope.patch(/.*/).reply(201);
+          registryScope.put(/.*/).times(allDists.length).reply(201);
+
+          return onRecordFound(registry, record, 0, failures.length)
+            .then(() => {
+              _.values(distScopes).forEach(scope => scope.done());
+            })
+            .then(() => {
+              afterEachProperty();
+              return true;
+            })
+            .catch(e => {
+              afterEachProperty();
+              throw e;
+            });
+        }
+      ),
+      {
+        tests: 10
       }
     );
   });
