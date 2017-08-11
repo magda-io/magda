@@ -32,7 +32,7 @@ function renderContent(props: props){
 }
 
 function renderNews(news: rssNews){
-  return (<li className='list-group-item' key={news.guid}>
+  return (<li className='list-group-item' key={news.link + news.title}>
             <h4 className='list-group-item-heading'><a href={news.link} target="_blank">{news.title}</a></h4>
             <div className='news-body list-group-item-text'>{news.contentSnippet}</div>
           </li>)
