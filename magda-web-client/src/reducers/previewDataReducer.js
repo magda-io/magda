@@ -1,6 +1,6 @@
 // @flow
 const initialData = {
-  previewData: {},
+  previewData: null,
   isFetching: false,
   error: null,
   url: ''
@@ -9,7 +9,7 @@ const initialData = {
 type previewDataState = {
   isFetching: boolean,
   error: ?number,
-  previewData: Object,
+  previewData: ?Object,
   url: string
 }
 

@@ -44,6 +44,7 @@ class DatasetDetails extends Component {
             </div>
             </div>
         </div>
+      }
 }
 
 function mapStateToProps(state) {

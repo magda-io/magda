@@ -63,12 +63,13 @@ class DataPreviewer extends Component {
     }
 
     render(){
+      debugger
       const url = this.props.url;
       return <div className='data-previewer'>
               <h3 className='section-heading'><a href={url} target='_blank'>{url && url.substring(url.lastIndexOf('/')+1)}</a></h3>
               {this.props.error && <div>{this.props.error}</div>}
               {this.props.isFetching && <ProgressBar/>}
-              {this.props.data[this.props.distribution.id]&& this.renderByState(this.props.data[this.props.distribution.id])}
+              {this.props.data && this.props.distribution.identifier && this.renderByState(this.props.data[this.props.distribution.identifier])}
              </div>
     }
 }

@@ -79,7 +79,7 @@ export function fetchPreviewData(distribution){
               type: "geo"
             }
           }
-          dispatch(receivePreviewData({[distribution.id]: geoData}));
+          dispatch(receivePreviewData({[distribution.identifier]: geoData}));
           break;
 
         case 'csv':
@@ -89,8 +89,8 @@ export function fetchPreviewData(distribution){
           complete: function(data) {
             data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
             data.meta.chartFields = distribution.chartFields;
-            
-            dispatch(receivePreviewData({[distribution.id]: data}))
+
+            dispatch(receivePreviewData({[distribution.identifier]: data}))
           },
           error: (error)=>{dispatch(requestPreviewDataError(error))}
         });
@@ -105,7 +105,7 @@ export function fetchPreviewData(distribution){
           ).then(xmlData=>{
             let data = xmlToTabular(xmlData);
             if(data){
-              dispatch(receivePreviewData({[distribution.id]: data}));
+              dispatch(receivePreviewData({[distribution.identifier]: data}));
             } else{
               dispatch(requestPreviewDataError('failed to parse xml'))
             }
@@ -126,7 +126,7 @@ export function fetchPreviewData(distribution){
               }
             }
             if(!json.error){
-              dispatch(receivePreviewData({[distribution.id]: jsonData}));
+              dispatch(receivePreviewData({[distribution.identifier]: jsonData}));
             } else{
               dispatch(requestPreviewDataError('failed to parse json'))
             }
@@ -147,7 +147,7 @@ export function fetchPreviewData(distribution){
                 type: 'txt'
               }
             }
-            dispatch(receivePreviewData({[distribution.id]: textData}));
+            dispatch(receivePreviewData({[distribution.identifier]: textData}));
           })
           break;
         case 'html':
@@ -157,7 +157,7 @@ export function fetchPreviewData(distribution){
                 type: 'html'
               }
             }
-            dispatch(receivePreviewData({[distribution.id]: htmlData}));
+            dispatch(receivePreviewData({[distribution.identifier]: htmlData}));
             break;
         case 'googleViewable':
             const googleViewableData = {
@@ -166,7 +166,7 @@ export function fetchPreviewData(distribution){
                 type: 'googleViewable'
               }
             }
-            dispatch(receivePreviewData({[distribution.id]: googleViewableData}));
+            dispatch(receivePreviewData({[distribution.identifier]: googleViewableData}));
             break;
         case 'rss':
             fetch(proxy + url)
@@ -189,13 +189,13 @@ export function fetchPreviewData(distribution){
                       type: 'rss'
                     }
                   }
-                  dispatch(receivePreviewData({[distribution.id]: rssData}))
+                  dispatch(receivePreviewData({[distribution.identifier]: rssData}))
                 }
             });
           })
             break;
         default:
-          return dispatch(receivePreviewData({[distribution.id]: null}));
+          return dispatch(receivePreviewData({[distribution.identifier]: null}));
       }
   }
 }
