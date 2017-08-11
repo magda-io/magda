@@ -1,8 +1,6 @@
 // @flow
 
-// eslint-disable-next-line
-import {RouterContext, Link } from 'react-router';
-
+import { RouterContext, Link } from 'react-router';
 import './Search.css';
 import {connect} from 'react-redux';
 import {config} from '../config.js';
@@ -19,6 +17,11 @@ import MatchingStatus from './MatchingStatus';
 import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../actions/datasetSearchActions';
 import {fetchFeaturedPublishersFromRegistry} from '../actions/featuredPublishersActions';
+
+
+// eslint-disable-next-line
+import PropTypes from 'prop-types';
+
 import queryString from 'query-string';
 import ProgressBar from '../UI/ProgressBar';
 
@@ -194,7 +197,7 @@ class Search extends Component {
 }
 
 Search.contextTypes ={
-  router: React.PropTypes.object.isRequired,
+  router: PropTypes.object.isRequired,
 }
 
 
