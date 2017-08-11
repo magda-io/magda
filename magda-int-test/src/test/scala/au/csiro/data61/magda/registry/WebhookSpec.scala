@@ -86,13 +86,13 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
             }))
 
           val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
-            // We don't care about this. 
+            // We don't care about this.
             indexed = None,
             source = None,
             quality = 0,
 
             distributions = dataSet.distributions.map(distribution => distribution.copy(
-              // This will be derived from the format so might not match the input 
+              // This will be derived from the format so might not match the input
               mediaType = None))))
 
           withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
@@ -151,7 +151,9 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
           lastEventId = 104856,
           events = None, // Not needed yet - soon?
           records = Some(dataSets.map(dataSetToRecord)),
-          aspectDefinitions = None))
+          aspectDefinitions = None,
+          deferredResponseUrl = None)
+      )
 
       val posts = payloads.map { payload =>
         new RequestBuilder(POST).apply("/", payload)
