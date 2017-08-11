@@ -112,6 +112,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
     show: ({ record, successes }: { record: Record; successes: object }) =>
       defaultRecordArb.show(record) + " and " + JSON.stringify(successes),
+
     shrink: jsc.shrink.bless(
       ({ record, successes }: { record: Record; successes: object }) => {
         const records = defaultRecordArb.shrink(record);
@@ -333,96 +334,248 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     ])
   );
 
-  it("Should retry failed HTTP connections", function() {
-    return jsc.assert(
-      jsc.forall(
-        httpOnlyRecordArb,
+  function arbFlatMap<T, U>(
+    arb: jsc.Arbitrary<T>,
+    arbForward: (t: T) => jsc.Arbitrary<U>,
+    shrinker: (t: T, u: U) => U[],
+    show: (arr: [T, U]) => string = arr => arr.toString()
+  ): jsc.Arbitrary<[T, U]> {
+    return jsc.bless<[T, U]>({
+      generator: arb.generator.flatmap((t: T) => {
+        return arbForward(t).generator.map(
+          (result: U) => [t, result] as [T, U]
+        );
+      }),
+      show,
+      shrink: jsc.shrink.bless(x => {
+        const t: T = x[0];
+        const u: U = x[1];
+        const y: [T, U][] = arb
+          .shrink(t)
+          .map((smallT: T) =>
+            _.flatMap(
+              shrinker(smallT, u),
+              (smallU: U) => [smallT, smallU] as [T, U]
+            )
+          ) as [T, U][];
+
+        return y;
+      })
+    });
+  }
+
+  describe("retrying", () => {
+    it("Should result in success if the last retry is successful", function() {
+      const retryCountArb = arbFlatMap(
         failureCodeArb,
-        (record: Record, failureCodes: number[]) => {
-          beforeEachProperty();
-
-          const registry = new Registry({
-            baseUrl: registryUrl,
-            maxRetries: 0
-          });
-
-          const distScopes = urlsFromRecord(record).map(url => {
-            const scope = nock(url); //.log(console.log);
-
-            failureCodes.forEach(failureCode => {
-              scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
-            });
-            scope.head(url.endsWith("/") ? "/" : "").reply(200);
-            return scope;
-          });
-
-          const allDists =
-            record.aspects["dataset-distributions"].distributions;
-
-          allDists.forEach((dist: Record) => {
-            registryScope
-              .put(
-                `/records/${encodeURIComponentWithApost(
-                  dist.id
-                )}/aspects/source-link-status`,
-                {
-                  status: "active"
-                }
-              )
-              .reply(201);
-          });
-
-          if (allDists.length > 0) {
-            // console.log(
-            //   `/records/${encodeURIComponentWithApost(
-            //     record.id
-            //   )}/aspects/dataset-quality-rating`
-            // );
-            registryScope
-              .patch(
-                `/records/${encodeURIComponentWithApost(
-                  record.id
-                )}/aspects/dataset-quality-rating`,
-                [
-                  {
-                    op: "add",
-                    path: "/source-link-status",
-                    value: {
-                      score: 1,
-                      weighting: 1
-                    }
-                  }
-                ]
-              )
-              .reply(201);
+        failureCodes =>
+          jsc.suchthat(
+            jsc.integer,
+            int => int >= 0 && int >= failureCodes.length
+          ),
+        (failureCodes, oldRetryCount) => {
+          const arr = [];
+          for (let i = failureCodes.length; i < oldRetryCount; i++) {
+            arr.push(i);
           }
+          return arr;
+        }
+      );
 
-          return onRecordFound(registry, record, 0, failureCodes.length)
-            .then(() => {
-              registryScope.done();
-              distScopes.forEach(scope => scope.done());
-            })
-            .then(() => {
-              afterEachProperty();
-              return true;
-            })
-            .catch(e => {
-              afterEachProperty();
-              throw e;
+      return jsc.assert(
+        jsc.forall(
+          httpOnlyRecordArb,
+          retryCountArb,
+          (record: Record, [failureCodes, retryCount]: [number[], number]) => {
+            beforeEachProperty();
+
+            const registry = new Registry({
+              baseUrl: registryUrl,
+              maxRetries: 0
             });
 
-          // promise.catch(() => {}).then(afterEachProperty);
+            const distScopes = urlsFromRecord(record).map(url => {
+              const scope = nock(url); //.log(console.log);
+
+              failureCodes.forEach(failureCode => {
+                scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
+              });
+              scope.head(url.endsWith("/") ? "/" : "").reply(200);
+              return scope;
+            });
+
+            const allDists =
+              record.aspects["dataset-distributions"].distributions;
+
+            allDists.forEach((dist: Record) => {
+              registryScope
+                .put(
+                  `/records/${encodeURIComponentWithApost(
+                    dist.id
+                  )}/aspects/source-link-status`,
+                  {
+                    status: "active"
+                  }
+                )
+                .reply(201);
+            });
+
+            if (allDists.length > 0) {
+              // console.log(
+              //   `/records/${encodeURIComponentWithApost(
+              //     record.id
+              //   )}/aspects/dataset-quality-rating`
+              // );
+              registryScope
+                .patch(
+                  `/records/${encodeURIComponentWithApost(
+                    record.id
+                  )}/aspects/dataset-quality-rating`,
+                  [
+                    {
+                      op: "add",
+                      path: "/source-link-status",
+                      value: {
+                        score: 1,
+                        weighting: 1
+                      }
+                    }
+                  ]
+                )
+                .reply(201);
+            }
+
+            return onRecordFound(registry, record, 0, retryCount)
+              .then(() => {
+                registryScope.done();
+                distScopes.forEach(scope => scope.done());
+              })
+              .then(() => {
+                afterEachProperty();
+                return true;
+              })
+              .catch(e => {
+                afterEachProperty();
+                throw e;
+              });
+
+            // promise.catch(() => {}).then(afterEachProperty);
+          }
+        ),
+        {
+          // rngState: "8980b5214cf3da6e79",
+          // tests: 1000
+          // quiet: false
         }
-      ),
-      {
-        // rngState: "8980b5214cf3da6e79",
-        // tests: 1000
-        // quiet: false
-      }
-    );
+      );
+    });
+
+    it("Should result in failures if the max number of retries is exceeded", function() {
+      const retryCountArb = arbFlatMap(
+        failureCodeArb,
+        failureCodes =>
+          jsc.suchthat(
+            jsc.integer,
+            int => int >= 0 && int < failureCodes.length
+          ),
+        (newFailureCodes, oldRetryCount) => {
+          const arr = [];
+          for (let i = 0; i < newFailureCodes.length; i++) {
+            arr.push(i);
+          }
+          return arr;
+        }
+      );
+
+      return jsc.assert(
+        jsc.forall(
+          httpOnlyRecordArb,
+          retryCountArb,
+          (record: Record, [failureCodes, retryCount]) => {
+            beforeEachProperty();
+
+            const registry = new Registry({
+              baseUrl: registryUrl,
+              maxRetries: 0
+            });
+
+            const distScopes = urlsFromRecord(record).map(url => {
+              const scope = nock(url); //.log(console.log);
+
+              _(failureCodes).take(retryCount).forEach(failureCode => {
+                scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
+              });
+              return scope;
+            });
+
+            const allDists =
+              record.aspects["dataset-distributions"].distributions;
+
+            allDists.forEach((dist: Record) => {
+              registryScope
+                .put(
+                  `/records/${encodeURIComponentWithApost(
+                    dist.id
+                  )}/aspects/source-link-status`,
+                  {
+                    status: "broken"
+                  }
+                )
+                .reply(201);
+            });
+
+            if (allDists.length > 0) {
+              // console.log(
+              //   `/records/${encodeURIComponentWithApost(
+              //     record.id
+              //   )}/aspects/dataset-quality-rating`
+              // );
+              registryScope
+                .patch(
+                  `/records/${encodeURIComponentWithApost(
+                    record.id
+                  )}/aspects/dataset-quality-rating`,
+                  [
+                    {
+                      op: "add",
+                      path: "/source-link-status",
+                      value: {
+                        score: 0,
+                        weighting: 1
+                      }
+                    }
+                  ]
+                )
+                .reply(201);
+            }
+
+            return onRecordFound(registry, record, 0, retryCount)
+              .then(() => {
+                registryScope.done();
+                distScopes.forEach(scope => scope.done());
+              })
+              .then(() => {
+                afterEachProperty();
+                return true;
+              })
+              .catch(e => {
+                afterEachProperty();
+                throw e;
+              });
+
+            // promise.catch(() => {}).then(afterEachProperty);
+          }
+        ),
+        {
+          // rngState: "8980b5214cf3da6e79",
+          // tests: 1000
+          // quiet: false
+        }
+      );
+    });
   });
 
-  it("Should only try to hit one domain at a time", function() {
+  it("Should only try to make one request per host at a time", function() {
     const httpOrHttps = jsc.sampler(
       jsc.oneof([jsc.constant("http"), jsc.constant("https")])
     )(1);
