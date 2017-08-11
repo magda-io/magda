@@ -1,6 +1,6 @@
 // @flow
 const initialData = {
-  previewData: null,
+  previewData: {},
   isFetching: false,
   error: null,
   url: ''
@@ -9,7 +9,7 @@ const initialData = {
 type previewDataState = {
   isFetching: boolean,
   error: ?number,
-  previewData: ?Object,
+  previewData: Object,
   url: string
 }
 
@@ -27,7 +27,6 @@ const previewDataReducer = (state: previewDataState = initialData, action: previ
         isFetching: true,
         error: null,
         url: action.url,
-        previewData: null
       })
     case 'REQUEST_PREVIEW_DATA_ERROR':
       return Object.assign({}, state, {
@@ -38,7 +37,9 @@ const previewDataReducer = (state: previewDataState = initialData, action: previ
     case 'RECEIVE_PREVIEW_DATA':
       return Object.assign({}, state, {
         isFetching: false,
-        previewData: action.previewData,
+        previewData: Object.assign({}, state.previewData,
+          action.previewData
+        ),
         error: null
       })
     case 'RESET_PREVIEW_DATA':
