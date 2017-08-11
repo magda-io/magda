@@ -3,6 +3,9 @@ import React, { Component } from 'react';
 import VegaLite from 'react-vega-lite';
 import JsonForm from 'react-json';
 
+const VEGAMARK = ['area', 'bar', 'circle', 'line', 'point', 'rect', 'square', 'text', 'tick'];
+
+
 const defaultSpec = {
   "description": "Example data",
   "mark": "bar",
@@ -41,8 +44,10 @@ class DataPreviewVega extends Component {
 
   componentWillMount(){
     const spec = {
+      "width": 600,
+      "height": 200,
       "description": "",
-      "mark": "bar",
+      "mark": "line",
       "encoding": {
         "x": {"field": this.props.data.meta.chartFields.time[0], "type": "temporal"},
         "y": {"field": this.props.data.meta.chartFields.numeric[0], "type": "quantitative"}
@@ -57,23 +62,13 @@ class DataPreviewVega extends Component {
       spec: spec,
       data: data
     })
-    debugger
   }
 
   renderCharts(){
-    debugger
-    const settings = {
-      form: true,
-      fields: {
-        description: {type: 'string'},
-        mark: {type: 'select', settings: {options: ['bar', 'line']}},
-      }
-    }
     return (
       <div className="clearfix">
         <div className='vis row'>
-          <div className="col-sm-4"><JsonForm value={ this.state.spec } onChange={ this.logChange } settings={settings}/></div>
-          <div className="col-sm-8"><VegaLite spec={this.state.spec} data={this.state.data}/></div>
+          <div className="col-sm-12 white-box"><VegaLite spec={this.state.spec} data={this.state.data}/></div>
         </div>
       </div>
       )
