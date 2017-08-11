@@ -1,6 +1,6 @@
 {
   "name": "@magda/discussions-db",
-  "version": "0.0.28",
+  "version": "0.0.29-SNAPSHOT",
   "description": "Magda auth's PostgreSQL database.",
   "scripts": {
     "dev": "echo \"No dev mode available, use `magda-combined-db` instead.\"",
@@ -16,6 +16,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.28"
+    "@magda/scripts": "^0.0.29-SNAPSHOT"
   }
 }

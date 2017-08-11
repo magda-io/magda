@@ -15,7 +15,7 @@ object WebHookActor {
 
   case class Status(isProcessing: Boolean)
 
-  private case class DoneProcessing(result: Map[WebHook, WebHookProcessingResult])
+  private case class DoneProcessing(result: Option[Map[WebHook, WebHookProcessingResult]] = None, exception: Option[Throwable] = None)
 
   private class TheActor extends Actor {
     import context.dispatcher
@@ -32,12 +32,22 @@ object WebHookActor {
         } else {
           this.isProcessing = true
           println("WebHook Processing: STARTING")
-          processor.sendNotifications().map(DoneProcessing(_)).pipeTo(this.self)
+          processor.sendNotifications().map {
+            result => DoneProcessing(Some(result))
+          }.recover {
+            case e => DoneProcessing(None, Some(e))
+          }.pipeTo(this.self)
         }
       }
       case GetStatus => sender() ! Status(this.isProcessing)
-      case DoneProcessing(_) => {
-        println("WebHook Processing: DONE")
+      case DoneProcessing(_, exception) => {
+        if (exception.isEmpty) {
+          println("WebHook Processing: DONE")
+        } else {
+          println("WebHook Processing: FAILED")
+          exception.get.printStackTrace()
+        }
+
         isProcessing = false
         if (this.processAgain) {
           this.processAgain = false

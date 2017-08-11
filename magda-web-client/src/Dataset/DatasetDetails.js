@@ -35,16 +35,15 @@ class DatasetDetails extends Component {
                   </div>
               </div>
 
-              <div className='record-details__sidebar col-sm-4'>
-                  <Social/>
-                  <div className='tags'>
-                    <h5>Tags</h5>
-                    {dataset.tags && dataset.tags.map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
-                  </div>
-              </div>
-              </div>
-          </div>
-  }
+            <div className='record-details__sidebar col-sm-4'>
+                <Social/>
+                <div className='tags'>
+                  <h5>Tags</h5>
+                  {dataset.tags && dataset.tags.map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
+                </div>
+            </div>
+            </div>
+        </div>
 }
 
 function mapStateToProps(state) {

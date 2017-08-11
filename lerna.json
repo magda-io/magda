@@ -30,8 +30,10 @@
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.28",
-  "hoist": ["tsmonad"],
+  "version": "0.0.29-SNAPSHOT",
+  "hoist": [
+    "tsmonad"
+  ],
   "concurrency": "1",
   "commands": {
     "docker-build-prod": {

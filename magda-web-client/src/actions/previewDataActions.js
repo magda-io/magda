@@ -24,7 +24,7 @@ export function receivePreviewData(data: PreviewData) {
   }
 }
 
-export function requestPreviewDataError(error: number){
+export function requestPreviewDataError(error: string){
   return {
     type: actionTypes.REQUEST_PREVIEW_DATA_ERROR,
     error,
@@ -45,7 +45,7 @@ export function fetchPreviewData(distribution){
       // check if we need to fetch
 
       if(!prop){
-        return dispatch(resetPreviewData())
+        return dispatch(requestPreviewDataError("No preview available because the url to access the data is broken"));
       }
 
       if(getState().previewData.isFetching && prop.url === getState().previewData.url){
