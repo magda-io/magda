@@ -7,11 +7,12 @@ import jsc = require("jsverify");
 import Registry from "@magda/typescript-common/dist/Registry";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import * as _ from "lodash";
-import { onRecordFound } from "../src/sleuther";
+import { onRecordFound, BrokenLinkAspect } from "../src/sleuther";
 import {
   specificRecordArb,
   distStringsArb,
-  distUrlArb
+  distUrlArb,
+  arrayOfSizeArb
 } from "@magda/typescript-common/spec/arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util";
 import * as URI from "urijs";
@@ -41,13 +42,20 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     sinon.stub(console, "info");
 
     ftp = setupFtp();
+
+    nock.emitter.on("no match", onMatchFail);
   });
+
+  const onMatchFail = (req: any) => {
+    console.warn("Match failure: " + JSON.stringify(req.path));
+  };
 
   after(() => {
     dns.lookup.restore();
     (console.info as any).restore();
 
     ftp.close();
+    nock.emitter.removeListener("no match", onMatchFail);
   });
 
   const beforeEachProperty = () => {
@@ -247,10 +255,37 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                 `/records/${encodeURIComponentWithApost(
                   dist.id
                 )}/aspects/source-link-status`,
-                {
-                  status: result
-                  // httpStatusCode: () => true,
-                  // errorDetails: () => true
+                (body: BrokenLinkAspect) => {
+                  const statusMatch = body.status === result;
+
+                  const codeMatch = ((code?: number) => {
+                    if (
+                      (successes[downloadURL] &&
+                        downloadURL.startsWith("http")) ||
+                      (!successes[downloadURL] &&
+                        successes[accessURL] &&
+                        accessURL.startsWith("http"))
+                    ) {
+                      return code === 200;
+                    } else if (
+                      result === "broken" &&
+                      ((downloadURL && downloadURL.startsWith("http")) ||
+                        (!downloadURL &&
+                          accessURL &&
+                          accessURL.startsWith("http")))
+                    ) {
+                      return code === 404;
+                    } else {
+                      return _.isUndefined(code);
+                    }
+                  })(body.httpStatusCode);
+
+                  const errorMatch = ((arg?: Error) =>
+                    success ? _.isUndefined(arg) : !_.isUndefined(arg))(
+                    body.errorDetails
+                  );
+
+                  return statusMatch && codeMatch && errorMatch;
                 }
               )
               .reply(201);
@@ -301,7 +336,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         }
       ),
       {
-        // rngState: "8980b5214cf3da6e79",
+        // rngState: "8848e1b5026fcad793",
         tests: 1000
         // quiet: false
       }
@@ -327,12 +362,12 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       })
   );
 
-  const failureCodeArb = jsc.nearray(
-    jsc.oneof([
-      jsc.constant(429),
-      jsc.suchthat(jsc.integer, int => int >= 300 && int <= 600)
-    ])
+  const failureCodeArb = jsc.suchthat(
+    jsc.integer(300, 600),
+    int => int !== 429
   );
+
+  const failureCodesArb = jsc.nearray(failureCodeArb);
 
   function arbFlatMap<T, U>(
     arb: jsc.Arbitrary<T>,
@@ -350,14 +385,12 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       shrink: jsc.shrink.bless(x => {
         const t: T = x[0];
         const u: U = x[1];
-        const y: [T, U][] = arb
-          .shrink(t)
-          .map((smallT: T) =>
-            _.flatMap(
-              shrinker(smallT, u),
-              (smallU: U) => [smallT, smallU] as [T, U]
-            )
-          ) as [T, U][];
+        const y: [T, U][] = arb.shrink(t).map((smallT: T) => {
+          return _.flatMap(
+            shrinker(smallT, u),
+            (smallU: U) => [smallT, smallU] as [T, U]
+          );
+        }) as [T, U][];
 
         return y;
       })
@@ -365,214 +398,140 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   }
 
   describe("retrying", () => {
-    it("Should result in success if the last retry is successful", function() {
-      const retryCountArb = arbFlatMap(
-        failureCodeArb,
-        failureCodes =>
-          jsc.suchthat(
-            jsc.integer,
-            int => int >= 0 && int >= failureCodes.length
-          ),
-        (failureCodes, oldRetryCount) => {
-          const arr = [];
-          for (let i = failureCodes.length; i < oldRetryCount; i++) {
-            arr.push(i);
-          }
-          return arr;
-        }
-      );
+    const retrySpec = (caption: string, success: boolean) => {
+      it(caption, function() {
+        const retryArb = jsc.integer(0, 10);
 
-      return jsc.assert(
-        jsc.forall(
-          httpOnlyRecordArb,
-          retryCountArb,
-          (record: Record, [failureCodes, retryCount]: [number[], number]) => {
-            beforeEachProperty();
-
-            const registry = new Registry({
-              baseUrl: registryUrl,
-              maxRetries: 0
-            });
-
-            const distScopes = urlsFromRecord(record).map(url => {
-              const scope = nock(url); //.log(console.log);
-
-              failureCodes.forEach(failureCode => {
-                scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
-              });
-              scope.head(url.endsWith("/") ? "/" : "").reply(200);
-              return scope;
-            });
-
-            const allDists =
-              record.aspects["dataset-distributions"].distributions;
-
-            allDists.forEach((dist: Record) => {
-              registryScope
-                .put(
-                  `/records/${encodeURIComponentWithApost(
-                    dist.id
-                  )}/aspects/source-link-status`,
-                  {
-                    status: "active"
-                  }
-                )
-                .reply(201);
-            });
-
-            if (allDists.length > 0) {
-              // console.log(
-              //   `/records/${encodeURIComponentWithApost(
-              //     record.id
-              //   )}/aspects/dataset-quality-rating`
-              // );
-              registryScope
-                .patch(
-                  `/records/${encodeURIComponentWithApost(
-                    record.id
-                  )}/aspects/dataset-quality-rating`,
-                  [
-                    {
-                      op: "add",
-                      path: "/source-link-status",
-                      value: {
-                        score: 1,
-                        weighting: 1
-                      }
-                    }
-                  ]
-                )
-                .reply(201);
+        const failuresArb = arbFlatMap(
+          retryArb,
+          retryCount =>
+            arrayOfSizeArb(
+              jsc,
+              success ? retryCount : retryCount + 1,
+              failureCodeArb
+            ),
+          (newRetryCount, oldFailureCodes: number[]) => {
+            const newFailureLengthCount = success
+              ? newRetryCount
+              : newRetryCount + 1;
+            const newFailureCodes: number[][] = [];
+            for (
+              let i = 0;
+              i <= oldFailureCodes.length - newFailureLengthCount;
+              i++
+            ) {
+              newFailureCodes.push(
+                _.slice(oldFailureCodes, i, i + newFailureLengthCount)
+              );
             }
+            return newFailureCodes;
+          }
+        );
 
-            return onRecordFound(registry, record, 0, retryCount)
-              .then(() => {
-                registryScope.done();
-                distScopes.forEach(scope => scope.done());
-              })
-              .then(() => {
-                afterEachProperty();
-                return true;
-              })
-              .catch(e => {
-                afterEachProperty();
-                throw e;
+        return jsc.assert(
+          jsc.forall(
+            httpOnlyRecordArb,
+            failuresArb,
+            (record: Record, [retryCount, failureCodes]) => {
+              beforeEachProperty();
+
+              const registry = new Registry({
+                baseUrl: registryUrl,
+                maxRetries: 0
               });
 
-            // promise.catch(() => {}).then(afterEachProperty);
-          }
-        ),
-        {
-          // rngState: "8980b5214cf3da6e79",
-          // tests: 1000
-          // quiet: false
-        }
-      );
-    });
+              const distScopes = urlsFromRecord(record).map(url => {
+                const scope = nock(url); //.log(console.log);
 
-    it("Should result in failures if the max number of retries is exceeded", function() {
-      const retryCountArb = arbFlatMap(
-        failureCodeArb,
-        failureCodes =>
-          jsc.suchthat(
-            jsc.integer,
-            int => int >= 0 && int < failureCodes.length
-          ),
-        (newFailureCodes, oldRetryCount) => {
-          const arr = [];
-          for (let i = 0; i < newFailureCodes.length; i++) {
-            arr.push(i);
-          }
-          return arr;
-        }
-      );
+                failureCodes.forEach(failureCode => {
+                  scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
+                });
 
-      return jsc.assert(
-        jsc.forall(
-          httpOnlyRecordArb,
-          retryCountArb,
-          (record: Record, [failureCodes, retryCount]) => {
-            beforeEachProperty();
+                if (success) {
+                  scope.head(url.endsWith("/") ? "/" : "").reply(200);
+                }
 
-            const registry = new Registry({
-              baseUrl: registryUrl,
-              maxRetries: 0
-            });
-
-            const distScopes = urlsFromRecord(record).map(url => {
-              const scope = nock(url); //.log(console.log);
-
-              _(failureCodes).take(retryCount).forEach(failureCode => {
-                scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
+                return scope;
               });
-              return scope;
-            });
 
-            const allDists =
-              record.aspects["dataset-distributions"].distributions;
+              const allDists =
+                record.aspects["dataset-distributions"].distributions;
 
-            allDists.forEach((dist: Record) => {
-              registryScope
-                .put(
-                  `/records/${encodeURIComponentWithApost(
-                    dist.id
-                  )}/aspects/source-link-status`,
-                  {
-                    status: "broken"
-                  }
-                )
-                .reply(201);
-            });
+              allDists.forEach((dist: Record) => {
+                registryScope
+                  .put(
+                    `/records/${encodeURIComponentWithApost(
+                      dist.id
+                    )}/aspects/source-link-status`,
+                    (result: any) => {
+                      const statusMatch =
+                        result.status === (success ? "active" : "broken");
+                      const codeMatch =
+                        result.httpStatusCode ===
+                        (success ? 200 : _.last(failureCodes));
 
-            if (allDists.length > 0) {
-              // console.log(
-              //   `/records/${encodeURIComponentWithApost(
-              //     record.id
-              //   )}/aspects/dataset-quality-rating`
-              // );
-              registryScope
-                .patch(
-                  `/records/${encodeURIComponentWithApost(
-                    record.id
-                  )}/aspects/dataset-quality-rating`,
-                  [
-                    {
-                      op: "add",
-                      path: "/source-link-status",
-                      value: {
-                        score: 0,
-                        weighting: 1
-                      }
+                      return statusMatch && codeMatch;
                     }
-                  ]
-                )
-                .reply(201);
-            }
-
-            return onRecordFound(registry, record, 0, retryCount)
-              .then(() => {
-                registryScope.done();
-                distScopes.forEach(scope => scope.done());
-              })
-              .then(() => {
-                afterEachProperty();
-                return true;
-              })
-              .catch(e => {
-                afterEachProperty();
-                throw e;
+                  )
+                  .reply(201);
               });
 
-            // promise.catch(() => {}).then(afterEachProperty);
+              if (allDists.length > 0) {
+                // console.log(
+                //   `/records/${encodeURIComponentWithApost(
+                //     record.id
+                //   )}/aspects/dataset-quality-rating`
+                // );
+                registryScope
+                  .patch(
+                    `/records/${encodeURIComponentWithApost(
+                      record.id
+                    )}/aspects/dataset-quality-rating`,
+                    [
+                      {
+                        op: "add",
+                        path: "/source-link-status",
+                        value: {
+                          score: success ? 1 : 0,
+                          weighting: 1
+                        }
+                      }
+                    ]
+                  )
+                  .reply(201);
+              }
+
+              return onRecordFound(registry, record, 0, retryCount)
+                .then(() => {
+                  registryScope.done();
+                  distScopes.forEach(scope => scope.done());
+                })
+                .then(() => {
+                  afterEachProperty();
+                  return true;
+                })
+                .catch(e => {
+                  afterEachProperty();
+                  throw e;
+                });
+
+              // promise.catch(() => {}).then(afterEachProperty);
+            }
+          ),
+          {
+            rngState: "828caf026d4be91573"
+            // tests: 1000
+            // quiet: false
           }
-        ),
-        {
-          // rngState: "8980b5214cf3da6e79",
-          // tests: 1000
-          // quiet: false
-        }
-      );
-    });
+        );
+      });
+    };
+
+    retrySpec("Should result in success if the last retry is successful", true);
+    retrySpec(
+      "Should result in failures if the max number of retries is exceeded",
+      false
+    );
   });
 
   it("Should only try to make one request per host at a time", function() {
@@ -603,8 +562,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     return jsc.assert(
       jsc.forall(
         thisRecordArb,
-        failureCodeArb,
-        jsc.suchthat(jsc.integer, number => number >= 0 && number <= 100),
+        failureCodesArb,
+        jsc.integer(0, 100),
         (record: Record, failures: number[], delayMs: number) => {
           beforeEachProperty();
 

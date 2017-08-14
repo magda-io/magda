@@ -1,6 +1,8 @@
 ///<reference path="./jsverify.d.ts" />
 import jsverify = require("jsverify");
+const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../dist/generated/registry/api";
+const lazyseq = require("lazy-seq");
 
 function fromCode(code: number) {
   return String.fromCharCode(code);
@@ -28,6 +30,9 @@ type jsc = {
     arb: jsverify.Arbitrary<U>,
     predicate: (u: U) => boolean
   ): jsverify.Arbitrary<U>;
+  shrink: jsverify.ShrinkFunctions;
+  generator: jsverify.GeneratorFunctions;
+  bless<U>(arb: jsverify.ArbitraryLike<U>): jsverify.Arbitrary<U>;
 };
 
 export const lowerCaseAlphaCharArb = ({ integer }: jsc) =>
@@ -73,6 +78,68 @@ type urlArbOptions = {
   schemeArb?: jsverify.Arbitrary<string>;
   hostArb?: jsverify.Arbitrary<string>;
 };
+
+function shrinkArrayWithMinimumSize<T>(
+  jsc: jsc,
+  size: number
+): (x: jsverify.Shrink<T>) => jsverify.Shrink<T[]> {
+  function shrinkArrayImpl(...args: any[]) {
+    const shrink: (x: any) => Array<any> = args[0];
+    const result: any = jsc.shrink.bless(function(arr: Array<any>) {
+      if (arr.length <= size) {
+        return lazyseq.nil;
+      } else {
+        var x = arr[0];
+        var xs = arr.slice(1);
+
+        return lazyseq
+          .cons(xs, lazyseq.nil)
+          .append(
+            shrink(x).map(function(xp: any) {
+              return [xp].concat(xs);
+            })
+          )
+          .append(
+            shrinkArrayImpl(shrink, xs).map(function(xsp: any) {
+              return [x].concat(xsp);
+            })
+          );
+      }
+    });
+
+    return curried2(result, args);
+  }
+
+  return shrinkArrayImpl;
+}
+
+function generateArrayOfSize<T>(
+  jsc: jsc,
+  arrSize: number,
+  gen: jsverify.Generator<T>
+): jsverify.Generator<T[]> {
+  var result = jsc.generator.bless(function(size: number) {
+    var arr = new Array(arrSize);
+    for (var i = 0; i < arrSize; i++) {
+      arr[i] = gen(size);
+    }
+    return arr;
+  });
+
+  return curried2(result, arguments);
+}
+
+export function arrayOfSizeArb<T>(
+  jsc: jsc,
+  size: number,
+  arb: jsverify.Arbitrary<T>
+): jsverify.Arbitrary<T[]> {
+  return jsc.bless<T[]>({
+    generator: generateArrayOfSize(jsc, size, arb.generator),
+    shrink: shrinkArrayWithMinimumSize<T>(jsc, size)(arb.shrink),
+    show: x => x.toString()
+  });
+}
 
 const urlPartsArb = (jsc: jsc, options: urlArbOptions) =>
   jsc

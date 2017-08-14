@@ -45,8 +45,9 @@ export default async function sleuthBrokenLinks() {
 export async function onRecordFound(
   registry: Registry,
   record: Record,
-  maxRetryDelay: number = 1,
-  retries: number = 5
+  baseRetryDelaySeconds: number = 1,
+  retries: number = 5,
+  base429RetryDelaySeconds = 60
 ) {
   const distributions: Record[] =
     record.aspects["dataset-distributions"] &&
@@ -63,7 +64,7 @@ export async function onRecordFound(
       checkDistributionLink(
         distribution,
         distribution.aspects["dcat-distribution-strings"],
-        maxRetryDelay,
+        baseRetryDelaySeconds,
         retries
       )
   );
@@ -103,6 +104,12 @@ export async function onRecordFound(
     .values()
     .map((results: BrokenLinkSleuthingResult[]) =>
       _(results)
+        .sortBy(result => {
+          return (
+            { none: 1, downloadURL: 2, accessURL: 3 }[result.urlType] ||
+            Number.MAX_VALUE
+          );
+        })
         .sortBy(result => {
           return (
             { active: 1, unknown: 2, broken: 3 }[result.aspect.status] ||
@@ -188,13 +195,24 @@ type DistributionLinkCheck = {
 function checkDistributionLink(
   distribution: Record,
   distStringsAspect: any,
-  maxRetryDelay: number,
+  baseRetryDelay: number,
   retries: number
 ): DistributionLinkCheck[] {
-  const urls = [
-    distStringsAspect.downloadURL,
-    distStringsAspect.accessURL
-  ].filter(x => !!x);
+  type DistURL = {
+    url?: string;
+    type: "downloadURL" | "accessURL";
+  };
+
+  const urls: DistURL[] = [
+    {
+      url: distStringsAspect.downloadURL as string,
+      type: "downloadURL" as "downloadURL"
+    },
+    {
+      url: distStringsAspect.accessURL as string,
+      type: "accessURL" as "accessURL"
+    }
+  ].filter(x => !!x.url);
 
   if (urls.length === 0) {
     return [
@@ -202,8 +220,10 @@ function checkDistributionLink(
         op: () =>
           Promise.resolve({
             distribution,
+            urlType: "none" as "none",
             aspect: {
-              status: "broken" as "broken"
+              status: "broken" as RetrieveResult,
+              errorDetails: new Error("No distribution urls to check.")
             }
           })
       }
@@ -211,55 +231,60 @@ function checkDistributionLink(
   }
 
   return urls.map(url => {
-    const parsedURL = new URI(url);
+    const parsedURL = new URI(url.url);
     return {
       host: (parsedURL && parsedURL.host()) as string,
       op: () =>
-        retrieve(parsedURL, maxRetryDelay, retries)
-          .then(result => ({
+        retrieve(parsedURL, baseRetryDelay, retries)
+          .then(aspect => ({
             distribution,
-            aspect: {
-              status: result
-            }
+            urlType: url.type,
+            aspect
           }))
           .catch(err => ({
             distribution,
+            urlType: url.type,
             aspect: {
-              status: "broken" as "broken"
+              status: "broken" as RetrieveResult,
+              errorDetails: err
             }
           })) as Promise<BrokenLinkSleuthingResult>
     };
   });
 }
 
-type RetrieveResult = "active" | "unknown";
 function retrieve(
   parsedURL: uri.URI,
-  maxRetryDelay: number,
+  baseRetryDelay: number,
   retries: number
-): Promise<RetrieveResult> {
+): Promise<BrokenLinkAspect> {
   if (parsedURL.protocol() === "http" || parsedURL.protocol() === "https") {
-    return retrieveHttp(parsedURL.toString(), maxRetryDelay, retries);
+    return retrieveHttp(parsedURL.toString(), baseRetryDelay, retries);
   } else if (parsedURL.protocol() === "ftp") {
     return retrieveFtp(parsedURL);
   } else {
     console.info(`Unrecognised URL: ${parsedURL.toString()}`);
-    return Promise.resolve("unknown" as "unknown");
+    return Promise.resolve({
+      status: "unknown" as "unknown",
+      errorDetails: new Error(
+        "Could not check protocol " + parsedURL.protocol()
+      )
+    });
   }
 }
 
-function retrieveFtp(parsedURL: uri.URI): Promise<RetrieveResult> {
+function retrieveFtp(parsedURL: uri.URI): Promise<BrokenLinkAspect> {
   const port = +(parsedURL.port() || 21);
   const pClient = FTPHandler.getClient(parsedURL.hostname(), port);
   return pClient.then(client => {
-    return new Promise<RetrieveResult>((resolve, reject) => {
+    return new Promise<BrokenLinkAspect>((resolve, reject) => {
       client.list(parsedURL.path(), (err, list) => {
         if (err) {
           reject(err);
         } else if (list.length === 0) {
           reject(new Error(`File "${parsedURL.toString()}" not found`));
         } else {
-          resolve("active" as "active");
+          resolve({ status: "active" as "active" });
         }
       });
     });
@@ -270,22 +295,23 @@ function retrieveFtp(parsedURL: uri.URI): Promise<RetrieveResult> {
  * Retrieves an HTTP/HTTPS url
  * 
  * @param url The url to retrieve
- * @param delaySeconds429 How long to wait before trying again if a 429 Too Many Requests status is encountered.
  */
 function retrieveHttp(
   url: string,
-  maxRetryDelay: number,
-  retries: number,
-  delaySeconds429: number = 10
-): Promise<RetrieveResult> {
-  const operation = () => {
+  baseRetryDelay: number,
+  retries: number
+): Promise<BrokenLinkAspect> {
+  const operation: () => Promise<number> = () => {
     return new Promise((resolve, reject) =>
       request.head(url, (err: Error, response: http.IncomingMessage) => {
         if (err) {
           reject(err);
         } else {
-          if (response.statusCode >= 200 && response.statusCode <= 299) {
-            resolve();
+          if (
+            (response.statusCode >= 200 && response.statusCode <= 299) ||
+            response.statusCode === 429
+          ) {
+            resolve(response.statusCode);
           } else {
             reject(
               new BadHttpResponseError(
@@ -300,37 +326,45 @@ function retrieveHttp(
     );
   };
 
-  return retryBackoff(operation, maxRetryDelay, retries, (err, retries) => {
+  const onRetry = (err: BadHttpResponseError, retries: number) => {
     console.info(
-      `Downloading ${url} failed: ${err.errorDetails ||
-        err.httpStatusCode ||
+      `Downloading ${url} failed: ${err.httpStatusCode ||
         err} (${retries} retries remaining)`
     );
-  })
-    .then(() => "active" as "active")
-    .catch((err: any) => {
-      if (err.httpStatusCode === 429) {
-        if (delaySeconds429 < 3600) {
-          console.info(
-            `429 rate limit detected for ${url}, waiting ${delaySeconds429} seconds`
-          );
-          return new Promise<RetrieveResult>(resolve =>
-            setTimeout(
-              () =>
-                resolve(retrieveHttp(url, delaySeconds429 * 10, retries - 1)),
-              delaySeconds429
-            )
-          );
+  };
+
+  const innerOp = () =>
+    retryBackoff(operation, baseRetryDelay, retries, onRetry);
+
+  const outerOp: () => Promise<BrokenLinkAspect> = () =>
+    innerOp().then(
+      code => {
+        if (code === 429) {
+          throw new Error();
         } else {
-          console.warn(
-            `Could not resolve ${url} even after waiting for ${delaySeconds429} seconds`
-          );
-          throw err;
+          return { status: "active" as "active", httpStatusCode: code };
         }
-      } else {
-        throw err;
+      },
+      error => {
+        return {
+          status: "broken" as "broken",
+          httpStatusCode: error.httpStatusCode,
+          errorDetails: error
+        };
       }
-    });
+    );
+
+  return retryBackoff(
+    outerOp,
+    baseRetryDelay,
+    retries,
+    onRetry,
+    (x: number) => x * 5
+  ).catch(err => ({
+    status: "unknown" as "unknown",
+    errorDetails: err,
+    httpStatusCode: 429
+  }));
 }
 
 class BadHttpResponseError extends Error {
@@ -393,10 +427,13 @@ namespace FTPHandler {
 interface BrokenLinkSleuthingResult {
   distribution: Record;
   aspect?: BrokenLinkAspect;
+  urlType: "downloadURL" | "accessURL" | "none";
 }
 
-interface BrokenLinkAspect {
-  status: RetrieveResult | "broken";
+export type RetrieveResult = "active" | "unknown" | "broken";
+
+export interface BrokenLinkAspect {
+  status: RetrieveResult;
   httpStatusCode?: number;
   errorDetails?: any;
 }
