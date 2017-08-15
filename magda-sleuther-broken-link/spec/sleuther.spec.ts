@@ -372,27 +372,19 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   function arbFlatMap<T, U>(
     arb: jsc.Arbitrary<T>,
     arbForward: (t: T) => jsc.Arbitrary<U>,
-    shrinker: (t: T, u: U) => U[],
-    show: (arr: [T, U]) => string = arr => arr.toString()
-  ): jsc.Arbitrary<[T, U]> {
-    return jsc.bless<[T, U]>({
+    backwards: (u: U) => T,
+    show: (u: U) => string = u => u.toString()
+  ): jsc.Arbitrary<U> {
+    return jsc.bless<U>({
       generator: arb.generator.flatmap((t: T) => {
-        return arbForward(t).generator.map(
-          (result: U) => [t, result] as [T, U]
-        );
+        return arbForward(t).generator;
       }),
       show,
-      shrink: jsc.shrink.bless(x => {
-        const t: T = x[0];
-        const u: U = x[1];
-        const y: [T, U][] = arb.shrink(t).map((smallT: T) => {
-          return _.flatMap(
-            shrinker(smallT, u),
-            (smallU: U) => [smallT, smallU] as [T, U]
-          );
-        }) as [T, U][];
+      shrink: jsc.shrink.bless((u: U) => {
+        const t = backwards(u);
+        const arb = arbForward(t);
 
-        return y;
+        return arb.shrink(u);
       })
     });
   }
@@ -402,29 +394,24 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       it(caption, function() {
         const retryArb = jsc.integer(0, 10);
 
-        const failuresArb = arbFlatMap(
+        type FailuresArbResult = {
+          retryCount: number;
+          failureCodes: number[];
+        };
+
+        const failuresArb = arbFlatMap<number, FailuresArbResult>(
           retryArb,
-          retryCount =>
+          (retryCount: number) =>
             arrayOfSizeArb(
               jsc,
               success ? retryCount : retryCount + 1,
               failureCodeArb
+            ).smap<FailuresArbResult>(
+              (failureCodes: number[]) => ({ retryCount, failureCodes }),
+              ({ retryCount, failureCodes }: FailuresArbResult) => failureCodes
             ),
-          (newRetryCount, oldFailureCodes: number[]) => {
-            const newFailureLengthCount = success
-              ? newRetryCount
-              : newRetryCount + 1;
-            const newFailureCodes: number[][] = [];
-            for (
-              let i = 0;
-              i <= oldFailureCodes.length - newFailureLengthCount;
-              i++
-            ) {
-              newFailureCodes.push(
-                _.slice(oldFailureCodes, i, i + newFailureLengthCount)
-              );
-            }
-            return newFailureCodes;
+          ({ retryCount, failureCodes }: FailuresArbResult) => {
+            return retryCount;
           }
         );
 
@@ -432,7 +419,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           jsc.forall(
             httpOnlyRecordArb,
             failuresArb,
-            (record: Record, [retryCount, failureCodes]) => {
+            (
+              record: Record,
+              { retryCount, failureCodes }: FailuresArbResult
+            ) => {
               beforeEachProperty();
 
               const registry = new Registry({
