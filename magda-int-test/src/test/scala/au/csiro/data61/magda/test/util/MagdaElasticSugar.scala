@@ -8,13 +8,19 @@ import com.sksamuel.elastic4s.embedded.LocalNode
 import com.sksamuel.elastic4s.testkit.LocalNodeProvider
 import com.sksamuel.elastic4s.testkit.SharedElasticSugar
 import org.scalatest.Suite
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse
+import com.sksamuel.elastic4s.Indexes
 
 trait MagdaElasticSugar extends SharedElasticSugar {
   this: Suite with LocalNodeProvider =>
 
   override def getNode: LocalNode = ClassloaderLocalNodeProvider.node
 
-  implicit val defaultTimeout: Duration = 60 seconds
+  override def refresh(indexes: Indexes): RefreshResponse = {
+    client.execute {
+      refreshIndex(indexes)
+    }.await(60 seconds)
+  }
 }
 object ClassloaderLocalNodeProvider {
   lazy val node = {
