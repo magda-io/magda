@@ -33,7 +33,7 @@ const jsPackages = lernaJson.packages
   })
   .filter(packageName => webPackages.indexOf(packageName) === -1);
 
-const commands = ["bootstrap", "build", "test"];
+const commands = ["bootstrap", "run build", "run test"];
 
 commands.forEach(command => {
   const result = childProcess.spawnSync(
@@ -42,8 +42,7 @@ commands.forEach(command => {
       ...jsPackages.map(package => "--scope " + package),
       "--concurrency",
       "4",
-      "run",
-      "bootstrap"
+      command
     ],
     {
       stdio: ["pipe", "inherit", "inherit"],
