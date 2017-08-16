@@ -113,6 +113,44 @@ function shrinkArrayWithMinimumSize<T>(
   return shrinkArrayImpl;
 }
 
+type MonadicArb<T> = jsverify.Arbitrary<T> & {
+  flatMap<U>(
+    arbForward: (t: T) => jsverify.Arbitrary<U>,
+    backwards: (u: U) => T
+  ): MonadicArb<U>;
+};
+
+export function arbFlatMap<T, U>(
+  jsc: jsc,
+  arb: jsverify.Arbitrary<T>,
+  arbForward: (t: T) => jsverify.Arbitrary<U>,
+  backwards: (u: U) => T,
+  show: (u: U) => string = u => JSON.stringify(u)
+): MonadicArb<U> {
+  const x = jsc.bless<U>({
+    generator: arb.generator.flatmap((t: T) => {
+      return arbForward(t).generator;
+    }),
+    show,
+    shrink: jsc.shrink.bless((u: U) => {
+      const t = backwards(u);
+      const arb = arbForward(t);
+
+      return arb.shrink(u);
+    })
+  });
+
+  return {
+    ...x,
+    flatMap<V>(
+      arbForward: (u: U) => jsverify.Arbitrary<V>,
+      backwards: (v: V) => U
+    ): MonadicArb<V> {
+      return arbFlatMap<U, V>(jsc, x, arbForward, backwards);
+    }
+  };
+}
+
 function generateArrayOfSize<T>(
   jsc: jsc,
   arrSize: number,
@@ -167,12 +205,12 @@ const urlPartsArb = (jsc: jsc, options: urlArbOptions) =>
 
 export const distUrlArb = (
   jsc: jsc,
-  options: urlArbOptions = {
-    schemeArb: defaultSchemeArb(jsc),
-    hostArb: lcAlphaNumStringArbNe(jsc)
-  }
+  {
+    schemeArb = defaultSchemeArb(jsc),
+    hostArb = lcAlphaNumStringArbNe(jsc)
+  }: urlArbOptions = {}
 ) =>
-  urlPartsArb(jsc, options).smap(
+  urlPartsArb(jsc, { schemeArb, hostArb }).smap(
     urlParts =>
       `${urlParts.scheme}://${urlParts.host}.com:${urlParts.port}/${(urlParts.path ||
         [])
@@ -191,9 +229,12 @@ export const distUrlArb = (
 
 export const distStringsArb = (
   jsc: jsc,
-  customDistUrlArb: jsverify.Arbitrary<String> = distUrlArb(jsc)
+  customDistUrlArb: jsverify.Arbitrary<String> = jsc.oneof([
+    distUrlArb(jsc),
+    jsc.constant(undefined)
+  ])
 ) =>
   jsc.record({
-    downloadURL: jsc.oneof([customDistUrlArb, jsc.constant(undefined)]),
-    accessURL: jsc.oneof([customDistUrlArb, jsc.constant(undefined)])
+    downloadURL: customDistUrlArb,
+    accessURL: customDistUrlArb
   });

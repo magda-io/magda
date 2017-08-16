@@ -276,6 +276,7 @@ function retrieve(
 function retrieveFtp(parsedURL: uri.URI): Promise<BrokenLinkAspect> {
   const port = +(parsedURL.port() || 21);
   const pClient = FTPHandler.getClient(parsedURL.hostname(), port);
+
   return pClient.then(client => {
     return new Promise<BrokenLinkAspect>((resolve, reject) => {
       client.list(parsedURL.path(), (err, list) => {
@@ -340,7 +341,7 @@ function retrieveHttp(
     innerOp().then(
       code => {
         if (code === 429) {
-          throw new Error();
+          throw new Error("429 encountered");
         } else {
           return { status: "active" as "active", httpStatusCode: code };
         }
@@ -416,7 +417,8 @@ namespace FTPHandler {
       console.info(`Attempting to connect to host: ${host}, port: ${port}`);
       client.connect({
         host,
-        port
+        port,
+        keepalive: 0
       });
       lru.set(`${host}:${port}`, pClient);
       return pClient;

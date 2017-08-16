@@ -12,7 +12,8 @@ import {
   specificRecordArb,
   distStringsArb,
   distUrlArb,
-  arrayOfSizeArb
+  arrayOfSizeArb,
+  arbFlatMap
 } from "@magda/typescript-common/spec/arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util";
 import * as URI from "urijs";
@@ -22,7 +23,7 @@ const dns = require("dns");
 const KNOWN_PROTOCOLS = ["https", "http", "ftp"];
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
-  this.timeout(10000);
+  this.timeout(60000);
   nock.disableNetConnect();
   const registryUrl = "http://example.com";
   let registryScope: nock.Scope;
@@ -31,6 +32,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   before(() => {
     const originalDns = dns.lookup;
 
+    // Set up an FTP server that will respond in line with test data.
+    ftp = setupFtp();
+
+    // Mess with node DNS so that a call to any host that starts with FTP actually gets resolved to our local FTP server.
     sinon.stub(dns, "lookup").callsFake((hostname, options, callback) => {
       if (hostname.startsWith("ftp")) {
         callback(null, "127.0.0.1", 4);
@@ -41,13 +46,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
     sinon.stub(console, "info");
 
-    ftp = setupFtp();
-
     nock.emitter.on("no match", onMatchFail);
   });
 
   const onMatchFail = (req: any) => {
-    console.warn("Match failure: " + JSON.stringify(req.path));
+    console.error("Match failure: " + JSON.stringify(req.path));
   };
 
   after(() => {
@@ -66,6 +69,9 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     nock.cleanAll();
   };
 
+  /**
+   * Generates records with distributions.
+   */
   const recordArb = (distUrlArb?: jsc.Arbitrary<String>) =>
     specificRecordArb(jsc)({
       "dataset-distributions": jsc.record({
@@ -86,7 +92,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
   const defaultRecordArb = recordArb();
 
-  function urlsFromRecord(record: Record): string[] {
+  /**
+   * Gets an array of the individual urls from every distribution inside a dataset record, including both downloadURL and accessURL.
+   */
+  function urlsFromDataSet(record: Record): string[] {
     return _(record.aspects["dataset-distributions"].distributions)
       .map((dist: any) => dist.aspects["dcat-distribution-strings"])
       .flatMap(_.values)
@@ -94,80 +103,66 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       .value();
   }
 
+  /**
+   * Generates a record along with a map of every distribution URL to whether 
+   * or not it should successfully return.
+   */
   const recordArbWithSuccesses: jsc.Arbitrary<{
     record: Record;
     successes: object;
-  }> = jsc.bless({
-    generator: defaultRecordArb.generator.flatmap(record => {
-      const urls: any[] = _(urlsFromRecord(record))
+  }> = arbFlatMap(
+    jsc,
+    defaultRecordArb,
+    (record: Record) => {
+      const urls: any[] = _(urlsFromDataSet(record))
         .filter(url => KNOWN_PROTOCOLS.indexOf(URI(url).scheme()) >= 0)
         .uniq()
         .value();
 
-      const gens: jsc.Generator<boolean>[] = urls.map(() => jsc.bool.generator);
+      const gens: jsc.Arbitrary<boolean>[] = urls.map(() => jsc.bool);
 
-      const gen = jsc.generator.tuple(gens);
+      const gen = gens.length > 0 ? jsc.tuple(gens) : jsc.constant([]);
 
-      return gen.map(successfulArr => {
-        const successes = urls.reduce((soFar, current, index) => {
-          soFar[current] = successfulArr[index];
-          return soFar;
-        }, {});
+      return gen.smap(
+        successfulArr => {
+          const successes = urls.reduce((soFar, current, index) => {
+            soFar[current] = successfulArr[index];
+            return soFar;
+          }, {});
 
-        return { record, successes };
-      });
-    }),
+          return { record, successes };
+        },
+        ({ record, successes }) =>
+          urlsFromDataSet(record).map(url => successes[url])
+      );
+    },
+    ({ record, successes }) => record
+  );
 
-    show: ({ record, successes }: { record: Record; successes: object }) =>
-      defaultRecordArb.show(record) + " and " + JSON.stringify(successes),
-
-    shrink: jsc.shrink.bless(
-      ({ record, successes }: { record: Record; successes: object }) => {
-        const records = defaultRecordArb.shrink(record);
-
-        return records.map(record => {
-          const urls = _.uniq(urlsFromRecord(record));
-
-          const after = {
-            record,
-            successes: _.pickBy(
-              successes,
-              (value: boolean, key: string) => urls.indexOf(key) >= 0
-            )
-          };
-
-          return after;
-        });
-      }
-    )
-  });
-
+  /**
+   * recordArbWithSuccesses, but ensures that no ftp:// paths are duplicated, 
+   * as that confuses our fake FTP server which only has a map of paths and 
+   * whether or not to return a successful match for each.
+   */
   const recordArbWithSuccessesNoDupFtpPaths = jsc.suchthat(
     recordArbWithSuccesses,
-    (result: any) => {
-      const ftpPaths = _(
-        result.record.aspects["dataset-distributions"].distributions
-      )
-        .map((dist: any) => dist.aspects["dcat-distribution-strings"])
-        .flatMap(_.values)
-        .filter(x => !!x)
+    ({ record, successes }) => {
+      const ftpPaths = _(urlsFromDataSet(record))
         .filter((x: string) => x.startsWith("ftp"))
         .map(url => new URI(url).path())
         .value();
-
-      // console.log(
-      //   "FTP Paths: " +
-      //     _.uniq(ftpPaths) +
-      //     "|" +
-      //     ftpPaths +
-      //     "... " +
-      //     _.isEqual(_.uniq(ftpPaths), ftpPaths)
-      // );
 
       return _.isEqual(_.uniq(ftpPaths), ftpPaths);
     }
   );
 
+  /**
+   * Generator-driven super-test: generates records and runs them through the
+   * onRecordFound function, listening for HTTP and FTP calls made and returning
+   * success or failure based on generated outcomes, then checks that they're
+   * recorded on a by-distribution basis as link status as well as on a by-record
+   * basis as a part of dataset quality.
+   */
   it("Should correctly record link statuses and quality", function() {
     return jsc.assert(
       jsc.forall(
@@ -181,6 +176,9 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         }) => {
           beforeEachProperty();
 
+          // Tell the FTP server to return success/failure for the various FTP
+          // paths with this dodgy method. Note that because the FTP server can
+          // only see paths and not host, we only send it the path of the req.
           ftp.successes = _(successes)
             .pickBy((value, url) => url.startsWith("ftp"))
             .mapKeys((value: boolean, url: string) => new URI(url).path())
@@ -189,13 +187,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           const allDists =
             record.aspects["dataset-distributions"].distributions;
 
-          const allDistStrings = _(allDists)
-            .map((dist: any) => dist.aspects["dcat-distribution-strings"])
-            .value();
-
-          const httpDistUrls = _(allDistStrings)
-            .flatMap(_.values)
-            .filter(x => !!x)
+          const httpDistUrls = _(urlsFromDataSet(record))
             .filter((x: string) => x.startsWith("http"))
             .map((url: string) => ({
               url,
@@ -203,6 +195,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             }))
             .value();
 
+          // Set up a nock scope for every HTTP URL - the sleuther will actually
+          // attempt to download these but it'll be intercepted by nock.
           const distScopes = httpDistUrls.map(
             ({ url, success }: { url: string; success: boolean }) =>
               nock(url)
@@ -227,25 +221,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             const downloadUnknown = isUnknownProtocol(downloadURL);
             const accessUnknown = isUnknownProtocol(accessURL);
 
-            // console.log(
-            //   "unknowns: " +
-            //     downloadURL +
-            //     ":" +
-            //     downloadUnknown +
-            //     "/" +
-            //     accessURL +
-            //     ":" +
-            //     accessUnknown
-            // );
-
-            // console.log(
-            //   `expecting PUT /records/${encodeURIComponentWithApost(
-            //     dist.id
-            //   )}/aspects/source-link-status` +
-            //     ": " +
-            //     (success ? "active" : "broken")
-            // );
-
             const result = success
               ? "active"
               : downloadUnknown || accessUnknown ? "unknown" : "broken";
@@ -256,36 +231,40 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                   dist.id
                 )}/aspects/source-link-status`,
                 (body: BrokenLinkAspect) => {
-                  const statusMatch = body.status === result;
+                  const doesStatusMatch = body.status === result;
 
-                  const codeMatch = ((code?: number) => {
-                    if (
-                      (successes[downloadURL] &&
-                        downloadURL.startsWith("http")) ||
-                      (!successes[downloadURL] &&
-                        successes[accessURL] &&
-                        accessURL.startsWith("http"))
-                    ) {
+                  const isHttpSuccess =
+                    (successes[downloadURL] &&
+                      downloadURL.startsWith("http")) ||
+                    (!successes[downloadURL] &&
+                      successes[accessURL] &&
+                      accessURL.startsWith("http"));
+
+                  const isHttpFailure =
+                    result === "broken" &&
+                    ((downloadURL && downloadURL.startsWith("http")) ||
+                      (!downloadURL &&
+                        accessURL &&
+                        accessURL.startsWith("http")));
+
+                  const doesResponseCodeMatch = ((code?: number) => {
+                    if (isHttpSuccess) {
                       return code === 200;
-                    } else if (
-                      result === "broken" &&
-                      ((downloadURL && downloadURL.startsWith("http")) ||
-                        (!downloadURL &&
-                          accessURL &&
-                          accessURL.startsWith("http")))
-                    ) {
+                    } else if (isHttpFailure) {
                       return code === 404;
                     } else {
                       return _.isUndefined(code);
                     }
                   })(body.httpStatusCode);
 
-                  const errorMatch = ((arg?: Error) =>
+                  const doesErrorMatch = ((arg?: Error) =>
                     success ? _.isUndefined(arg) : !_.isUndefined(arg))(
                     body.errorDetails
                   );
 
-                  return statusMatch && codeMatch && errorMatch;
+                  return (
+                    doesStatusMatch && doesResponseCodeMatch && doesErrorMatch
+                  );
                 }
               )
               .reply(201);
@@ -294,6 +273,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           });
 
           if (allDists.length > 0) {
+            const expectedQualityScore =
+              results.filter((result: string) => result === "active").length /
+              allDists.length;
+
             registryScope
               .patch(
                 `/records/${encodeURIComponentWithApost(
@@ -304,9 +287,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                     op: "add",
                     path: "/source-link-status",
                     value: {
-                      score:
-                        results.filter((result: string) => result === "active")
-                          .length / allDists.length,
+                      score: expectedQualityScore,
                       weighting: 1
                     }
                   }
@@ -336,16 +317,27 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         }
       ),
       {
-        // rngState: "8848e1b5026fcad793",
-        tests: 1000
-        // quiet: false
+        // rngState: "092b7e0365c8da4f19",
+        tests: 500
       }
     );
   });
 
+  /**
+   * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with
+   * at least one distribution per dataset and with at least one valid url per
+   * distribution, for testing retries.
+   */
   const httpOnlyRecordArb = jsc.suchthat(
-    defaultRecordArb,
-    (record: Record) =>
+    recordArb(
+      jsc.oneof([
+        jsc.constant(undefined),
+        distUrlArb(jsc, {
+          schemeArb: jsc.oneof([jsc.constant("http"), jsc.constant("https")])
+        })
+      ])
+    ),
+    record =>
       record.aspects["dataset-distributions"].distributions.length > 1 &&
       record.aspects[
         "dataset-distributions"
@@ -362,55 +354,100 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       })
   );
 
+  /** 
+   * Generates a failing HTTP code at random, excepting 429 because that
+   * triggers different behaviour.
+   */
   const failureCodeArb = jsc.suchthat(
     jsc.integer(300, 600),
     int => int !== 429
   );
 
-  const failureCodesArb = jsc.nearray(failureCodeArb);
-
-  function arbFlatMap<T, U>(
-    arb: jsc.Arbitrary<T>,
-    arbForward: (t: T) => jsc.Arbitrary<U>,
-    backwards: (u: U) => T,
-    show: (u: U) => string = u => u.toString()
-  ): jsc.Arbitrary<U> {
-    return jsc.bless<U>({
-      generator: arb.generator.flatmap((t: T) => {
-        return arbForward(t).generator;
-      }),
-      show,
-      shrink: jsc.shrink.bless((u: U) => {
-        const t = backwards(u);
-        const arb = arbForward(t);
-
-        return arb.shrink(u);
-      })
-    });
-  }
-
   describe("retrying", () => {
-    const retrySpec = (caption: string, success: boolean) => {
+    /**
+     * Runs onRecordFound with a number of failing codes, testing whether the
+     * sleuther retries the correct number of times, and whether it correctly
+     * records a success after retries or a failure after the retries run out.
+     * 
+     * This tests both 429 retries and other retries - this involves different
+     * behaviour as the retry for 429 (which indicates rate limiting) require
+     * a much longer cool-off time and hence are done differently.
+     * 
+     * @param caption The caption to use for the mocha "it" call.
+     * @param result Whether to test for a number of retries then a success, a
+     *                number of retries then a failure because of too many 429s,
+     *                or a number of retries then a failure because of too many
+     *                non-429 failures (e.g. 404s)
+     */
+    const retrySpec = (
+      caption: string,
+      result: "success" | "fail429" | "failNormal"
+    ) => {
       it(caption, function() {
-        const retryArb = jsc.integer(0, 10);
+        const retryCountArb = jsc.integer(0, 5);
 
         type FailuresArbResult = {
           retryCount: number;
-          failureCodes: number[];
+          allResults: number[][];
         };
 
-        const failuresArb = arbFlatMap<number, FailuresArbResult>(
-          retryArb,
-          (retryCount: number) =>
-            arrayOfSizeArb(
+        /**
+         * Generates a retryCount and a nested array of results to return to the
+         * sleuther - the inner arrays are status codes to be returned (in order),
+         * after each inner array is finished a 429 will be returned, then the 
+         * next array of error codes will be returned.
+         */
+        const failuresArb: jsc.Arbitrary<FailuresArbResult> = arbFlatMap<
+          number,
+          FailuresArbResult
+        >(
+          jsc,
+          retryCountArb,
+          (retryCount: number) => {
+            /** Generates how many 429 codes will be returned */
+            const count429Arb =
+              result === "fail429"
+                ? jsc.constant(retryCount)
+                : jsc.integer(0, retryCount);
+
+            /** Generates how long the array of non-429 failures should be. */
+            const failureCodeLengthArb = jsc.integer(0, retryCount);
+
+            const allResultsArb = arbFlatMap<number, number[]>(
               jsc,
-              success ? retryCount : retryCount + 1,
-              failureCodeArb
-            ).smap<FailuresArbResult>(
-              (failureCodes: number[]) => ({ retryCount, failureCodes }),
-              ({ retryCount, failureCodes }: FailuresArbResult) => failureCodes
-            ),
-          ({ retryCount, failureCodes }: FailuresArbResult) => {
+              count429Arb,
+              count429s =>
+                arrayOfSizeArb(jsc, count429s + 1, failureCodeLengthArb),
+              (failureCodeArr: number[]) => failureCodeArr.length
+            ).flatMap<number[][]>(
+              (failureCodeArrSizes: number[]) => {
+                const failureCodeArbs = failureCodeArrSizes.map(size =>
+                  arrayOfSizeArb(jsc, size, failureCodeArb)
+                );
+
+                if (result === "failNormal") {
+                  failureCodeArbs[failureCodeArbs.length - 1] = arrayOfSizeArb(
+                    jsc,
+                    retryCount + 1,
+                    failureCodeArb
+                  );
+                }
+
+                return failureCodeArrSizes.length > 0
+                  ? jsc.tuple(failureCodeArbs)
+                  : jsc.constant([]);
+              },
+              failures => failures.map(inner => inner.length)
+            );
+
+            const combined = jsc.record<FailuresArbResult>({
+              retryCount: jsc.constant(retryCount),
+              allResults: allResultsArb
+            });
+
+            return combined;
+          },
+          ({ retryCount }: FailuresArbResult) => {
             return retryCount;
           }
         );
@@ -419,25 +456,26 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           jsc.forall(
             httpOnlyRecordArb,
             failuresArb,
-            (
-              record: Record,
-              { retryCount, failureCodes }: FailuresArbResult
-            ) => {
+            (record: Record, { retryCount, allResults }: FailuresArbResult) => {
               beforeEachProperty();
-
               const registry = new Registry({
                 baseUrl: registryUrl,
                 maxRetries: 0
               });
 
-              const distScopes = urlsFromRecord(record).map(url => {
+              const distScopes = urlsFromDataSet(record).map(url => {
                 const scope = nock(url); //.log(console.log);
 
-                failureCodes.forEach(failureCode => {
-                  scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
+                allResults.forEach((failureCodes, i) => {
+                  failureCodes.forEach(failureCode => {
+                    scope.head(url.endsWith("/") ? "/" : "").reply(failureCode);
+                  });
+                  if (i < allResults.length - 1 || result === "fail429") {
+                    scope.head(url.endsWith("/") ? "/" : "").reply(429);
+                  }
                 });
 
-                if (success) {
+                if (result === "success") {
                   scope.head(url.endsWith("/") ? "/" : "").reply(200);
                 }
 
@@ -453,12 +491,22 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                     `/records/${encodeURIComponentWithApost(
                       dist.id
                     )}/aspects/source-link-status`,
-                    (result: any) => {
+                    (response: any) => {
                       const statusMatch =
-                        result.status === (success ? "active" : "broken");
+                        response.status ===
+                        {
+                          success: "active",
+                          failNormal: "broken",
+                          fail429: "unknown"
+                        }[result];
                       const codeMatch =
-                        result.httpStatusCode ===
-                        (success ? 200 : _.last(failureCodes));
+                        !_.isUndefined(response.httpStatusCode) &&
+                        response.httpStatusCode ===
+                          {
+                            success: 200,
+                            failNormal: _.last(_.last(allResults)),
+                            fail429: 429
+                          }[result];
 
                       return statusMatch && codeMatch;
                     }
@@ -467,11 +515,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
               });
 
               if (allDists.length > 0) {
-                // console.log(
-                //   `/records/${encodeURIComponentWithApost(
-                //     record.id
-                //   )}/aspects/dataset-quality-rating`
-                // );
                 registryScope
                   .patch(
                     `/records/${encodeURIComponentWithApost(
@@ -482,7 +525,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         op: "add",
                         path: "/source-link-status",
                         value: {
-                          score: success ? 1 : 0,
+                          score: result === "success" ? 1 : 0,
                           weighting: 1
                         }
                       }
@@ -504,23 +547,27 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                   afterEachProperty();
                   throw e;
                 });
-
-              // promise.catch(() => {}).then(afterEachProperty);
             }
           ),
           {
-            rngState: "828caf026d4be91573"
-            // tests: 1000
-            // quiet: false
+            // rngState: "828caf026d4be91573"
+            tests: 50
           }
         );
       });
     };
 
-    retrySpec("Should result in success if the last retry is successful", true);
+    retrySpec(
+      "Should result in success if the last retry is successful",
+      "success"
+    );
     retrySpec(
       "Should result in failures if the max number of retries is exceeded",
-      false
+      "failNormal"
+    );
+    retrySpec(
+      "Should result in failures if the max number of 429s is exceeded",
+      "fail429"
     );
   });
 
@@ -539,7 +586,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     });
 
     const thisRecordArb = jsc.suchthat(recordArb(urlArb), record => {
-      const urls: string[] = urlsFromRecord(record);
+      const urls: string[] = urlsFromDataSet(record);
       const hosts: string[] = urls.map(url => {
         const uri = new URI(url);
 
@@ -552,8 +599,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     return jsc.assert(
       jsc.forall(
         thisRecordArb,
-        failureCodesArb,
-        jsc.integer(0, 100),
+        jsc.nearray(failureCodeArb),
+        jsc.integer(0, 25),
         (record: Record, failures: number[], delayMs: number) => {
           beforeEachProperty();
 
@@ -562,7 +609,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             maxRetries: 0
           });
 
-          const distScopes = urlsFromRecord(
+          const distScopes = urlsFromDataSet(
             record
           ).reduce((scopeLookup, url) => {
             const uri = new URI(url);
