@@ -2,7 +2,8 @@ package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.server.Directives.{as, complete, entity, post}
 import akka.http.scaladsl.server.Route
 import spray.json.{JsObject, JsString, JsonParser}
@@ -14,7 +15,7 @@ import scala.util.Random
 import au.csiro.data61.magda.model.Registry._
 
 class WebHookProcessorSpec extends ApiSpec {
-  private val processor = new WebHookProcessor(system, executor)
+  private val processor = new WebHookProcessor(system, Uri("http://localhost:6101/v0/"), executor)
 
   it("includes aspectDefinitions if events modified them") { param =>
     testWebHook(param.api, None) { payloads =>
@@ -23,14 +24,9 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      val result = Await.result(processor.sendNotifications(), 5 seconds)
-      result.foreach {
-        case (webHook, processingResult) => {
-          webHook.name shouldBe "test"
-          processingResult.failedPosts shouldBe 0
-          processingResult.successfulPosts shouldBe 1
-        }
-      }
+      val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+      result.statusCode should be (Some(StatusCodes.OK))
+
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 1
       payloads(0).records.get.length shouldBe 0
@@ -46,14 +42,9 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      val result = Await.result(processor.sendNotifications(), 5 seconds)
-      result.foreach {
-        case (webHook, processingResult) => {
-          webHook.name shouldBe "test"
-          processingResult.failedPosts shouldBe 0
-          processingResult.successfulPosts shouldBe 1
-        }
-      }
+      val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+      result.statusCode should be (Some(StatusCodes.OK))
+
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 1
       payloads(0).records.get.length shouldBe 1
@@ -89,14 +80,9 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      val result = Await.result(processor.sendNotifications(), 5 seconds)
-      result.foreach {
-        case (webHook, processingResult) => {
-          webHook.name shouldBe "test"
-          processingResult.failedPosts shouldBe 0
-          processingResult.successfulPosts shouldBe 1
-        }
-      }
+      val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+      result.statusCode should be (Some(StatusCodes.OK))
+
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 5
       payloads(0).records.get.length shouldBe 1
@@ -145,14 +131,8 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendNotifications(), 5 seconds)
-        result1.foreach {
-          case (webHook, processingResult) => {
-            webHook.name shouldBe "test"
-            processingResult.failedPosts shouldBe 0
-            processingResult.successfulPosts shouldBe 1
-          }
-        }
+        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result1.statusCode should be (Some(StatusCodes.OK))
 
         payloads.clear()
 
@@ -161,14 +141,8 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result2 = Await.result(processor.sendNotifications(), 5 seconds)
-        result2.foreach {
-          case (webHook, processingResult) => {
-            webHook.name shouldBe "test"
-            processingResult.failedPosts shouldBe 0
-            processingResult.successfulPosts shouldBe 1
-          }
-        }
+        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result2.statusCode should be (Some(StatusCodes.OK))
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -178,14 +152,116 @@ class WebHookProcessorSpec extends ApiSpec {
     }
   }
 
+  describe("async web hooks") {
+    it("delays further notifications until previous one is acknowledged") { param =>
+      testAsyncWebHook(param.api, None) { payloads =>
+        val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+        Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result1.deferredResponse should be (true)
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 0
+        payloads(0).aspectDefinitions.get.length shouldBe 1
+        payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
+        payloads(0).deferredResponseUrl shouldBe (Some("http://localhost:6101/v0/hooks/test/ack"))
+
+        val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
+        Post("/v0/aspects", aspectDefinition2) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result2.statusCode should be (None)
+        payloads.length shouldBe 1
+      }
+    }
+
+    it("retries an unsuccessful notification") { param =>
+      testAsyncWebHook(param.api, None) { payloads =>
+        val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+        Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result1.deferredResponse should be (true)
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 0
+        payloads(0).aspectDefinitions.get.length shouldBe 1
+        payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
+
+        Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, 0l)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be < (payloads(0).lastEventId)
+        }
+
+        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result2.deferredResponse should be (true)
+
+        payloads.length shouldBe 2
+        payloads(1).events.get.length shouldBe 1
+        payloads(1).records.get.length shouldBe 0
+        payloads(1).lastEventId shouldBe (payloads(0).lastEventId)
+        payloads(1).aspectDefinitions.get.length shouldBe 1
+        payloads(1).aspectDefinitions.get(0).id shouldBe ("testId")
+      }
+    }
+
+    it("sends the next events after a successful notification") { param =>
+      testAsyncWebHook(param.api, None) { payloads =>
+        val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+        Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result1.deferredResponse should be (true)
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 0
+        payloads(0).aspectDefinitions.get.length shouldBe 1
+        payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
+
+        val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
+        Post("/v0/aspects", aspectDefinition2) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, payloads(0).lastEventId)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be (payloads(0).lastEventId)
+        }
+
+        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result2.deferredResponse should be (true)
+
+        payloads.length shouldBe 2
+        payloads(1).events.get.length shouldBe 1
+        payloads(1).records.get.length shouldBe 0
+        payloads(1).lastEventId shouldBe > (payloads(0).lastEventId)
+        payloads(1).aspectDefinitions.get.length shouldBe 1
+        payloads(1).aspectDefinitions.get(0).id shouldBe ("testId2")
+      }
+    }
+  }
+
   private val defaultWebHook = WebHook(
-    id = None,
+    id = Some("test"),
     userId = None,
     name = "test",
     active = true,
     lastEvent = None,
     url = "",
     eventTypes = EventType.values.toSet,
+    isWaitingForResponse = None,
     config = WebHookConfig(
       includeEvents = Some(true),
       includeRecords = Some(true),
@@ -193,12 +269,12 @@ class WebHookProcessorSpec extends ApiSpec {
       dereference = Some(true)
     ))
 
-  private def testWebHook(api: Api, webHook: Option[WebHook])(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
+  private def testWebHookWithResponse(api: Api, webHook: Option[WebHook], response: ⇒ ToResponseMarshallable)(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
     val payloads = ArrayBuffer[WebHookPayload]()
     val route = post {
       entity(as[WebHookPayload]) { payload =>
         payloads.append(payload)
-        complete("got it")
+        complete(response)
       }
     }
     val server = createHookRoute(route)
@@ -213,6 +289,14 @@ class WebHookProcessorSpec extends ApiSpec {
     } finally {
       server.unbind()
     }
+  }
+
+  private def testWebHook(api: Api, webHook: Option[WebHook])(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
+    testWebHookWithResponse(api, webHook, "got it")(testCallback)
+  }
+
+  private def testAsyncWebHook(api: Api, webHook: Option[WebHook])(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
+    testWebHookWithResponse(api, webHook, WebHookResponse(true))(testCallback)
   }
 
   private def createHookRoute(route: Route): Http.ServerBinding = {

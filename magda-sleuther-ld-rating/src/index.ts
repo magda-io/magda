@@ -40,7 +40,7 @@ const registry = new Registry({
   baseUrl:
     process.env.REGISTRY_URL ||
     process.env.npm_package_config_registryUrl ||
-    "http://localhost:6100/v0"
+    "http://localhost:6101/v0"
 });
 
 function lowerCaseify(strings: string[]): string[] {

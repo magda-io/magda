@@ -15,7 +15,7 @@ const argv = yargs
     .option('apiBaseUrl', {
         describe: 'The base URL of the MAGDA API Gateway.',
         type: 'string',
-        default: 'http://localhost:6100/api/'
+        default: 'http://localhost:6101/api/'
     })
     .option('searchApiBaseUrl', {
         describe: 'The base URL of the MAGDA Search API.  If not specified, the URL is built from the apiBaseUrl.',

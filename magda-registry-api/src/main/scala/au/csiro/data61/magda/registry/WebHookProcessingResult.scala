@@ -1,3 +1,5 @@
 package au.csiro.data61.magda.registry
 
-case class WebHookProcessingResult(successfulPosts: Int, failedPosts: Int)
+import akka.http.scaladsl.model.StatusCode
+
+case class WebHookProcessingResult(previousLastEvent: Long, newLastEvent: Long, deferredResponse: Boolean, statusCode: Option[StatusCode])
