@@ -8,14 +8,18 @@ import * as express from "express";
 import * as request from "supertest";
 import * as _ from "lodash";
 
+import {
+  lcAlphaNumStringArbNe,
+  lcAlphaNumStringArb,
+  recordArb
+} from "@magda/typescript-common/spec/arbitraries";
 import sleuther, { SleutherOptions } from "../src/index";
-import {encodeURIComponentWithApost} from "@magda/typescript-common/spec/util";
+import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util";
 
 import {
   WebHook,
   AspectDefinition
 } from "@magda/typescript-common/dist/generated/registry/api";
-import { recordArb } from "@magda/typescript-common/spec/arbitraries";
 
 const aspectArb = jsc.record({
   id: jsc.string,
@@ -66,7 +70,6 @@ function makePromiseQueryable<W>(
   return result;
 }
 
-
 function arraysEqual(a: any[], b: any[]) {
   if (a === b) return true;
   if (a == null || b == null) return false;
@@ -106,7 +109,7 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
   };
 
   const registryUrlArb: jsc.Arbitrary<RegistryUrlArbResult> = jsc.record({
-    domain: lcAlphaNumStringArbNe,
+    domain: lcAlphaNumStringArbNe(jsc),
     method: jsc.oneof([
       jsc.constant("none"),
       jsc.constant("env var"),
@@ -138,7 +141,7 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
     jsc.array(aspectArb),
     jsc.nestring,
     registryUrlArb,
-    lcAlphaNumStringArbNe,
+    lcAlphaNumStringArbNe(jsc),
     jsc.array(jsc.nestring),
     jsc.array(jsc.nestring),
     jsc.suchthat(jsc.integer, int => int > 0 && int < 65000),
@@ -217,7 +220,7 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
     registryUrlArb,
     jsc.array(jsc.nestring),
     jsc.array(jsc.nestring),
-    jsc.array(recordArb),
+    jsc.array(recordArb(jsc)),
     jsc.suchthat(jsc.integer, int => int > 3000 && int < 3100),
     (registry, aspects, optionalAspects, records, pageSize) => {
       beforeEachProperty();
@@ -297,9 +300,9 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
   jsc.property(
     "should correctly handle incoming webhooks",
-    jsc.array(jsc.array(recordArb)),
+    jsc.array(jsc.array(recordArb(jsc))),
     jsc.suchthat(jsc.integer, int => int > 0),
-    lcAlphaNumStringArbNe,
+    lcAlphaNumStringArbNe(jsc),
     jsc.suchthat(jsc.integer, int => int > 0),
     jsc.integer,
     (
@@ -388,10 +391,10 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
     jsc.suchthat(
       jsc.record({
         port: jsc.integer,
-        host: lcAlphaNumStringArb,
-        id: lcAlphaNumStringArb,
-        aspects: jsc.array(lcAlphaNumStringArb),
-        optionalAspects: jsc.array(lcAlphaNumStringArb)
+        host: lcAlphaNumStringArb(jsc),
+        id: lcAlphaNumStringArb(jsc),
+        aspects: jsc.array(lcAlphaNumStringArb(jsc)),
+        optionalAspects: jsc.array(lcAlphaNumStringArb(jsc))
       }),
       (record: input) =>
         // return true;
