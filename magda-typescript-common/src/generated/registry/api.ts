@@ -840,6 +840,7 @@ export class RecordAspectsApi {
             json: true,
             body: aspect,
         };
+
         this.authentications.default.applyToRequest(requestOptions);
 
         if (Object.keys(formParams).length) {

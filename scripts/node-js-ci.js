@@ -6,47 +6,54 @@ const childProcess = require("child_process");
 
 const lernaJson = require("../lerna.json");
 
-const nonScalaPackages = lernaJson.packages
+// const commonPackages = [
+//   "@magda/typescript-common",
+//   "@magda/sleuther-framework"
+// ];
+
+// const commonResults = commonPackages.map(package =>
+//   childProcess.spawnSync(
+//     "lerna",
+//     ["--scope ", package, "--concurrency", "4", "run", "build"],
+//     {
+//       stdio: ["pipe", "inherit", "inherit"],
+//       shell: true
+//     }
+//   )
+// );
+const webPackages = ["@magda/web-client", "@magda/preview-map"];
+
+const jsPackages = lernaJson.packages
   .filter(function(packagePath) {
     return !fse.existsSync(path.resolve(packagePath, "build.sbt"));
   })
   .map(packagePath => {
     const packageJson = require(path.resolve(packagePath, "package.json"));
     return packageJson.name;
-  });
+  })
+  .filter(packageName => webPackages.indexOf(packageName) === -1);
 
-const buildResult = childProcess.spawnSync(
-  "lerna",
-  [
-    ...nonScalaPackages.map(package => "--scope " + package),
-    "--concurrency",
-    "4",
-    "run",
-    "build"
-  ],
-  {
-    stdio: ["pipe", "inherit", "inherit"],
-    shell: true
+const commands = ["bootstrap", "build", "test"];
+
+commands.forEach(command => {
+  const result = childProcess.spawnSync(
+    "lerna",
+    [
+      ...jsPackages.map(package => "--scope " + package),
+      "--concurrency",
+      "4",
+      "run",
+      "bootstrap"
+    ],
+    {
+      stdio: ["pipe", "inherit", "inherit"],
+      shell: true
+    }
+  );
+
+  if (result.status > 0) {
+    process.exit(result.status);
   }
-);
+});
 
-if (buildResult.status > 0) {
-  process.exit(buildResult.status);
-}
-
-const testResult = childProcess.spawnSync(
-  "lerna",
-  [
-    ...nonScalaPackages.map(package => "--scope " + package),
-    "--concurrency",
-    "4",
-    "run",
-    "test"
-  ],
-  {
-    stdio: ["pipe", "inherit", "inherit"],
-    shell: true
-  }
-);
-
-process.exit(testResult.status);
+process.exit(0);

@@ -19,7 +19,7 @@ import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util"
 import {
   WebHook,
   AspectDefinition
-} from "@magda/typescript-common/dist/generated/registry/api";
+} from "@magda/typescript-common/src/generated/registry/api";
 
 const aspectArb = jsc.record({
   id: jsc.string,
@@ -120,7 +120,7 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
   const setRegistryUrl = (arbResult: RegistryUrlArbResult) => {
     if (arbResult.method === "none") {
-      return "http://localhost:6100/v0";
+      return "http://localhost:6101/v0";
     } else {
       const registryUrl = `http://${arbResult.domain}.com`;
       if (arbResult.method === "env var") {
@@ -180,7 +180,8 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
           dereference: true,
           includeRecords: true
         },
-        lastEvent: null
+        lastEvent: null,
+        isWaitingForResponse: false
       };
 
       aspectDefs.forEach(aspectDef => {

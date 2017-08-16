@@ -165,7 +165,8 @@ export default async function sleuther(
         "PatchRecordAspect"
       ],
       config: webHookConfig,
-      lastEvent: null
+      lastEvent: null,
+      isWaitingForResponse: false
     };
 
     registry.putHook(newWebHook);

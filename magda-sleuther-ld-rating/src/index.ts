@@ -93,7 +93,6 @@ function sleuthLinkedData(registry: Registry) {
   }
 
   sleuther({
-    registry,
     host,
     id: ID,
     defaultPort: 6109,
