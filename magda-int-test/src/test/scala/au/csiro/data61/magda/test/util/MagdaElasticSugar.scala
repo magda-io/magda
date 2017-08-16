@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.test.util
 
 import java.nio.file.Paths
+import scala.concurrent.duration._
 import java.nio.file.Path
 import java.util.UUID
 import com.sksamuel.elastic4s.embedded.LocalNode
@@ -13,6 +14,7 @@ trait MagdaElasticSugar extends SharedElasticSugar {
 
   override def getNode: LocalNode = ClassloaderLocalNodeProvider.node
 
+  implicit val defaultTimeout: Duration = 60 seconds
 }
 object ClassloaderLocalNodeProvider {
   lazy val node = {
@@ -23,8 +25,7 @@ object ClassloaderLocalNodeProvider {
 
     val settings = requiredSettings ++ Map(
       "bootstrap.memory_lock" -> "true",
-      "cluster.routing.allocation.disk.threshold_enabled" -> "false"
-    )
+      "cluster.routing.allocation.disk.threshold_enabled" -> "false")
 
     LocalNode(settings)
   }
