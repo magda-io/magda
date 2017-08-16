@@ -127,9 +127,14 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
           blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
         } catch {
           case (e: Throwable) =>
+            val sizeQuery = search(indexId / indices.getType(Indices.DataSetsIndexType)).size(10000)
+            val result = client.execute(sizeQuery).await(60 seconds)
             logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
-            logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${search(indexId / indices.getType(Indices.DataSetsIndexType)).size(0)}" +
-              s", firstIndex = ${source._1.size}, initialCount=${source}, afterCount = ${source._2.size}")
+            logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${result.totalHits}" +
+              s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
+            logger.error(s"Returned results: ${result.hits}")
+            logger.error(s"First index: ${source._1.map(_.normalToString)}")
+            logger.error(s"Second index: ${source._2.map(_.normalToString)}")
             throw e
         }
       }
