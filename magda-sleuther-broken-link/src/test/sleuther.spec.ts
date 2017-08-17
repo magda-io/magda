@@ -7,15 +7,15 @@ import jsc = require("jsverify");
 import Registry from "@magda/typescript-common/dist/Registry";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import * as _ from "lodash";
-import { onRecordFound, BrokenLinkAspect } from "../src/sleuther";
+import { onRecordFound, BrokenLinkAspect } from "../sleuther";
 import {
   specificRecordArb,
   distStringsArb,
   distUrlArb,
   arrayOfSizeArb,
   arbFlatMap
-} from "@magda/typescript-common/spec/arbitraries";
-import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util";
+} from "@magda/typescript-common/src/test/arbitraries";
+import { encodeURIComponentWithApost } from "@magda/typescript-common/src/test/util";
 import * as URI from "urijs";
 const setupFtp = require("./setup-ftp");
 const dns = require("dns");

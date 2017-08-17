@@ -17,9 +17,9 @@ import {
   lcAlphaNumStringArbNe,
   lcAlphaNumStringArb,
   recordArb
-} from "@magda/typescript-common/spec/arbitraries";
-import sleuther, { SleutherOptions } from "../src/index";
-import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util";
+} from "@magda/typescript-common/src/test/arbitraries";
+import sleuther, { SleutherOptions } from "../index";
+import { encodeURIComponentWithApost } from "@magda/typescript-common/src/test/util";
 
 const aspectArb = jsc.record({
   id: jsc.string,

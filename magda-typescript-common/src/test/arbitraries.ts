@@ -1,7 +1,7 @@
 ///<reference path="./jsverify.d.ts" />
 import jsverify = require("jsverify");
 const { curried2 } = require("jsverify/lib/utils");
-import { Record } from "../dist/generated/registry/api";
+import { Record } from "../../src/generated/registry/api";
 const lazyseq = require("lazy-seq");
 import uuid = require("uuid/v4");
 
@@ -13,7 +13,7 @@ function toCode(c: string) {
   return c.charCodeAt(0);
 }
 
-type jsc = {
+export type jsc = {
   integer: jsverify.Arbitrary<number> &
     jsverify.integerFn &
     jsverify.integerFn2;
@@ -122,7 +122,7 @@ function shrinkArrayWithMinimumSize<T>(
   return shrinkArrayImpl;
 }
 
-type MonadicArb<T> = jsverify.Arbitrary<T> & {
+export type MonadicArb<T> = jsverify.Arbitrary<T> & {
   flatMap<U>(
     arbForward: (t: T) => jsverify.Arbitrary<U>,
     backwards: (u: U) => T

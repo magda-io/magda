@@ -8,7 +8,7 @@
     "compile": "tsc -p tsconfig-build.json",
     "watch": "tsc -p tsconfig-build.json --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
-    "test": "mocha dist/test/*.js",
+    "test": "mocha dist/test/**/*.spec.js",
     "dev": "npm run watch"
   },
   "devDependencies": {

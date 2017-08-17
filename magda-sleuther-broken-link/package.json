@@ -10,7 +10,7 @@
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register \"spec/**/*.spec.ts\""
+    "test": "mocha --compilers ts:ts-node/register \"src/test/**/*.spec.ts\""
   },
   "author": "",
   "license": "Apache-2.0",
