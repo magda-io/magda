@@ -7,7 +7,11 @@ import jsc = require("jsverify");
 import * as express from "express";
 import * as request from "supertest";
 import * as _ from "lodash";
-import { Record } from "@magda/typescript-common/dist/generated/Registry/api";
+import {
+  Record,
+  WebHook,
+  AspectDefinition
+} from "@magda/typescript-common/dist/generated/Registry/api";
 import {
   arbFlatMap,
   lcAlphaNumStringArbNe,
@@ -16,11 +20,6 @@ import {
 } from "@magda/typescript-common/spec/arbitraries";
 import sleuther, { SleutherOptions } from "../src/index";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/spec/util";
-
-import {
-  WebHook,
-  AspectDefinition
-} from "@magda/typescript-common/src/generated/registry/api";
 
 const aspectArb = jsc.record({
   id: jsc.string,
