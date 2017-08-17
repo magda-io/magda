@@ -299,82 +299,184 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
     }
   );
 
-  jsc.property(
-    "should correctly handle incoming webhooks",
-    jsc.array(jsc.array(recordArb(jsc))),
-    jsc.suchthat(jsc.integer, int => int > 0),
-    lcAlphaNumStringArbNe(jsc),
-    jsc.suchthat(jsc.integer, int => int > 0),
-    jsc.integer,
-    (
-      recordsBatches: object[][],
-      pageSize: number,
-      domain: string,
-      defaultPort: number,
-      overridePort: number
-    ) => {
-      beforeEachProperty();
+  describe("webhooks", () => {
+    // jsc.property(
+    //   "should correctly handle synchronously",
+    //   jsc.array(jsc.array(recordArb(jsc))),
+    //   jsc.suchthat(jsc.integer, int => int > 0),
+    //   lcAlphaNumStringArbNe(jsc),
+    //   jsc.suchthat(jsc.integer, int => int > 0),
+    //   jsc.integer,
+    //   (
+    //     recordsBatches: object[][],
+    //     pageSize: number,
+    //     domain: string,
+    //     defaultPort: number,
+    //     overridePort: number
+    //   ) => {
+    //     beforeEachProperty();
 
-      const registryDomain = "example";
-      const registryUrl = `http://${registryDomain}.com:80`;
-      process.env.REGISTRY_URL = registryUrl;
-      const registryScope = nock(registryUrl);
+    //     const registryDomain = "example";
+    //     const registryUrl = `http://${registryDomain}.com:80`;
+    //     process.env.REGISTRY_URL = registryUrl;
+    //     const registryScope = nock(registryUrl);
 
-      const port = overridePort > 0 ? overridePort : defaultPort;
-      if (overridePort > 0) {
-        process.env.NODE_PORT = overridePort.toString();
-      }
+    //     const port = overridePort > 0 ? overridePort : defaultPort;
+    //     if (overridePort > 0) {
+    //       process.env.NODE_PORT = overridePort.toString();
+    //     }
 
-      registryScope.put(/\/hooks\/.*/).reply(201);
+    //     registryScope.put(/\/hooks\/.*/).reply(201);
 
-      const options: SleutherOptions = {
-        host: `${domain}.com`,
-        defaultPort,
-        id: "id",
-        aspects: [],
-        optionalAspects: [],
-        writeAspectDefs: [],
-        express: () => expressApp,
-        onRecordFound: sinon.stub().callsFake(record => Promise.resolve())
-      };
-      registryScope.get("/records").query(true).reply(200, { records: [] });
+    //     const options: SleutherOptions = {
+    //       host: `${domain}.com`,
+    //       defaultPort,
+    //       id: "id",
+    //       aspects: [],
+    //       optionalAspects: [],
+    //       writeAspectDefs: [],
+    //       express: () => expressApp,
+    //       onRecordFound: sinon.stub().callsFake(record => Promise.resolve())
+    //     };
+    //     registryScope.get("/records").query(true).reply(200, { records: [] });
 
-      return sleuther(options)
-        .then(() => {
-          const listenStub = expressApp.listen as sinon.SinonStub;
-          expect(listenStub.calledWith(port)).to.be.true;
+    //     return sleuther(options)
+    //       .then(() => {
+    //         const listenStub = expressApp.listen as sinon.SinonStub;
+    //         expect(listenStub.calledWith(port)).to.be.true;
 
-          return Promise.all(
-            recordsBatches.map((records: object[]) => {
-              const test = request(expressApp)
-                .post("/hook")
-                .set("Content-Type", "application/json")
-                .send({
-                  records
-                })
-                .expect(201);
+    //         return Promise.all(
+    //           recordsBatches.map((records: object[]) => {
+    //             const test = request(expressApp)
+    //               .post("/hook")
+    //               .set("Content-Type", "application/json")
+    //               .send({
+    //                 records
+    //               })
+    //               .expect(201);
 
-              const queryable = makePromiseQueryable(test);
+    //             const queryable = makePromiseQueryable(test);
 
-              expect(queryable.isFulfilled()).to.be.false;
+    //             expect(queryable.isFulfilled()).to.be.false;
 
-              return queryable.then(() =>
-                records.forEach(record =>
-                  expect(
-                    (options.onRecordFound as sinon.SinonStub).calledWith(
-                      record
+    //             return queryable.then(() =>
+    //               records.forEach(record =>
+    //                 expect(
+    //                   (options.onRecordFound as sinon.SinonStub).calledWith(
+    //                     record
+    //                   )
+    //                 )
+    //               )
+    //             );
+    //           })
+    //         );
+    //       })
+    //       .then(() => {
+    //         return true;
+    //       });
+    //   }
+    // );
+
+    const x = (caption: string, async: boolean) => {
+      jsc.property(
+        caption,
+        jsc.array(jsc.array(recordArb(jsc))),
+        jsc.suchthat(jsc.integer, int => int > 0),
+        lcAlphaNumStringArbNe(jsc),
+        jsc.suchthat(jsc.integer, int => int > 0),
+        jsc.integer,
+        (
+          recordsBatches: object[][],
+          pageSize: number,
+          domain: string,
+          defaultPort: number,
+          overridePort: number
+        ) => {
+          beforeEachProperty();
+
+          const registryDomain = "example";
+          const registryUrl = `http://${registryDomain}.com:80`;
+          process.env.REGISTRY_URL = registryUrl;
+          const registryScope = nock(registryUrl);
+
+          const port = overridePort > 0 ? overridePort : defaultPort;
+          if (overridePort > 0) {
+            process.env.NODE_PORT = overridePort.toString();
+          }
+
+          registryScope.put(/\/hooks\/.*/).reply(201);
+
+          const options: SleutherOptions = {
+            host: `${domain}.com`,
+            defaultPort,
+            id: "id",
+            aspects: [],
+            optionalAspects: [],
+            writeAspectDefs: [],
+            async,
+            express: () => expressApp,
+            onRecordFound: sinon.stub().callsFake(record => Promise.resolve())
+          };
+          registryScope.get("/records").query(true).reply(200, { records: [] });
+
+          let lastHookId = 0;
+          return sleuther(options)
+            .then(() => {
+              const listenStub = expressApp.listen as sinon.SinonStub;
+              expect(listenStub.calledWith(port)).to.be.true;
+
+              return Promise.all(
+                recordsBatches.map((records: object[]) => {
+                  lastHookId++;
+
+                  if (async) {
+                    registryScope
+                      .post(`/hooks/${lastHookId}`, {
+                        succeeded: true,
+                        lastEventIdReceived: lastHookId
+                      })
+                      .reply(201);
+                  }
+
+                  const test = request(expressApp)
+                    .post("/hook")
+                    .set("Content-Type", "application/json")
+                    .send({
+                      records,
+                      deferredResponseUrl: `${registryUrl}/hooks/${lastHookId}`
+                    })
+                    .expect(201)
+                    .then((response: any) => {
+                      expect(!!response.body.deferResponse).to.equal(async);
+                    });
+
+                  const queryable = makePromiseQueryable(test);
+
+                  expect(queryable.isFulfilled()).to.be.false;
+
+                  return queryable.then(() =>
+                    records.forEach(record =>
+                      expect(
+                        (options.onRecordFound as sinon.SinonStub).calledWith(
+                          record
+                        )
+                      )
                     )
-                  )
-                )
+                  );
+                })
               );
             })
-          );
-        })
-        .then(() => {
-          return true;
-        });
-    }
-  );
+            .then(() => {
+              registryScope.done();
+              return true;
+            });
+        }
+      );
+    };
+
+    x("should work synchronously", false);
+    x("should work asynchronously", true);
+  });
 
   const containsBlanks = (strings: string[]) =>
     strings.some(string => string === "");

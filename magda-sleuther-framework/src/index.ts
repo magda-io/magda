@@ -10,6 +10,8 @@ import AsyncPage, {
   forEachAsync
 } from "@magda/typescript-common/dist/AsyncPage";
 import * as express from "express";
+import * as fetch from "isomorphic-fetch";
+import * as _ from "lodash";
 
 export interface SleutherOptions {
   host: string;
@@ -18,6 +20,7 @@ export interface SleutherOptions {
   aspects: string[];
   optionalAspects: string[];
   writeAspectDefs: AspectDefinition[];
+  async?: boolean;
   onRecordFound: (record: Record) => Promise<void>;
   express?: () => express.Express;
 }
@@ -106,20 +109,66 @@ export default async function sleuther(
       "/hook",
       (request: express.Request, response: express.Response) => {
         const payload = request.body;
+
         const promises: Promise<
           void
         >[] = payload.records.map((record: Record) =>
           options.onRecordFound(record)
         );
 
-        Promise.all(promises)
-          .then(results => {
-            response.status(201).send("Received");
-          })
-          .catch(e => {
-            console.error(e);
-            response.status(500).send("Error");
+        const megaPromise = Promise.all(promises);
+
+        const lastEventIdExists = !_.isUndefined(payload.lastEventId);
+        const deferredResponseUrlExists = !_.isUndefined(
+          payload.deferredResponseUrl
+        );
+        if (options.async) {
+          if (!lastEventIdExists) {
+            console.warn(
+              "No event id was passed so the sleuther can't operate asynchronously - reverting to synchronous mode"
+            );
+          }
+
+          if (!deferredResponseUrlExists) {
+            console.warn(
+              "No deferred response url was passed so the sleuther can't operate asynchronously - reverting to synchronous mode"
+            );
+          }
+        }
+
+        if (options.async && lastEventIdExists && deferredResponseUrlExists) {
+          response.status(201).send({
+            status: "Working",
+            deferResponse: true
           });
+
+          const sendResult = (success: boolean) =>
+            fetch(payload.deferredResponseUrl, {
+              method: "POST",
+              body: JSON.stringify({
+                succeeded: success,
+                lastEventIdReceived: payload.lastEventId
+              })
+            });
+
+          megaPromise.then(results => sendResult(true)).catch((err: Error) => {
+            console.error(err);
+            return sendResult(false);
+          });
+        } else {
+          megaPromise
+            .then(results => {
+              response
+                .status(201)
+                .send({ status: "Received", deferResponse: false });
+            })
+            .catch(e => {
+              console.error(e);
+              response
+                .status(500)
+                .send({ status: "Error", deferResponse: false });
+            });
+        }
       }
     );
 
