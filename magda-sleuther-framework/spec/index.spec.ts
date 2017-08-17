@@ -7,8 +7,9 @@ import jsc = require("jsverify");
 import * as express from "express";
 import * as request from "supertest";
 import * as _ from "lodash";
-
+import { Record } from "@magda/typescript-common/dist/generated/Registry/api";
 import {
+  arbFlatMap,
   lcAlphaNumStringArbNe,
   lcAlphaNumStringArb,
   recordArb
@@ -87,6 +88,15 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
   before(() => {
     sinon.stub(console, "info");
+
+    const originalConsoleError = console.error;
+    sinon.stub(console, "error").callsFake((...args) => {
+      // console.log(args[0].message);
+      // console.log(fakeError.message);
+      if (!args[0] || !args[0].ignore) {
+        originalConsoleError(...args);
+      }
+    });
   });
 
   after(() => {
@@ -300,98 +310,54 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
   );
 
   describe("webhooks", () => {
-    // jsc.property(
-    //   "should correctly handle synchronously",
-    //   jsc.array(jsc.array(recordArb(jsc))),
-    //   jsc.suchthat(jsc.integer, int => int > 0),
-    //   lcAlphaNumStringArbNe(jsc),
-    //   jsc.suchthat(jsc.integer, int => int > 0),
-    //   jsc.integer,
-    //   (
-    //     recordsBatches: object[][],
-    //     pageSize: number,
-    //     domain: string,
-    //     defaultPort: number,
-    //     overridePort: number
-    //   ) => {
-    //     beforeEachProperty();
+    const doWebhookTest = (caption: string, async: boolean) => {
+      const batchResultsArb = jsc.array(jsc.bool);
 
-    //     const registryDomain = "example";
-    //     const registryUrl = `http://${registryDomain}.com:80`;
-    //     process.env.REGISTRY_URL = registryUrl;
-    //     const registryScope = nock(registryUrl);
+      const recordWithSuccessArb = (mightFail: boolean) =>
+        jsc.record({
+          record: recordArb(jsc),
+          success: mightFail ? jsc.bool : jsc.constant(true)
+        });
 
-    //     const port = overridePort > 0 ? overridePort : defaultPort;
-    //     if (overridePort > 0) {
-    //       process.env.NODE_PORT = overridePort.toString();
-    //     }
+      const recordsWithSuccessArrArb = (success: boolean) => {
+        const baseArb = jsc.array(recordWithSuccessArb(!success));
 
-    //     registryScope.put(/\/hooks\/.*/).reply(201);
+        return success
+          ? baseArb
+          : jsc.suchthat(baseArb, combined =>
+              combined.some(({ success }) => !success)
+            );
+      };
 
-    //     const options: SleutherOptions = {
-    //       host: `${domain}.com`,
-    //       defaultPort,
-    //       id: "id",
-    //       aspects: [],
-    //       optionalAspects: [],
-    //       writeAspectDefs: [],
-    //       express: () => expressApp,
-    //       onRecordFound: sinon.stub().callsFake(record => Promise.resolve())
-    //     };
-    //     registryScope.get("/records").query(true).reply(200, { records: [] });
+      type Batch = {
+        /** Each record in the batch and whether it should succeed when
+         *  onRecordFound is called */
+        records: { record: Record; success: boolean }[];
+        /** Whether the overall batch should succeed - to succeed, every record
+         *  should succeed, to fail then at least one record should fail. */
+        overallSuccess: boolean;
+      };
 
-    //     return sleuther(options)
-    //       .then(() => {
-    //         const listenStub = expressApp.listen as sinon.SinonStub;
-    //         expect(listenStub.calledWith(port)).to.be.true;
+      const batchArb = arbFlatMap<boolean[], Batch[]>(
+        jsc,
+        batchResultsArb,
+        batchResults => {
+          const batchArb = batchResults.map(overallSuccess =>
+            recordsWithSuccessArrArb(overallSuccess).smap(
+              records => ({ records, overallSuccess }),
+              ({ records }) => records
+            )
+          );
+          return batchArb.length > 0 ? jsc.tuple(batchArb) : jsc.constant([]);
+        },
+        batches => batches.map(({ overallSuccess }) => overallSuccess)
+      );
 
-    //         return Promise.all(
-    //           recordsBatches.map((records: object[]) => {
-    //             const test = request(expressApp)
-    //               .post("/hook")
-    //               .set("Content-Type", "application/json")
-    //               .send({
-    //                 records
-    //               })
-    //               .expect(201);
-
-    //             const queryable = makePromiseQueryable(test);
-
-    //             expect(queryable.isFulfilled()).to.be.false;
-
-    //             return queryable.then(() =>
-    //               records.forEach(record =>
-    //                 expect(
-    //                   (options.onRecordFound as sinon.SinonStub).calledWith(
-    //                     record
-    //                   )
-    //                 )
-    //               )
-    //             );
-    //           })
-    //         );
-    //       })
-    //       .then(() => {
-    //         return true;
-    //       });
-    //   }
-    // );
-
-    const x = (caption: string, async: boolean) => {
       jsc.property(
         caption,
-        jsc.array(jsc.array(recordArb(jsc))),
-        jsc.suchthat(jsc.integer, int => int > 0),
+        batchArb,
         lcAlphaNumStringArbNe(jsc),
-        jsc.suchthat(jsc.integer, int => int > 0),
-        jsc.integer,
-        (
-          recordsBatches: object[][],
-          pageSize: number,
-          domain: string,
-          defaultPort: number,
-          overridePort: number
-        ) => {
+        (recordsBatches: Batch[], domain: string) => {
           beforeEachProperty();
 
           const registryDomain = "example";
@@ -399,53 +365,67 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
           process.env.REGISTRY_URL = registryUrl;
           const registryScope = nock(registryUrl);
 
-          const port = overridePort > 0 ? overridePort : defaultPort;
-          if (overridePort > 0) {
-            process.env.NODE_PORT = overridePort.toString();
-          }
-
           registryScope.put(/\/hooks\/.*/).reply(201);
+
+          /** All records in all the batches */
+          const flattenedRecords = _.flatMap(
+            recordsBatches,
+            batch => batch.records
+          );
+          /** Error thrown when the call is *supposed* to fail  */
+          const fakeError = new Error("Fake-ass testing error");
+          (fakeError as any).ignore = true;
 
           const options: SleutherOptions = {
             host: `${domain}.com`,
-            defaultPort,
+            defaultPort: 80,
             id: "id",
             aspects: [],
             optionalAspects: [],
             writeAspectDefs: [],
             async,
             express: () => expressApp,
-            onRecordFound: sinon.stub().callsFake(record => Promise.resolve())
+            onRecordFound: sinon.stub().callsFake((foundRecord: Record) => {
+              const match = flattenedRecords.find(({ record: thisRecord }) => {
+                return thisRecord.id === foundRecord.id;
+              });
+              return match.success
+                ? Promise.resolve()
+                : Promise.reject(fakeError);
+            })
           };
           registryScope.get("/records").query(true).reply(200, { records: [] });
 
+          /** Global hook id generator - incremented every time we create another hook */
           let lastHookId = 0;
           return sleuther(options)
-            .then(() => {
-              const listenStub = expressApp.listen as sinon.SinonStub;
-              expect(listenStub.calledWith(port)).to.be.true;
-
-              return Promise.all(
-                recordsBatches.map((records: object[]) => {
+            .then(() =>
+              Promise.all(
+                recordsBatches.map(batch => {
                   lastHookId++;
 
                   if (async) {
+                    // If we're running async then we expect that there'll be a call to the registry
+                    // telling it to give more events.
                     registryScope
                       .post(`/hooks/${lastHookId}`, {
-                        succeeded: true,
+                        succeeded: batch.overallSuccess,
                         lastEventIdReceived: lastHookId
                       })
                       .reply(201);
                   }
 
+                  // Send the hook payload to the sleuther
                   const test = request(expressApp)
                     .post("/hook")
                     .set("Content-Type", "application/json")
                     .send({
-                      records,
-                      deferredResponseUrl: `${registryUrl}/hooks/${lastHookId}`
+                      records: batch.records.map(({ record }) => record),
+                      deferredResponseUrl: `${registryUrl}/hooks/${lastHookId}`,
+                      lastEventId: lastHookId
                     })
-                    .expect(201)
+                    // The hook should only return 500 if it's failed synchronously.
+                    .expect(async || batch.overallSuccess ? 201 : 500)
                     .then((response: any) => {
                       expect(!!response.body.deferResponse).to.equal(async);
                     });
@@ -455,7 +435,7 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                   expect(queryable.isFulfilled()).to.be.false;
 
                   return queryable.then(() =>
-                    records.forEach(record =>
+                    batch.records.forEach(({ record }) =>
                       expect(
                         (options.onRecordFound as sinon.SinonStub).calledWith(
                           record
@@ -464,8 +444,8 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                     )
                   );
                 })
-              );
-            })
+              )
+            )
             .then(() => {
               registryScope.done();
               return true;
@@ -474,8 +454,8 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
       );
     };
 
-    x("should work synchronously", false);
-    x("should work asynchronously", true);
+    doWebhookTest("should work synchronously", false);
+    doWebhookTest("should work asynchronously", true);
   });
 
   const containsBlanks = (strings: string[]) =>

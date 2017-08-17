@@ -3,6 +3,7 @@ import jsverify = require("jsverify");
 const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../dist/generated/registry/api";
 const lazyseq = require("lazy-seq");
+import uuid = require("uuid/v4");
 
 function fromCode(code: number) {
   return String.fromCharCode(code);
@@ -32,6 +33,7 @@ type jsc = {
   ): jsverify.Arbitrary<U>;
   shrink: jsverify.ShrinkFunctions;
   generator: jsverify.GeneratorFunctions;
+  show: jsverify.ShowFunctions;
   bless<U>(arb: jsverify.ArbitraryLike<U>): jsverify.Arbitrary<U>;
 };
 
@@ -50,9 +52,16 @@ export const lcAlphaNumStringArbNe = (jsc: jsc) =>
     .nearray(lcAlphaNumCharArb(jsc))
     .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
 
+const uuidArb: (jsc: jsc) => jsverify.Arbitrary<string> = (jsc: jsc) =>
+  jsc.bless({
+    generator: jsc.generator.bless(x => uuid()),
+    shrink: jsc.shrink.bless(uuid => [uuid]),
+    show: (x: string) => x
+  });
+
 export const recordArb = (jsc: jsc) =>
   jsc.record<Record>({
-    id: lcAlphaNumStringArb(jsc),
+    id: uuidArb(jsc), //lcAlphaNumStringArb(jsc),
     name: jsc.string,
     aspects: jsc.array(jsc.json)
   });
@@ -61,7 +70,7 @@ export const specificRecordArb = (jsc: jsc) => (aspectArbs: {
   [key: string]: jsverify.Arbitrary<any>;
 }) =>
   jsc.record<Record>({
-    id: lcAlphaNumStringArbNe(jsc),
+    id: uuidArb(jsc), //lcAlphaNumStringArbNe(jsc),
     name: jsc.string,
     aspects: jsc.record(aspectArbs)
   });

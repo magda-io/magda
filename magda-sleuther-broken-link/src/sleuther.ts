@@ -32,6 +32,7 @@ export default async function sleuthBrokenLinks() {
     defaultPort: 6111,
     aspects: ["dataset-distributions"],
     optionalAspects: [],
+    async: true,
     writeAspectDefs: [brokenLinkAspectDefinition, datasetQualityAspectDef],
     onRecordFound: record =>
       onRecordFound(
