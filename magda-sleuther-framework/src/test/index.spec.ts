@@ -11,7 +11,7 @@ import {
   Record,
   WebHook,
   AspectDefinition
-} from "@magda/typescript-common/dist/generated/Registry/api";
+} from "@magda/typescript-common/dist/generated/registry/api";
 import {
   arbFlatMap,
   lcAlphaNumStringArbNe,
