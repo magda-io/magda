@@ -10,6 +10,10 @@ import renderDistribution from '../UI/Distribution';
 import './RecordDetails.css';
 
 class DatasetDetails extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {showPreview: false};
+  }
   render(){
     const dataset = this.props.dataset;
     const datasetId = this.props.params.datasetId;
@@ -26,8 +30,8 @@ class DatasetDetails extends Component {
                     <OverviewBox content={source}/>
                   </div>
                   <div className='dataset-details-source'>
-                      <h3 className='section-heading'>Data and APIs</h3>
-                      <div>{dataset.distributions.map(s=> renderDistribution(s, datasetId, false))}</div>
+                      <div className='clearfix'><span className='section-heading'>Data and APIs</span><button className='preview-toggle btn btn-default' onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</button></div>
+                      <div className='clearfix'>{dataset.distributions.map(s=> renderDistribution(s, datasetId, this.state.showPreview))}</div>
                   </div>
                   <div className='dataset-details-temporal-coverage'>
                       <h3 className='section-heading'>Temporal coverage</h3>

@@ -57,6 +57,8 @@ class DataPreviewer extends Component {
            return <News newsItems={previewData}/>
           case 'googleViewable':
             return <DataPreviewGoogleViewer data={previewData}/>
+          case 'impossible':
+            return "this dataset cannot be previewed"
           default:
             return null;
         }
@@ -68,7 +70,7 @@ class DataPreviewer extends Component {
               <h3 className='section-heading'><a href={url} target='_blank'>{url && url.substring(url.lastIndexOf('/')+1)}</a></h3>
               {this.props.error && <div>{this.props.error}</div>}
               {this.props.isFetching && <ProgressBar/>}
-              {this.props.data && this.props.distribution.identifier && this.renderByState(this.props.data[this.props.distribution.identifier])}
+              {this.props.data && this.props.distribution.identifier && this.props.data[this.props.distribution.identifier] && this.renderByState(this.props.data[this.props.distribution.identifier])}
              </div>
     }
 }

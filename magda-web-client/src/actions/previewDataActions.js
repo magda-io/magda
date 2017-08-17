@@ -192,6 +192,15 @@ export function fetchPreviewData(distribution){
             }
             dispatch(receivePreviewData({[distribution.identifier]: googleViewableData}));
             break;
+        case 'impossible':
+            const impossibleData = {
+              data: url,
+              meta: {
+                type: 'impossible'
+              }
+            }
+            dispatch(receivePreviewData({[distribution.identifier]: impossibleData}));
+            break;
         case 'rss':
             fetch(proxy + url)
             .then(response=>{

@@ -16,10 +16,13 @@ export function getPreviewDataUrl(distribution: ParsedDistribution){
       const format  = distribution.format.toLowerCase();
       const geoFormat = ["csv-geo-au" , "wfs" , "wms" , "czml" , "kml"];
       const normaFormat = ['csv', 'xml', 'json', 'txt', 'html', 'rss' ];
+      const impossibleFormat = ['zip' ];
       if(geoFormat.indexOf(format) !== -1){
         return {id: distribution.identifier, format: 'geo', name: distribution.title}
       } else if(normaFormat.indexOf(format) !== -1){
         return {url: distribution.downloadURL || distribution.accessURL, format: distribution.format.toLowerCase()}
+      } else if(impossibleFormat.indexOf(format) !== -1){
+        return {url: distribution.downloadURL, format: 'impossible'}
       }
       return {url: distribution.downloadURL, format: 'googleViewable'}
     }
