@@ -2,7 +2,7 @@ import {} from "mocha";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as nock from "nock";
-///<reference path="@magda/typescript-common/spec/jsverify.d.ts" />
+///<reference path="@magda/typescript-common/src/test/jsverify.d.ts" />
 import jsc = require("jsverify");
 import * as express from "express";
 import * as request from "supertest";
@@ -17,9 +17,9 @@ import {
   lcAlphaNumStringArbNe,
   lcAlphaNumStringArb,
   recordArb
-} from "@magda/typescript-common/src/test/arbitraries";
+} from "@magda/typescript-common/dist/test/arbitraries";
 import sleuther, { SleutherOptions } from "../index";
-import { encodeURIComponentWithApost } from "@magda/typescript-common/src/test/util";
+import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 
 const aspectArb = jsc.record({
   id: jsc.string,
