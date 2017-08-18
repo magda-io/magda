@@ -2,7 +2,7 @@ import {} from "mocha";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as nock from "nock";
-///<reference path="@magda/typescript-common/src/test/jsverify.d.ts" />
+///<reference path="@magda/typescript-common/dist/test/jsverify.d.ts" />
 import jsc = require("jsverify");
 import * as express from "express";
 import * as request from "supertest";

@@ -2,7 +2,7 @@ import {} from "mocha";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as nock from "nock";
-///<reference path="@magda/typescript-common/src/test/jsverify.d.ts" />
+///<reference path="@magda/typescript-common/dist/test/jsverify.d.ts" />
 import jsc = require("jsverify");
 import Registry from "@magda/typescript-common/dist/Registry";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
@@ -14,8 +14,8 @@ import {
   distUrlArb,
   arrayOfSizeArb,
   arbFlatMap
-} from "@magda/typescript-common/src/test/arbitraries";
-import { encodeURIComponentWithApost } from "@magda/typescript-common/src/test/util";
+} from "@magda/typescript-common/dist/test/arbitraries";
+import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 import * as URI from "urijs";
 const setupFtp = require("./setupFtp");
 const dns = require("dns");
@@ -104,7 +104,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   }
 
   /**
-   * Generates a record along with a map of every distribution URL to whether 
+   * Generates a record along with a map of every distribution URL to whether
    * or not it should successfully return.
    */
   const recordArbWithSuccesses: jsc.Arbitrary<{
@@ -140,8 +140,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   );
 
   /**
-   * recordArbWithSuccesses, but ensures that no ftp:// paths are duplicated, 
-   * as that confuses our fake FTP server which only has a map of paths and 
+   * recordArbWithSuccesses, but ensures that no ftp:// paths are duplicated,
+   * as that confuses our fake FTP server which only has a map of paths and
    * whether or not to return a successful match for each.
    */
   const recordArbWithSuccessesNoDupFtpPaths = jsc.suchthat(
@@ -354,7 +354,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       })
   );
 
-  /** 
+  /**
    * Generates a failing HTTP code at random, excepting 429 because that
    * triggers different behaviour.
    */
@@ -368,11 +368,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      * Runs onRecordFound with a number of failing codes, testing whether the
      * sleuther retries the correct number of times, and whether it correctly
      * records a success after retries or a failure after the retries run out.
-     * 
+     *
      * This tests both 429 retries and other retries - this involves different
      * behaviour as the retry for 429 (which indicates rate limiting) require
      * a much longer cool-off time and hence are done differently.
-     * 
+     *
      * @param caption The caption to use for the mocha "it" call.
      * @param result Whether to test for a number of retries then a success, a
      *                number of retries then a failure because of too many 429s,
@@ -394,7 +394,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         /**
          * Generates a retryCount and a nested array of results to return to the
          * sleuther - the inner arrays are status codes to be returned (in order),
-         * after each inner array is finished a 429 will be returned, then the 
+         * after each inner array is finished a 429 will be returned, then the
          * next array of error codes will be returned.
          */
         const failuresArb: jsc.Arbitrary<FailuresArbResult> = arbFlatMap<

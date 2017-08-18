@@ -1,7 +1,7 @@
 import Registry from "@magda/typescript-common/dist/Registry";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
-import sleuther, { getRegistry } from "@magda/sleuther-framework/src/index";
+import sleuther, { getRegistry } from "@magda/sleuther-framework/dist/index";
 import * as _ from "lodash";
 import * as request from "request";
 import * as http from "http";
@@ -189,7 +189,7 @@ type DistributionLinkCheck = {
 
 /**
  * Checks a distribution's URL. Returns a tuple of the distribution's host and a no-arg function that when executed will fetch the url, returning a promise.
- * 
+ *
  * @param distribution The distribution Record
  * @param distStringsAspect The dcat-distributions-strings aspect for this distribution
  */
@@ -295,7 +295,7 @@ function retrieveFtp(parsedURL: uri.URI): Promise<BrokenLinkAspect> {
 
 /**
  * Retrieves an HTTP/HTTPS url
- * 
+ *
  * @param url The url to retrieve
  */
 function retrieveHttp(
