@@ -17,7 +17,7 @@ import {
 } from "@magda/typescript-common/src/test/arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/src/test/util";
 import * as URI from "urijs";
-const setupFtp = require("./setup-ftp");
+const setupFtp = require("./setupFtp");
 const dns = require("dns");
 
 const KNOWN_PROTOCOLS = ["https", "http", "ftp"];

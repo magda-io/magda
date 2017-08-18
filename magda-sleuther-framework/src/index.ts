@@ -5,7 +5,7 @@ import {
   AspectDefinition
 } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry, { RecordsPage } from "@magda/typescript-common/dist/Registry";
-import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import AsyncPage, {
   forEachAsync
 } from "@magda/typescript-common/dist/AsyncPage";

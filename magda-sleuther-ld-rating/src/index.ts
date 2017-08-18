@@ -1,6 +1,6 @@
 import Registry from "@magda/typescript-common/src/Registry";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import sleuther from "@magda/sleuther-framework/src/index";
 import * as _ from "lodash";
 
