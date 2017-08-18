@@ -37,7 +37,7 @@ type DcatDatasetStrings = {
 
 
 
-type Publisher = {
+export type Publisher = {
   id:string,
   name:string,
   aspects:{
@@ -54,7 +54,7 @@ type Publisher = {
   }
 }
 
-type DatasetPublisher = {
+export type DatasetPublisher = {
   publisher: Publisher
 }
 
@@ -127,7 +127,7 @@ export type ParsedDataset = {
   error: ?string
 }
 
-const defaultPublisher: Publisher = {
+export const defaultPublisher: Publisher = {
   id: '',
   name: '',
   aspects:{

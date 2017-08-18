@@ -3,7 +3,7 @@ import React from 'react';
 import './Social.css';
 
 
-export default function Social(props) {
+export default function Social() {
   const url: string = window.location.href;
   return (
     <div className='social'>

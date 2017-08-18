@@ -3,16 +3,18 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router';
 import './PublisherSummary.css';
+import type {Publisher} from '../helpers/record';
 
-function PublisherSummary(props) {
+function PublisherSummary(props: {publisher: Publisher}) {
+  const details = props.publisher.aspects['organization-details'];
   return (
       <div className='publisher-summray white-box media'>
                 <div className='media-left'>
-                    <img className='media-object publisher_image' src={props.publisher.image_url} alt={props.publisher.name}/>
+                    <img className='media-object publisher_image' src={details.imageUrl} alt={props.publisher.name}/>
                 </div>
                 <div className='media-body'>
                     <Link to={'publishers/' + encodeURIComponent(props.publisher.id)}><h3>{props.publisher.name}</h3></Link>
-                    <div className='publisher-description'>{props.publisher.description.slice(0, 200) + '...'}</div>
+                    <div className='publisher-description'>{details.description.slice(0, 200) + '...'}</div>
                 </div>
              </div>
   );

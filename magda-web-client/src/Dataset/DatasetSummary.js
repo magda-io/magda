@@ -42,7 +42,7 @@ export default class DatasetSummary extends Component {
               <div className='dataset-summary__content clearfix'>
                 <h5 className='dataset-summary__sub-heading'>Contents</h5>
                 <ToggleList list={this.props.dataset.distributions}
-                            renderFunction={item=>renderDistribution(item, this.props.dataset.identifier)}
+                            renderFunction={item=>renderDistribution(item, this.props.dataset.identifier, false)}
                             className={''}
                             defaultLength={3}
                             getKey={item=>item.downloadURL}/>

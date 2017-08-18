@@ -8,11 +8,22 @@ import { Link } from 'react-router';
 import { connect } from 'react-redux';
 import renderDistribution from '../UI/Distribution';
 import './RecordDetails.css';
+import type {ParsedDataset} from '../helpers/record';
 
-class DatasetDetails extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {showPreview: false};
+type Props = {
+  dataset: ParsedDataset,
+  params: Object
+};
+
+
+type State = {
+  showPreview: boolean
+}
+
+
+class DatasetDetails extends Component<{}, Props, State> {
+  state={
+    showPreview: false
   }
   render(){
     const dataset = this.props.dataset;
