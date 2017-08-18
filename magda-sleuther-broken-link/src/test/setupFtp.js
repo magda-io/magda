@@ -15,13 +15,9 @@ module.exports = function createFtpServer() {
     useWriteFile: false,
     useReadFile: false,
     logLevel: -1,
-    pasvPortRangeStart: 31000,
-    pasvPortRangeEnd: 31020
-    // allowedCommands: ["STAT", "LIST", "USER"]
-    // uploadMaxSlurpSize: 7000 // N/A unless 'useWriteFile' is true.
+    pasvPortRangeStart: 31002,
+    pasvPortRangeEnd: 31102
   });
-
-  // server.debugging = Number.MAX_SAFE_INTEGER;
 
   server.on("error", function(error) {
     console.error("FTP Server error:", error);
@@ -42,46 +38,15 @@ module.exports = function createFtpServer() {
       if (pass) {
         success(username, {
           readdir: (path, cb) => {
-            if ( server.successes[path]) {
+            if (server.successes[path]) {
               cb(null, [path]);
-              // fs.readdir("/home", cb);
             } else {
               cb(null, []);
             }
-            // const success = server.successes[path];
-
-            // if (success) {
-            //   cb(null, [path]);
-            // } else {
-            //   cb(null, []);
-            // }
           },
 
           stat: (path, cb) => {
             fs.stat("/home", cb);
-            //   callback(null, {
-            //     isFile: () => true,
-            //     isDirectory: () => false,
-            //     isBlockDevice: () => true,
-            //     dev: 2114,
-            //     ino: 48064969,
-            //     mode: 33188,
-            //     nlink: 1,
-            //     uid: 85,
-            //     gid: 100,
-            //     rdev: 0,
-            //     size: 527,
-            //     blksize: 4096,
-            //     blocks: 8,
-            //     atimeMs: 1318289051000.1,
-            //     mtimeMs: 1318289051000.1,
-            //     ctimeMs: 1318289051000.1,
-            //     birthtimeMs: 1318289051000.1,
-            //     atime: "Mon, 10 Oct 2011 23:24:11 GMT",
-            //     mtime: "Mon, 10 Oct 2011 23:24:11 GMT",
-            //     ctime: "Mon, 10 Oct 2011 23:24:11 GMT",
-            //     birthtime: "Mon, 10 Oct 2011 23:24:11 GMT"
-            //   });
           }
         });
       } else {
@@ -90,7 +55,6 @@ module.exports = function createFtpServer() {
     });
   });
 
-  // server.debugging = 4;
   server.listen(30021);
 
   return server;

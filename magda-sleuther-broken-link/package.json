@@ -28,7 +28,7 @@
     "@types/urijs": "^1.15.31",
     "chai": "^4.1.0",
     "dns-proxy": "^0.5.0",
-    "ftpd": "git+https://github.com/nodeftpd/nodeftpd.git",
+    "ftpd": "git+https://github.com/TerriaJS/nodeftpd.git",
     "jsverify": "^0.8.2",
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
