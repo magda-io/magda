@@ -30,7 +30,7 @@ class DatasetDetails extends Component {
                     <OverviewBox content={source}/>
                   </div>
                   <div className='dataset-details-source'>
-                      <div className='clearfix'><span className='section-heading'>Data and APIs</span><button className='preview-toggle btn btn-default' onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</button></div>
+                      <h3 className='clearfix'><span className='section-heading'>Data and APIs</span><button className='preview-toggle btn btn-default' onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</button></h3>
                       <div className='clearfix'>{dataset.distributions.map(s=> renderDistribution(s, datasetId, this.state.showPreview))}</div>
                   </div>
                   <div className='dataset-details-temporal-coverage'>
