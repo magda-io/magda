@@ -18,7 +18,6 @@ import {
 import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 import * as URI from "urijs";
 import * as Client from "ftp";
-// import Deferred from "./Deferred";
 import FtpHandler from "../FtpHandler";
 
 const KNOWN_PROTOCOLS = ["https", "http", "ftp"];
@@ -30,7 +29,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   process.env.REGISTRY_URL = registryUrl;
   let registryScope: nock.Scope;
   let clients: { [s: string]: Client[] };
-  let ftpSuccesses: { [url: string]: boolean };
+  let ftpSuccesses: { [url: string]: CheckResult };
 
   before(() => {
     sinon.stub(console, "info");
@@ -84,9 +83,18 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             expect(key).not.to.be.undefined;
             const url = `ftp://${key}${path}`;
 
-            expect(ftpSuccesses[url]).not.to.be.undefined;
-            callback(null, ftpSuccesses[url] ? ["file"] : []);
+            const success = ftpSuccesses[url];
+            expect(success).not.to.be.undefined;
+
+            if (success === "success") {
+              callback(null, ["file"]);
+            } else if (success === "notfound") {
+              callback(null, []);
+            } else {
+              callback(new Error("Fake error!"), null);
+            }
           } catch (e) {
+            console.error(e);
             callback(e, null);
           }
         }
@@ -134,13 +142,22 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       .value();
   }
 
+  type CheckResult = "success" | "error" | "notfound";
+  const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
+    ["success" as "success", "error" as "error", "notfound" as "notfound"].map(
+      jsc.constant
+    )
+  );
+
   /**
    * Generates a record along with a map of every distribution URL to whether
    * or not it should successfully return.
    */
   const recordArbWithSuccesses: jsc.Arbitrary<{
     record: Record;
-    successes: object;
+    successes: {
+      [a: string]: CheckResult;
+    };
   }> = arbFlatMap(
     jsc,
     defaultRecordArb,
@@ -153,42 +170,27 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
       const urls = getKnownProtocolUrls(record);
 
-      const gens: jsc.Arbitrary<boolean>[] = urls.map(() => jsc.bool);
-
-      const gen: jsc.Arbitrary<boolean[]> =
-        gens.length > 0 ? jsc.tuple(gens) : jsc.constant([]);
+      const gen: jsc.Arbitrary<CheckResult[]> = arrayOfSizeArb(
+        jsc,
+        urls.length,
+        checkResultArb
+      );
 
       return gen.smap(
         successfulArr => {
           const successes = urls.reduce((soFar, current, index) => {
             soFar[current] = successfulArr[index];
             return soFar;
-          }, {} as { [a: string]: boolean });
+          }, {} as { [a: string]: CheckResult });
 
           return { record, successes };
         },
-        ({ record, successes }) =>
-          getKnownProtocolUrls(record).map(url => !!successes[url])
+        ({ record, successes }) => {
+          return getKnownProtocolUrls(record).map(url => successes[url]);
+        }
       );
     },
     ({ record, successes }) => record
-  );
-
-  /**
-   * recordArbWithSuccesses, but ensures that no ftp:// paths are duplicated,
-   * as that confuses our fake FTP server which only has a map of paths and
-   * whether or not to return a successful match for each.
-   */
-  const recordArbWithSuccessesNoDupFtpPaths = jsc.suchthat(
-    recordArbWithSuccesses,
-    ({ record, successes }) => {
-      const ftpPaths = _(urlsFromDataSet(record))
-        .filter((x: string) => x.startsWith("ftp"))
-        .map(url => new URI(url).path())
-        .value();
-
-      return _.isEqual(_.uniq(ftpPaths), ftpPaths);
-    }
   );
 
   /**
@@ -200,153 +202,169 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
    */
   it("Should correctly record link statuses and quality", function() {
     return jsc.assert(
-      jsc.forall(
-        recordArbWithSuccessesNoDupFtpPaths,
-        ({
-          record,
-          successes
-        }: {
-          record: Record;
-          successes: { [x: string]: boolean };
-        }) => {
-          beforeEachProperty();
+      jsc.forall(recordArbWithSuccesses, ({ record, successes }) => {
+        beforeEachProperty();
+        // console.log({ record, successes });
 
-          // Tell the FTP server to return success/failure for the various FTP
-          // paths with this dodgy method. Note that because the FTP server can
-          // only see paths and not host, we only send it the path of the req.
-          ftpSuccesses = _.pickBy(successes, (value, url) =>
-            url.startsWith("ftp")
-          );
+        // Tell the FTP server to return success/failure for the various FTP
+        // paths with this dodgy method. Note that because the FTP server can
+        // only see paths and not host, we only send it the path of the req.
+        ftpSuccesses = _.pickBy(successes, (value, url) =>
+          url.startsWith("ftp")
+        );
 
-          const allDists =
-            record.aspects["dataset-distributions"].distributions;
+        const allDists = record.aspects["dataset-distributions"].distributions;
 
-          const httpDistUrls = _(urlsFromDataSet(record))
-            .filter((x: string) => x.startsWith("http"))
-            .map((url: string) => ({
-              url,
-              success: successes[url]
-            }))
-            .value();
+        const httpDistUrls = _(urlsFromDataSet(record))
+          .filter((x: string) => x.startsWith("http"))
+          .map((url: string) => ({
+            url,
+            success: successes[url]
+          }))
+          .value();
 
-          // Set up a nock scope for every HTTP URL - the sleuther will actually
-          // attempt to download these but it'll be intercepted by nock.
-          const distScopes = httpDistUrls.map(
-            ({ url, success }: { url: string; success: boolean }) =>
-              nock(url)
-                .head(url.endsWith("/") ? "/" : "")
-                .reply(success ? 200 : 404)
-          );
+        // Set up a nock scope for every HTTP URL - the sleuther will actually
+        // attempt to download these but it'll be intercepted by nock.
+        const distScopes = httpDistUrls.map(
+          ({ url, success }: { url: string; success: CheckResult }) => {
+            const scope = nock(url).head(url.endsWith("/") ? "/" : "");
 
-          const results = allDists.map((dist: Record) => {
-            const { downloadURL, accessURL } = dist.aspects[
-              "dcat-distribution-strings"
-            ];
-            const success = successes[downloadURL] || successes[accessURL];
+            if (success !== "error") {
+              return scope.reply(success === "success" ? 200 : 404);
+            } else {
+              return scope.replyWithError("fail");
+            }
+          }
+        );
 
-            const isUnknownProtocol = (url: string) => {
-              if (!url) {
-                return false;
-              }
-              const scheme = URI(url).scheme();
-              return !scheme || KNOWN_PROTOCOLS.indexOf(scheme) === -1;
-            };
+        const results = allDists.map((dist: Record) => {
+          const { downloadURL, accessURL } = dist.aspects[
+            "dcat-distribution-strings"
+          ];
+          const success =
+            successes[downloadURL] === "success"
+              ? "success"
+              : successes[accessURL];
 
-            const downloadUnknown = isUnknownProtocol(downloadURL);
-            const accessUnknown = isUnknownProtocol(accessURL);
+          const isUnknownProtocol = (url: string) => {
+            if (!url) {
+              return false;
+            }
+            const scheme = URI(url).scheme();
+            return !scheme || KNOWN_PROTOCOLS.indexOf(scheme) === -1;
+          };
 
-            const result = success
+          const downloadUnknown = isUnknownProtocol(downloadURL);
+          const accessUnknown = isUnknownProtocol(accessURL);
+
+          const result =
+            success === "success"
               ? "active"
               : downloadUnknown || accessUnknown ? "unknown" : "broken";
 
-            registryScope
-              .put(
-                `/records/${encodeURIComponentWithApost(
-                  dist.id
-                )}/aspects/source-link-status`,
-                (body: BrokenLinkAspect) => {
-                  const doesStatusMatch = body.status === result;
+          registryScope
+            .put(
+              `/records/${encodeURIComponentWithApost(
+                dist.id
+              )}/aspects/source-link-status`,
+              (body: BrokenLinkAspect) => {
+                const doesStatusMatch = body.status === result;
 
-                  const isHttpSuccess =
-                    (successes[downloadURL] &&
-                      downloadURL.startsWith("http")) ||
-                    (!successes[downloadURL] &&
-                      successes[accessURL] &&
-                      accessURL.startsWith("http"));
+                const isDownloadUrlHttp =
+                  downloadURL && downloadURL.startsWith("http");
+                const isAccessUrlHttp =
+                  accessURL && accessURL.startsWith("http");
 
-                  const isHttpFailure =
-                    result === "broken" &&
-                    ((downloadURL && downloadURL.startsWith("http")) ||
-                      (!downloadURL &&
-                        accessURL &&
-                        accessURL.startsWith("http")));
+                const isDownloadUrlHttpSuccess =
+                  isDownloadUrlHttp && successes[downloadURL] === "success";
 
-                  const doesResponseCodeMatch = ((code?: number) => {
-                    if (isHttpSuccess) {
-                      return code === 200;
-                    } else if (isHttpFailure) {
-                      return code === 404;
-                    } else {
-                      return _.isUndefined(code);
-                    }
-                  })(body.httpStatusCode);
+                const isDownloadUrlFtpSuccess =
+                  !isDownloadUrlHttp && successes[downloadURL] === "success";
 
-                  const doesErrorMatch = ((arg?: Error) =>
-                    success ? _.isUndefined(arg) : !_.isUndefined(arg))(
-                    body.errorDetails
-                  );
+                const isAccessURLHttpSuccess =
+                  isAccessUrlHttp && successes[accessURL] === "success";
 
-                  return (
-                    doesStatusMatch && doesResponseCodeMatch && doesErrorMatch
-                  );
-                }
-              )
-              .reply(201);
+                const isHttpSuccess: boolean =
+                  isDownloadUrlHttpSuccess ||
+                  (!isDownloadUrlFtpSuccess && isAccessURLHttpSuccess);
 
-            return result;
-          });
+                const is404: boolean =
+                  result === "broken" &&
+                  ((isDownloadUrlHttp &&
+                    successes[downloadURL] === "notfound") ||
+                    (_.isUndefined(downloadURL) &&
+                      isAccessUrlHttp &&
+                      successes[accessURL] === "notfound"));
 
-          if (allDists.length > 0) {
-            const expectedQualityScore =
-              results.filter((result: string) => result === "active").length /
-              allDists.length;
-
-            registryScope
-              .patch(
-                `/records/${encodeURIComponentWithApost(
-                  record.id
-                )}/aspects/dataset-quality-rating`,
-                [
-                  {
-                    op: "add",
-                    path: "/source-link-status",
-                    value: {
-                      score: expectedQualityScore,
-                      weighting: 1
-                    }
+                const doesResponseCodeMatch = ((code?: number) => {
+                  if (isHttpSuccess) {
+                    return code === 200;
+                  } else if (is404) {
+                    return code === 404;
+                  } else {
+                    return _.isUndefined(code);
                   }
-                ]
-              )
-              .reply(201);
-          }
+                })(body.httpStatusCode);
 
-          return onRecordFound(record, 0, 0, 0, ftpHandler)
-            .then(() => {
-              distScopes.forEach(scope => scope.done());
-              registryScope.done();
-            })
-            .then(() => {
-              afterEachProperty();
-              return true;
-            })
-            .catch(e => {
-              afterEachProperty();
-              throw e;
-            });
+                const doesErrorMatch = ((arg?: Error) =>
+                  success === "success"
+                    ? _.isUndefined(arg)
+                    : !_.isUndefined(arg))(body.errorDetails);
+
+                // console.log(
+                //   `${dist.id}: ${doesStatusMatch} && ${doesResponseCodeMatch} && ${doesErrorMatch} `
+                // );
+
+                return (
+                  doesStatusMatch && doesResponseCodeMatch && doesErrorMatch
+                );
+              }
+            )
+            .reply(201);
+
+          return result;
+        });
+
+        if (allDists.length > 0) {
+          const expectedQualityScore =
+            results.filter((result: string) => result === "active").length /
+            allDists.length;
+
+          registryScope
+            .patch(
+              `/records/${encodeURIComponentWithApost(
+                record.id
+              )}/aspects/dataset-quality-rating`,
+              [
+                {
+                  op: "add",
+                  path: "/source-link-status",
+                  value: {
+                    score: expectedQualityScore,
+                    weighting: 1
+                  }
+                }
+              ]
+            )
+            .reply(201);
         }
-      ),
+
+        return onRecordFound(record, 0, 0, 0, ftpHandler)
+          .then(() => {
+            distScopes.forEach(scope => scope.done());
+            registryScope.done();
+          })
+          .then(() => {
+            afterEachProperty();
+            return true;
+          })
+          .catch(e => {
+            afterEachProperty();
+            throw e;
+          });
+      }),
       {
-        // rngState: "092b7e0365c8da4f19",
+        // rngState: "0a60f4c38b75a2d1e9",
         tests: 500
       }
     );

@@ -4,6 +4,7 @@ const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../../src/generated/registry/api";
 const lazyseq = require("lazy-seq");
 import uuid = require("uuid/v4");
+import * as _ from "lodash";
 
 function fromCode(code: number) {
   return String.fromCharCode(code);
@@ -55,7 +56,7 @@ export const lcAlphaNumStringArbNe = (jsc: jsc) =>
 const uuidArb: (jsc: jsc) => jsverify.Arbitrary<string> = (jsc: jsc) =>
   jsc.bless({
     generator: jsc.generator.bless(x => uuid()),
-    shrink: jsc.shrink.bless(uuid => [uuid]),
+    shrink: jsc.shrink.bless(x => [uuid()]),
     show: (x: string) => x
   });
 
@@ -129,6 +130,11 @@ export type MonadicArb<T> = jsverify.Arbitrary<T> & {
   ): MonadicArb<U>;
 };
 
+/** Sometimes jsverify returns a lazy-seq when it should return an array, this makes sure it's an array. */
+function unSeq<T>(maybeArray: any): T[] {
+  return maybeArray.toArray ? maybeArray.toArray() : maybeArray;
+}
+
 export function arbFlatMap<T, U>(
   jsc: jsc,
   arb: jsverify.Arbitrary<T>,
@@ -143,12 +149,9 @@ export function arbFlatMap<T, U>(
     show,
     shrink: jsc.shrink.bless((u: U) => {
       const t = backwards(u);
-      const arb = arbForward(t);
-
-      console.log(t);
-      console.log(u);
-
-      return arb.shrink(u);
+      const ts = unSeq<T>(arb.shrink(t));
+      const us = _.flatMap(ts, thisT => unSeq<U>(arbForward(thisT).shrink(u)));
+      return us;
     })
   });
 
