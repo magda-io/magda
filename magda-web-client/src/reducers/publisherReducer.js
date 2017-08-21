@@ -7,7 +7,7 @@ const initialData = {
     isFetchingPublishers: false,
     isFetchingPublisher: false,
     publishers: [],
-    publisher: {},
+    publisher: parsePublisher(),
     hitCount: 0,
     errorFetchingPublishers: undefined,
     errorFetchingPublisher: undefined,
