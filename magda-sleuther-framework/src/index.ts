@@ -25,12 +25,13 @@ export interface SleutherOptions {
   express?: () => express.Express;
 }
 
-export function getRegistry() {
+export function getRegistry({ maxRetries }: { maxRetries?: number } = {}) {
   return new Registry({
     baseUrl:
       process.env.REGISTRY_URL ||
       process.env.npm_package_config_registryUrl ||
-      "http://localhost:6101/v0"
+      "http://localhost:6101/v0",
+    maxRetries
   });
 }
 

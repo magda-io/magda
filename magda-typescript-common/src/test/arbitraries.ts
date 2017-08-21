@@ -145,6 +145,9 @@ export function arbFlatMap<T, U>(
       const t = backwards(u);
       const arb = arbForward(t);
 
+      console.log(t);
+      console.log(u);
+
       return arb.shrink(u);
     })
   });
@@ -189,28 +192,19 @@ export function arrayOfSizeArb<T>(
 }
 
 const urlPartsArb = (jsc: jsc, options: urlArbOptions) =>
-  jsc
-    .record({
-      scheme: options.schemeArb,
-      host: jsc.suchthat(
-        options.hostArb,
-        (string: string) => !string.startsWith("ftp")
-      ),
-      path: jsc.array(lcAlphaNumStringArbNe(jsc))
-    })
-    .smap(
-      partialUrlParts => ({
-        ...partialUrlParts,
-        host:
-          (partialUrlParts.scheme === "ftp" ? "ftp" : "") +
-          partialUrlParts.host,
-        port: partialUrlParts.scheme === "ftp" ? 30021 : 80
-      }),
-      urlParts => ({
-        ...urlParts,
-        port: undefined
-      })
-    );
+  jsc.record({
+    scheme: options.schemeArb,
+    host: jsc.suchthat(
+      options.hostArb,
+      (string: string) => !string.startsWith("ftp")
+    ),
+    port: jsc.oneof([
+      jsc.integer(1, 65000),
+      jsc.constant(80),
+      jsc.constant(21)
+    ]),
+    path: jsc.array(lcAlphaNumStringArbNe(jsc))
+  });
 
 export const distUrlArb = (
   jsc: jsc,
@@ -220,10 +214,17 @@ export const distUrlArb = (
   }: urlArbOptions = {}
 ) =>
   urlPartsArb(jsc, { schemeArb, hostArb }).smap(
-    urlParts =>
-      `${urlParts.scheme}://${urlParts.host}.com:${urlParts.port}/${(urlParts.path ||
+    urlParts => {
+      const port =
+        (urlParts.scheme === "http" && urlParts.port === 80) ||
+        (urlParts.scheme === "ftp" && urlParts.port === 21)
+          ? ""
+          : ":" + urlParts.port;
+
+      return `${urlParts.scheme}://${urlParts.host}.com${port}/${(urlParts.path ||
         [])
-        .join("/")}` as string,
+        .join("/")}` as string;
+    },
     (url: string) => {
       const splitAfterScheme = url.split("://")[0];
       const scheme = splitAfterScheme[0];

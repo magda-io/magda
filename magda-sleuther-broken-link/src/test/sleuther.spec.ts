@@ -4,10 +4,10 @@ import * as sinon from "sinon";
 import * as nock from "nock";
 ///<reference path="@magda/typescript-common/dist/test/jsverify.d.ts" />
 import jsc = require("jsverify");
-import Registry from "@magda/typescript-common/dist/Registry";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import * as _ from "lodash";
-import { onRecordFound, BrokenLinkAspect } from "../sleuther";
+import onRecordFound from "../onRecordFound";
+import { BrokenLinkAspect } from "../brokenLinkAspectDef";
 import {
   specificRecordArb,
   distStringsArb,
@@ -17,33 +17,22 @@ import {
 } from "@magda/typescript-common/dist/test/arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 import * as URI from "urijs";
-const setupFtp = require("./setupFtp");
-const dns = require("dns");
+import * as Client from "ftp";
+// import Deferred from "./Deferred";
+import FtpHandler from "../FtpHandler";
 
 const KNOWN_PROTOCOLS = ["https", "http", "ftp"];
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
-  this.timeout(60000);
+  this.timeout(20000);
   nock.disableNetConnect();
   const registryUrl = "http://example.com";
+  process.env.REGISTRY_URL = registryUrl;
   let registryScope: nock.Scope;
-  let ftp: any;
+  let clients: { [s: string]: Client[] };
+  let ftpSuccesses: { [url: string]: boolean };
 
   before(() => {
-    const originalDns = dns.lookup;
-
-    // Set up an FTP server that will respond in line with test data.
-    ftp = setupFtp();
-
-    // Mess with node DNS so that a call to any host that starts with FTP actually gets resolved to our local FTP server.
-    sinon.stub(dns, "lookup").callsFake((hostname, options, callback) => {
-      if (hostname.startsWith("ftp")) {
-        callback(null, "127.0.0.1", 4);
-      } else {
-        originalDns(hostname, options, callback);
-      }
-    });
-
     sinon.stub(console, "info");
 
     nock.emitter.on("no match", onMatchFail);
@@ -54,16 +43,58 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   };
 
   after(() => {
-    dns.lookup.restore();
     (console.info as any).restore();
 
-    ftp.close();
     nock.emitter.removeListener("no match", onMatchFail);
   });
 
   const beforeEachProperty = () => {
     registryScope = nock(registryUrl); //.log(console.log);
+    clients = {};
+    ftpSuccesses = {};
   };
+
+  const clientFactory = () => {
+    const client = new Client();
+    let readyCallback: () => void;
+    let key: string;
+    sinon
+      .stub(client, "connect")
+      .callsFake(({ host, port }: { host: string; port: number }) => {
+        const keyPort = port !== 21 ? `:${port}` : "";
+        key = `${host}${keyPort}`;
+        if (!clients[key]) {
+          clients[key] = [];
+        }
+        clients[key].push(client);
+        readyCallback();
+      });
+    sinon
+      .stub(client, "on")
+      .callsFake((event: string, callback: () => void) => {
+        if (event === "ready") {
+          readyCallback = callback;
+        }
+      });
+    sinon
+      .stub(client, "list")
+      .callsFake(
+        (path: string, callback: (err: Error, list: string[]) => void) => {
+          try {
+            expect(key).not.to.be.undefined;
+            const url = `ftp://${key}${path}`;
+
+            expect(ftpSuccesses[url]).not.to.be.undefined;
+            callback(null, ftpSuccesses[url] ? ["file"] : []);
+          } catch (e) {
+            callback(e, null);
+          }
+        }
+      );
+    return client;
+  };
+
+  const ftpHandler = new FtpHandler(clientFactory);
 
   const afterEachProperty = () => {
     nock.cleanAll();
@@ -114,26 +145,30 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     jsc,
     defaultRecordArb,
     (record: Record) => {
-      const urls: any[] = _(urlsFromDataSet(record))
-        .filter(url => KNOWN_PROTOCOLS.indexOf(URI(url).scheme()) >= 0)
-        .uniq()
-        .value();
+      const getKnownProtocolUrls = (record: Record) =>
+        _(urlsFromDataSet(record))
+          .filter(url => KNOWN_PROTOCOLS.indexOf(URI(url).scheme()) >= 0)
+          .uniq()
+          .value();
+
+      const urls = getKnownProtocolUrls(record);
 
       const gens: jsc.Arbitrary<boolean>[] = urls.map(() => jsc.bool);
 
-      const gen = gens.length > 0 ? jsc.tuple(gens) : jsc.constant([]);
+      const gen: jsc.Arbitrary<boolean[]> =
+        gens.length > 0 ? jsc.tuple(gens) : jsc.constant([]);
 
       return gen.smap(
         successfulArr => {
           const successes = urls.reduce((soFar, current, index) => {
             soFar[current] = successfulArr[index];
             return soFar;
-          }, {});
+          }, {} as { [a: string]: boolean });
 
           return { record, successes };
         },
         ({ record, successes }) =>
-          urlsFromDataSet(record).map(url => successes[url])
+          getKnownProtocolUrls(record).map(url => !!successes[url])
       );
     },
     ({ record, successes }) => record
@@ -179,10 +214,9 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           // Tell the FTP server to return success/failure for the various FTP
           // paths with this dodgy method. Note that because the FTP server can
           // only see paths and not host, we only send it the path of the req.
-          ftp.successes = _(successes)
-            .pickBy((value, url) => url.startsWith("ftp"))
-            .mapKeys((value: boolean, url: string) => new URI(url).path())
-            .value();
+          ftpSuccesses = _.pickBy(successes, (value, url) =>
+            url.startsWith("ftp")
+          );
 
           const allDists =
             record.aspects["dataset-distributions"].distributions;
@@ -296,12 +330,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
               .reply(201);
           }
 
-          const registry = new Registry({
-            baseUrl: registryUrl,
-            maxRetries: 0
-          });
-
-          return onRecordFound(registry, record, 0, 0)
+          return onRecordFound(record, 0, 0, 0, ftpHandler)
             .then(() => {
               distScopes.forEach(scope => scope.done());
               registryScope.done();
@@ -458,10 +487,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             failuresArb,
             (record: Record, { retryCount, allResults }: FailuresArbResult) => {
               beforeEachProperty();
-              const registry = new Registry({
-                baseUrl: registryUrl,
-                maxRetries: 0
-              });
 
               const distScopes = urlsFromDataSet(record).map(url => {
                 const scope = nock(url); //.log(console.log);
@@ -534,7 +559,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                   .reply(201);
               }
 
-              return onRecordFound(registry, record, 0, retryCount)
+              return onRecordFound(record, 0, retryCount)
                 .then(() => {
                   registryScope.done();
                   distScopes.forEach(scope => scope.done());
@@ -604,11 +629,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         (record: Record, failures: number[], delayMs: number) => {
           beforeEachProperty();
 
-          const registry = new Registry({
-            baseUrl: registryUrl,
-            maxRetries: 0
-          });
-
           const distScopes = urlsFromDataSet(
             record
           ).reduce((scopeLookup, url) => {
@@ -649,7 +669,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           registryScope.patch(/.*/).reply(201);
           registryScope.put(/.*/).times(allDists.length).reply(201);
 
-          return onRecordFound(registry, record, 0, failures.length)
+          return onRecordFound(record, 0, failures.length)
             .then(() => {
               _.values(distScopes).forEach(scope => scope.done());
             })
@@ -686,11 +706,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     record => {
       beforeEachProperty();
 
-      const registry = new Registry({
-        baseUrl: registryUrl
-      });
-
-      return onRecordFound(registry, record).then(() => {
+      return onRecordFound(record).then(() => {
         afterEachProperty();
 
         registryScope.done();
