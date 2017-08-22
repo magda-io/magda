@@ -90,7 +90,7 @@ export default class DatasetSummary extends Component {
                   </div>
 
                   <label className='dataset-summary-source'>Source: {source}</label>
-                  <label className='dataset-summary-source'>{defined(dataset.quality) && <QualityIndicator quality={dataset.quality}/>}</label>
+                  <label className='dataset-summary-quality'>{defined(dataset.quality) && <QualityIndicator quality={dataset.quality}/>}</label>
 
                 </div>
               {this.props.onClickDataset && <div className='dataset-summary__footer'>

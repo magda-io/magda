@@ -11,7 +11,7 @@ function QualityIndicator(props: {quality: number}) {
   };
 
   return (
-        <div> Quality: <span style={style} className='quality'></span> {rating} </div>
+        <div> Quality: <span style={style} className='quality'></span> {rating*100}% </div>
   );
 }
 
