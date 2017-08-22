@@ -15,7 +15,7 @@ export default function renderDistribution(distribution: ParsedDistribution, dat
           </div>
           <div className='media-body'>
            <h3><Link to={`/dataset/${encodeURIComponent(datasetId)}/distribution/${encodeURIComponent(distribution.identifier)}`}>{distribution.title}({distribution.format})</Link></h3>
-           <div className='distribution__license'>{typeof distribution.license === 'string' ? distribution.license : (distribution.license.name ?  distribution.license.name : '')}</div>
+           <div className='distribution__license'>{distribution.license && (typeof distribution.license === 'string' ? distribution.license : (distribution.license.name ?  distribution.license.name : ''))}</div>
           </div>
           {
             distribution.linkStatusAvailable && <div className='media-right'>
