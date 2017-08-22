@@ -37,7 +37,7 @@ type DcatDatasetStrings = {
 
 
 
-type Publisher = {
+export type Publisher = {
   id:string,
   name:string,
   aspects:{
@@ -54,7 +54,7 @@ type Publisher = {
   }
 }
 
-type DatasetPublisher = {
+export type DatasetPublisher = {
   publisher: Publisher
 }
 
@@ -66,7 +66,13 @@ export type RawDistribution = {
     'dcat-distribution-strings': dcatDistributionStrings,
     'source-link-status': {
       status: ?string
-    }
+    },
+    'visualisation-info': {
+      fields: Object,
+      format: string,
+      timeseries: boolean,
+      wellFormed: boolean
+      }
   }
 }
 
@@ -77,9 +83,9 @@ export type RawDataset = {
   aspects: {
     'dcat-dataset-strings': DcatDatasetStrings,
     source?: {
-      "url": string,
-      "name": string,
-      "type": string,
+      'url': string,
+      'name': string,
+      'type': string,
     },
     'dataset-publisher'?: DatasetPublisher,
     'dataset-distributions'?: {
@@ -91,7 +97,7 @@ export type RawDataset = {
 
 
 export type ParsedDistribution = {
-  id: string,
+  identifier: string,
   title: string,
   description: string,
   format: string,
@@ -100,7 +106,9 @@ export type ParsedDistribution = {
   updatedDate: string,
   license: string,
   linkActive:boolean,
-  linkStatusAvailable:boolean
+  linkStatusAvailable:boolean,
+  isTimeSeries: boolean,
+  chartFields? : ?Object
 };
 
 // all aspects become required and must have value
@@ -119,7 +127,7 @@ export type ParsedDataset = {
   error: ?string
 }
 
-const defaultPublisher: Publisher = {
+export const defaultPublisher: Publisher = {
   id: '',
   name: '',
   aspects:{
@@ -151,9 +159,9 @@ const defaultDatasetAspects = {
   'temporal-coverage': null,
   'dataset-publisher': {publisher: defaultPublisher},
   'source': {
-    "url": '',
-    "name": '',
-    "type": '',
+    'url': '',
+    'name': '',
+    'type': '',
   },
   error: null
 }
@@ -170,11 +178,17 @@ const defaultDistributionAspect = {
   },
   'source-link-status': {
     status: null
-  }
+  },
+  "visualisation-info": {
+    "fields": {},
+    "format": null,
+    "timeseries": false,
+    "wellFormed": false
+    }
 }
 
 export function parseDistribution(record?: RawDistribution) : ParsedDistribution {
-  const id = record ? record['id']: '';
+  const identifier = record ? record['id']: '';
   const title = record ? record['name'] : '';
 
   const aspects = record ? Object.assign({}, defaultDistributionAspect, record['aspects']) : defaultDistributionAspect;
@@ -190,9 +204,21 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const linkStatus = aspects['source-link-status'];
   const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
   const linkActive = linkStatus.status === 'active';
+  const isTimeSeries = aspects['visualisation-info']['timeseries']
+  let chartFields = null;
+
+  if(isTimeSeries){
+    const fields = aspects['visualisation-info'].fields;
+    const timeFields = Object.keys(fields).filter(f=>fields[f].time === true);
+    const numericFields = Object.keys(fields).filter(f=>fields[f].numeric === true);
+    chartFields = {
+          time: timeFields,
+          numeric: numericFields
+    }
+  }
 
 
-  return { id, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive }
+  return { identifier, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive, isTimeSeries, chartFields }
 };
 
 
@@ -220,8 +246,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
       const distributionAspects = Object.assign({}, defaultDistributionAspect, d['aspects']);
       const info = distributionAspects['dcat-distribution-strings'];
       const linkStatus = distributionAspects['source-link-status'];
+      const visualisationInfo = distributionAspects['visualisation-info'];
       return {
-          id: d['id'],
+          identifier: d['id'],
           title: d['name'],
           downloadURL: info.downloadURL || null,
           accessURL : info.accessURL || null,
@@ -230,7 +257,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
           description: info.description || 'No description provided',
           linkStatusAvailable: Boolean(linkStatus.status), // Link status is available if status is non-empty string
           linkActive: linkStatus.status === 'active',
-          updatedDate: info.modified ? getDateString(info.modified) : 'unknown date'
+          updatedDate: info.modified ? getDateString(info.modified) : 'unknown date',
+          isTimeSeries: visualisationInfo['timeseries']
       }
   });
   return {

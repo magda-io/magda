@@ -43,7 +43,7 @@ class PublisherDetails extends Component<void, Props, void> {
                         <h1>{publisher.name}</h1>
                         <div className='publisher-details-overview'>
                             <h3 className='section-heading'>Overview</h3>
-                            <OverviewBox content={publisher.description}/>
+                            <OverviewBox content={publisher.aspects['organization-details'].description}/>
                         </div>
                     </div>
                     <div className='col-sm-4'>

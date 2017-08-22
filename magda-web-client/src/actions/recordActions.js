@@ -74,7 +74,7 @@ export function fetchDatasetFromRegistry(id: string):Function{
 export function fetchDistributionFromRegistry(id: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestDistribution(id))
-    let url : string = config.registryUrl + `/records/${encodeURIComponent(id)}?aspect=dcat-distribution-strings&optionalAspect=source-link-status`;
+    let url : string = config.registryUrl + `/records/${encodeURIComponent(id)}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualisation-info`;
     console.log(url);
     return fetch(url)
     .then(response => {

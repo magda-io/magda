@@ -1,11 +1,13 @@
 // @flow
 import {parsePublisher} from '../helpers/publisher';
+import type {Publisher} from '../helpers/record';
+
 
 const initialData = {
     isFetchingPublishers: false,
     isFetchingPublisher: false,
     publishers: [],
-    publisher: {},
+    publisher: parsePublisher(),
     hitCount: 0,
     errorFetchingPublishers: undefined,
     errorFetchingPublisher: undefined,
@@ -15,8 +17,8 @@ const initialData = {
 type PublishersResult = {
   isFetchingPublishers : boolean,
   isFetchingPublisher : boolean,
-  publishers: Array<Object>,
-  publisher: Object,
+  publishers: Array<Publisher>,
+  publisher: Publisher,
   hitCount: number,
   errorFetchingPublishers: any,
   errorFetchingPublisher: any,

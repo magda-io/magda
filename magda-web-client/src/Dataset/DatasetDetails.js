@@ -8,8 +8,23 @@ import { Link } from 'react-router';
 import { connect } from 'react-redux';
 import renderDistribution from '../UI/Distribution';
 import './RecordDetails.css';
+import type {ParsedDataset} from '../helpers/record';
 
-class DatasetDetails extends Component {
+type Props = {
+  dataset: ParsedDataset,
+  params: Object
+};
+
+
+type State = {
+  showPreview: boolean
+}
+
+
+class DatasetDetails extends Component<{}, Props, State> {
+  state={
+    showPreview: false
+  }
   render(){
     const dataset = this.props.dataset;
     const datasetId = this.props.params.datasetId;
@@ -26,8 +41,8 @@ class DatasetDetails extends Component {
                     <OverviewBox content={source}/>
                   </div>
                   <div className='dataset-details-source'>
-                      <h3 className='section-heading'>Data and APIs</h3>
-                      <div className='white-box'>{dataset.distributions.map(s=> renderDistribution(s.format, s.id, s.title, s.license, datasetId, s.linkStatusAvailable, s.linkActive))}</div>
+                      <h3 className='clearfix'><span className='section-heading'>Data and APIs</span><button className='preview-toggle btn btn-default' onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</button></h3>
+                      <div className='clearfix'>{dataset.distributions.map(s=> renderDistribution(s, datasetId, this.state.showPreview))}</div>
                   </div>
                   <div className='dataset-details-temporal-coverage'>
                       <h3 className='section-heading'>Temporal coverage</h3>
@@ -35,16 +50,16 @@ class DatasetDetails extends Component {
                   </div>
               </div>
 
-              <div className='record-details__sidebar col-sm-4'>
-                  <Social/>
-                  <div className='tags'>
-                    <h5>Tags</h5>
-                    {dataset.tags && dataset.tags.map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
-                  </div>
-              </div>
-              </div>
-          </div>
-  }
+            <div className='record-details__sidebar col-sm-4'>
+                <Social/>
+                <div className='tags'>
+                  <h5>Tags</h5>
+                  {dataset.tags && dataset.tags.map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
+                </div>
+            </div>
+            </div>
+        </div>
+      }
 }
 
 function mapStateToProps(state) {

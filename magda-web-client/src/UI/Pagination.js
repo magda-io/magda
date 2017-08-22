@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import queryString from 'query-string';
 import propTypes from 'prop-types';
 import './Pagination.css';
