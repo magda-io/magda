@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.service.internalPort }}
+    targetPort: {{ .Values.service.internalPort }}
+  selector:
+    service: gateway
+  type: {{ .Values.service.type }}
+{{ if .Values.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.loadBalancerIP | quote }}
+{{ end }}

@@ -1,0 +1,6 @@
+# Default values for magda.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+global:
+  repository: "data61/"
+  tag: "0.0.28"
