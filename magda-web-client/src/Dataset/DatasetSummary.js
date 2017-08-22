@@ -1,8 +1,10 @@
 //  @flow
 import React, { Component } from 'react';
 import MarkdownViewer from '../UI/MarkdownViewer';
+import defined from '../helpers/defined';
 // import Star from '../UI/Star';
 import ToggleList from '../UI/ToggleList';
+import QualityIndicator from '../UI/QualityIndicator';
 import renderDistribution from '../UI/Distribution';
 import './DatasetSummary.css';
 import { Link } from 'react-router';
@@ -66,6 +68,7 @@ export default class DatasetSummary extends Component {
                             to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>
                         {dataset.title}
                       </Link>
+
                       <label className='dataset-summary-publisher'>{publisher}</label>
                     </div>
                     <span className='hidden-xs dataset-summary__toggle'>
@@ -87,6 +90,8 @@ export default class DatasetSummary extends Component {
                   </div>
 
                   <label className='dataset-summary-source'>Source: {source}</label>
+                  <label className='dataset-summary-source'>{defined(dataset.quality) && <QualityIndicator quality={dataset.quality}/>}</label>
+
                 </div>
               {this.props.onClickDataset && <div className='dataset-summary__footer'>
                   {this.props.isExpanded && this.renderLinks()}
