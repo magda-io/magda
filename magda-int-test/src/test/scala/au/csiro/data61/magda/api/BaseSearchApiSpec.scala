@@ -29,7 +29,7 @@ import com.sksamuel.elastic4s.Indexes
 import scala.collection.mutable
 
 trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
-  val INSERTION_WAIT_TIME = 90 seconds
+  val INSERTION_WAIT_TIME = 500 seconds
 
   val cleanUpQueue = new ConcurrentLinkedQueue[String]()
 
@@ -88,11 +88,11 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
       }
     }
   def mediumIndexGen: Gen[(String, List[DataSet], Route)] = indexGen
-//    Gen.delay {
-//      Gen.choose(45, 55).flatMap { size =>
-//        genIndexForSize(size)
-//      }
-//    }
+  //    Gen.delay {
+  //      Gen.choose(45, 55).flatMap { size =>
+  //        genIndexForSize(size)
+  //      }
+  //    }
 
   def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
     val size = rawSize % 100

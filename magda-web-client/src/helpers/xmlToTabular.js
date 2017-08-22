@@ -1,6 +1,5 @@
 //@flow
 import  fastXmlParser from 'fast-xml-parser';
-import traverse from 'traverse';
 import jsonToArray from './jsonToArray';
 import type {PreviewData} from './previewData';
 

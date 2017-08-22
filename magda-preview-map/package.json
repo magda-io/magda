@@ -1,5 +1,5 @@
 {
-  "name": "magda-preview-map",
+  "name": "@magda/preview-map",
   "version": "0.0.29-SNAPSHOT",
   "description": "Geospatial preview based on TerriaJS.",
   "license": "Apache-2.0",

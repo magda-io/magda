@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import fetch from 'isomorphic-fetch'
 import {fetchPreviewData} from '../actions/previewDataActions'
 import { bindActionCreators } from 'redux';
 import DataPreviewer from '../UI/DataPreviewer';
 import ProgressBar from "../UI/ProgressBar";
-
-import JsonForm from 'react-json';
 
 import './DatasetPreview.css'
 

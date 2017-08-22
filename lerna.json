@@ -1,12 +1,12 @@
 {
-  "lerna": "2.0.0-rc.5",
+  "lerna": "2.0.0",
   "packages": [
     "deploy/",
     "magda-auth-api/",
     "magda-auth-db/",
     "magda-sleuther-framework/",
     "magda-sleuther-ld-rating/",
-    "magda-broken-link-sleuther/",
+    "magda-sleuther-broken-link/",
     "magda-ckan-connector/",
     "magda-combined-db/",
     "magda-csw-connector/",
@@ -31,9 +31,7 @@
     "scripts/"
   ],
   "version": "0.0.29-SNAPSHOT",
-  "hoist": [
-    "tsmonad"
-  ],
+  "hoist": ["tsmonad", "urijs", "@types/urijs"],
   "concurrency": "1",
   "commands": {
     "docker-build-prod": {

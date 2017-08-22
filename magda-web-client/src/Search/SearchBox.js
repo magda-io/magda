@@ -1,6 +1,7 @@
 // @flow
 // eslint-disable-next-line
 import {RouterContext } from 'react-router';
+import propTypes from 'prop-types';
 
 import './SearchBox.css';
 import {connect} from 'react-redux';
@@ -139,7 +140,7 @@ class SearchBox extends Component {
 }
 
 SearchBox.contextTypes ={
-  router: React.PropTypes.object.isRequired,
+  router: propTypes.object.isRequired,
 }
 
 

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import queryString from 'query-string';
+import propTypes from 'prop-types';
 import './Pagination.css';
 
 class Pagination extends Component {
@@ -53,7 +54,7 @@ class Pagination extends Component {
 }
 
 Pagination.contextTypes ={
-  router: React.PropTypes.object.isRequired,
+  router: propTypes.object.isRequired,
 }
 
 export default Pagination;

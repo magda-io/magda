@@ -5,176 +5,253 @@ import {
   AspectDefinition
 } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry, { RecordsPage } from "@magda/typescript-common/dist/Registry";
-import unionToThrowable from "@magda/typescript-common/dist/util/union-to-throwable";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import AsyncPage, {
   forEachAsync
 } from "@magda/typescript-common/dist/AsyncPage";
-// import * as _ from "lodash";
 import * as express from "express";
+import * as fetch from "isomorphic-fetch";
+import * as _ from "lodash";
 
-export type SleutherOptions = {
-  registry: Registry;
+export interface SleutherOptions {
   host: string;
   defaultPort: number;
   id: string;
   aspects: string[];
   optionalAspects: string[];
   writeAspectDefs: AspectDefinition[];
+  async?: boolean;
   onRecordFound: (record: Record) => Promise<void>;
-};
+  express?: () => express.Express;
+}
+
+export function getRegistry({ maxRetries }: { maxRetries?: number } = {}) {
+  return new Registry({
+    baseUrl:
+      process.env.REGISTRY_URL ||
+      process.env.npm_package_config_registryUrl ||
+      "http://localhost:6101/v0",
+    maxRetries
+  });
+}
 
 export default async function sleuther(
   options: SleutherOptions
 ): Promise<void> {
-  setupWebhookEndpoint(options);
+  checkOptions(options);
 
-  await putAspectDefsIfNeeded(options);
-  await registerWebhookIfNecessary(options);
-  await crawlExistingRecords(options);
-}
+  options.express = options.express || (() => express());
+  const registry = getRegistry();
 
-async function putAspectDefsIfNeeded(options: SleutherOptions) {
-  const aspectDefsToAdd = options.writeAspectDefs;
-  console.info(`Adding aspect defs ${aspectDefsToAdd.map(def => def.name)}`);
+  setupWebhookEndpoint();
 
-  const addPromises = aspectDefsToAdd.map(aspectDef =>
-    options.registry.putAspectDefinition(aspectDef)
-  );
+  await putAspectDefs();
+  await registerWebhook();
+  await crawlExistingRecords();
 
-  return Promise.all(addPromises).then(failIfErrors).then(result => {
-    console.info("Successfully added aspect defs");
-    return result;
-  });
-}
-
-function failIfErrors<T>(results: Array<T | Error>) {
-  const failed = results.filter((result: T | Error) => result instanceof Error);
-
-  if (failed.length > 0) {
-    throw failed[0];
-  } else {
-    return results;
-  }
-}
-
-function setupWebhookEndpoint(options: SleutherOptions) {
-  const server = express();
-
-  server.get(
-    "/hook",
-    (request: express.Request, response: express.Response) => {
-      const payload = request.body();
-      const promises: Promise<void>[] = payload.records.map((record: Record) =>
-        options.onRecordFound(record)
-      );
-
-      Promise.all(promises)
-        .then(results => {
-          response.status(201).send("Received");
-        })
-        .catch(e => {
-          console.error(e);
-          response.status(500).send("Error");
-        });
+  function checkOptions(options: SleutherOptions) {
+    if (options.defaultPort <= 0 || options.defaultPort > 65535) {
+      throw new Error(`Default port of ${options.defaultPort} is invalid`);
     }
-  );
 
-  console.info(`Listening at ${getHookUrl(options)}`);
-  server.listen(getPort(options));
-}
+    if (options.id === "") {
+      throw new Error(`id is unspecified`);
+    }
 
-function getHookUrl(options: SleutherOptions) {
-  return `http://${options.host}:${getPort(options)}/hook`;
-}
+    if (options.host === "") {
+      throw new Error(`Host is unspecified`);
+    }
 
-function getPort(options: SleutherOptions) {
-  return process.env.NODE_PORT || options.defaultPort;
-}
+    const containsBlank = (strings: string[]) =>
+      strings.some(string => string === "");
 
-async function registerWebhookIfNecessary(options: SleutherOptions) {
-  console.info("Looking up existing webhooks");
-  const hooks = await options.registry.getHooks();
+    if (containsBlank(options.aspects)) {
+      throw new Error(`Aspects ${options.aspects} contains a blank aspect`);
+    }
 
-  if (<WebHook[]>hooks) {
-    const castHooks = <WebHook[]>hooks;
-    console.info("Retrieved webhooks");
-    const alreadyExists = castHooks.some(
-      hook => hook.url === getHookUrl(options)
+    if (containsBlank(options.optionalAspects)) {
+      throw new Error(
+        `Aspects ${options.optionalAspects} contains a blank aspect`
+      );
+    }
+  }
+
+  async function putAspectDefs() {
+    const aspectDefsToAdd = options.writeAspectDefs;
+    console.info(`Adding aspect defs ${aspectDefsToAdd.map(def => def.name)}`);
+
+    const addPromises = aspectDefsToAdd.map(aspectDef =>
+      registry.putAspectDefinition(aspectDef)
     );
 
-    if (alreadyExists) {
-      console.info("Hook already exists, no need to register");
-      return;
-    } else {
-      console.info("No hook - registering a new one");
-      await registerNewWebhook(options);
-    }
-  } else {
-    console.error("Failed when retrieving existing hooks", <Error>hooks);
-    throw <Error>hooks;
+    return Promise.all(addPromises).then(failIfErrors).then(result => {
+      console.info("Successfully added aspect defs");
+      return result;
+    });
   }
-}
 
-async function registerNewWebhook(options: SleutherOptions) {
-  const webHookConfig: WebHookConfig = {
-    aspects: options.aspects,
-    optionalAspects: options.optionalAspects,
-    includeEvents: false,
-    includeRecords: true,
-    includeAspectDefinitions: false,
-    dereference: true
-  };
+  function failIfErrors<T>(results: Array<T | Error>) {
+    const failed = results.filter(
+      (result: T | Error) => result instanceof Error
+    );
 
-  const newWebHook: WebHook = {
-    id: null,
-    userId: 0, // TODO: When this matters
-    name: options.id,
-    active: true,
-    url: getHookUrl(options),
-    eventTypes: [
-      "CreateRecord",
-      "CreateAspectDefinition",
-      "CreateRecordAspect",
-      "PatchRecord",
-      "PatchAspectDefinition",
-      "PatchRecordAspect"
-    ],
-    config: webHookConfig,
-    lastEvent: null
-  };
-
-  options.registry.putHook(newWebHook);
-}
-
-async function crawlExistingRecords(options: SleutherOptions) {
-  const registryPage = AsyncPage.create<RecordsPage<Record>>(previous => {
-    if (previous && previous.records.length === 0) {
-      console.info("No more records left");
-      // Last page was an empty page, no more records left
-      return undefined;
+    if (failed.length > 0) {
+      throw failed[0];
     } else {
-      console.info(
-        "Crawling after token " +
-          (previous && previous.nextPageToken
-            ? previous.nextPageToken
-            : "<first page>")
-      );
-      return options.registry
-        .getRecords<Record>(
-          options.aspects,
-          options.optionalAspects,
-          previous && previous.nextPageToken,
-          true
-        )
-        .then(unionToThrowable)
-        .then(page => {
-          console.info(`Crawled ${page.records.length} records`);
-          return page;
-        });
+      return results;
     }
-  }).map((page: RecordsPage<Record>) => page.records);
+  }
 
-  await forEachAsync(registryPage, 20, (record: Record) =>
-    options.onRecordFound(record)
-  );
+  function setupWebhookEndpoint() {
+    const server = options.express();
+    server.use(require("body-parser").json());
+
+    server.post(
+      "/hook",
+      (request: express.Request, response: express.Response) => {
+        const payload = request.body;
+
+        const promises: Promise<
+          void
+        >[] = payload.records.map((record: Record) =>
+          options.onRecordFound(record)
+        );
+
+        const megaPromise = Promise.all(promises);
+
+        const lastEventIdExists = !_.isUndefined(payload.lastEventId);
+        const deferredResponseUrlExists = !_.isUndefined(
+          payload.deferredResponseUrl
+        );
+        if (options.async) {
+          if (!lastEventIdExists) {
+            console.warn(
+              "No event id was passed so the sleuther can't operate asynchronously - reverting to synchronous mode"
+            );
+          }
+
+          if (!deferredResponseUrlExists) {
+            console.warn(
+              "No deferred response url was passed so the sleuther can't operate asynchronously - reverting to synchronous mode"
+            );
+          }
+        }
+
+        if (options.async && lastEventIdExists && deferredResponseUrlExists) {
+          response.status(201).send({
+            status: "Working",
+            deferResponse: true
+          });
+
+          const sendResult = (success: boolean) =>
+            fetch(payload.deferredResponseUrl, {
+              method: "POST",
+              body: JSON.stringify({
+                succeeded: success,
+                lastEventIdReceived: payload.lastEventId
+              })
+            });
+
+          megaPromise.then(results => sendResult(true)).catch((err: Error) => {
+            console.error(err);
+            return sendResult(false);
+          });
+        } else {
+          megaPromise
+            .then(results => {
+              response
+                .status(201)
+                .send({ status: "Received", deferResponse: false });
+            })
+            .catch(e => {
+              console.error(e);
+              response
+                .status(500)
+                .send({ status: "Error", deferResponse: false });
+            });
+        }
+      }
+    );
+
+    console.info(`Listening at ${getHookUrl()}`);
+    server.listen(getPort());
+  }
+
+  function getHookUrl() {
+    return `http://${options.host}:${getPort()}/hook`;
+  }
+
+  function getPort() {
+    return parseInt(process.env.NODE_PORT) || options.defaultPort;
+  }
+
+  async function registerWebhook() {
+    console.info("Registering webhook");
+    await registerNewWebhook();
+  }
+
+  async function registerNewWebhook() {
+    const webHookConfig: WebHookConfig = {
+      aspects: options.aspects,
+      optionalAspects: options.optionalAspects,
+      includeEvents: false,
+      includeRecords: true,
+      includeAspectDefinitions: false,
+      dereference: true
+    };
+
+    const newWebHook: WebHook = {
+      id: options.id,
+      userId: 0, // TODO: When this matters
+      name: options.id,
+      active: true,
+      url: getHookUrl(),
+      eventTypes: [
+        "CreateRecord",
+        "CreateAspectDefinition",
+        "CreateRecordAspect",
+        "PatchRecord",
+        "PatchAspectDefinition",
+        "PatchRecordAspect"
+      ],
+      config: webHookConfig,
+      lastEvent: null,
+      isWaitingForResponse: false
+    };
+
+    registry.putHook(newWebHook);
+  }
+
+  async function crawlExistingRecords() {
+    const registryPage = AsyncPage.create<RecordsPage<Record>>(previous => {
+      if (previous && previous.records.length === 0) {
+        console.info("No more records left");
+        // Last page was an empty page, no more records left
+        return undefined;
+      } else {
+        console.info(
+          "Crawling after token " +
+            (previous && previous.nextPageToken
+              ? previous.nextPageToken
+              : "<first page>")
+        );
+        return registry
+          .getRecords<Record>(
+            options.aspects,
+            options.optionalAspects,
+            previous && previous.nextPageToken,
+            true
+          )
+          .then(unionToThrowable)
+          .then(page => {
+            console.info(`Crawled ${page.records.length} records`);
+            return page;
+          });
+      }
+    }).map((page: RecordsPage<Record>) => page.records);
+
+    await forEachAsync(registryPage, 20, (record: Record) =>
+      options.onRecordFound(record)
+    );
+  }
 }

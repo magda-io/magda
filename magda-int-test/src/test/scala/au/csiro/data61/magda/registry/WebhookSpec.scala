@@ -141,7 +141,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
       val searchApi = new SearchApi(searchQueryer)(config, logger)
 
       val routes = webhookApi.routes
-      indexer.ready.await
+      indexer.ready.await(60 seconds)
 
       blockUntilIndexExists(indices.getIndex(config, Indices.DataSetsIndex))
 
