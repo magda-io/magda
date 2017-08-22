@@ -31,7 +31,7 @@ export interface RecordsPage<I> {
 }
 
 export default class Registry {
-  private baseUrl: uri.URI;
+  private baseUri: uri.URI;
   private aspectDefinitionsApi: AspectDefinitionsApi;
   private recordsApi: RecordsApi;
   private webHooksApi: WebHooksApi;
@@ -44,11 +44,11 @@ export default class Registry {
     maxRetries = 10,
     secondsBetweenRetries = 10
   }: RegistryOptions) {
-    this.baseUrl = new URI(baseUrl);
+    const registryApiUrl = baseUrl;
+    this.baseUri = new URI(baseUrl);
     this.maxRetries = maxRetries;
     this.secondsBetweenRetries = secondsBetweenRetries;
 
-    const registryApiUrl = this.baseUrl.toString();
     this.aspectDefinitionsApi = new AspectDefinitionsApi(registryApiUrl);
     this.recordsApi = new RecordsApi(registryApiUrl);
     this.recordsApi.useQuerystring = true; // Use querystring instead of qs to construct URL
@@ -57,7 +57,7 @@ export default class Registry {
   }
 
   getRecordUrl(id: string): string {
-    return this.baseUrl.clone().segment("records").segment(id).toString();
+    return this.baseUri.clone().segment("records").segment(id).toString();
   }
 
   putAspectDefinition(
@@ -243,7 +243,8 @@ export default class Registry {
   }
 
   putHook(hook: WebHook): Promise<WebHook | Error> {
-    const operation = () => this.webHooksApi.create(hook);
+    const operation = () =>
+      this.webHooksApi.putById(encodeURIComponent(hook.id), hook);
     return retry(
       operation,
       this.secondsBetweenRetries,

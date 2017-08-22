@@ -142,7 +142,11 @@ class SearchBox extends Component {
 }
 
 SearchBox.contextTypes ={
+<<<<<<< HEAD
   router: PropTypes.object.isRequired,
+=======
+  router: propTypes.object.isRequired,
+>>>>>>> master
 }
 
 

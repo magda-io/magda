@@ -197,7 +197,11 @@ class Search extends Component {
 }
 
 Search.contextTypes ={
+<<<<<<< HEAD
   router: PropTypes.object.isRequired,
+=======
+  router: propTypes.object.isRequired,
+>>>>>>> master
 }
 
 

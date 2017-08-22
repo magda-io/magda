@@ -24,11 +24,11 @@ export default class AppContainer extends React.Component {
     this.state = { isOpen: false, showPrototypeWarning: true };
   }
   renderLink(link: string) {
-    const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
+    const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
     if (!regex.test(link[1])) {
       return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
     }
-    return <a target='_blank' href={link[1]}>{link[0]}</a>;
+    return <a target='_blank' rel="noopener noreferrer" href={link[1]}>{link[0]}</a>;
   }
 
   toggleMenu() {
@@ -100,7 +100,7 @@ export default class AppContainer extends React.Component {
                       className={`navbar-collapse collapse ${this.state.isOpen
                         ? 'in'
                         : ''}`}
-                      aria-expanded={`${this.state.isOpen ? 'true' : 'false'}`}
+                      aria-expanded={this.state.isOpen ? true : false}
                     >
                       <ul className='nav nav-pills nav-stacked'>
                         {headerNavs.map(nav =>

@@ -9,7 +9,12 @@
       "@magda/typescript-common/dist/*": [
         "./node_modules/@magda/typescript-common/src/*"
       ],
-      "jsverify": ["./node_modules/@magda/typescript-common/spec/jsverify.d.ts"]
+      "@magda/sleuther-framework/dist/*": [
+        "./node_modules/@magda/sleuther-framework/src/*"
+      ],
+      "jsverify": [
+        "./node_modules/@magda/typescript-common/src/test/jsverify.d.ts"
+      ]
     }
   }
 }

@@ -75,7 +75,7 @@ export function parseProject(rawProject?: RawProject): ParsedProject {
 
 
 function  isSpecialChar(str: string){
-  return /[`!@#$%^&*()_+\-=\[\]{};':'\\|,.<>\/?]+/.test( str );
+  return /[`!@#$%^&*()_+\-=[\]{};':'\\|,.<>/?]+/.test( str );
 }
 
 export function validateProjectName(name: ?string){
