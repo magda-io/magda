@@ -55,11 +55,7 @@ class Pagination extends Component {
 }
 
 Pagination.contextTypes ={
-<<<<<<< HEAD
-  router: PropTypes.object.isRequired,
-=======
   router: propTypes.object.isRequired,
->>>>>>> master
 }
 
 export default Pagination;

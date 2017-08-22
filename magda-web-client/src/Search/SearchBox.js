@@ -4,6 +4,7 @@ import { RouterContext } from 'react-router';
 import './SearchBox.css';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
+import propTypes from 'prop-types';
 // import {config} from '../config.js';
 import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
@@ -142,11 +143,7 @@ class SearchBox extends Component {
 }
 
 SearchBox.contextTypes ={
-<<<<<<< HEAD
-  router: PropTypes.object.isRequired,
-=======
   router: propTypes.object.isRequired,
->>>>>>> master
 }
 
 

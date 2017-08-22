@@ -1,11 +1,6 @@
 import {config} from '../config'
 import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
-<<<<<<< HEAD
-=======
-import xmlToTabular from '../helpers/xmlToTabular';
-import papa from 'papaparse';
->>>>>>> master
 import {getPreviewDataUrl} from '../helpers/previewData';
 import type {PreviewData} from '../helpers/previewData';
 
