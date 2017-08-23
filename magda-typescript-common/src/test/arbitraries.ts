@@ -36,6 +36,17 @@ export type jsc = {
   generator: jsverify.GeneratorFunctions;
   show: jsverify.ShowFunctions;
   bless<U>(arb: jsverify.ArbitraryLike<U>): jsverify.Arbitrary<U>;
+  number: jsverify.Arbitrary<number> & jsverify.integerFn & jsverify.integerFn2;
+  nat: jsverify.Arbitrary<number> & jsverify.integerFn;
+  elements<T>(args: T[]): jsverify.Arbitrary<T>;
+  tuple(arbs: jsverify.Arbitrary<any>[]): jsverify.Arbitrary<any[]>;
+  bool: jsverify.Arbitrary<boolean>;
+  char: jsverify.Arbitrary<string>;
+  asciichar: jsverify.Arbitrary<string>;
+  // tslint:disable-next-line:variable-name
+  nestring: jsverify.Arbitrary<string>;
+  asciistring: jsverify.Arbitrary<string>;
+  asciinestring: jsverify.Arbitrary<string>;
 };
 
 export const lowerCaseAlphaCharArb = ({ integer }: jsc) =>
@@ -56,7 +67,7 @@ export const lcAlphaNumStringArbNe = (jsc: jsc) =>
 const uuidArb: (jsc: jsc) => jsverify.Arbitrary<string> = (jsc: jsc) =>
   jsc.bless({
     generator: jsc.generator.bless(x => uuid()),
-    shrink: jsc.shrink.bless(x => [uuid()]),
+    shrink: jsc.shrink.bless(x => []),
     show: (x: string) => x
   });
 
@@ -140,7 +151,7 @@ export function arbFlatMap<T, U>(
   arb: jsverify.Arbitrary<T>,
   arbForward: (t: T) => jsverify.Arbitrary<U>,
   backwards: (u: U) => T,
-  show: (u: U) => string = u => JSON.stringify(u)
+  show: (u: U) => string | undefined = u => JSON.stringify(u)
 ): MonadicArb<U> {
   const x = jsc.bless<U>({
     generator: arb.generator.flatmap((t: T) => {
@@ -149,8 +160,13 @@ export function arbFlatMap<T, U>(
     show,
     shrink: jsc.shrink.bless((u: U) => {
       const t = backwards(u);
+      if (_.isUndefined(t)) {
+        return [];
+      }
+
       const ts = unSeq<T>(arb.shrink(t));
       const us = _.flatMap(ts, thisT => unSeq<U>(arbForward(thisT).shrink(u)));
+
       return us;
     })
   });
@@ -240,14 +256,114 @@ export const distUrlArb = (
     }
   );
 
+export type DistStringsOverrideArbs = {
+  url?: jsverify.Arbitrary<string>;
+  license?: jsverify.Arbitrary<string>;
+  format?: jsverify.Arbitrary<string>;
+};
+
 export const distStringsArb = (
   jsc: jsc,
-  customDistUrlArb: jsverify.Arbitrary<String> = jsc.oneof([
-    distUrlArb(jsc),
-    jsc.constant(undefined)
-  ])
+  {
+    url = jsc.oneof([distUrlArb(jsc), jsc.constant(undefined)]),
+    license = jsc.string,
+    format = jsc.string
+  }: DistStringsOverrideArbs
 ) =>
   jsc.record({
-    downloadURL: customDistUrlArb,
-    accessURL: customDistUrlArb
+    downloadURL: url,
+    accessURL: url,
+    license,
+    format
   });
+
+/**
+   * Generates records with distributions.
+   */
+export const recordArbWithDistributions = (
+  jsc: jsc,
+  overrides: DistStringsOverrideArbs
+) =>
+  specificRecordArb(jsc)({
+    "dataset-distributions": jsc.record({
+      distributions: jsc.array(
+        specificRecordArb(jsc)({
+          "dcat-distribution-strings": distStringsArb(jsc, overrides)
+        })
+      )
+    })
+  });
+
+export function someOf<T>(jsc: jsc, array: T[]): jsverify.Arbitrary<T[]> {
+  return jsc
+    .record({
+      length: jsc.integer(0, array.length),
+      start: jsc.integer(0, array.length - 1)
+    })
+    .smap(
+      ({ length, start }) => _(array).drop(start).take(length).value(),
+      (newArray: T[]) => {
+        const start = _.indexOf(array, newArray[0]);
+        const length = newArray.length - start;
+
+        return { start, length };
+      }
+    );
+}
+
+export function fuzzStringArb(
+  jsc: jsc,
+  string: string
+): jsverify.Arbitrary<string> {
+  const words = string.split(/[^a-zA-Z\d]+/);
+  const aroundArbs = arrayOfSizeArb(jsc, words.length + 1, stringArb(jsc));
+
+  return arbFlatMap(
+    jsc,
+    aroundArbs,
+    around => {
+      const string = _(around).zip(words).flatten().join("");
+      const caseArb = arrayOfSizeArb(jsc, string.length, jsc.bool);
+      return jsc.record({ string: jsc.constant(string), cases: caseArb });
+    },
+    ({ string, cases }) => {
+      const wordsRegex = new RegExp(words.join("|"));
+      return string.split(wordsRegex);
+    }
+  ).smap(
+    ({ string, cases }) =>
+      _.map(string, (char, index) => {
+        if (cases[index]) {
+          return char.toUpperCase();
+        } else {
+          return char.toLowerCase();
+        }
+      }).join(""),
+    string => ({
+      cases: _.map(string, (char, index) => char === char.toUpperCase()),
+      string
+    })
+  );
+}
+
+export function fuzzStringArbResult(
+  jsc: jsc,
+  stringArb: jsverify.Arbitrary<string>
+) {
+  return arbFlatMap(
+    jsc,
+    stringArb,
+    string => fuzzStringArb(jsc, string),
+    fuzzedString => undefined
+  );
+}
+
+export function charArb(jsc: jsc) {
+  return jsc.integer(32, 0xff).smap(fromCode, toCode);
+}
+
+export function stringArb(jsc: jsc) {
+  return jsc
+    .array(charArb(jsc))
+    .smap(chars => chars.join(""), string => string.split(""));
+}

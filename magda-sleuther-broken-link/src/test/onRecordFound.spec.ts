@@ -10,10 +10,10 @@ import onRecordFound from "../onRecordFound";
 import { BrokenLinkAspect } from "../brokenLinkAspectDef";
 import {
   specificRecordArb,
-  distStringsArb,
   distUrlArb,
   arrayOfSizeArb,
-  arbFlatMap
+  arbFlatMap,
+  recordArbWithDistributions
 } from "@magda/typescript-common/dist/test/arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 import * as URI from "urijs";
@@ -53,6 +53,14 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     ftpSuccesses = {};
   };
 
+  const afterEachProperty = () => {
+    nock.cleanAll();
+  };
+
+  /**
+   * Builds FTP clients that have all their important methods stubbed out - these
+   * will respond based on the current content of ftpSuccesses.
+   */
   const clientFactory = () => {
     const client = new Client();
     let readyCallback: () => void;
@@ -102,34 +110,9 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     return client;
   };
 
-  const ftpHandler = new FtpHandler(clientFactory);
+  const fakeFtpHandler = new FtpHandler(clientFactory);
 
-  const afterEachProperty = () => {
-    nock.cleanAll();
-  };
-
-  /**
-   * Generates records with distributions.
-   */
-  const recordArb = (distUrlArb?: jsc.Arbitrary<String>) =>
-    specificRecordArb(jsc)({
-      "dataset-distributions": jsc.record({
-        distributions: jsc.suchthat(
-          jsc.array(
-            specificRecordArb(jsc)({
-              "dcat-distribution-strings": distStringsArb(jsc, distUrlArb)
-            })
-          ),
-          (arr: Record[]) => {
-            const ids = arr.map(_ => _.id);
-
-            return _.isEqual(ids, _.uniq(ids));
-          }
-        )
-      })
-    });
-
-  const defaultRecordArb = recordArb();
+  const defaultRecordArb = recordArbWithDistributions(jsc);
 
   /**
    * Gets an array of the individual urls from every distribution inside a dataset record, including both downloadURL and accessURL.
@@ -349,7 +332,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             .reply(201);
         }
 
-        return onRecordFound(record, 0, 0, 0, ftpHandler)
+        return onRecordFound(record, 0, 0, 0, fakeFtpHandler)
           .then(() => {
             distScopes.forEach(scope => scope.done());
             registryScope.done();
@@ -376,7 +359,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
    * distribution, for testing retries.
    */
   const httpOnlyRecordArb = jsc.suchthat(
-    recordArb(
+    recordArbWithDistributions(
+      jsc,
       jsc.oneof([
         jsc.constant(undefined),
         distUrlArb(jsc, {
@@ -628,16 +612,19 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
       ])
     });
 
-    const thisRecordArb = jsc.suchthat(recordArb(urlArb), record => {
-      const urls: string[] = urlsFromDataSet(record);
-      const hosts: string[] = urls.map(url => {
-        const uri = new URI(url);
+    const thisRecordArb = jsc.suchthat(
+      recordArbWithDistributions(jsc, urlArb),
+      record => {
+        const urls: string[] = urlsFromDataSet(record);
+        const hosts: string[] = urls.map(url => {
+          const uri = new URI(url);
 
-        return uri.scheme() + "://" + uri.host();
-      });
+          return uri.scheme() + "://" + uri.host();
+        });
 
-      return !_.isEqual(_.uniq(hosts), hosts);
-    });
+        return !_.isEqual(_.uniq(hosts), hosts);
+      }
+    );
 
     return jsc.assert(
       jsc.forall(

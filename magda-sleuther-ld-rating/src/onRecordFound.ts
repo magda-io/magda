@@ -5,29 +5,22 @@ import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import linkedDataAspectDef from "./linkedDataAspectDef";
 import datasetQualityAspectDef from "./linkedDataAspectDef";
+import openLicenses from "./openLicenses";
+import formatStars from "./openFormats";
 
-const OPEN_LICENSES = ["Creative Commons", "PDDL", "ODC"];
-const FORMAT_STARS: { [stars: number]: string[] } = {
-  2: ["xls", "xlsx", "mdb", "esri rest"],
-  3: [
-    "csv",
-    "wms",
-    "geojson",
-    "wfs",
-    "kml",
-    "kmz",
-    "json",
-    "xml",
-    "shp",
-    "rss",
-    "gpx",
-    "tsv"
-  ],
-  4: ["csv-geo-au", "sparql", "rdf", "json-ld"]
-};
-const registry = getRegistry();
+const openLicenseRegex = stringsToRegex(openLicenses);
+const openFormatRegexes = _(formatStars)
+  .mapValues(stringsToRegex)
+  .toPairs<RegExp>()
+  .map(([starCount, regex]) => [parseInt(starCount), regex] as [number, RegExp])
+  .sortBy(([starCount, regex]) => -1 * starCount);
 
-export default async function onRecordFound(record: Record) {
+export default async function onRecordFound(
+  record: Record,
+  registryRetries: number = 5
+) {
+  const registry = getRegistry({ maxRetries: registryRetries });
+
   const distributions = _(
     record.aspects["dataset-distributions"]
       ? record.aspects["dataset-distributions"].distributions
@@ -41,7 +34,7 @@ export default async function onRecordFound(record: Record) {
     const isLicenseOpen = isOpenLicense(distribution.license);
 
     if (isLicenseOpen) {
-      return starsForFormat(distribution.format);
+      return Math.max(starsForFormat(distribution.format), 1);
     } else {
       return 0;
     }
@@ -68,30 +61,26 @@ export default async function onRecordFound(record: Record) {
     .patchRecordAspect(record.id, datasetQualityAspectDef.id, [op])
     .then(result => unionToThrowable(result));
 
-  await Promise.all([starsAspectPromise, qualityPromise]);
+  return Promise.all([starsAspectPromise, qualityPromise]);
 }
 
-const lowerCaseOpenLicenses = lowerCaseify(OPEN_LICENSES);
-function isOpenLicense(license: String): boolean {
-  const lowerCase = license ? license.toLowerCase() : "";
-
-  return lowerCaseOpenLicenses.some(
-    openLicense => lowerCase.indexOf(openLicense) >= 0
-  );
+function isOpenLicense(license: string): boolean {
+  return openLicenseRegex.test(license);
 }
 
-const formatStarsLookup = _(FORMAT_STARS)
-  .toPairs()
-  .flatMap(([stars, formats]: [string, string[]]) =>
-    formats.map(format => [format.toLowerCase(), parseInt(stars)])
-  )
-  .fromPairs()
-  .value();
+function starsForFormat(format: string): number {
+  const starRatingForFormat = _(openFormatRegexes)
+    .filter(([starCount, regex]) => regex.test(format))
+    .map(([starCount, regex]) => starCount)
+    .first();
 
-function starsForFormat(format: String): number {
-  return (format && formatStarsLookup[format.toLowerCase()]) || 1;
+  return starRatingForFormat || 0;
 }
 
-function lowerCaseify(strings: string[]): string[] {
-  return strings.map(license => license.toLowerCase());
+function stringsToRegex(array: string[]): RegExp {
+  function regexIfy(string: string) {
+    return string.replace(/[^a-zA-Z\d]/g, "[\\s\\S]*");
+  }
+
+  return new RegExp(array.map(regexIfy).join("|"), "i");
 }
