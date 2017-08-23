@@ -1,26 +1,25 @@
-{{- if not .Values.global.useCombinedDb }}
+{{- if .Values.global.useCombinedDb }}
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: registry-datastore
+  name: combined-db
 spec:
-  serviceName: registry-datastore
+  serviceName: combined-db
   replicas: 1
-{{- if semverCompare "^1.7.0" (printf "%s" .Capabilities.KubeVersion) }}
-  updateStrategy:
-    type: RollingUpdate
-{{- end }}
   template:
     metadata:
       labels:
-        service: registry-datastore
+        service: combined-db
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: registry-datastore
+      - name: combined-db
         resources:
-{{ toYaml .Values.resources | indent 10 }}
+          requests:
+            cpu: 0m
+            memory: 0
         image: {{ template "dockerimage" . }}
+        imagePullPolicy: Always
         ports:
         - containerPort: 5432
         env:
@@ -28,10 +27,10 @@ spec:
           value: /var/pv/data
         volumeMounts:
         - mountPath: /var/pv
-          name: registrydata
+          name: combined-db
   volumeClaimTemplates:
   - metadata:
-      name: registrydata
+      name: combined-db
     spec:
       accessModes: [ "ReadWriteOnce" ]
     {{- if .Values.data.storageClass }}
@@ -39,5 +38,5 @@ spec:
     {{- end }}
       resources:
         requests:
-          storage: "{{ .Values.data.storage }}"
+          storage: {{ .Values.data.storage | quote }}
 {{- end }}

@@ -8,4 +8,4 @@ spec:
     port: 5432
     targetPort: 5432
   selector:
-    service: registry-datastore
+    service: {{- if .Values.global.useCombinedDb }} "combined-db" {{- else }} "registry-datastore" {{- end }}
