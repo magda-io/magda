@@ -1,7 +1,6 @@
 // @flow
 import React, { Component } from 'react';
 import VegaLite from 'react-vega-lite';
-import JsonForm from 'react-json';
 
 const VEGAMARK = ['area', 'bar', 'circle', 'line', 'point', 'rect', 'square', 'text', 'tick'];
 const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
