@@ -253,7 +253,6 @@ export const distUrlArb = (
       const splitAfterScheme = url.split("://");
       const scheme = splitAfterScheme[0];
       const splitOnDotCom = splitAfterScheme[1].split(/\.com:?/);
-      console.log(splitOnDotCom);
       const host = splitOnDotCom[0];
       const pathSegments = splitOnDotCom[1].split("/");
       const port: number = parseInt(pathSegments[0]);
@@ -349,10 +348,11 @@ export function someOf<T>(jsc: jsc, array: T[]): jsverify.Arbitrary<T[]> {
  */
 export function fuzzStringArb(
   jsc: jsc,
-  string: string
+  string: string,
+  fuzzArb: jsverify.Arbitrary<string> = stringArb(jsc)
 ): jsverify.Arbitrary<string> {
   const words = string.split(/[^a-zA-Z\d]+/);
-  const aroundArbs = arrayOfSizeArb(jsc, words.length + 1, stringArb(jsc));
+  const aroundArbs = arrayOfSizeArb(jsc, words.length + 1, fuzzArb);
 
   return arbFlatMap(
     jsc,
@@ -388,12 +388,13 @@ export function fuzzStringArb(
  */
 export function fuzzStringArbResult(
   jsc: jsc,
-  stringArb: jsverify.Arbitrary<string>
+  stringArb: jsverify.Arbitrary<string>,
+  fuzzArb?: jsverify.Arbitrary<string>
 ) {
   return arbFlatMap(
     jsc,
     stringArb,
-    string => fuzzStringArb(jsc, string),
+    string => fuzzStringArb(jsc, string, fuzzArb),
     fuzzedString => undefined
   );
 }

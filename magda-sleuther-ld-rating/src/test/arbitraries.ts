@@ -11,10 +11,26 @@ import openLicenses from "../openLicenses";
 import openFormats from "../openFormats";
 import { ZERO_STAR_LICENSES } from "./examples";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import * as _ from "lodash";
 
 /** Generates strings with the words of open licenses embedded in them */
 export const openLicenseArb = (jsc: jsc): jsverify.Arbitrary<string> =>
   fuzzStringArbResult(jsc, jsc.elements(openLicenses));
+
+const allFormatWords = new RegExp(
+  _(openFormats)
+    .values()
+    .flatten()
+    .flatMap((format: string) => format.split(" "))
+    .join("|"),
+  "i"
+);
+
+
+const fuzzArb = (jsc: jsc) =>
+  jsc.suchthat(jsc.string, string => {
+    return !allFormatWords.test(string);
+  });
 
 /**
  * Generates a format string that will match the desired star count. 
@@ -28,7 +44,11 @@ export const formatArb = (
   } else if (starCount === 1) {
     return jsc.elements(ZERO_STAR_LICENSES);
   } else {
-    return fuzzStringArbResult(jsc, jsc.elements(openFormats[starCount]));
+    return fuzzStringArbResult(
+      jsc,
+      jsc.elements(openFormats[starCount]),
+      fuzzArb(jsc)
+    );
   }
 };
 

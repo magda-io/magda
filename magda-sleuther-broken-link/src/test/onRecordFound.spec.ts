@@ -2,12 +2,13 @@ import {} from "mocha";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as nock from "nock";
-///<reference path="@magda/typescript-common/dist/test/jsverify.d.ts" />
 import jsc = require("jsverify");
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import * as _ from "lodash";
-import onRecordFound from "../onRecordFound";
-import { BrokenLinkAspect } from "../brokenLinkAspectDef";
+import * as Client from "ftp";
+import * as URI from "urijs";
+
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 import {
   specificRecordArb,
   distUrlArb,
@@ -15,12 +16,18 @@ import {
   arbFlatMap,
   recordArbWithDistArbs
 } from "@magda/typescript-common/dist/test/arbitraries";
-import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
-import * as URI from "urijs";
-import * as Client from "ftp";
-import FtpHandler from "../FtpHandler";
 
-const KNOWN_PROTOCOLS = ["https", "http", "ftp"];
+import onRecordFound from "../onRecordFound";
+import { BrokenLinkAspect } from "../brokenLinkAspectDef";
+import urlsFromDataSet from "./urlsFromDataSet";
+import {
+  CheckResult,
+  recordArbWithSuccesses,
+  KNOWN_PROTOCOLS,
+  httpOnlyRecordArb,
+  failureCodeArb
+} from "./arbitraries";
+import FtpHandler from "../FtpHandler";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   this.timeout(20000);
@@ -112,70 +119,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
   const fakeFtpHandler = new FtpHandler(clientFactory);
 
-  const defaultRecordArb = recordArbWithDistArbs(jsc, { url: distUrlArb(jsc) });
-
-  /**
-   * Gets an array of the individual urls from every distribution inside a dataset record, including both downloadURL and accessURL.
-   */
-  function urlsFromDataSet(record: Record): string[] {
-    return _(record.aspects["dataset-distributions"].distributions)
-      .map((dist: any) => dist.aspects["dcat-distribution-strings"])
-      .flatMap(_.values)
-      .filter(x => !!x)
-      .value();
-  }
-
-  type CheckResult = "success" | "error" | "notfound";
-  const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
-    ["success" as "success", "error" as "error", "notfound" as "notfound"].map(
-      jsc.constant
-    )
-  );
-
-  /**
-   * Generates a record along with a map of every distribution URL to whether
-   * or not it should successfully return.
-   */
-  const recordArbWithSuccesses: jsc.Arbitrary<{
-    record: Record;
-    successes: {
-      [a: string]: CheckResult;
-    };
-  }> = arbFlatMap(
-    jsc,
-    defaultRecordArb,
-    (record: Record) => {
-      const getKnownProtocolUrls = (record: Record) =>
-        _(urlsFromDataSet(record))
-          .filter(url => KNOWN_PROTOCOLS.indexOf(URI(url).scheme()) >= 0)
-          .uniq()
-          .value();
-
-      const urls = getKnownProtocolUrls(record);
-
-      const gen: jsc.Arbitrary<CheckResult[]> = arrayOfSizeArb(
-        jsc,
-        urls.length,
-        checkResultArb
-      );
-
-      return gen.smap(
-        successfulArr => {
-          const successes = urls.reduce((soFar, current, index) => {
-            soFar[current] = successfulArr[index];
-            return soFar;
-          }, {} as { [a: string]: CheckResult });
-
-          return { record, successes };
-        },
-        ({ record, successes }) => {
-          return getKnownProtocolUrls(record).map(url => successes[url]);
-        }
-      );
-    },
-    ({ record, successes }) => record
-  );
-
   /**
    * Generator-driven super-test: generates records and runs them through the
    * onRecordFound function, listening for HTTP and FTP calls made and returning
@@ -185,9 +128,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
    */
   it("Should correctly record link statuses and quality", function() {
     return jsc.assert(
-      jsc.forall(recordArbWithSuccesses, ({ record, successes }) => {
+      jsc.forall(recordArbWithSuccesses(jsc), ({ record, successes }) => {
         beforeEachProperty();
-        // console.log({ record, successes });
 
         // Tell the FTP server to return success/failure for the various FTP
         // paths with this dodgy method. Note that because the FTP server can
@@ -347,52 +289,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
           });
       }),
       {
-        // rngState: "0a60f4c38b75a2d1e9",
         tests: 500
       }
     );
   });
-
-  /**
-   * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with
-   * at least one distribution per dataset and with at least one valid url per
-   * distribution, for testing retries.
-   */
-  const httpOnlyRecordArb = jsc.suchthat(
-    recordArbWithDistArbs(
-      jsc,
-      jsc.oneof([
-        jsc.constant(undefined),
-        distUrlArb(jsc, {
-          schemeArb: jsc.oneof([jsc.constant("http"), jsc.constant("https")])
-        })
-      ])
-    ),
-    record =>
-      record.aspects["dataset-distributions"].distributions.length > 1 &&
-      record.aspects[
-        "dataset-distributions"
-      ].distributions.every((dist: any) => {
-        const aspect = dist.aspects["dcat-distribution-strings"];
-
-        const definedURLs = [aspect.accessURL, aspect.downloadURL].filter(
-          x => !!x
-        );
-
-        return (
-          definedURLs.length > 0 && definedURLs.every(x => x.startsWith("http"))
-        );
-      })
-  );
-
-  /**
-   * Generates a failing HTTP code at random, excepting 429 because that
-   * triggers different behaviour.
-   */
-  const failureCodeArb = jsc.suchthat(
-    jsc.integer(300, 600),
-    int => int !== 429
-  );
 
   describe("retrying", () => {
     /**
@@ -453,14 +353,14 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             ).flatMap<number[][]>(
               (failureCodeArrSizes: number[]) => {
                 const failureCodeArbs = failureCodeArrSizes.map(size =>
-                  arrayOfSizeArb(jsc, size, failureCodeArb)
+                  arrayOfSizeArb(jsc, size, failureCodeArb(jsc))
                 );
 
                 if (result === "failNormal") {
                   failureCodeArbs[failureCodeArbs.length - 1] = arrayOfSizeArb(
                     jsc,
                     retryCount + 1,
-                    failureCodeArb
+                    failureCodeArb(jsc)
                   );
                 }
 
@@ -485,7 +385,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
         return jsc.assert(
           jsc.forall(
-            httpOnlyRecordArb,
+            httpOnlyRecordArb(jsc),
             failuresArb,
             (record: Record, { retryCount, allResults }: FailuresArbResult) => {
               beforeEachProperty();
@@ -577,7 +477,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             }
           ),
           {
-            // rngState: "828caf026d4be91573"
             tests: 50
           }
         );
@@ -599,18 +498,12 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
   });
 
   it("Should only try to make one request per host at a time", function() {
-    const httpOrHttps = jsc.sampler(
-      jsc.oneof([jsc.constant("http"), jsc.constant("https")])
-    )(1);
-
-    const urlArb = distUrlArb(jsc, {
-      schemeArb: jsc.constant(httpOrHttps),
-      hostArb: jsc.oneof([
-        jsc.constant("example1"),
-        jsc.constant("example2"),
-        jsc.constant("example3")
-      ])
-    });
+    const urlArb = (jsc as any).nonshrink(
+      distUrlArb(jsc, {
+        schemeArb: jsc.elements(["http", "https"]),
+        hostArb: jsc.elements(["example1", "example2", "example3"])
+      })
+    );
 
     const thisRecordArb = jsc.suchthat(
       recordArbWithDistArbs(jsc, { url: urlArb }),
@@ -629,7 +522,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     return jsc.assert(
       jsc.forall(
         thisRecordArb,
-        jsc.nearray(failureCodeArb),
+        jsc.nearray(failureCodeArb(jsc)),
         jsc.integer(0, 25),
         (record: Record, failures: number[], delayMs: number) => {
           beforeEachProperty();

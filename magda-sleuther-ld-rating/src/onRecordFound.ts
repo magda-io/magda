@@ -13,7 +13,8 @@ const openFormatRegexes = _(formatStars)
   .mapValues(stringsToRegex)
   .toPairs<RegExp>()
   .map(([starCount, regex]) => [parseInt(starCount), regex] as [number, RegExp])
-  .sortBy(([starCount, regex]) => -1 * starCount);
+  .sortBy(([starCount, regex]) => -1 * starCount)
+  .value();
 
 export default async function onRecordFound(
   record: Record,
@@ -61,7 +62,7 @@ export default async function onRecordFound(
     .patchRecordAspect(record.id, datasetQualityAspectDef.id, [op])
     .then(result => unionToThrowable(result));
 
-  return Promise.all([starsAspectPromise, qualityPromise]);
+  return Promise.all([starsAspectPromise, qualityPromise]).then(() => {});
 }
 
 function isOpenLicense(license: string): boolean {
