@@ -82,7 +82,7 @@ function arraysEqual(a: any[], b: any[]) {
 }
 
 describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
-  this.timeout(5000);
+  this.timeout(10000);
   let expressApp: express.Express;
 
   before(() => {
