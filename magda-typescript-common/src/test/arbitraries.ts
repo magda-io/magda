@@ -95,7 +95,7 @@ const defaultSchemeArb = (jsc: jsc) =>
     lcAlphaNumStringArbNe(jsc)
   ]);
 
-type urlArbOptions = {
+type UrlArbOptions = {
   schemeArb?: jsverify.Arbitrary<string>;
   hostArb?: jsverify.Arbitrary<string>;
 };
@@ -198,6 +198,7 @@ function generateArrayOfSize<T>(
   return curried2(result, arguments);
 }
 
+/** Generates an array that is guaranteed to be of the supplied size */
 export function arrayOfSizeArb<T>(
   jsc: jsc,
   size: number,
@@ -210,7 +211,10 @@ export function arrayOfSizeArb<T>(
   });
 }
 
-const urlPartsArb = (jsc: jsc, options: urlArbOptions) =>
+/**
+ * Randomly generates a scheme, host, port and path for a URL.
+ */
+const urlPartsArb = (jsc: jsc, options: UrlArbOptions) =>
   jsc.record({
     scheme: options.schemeArb,
     host: jsc.suchthat(
@@ -225,12 +229,13 @@ const urlPartsArb = (jsc: jsc, options: urlArbOptions) =>
     path: jsc.array(lcAlphaNumStringArbNe(jsc))
   });
 
+/** Generates a URL for a distribution - this could be ftp, http or https */
 export const distUrlArb = (
   jsc: jsc,
   {
     schemeArb = defaultSchemeArb(jsc),
     hostArb = lcAlphaNumStringArbNe(jsc)
-  }: urlArbOptions = {}
+  }: UrlArbOptions = {}
 ) =>
   urlPartsArb(jsc, { schemeArb, hostArb }).smap(
     urlParts => {
@@ -245,9 +250,10 @@ export const distUrlArb = (
         .join("/")}` as string;
     },
     (url: string) => {
-      const splitAfterScheme = url.split("://")[0];
+      const splitAfterScheme = url.split("://");
       const scheme = splitAfterScheme[0];
-      const splitOnDotCom = splitAfterScheme[1].split(".com:");
+      const splitOnDotCom = splitAfterScheme[1].split(/\.com:?/);
+      console.log(splitOnDotCom);
       const host = splitOnDotCom[0];
       const pathSegments = splitOnDotCom[1].split("/");
       const port: number = parseInt(pathSegments[0]);
@@ -256,12 +262,18 @@ export const distUrlArb = (
     }
   );
 
+/**
+ * Can be passed into distStringsArb to override the default arbitraries.
+ */
 export type DistStringsOverrideArbs = {
   url?: jsverify.Arbitrary<string>;
   license?: jsverify.Arbitrary<string>;
   format?: jsverify.Arbitrary<string>;
 };
 
+/**
+ * Generates the content of a distribution's dcat-distribution-strings aspect.
+ */
 export const distStringsArb = (
   jsc: jsc,
   {
@@ -278,11 +290,11 @@ export const distStringsArb = (
   });
 
 /**
-   * Generates records with distributions.
+   * Generates records, allowing specific arbs to be defined for the distribution.
    */
-export const recordArbWithDistributions = (
+export const recordArbWithDistArbs = (
   jsc: jsc,
-  overrides: DistStringsOverrideArbs
+  overrides: DistStringsOverrideArbs = {}
 ) =>
   specificRecordArb(jsc)({
     "dataset-distributions": jsc.record({
@@ -294,6 +306,26 @@ export const recordArbWithDistributions = (
     })
   });
 
+/** 
+ * Randomly generates a record with the passed objects under its
+ * distributions' dcat-distribution-strings aspect.
+ */
+export const recordArbWithDists = (jsc: jsc, dists: object[]) =>
+  specificRecordArb(jsc)({
+    "dataset-distributions": jsc.record({
+      distributions: jsc.tuple(
+        dists.map(dist =>
+          specificRecordArb(jsc)({
+            "dcat-distribution-strings": jsc.constant(dists)
+          })
+        )
+      )
+    })
+  });
+
+/**
+ * Randomly returns a subset of the array, in-order.
+ */
 export function someOf<T>(jsc: jsc, array: T[]): jsverify.Arbitrary<T[]> {
   return jsc
     .record({
@@ -311,6 +343,10 @@ export function someOf<T>(jsc: jsc, array: T[]): jsverify.Arbitrary<T[]> {
     );
 }
 
+/**
+ * Fuzzes a string, changing the case and putting random strings around it 
+ * and in spaces.
+ */
 export function fuzzStringArb(
   jsc: jsc,
   string: string
@@ -346,6 +382,10 @@ export function fuzzStringArb(
   );
 }
 
+/**
+ * Gets the result of the passed string arbitrary and fuzzes it, changing
+ * the case and putting random strings around it and in spaces.
+ */
 export function fuzzStringArbResult(
   jsc: jsc,
   stringArb: jsverify.Arbitrary<string>
@@ -358,10 +398,14 @@ export function fuzzStringArbResult(
   );
 }
 
-export function charArb(jsc: jsc) {
+function charArb(jsc: jsc) {
   return jsc.integer(32, 0xff).smap(fromCode, toCode);
 }
 
+/** 
+ * Generates a random string with characters greater than code 32 (so no random
+ * TTY crap that can't be matched by any regex
+ */
 export function stringArb(jsc: jsc) {
   return jsc
     .array(charArb(jsc))

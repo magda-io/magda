@@ -8,17 +8,16 @@ import jsc = require("jsverify");
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import * as _ from "lodash";
 import {
-  recordArbWithDistributions,
+  recordArbWithDistArbs,
   stringArb
 } from "@magda/typescript-common/dist/test/arbitraries";
-import { openLicenseArb, formatArb } from "./arbitraries";
-import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 import {
-  OKFN_LICENSES,
-  // ZERO_STAR_FORMATS,
-  ZERO_STAR_LICENSES,
-  FORMAT_EXAMPLES
-} from "./examples";
+  openLicenseArb,
+  formatArb,
+  recordForHighestStarCountArb
+} from "./arbitraries";
+import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
+import { OKFN_LICENSES, ZERO_STAR_LICENSES, FORMAT_EXAMPLES } from "./examples";
 
 describe("ld rating onRecordFound", function(
   this: Mocha.ISuiteCallbackContext
@@ -36,7 +35,7 @@ describe("ld rating onRecordFound", function(
   });
 
   const onMatchFail = (req: any) => {
-    // console.error("Match failure: " + JSON.stringify(req.path));
+    console.error("Match failure: " + JSON.stringify(req.path));
   };
 
   after(() => {
@@ -170,19 +169,39 @@ describe("ld rating onRecordFound", function(
     });
   });
 
-  // it("should always record the result of the best distribution", () => {
-  //   const arbs = {
-  //     0: {
-  //       format:
-  //     }
-  //   }
-  // });
+  describe("should always record the result of the best distribution", () => {
+    for (let highestStarCount = 0; highestStarCount <= 4; highestStarCount++) {
+      it(`when highest star count is ${highestStarCount}`, () => {
+        return jsc.assert(
+          jsc.forall(
+            recordForHighestStarCountArb(jsc, highestStarCount),
+            (record: Record) => {
+              beforeEachProperty();
+
+              registryScope.patch(/.*/).reply(201);
+              expectStarCount(record, highestStarCount);
+
+              return onRecordFound(record, 0)
+                .then(() => {
+                  afterEachProperty();
+                  return true;
+                })
+                .catch(e => {
+                  afterEachProperty();
+                  throw e;
+                });
+            }
+          )
+        );
+      });
+    }
+  });
 
   function runPropertyTest({
     licenseArb = openLicenseArb(jsc),
     formatArb = jsc.asciistring,
     recordArb = jsc.suchthat(
-      recordArbWithDistributions(jsc, {
+      recordArbWithDistArbs(jsc, {
         license: licenseArb,
         format: formatArb
       }),

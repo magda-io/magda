@@ -13,7 +13,7 @@ import {
   distUrlArb,
   arrayOfSizeArb,
   arbFlatMap,
-  recordArbWithDistributions
+  recordArbWithDistArbs
 } from "@magda/typescript-common/dist/test/arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 import * as URI from "urijs";
@@ -112,7 +112,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
   const fakeFtpHandler = new FtpHandler(clientFactory);
 
-  const defaultRecordArb = recordArbWithDistributions(jsc);
+  const defaultRecordArb = recordArbWithDistArbs(jsc, { url: distUrlArb(jsc) });
 
   /**
    * Gets an array of the individual urls from every distribution inside a dataset record, including both downloadURL and accessURL.
@@ -359,7 +359,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
    * distribution, for testing retries.
    */
   const httpOnlyRecordArb = jsc.suchthat(
-    recordArbWithDistributions(
+    recordArbWithDistArbs(
       jsc,
       jsc.oneof([
         jsc.constant(undefined),
@@ -613,7 +613,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     });
 
     const thisRecordArb = jsc.suchthat(
-      recordArbWithDistributions(jsc, urlArb),
+      recordArbWithDistArbs(jsc, { url: urlArb }),
       record => {
         const urls: string[] = urlsFromDataSet(record);
         const hosts: string[] = urls.map(url => {
