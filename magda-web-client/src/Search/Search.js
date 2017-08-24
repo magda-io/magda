@@ -1,6 +1,6 @@
 // @flow
 
-import { RouterContext, Link } from 'react-router';
+import {Link } from 'react-router';
 import './Search.css';
 import {connect} from 'react-redux';
 import {config} from '../config.js';

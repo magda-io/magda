@@ -1,6 +1,5 @@
 // @flow
 
-import { RouterContext } from 'react-router';
 import './SearchBox.css';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
