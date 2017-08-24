@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 
 import CrappyChat from "../Components/CrappyChat/CrappyChat";
 import "./RecordDetails.css";

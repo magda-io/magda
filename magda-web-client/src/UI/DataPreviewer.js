@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import DataPreviewTable from '../UI/DataPreviewTable';
-import DataPreviewPdf from '../UI/DataPreviewPdf';
 import DataPreviewTextBox from '../UI/DataPreviewTextBox';
 import DataPreviewGoogleViewer from '../UI/DataPreviewGoogleViewer';
 import DataPreviewJson from '../UI/DataPreviewJson';
@@ -41,7 +40,7 @@ class DataPreviewer extends Component {
     renderByState(previewData){
         switch (previewData.meta.type) {
           case 'geo':
-            return <iframe name='FRAME1' src={previewData.data} width='100%' height='600px' scrolling='auto' frameBorder='0'/>
+            return <iframe title='national map' name='FRAME1' src={previewData.data} width='100%' height='600px' scrolling='auto' frameBorder='0'/>
           case 'chart':
             return <DataPreviewVega data={previewData}></DataPreviewVega>
           case 'tabular':
@@ -51,7 +50,7 @@ class DataPreviewer extends Component {
           case 'txt':
             return <DataPreviewTextBox data ={previewData}/>
           case 'html':
-            return <iframe width="100%" height="600px" src={previewData}></iframe>
+            return <iframe title='preview' width="100%" height="600px" src={previewData}></iframe>
           case 'rss' :
            return <News newsItems={previewData}/>
           case 'googleViewable':

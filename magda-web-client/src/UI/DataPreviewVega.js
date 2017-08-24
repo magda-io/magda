@@ -5,15 +5,6 @@ import VegaLite from 'react-vega-lite';
 const VEGAMARK = ['area', 'bar', 'circle', 'line', 'point', 'rect', 'square', 'text', 'tick'];
 const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
 
-const defaultSpec = {
-  "description": "Example data",
-  "mark": "bar",
-  "encoding": {
-    "x": {"field": "a", "type": "ordinal"},
-    "y": {"field": "b", "type": "quantitative"}
-  }
-}
-
 class DataPreviewVega extends Component {
   constructor(props) {
     super(props);

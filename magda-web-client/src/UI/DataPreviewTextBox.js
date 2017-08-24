@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import OverviewBox from './OverviewBox';
+import React from 'react';
 import './DataPreviewTextBox.css';
 
 function DataPreviewTextBox(props) {

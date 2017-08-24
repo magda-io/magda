@@ -7,7 +7,7 @@ export default function Feedback(props) {
   <ReactDocumentTitle title={config.appName + ' | feedback'}>
     <div className='container feedback'>
       <h1>Feedback</h1>
-      <a href="http://preview.data.gov.au/feedback.html" target="_blank">Give us feedback</a>
+      <a href="http://preview.data.gov.au/feedback.html" target="_blank" rel="noopener noreferrer">Give us feedback</a>
     </div>
     </ReactDocumentTitle>
   );

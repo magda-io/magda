@@ -1,6 +1,6 @@
 
 //@flow
-import React, { Component } from 'react';
+import React from 'react';
 import { Link } from 'react-router';
 import './PublisherSummary.css';
 import type {Publisher} from '../helpers/record';

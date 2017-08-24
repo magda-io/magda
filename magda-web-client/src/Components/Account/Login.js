@@ -51,7 +51,7 @@ export default function Login(props) {
           <p>
             This will use your existing data.gov.au account. To register a new
             data.gov.au account,{" "}
-            <a href="http://data.gov.au/user/register" target="_blank">
+            <a href="http://data.gov.au/user/register" target="_blank" rel="noopener noreferrer">
               click here
             </a>.
           </p>

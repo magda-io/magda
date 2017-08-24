@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 
 function QualityIndicator(props: {quality: number}) {
   const rating = props.quality;

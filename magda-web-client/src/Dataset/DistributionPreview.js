@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import DataPreviewer from '../UI/DataPreviewer';
 
 class DistributionPreview extends Component {
