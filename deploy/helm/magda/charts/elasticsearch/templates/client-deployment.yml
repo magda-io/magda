@@ -44,8 +44,8 @@ spec:
           value: "false"
         - name: HTTP_ENABLE
           value: "true"
-        - name: ES_HEAP_SIZE
-          value: {{ .Values.client.heapSize | quote }}
+        - name: ES_JAVA_OPTS
+          value: "-Xms{{ .Values.client.heapSize }} -Xmx{{ .Values.client.heapSize }}"
         - name: "ES_PLUGINS_INSTALL"
           value: {{ .Values.client.pluginsInstall | quote }}
         ports:

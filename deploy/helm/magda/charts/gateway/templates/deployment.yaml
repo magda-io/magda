@@ -31,13 +31,9 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: session-secret
-# TODO: just pass in the whole oauth-secrets as a file
 {{- if .Values.auth.facebookClientId }}
         - name: FACEBOOK_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: facebook-client-id
+          value: {{ .Values.auth.facebookClientId }}
         - name: FACEBOOK_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
@@ -46,10 +42,7 @@ spec:
 {{- end }}
 {{- if .Values.auth.googleClientId }}
         - name: GOOGLE_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: google-client-id
+          value: {{ .Values.auth.googleClientId }}
         - name: GOOGLE_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
