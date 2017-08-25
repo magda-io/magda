@@ -1,6 +1,8 @@
 // @flow
+import Symbol from 'es6-symbol/implement';
 import React, { Component } from 'react';
 import VegaLite from 'react-vega-lite';
+
 
 const VEGAMARK = ['area', 'bar', 'circle', 'line', 'point', 'rect', 'square', 'text', 'tick'];
 const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];

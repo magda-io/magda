@@ -7,6 +7,8 @@ import "./Login.css";
 import { config } from "../../config";
 const { baseUrl } = config;
 
+
+
 export default function Login(props) {
   const { pathname: prevPath } =
     browserHistory.lastLocation || browserHistory.getCurrentLocation();
@@ -19,7 +21,6 @@ export default function Login(props) {
     `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
       oauthRedirect
     )}`;
-
   return (
     <div className="row login__row">
       {props.signInError &&
@@ -29,14 +30,14 @@ export default function Login(props) {
       <div className="col-sm-6 col-md-5 col-md-offset-1">
         <h2>Sign In / Register through External Provider</h2>
         <ul className="login__providers">
-          {props.providers.includes("facebook") &&
+          {props.providers.indexOf("facebook") !== -1 &&
             <li className="login__provider">
               <a href={makeLoginUrl("facebook")}>
                 <img src={fbLogo} className="login__logo" alt="logo" />
                 Facebook
               </a>
             </li>}
-          {props.providers.includes("google") &&
+          {props.providers.indexOf("google") !== -1 &&
             <li className="login__provider">
               <a href={makeLoginUrl("google")}>
                 <img src={googleLogo} className="login__logo" alt="logo" />
@@ -45,7 +46,7 @@ export default function Login(props) {
             </li>}
         </ul>
       </div>
-      {props.providers.includes("ckan") &&
+      {props.providers.indexOf("ckan") !== -1 &&
         <div className="col-sm-6 col-md-5">
           <h2>Sign In with Data.gov.au</h2>
           <p>
