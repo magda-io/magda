@@ -1,5 +1,7 @@
 // @flow
 // eslint-disable-next-line
+import'es6-shim';
+
 import createLogger from "redux-logger";
 import "./index.css";
 import {
@@ -42,6 +44,10 @@ import PublisherDetails from "./Publisher/PublisherDetails";
 import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import { requestWhoAmI } from "./actions/userManagementActions";
+
+
+
+
 
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
