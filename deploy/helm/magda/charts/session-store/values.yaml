@@ -3,22 +3,9 @@ image:
   #repository: data61/
   #tag: latest
   pullPolicy: Always
-auth:
-  enabled: true
-  #facebookClientId: "173073926555600"
-  #facebookClientSecret: "secret"
-  #googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
-  #googleClientSecret: "secret"
-service:
-  type: LoadBalancer
-  externalPort: 80
-  internalPort: 80
-  #loadBalancerIP: 127.0.0.1
-autoscaler:
-  enabled: true
-  minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 80
+data:
+  storage: 200Gi
+  #storageClass: "ssd"
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

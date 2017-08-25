@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: web
+    spec:
+      containers:
+      - name: web
+        command: [
+            'node', '/usr/src/app/component/dist/index.js',
+            '--config', "/etc/config.json"
+        ]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NODE_ENV
+          value: prod
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        volumeMounts:
+        - mountPath: "/etc"
+          name: config
+      volumes:
+      - name: config
+        configMap:
+          name: config
+          items:
+          - key: web.json
+            path: config.json

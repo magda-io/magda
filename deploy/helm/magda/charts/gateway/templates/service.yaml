@@ -5,7 +5,7 @@ metadata:
 spec:
   ports:
   - name: http
-    port: {{ .Values.service.internalPort }}
+    port: {{ .Values.service.externalPort }}
     targetPort: {{ .Values.service.internalPort }}
   selector:
     service: gateway
