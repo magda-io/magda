@@ -4,4 +4,4 @@
 global:
   repository: "data61/"
   tag: "0.0.28"
-  useCombinedDb: false
+  useCombinedDb: true
