@@ -26,7 +26,6 @@ const allFormatWords = new RegExp(
   "i"
 );
 
-
 const fuzzArb = (jsc: jsc) =>
   jsc.suchthat(jsc.string, string => {
     return !allFormatWords.test(string);

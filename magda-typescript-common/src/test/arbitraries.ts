@@ -47,6 +47,10 @@ export type jsc = {
   nestring: jsverify.Arbitrary<string>;
   asciistring: jsverify.Arbitrary<string>;
   asciinestring: jsverify.Arbitrary<string>;
+  sampler<U>(
+    arb: jsverify.Arbitrary<U>,
+    genSize?: number
+  ): (sampleSize: number) => U;
 };
 
 export const lowerCaseAlphaCharArb = ({ integer }: jsc) =>
@@ -160,12 +164,19 @@ export function arbFlatMap<T, U>(
     show,
     shrink: jsc.shrink.bless((u: U) => {
       const t = backwards(u);
+
       if (_.isUndefined(t)) {
         return [];
       }
 
       const ts = unSeq<T>(arb.shrink(t));
-      const us = _.flatMap(ts, thisT => unSeq<U>(arbForward(thisT).shrink(u)));
+      const us = _(ts)
+        .flatMap(thisT => {
+          const newArb = arbForward(thisT);
+          const newU = (jsc.sampler(newArb, ts.length)(1) as any)[0];
+          return _.take(unSeq<U>(newArb.shrink(newU)), 3);
+        })
+        .value();
 
       return us;
     })
