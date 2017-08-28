@@ -1,5 +1,6 @@
 global:
     useCombinedDb: false
+    externalUrl: http://search.data.gov.au
 elasticsearch:
     production: true
     client:
