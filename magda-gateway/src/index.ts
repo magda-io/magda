@@ -128,7 +128,8 @@ app.use("/auth", createAuthRouter({
     googleClientId: argv.googleClientId,
     googleClientSecret: argv.googleClientSecret,
     ckanUrl: argv.ckanUrl,
-    authenticationApi: argv.authenticationApi
+    authenticationApi: argv.authenticationApi,
+    externalUrl: argv.externalUrl
 }));
 app.use("/api/v0", createApiRouter({
     authenticator: authenticator,

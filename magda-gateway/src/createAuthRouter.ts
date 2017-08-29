@@ -4,14 +4,15 @@ import Authenticator from "./Authenticator";
 import * as passport from "passport";
 
 export interface AuthRouterOptions {
-    authenticator: Authenticator,
-    jwtSecret: string,
-    facebookClientId: string,
-    facebookClientSecret: string,
-    googleClientId: string,
-    googleClientSecret: string,
-    ckanUrl: string,
-    authenticationApi: string
+    authenticator: Authenticator;
+    jwtSecret: string;
+    facebookClientId: string;
+    facebookClientSecret: string;
+    googleClientId: string;
+    googleClientSecret: string;
+    ckanUrl: string;
+    authenticationApi: string;
+    externalUrl: string;
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
@@ -28,17 +29,33 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         {
             id: "facebook",
             enabled: options.facebookClientId ? true : false,
-            authRouter: require("./oauth2/facebook").default(passport, options.facebookClientId, options.facebookClientSecret)
+            authRouter: require("./oauth2/facebook").default({
+                authenticationApi: authApi,
+                passport: passport,
+                clientId: options.facebookClientId,
+                clientSecret: options.facebookClientSecret,
+                externalAuthHome: `${options.externalUrl}/auth`
+            })
         },
         {
             id: "google",
             enabled: options.googleClientId ? true : false,
-            authRouter: require("./oauth2/google").default(passport, options.googleClientId, options.googleClientSecret)
+            authRouter: require("./oauth2/google").default({
+                authenticationApi: authApi,
+                passport: passport,
+                clientId: options.googleClientId,
+                clientSecret: options.googleClientSecret,
+                externalAuthHome: `${options.externalUrl}/auth`
+            })
         },
         {
             id: "ckan",
             enabled: options.ckanUrl ? true : false,
-            authRouter: require("./oauth2/ckan").default(passport)
+            authRouter: require("./oauth2/ckan").default({
+                authenticationApi: authApi,
+                passport: passport,
+                externalAuthHome: `${options.externalUrl}/auth`
+            })
         }
     ];
 

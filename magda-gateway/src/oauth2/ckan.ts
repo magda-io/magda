@@ -7,17 +7,26 @@ import { Strategy as LocalStrategy } from "passport-local";
 import ApiClient from '@magda/auth-api/dist/ApiClient';
 import loginToCkan from "./loginToCkan";
 import createOrGetUserToken from '../createOrGetUserToken';
-import constants from '../constants';
 import { redirectOnSuccess, redirectOnError } from './redirect';
 
-export default function ckan(authApi: ApiClient, passport: Passport) {
+export interface CkanOptions {
+    authenticationApi: ApiClient;
+    passport: Passport;
+    externalAuthHome: string;
+}
+
+export default function ckan(options: CkanOptions) {
+    const authenticationApi = options.authenticationApi;
+    const passport = options.passport;
+    const externalAuthHome = options.externalAuthHome;
+
     passport.use(
         new LocalStrategy(function (username: string, password: string, cb: (error: any, user?: any, info?: any) => void) {
             loginToCkan(username, password).then(result => {
                 result.caseOf({
                     left: error => cb(error),
                     right: profile => {
-                        createOrGetUserToken(authApi, profile, 'ckan')
+                        createOrGetUserToken(authenticationApi, profile, 'ckan')
                             .then(userId => cb(null, userId))
                             .catch(error => cb(error));
                     }
@@ -40,10 +49,10 @@ export default function ckan(authApi: ApiClient, passport: Passport) {
             })(req, res, next)
         },
         (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            redirectOnSuccess(req.query.redirect || constants.authHome, req, res);
+            redirectOnSuccess(req.query.redirect || externalAuthHome, req, res);
         },
         (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any => {
-            redirectOnError(err, req.query.redirect || constants.authHome, req, res);
+            redirectOnError(err, req.query.redirect || externalAuthHome, req, res);
         }
     );
 

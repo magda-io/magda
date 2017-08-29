@@ -5,10 +5,28 @@ import { Passport, Profile } from "passport";
 
 import ApiClient from '@magda/auth-api/dist/ApiClient';
 import createOrGetUserToken from "../createOrGetUserToken";
-import constants from "../constants";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
 
-export default function facebook(authApi: ApiClient, passport: Passport, clientId: string, clientSecret: string) {
+export interface FacebookOptions {
+    authenticationApi: ApiClient;
+    passport: Passport;
+    clientId: string;
+    clientSecret: string;
+    externalAuthHome: string;
+}
+
+export default function facebook(options: FacebookOptions) {
+    const authenticationApi = options.authenticationApi;
+    const passport = options.passport;
+    const clientId = options.clientId;
+    const clientSecret = options.clientSecret;
+    const externalAuthHome = options.externalAuthHome;
+    const loginBaseUrl = `${externalAuthHome}/login`;
+
+    if (!clientId) {
+        return undefined;
+    }
+
     passport.use(
         new FBStrategy(
             {
@@ -23,7 +41,7 @@ export default function facebook(authApi: ApiClient, passport: Passport, clientI
                 profile: Profile,
                 cb: Function
             ) {
-                createOrGetUserToken(authApi, profile, "facebook")
+                createOrGetUserToken(authenticationApi, profile, "facebook")
                     .then(userId => cb(null, userId))
                     .catch(error => cb(error));
             }
@@ -38,8 +56,8 @@ export default function facebook(authApi: ApiClient, passport: Passport, clientI
         // sneak it in via an `any`.
         const options: any = {
             scope: ["public_profile", "email"],
-            callbackURL: `${constants.loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
-                req.query.redirect || constants.authHome
+            callbackURL: `${loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
+                req.query.redirect || externalAuthHome
             )}`
         };
         passport.authenticate("facebook", options)(req, res, next);
@@ -53,15 +71,15 @@ export default function facebook(authApi: ApiClient, passport: Passport, clientI
             next: express.NextFunction
         ) {
             const options: any = {
-                callbackURL: `${constants.loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
-                    req.query.redirect || constants.authHome
+                callbackURL: `${loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
+                    req.query.redirect || externalAuthHome
                 )}`,
                 failWithError: true
             };
             passport.authenticate("facebook", options)(req, res, next);
         },
         (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            redirectOnSuccess(req.query.redirect || constants.authHome, req, res);
+            redirectOnSuccess(req.query.redirect || externalAuthHome, req, res);
         },
         (
             err: any,
@@ -70,7 +88,7 @@ export default function facebook(authApi: ApiClient, passport: Passport, clientI
             next: express.NextFunction
         ): any => {
             console.error(err);
-            redirectOnError(err, req.query.redirect || constants.authHome, req, res);
+            redirectOnError(err, req.query.redirect || externalAuthHome, req, res);
         }
     );
 

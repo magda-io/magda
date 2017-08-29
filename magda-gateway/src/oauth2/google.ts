@@ -1,35 +1,52 @@
 import * as express from 'express';
-import { Router } from 'express';
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Passport, Profile } from 'passport';
 
 import ApiClient from '@magda/auth-api/dist/ApiClient';
 import createOrGetUserToken from '../createOrGetUserToken';
-import constants from '../constants';
 import { redirectOnSuccess, redirectOnError } from './redirect';
 
-export default function google(authApi: ApiClient, passport: Passport, clientId: string, clientSecret: string) {
+export interface GoogleOptions {
+    authenticationApi: ApiClient;
+    passport: Passport;
+    clientId: string;
+    clientSecret: string;
+    externalAuthHome: string;
+}
+
+export default function google(options: GoogleOptions) {
+    const authenticationApi = options.authenticationApi;
+    const passport = options.passport;
+    const clientId = options.clientId;
+    const clientSecret = options.clientSecret;
+    const externalAuthHome = options.externalAuthHome;
+    const loginBaseUrl = `${externalAuthHome}/login`;
+
+    if (!clientId) {
+        return undefined;
+    }
+
     passport.use(
         new GoogleStrategy(
             {
                 clientID: clientId,
                 clientSecret: clientSecret,
-                callbackURL: `${constants.loginBaseUrl}/google/return`
+                callbackURL: `${loginBaseUrl}/google/return`
             },
             function (accessToken: string, refreshToken: string, profile: Profile, cb: (error: any, user?: any, info?: any) => void) {
-                createOrGetUserToken(authApi, profile, 'google').then(userId => cb(null, userId)).catch(error => cb(error));
+                createOrGetUserToken(authenticationApi, profile, 'google').then(userId => cb(null, userId)).catch(error => cb(error));
             }
         )
     );
 
-    const router: Router = express.Router();
+    const router: express.Router = express.Router();
 
     router.get(
         "/",
         (req, res, next) => {
             const options: any = {
                 scope: ["profile", "email"],
-                state: req.query.redirect || constants.authHome
+                state: req.query.redirect || externalAuthHome
             };
             passport.authenticate("google", options)(req, res, next);
         }
