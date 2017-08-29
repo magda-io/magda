@@ -3,15 +3,31 @@ const fs = require("fs");
 require("util.promisify/shim")();
 import { promisify } from "util";
 import * as _ from "lodash";
+import * as config from "config";
+import * as path from "path";
+import getMinikubeIP from "@magda/typescript-common/dist/util/getMinikubeIP";
 // var request = require('request');
 // require('request-debug')(request);
 
-const details = {
-  url: "https://192.168.99.100:8443",
-  ca: fs.readFileSync(`/Users/${process.env.USER}/.minikube/ca.crt`),
-  cert: fs.readFileSync(`/Users/${process.env.USER}/.minikube/apiserver.crt`),
-  key: fs.readFileSync(`/Users/${process.env.USER}/.minikube/apiserver.key`)
-};
+const details = (() => {
+  if (config.get("kubernetesApi.isMinikube")) {
+    const minikubeIP = getMinikubeIP();
+
+    const minikubePath = path.join(
+      process.env[process.platform === "win32" ? "USERPROFILE" : "HOME"],
+      ".minikube"
+    );
+
+    return {
+      url: `https://${minikubeIP}:8443`,
+      ca: fs.readFileSync(path.join(minikubePath, "ca.crt")),
+      cert: fs.readFileSync(path.join(minikubePath, "apiserver.crt")),
+      key: fs.readFileSync(path.join(minikubePath, "apiserver.key"))
+    };
+  } else {
+    return Api.config.getInCluster();
+  }
+})();
 const batchApi = new Api.Batch(details);
 const coreApi = new Api.Core(details);
 

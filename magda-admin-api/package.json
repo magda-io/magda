@@ -34,7 +34,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-auth-api",
+      "name": "data61/magda-admin-api",
       "include": "node_modules dist config Dockerfile"
     }
   }
