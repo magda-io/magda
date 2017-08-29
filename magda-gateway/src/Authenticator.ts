@@ -16,12 +16,12 @@ export default class Authenticator {
     private passportSessionMiddleware: express.RequestHandler;
 
     constructor(options: AuthenticatorOptions) {
-        passport.serializeUser(function (user: string, cb) {
+        passport.serializeUser(function (user: any, cb) {
             cb(null, user);
         });
 
-        passport.deserializeUser(function (userId: string, cb) {
-            cb(null, userId);
+        passport.deserializeUser(function (user: any, cb) {
+            cb(null, user);
         });
 
         const store = new (require("connect-pg-simple")(session))({

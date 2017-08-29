@@ -21,7 +21,7 @@ function profileToUser(profile: passport.Profile, source: string): User {
         source: source,
         sourceId: profile.id,
         isAdmin: false
-    }
+    };
 }
 
 function userToUserToken(user: User): UserToken {

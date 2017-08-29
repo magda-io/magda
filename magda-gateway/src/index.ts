@@ -45,7 +45,7 @@ const argv = yargs
     .option('authenticationApi', {
         describe: 'The base URL of the authentication API.',
         type: 'string',
-        default: 'http://localhost:6104/v0/public'
+        default: 'http://localhost:6104/v0'
     })
     .option('discussionApi', {
         describe: 'The base URL of the discussion API.',
@@ -136,7 +136,7 @@ app.use("/api/v0", createApiRouter({
     jwtSecret: argv.jwtSecret,
     searchApi: argv.searchApi,
     registryApi: argv.registryApi,
-    authenticationApi: argv.authenticationApi,
+    authenticationApi: argv.authenticationApi + '/public',
     discussionApi: argv.discussionsApi
 }));
 app.use("/preview-map", createGenericProxy(argv.previewMap));

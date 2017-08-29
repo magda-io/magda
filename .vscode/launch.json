@@ -57,16 +57,24 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Gateway",
-            "program": "${workspaceRoot}/magda-gateway/index.js",
-            "cwd": "${workspaceRoot}/magda-gateway",
-            "env": {
-                "JWT_SECRET": "squirrel",
-                "SESSION_SECRET": "keyboard cat",
-                "FACEBOOK_CLIENT_ID": "173073926555600",
-                "FACEBOOK_CLIENT_SECRET": "none",
-                "GOOGLE_CLIENT_ID": "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
-                "GOOGLE_CLIENT_SECRET": "none"
-            }
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs":[
+                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/index.ts"
+            ],
+            "args":[
+                "--jwtSecret", "squirrel",
+                "--sessionSecret", "keyboard cat",
+                "--ckanUrl", "https://data.gov.au",
+                "--googleClientId", "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
+                "--googleClientSecret", "secret",
+                "--facebookClientId", "1906944756293015",
+                "--facebookClientSecret", "secret"
+            ],
+            "cwd": "${workspaceRoot}/magda-gateway"
         },
         {
             "type": "node",

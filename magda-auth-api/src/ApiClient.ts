@@ -27,7 +27,8 @@ export default class ApiClient {
             },
             body: JSON.stringify(user)
         })
-            .then(res => Object.assign({}, user, res.json()))
+            .then(res => res.json())
+            .then(userJson => Object.assign({}, user, userJson))
             .catch(e => {
                 console.error(e);
                 throw e;
