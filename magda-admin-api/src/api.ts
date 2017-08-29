@@ -6,6 +6,7 @@ require("util.promisify/shim")();
 import { promisify } from "util";
 import connectorConfig from "./connectorConfig";
 // var request = require('request');
+import * as _ from "lodash";
 
 // require('request-debug')(request);
 // import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
@@ -22,20 +23,42 @@ const coreApi = new Api.Core(details);
 
 const getJobs = promisify(batchApi.ns.jobs.get.bind(batchApi.ns.jobs));
 const postJob = promisify(batchApi.ns.jobs.post.bind(batchApi.ns.jobs));
-const getConfigMap = promisify(
-  coreApi.ns.configmaps.get.bind(coreApi.ns.configmaps)
-);
+const getConnectorConfigMap = () =>
+  promisify(coreApi.ns.configmaps.get.bind(coreApi.ns.configmaps))({
+    name: "connector-config"
+  }).then((result: any) =>
+    _(result.data)
+      .mapKeys((value: any, key: string) => {
+        return key.slice(0, key.length - 5);
+      })
+      .mapValues((value: string) => JSON.parse(value))
+      .value()
+  );
 
 router.get("/crawlers", (req, res) => {
-  getJobs()
-    .then((result: any) => {
-      const crawlers = result.items.map((item: any) => ({
-        name: item.metadata.name,
-        status: item.status.active === 1 ? "active" : "inactive",
-        startTime: item.status.startTime
-      }));
+  Promise.all([getConnectorConfigMap(), getJobs()])
+    .then(([connectorConfigMap, jobs]: [any, any]) => {
+      const crawlerStatus = _(jobs.items)
+        .map((item: any) => ({
+          name: item.metadata.name,
+          status: item.status.active === 1 ? "active" : "inactive",
+          startTime: item.status.startTime
+        }))
+        .keyBy((item: any) => item.name.slice("connector-".length))
+        .value();
 
-      res.status(200).send(crawlers);
+      const result = _.map(
+        connectorConfigMap,
+        (connector: any, key: string) => {
+          return {
+            ...connector,
+            id: key,
+            job: crawlerStatus[key]
+          };
+        }
+      );
+
+      res.status(200).send(result);
     })
     .catch((err: Error) => {
       console.error(err);
@@ -43,7 +66,12 @@ router.get("/crawlers", (req, res) => {
     });
 });
 
-router.put("/crawlers/:id", (req, res) => {
+// router.post("/crawlers", (req, res) => {
+//   const id = req.params.id;
+//   const prefixedId = `connector-${id}`;
+// });
+
+router.put("/crawlers/:id/start", (req, res) => {
   const id = req.params.id;
   const prefixedId = `connector-${id}`;
 
@@ -62,13 +90,11 @@ router.put("/crawlers/:id", (req, res) => {
         return Promise.resolve();
       }
     })
-    .then(() => {
-      return getConfigMap({ name: "connector-config" });
-    })
+    .then(() => getConnectorConfigMap())
     .then((configMap: any) => {
       const config = connectorConfig({
         id,
-        dockerImage: configMap.data[`${id}.json`].type
+        dockerImage: configMap[id].type
       });
 
       return postJob({ body: config }).then((result: any) => {
