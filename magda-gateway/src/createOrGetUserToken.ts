@@ -1,11 +1,11 @@
 import * as passport from 'passport';
-import { lookupUser, createUser } from '@magda/auth-api/dist/client';
+import ApiClient from '@magda/auth-api/dist/ApiClient';
 import { User, UserToken } from '@magda/auth-api/dist/model';
 
-export default function createOrGet(profile: passport.Profile, source: string): Promise<UserToken> {
-    return lookupUser(source, profile.id).then(maybe => maybe.caseOf({
+export default function createOrGetUserToken(authApi: ApiClient, profile: passport.Profile, source: string): Promise<UserToken> {
+    return authApi.lookupUser(source, profile.id).then(maybe => maybe.caseOf({
         just: user => Promise.resolve(userToUserToken(user)),
-        nothing: () => createUser(profileToUser(profile, source)).then(userToUserToken)
+        nothing: () => authApi.createUser(profileToUser(profile, source)).then(userToUserToken)
     }));
 };
 

@@ -1,7 +1,7 @@
 import * as express from "express";
 const httpProxy = require("http-proxy");
 
-export default function(target: {}): express.Router {
+export default function createGenericProxy(target: {}): express.Router {
   const webRouter = express.Router();
   const proxy = httpProxy.createProxyServer({ prependUrl: false });
 
