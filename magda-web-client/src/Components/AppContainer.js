@@ -49,7 +49,7 @@ export default class AppContainer extends React.Component {
       <ReactDocumentTitle title={config.appName}>
         <div>
         {this.state.showPrototypeWarning && <div className='prototype-warning'>
-          <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <a href='http://preview.data.gov.au/feedback.html' rel="noopener noreferrer" target='_blank'>your feedback</a>.</div>
+          <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <a href="http://preview.data.gov.au/feedback.html" target="_blank" rel="noopener noreferrer">your feedback</a>.</div>
           <button className='prototype-warning-dismiss btn' onClick={()=>this.dismissPrototypeWarning()}><i className="fa fa-times" aria-hidden="true"></i></button>
         </div>}
           <nav className='appContainer__nav'>

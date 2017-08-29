@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import marked from 'marked';
 import './MarkdownViewer.css';
 
@@ -28,11 +28,9 @@ LIST.forEach(l=>{
  };
 });
 
-class MarkdownViewer extends Component {
-    render(){
-        let markdown = {__html: marked(this.props.markdown)};
-        return <div className='markdown' dangerouslySetInnerHTML={markdown}/>
-    }
+function MarkdownViewer(props) {
+    let markdown = {__html: marked(props.markdown)};
+    return <div className='markdown' dangerouslySetInnerHTML={markdown}/>
 }
 
 MarkdownViewer.defaultProps = {markdown: ''};

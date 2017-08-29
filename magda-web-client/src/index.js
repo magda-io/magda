@@ -1,5 +1,7 @@
 // @flow
 // eslint-disable-next-line
+import'es6-shim';
+
 import createLogger from "redux-logger";
 import "./index.css";
 import {
@@ -31,7 +33,6 @@ import { staticPageRegister } from "./content/register";
 import DatasetDetails from "./Dataset/DatasetDetails";
 import DatasetDiscussion from "./Dataset/DatasetDiscussion";
 import DatasetPublisher from "./Dataset/DatasetPublisher";
-import DatasetPreview from './Dataset/DatasetPreview';
 
 import ProjectsViewer from "./Project/ProjectsViewer";
 import ProjectDetails from "./Project/ProjectDetails";
@@ -43,6 +44,10 @@ import PublisherDetails from "./Publisher/PublisherDetails";
 import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import { requestWhoAmI } from "./actions/userManagementActions";
+
+
+
+
 
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
@@ -86,7 +91,6 @@ ReactDOM.render(
           <Route path="details" component={DatasetDetails} />
           <Route path="discussion" component={DatasetDiscussion} />
           <Route path="publisher" component={DatasetPublisher} />
-          <Route path="preview" component={DatasetPreview} />
         </Route>
         <Route
           path="dataset/:datasetId/distribution/:distributionId"
