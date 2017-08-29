@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import queryString from 'query-string';
 import propTypes from 'prop-types';
+import queryString from 'query-string';
 import './Pagination.css';
 
 class Pagination extends Component {

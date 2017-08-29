@@ -10,7 +10,7 @@
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "test": "mocha --compilers ts:ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "author": "",
   "license": "Apache-2.0",
@@ -19,7 +19,7 @@
     "@types/chai": "^4.0.2",
     "@types/ftp": "^0.3.29",
     "@types/lodash": "^4.14.71",
-    "@types/lru-cache": "^4.0.0",
+    "@types/lru-cache": "4.0.0",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
     "@types/node": "^8.0.14",
@@ -28,12 +28,10 @@
     "@types/urijs": "^1.15.31",
     "chai": "^4.1.0",
     "dns-proxy": "^0.5.0",
-    "ftpd": "git+https://github.com/TerriaJS/nodeftpd.git",
     "jsverify": "^0.8.2",
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
     "sinon": "^3.0.0",
-    "ts-node": "^3.3.0",
     "typescript": "~2.4.0"
   },
   "dependencies": {
@@ -42,7 +40,7 @@
     "@magda/typescript-common": "^0.0.29-SNAPSHOT",
     "ftp": "^0.3.10",
     "lodash": "^4.17.4",
-    "lru-cache": "^4.0.2",
+    "lru-cache": "4.0.2",
     "request": "^2.79.0",
     "urijs": "^1.18.7"
   },

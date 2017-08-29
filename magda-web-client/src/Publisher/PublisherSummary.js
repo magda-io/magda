@@ -1,21 +1,23 @@
 
 //@flow
-import React, { Component } from 'react';
+import React from 'react';
 import { Link } from 'react-router';
 import './PublisherSummary.css';
+import type {Publisher} from '../helpers/record';
 
-class PublisherSummary extends Component {
-    render(){
-      return <div className='publisher-summray white-box media'>
+function PublisherSummary(props: {publisher: Publisher}) {
+  const details = props.publisher.aspects['organization-details'];
+  return (
+      <div className='publisher-summray white-box media'>
                 <div className='media-left'>
-                    <img className='media-object publisher_image' src={this.props.publisher.image_url} alt={this.props.publisher.name}/>
+                    <img className='media-object publisher_image' src={details.imageUrl} alt={props.publisher.name}/>
                 </div>
                 <div className='media-body'>
-                    <Link to={'publishers/' + encodeURIComponent(this.props.publisher.id)}><h3>{this.props.publisher.name}</h3></Link>
-                    <div className='publisher-description'>{this.props.publisher.description.slice(0, 200) + '...'}</div>
+                    <Link to={'publishers/' + encodeURIComponent(props.publisher.id)}><h3>{props.publisher.name}</h3></Link>
+                    <div className='publisher-description'>{details.description.slice(0, 200) + '...'}</div>
                 </div>
              </div>
-    }
+  );
 }
 
 

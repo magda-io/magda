@@ -1,16 +1,18 @@
 // @flow
-// eslint-disable-next-line
-import {RouterContext } from 'react-router';
-import propTypes from 'prop-types';
 
 import './SearchBox.css';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
+import propTypes from 'prop-types';
 // import {config} from '../config.js';
 import debounce from 'lodash.debounce';
 import defined from '../helpers/defined';
 import React, { Component } from 'react';
 import {fetchRegionMapping} from '../actions/regionMappingActions';
+
+// eslint-disable-next-line
+import PropTypes from 'prop-types';
+
 import queryString from 'query-string';
 
 
