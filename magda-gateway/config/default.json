@@ -1,15 +1,37 @@
 {
-    "listenPort": 6100,
-    "db": {
-        "host": "localhost",
-        "port": 5432
+  "listenPort": 6100,
+  "db": {
+    "host": "localhost",
+    "port": 5432
+  },
+  "externalHost": "http://localhost:6100",
+  "baseAuthApiUrl": "http://localhost:6104",
+  "targets": {
+    "search": {
+      "to": "http://localhost:6102/v0"
     },
-    "targets": {
-        "search": "http://localhost:6102/v0",
-        "registry": "http://localhost:6101/v0",
-        "auth": "http://localhost:6104/v0/public",
-        "discussions": "http://localhost:6105/v0",
-        "web": "http://localhost:6108",
-        "preview-map": "http://localhost:6110"
+    "registry": {
+      "to": "http://localhost:6101/v0",
+      "methods": ["GET"]
+    },
+    "auth": {
+      "to": "http://localhost:6104/v0/public",
+      "methods": ["GET"],
+      "auth": true
+    },
+    "discussions": {
+      "to": "http://localhost:6105/v0",
+      "auth": true
+    },
+    "web": {
+      "to": "http://localhost:6108"
+    },
+    "preview-map": {
+      "to": "http://localhost:6110"
+    },
+    "admin": {
+      "to": "http://localhost:6112/v0",
+      "auth": true
     }
+  }
 }

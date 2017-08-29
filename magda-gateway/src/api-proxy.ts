@@ -1,8 +1,9 @@
 import * as express from "express";
-import { Router} from "express";
+import { Router } from "express";
 const httpProxy = require("http-proxy");
 const jwt = require("jsonwebtoken");
 const config = require("config");
+import * as _ from "lodash";
 
 import setupAuth from "./setup-auth";
 
@@ -17,7 +18,10 @@ proxy.on("proxyReq", function(
   options: any
 ) {
   if (req.user) {
-    const token = jwt.sign({ userId: req.user.id, isAdmin: req.user.isAdmin }, process.env.JWT_SECRET || process.env.npm_package_config_JWT_SECRET);
+    const token = jwt.sign(
+      { userId: req.user.id, isAdmin: req.user.isAdmin },
+      process.env.JWT_SECRET || process.env.npm_package_config_JWT_SECRET
+    );
     proxyReq.setHeader("X-Magda-Session", token);
   }
 });
@@ -57,9 +61,20 @@ function proxyRoute(
   return routeRouter;
 }
 
-proxyRoute("/search", config.get("targets.search"));
-proxyRoute("/registry", config.get("targets.registry"), ["get"], true);
-proxyRoute("/auth", config.get("targets.auth"), ["get"], true);
-proxyRoute("/discussions", config.get("targets.discussions"), undefined, true);
+type ProxyTarget = {
+  to: string;
+  methods?: string[];
+  auth?: boolean;
+};
+
+const targets = config.get("targets");
+_(targets).forEach((value: ProxyTarget, key: string) => {
+  proxyRoute(`/${key}`, value.to, value.methods, !!value.auth);
+});
+
+// proxyRoute("/search", config.get("targets.search"));
+// proxyRoute("/registry", config.get("targets.registry"), ["get"], true);
+// proxyRoute("/auth", config.get("targets.auth"), ["get"], true);
+// proxyRoute("/discussions", config.get("targets.discussions"), undefined, true);
 
 export default router;

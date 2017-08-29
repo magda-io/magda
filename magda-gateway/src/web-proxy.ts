@@ -5,7 +5,7 @@ const config = require("config");
 
 const webRouter: Router = express.Router();
 const proxy = httpProxy.createProxyServer({ prependUrl: false });
-const target = config.get("targets.web");
+const target = config.get("targets.web.to");
 
 proxy.on("error", function(err: any, req: any, res: any) {
   res.writeHead(500, {
