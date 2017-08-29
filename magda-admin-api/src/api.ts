@@ -1,42 +1,16 @@
 import * as express from "express";
 // import { Maybe } from "tsmonad";
-const Api = require("kubernetes-client");
-const fs = require("fs");
-require("util.promisify/shim")();
-import { promisify } from "util";
 import connectorConfig from "./connectorConfig";
-// var request = require('request');
 import * as _ from "lodash";
+import * as k8sApi from "./k8sApi";
 
-// require('request-debug')(request);
 // import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
 
 const router: express.Router = express.Router();
-const details = {
-  url: "https://192.168.99.100:8443",
-  ca: fs.readFileSync(`/Users/${process.env.USER}/.minikube/ca.crt`),
-  cert: fs.readFileSync(`/Users/${process.env.USER}/.minikube/apiserver.crt`),
-  key: fs.readFileSync(`/Users/${process.env.USER}/.minikube/apiserver.key`)
-};
-const batchApi = new Api.Batch(details);
-const coreApi = new Api.Core(details);
-
-const getJobs = promisify(batchApi.ns.jobs.get.bind(batchApi.ns.jobs));
-const postJob = promisify(batchApi.ns.jobs.post.bind(batchApi.ns.jobs));
-const getConnectorConfigMap = () =>
-  promisify(coreApi.ns.configmaps.get.bind(coreApi.ns.configmaps))({
-    name: "connector-config"
-  }).then((result: any) =>
-    _(result.data)
-      .mapKeys((value: any, key: string) => {
-        return key.slice(0, key.length - 5);
-      })
-      .mapValues((value: string) => JSON.parse(value))
-      .value()
-  );
+const prefixId = (id: string) => `connector-${id}`;
 
 router.get("/crawlers", (req, res) => {
-  Promise.all([getConnectorConfigMap(), getJobs()])
+  Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
     .then(([connectorConfigMap, jobs]: [any, any]) => {
       const crawlerStatus = _(jobs.items)
         .map((item: any) => ({
@@ -66,40 +40,60 @@ router.get("/crawlers", (req, res) => {
     });
 });
 
-// router.post("/crawlers", (req, res) => {
-//   const id = req.params.id;
-//   const prefixedId = `connector-${id}`;
-// });
-
-router.put("/crawlers/:id/start", (req, res) => {
+router.put("/crawlers/:id", (req, res) => {
   const id = req.params.id;
-  const prefixedId = `connector-${id}`;
 
-  getJobs({ path: `/${id}/status` })
-    .then((result: any) => {
-      if (result.items.length > 0) {
-        return batchApi.delete({
-          path: `/apis/batch/v1/namespaces/default/jobs/${prefixedId}`,
-          body: {
-            kind: "DeleteOptions",
-            apiVersion: "batch/v1",
-            propagationPolicy: "Background"
-          }
-        });
-      } else {
-        return Promise.resolve();
-      }
-    })
-    .then(() => getConnectorConfigMap())
+  k8sApi
+    .updateConnectorConfigMap(id, req.body)
+    .then((result: any) => res.status(200).send(result))
+    .catch((error: Error) => {
+      console.error(error);
+      res.status(500).send("Error");
+    });
+});
+
+router.delete("/crawlers/:id", (req, res) => {
+  const id = req.params.id;
+
+  k8sApi
+    .deleteJobIfRunning(prefixId(id))
+    .then(() => k8sApi.updateConnectorConfigMap(id, null))
+    .then((result: any) => res.status(200).send(result))
+    .catch((error: Error) => {
+      console.error(error);
+      res.status(500).send("Error");
+    });
+});
+
+router.post("/crawlers/:id/start", (req, res) => {
+  const id = req.params.id;
+
+  k8sApi
+    .deleteJobIfRunning(prefixId(id))
+    .then(() => k8sApi.getConnectorConfigMap())
     .then((configMap: any) => {
       const config = connectorConfig({
         id,
         dockerImage: configMap[id].type
       });
 
-      return postJob({ body: config }).then((result: any) => {
-        res.status(201).send(result);
+      return k8sApi.createJob({ body: config }).then((result: any) => {
+        res.status(200).send(result);
       });
+    })
+    .catch((err: Error) => {
+      console.error(err);
+      res.status(500).send("Error");
+    });
+});
+
+router.post("/crawlers/:id/stop", (req, res) => {
+  const id = req.params.id;
+
+  return k8sApi
+    .deleteJob(prefixId(id))
+    .then(() => {
+      res.status(204).send();
     })
     .catch((err: Error) => {
       console.error(err);
