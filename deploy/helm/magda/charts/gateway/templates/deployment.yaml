@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gateway
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        service: gateway
+    spec:
+      containers:
+      - name: gateway
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NODE_ENV
+          value: production
+{{- if .Values.auth.enabled }}
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: session-secret
+{{- if .Values.auth.facebookClientId }}
+        - name: FACEBOOK_CLIENT_ID
+          value: {{ .Values.auth.facebookClientId }}
+        - name: FACEBOOK_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth-secrets
+              key: facebook-client-secret
+{{- end }}
+{{- if .Values.auth.googleClientId }}
+        - name: GOOGLE_CLIENT_ID
+          value: {{ .Values.auth.googleClientId }}
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth-secrets
+              key: google-client-secret
+{{- end }}
+{{- end }}

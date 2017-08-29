@@ -1,0 +1,42 @@
+{{- if .Values.global.useCombinedDb }}
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: combined-db
+spec:
+  serviceName: combined-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: combined-db
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: combined-db
+        resources:
+          requests:
+            cpu: 0m
+            memory: 0
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5432
+        env:
+        - name: PGDATA
+          value: /var/pv/data
+        volumeMounts:
+        - mountPath: /var/pv
+          name: combined-db
+  volumeClaimTemplates:
+  - metadata:
+      name: combined-db
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+    {{- if .Values.data.storageClass }}
+      storageClassName: "{{ .Values.data.storageClass }}"
+    {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.data.storage | quote }}
+{{- end }}
