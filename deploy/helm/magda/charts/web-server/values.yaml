@@ -1,4 +1,3 @@
-# Default values for gateway.
 image:
   #repository: data61/
   #tag: latest
