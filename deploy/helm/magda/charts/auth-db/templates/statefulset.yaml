@@ -1,0 +1,43 @@
+{{- if not .Values.global.useCombinedDb }}
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: session-store
+spec:
+  serviceName: session-store
+  replicas: 1
+{{- if semverCompare "^1.7.0" (printf "%s" .Capabilities.KubeVersion) }}
+  updateStrategy:
+    type: RollingUpdate
+{{- end }}
+  template:
+    metadata:
+      labels:
+        service: session-store
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: session-store
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        image: {{ template "dockerimage" . }}
+        ports:
+        - containerPort: 5432
+        env:
+        - name: PGDATA
+          value: /var/pv/data
+        volumeMounts:
+        - mountPath: /var/pv
+          name: registrydata
+  volumeClaimTemplates:
+  - metadata:
+      name: registrydata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+    {{- if .Values.data.storageClass }}
+      storageClassName: "{{ .Values.data.storageClass }}"
+    {{- end }}
+      resources:
+        requests:
+          storage: "{{ .Values.data.storage }}"
+{{- end }}
