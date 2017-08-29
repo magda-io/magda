@@ -63,12 +63,12 @@ router.put("/crawlers/:id", (req, res) => {
       }
     })
     .then(() => {
-      return getConfigMap({ name: prefixedId });
+      return getConfigMap({ name: "connector-config" });
     })
     .then((configMap: any) => {
       const config = connectorConfig({
         id,
-        dockerImage: configMap.data["connector.json"].type
+        dockerImage: configMap.data[`${id}.json`].type
       });
 
       return postJob({ body: config }).then((result: any) => {
