@@ -199,6 +199,10 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
 }
 
 function getPackageList(dependencies, basePath, result) {
+    if (!dependencies) {
+        return result;
+    }
+
     Object.keys(dependencies).forEach(function(dependencyName) {
         const dependencyDetails = dependencies[dependencyName];
         if (dependencyDetails.extraneous) {
