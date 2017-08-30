@@ -206,7 +206,18 @@ function getPackageList(dependencies, basePath, result) {
             return;
         }
 
-        const dependencyDir = path.join(basePath, dependencyName.replace(/\//g, path.sep));
+        let dependencyDir = path.join(basePath, dependencyName.replace(/\//g, path.sep));
+
+        // Does this directory exist?  If not, imitate node's module resolution by walking
+        // up the directory tree.
+        while (!fse.existsSync(dependencyDir)) {
+            const upOne = path.resolve(dependencyDir, '..', '..', '..', path.basename(dependencyDir));
+            if (upOne === dependencyDir) {
+                break;
+            }
+            dependencyDir = upOne;
+        }
+
         result.push(dependencyDir);
 
         if (dependencyDetails.dependencies) {

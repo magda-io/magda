@@ -111,7 +111,7 @@
             "protocol": "inspector",
             "name": "create-docker-context-for-node-component",
             "program": "${workspaceRoot}/scripts/create-docker-context-for-node-component.js",
-            "cwd": "${workspaceRoot}/magda-auth-api",
+            "cwd": "${workspaceRoot}/magda-gateway",
             "args": [
                "--output", "foo.tar.gz"
             ]
