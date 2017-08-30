@@ -5,7 +5,7 @@ import googleLogo from "./google-logo.svg";
 import "./Login.css";
 
 import { config } from "../../config";
-const { authApiUrl } = config;
+const { baseUrl } = config;
 
 
 
@@ -18,7 +18,7 @@ export default function Login(props) {
   const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${prevPath}`;
 
   const makeLoginUrl = type =>
-    `${authApiUrl}login/${type}?redirect=${encodeURIComponent(
+    `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
       oauthRedirect
     )}`;
   return (

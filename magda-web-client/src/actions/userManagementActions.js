@@ -64,7 +64,7 @@ export function requestSignOut() {
       type: actionTypes.REQUEST_SIGN_OUT
     });
 
-    fetch(config.authApiUrl + "logout", {
+    fetch(config.baseUrl + "auth/logout", {
       credentials: "include"
     }).then(response => {
       if (response.status <= 400) {
@@ -102,7 +102,7 @@ export function requestAuthProviders() {
       type: actionTypes.REQUEST_AUTH_PROVIDERS
     });
 
-    fetch(config.authApiUrl + "providers")
+    fetch(config.baseUrl + "auth/providers")
       .then(response => {
         if (response.status === 200) {
           return response
