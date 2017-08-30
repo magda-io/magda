@@ -32,30 +32,15 @@ const argv = yargs
         type: 'number',
         default: 5432
     })
-    .option('registryApi', {
-        describe: 'The base URL of the registry API.',
+    .option('routesPath', {
+        describe: 'Path of the json that defines routes to proxy',
         type: 'string',
-        default: 'http://localhost:6101/v0'
-    })
-    .option('searchApi', {
-        describe: 'The base URL of the search API.',
-        type: 'string',
-        default: 'http://localhost:6102/v0'
+        default: '../local-routes.json'
     })
     .option('authenticationApi', {
         describe: 'The base URL of the authentication API.',
         type: 'string',
         default: 'http://localhost:6104/v0'
-    })
-    .option('discussionApi', {
-        describe: 'The base URL of the discussion API.',
-        type: 'string',
-        default: 'http://localhost:6105/v0'
-    })
-    .option('web', {
-        describe: 'The base URL of the web site.',
-        type: 'string',
-        default: 'http://localhost:6108'
     })
     .option('previewMap', {
         describe: 'The base URL of the preview map.',
@@ -134,10 +119,7 @@ app.use("/auth", createAuthRouter({
 app.use("/api/v0", createApiRouter({
     authenticator: authenticator,
     jwtSecret: argv.jwtSecret,
-    searchApi: argv.searchApi,
-    registryApi: argv.registryApi,
-    authenticationApi: argv.authenticationApi + '/public',
-    discussionApi: argv.discussionsApi
+    routes: require(argv.routesPath)
 }));
 app.use("/preview-map", createGenericProxy(argv.previewMap));
 

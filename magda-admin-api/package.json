@@ -11,8 +11,9 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.29-SNAPSHOT",
     "@magda/auth-api": "^0.0.29-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.29-SNAPSHOT",
+    "@types/yargs": "^8.0.2",
     "body-parser": "^1.13.2",
     "config": "^1.26.1",
     "express": "^4.13.1",
@@ -22,7 +23,8 @@
     "kubernetes-client": "^3.14.0",
     "lodash": "^4.17.4",
     "tsmonad": "^0.7.2",
-    "util.promisify": "^1.0.0"
+    "util.promisify": "^1.0.0",
+    "yargs": "^8.0.2"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.29-SNAPSHOT",
