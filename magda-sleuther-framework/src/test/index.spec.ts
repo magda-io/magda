@@ -82,7 +82,7 @@ function arraysEqual(a: any[], b: any[]) {
 }
 
 describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
-  this.timeout(5000);
+  this.timeout(10000);
   let expressApp: express.Express;
 
   before(() => {
@@ -310,147 +310,159 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
   describe("webhooks", () => {
     const doWebhookTest = (caption: string, async: boolean) => {
-      const batchResultsArb = jsc.array(jsc.bool);
+      it(caption, () => {
+        const batchResultsArb = jsc.suchthat(
+          jsc.array(jsc.bool),
+          array => array.length <= 5
+        );
 
-      const recordWithSuccessArb = (mightFail: boolean) =>
-        jsc.record({
-          record: recordArb(jsc),
-          success: mightFail ? jsc.bool : jsc.constant(true)
-        });
+        const recordWithSuccessArb = (mightFail: boolean) =>
+          jsc.record({
+            record: recordArb(jsc),
+            success: mightFail ? jsc.bool : jsc.constant(true)
+          });
 
-      const recordsWithSuccessArrArb = (success: boolean) => {
-        const baseArb = jsc.array(recordWithSuccessArb(!success));
+        const recordsWithSuccessArrArb = (success: boolean) => {
+          const baseArb = jsc.array(recordWithSuccessArb(!success));
 
-        return success
-          ? baseArb
-          : jsc.suchthat(baseArb, combined =>
-              combined.some(({ success }) => !success)
-            );
-      };
+          return success
+            ? baseArb
+            : jsc.suchthat(baseArb, combined =>
+                combined.some(({ success }) => !success)
+              );
+        };
 
-      type Batch = {
-        /** Each record in the batch and whether it should succeed when
+        type Batch = {
+          /** Each record in the batch and whether it should succeed when
          *  onRecordFound is called */
-        records: { record: Record; success: boolean }[];
-        /** Whether the overall batch should succeed - to succeed, every record
+          records: { record: Record; success: boolean }[];
+          /** Whether the overall batch should succeed - to succeed, every record
          *  should succeed, to fail then at least one record should fail. */
-        overallSuccess: boolean;
-      };
+          overallSuccess: boolean;
+        };
 
-      const batchArb = arbFlatMap<boolean[], Batch[]>(
-        jsc,
-        batchResultsArb,
-        batchResults => {
-          const batchArb = batchResults.map(overallSuccess =>
-            recordsWithSuccessArrArb(overallSuccess).smap(
-              records => ({ records, overallSuccess }),
-              ({ records }) => records
-            )
-          );
-          return batchArb.length > 0 ? jsc.tuple(batchArb) : jsc.constant([]);
-        },
-        batches => batches.map(({ overallSuccess }) => overallSuccess)
-      );
-
-      jsc.property(
-        caption,
-        batchArb,
-        lcAlphaNumStringArbNe(jsc),
-        (recordsBatches: Batch[], domain: string) => {
-          beforeEachProperty();
-
-          const registryDomain = "example";
-          const registryUrl = `http://${registryDomain}.com:80`;
-          process.env.REGISTRY_URL = registryUrl;
-          const registryScope = nock(registryUrl);
-
-          registryScope.put(/\/hooks\/.*/).reply(201);
-
-          /** All records in all the batches */
-          const flattenedRecords = _.flatMap(
-            recordsBatches,
-            batch => batch.records
-          );
-          /** Error thrown when the call is *supposed* to fail  */
-          const fakeError = new Error("Fake-ass testing error");
-          (fakeError as any).ignore = true;
-
-          const options: SleutherOptions = {
-            host: `${domain}.com`,
-            defaultPort: 80,
-            id: "id",
-            aspects: [],
-            optionalAspects: [],
-            writeAspectDefs: [],
-            async,
-            express: () => expressApp,
-            onRecordFound: sinon.stub().callsFake((foundRecord: Record) => {
-              const match = flattenedRecords.find(({ record: thisRecord }) => {
-                return thisRecord.id === foundRecord.id;
-              });
-              return match.success
-                ? Promise.resolve()
-                : Promise.reject(fakeError);
-            })
-          };
-          registryScope.get("/records").query(true).reply(200, { records: [] });
-
-          /** Global hook id generator - incremented every time we create another hook */
-          let lastHookId = 0;
-          return sleuther(options)
-            .then(() =>
-              Promise.all(
-                recordsBatches.map(batch => {
-                  lastHookId++;
-
-                  if (async) {
-                    // If we're running async then we expect that there'll be a call to the registry
-                    // telling it to give more events.
-                    registryScope
-                      .post(`/hooks/${lastHookId}`, {
-                        succeeded: batch.overallSuccess,
-                        lastEventIdReceived: lastHookId
-                      })
-                      .reply(201);
-                  }
-
-                  // Send the hook payload to the sleuther
-                  const test = request(expressApp)
-                    .post("/hook")
-                    .set("Content-Type", "application/json")
-                    .send({
-                      records: batch.records.map(({ record }) => record),
-                      deferredResponseUrl: `${registryUrl}/hooks/${lastHookId}`,
-                      lastEventId: lastHookId
-                    })
-                    // The hook should only return 500 if it's failed synchronously.
-                    .expect(async || batch.overallSuccess ? 201 : 500)
-                    .then((response: any) => {
-                      expect(!!response.body.deferResponse).to.equal(async);
-                    });
-
-                  const queryable = makePromiseQueryable(test);
-
-                  expect(queryable.isFulfilled()).to.be.false;
-
-                  return queryable.then(() =>
-                    batch.records.forEach(({ record }) =>
-                      expect(
-                        (options.onRecordFound as sinon.SinonStub).calledWith(
-                          record
-                        )
-                      )
-                    )
-                  );
-                })
+        const batchArb = arbFlatMap<boolean[], Batch[]>(
+          jsc,
+          batchResultsArb,
+          batchResults => {
+            const batchArb = batchResults.map(overallSuccess =>
+              recordsWithSuccessArrArb(overallSuccess).smap(
+                records => ({ records, overallSuccess }),
+                ({ records }) => records
               )
-            )
-            .then(() => {
-              registryScope.done();
-              return true;
-            });
-        }
-      );
+            );
+            return batchArb.length > 0 ? jsc.tuple(batchArb) : jsc.constant([]);
+          },
+          batches => batches.map(({ overallSuccess }) => overallSuccess)
+        );
+
+        return jsc.assert(
+          jsc.forall(
+            batchArb,
+            lcAlphaNumStringArbNe(jsc),
+            (recordsBatches: Batch[], domain: string) => {
+              beforeEachProperty();
+
+              const registryDomain = "example";
+              const registryUrl = `http://${registryDomain}.com:80`;
+              process.env.REGISTRY_URL = registryUrl;
+              const registryScope = nock(registryUrl);
+
+              registryScope.put(/\/hooks\/.*/).reply(201);
+
+              /** All records in all the batches */
+              const flattenedRecords = _.flatMap(
+                recordsBatches,
+                batch => batch.records
+              );
+              /** Error thrown when the call is *supposed* to fail  */
+              const fakeError = new Error("Fake-ass testing error");
+              (fakeError as any).ignore = true;
+
+              const options: SleutherOptions = {
+                host: `${domain}.com`,
+                defaultPort: 80,
+                id: "id",
+                aspects: [],
+                optionalAspects: [],
+                writeAspectDefs: [],
+                async,
+                express: () => expressApp,
+                onRecordFound: sinon.stub().callsFake((foundRecord: Record) => {
+                  const match = flattenedRecords.find(
+                    ({ record: thisRecord }) => {
+                      return thisRecord.id === foundRecord.id;
+                    }
+                  );
+                  return match.success
+                    ? Promise.resolve()
+                    : Promise.reject(fakeError);
+                })
+              };
+              registryScope
+                .get("/records")
+                .query(true)
+                .reply(200, { records: [] });
+
+              /** Global hook id generator - incremented every time we create another hook */
+              let lastHookId = 0;
+              return sleuther(options)
+                .then(() =>
+                  Promise.all(
+                    recordsBatches.map(batch => {
+                      lastHookId++;
+
+                      if (async) {
+                        // If we're running async then we expect that there'll be a call to the registry
+                        // telling it to give more events.
+                        registryScope
+                          .post(`/hooks/${lastHookId}`, {
+                            succeeded: batch.overallSuccess,
+                            lastEventIdReceived: lastHookId
+                          })
+                          .reply(201);
+                      }
+
+                      // Send the hook payload to the sleuther
+                      const test = request(expressApp)
+                        .post("/hook")
+                        .set("Content-Type", "application/json")
+                        .send({
+                          records: batch.records.map(({ record }) => record),
+                          deferredResponseUrl: `${registryUrl}/hooks/${lastHookId}`,
+                          lastEventId: lastHookId
+                        })
+                        // The hook should only return 500 if it's failed synchronously.
+                        .expect(async || batch.overallSuccess ? 201 : 500)
+                        .expect((response: any) => {
+                          expect(!!response.body.deferResponse).to.equal(async);
+                        });
+
+                      const queryable = makePromiseQueryable(test);
+
+                      expect(queryable.isFulfilled()).to.be.false;
+
+                      return queryable.then(() =>
+                        batch.records.forEach(({ record }) =>
+                          expect(
+                            (options.onRecordFound as sinon.SinonStub).calledWith(
+                              record
+                            )
+                          )
+                        )
+                      );
+                    })
+                  )
+                )
+                .then(() => {
+                  registryScope.done();
+                  return true;
+                });
+            }
+          ),
+          {}
+        );
+      });
     };
 
     doWebhookTest("should work synchronously", false);

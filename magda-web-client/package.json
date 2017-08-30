@@ -20,6 +20,8 @@
   "devDependencies": {
     "@magda/scripts": "^0.0.29-SNAPSHOT",
     "deep-freeze": "0.0.1",
+    "es6-shim": "^0.35.3",
+    "es6-symbol": "^3.1.1",
     "expect": "^1.20.2",
     "flow-bin": "^0.39.0",
     "npm-run-all": "^4.0.1",

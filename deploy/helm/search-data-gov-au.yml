@@ -1,0 +1,57 @@
+global:
+    useCombinedDb: false
+    externalUrl: http://search.data.gov.au
+elasticsearch:
+    production: true
+    client:
+        heapSize: 900m
+        pluginsInstall: "repository-gcs"
+        resources:
+            requests:
+                cpu: 200m
+                memory: 1500Mi
+    data:
+        heapSize: 4000m
+        pluginsInstall: "repository-gcs"
+        resources:
+            requests:
+                cpu: 800m
+                memory: 8000Mi
+gateway:
+    loadBalancerIP: "35.189.8.102"
+    auth:
+        facebookClientId: "173073926555600"
+        googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+    resources:
+        requests:
+            cpu: 200m
+            memory: 200Mi
+indexer:
+    resources:
+        requests:
+            cpu: 200m
+            memory: 500Mi
+preview-map:
+    resources:
+        requests:
+            cpu: 250m
+            memory: 200Mi
+registry-api:
+    resources: {} # TODO
+registry-datastore:
+    resources:
+        requests:
+            cpu: 900m
+            memory: 2000Mi
+search-api:
+    resources: {} # TODO
+session-store:
+    resources:
+        requests:
+            cpu: 200m
+            memory: 2000Mi
+web-server:
+    resources:
+        requests:
+            cpu: 300m
+            memory: 200Mi

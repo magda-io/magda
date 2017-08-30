@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: indexer
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        service: indexer
+    spec:
+      containers:
+      - name: indexer
+        env:
+        - name: SCALA_ENV
+          value: dev-na # TODO
+        - name: S3_SECRET_KEY
+          value: dummy
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /usr/regions
+          name: regions
+      volumes:
+      - name: regions
+        hostPath:
+          path: /var/regions

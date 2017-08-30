@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: registry-api
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        service: registry-api
+    spec:
+      containers:
+      - name: registry-api
+        env:
+        - name: SCALA_ENV
+          value: prod
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80

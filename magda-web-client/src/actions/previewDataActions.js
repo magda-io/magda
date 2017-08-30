@@ -75,7 +75,7 @@ export function fetchPreviewData(distribution){
 
       dispatch(requestPreviewData(url));
 
-      const proxy = "https://nationalmap.gov.au/proxy/_0d/";
+      const proxy = config.proxyUrl;
 
       switch (format) {
         case 'geo':
@@ -92,7 +92,7 @@ export function fetchPreviewData(distribution){
           }]}
 
           let geoData = {
-            data: window.location.origin + "/preview-map/#start=" + encodeURIComponent(JSON.stringify(catalog)),
+            data: config.previewMapUrl + "#start=" + encodeURIComponent(JSON.stringify(catalog)),
             meta: {
               type: "geo"
             }
@@ -102,7 +102,7 @@ export function fetchPreviewData(distribution){
 
         case 'csv':
         loadPapa().then(papa=>{
-          papa.parse("https://nationalmap.gov.au/proxy/_0d/" + url, {
+          papa.parse(proxy + "_0d/" + url, {
             download: true,
             header: true,
             complete: function(data) {

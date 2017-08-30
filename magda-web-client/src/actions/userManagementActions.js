@@ -14,7 +14,7 @@ export function requestWhoAmI() {
       type: actionTypes.REQUEST_WHO_AM_I
     });
 
-    fetch(config.authApiUrl + "/users/whoami", {
+    fetch(config.authApiUrl + "users/whoami", {
       credentials: "include"
     })
       .then(response => {
@@ -101,7 +101,7 @@ export function requestAuthProviders() {
     dispatch({
       type: actionTypes.REQUEST_AUTH_PROVIDERS
     });
-    
+
     fetch(config.baseUrl + "auth/providers")
       .then(response => {
         if (response.status === 200) {

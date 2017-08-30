@@ -1,71 +1,96 @@
-// import * as passport from 'passport';
-const passport = require("passport");
-const FBStrategy = require("passport-facebook").Strategy;
+import { Strategy as FBStrategy } from "passport-facebook";
 import * as express from "express";
 import { Router } from "express";
-import { Profile } from "passport";
+import { Passport, Profile } from "passport";
 
-import createOrGet from "../create-or-get";
-import constants from "../constants";
+import ApiClient from '@magda/auth-api/dist/ApiClient';
+import createOrGetUserToken from "../createOrGetUserToken";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
 
-passport.use(
-  new FBStrategy(
-    {
-      clientID: process.env.FACEBOOK_CLIENT_ID || process.env.npm_package_config_FACEBOOK_CLIENT_ID,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || process.env.npm_package_config_FACEBOOK_CLIENT_SECRET,
-      profileFields: ["displayName", "picture", "email"]
-    },
-    function(
-      accessToken: string,
-      refreshToken: string,
-      profile: Profile,
-      cb: Function
-    ) {
-      createOrGet(profile, "facebook")
-        .then(userId => cb(null, userId))
-        .catch(error => cb(error));
+export interface FacebookOptions {
+    authenticationApi: ApiClient;
+    passport: Passport;
+    clientId: string;
+    clientSecret: string;
+    externalAuthHome: string;
+}
+
+export default function facebook(options: FacebookOptions) {
+    const authenticationApi = options.authenticationApi;
+    const passport = options.passport;
+    const clientId = options.clientId;
+    const clientSecret = options.clientSecret;
+    const externalAuthHome = options.externalAuthHome;
+    const loginBaseUrl = `${externalAuthHome}/login`;
+
+    if (!clientId) {
+        return undefined;
     }
-  )
-);
 
-const router: Router = express.Router();
+    passport.use(
+        new FBStrategy(
+            {
+                clientID: clientId,
+                clientSecret: clientSecret,
+                profileFields: ["displayName", "picture", "email"],
+                callbackURL: undefined
+            },
+            function (
+                accessToken: string,
+                refreshToken: string,
+                profile: Profile,
+                cb: Function
+            ) {
+                createOrGetUserToken(authenticationApi, profile, "facebook")
+                    .then(userId => cb(null, userId))
+                    .catch(error => cb(error));
+            }
+        )
+    );
 
-router.get("/", (req, res, next) => {
-  passport.authenticate("facebook", {
-    scope: ["public_profile", "email"],
-    callbackURL: `${constants.loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
-      req.query.redirect || constants.authHome
-    )}`
-  })(req, res, next);
-});
+    const router: Router = express.Router();
 
-router.get(
-  "/return",
-  function(
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) {
-    passport.authenticate("facebook", {
-      callbackURL: `${constants.loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
-        req.query.redirect || constants.authHome
-      )}`,
-      failWithError: true
-    })(req, res, next);
-  },
-  (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    redirectOnSuccess(req.query.redirect || constants.authHome, req, res);
-  },
-  (
-    err: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): any => {
-    console.error(err);
-    redirectOnError(err, req.query.redirect || constants.authHome, req, res);
-  }
-);
+    router.get("/", (req, res, next) => {
+        // callbackURL property from https://github.com/jaredhanson/passport-facebook/issues/2
+        // But it's not in the typescript defintions (as of @types/passport@0.3.4), so we need
+        // sneak it in via an `any`.
+        const options: any = {
+            scope: ["public_profile", "email"],
+            callbackURL: `${loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
+                req.query.redirect || externalAuthHome
+            )}`
+        };
+        passport.authenticate("facebook", options)(req, res, next);
+    });
 
-export default router;
+    router.get(
+        "/return",
+        function (
+            req: express.Request,
+            res: express.Response,
+            next: express.NextFunction
+        ) {
+            const options: any = {
+                callbackURL: `${loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
+                    req.query.redirect || externalAuthHome
+                )}`,
+                failWithError: true
+            };
+            passport.authenticate("facebook", options)(req, res, next);
+        },
+        (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            redirectOnSuccess(req.query.redirect || externalAuthHome, req, res);
+        },
+        (
+            err: any,
+            req: express.Request,
+            res: express.Response,
+            next: express.NextFunction
+        ): any => {
+            console.error(err);
+            redirectOnError(err, req.query.redirect || externalAuthHome, req, res);
+        }
+    );
+
+    return router;
+}

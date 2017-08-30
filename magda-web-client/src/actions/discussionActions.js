@@ -19,7 +19,7 @@ import type {Dispatch, GetState } from "../types";
 
 //     dispatch(requestDiscussionForType(type, id));
 
-//     return fetch(config.discussionsApiUrl + `/linked/${type}/${id}`)
+//     return fetch(config.discussionsApiUrl + `linked/${type}/${id}`)
 //       .then(response => {
 //         if (response.status === 200) {
 //           return response.json();
@@ -77,7 +77,7 @@ export function fetchMessages(typeName: string, typeId: string) {
 
     return fetch(
       config.discussionsApiUrl +
-        `/linked/${typeName}/${typeId}/messages`
+        `linked/${typeName}/${typeId}/messages`
     )
       .then(response => {
         if (response.status === 200) {
@@ -125,7 +125,7 @@ export function sendNewMessage(typeName: string, typeId: string, message: string
 
     return fetch(
       config.discussionsApiUrl +
-        `/linked/${typeName}/${typeId}/messages`,
+        `linked/${typeName}/${typeId}/messages`,
       {
         method: "POST",
         credentials: "include",

@@ -2,6 +2,7 @@ import * as express from "express";
 import { Router } from "express";
 import { Message } from "./model";
 import * as _ from "lodash";
+const config = require('config');
 
 import {
   getMessagesForDiscussion,
@@ -11,7 +12,20 @@ import {
   addMessageToLinkedDiscussion
 } from "./db";
 import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
-import { getUserPublic } from "@magda/auth-api/dist/client";
+import ApiClient from "@magda/auth-api/dist/ApiClient";
+
+// TODO: Refactor this to use command-line args like magda-gateway.
+const baseUrl: string = (() => {
+    if (config.has("baseAuthApiUrl")) {
+        return config.get("baseAuthApiUrl");
+    } else if (process.env.NODE_ENV && process.env.NODE_ENV !== "development") {
+        return "http://auth-api"
+    } else {
+        return "http://minikube.data.gov.au:30015";
+    }
+})() + '/v0';
+
+const authApi = new ApiClient(baseUrl);
 
 const router: Router = express.Router();
 
@@ -107,7 +121,7 @@ function handleMessages(
 function addUsers(messages: Message[]): Promise<Message[]> {
   const userIds = _(messages).map(message => message.userId).uniq().value();
 
-  const userPromises = userIds.map(getUserPublic);
+  const userPromises = userIds.map(id => authApi.getUserPublic(id));
 
   return Promise.all(userPromises)
     .then(users => {

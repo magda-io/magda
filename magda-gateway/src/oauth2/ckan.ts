@@ -1,60 +1,60 @@
-import * as passport from "passport";
-import * as express from "express";
-import { Router } from "express";
-const LocalStrategy = require("passport-local").Strategy;
 
-import loginToCkan from "./login-to-ckan";
-import createOrGet from "../create-or-get";
-import constants from "../constants";
-import { redirectOnSuccess, redirectOnError } from "./redirect";
+import { Passport } from 'passport';
+import * as express from 'express';
+import { Router } from 'express';
+import { Strategy as LocalStrategy } from "passport-local";
 
-passport.use(
-  new LocalStrategy(function(
-    username: string,
-    password: string,
-    cb: (error: any, user?: any, info?: any) => void
-  ) {
-    loginToCkan(username, password).then(result => {
-      result.caseOf({
-        left: error => cb(error),
-        right: profile => {
-          createOrGet(profile, "ckan")
-            .then(user => {
-              cb(null, user);
-            })
-            .catch(error => {
-              cb(error);
+import ApiClient from '@magda/auth-api/dist/ApiClient';
+import loginToCkan from "./loginToCkan";
+import createOrGetUserToken from '../createOrGetUserToken';
+import { redirectOnSuccess, redirectOnError } from './redirect';
+
+export interface CkanOptions {
+    authenticationApi: ApiClient;
+    passport: Passport;
+    externalAuthHome: string;
+}
+
+export default function ckan(options: CkanOptions) {
+    const authenticationApi = options.authenticationApi;
+    const passport = options.passport;
+    const externalAuthHome = options.externalAuthHome;
+
+    passport.use(
+        new LocalStrategy(function (username: string, password: string, cb: (error: any, user?: any, info?: any) => void) {
+            loginToCkan(username, password).then(result => {
+                result.caseOf({
+                    left: error => cb(error),
+                    right: profile => {
+                        createOrGetUserToken(authenticationApi, profile, 'ckan')
+                            .then(userId => cb(null, userId))
+                            .catch(error => cb(error));
+                    }
+                });
             });
-        }
-      });
+        })
+    );
+
+    const router: Router = express.Router();
+
+    router.get("/", function (req, res) {
+        res.render("form");
     });
-  })
-);
 
-const router: Router = express.Router();
+    router.post(
+        "/",
+        (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            passport.authenticate("local", {
+                failWithError: true
+            })(req, res, next)
+        },
+        (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            redirectOnSuccess(req.query.redirect || externalAuthHome, req, res);
+        },
+        (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any => {
+            redirectOnError(err, req.query.redirect || externalAuthHome, req, res);
+        }
+    );
 
-router.get("/", function(req, res) {
-  res.render("form");
-});
-
-router.post(
-  "/",
-  (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    passport.authenticate("local", {
-      failWithError: true
-    })(req, res, next);
-  },
-  (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    redirectOnSuccess(req.query.redirect || constants.authHome, req, res);
-  },
-  (
-    err: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): any => {
-    redirectOnError(err, req.query.redirect || constants.authHome, req, res);
-  }
-);
-
-export default router;
+    return router;
+}
