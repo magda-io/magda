@@ -214,7 +214,7 @@ function getPackageList(dependencies, basePath, result) {
         // Does this directory exist?  If not, imitate node's module resolution by walking
         // up the directory tree.
         while (!fse.existsSync(dependencyDir)) {
-            const upOne = path.resolve(dependencyDir, '..', '..', '..', path.basename(dependencyDir));
+            const upOne = path.resolve(dependencyDir, '..', '..', '..', 'node_modules', path.basename(dependencyDir));
             if (upOne === dependencyDir) {
                 break;
             }
