@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 const childProcess = require('child_process');
 const fse = require('fs-extra');
-const klawSync = require("klaw-sync");
 const path = require('path');
 const process = require('process');
 const yargs = require('yargs');
