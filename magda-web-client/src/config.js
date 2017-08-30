@@ -8,22 +8,24 @@ const fallbackApiHost = "http://magda-dev.terria.io/";
 
 const serverConfig = window.magda_server_config || {};
 
-const registryUrl =
-  serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry";
-const previewMapUrl = serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map";
-const proxy = "https://nationalmap.gov.au";
+const registryApiUrl =
+  serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
+const previewMapUrl = serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
+const proxyUrl = previewMapUrl + "proxy/";
+
 export const config = {
   appName: "data.gov.au",
-  baseUrl: fallbackApiHost,
-  searchApiBaseUrl:
-    serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search",
-  registryUrl: registryUrl,
-  authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth",
+  baseUrl: serverConfig.baseUrl || fallbackApiHost,
+  searchApiUrl:
+    serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
+  registryApiUrl: registryApiUrl,
+  authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",
   discussionsApiUrl:
     serverConfig.discussionsApiBaseUrl ||
-    fallbackApiHost + "api/v0/discussions",
+    fallbackApiHost + "api/v0/discussions/",
   previewMapUrl: previewMapUrl,
-  rssUrl: proxy + "/proxy/_0d/https://blog.data.gov.au/blogs/rss.xml",
+  proxyUrl: proxyUrl,
+  rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
   facetListSize: 5,
   resultsPerPage: 10,
   descriptionLength: 50,
@@ -98,7 +100,7 @@ export const config = {
       category: "Developers",
       links: [
         ["Architecture", "page/architecture"],
-        ["API Docs", registryUrl + "/swagger/index.html"]
+        ["API Docs", registryApiUrl + "swagger/index.html"]
       ]
     },
     {

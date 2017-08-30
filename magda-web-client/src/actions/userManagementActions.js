@@ -14,7 +14,7 @@ export function requestWhoAmI() {
       type: actionTypes.REQUEST_WHO_AM_I
     });
 
-    fetch(config.authApiUrl + "/users/whoami", {
+    fetch(config.authApiUrl + "users/whoami", {
       credentials: "include"
     })
       .then(response => {
@@ -64,7 +64,7 @@ export function requestSignOut() {
       type: actionTypes.REQUEST_SIGN_OUT
     });
 
-    fetch(config.baseUrl + "auth/logout", {
+    fetch(config.authApiUrl + "logout", {
       credentials: "include"
     }).then(response => {
       if (response.status <= 400) {
@@ -101,8 +101,8 @@ export function requestAuthProviders() {
     dispatch({
       type: actionTypes.REQUEST_AUTH_PROVIDERS
     });
-    
-    fetch(config.baseUrl + "auth/providers")
+
+    fetch(config.authApiUrl + "providers")
       .then(response => {
         if (response.status === 200) {
           return response

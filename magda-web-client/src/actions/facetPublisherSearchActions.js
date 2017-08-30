@@ -25,7 +25,7 @@ export function receivePublishers(generalQuery:string, facetQuery:string, json:O
 export function fetchPublisherSearchResults(generalQuery:string, facetQuery:string) {
   return (dispatch: Function)=>{
     dispatch(requestPublishers(generalQuery, facetQuery))
-    return fetch(config.searchApiBaseUrl + `/facets/publisher/options?generalQuery=${encodeURIComponent(generalQuery)}&facetQuery=${encodeURIComponent(facetQuery)}`)
+    return fetch(config.searchApiUrl + `facets/publisher/options?generalQuery=${encodeURIComponent(generalQuery)}&facetQuery=${encodeURIComponent(facetQuery)}`)
     .then(response => response.json())
     .then((json: FacetSearchJson) =>
       dispatch(receivePublishers(generalQuery, facetQuery, json))

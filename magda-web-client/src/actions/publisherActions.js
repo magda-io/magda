@@ -48,7 +48,7 @@ export function requestPublisherError(error: number): FacetAction {
 function fetchPublishers(start){
     return (dispatch: Function) => {
         dispatch(requestPublishers());
-        const url = `${config.registryUrl}/records?aspect=organization-details&limit=${config.resultsPerPage}&start=${(start-1)*config.resultsPerPage}`;
+        const url = `${config.registryApiUrl}records?aspect=organization-details&limit=${config.resultsPerPage}&start=${(start-1)*config.resultsPerPage}`;
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {
@@ -87,7 +87,7 @@ export function fetchPublishersIfNeeded(start: number):Object{
 function fetchPublisher(id){
     return (dispatch: Function) => {
         dispatch(requestPublisher());
-        const url = `${config.registryUrl}/records/${id}?aspect=organization-details`;
+        const url = `${config.registryApiUrl}records/${id}?aspect=organization-details`;
         console.log(url);
         return fetch(url)
             .then(response => {
