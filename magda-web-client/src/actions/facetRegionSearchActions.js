@@ -23,7 +23,7 @@ export function receiveRegions(facetQuery: string , json: Object ): FacetAction{
 export function fetchRegionSearchResults(facetQuery: string ) : Store {
   return (dispatch: Dispatch)=>{
     dispatch(requestRegions(facetQuery))
-    return fetch(config.searchApiBaseUrl + `/regions?query=${facetQuery}`)
+    return fetch(config.searchApiUrl + `regions?query=${facetQuery}`)
     .then(response => response.json())
     .then((json: FacetSearchJson) =>
       dispatch(receiveRegions(facetQuery, json))

@@ -2,4 +2,4 @@ global:
   repository: "data61/"
   tag: "0.0.28"
   useCombinedDb: true
-  #externalUrl: "http://please-set-this.example.com"
+  externalUrl: "http://localhost:6100"

@@ -1,6 +1,5 @@
 global:
-  repository: "localhost:5000/data61/"
-  tag: "latest"
+  externalUrl: http://magda-dev.terria.io
 gateway:
   auth:
     facebookClientId: "173073926555600"

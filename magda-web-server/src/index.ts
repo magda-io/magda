@@ -12,10 +12,14 @@ const argv = yargs
         type: 'boolean',
         default: false
     })
-    .option('apiBaseUrl', {
-        describe: 'The base URL of the MAGDA API Gateway.',
+    .option('baseUrl', {
+        describe: 'The base URL of the MAGDA Gateway.',
         type: 'string',
-        default: 'http://localhost:6101/api/'
+        default: 'http://localhost:6100/'
+    })
+    .option('apiBaseUrl', {
+        describe: 'The base URL of the MAGDA API Gateway.  If not specified, the URL is built from the baseUrl.',
+        type: 'string',
     })
     .option('searchApiBaseUrl', {
         describe: 'The base URL of the MAGDA Search API.  If not specified, the URL is built from the apiBaseUrl.',
@@ -41,14 +45,18 @@ const clientRoot = path.join(__dirname, '..', 'node_modules', '@magda', 'web-cli
 const clientBuild = path.join(clientRoot, 'build');
 console.log(clientBuild);
 
+const apiBaseUrl = addTrailingSlash(argv.apiBaseUrl || new URI(argv.baseUrl).segment('api').toString());
+
 app.get('/server-config.js', function(req, res) {
     const config = {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
-        searchApiBaseUrl: argv.searchApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('search').toString(),
-        registryApiBaseUrl: argv.registryApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('registry').toString(),
-        authApiBaseUrl: argv.authApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('auth').toString(),
-        discussionsApiBaseUrl: argv.discussionsApiBaseUrl || new URI(argv.apiBaseUrl).segment('v0').segment('discussions').toString(),
-        previewMapBaseUrl: argv.previewMapBaseUrl || new URI(argv.apiBaseUrl).segment('..').segment('preview-map').toString(),
+        baseUrl: addTrailingSlash(argv.baseUrl),
+        apiBaseUrl: apiBaseUrl,
+        searchApiBaseUrl: addTrailingSlash(argv.searchApiBaseUrl || new URI(apiBaseUrl).segment('v0').segment('search').toString()),
+        registryApiBaseUrl: addTrailingSlash(argv.registryApiBaseUrl || new URI(apiBaseUrl).segment('v0').segment('registry').toString()),
+        authApiBaseUrl: addTrailingSlash(argv.authApiBaseUrl || new URI(apiBaseUrl).segment('v0').segment('auth').toString()),
+        discussionsApiBaseUrl: addTrailingSlash(argv.discussionsApiBaseUrl || new URI(apiBaseUrl).segment('v0').segment('discussions').toString()),
+        previewMapBaseUrl: addTrailingSlash(argv.previewMapBaseUrl || new URI(apiBaseUrl).segment('..').segment('preview-map').toString()),
     };
     res.type('json');
     res.send('window.magda_server_config = ' + JSON.stringify(config) + ';');
@@ -83,3 +91,15 @@ console.log("Listening on port " + config.get("listenPort"));
 process.on("unhandledRejection", (reason: string, promise: any) => {
   console.error(reason);
 });
+
+function addTrailingSlash(url: string) {
+    if (!url) {
+        return url;
+    }
+
+    if (url.lastIndexOf('/') !== url.length - 1) {
+        return url + '/';
+    } else {
+        return url;
+    }
+}

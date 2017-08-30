@@ -113,7 +113,7 @@ export function updateProjectFailure(){
 export function updateProjectStatus(project: ProjectProps){
   return (dispatch: Dispatch) => {
     dispatch(updateProject());
-    const url = `${config.registryUrl}/records/${project.id}/aspects/project`;
+    const url = `${config.registryApiUrl}records/${project.id}/aspects/project`;
     const body = [{ "op": "replace", "path": "/status", "value": project.status === 'open' ? 'closed' : 'open' }]
       return fetch(url,
       {
@@ -145,7 +145,7 @@ export function updateProjectStatus(project: ProjectProps){
 export function postNewProject(props: ProjectProps){
   return (dispatch: Dispatch) => {
     dispatch(createProject());
-    const url = config.registryUrl + '/records';
+    const url = config.registryApiUrl + 'records';
 
     return fetch(url,
     {
@@ -200,7 +200,7 @@ export function validateFields(props: Object){
 export function fetchProjectsFromRegistry(start: number):Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestProjects())
-    let url : string = `${config.registryUrl}/records?aspect=project&limit=${config.resultsPerPage}&start=${(start-1)*config.resultsPerPage}`;
+    let url : string = `${config.registryApiUrl}records?aspect=project&limit=${config.resultsPerPage}&start=${(start-1)*config.resultsPerPage}`;
     console.log(url);
     return fetch(url)
     .then(response => {
@@ -229,7 +229,7 @@ export function fetchProjectsIfNeeded(start: number){
 export function fetchProjectFromRegistry(projectId: string):Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestProject())
-    let url : string = config.registryUrl + '/records/' + projectId + '?aspect=project';
+    let url : string = config.registryApiUrl + 'records/' + projectId + '?aspect=project';
     return fetch(url)
     .then(response => {
         if (response.status >= 400) {

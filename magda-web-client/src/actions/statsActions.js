@@ -34,7 +34,7 @@ export function fetchDatasetCount(){
         return false;
       }
       dispatch(requestDatasetCount())
-      const url = `${config.registryUrl}/records?limit=0&aspect=dcat-dataset-strings`;
+      const url = `${config.registryApiUrl}records?limit=0&aspect=dcat-dataset-strings`;
       fetch(url)
       .then(response=>{
         if (response.status !== 200) {
