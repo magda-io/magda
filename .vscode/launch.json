@@ -104,6 +104,17 @@
                "--selector", "service=combined-db",
                "--port", "5432"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "create-docker-context-for-node-component",
+            "program": "${workspaceRoot}/scripts/create-docker-context-for-node-component.js",
+            "cwd": "${workspaceRoot}/magda-auth-api",
+            "args": [
+               "--output", "foo.tar.gz"
+            ]
         }
     ]
 }
