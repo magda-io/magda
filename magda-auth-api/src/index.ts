@@ -13,5 +13,6 @@ app.listen(nodeConfig.get("listenPort"));
 console.log("Auth API started on port " + nodeConfig.get("listenPort"));
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
+  console.error("Unhandled rejection:");
   console.error(reason);
 });

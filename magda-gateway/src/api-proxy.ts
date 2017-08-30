@@ -19,7 +19,7 @@ proxy.on("proxyReq", function(
 ) {
   if (req.user) {
     const token = jwt.sign(
-      { userId: req.user.id, isAdmin: req.user.isAdmin },
+      { userId: req.user.id },
       process.env.JWT_SECRET || process.env.npm_package_config_JWT_SECRET
     );
     proxyReq.setHeader("X-Magda-Session", token);

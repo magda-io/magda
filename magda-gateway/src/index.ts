@@ -35,5 +35,6 @@ app.listen(config.get("listenPort"));
 console.log("Listening on port " + config.get("listenPort"));
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
+  console.error("Unhandled rejection");
   console.error(reason);
 });

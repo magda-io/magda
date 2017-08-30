@@ -53,9 +53,13 @@ authRouter.get(
   "/profile",
   require("connect-ensure-login").ensureLoggedIn(),
   function(req, res) {
-    getUser(req.user.id).then(user =>
-      res.render("profile", { user: user.valueOrThrow() })
-    );
+    console.log(req.user);
+    getUser(req.user.id)
+      .then(user => res.render("profile", { user: user.valueOrThrow() }))
+      .catch((error: Error) => {
+        console.error(error);
+        res.status(500).send("Error");
+      });
   }
 );
 

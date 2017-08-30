@@ -3,11 +3,12 @@ import * as express from "express";
 import connectorConfig from "./connectorConfig";
 import * as _ from "lodash";
 import * as k8sApi from "./k8sApi";
-
-// import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
+import { mustBeAdmin } from "@magda/auth-api/dist/authMiddleware";
 
 const router: express.Router = express.Router();
 const prefixId = (id: string) => `connector-${id}`;
+
+router.use(mustBeAdmin);
 
 router.get("/crawlers", (req, res) => {
   Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
@@ -101,13 +102,13 @@ router.post("/crawlers/:id/stop", (req, res) => {
     });
 });
 
-// // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
-// if (process.env.NODE_ENV !== "production") {
-//   router.get("public/jwt", function(req, res) {
-//     res.status(200);
-//     res.write("X-Magda-Session: " + req.header("X-Magda-Session"));
-//     res.send();
-//   });
-// }
+// This is for getting a JWT in development so you can do fake authenticated requests to a local server.
+if (process.env.NODE_ENV === "") {
+  router.get("public/jwt", function(req, res) {
+    res.status(200);
+    res.write("X-Magda-Session: " + req.header("X-Magda-Session"));
+    res.send();
+  });
+}
 
 export default router;

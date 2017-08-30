@@ -2,6 +2,7 @@
   "lerna": "2.0.0",
   "packages": [
     "deploy/",
+    "magda-admin-api/",
     "magda-auth-api/",
     "magda-auth-db/",
     "magda-sleuther-framework/",
