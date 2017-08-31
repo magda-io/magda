@@ -135,7 +135,15 @@ if (argv.build) {
 
 function preparePackage(packageDir, destDir, productionPackages) {
     const packageJson = require(path.join(packageDir, 'package.json'));
-    const dockerIncludes = (packageJson.config && packageJson.config.docker && packageJson.config.docker.include || '').split(' ').filter(include => include.length > 0);
+    const dockerIncludesFromPackageJson = packageJson.config && packageJson.config.docker && packageJson.config.docker.include;
+
+    let dockerIncludes;
+    if (!dockerIncludesFromPackageJson) {
+        console.log(`WARNING: Package ${packageDir} does not have a config.docker.include key in package.json, so all of its files will be included in the docker image.`);
+        dockerIncludes = fse.readdirSync(packageDir);
+    } else {
+        dockerIncludes = dockerIncludesFromPackageJson.split(' ').filter(include => include.length > 0);
+    }
 
     dockerIncludes.forEach(function(include) {
         const src = path.resolve(packageDir, include);
