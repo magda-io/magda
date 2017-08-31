@@ -14,6 +14,7 @@
     "magda-discussions-db/",
     "magda-elastic-search/",
     "magda-gateway/",
+    "magda-graphql-api/",
     "magda-indexer/",
     "magda-int-test/",
     "magda-postgres/",
