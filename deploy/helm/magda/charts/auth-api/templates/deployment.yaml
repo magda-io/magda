@@ -15,6 +15,13 @@ spec:
       - name: auth-api
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: [
+            "node",
+            "/usr/src/app/component/dist/index.js",
+            "--listenPort", "80",
+            "--dbHost", "auth-db",
+            "--dbPort", "5432"
+        ]
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:

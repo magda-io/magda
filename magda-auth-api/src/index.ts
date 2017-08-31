@@ -1,7 +1,8 @@
 import * as express from 'express';
 import * as yargs from 'yargs';
 
-import apiRouter from './api';
+import createApiRouter from './createApiRouter';
+import Database from './Database';
 
 const argv = yargs
     .config()
@@ -12,12 +13,12 @@ const argv = yargs
         default: 6104
     })
     .option('dbHost', {
-        describe: 'The host running the session database.',
+        describe: 'The host running the auth database.',
         type: 'string',
         default: 'localhost'
     })
     .option('dbPort', {
-        describe: 'The port running the session database.',
+        describe: 'The port running the auth database.',
         type: 'number',
         default: 5432
     })
@@ -27,7 +28,12 @@ const argv = yargs
 var app = express();
 app.use(require("body-parser").json());
 
-app.use('/v0', apiRouter);
+app.use('/v0', createApiRouter({
+    database: new Database({
+        dbHost: argv.dbHost,
+        dbPort: argv.dbPort
+    })
+}));
 
 app.listen(argv.listenPort);
 console.log("Auth API started on port " + argv.listenPort);
