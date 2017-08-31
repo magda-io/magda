@@ -16,7 +16,7 @@
     "@magda/scripts": "^0.0.29-SNAPSHOT",
     "@types/config": "0.0.32",
     "@types/express": "^4.0.35",
-    "@types/urijs": "^1.15.33",
+    "@types/urijs": "^1.15.34",
     "@types/yargs": "^6.6.0",
     "typescript": "~2.4.0"
   },
@@ -24,7 +24,7 @@
     "@magda/web-client": "^0.0.29-SNAPSHOT",
     "config": "^1.26.1",
     "express": "^4.15.3",
-    "urijs": "^1.18.10",
+    "urijs": "^1.18.12",
     "yargs": "^8.0.2"
   },
   "config": {
