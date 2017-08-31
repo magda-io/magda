@@ -141,7 +141,12 @@ function preparePackage(packageDir, destDir, productionPackages) {
     if (!dockerIncludesFromPackageJson) {
         console.log(`WARNING: Package ${packageDir} does not have a config.docker.include key in package.json, so all of its files will be included in the docker image.`);
         dockerIncludes = fse.readdirSync(packageDir);
+    } else if (dockerIncludesFromPackageJson.trim() === '*') {
+        dockerIncludes = fse.readdirSync(packageDir);
     } else {
+        if (dockerIncludesFromPackageJson.indexOf('*') >= 0) {
+            throw new Error('Sorry, wildcards are not currently supported in config.docker.include.');
+        }
         dockerIncludes = dockerIncludesFromPackageJson.split(' ').filter(include => include.length > 0);
     }
 

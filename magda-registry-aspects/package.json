@@ -4,5 +4,10 @@
   "description": "Common aspects for use with the registry.",
   "scripts": {},
   "author": "",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "config": {
+      "docker": {
+          "include": "*"
+      }
+  }
 }
