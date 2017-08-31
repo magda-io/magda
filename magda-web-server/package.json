@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@magda/web-client": "^0.0.29-SNAPSHOT",
-    "config": "^1.26.1",
     "express": "^4.15.3",
     "urijs": "^1.18.12",
     "yargs": "^8.0.2"
@@ -30,7 +29,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-web-server",
-      "include": "node_modules dist Dockerfile config"
+      "include": "node_modules dist Dockerfile"
     }
   }
 }
