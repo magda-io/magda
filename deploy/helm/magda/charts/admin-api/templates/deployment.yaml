@@ -14,15 +14,15 @@ spec:
       containers:
       - name: admin-api
         image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
-            "--dockerRepo", {{ .Values.global.repository | quote }},
+            "--dockerRepo", {{ .Values.global.image.repository | quote }},
             "--authApiUrl", "http://auth-api/v0",
             "--registryApiUrl", "http://registry-api/v0",
-            "--imageTag", {{ .Values.image.tag | default .Values.global.tag }},
+            "--imageTag", {{ .Values.image.tag | default .Values.global.image.tag }},
             "--kubernetesApiType", "cluster"
         ]
         resources:

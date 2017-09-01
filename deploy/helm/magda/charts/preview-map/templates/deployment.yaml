@@ -20,4 +20,4 @@ spec:
         - name: NODE_ENV
           value: prod
         image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}

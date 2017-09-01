@@ -1,6 +1,8 @@
 global:
     useCombinedDb: false
     externalUrl: http://search.data.gov.au
+    image:
+        pullPolicy: IfNotPresent
 elasticsearch:
     production: true
     client:

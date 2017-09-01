@@ -14,7 +14,7 @@ spec:
       containers:
       - name: auth-api
         image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",

@@ -22,7 +22,7 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         volumeMounts:
         - mountPath: /usr/regions
           name: regions

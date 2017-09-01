@@ -6,7 +6,7 @@ spec:
   replicas: 1
   strategy:
     rollingUpdate:
-      maxUnavailable: {{ {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}|{{ .Values.global.rollingUpdate.maxUnavailable | default 0 }} }}|{{ {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}|{{ .Values.global.rollingUpdate.maxUnavailable | default 0 }} }}
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   template:
     metadata:
       labels:
@@ -18,6 +18,6 @@ spec:
         - name: SCALA_ENV
           value: prod
         image: {{ template "dockerimage" . }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         ports:
         - containerPort: 80
