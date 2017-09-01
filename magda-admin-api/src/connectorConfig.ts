@@ -1,19 +1,17 @@
-import * as config from "config";
-
 export type Options = {
     id: string;
     dockerImage: string;
     dockerImageTag: string;
-    dockerRepo?: string;
-    registryApiUrl?: string;
+    dockerRepo: string;
+    registryApiUrl: string;
 };
 
 export default function({
     id,
     dockerImage,
     dockerImageTag,
-    dockerRepo = config.get("dockerRepo"),
-    registryApiUrl = config.get("registryApiUrl")
+    dockerRepo,
+    registryApiUrl
 }: Options) {
     const jobName = `connector-${id}`;
 
@@ -34,7 +32,7 @@ export default function({
                     containers: [
                         {
                             name: jobName,
-                            image: `${dockerRepo}/${dockerImage}:${dockerImageTag}`,
+                            image: `${dockerRepo}${dockerImage}:${dockerImageTag}`,
                             command: [
                                 "node",
                                 "/usr/src/app/component/dist/index.js",
@@ -65,10 +63,10 @@ export default function({
                         {
                             name: "config",
                             configMap: {
-                                name: `connector-${id}`,
+                                name: `connector-config`,
                                 items: [
                                     {
-                                        key: `connector.json`,
+                                        key: `${id}.json`,
                                         path: "connector.json"
                                     }
                                 ]

@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: auth-api
+  name: admin-api
 spec:
   strategy:
     rollingUpdate:
@@ -9,21 +9,29 @@ spec:
   template:
     metadata:
       labels:
-        service: auth-api
+        service: admin-api
     spec:
       containers:
-      - name: auth-api
+      - name: admin-api
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: [
+            "node",
+            "/usr/src/app/component/dist/index.js",
+            "--listenPort", "80",
+            "--dockerRepo", {{ .Values.global.repository | quote }},
+            "--authApiUrl", "http://auth-api/v0",
+            "--registryApiUrl", "http://registry-api/v0",
+            "--imageTag", {{ .Values.image.tag | default .Values.global.tag }},
+            "--kubernetesApiType", "cluster"
+        ]
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
         - name: NODE_ENV
           value: production
-{{- if .Values.auth.enabled }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- end }}

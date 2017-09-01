@@ -29,6 +29,7 @@ export function getUserIdHandling(
       cb(userId);
     },
     nothing: () => {
+      console.warn("Rejecting with not authorized because no user id present");
       res.status(401).send("Not authorized.");
     }
   });

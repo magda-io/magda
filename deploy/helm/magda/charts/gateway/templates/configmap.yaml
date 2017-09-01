@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "gateway-routes"
+  labels:
+    pod: "gateway"
+data:
+  # When the config map is mounted as a volume, these will be created as files.
+  routes.json: '{
+    "search": {
+        "to": "http://search-api/v0"
+    },
+    "registry": {
+        "to": "http://registry-api/v0",
+        "methods": ["GET"]
+    },
+    "auth": {
+        "to": "http://auth-api/v0/public",
+        "methods": ["GET"],
+        "auth": true
+    },
+    "discussions": {
+        "to": "http://discussions-api/v0",
+        "auth": true
+    },
+    "admin": {
+        "to": "http://admin-api/v0",
+        "auth": true
+    }
+  }'

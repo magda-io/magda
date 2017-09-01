@@ -1,9 +1,0 @@
-{
-  "listenPort": 6112,
-  "dockerRepo": "localhost:5000/data61",
-  "registryApiUrl": "http://registry-api/v0",
-  "useDevImages": true,
-  "kubernetesApi": {
-    "isMinikube": true
-  }
-}

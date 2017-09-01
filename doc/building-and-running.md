@@ -11,6 +11,28 @@ You need the following in order to build and run MAGDA:
 
 These instructions assume you are using a Bash shell.  You can easily get a Bash shell on Windows by installing the [git](https://git-scm.com/downloads) client.
 
+## Building and running components
+
+First, install `npm` dependencies and set up the links  between components by running:
+
+```bash
+lerna bootstrap
+```
+
+Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.  From the MAGDA root directory, simply run:
+
+```bash
+npm run build
+```
+
+You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
+
+To run a built component, run the following in a component directory:
+
+```bash
+npm start
+```
+
 ## Setting up Minikube
 
 As mentioned above, Minikube is optional.  However, you will probably find it easier to run at least the databases (PostgreSQL and ElasticSearch) on Minikube, rather than installing them on your development machine.
@@ -34,32 +56,17 @@ eval $(minikube docker-env)
 
 You'll need to run this in each new shell.
 
-Finally, deploy the kube registry to the Minikube cluster:
+### Setting up Helm
+
+Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at https://github.com/kubernetes/helm/blob/master/docs/install.md.
+
+### Install a local kube registry
+
+This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
 
 ```bash
-kubectl create -f deploy/kubernetes/local/kube-registry.yml
-```
-
-## Building and running components
-
-First, install `npm` dependencies and set up the links  between components by running:
-
-```bash
-lerna bootstrap
-```
-
-Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.  From the MAGDA root directory, simply run:
-
-```bash
-npm run build
-```
-
-You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
-
-To run a built component, run the following in a component directory:
-
-```bash
-npm start
+helm install --name docker-registry incubator/docker-registry
+helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
 ```
 
 ## Running on your local machine
@@ -133,13 +140,13 @@ Scala components can easily be debugged using the IntelliJ debugger.  Create a d
 To run all of MAGDA on Minikube, you first need to build all components:
 
 ```bash
-npm run build
+lerna run build
 ```
 
 Then, build and push Docker containers for each by running the following in the root MAGDA directory:
 
 ```bash
-npm run docker-build-local
+lerna run docker-build-local
 ```
 
 If you get an error, make sure your Docker environment is set up:
@@ -153,15 +160,23 @@ Next, create the configmaps defining the cluster configuration:
 ```bash
 kubectl create configmap config --from-file deploy/kubernetes/config
 kubectl create configmap connector-config --from-file deploy/connector-config
+deploy/helm/create-auth-secrets.sh
 ```
 
-Then, create all the pods and services by running:
+```
+To install _everything_:
 
 ```bash
-kubectl apply -f deploy/kubernetes/local/base
+helm install --name magda deploy/helm/magda
 ```
 
-Once everything starts up, you can access the web front end on http://192.168.99.100:30016.  The IP address may be different on your system.  Get the real IP address by running:
+If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the `all` tag to `false` and the tag for the pod you want to `true`, e.g.
+
+```bash
+helm install --name combined-db --set tags.all=false --set tags.combined-db=true deploy/helm/magda
+```
+
+Once everything starts up, you can access the web front end on http://192.168.99.100:30000.  The IP address may be different on your system.  Get the real IP address by running:
 
 ```bash
 minikube ip
@@ -171,4 +186,3 @@ It's a good idea to add an entry for `minikube.data.gov.au` to your `hosts` file
 
 ```
 192.168.99.100	minikube.data.gov.au
-```

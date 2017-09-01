@@ -1,5 +1,7 @@
 global:
   externalUrl: http://magda-dev.terria.io
+  rollingUpdate:
+    maxUnavailable: 1
 gateway:
   auth:
     facebookClientId: "173073926555600"

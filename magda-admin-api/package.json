@@ -15,14 +15,10 @@
     "@magda/typescript-common": "^0.0.29-SNAPSHOT",
     "@types/yargs": "^8.0.2",
     "body-parser": "^1.13.2",
-    "config": "^1.26.1",
     "express": "^4.13.1",
     "isomorphic-fetch": "^2.2.1",
-    "json-stream": "^1.0.0",
-    "jsonwebtoken": "^7.4.1",
     "kubernetes-client": "^3.14.0",
     "lodash": "^4.17.4",
-    "tsmonad": "^0.7.2",
     "util.promisify": "^1.0.0",
     "yargs": "^8.0.2"
   },
@@ -38,7 +34,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-admin-api",
-      "include": "node_modules dist config Dockerfile"
+      "include": "node_modules dist Dockerfile"
     },
     "JWT_SECRET": "squirrel"
   }

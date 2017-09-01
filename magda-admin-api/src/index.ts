@@ -2,8 +2,6 @@ import * as express from "express";
 import buildApiRouter from "./buildApiRouter";
 import * as yargs from "yargs";
 
-const nodeConfig = require("config");
-
 const argv = yargs
     .config()
     .help()
@@ -23,11 +21,15 @@ const argv = yargs
         type: "string",
         default: "http://localhost:6104/v0"
     })
-    .option("useDevImages", {
-        describe:
-            "When creating new pods, should the latest (dev) tag be used, or the last version?",
-        type: "boolean",
-        default: true
+    .option("registryApiUrl", {
+        describe: "The base URL of the registry API",
+        type: "string",
+        default: "http://localhost:6101/v0"
+    })
+    .option("imageTag", {
+        describe: "When creating new pods, what tag should be used?",
+        type: "string",
+        default: "latest"
     })
     .option("kubernetesApiType", {
         describe: "What kubernetes API to connect to",
@@ -36,7 +38,7 @@ const argv = yargs
         default: "minikube"
     }).argv;
 
-// // Create a new Express application.
+// Create a new Express application.
 var app = express();
 app.use(require("body-parser").json());
 
@@ -45,13 +47,14 @@ app.use(
     buildApiRouter({
         dockerRepo: argv.dockerRepo,
         authApiUrl: argv.authApiUrl,
-        useDevImages: argv.useDevImages,
-        kubernetesApiType: argv.kubernetesApiType
+        imageTag: argv.imageTag,
+        kubernetesApiType: argv.kubernetesApiType,
+        registryApiUrl: argv.registryApiUrl
     })
 );
 
-app.listen(nodeConfig.get("listenPort"));
-console.log("Auth API started on port " + nodeConfig.get("listenPort"));
+app.listen(argv.listenPort);
+console.log("Admin API started on port " + argv.listenPort);
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
     console.error(reason);

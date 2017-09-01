@@ -7,8 +7,9 @@ import { mustBeAdmin } from "@magda/auth-api/dist/authMiddleware";
 export interface Options {
     dockerRepo: string;
     authApiUrl: string;
-    useDevImages: boolean;
+    imageTag: string;
     kubernetesApiType: K8SApiType;
+    registryApiUrl: string;
 }
 
 export default function buildApiRouter(options: Options) {
@@ -86,16 +87,14 @@ export default function buildApiRouter(options: Options) {
                 const config = connectorConfig({
                     id,
                     dockerImage: configMap[id].type,
-                    dockerImageTag: options.useDevImages
-                        ? "latest"
-                        : require("../package.json").version
+                    dockerImageTag: options.imageTag,
+                    dockerRepo: options.dockerRepo,
+                    registryApiUrl: options.registryApiUrl
                 });
 
-                return k8sApi
-                    .createJob({ body: config })
-                    .then((result: any) => {
-                        res.status(200).send(result);
-                    });
+                return k8sApi.createJob(config).then((result: any) => {
+                    res.status(200).send(result);
+                });
             })
             .catch((err: Error) => {
                 console.error(err);

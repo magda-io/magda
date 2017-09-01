@@ -1,0 +1,69 @@
+dependencies:
+  - name: auth-api
+    version: 0.1.0
+    tags:
+      - all
+      - auth-api
+  - name: auth-db
+    version: 0.1.0
+    tags:
+      - all
+      - auth-db
+      - combined-db
+  - name: combined-db
+    version: 0.1.0
+    tags:
+      - all
+      - combined-db
+  - name: elasticsearch
+    version: 0.1.0
+    tags:
+      - all
+      - elasticsearch
+  - name: gateway
+    version: 0.1.0
+    tags:
+      - all
+      - gateway
+  - name: indexer
+    version: 0.1.0
+    tags:
+      - all
+      - indexer
+  - name: preview-map
+    version: 0.1.0
+    tags:
+      - all
+      - preview-map
+  - name: registry-api
+    version: 0.1.0
+    tags:
+      - all
+      - registry-api
+  - name: registry-datastore
+    version: 0.1.0
+    tags:
+      - all
+      - registry-datastore
+      - combined-db
+  - name: search-api
+    version: 0.1.0
+    tags:
+      - all
+      - search-api
+  - name: session-store
+    version: 0.1.0
+    tags:
+      - all
+      - session-store
+      - combined-db
+  - name: web-server
+    version: 0.1.0
+    tags:
+      - all
+      - web-server
+  - name: admin-api
+    version: 0.1.0
+    tags:
+      - all
+      - admin-api

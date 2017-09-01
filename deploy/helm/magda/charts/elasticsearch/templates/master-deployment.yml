@@ -9,7 +9,7 @@ metadata:
 spec:
   strategy:
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   replicas: 3
   template:
     metadata:

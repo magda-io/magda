@@ -1,6 +1,10 @@
 global:
+  externalUrl: http://minikube.data.gov.au:30016
   repository: "localhost:5000/data61/"
   tag: "latest"
+  rollingUpdate:
+    maxUnavailable: 1
+  exposeNodePorts: true
 gateway:
   auth:
     facebookClientId: "173073926555600"

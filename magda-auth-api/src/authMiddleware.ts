@@ -30,10 +30,14 @@ export const mustBeAdmin = (baseAuthUrl: string) => (
                     if (user.isAdmin) {
                         next();
                     } else {
+                        console.warn(
+                            `Rejecting because user ${user} is not admin`
+                        );
                         rejectNoAuth();
                     }
                 },
                 nothing: () => {
+                    console.warn("Rejecting because no user");
                     rejectNoAuth();
                 }
             });

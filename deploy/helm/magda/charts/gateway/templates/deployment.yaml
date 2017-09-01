@@ -5,7 +5,7 @@ metadata:
 spec:
   strategy:
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   template:
     metadata:
       labels:
@@ -28,14 +28,15 @@ spec:
 {{- if .Values.auth.googleClientId }}
             "--googleClientId", {{ .Values.auth.googleClientId | quote }},
 {{- end }}
-            "--registryApi", "http://registry-api/v0",
-            "--searchApi", "http://search-api/v0",
-            "--authenticationApi", "http://auth-api/v0",
-            "--discussionsApi", "http://discussions-api/v0",
+            "--proxyRoutesPath", "/etc/routes/routes.json",
             "--web", "http://web",
+            "--authenticationApi", "http://auth-api/v0",
             "--previewMap", "http://preview-map:6110",
-            "--ckanUrl", "https://data.gov.au"
+            "--ckanUrl", "https://data.gov.au",
         ]
+        volumeMounts:
+          - name: routes
+            mountPath: /etc/routes
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
@@ -67,3 +68,7 @@ spec:
               key: google-client-secret
 {{- end }}
 {{- end }}
+      volumes:
+        - name: routes
+          configMap:
+            name: gateway-routes

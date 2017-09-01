@@ -1,8 +1,0 @@
-{
-  "listenPort": 80,
-  "dockerRepo": "data61",
-  "useDevImages": false,
-  "kubernetesApi": {
-    "isMinikube": false
-  }
-}

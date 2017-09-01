@@ -6,7 +6,7 @@ spec:
   replicas: 1
   strategy:
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: {{ {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}|{{ .Values.global.rollingUpdate.maxUnavailable | default 0 }} }}|{{ {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}|{{ .Values.global.rollingUpdate.maxUnavailable | default 0 }} }}
   template:
     metadata:
       labels:

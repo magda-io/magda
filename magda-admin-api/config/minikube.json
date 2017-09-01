@@ -1,6 +1,0 @@
-{
-    "listenPort": 80,
-    "kubernetesApi": {
-      "isMinikube": false
-    }
-}

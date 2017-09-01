@@ -43,7 +43,7 @@ export default class ApiClient {
               .baseUrl}/private/users`
           );
         }
-        return Object.assign({}, user, res.json());
+        return Object.assign({}, user, res);
       })
       .catch(e => {
         console.error(e);
