@@ -14,11 +14,14 @@ spec:
     spec:
       containers:
       - name: search-api
-        env:
-        - name: SCALA_ENV
-          value: dev-na # TODO
         image: {{ template "dockerimage" . }}
         imagePullPolicy: Always
+        command: [
+            "/app/bin/magda-search-api",
+            "-Dhttp.port=80",
+            "-Dakka.loglevel=INFO",
+            "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300"
+        ]
         ports:
         - containerPort: 80
         resources:

@@ -55,3 +55,10 @@ web-server:
         requests:
             cpu: 300m
             memory: 200Mi
+indexer:
+  elasticsearch:
+    shards: 2
+    replicas: 4
+    useGcsSnapshots: true
+    gcsSnapshotBucket: "magda-es-snapshots"
+    gcsSnapshotServiceAccount: "_default"

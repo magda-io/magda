@@ -10,7 +10,6 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
-import com.typesafe.config.ConfigFactory
 
 object RegistryApp extends App {
   class Listener extends Actor with ActorLogging {
@@ -19,7 +18,7 @@ object RegistryApp extends App {
     }
   }
 
-  implicit val config = ConfigFactory.load()
+  implicit val config = AppConfig.conf()
   implicit val system = ActorSystem("registry-api", config)
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
