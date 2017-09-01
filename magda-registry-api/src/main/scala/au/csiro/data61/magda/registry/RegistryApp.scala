@@ -10,6 +10,7 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
+import com.typesafe.config.ConfigFactory
 
 object RegistryApp extends App {
   class Listener extends Actor with ActorLogging {
@@ -18,14 +19,14 @@ object RegistryApp extends App {
     }
   }
 
-  implicit val config = AppConfig.conf()
+  implicit val config = ConfigFactory.load()
   implicit val system = ActorSystem("registry-api", config)
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
   val logger = Logging(system, getClass)
 
-  logger.info("Starting MAGDA! Registry with env {}", AppConfig.getEnv)
+  logger.info("Starting MAGDA Registry")
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
@@ -35,7 +36,7 @@ object RegistryApp extends App {
   val api = new Api(webHookActor, config, system, executor, materializer)
 
   val interface = Option(System.getenv("npm_package_config_interface")).orElse(Option(config.getString("http.interface"))).getOrElse("127.0.0.1")
-  val port = Option(System.getenv("npm_package_config_port")).map(_.toInt).orElse(Option(config.getInt("http.port"))).getOrElse(6100)
+  val port = Option(System.getenv("npm_package_config_port")).map(_.toInt).orElse(Option(config.getInt("http.port"))).getOrElse(6101)
 
   Http().bindAndHandle(api.routes, interface, port)
 }
