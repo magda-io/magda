@@ -1,4 +1,3 @@
-import * as config from 'config';
 import * as express from 'express';
 import * as path from 'path';
 import * as URI from 'urijs';
@@ -7,6 +6,11 @@ import * as yargs from 'yargs';
 const argv = yargs
     .config()
     .help()
+    .option('listenPort', {
+        describe: 'The TCP/IP port on which the web server should listen.',
+        type: 'number',
+        default: 6107
+    })
     .option('disableAuthenticationFeatures', {
         describe: 'True to disable all features that require authentication.',
         type: 'boolean',
@@ -85,8 +89,8 @@ topLevelRoutes.forEach(topLevelRoute => {
     });
 });
 
-app.listen(config.get("listenPort"));
-console.log("Listening on port " + config.get("listenPort"));
+app.listen(argv.listenPort);
+console.log("Listening on port " + argv.listenPort);
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
   console.error(reason);

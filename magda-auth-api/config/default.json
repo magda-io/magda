@@ -1,7 +1,0 @@
-{
-    "listenPort": 6104,
-    "db": {
-        "host": "localhost",
-        "port": 5432
-    }
-}

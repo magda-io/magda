@@ -66,7 +66,7 @@
     "terriajs-catalog-editor": "^0.2.0",
     "terriajs-cesium": "1.33.0",
     "terriajs-schema": "latest",
-    "urijs": "^1.17.1",
+    "urijs": "^1.18.12",
     "url-loader": "^0.5.7",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.4.1",

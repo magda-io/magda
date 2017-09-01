@@ -6,11 +6,6 @@ const process = require('process');
 const yargs = require('yargs');
 
 const argv = yargs.options({
-    include: {
-        description: 'The files and directories to include in the Docker image.  If not specified, uses the space-separated list in the `npm_package_config_docker_include` environment variable.',
-        default: (process.env.npm_package_config_docker_include || '').split(' '),
-        type: 'array'
-    },
     build: {
         description: 'Pipe the Docker context straight to Docker.',
         type: 'boolean',
@@ -49,38 +44,29 @@ fse.emptyDirSync(dockerContextDir);
 fse.ensureDirSync(componentDestDir);
 fse.ensureSymlinkSync(path.resolve(componentSrcDir, '..', 'node_modules'), path.resolve(dockerContextDir, 'node_modules'), 'junction');
 
-const linksToCreate = argv.include.filter((value, index, self) => self.indexOf(value) === index);
-linksToCreate.forEach(link => {
-    const src = path.resolve(componentSrcDir, link);
-    const dest = path.resolve(componentDestDir, link);
-    const type = fse.statSync(src).isFile() ? 'file' : 'junction'
+// Get the list of production packages.
+const productionPackageResult = JSON.parse(childProcess.spawnSync(
+    'npm', ['list', '--prod', '--json'],
+    { encoding: 'utf8', cwd: componentSrcDir, shell: true }).stdout);
+const productionPackages = getPackageList(productionPackageResult.dependencies, path.join(componentSrcDir, 'node_modules'), []);
 
-    // On Windows we can't create symlinks to files without special permissions.
-    // So just copy the file instead.  Usually creating directory junctions is
-    // fine without special permissions, but fall back on copying in the unlikely
-    // event that fails, too.
-    try {
-        fse.ensureSymlinkSync(src, dest, type);
-    } catch(e) {
-        fse.copySync(src, dest);
-    }
-});
+preparePackage(componentSrcDir, componentDestDir, productionPackages);
 
 const tar = process.platform === 'darwin' ? 'gtar' : 'tar';
 
-if (argv.build) {
-    // Docker and ConEmu (an otherwise excellent console for Windows) don't get along.
-    // See: https://github.com/Maximus5/ConEmu/issues/958 and https://github.com/moby/moby/issues/28814
-    // So if we're running under ConEmu, we need to add an extra -cur_console:i parameter to disable
-    // ConEmu's hooks and also set ConEmuANSI to OFF so Docker doesn't do anything drastic.
-    const env = Object.assign({}, process.env);
-    const extraParameters = [];
-    if (env.ConEmuANSI === 'ON') {
-        env.ConEmuANSI = 'OFF';
-        extraParameters.push('-cur_console:i');
-    }
+// Docker and ConEmu (an otherwise excellent console for Windows) don't get along.
+// See: https://github.com/Maximus5/ConEmu/issues/958 and https://github.com/moby/moby/issues/28814
+// So if we're running under ConEmu, we need to add an extra -cur_console:i parameter to disable
+// ConEmu's hooks and also set ConEmuANSI to OFF so Docker doesn't do anything drastic.
+const env = Object.assign({}, process.env);
+const extraParameters = [];
+if (env.ConEmuANSI === 'ON') {
+    env.ConEmuANSI = 'OFF';
+    extraParameters.push('-cur_console:i');
+}
 
-    const tarProcess = childProcess.spawn(tar, [...extraParameters, '--dereference', '-cf', '-', '*'], {
+if (argv.build) {
+    const tarProcess = childProcess.spawn(tar, [...extraParameters, '--dereference', '-czf', '-', '*'], {
         cwd: dockerContextDir,
         stdio: ['inherit', 'pipe', 'inherit'],
         env: env,
@@ -128,10 +114,132 @@ if (argv.build) {
         dockerProcess.stdin.write(data);
     });
 } else if (argv.output) {
-    console.log(path.resolve(process.cwd(), argv.output));
-    const tarProcess = childProcess.spawnSync(tar, ['--dereference', '-cf', argv.output, '*'], {
-        stdio: 'inherit'
+    const outputPath = path.resolve(process.cwd(), argv.output);
+    console.log(outputPath);
+
+    const outputTar = fse.openSync(outputPath, 'w', 0o644);
+
+    const tarProcess = childProcess.spawn(tar, ['--dereference', '-czf', '-', '*'], {
+        cwd: dockerContextDir,
+        stdio: ['inherit', outputTar, 'inherit'],
+        env: env,
+        shell: true
     });
-    console.log(tarProcess.status);
-    fse.removeSync(dockerContextDir);
+
+    tarProcess.on('close', code => {
+        fse.closeSync(outputTar);
+        console.log(tarProcess.status);
+        fse.removeSync(dockerContextDir);
+    });
+}
+
+function preparePackage(packageDir, destDir, productionPackages) {
+    const packageJson = require(path.join(packageDir, 'package.json'));
+    const dockerIncludesFromPackageJson = packageJson.config && packageJson.config.docker && packageJson.config.docker.include;
+
+    let dockerIncludes;
+    if (!dockerIncludesFromPackageJson) {
+        console.log(`WARNING: Package ${packageDir} does not have a config.docker.include key in package.json, so all of its files will be included in the docker image.`);
+        dockerIncludes = fse.readdirSync(packageDir);
+    } else if (dockerIncludesFromPackageJson.trim() === '*') {
+        dockerIncludes = fse.readdirSync(packageDir);
+    } else {
+        if (dockerIncludesFromPackageJson.indexOf('*') >= 0) {
+            throw new Error('Sorry, wildcards are not currently supported in config.docker.include.');
+        }
+        dockerIncludes = dockerIncludesFromPackageJson.split(' ').filter(include => include.length > 0);
+    }
+
+    dockerIncludes.forEach(function(include) {
+        const src = path.resolve(packageDir, include);
+        const dest = path.resolve(destDir, include);
+
+        if (include === 'node_modules') {
+            fse.ensureDirSync(dest);
+            prepareNodeModules(src, dest, productionPackages);
+            return;
+        }
+
+        const type = fse.statSync(src).isFile() ? 'file' : 'junction'
+
+        // On Windows we can't create symlinks to files without special permissions.
+        // So just copy the file instead.  Usually creating directory junctions is
+        // fine without special permissions, but fall back on copying in the unlikely
+        // event that fails, too.
+        try {
+            fse.ensureSymlinkSync(src, dest, type);
+        } catch(e) {
+            fse.copySync(src, dest);
+        }
+    });
+}
+
+function prepareNodeModules(packageDir, destDir, productionPackages) {
+    const subPackages = fse.readdirSync(packageDir);
+    subPackages.forEach(function(subPackageName) {
+        const src = path.join(packageDir, subPackageName);
+        const dest = path.join(destDir, subPackageName);
+
+        if (subPackageName[0] === '@') {
+            // This is a scope directory, recurse.
+            fse.ensureDirSync(dest);
+            prepareNodeModules(src, dest, productionPackages);
+            return;
+        }
+
+        if (productionPackages.indexOf(src) == -1) {
+            // Not a production dependency, skip it.
+            return;
+        }
+
+        const stat = fse.lstatSync(src);
+        if (stat.isSymbolicLink()) {
+            // This is a link to another package, presumably created by Lerna.
+            fse.ensureDirSync(dest);
+            preparePackage(src, dest, productionPackages);
+            return;
+        }
+
+
+        // Regular package, link/copy the whole thing.
+        try {
+            const type = stat.isFile() ? 'file' : 'junction'
+            fse.ensureSymlinkSync(src, dest, type);
+        } catch(e) {
+            fse.copySync(src, dest);
+        }
+    });
+}
+
+function getPackageList(dependencies, basePath, result) {
+    if (!dependencies) {
+        return result;
+    }
+
+    Object.keys(dependencies).forEach(function(dependencyName) {
+        const dependencyDetails = dependencies[dependencyName];
+        if (dependencyDetails.extraneous) {
+            return;
+        }
+
+        let dependencyDir = path.join(basePath, dependencyName.replace(/\//g, path.sep));
+
+        // Does this directory exist?  If not, imitate node's module resolution by walking
+        // up the directory tree.
+        while (!fse.existsSync(dependencyDir)) {
+            const upOne = path.resolve(dependencyDir, '..', '..', '..', 'node_modules', path.basename(dependencyDir));
+            if (upOne === dependencyDir) {
+                break;
+            }
+            dependencyDir = upOne;
+        }
+
+        result.push(dependencyDir);
+
+        if (dependencyDetails.dependencies) {
+            getPackageList(dependencyDetails.dependencies, path.join(dependencyDir, 'node_modules'), result);
+        }
+    });
+
+    return result;
 }

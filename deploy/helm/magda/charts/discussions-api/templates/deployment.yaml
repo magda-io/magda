@@ -1,15 +1,15 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: auth-api
+  name: discussions-api
 spec:
   strategy:
     rollingUpdate:
-      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+      maxUnavailable: 0
   template:
     metadata:
       labels:
-        service: auth-api
+        service: discussions-api
     spec:
       containers:
       - name: auth-api
@@ -19,8 +19,9 @@ spec:
             "node",
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
-            "--dbHost", "auth-db",
-            "--dbPort", "5432"
+            "--dbHost", "discussions-db",
+            "--dbPort", "5432",
+            "--authenticationApi", "http://auth-api/v0"
         ]
         resources:
 {{ toYaml .Values.resources | indent 10 }}

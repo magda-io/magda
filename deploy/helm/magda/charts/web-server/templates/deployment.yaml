@@ -15,8 +15,9 @@ spec:
       containers:
       - name: web
         command: [
-            'node', '/usr/src/app/component/dist/index.js',
-            '--config', "/etc/config.json"
+            "node", "/usr/src/app/component/dist/index.js",
+            "--config", "/etc/config.json",
+            "--listenPort", "80"
         ]
         resources:
 {{ toYaml .Values.resources | indent 10 }}

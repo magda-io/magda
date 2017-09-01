@@ -15,12 +15,15 @@
     "@magda/scripts": "^0.0.29-SNAPSHOT",
     "@types/chai": "^4.0.1",
     "@types/express": "^4.0.36",
+    "@types/isomorphic-fetch": "0.0.34",
     "@types/lodash": "^4.14.68",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
+    "chai": "^4.1.0",
     "jsverify": "^0.8.2",
+    "mocha": "^3.4.2",
     "mocha-testcheck": "^1.0.0-rc.0",
     "nock": "^9.0.14",
     "sinon": "^2.4.1",
@@ -31,12 +34,14 @@
   "dependencies": {
     "@magda/registry-aspects": "^0.0.29-SNAPSHOT",
     "@magda/typescript-common": "^0.0.29-SNAPSHOT",
-    "@types/isomorphic-fetch": "0.0.34",
     "body-parser": "^1.17.2",
-    "chai": "^4.1.0",
     "express": "^4.15.3",
     "isomorphic-fetch": "^2.2.1",
-    "lodash": "^4.17.4",
-    "mocha": "^3.4.2"
+    "lodash": "^4.17.4"
+  },
+  "config": {
+      "docker": {
+          "include": "node_modules dist"
+      }
   }
 }
