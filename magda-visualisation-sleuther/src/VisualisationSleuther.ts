@@ -9,11 +9,11 @@ import AsyncPage, { forEachAsync } from '@magda/typescript-common/dist/AsyncPage
 
 import { Record } from '@magda/typescript-common/dist/generated/registry/api';
 
-const aspectDefinition = {
-    id: 'visualisation',
-    name: 'Details about the downloadURL link status of a distribution',
-    jsonSchema: require('@magda/registry-aspects/source-link-status.schema.json')
-};
+// const aspectDefinition = {
+//     id: 'visualisation-info',
+//     name: 'Details about the downloadURL link status of a distribution',
+//     jsonSchema: {}
+// };
 
 const timeFormats = [moment.ISO_8601, 'DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-[Q]Q'];
 
@@ -28,7 +28,7 @@ export default class VisualisationSleuther {
         let csvs = 0;
         let timeseries = 0;
 
-        await this.registry.putAspectDefinition(aspectDefinition);
+        //await this.registry.putAspectDefinition(aspectDefinition);
         const registryPage = AsyncPage.create<{records: Array<Record>, nextPageToken: string}>((previous) => {
             if (previous === undefined) {
                 return this.registry.getRecords(['dcat-distribution-strings']);
@@ -52,7 +52,7 @@ export default class VisualisationSleuther {
                             if (response.statusCode >= 200 && response.statusCode <= 299) {
                                 resolve({response, body});
                             } else {
-                                throw new BadHttpResponseError(response.statusMessage, response, response.statusCode);
+                                reject(new BadHttpResponseError(response.statusMessage, response, response.statusCode));
                             }
                         }
                     }));
@@ -81,11 +81,11 @@ export default class VisualisationSleuther {
         // Currently only supports CSV:
         const parsed = Baby.parse(body, {
             header: true,
-            dynamicTyping: true
+            dynamicTyping: true,
+            skipEmptyLines: true
         });
         let visualisationInfoAspect;
         if (parsed.errors.length === 0) {
-
             const fields: {[key: string]: Field} = {};
             parsed.meta.fields.forEach(field => {
                 // Get column values
@@ -110,9 +110,15 @@ export default class VisualisationSleuther {
                 wellFormed: true,
                 fields,
                 // At least one time and one numeric column
-                timeseries: Object.keys(fields).reduce((val, key) => val+(fields[key].time ? 1 : 0), 0) > 0 && Object.keys(fields).reduce((val, key) => val+(fields[key].numeric ? 1 : 0), 0) > 0
+                //timeseries: Object.keys(fields).reduce((val, key) => val+(fields[key].time ? 1 : 0), 0) > 0 && Object.keys(fields).reduce((val, key) => val+(fields[key].numeric ? 1 : 0), 0) > 0
+                timeseries: Object.keys(fields).some(key => fields[key].time) && Object.keys(fields).some(key => fields[key].numeric)
             };
+            function fieldType(field: Field): string {
+                return field.numeric ? 'numeric' : field.time ? 'time' : 'text';
+            }
+            console.log('Parsed successfully with columns: ' + Object.keys(fields).map(key => `${key} (${fieldType(fields[key])})`).join(', '));
         } else {
+            console.log(`${parsed.errors.length} errors in CSV, including: ` + (err => `Row: ${err.row} - ${err.code} (${err.message}), `)(parsed.errors[0]));
             visualisationInfoAspect = {
                 format: 'CSV',
                 wellFormed: false

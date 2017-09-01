@@ -33,7 +33,7 @@
   "config": {
     "registryUrl": "http://localhost:6100/v0",
     "docker": {
-      "name": "data61/magda-broken-link-sleuther",
+      "name": "data61/magda-visualisation-sleuther",
       "include": "node_modules dist Dockerfile"
     }
   }
