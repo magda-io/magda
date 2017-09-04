@@ -1,5 +1,5 @@
 ///<reference path="./jsverify.d.ts" />
-import jsverify = require("jsverify");
+import * as jsverify from "jsverify";
 const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../generated/registry/api";
 const lazyseq = require("lazy-seq");

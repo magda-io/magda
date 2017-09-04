@@ -1,4 +1,4 @@
-import jsverify = require("jsverify");
+import * as jsverify from "jsverify";
 
 import {
   jsc,
