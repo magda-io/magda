@@ -6,7 +6,7 @@ import {
   arbFlatMap,
   distStringsArb,
   recordArbWithDists
-} from "@magda/typescript-common/src/test/arbitraries";
+} from "@magda/typescript-common/dist/test/arbitraries";
 import openLicenses from "../openLicenses";
 import openFormats from "../openFormats";
 import { ZERO_STAR_LICENSES } from "./examples";
@@ -32,7 +32,7 @@ const fuzzArb = (jsc: jsc) =>
   });
 
 /**
- * Generates a format string that will match the desired star count. 
+ * Generates a format string that will match the desired star count.
  */
 export const formatArb = (
   jsc: jsc,

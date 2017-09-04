@@ -1,5 +1,5 @@
 import jsverify = require("jsverify");
-import { jsc } from "@magda/typescript-common/src/test/arbitraries";
+import { jsc } from "@magda/typescript-common/dist/test/arbitraries";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import {
   distUrlArb,
