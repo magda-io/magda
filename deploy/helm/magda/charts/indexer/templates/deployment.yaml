@@ -27,6 +27,8 @@ spec:
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-DindexedServices.registry.baseUrl=http://registry-api/",
             "-DindexedServices.registry.ignore=false",
+            "-Dindexer.readSnapshots=true",
+            "-Dindexer.makeSnapshots=true",
             "-Dakka.loglevel=INFO",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300",
 {{- if .Values.elasticsearch.useGcsSnapshots }}
