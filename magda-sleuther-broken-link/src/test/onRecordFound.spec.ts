@@ -2,7 +2,7 @@ import {} from "mocha";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as nock from "nock";
-import jsc = require("jsverify");
+import * as jsc from "jsverify";
 import * as _ from "lodash";
 import * as Client from "ftp";
 import * as URI from "urijs";

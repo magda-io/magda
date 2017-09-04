@@ -1,4 +1,4 @@
-import jsverify = require("jsverify");
+import * as jsverify from "jsverify";
 import { jsc } from "@magda/typescript-common/dist/test/arbitraries";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import {

@@ -11,9 +11,6 @@
       ],
       "@magda/sleuther-framework/dist/*": [
         "./node_modules/@magda/sleuther-framework/src/*"
-      ],
-      "jsverify": [
-        "./node_modules/@magda/typescript-common/src/test/jsverify.d.ts"
       ]
     }
   }
