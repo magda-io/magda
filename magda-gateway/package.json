@@ -50,7 +50,7 @@
     "@types/pg": "^6.1.41",
     "@types/urijs": "^1.15.34",
     "@types/yargs": "^8.0.2",
-    "typescript": "~2.4.0"
+    "typescript": "~2.5.0"
   },
   "config": {
     "docker": {

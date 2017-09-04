@@ -27,7 +27,7 @@
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
     "sinon": "^3.2.1",
-    "typescript": "~2.4.0"
+    "typescript": "~2.5.0"
   },
   "dependencies": {
     "@magda/registry-aspects": "^0.0.29-SNAPSHOT",
