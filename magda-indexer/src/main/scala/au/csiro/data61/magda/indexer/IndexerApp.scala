@@ -1,13 +1,6 @@
 
 package au.csiro.data61.magda.indexer
 
-import scala.collection.JavaConversions._
-import scala.util.Failure
-import scala.util.Success
-
-import com.typesafe.config.ConfigObject
-import com.typesafe.config.ConfigValue
-
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.ActorSystem
@@ -15,15 +8,13 @@ import akka.actor.DeadLetter
 import akka.actor.Props
 import akka.event.Logging
 import akka.stream.ActorMaterializer
-import au.csiro.data61.magda.AppConfig;
-import au.csiro.data61.magda.indexer.crawler.Crawler
+import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
-import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import akka.http.scaladsl.Http
-import scala.concurrent.duration._
+
 import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
@@ -36,7 +27,7 @@ object IndexerApp extends App {
 
   val logger = Logging(system, getClass)
 
-  logger.info("Starting Indexer in env {}", AppConfig.getEnv)
+  logger.info("Starting Indexer")
   logger.info("Log level is {}", config.getString("akka.loglevel"))
 
   val listener = system.actorOf(Props(classOf[Listener]))

@@ -26,15 +26,6 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
 
   def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
 
-  if (!config.hasPath("indexer.autoCrawl") || config.getBoolean("indexer.autoCrawl")) {
-    // Index every 3 days 
-    system.scheduler.schedule(0 millis, 3 days, new Runnable {
-      def run = {
-        crawl()
-      }
-    })
-  }
-
   val routes =
     magdaRoute {
       path("in-progress") {

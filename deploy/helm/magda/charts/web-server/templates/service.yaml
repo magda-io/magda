@@ -6,7 +6,7 @@ spec:
   ports:
   - name: http
     port: 80
-    targetPort: 6107
+    targetPort: 80
 {{- if .Values.global.exposeNodePorts }}
     nodePort: 30107
   type: NodePort

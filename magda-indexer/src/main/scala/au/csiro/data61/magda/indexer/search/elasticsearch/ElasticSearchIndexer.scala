@@ -254,13 +254,14 @@ class ElasticSearchIndexer(
 
             definition.create match {
               case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
-                .flatMap(_ =>
+                .flatMap(_ => {
                   if (config.getBoolean("indexer.makeSnapshots"))
                     createSnapshot(client, definition)
                   else {
                     logger.info("Snapshotting disabled, skipping")
                     Future(Unit)
-                  })
+                  }
+                })
               case None => Future(Unit)
             }
           }
@@ -426,14 +427,14 @@ class ElasticSearchIndexer(
     val indexDataSet = ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType) id dataSet.uniqueId source (
       dataSet.toJson)
 
-    val indexPublisher = dataSet.publisher.flatMap(publisher => publisher.name.map(publisherName =>
+    val indexPublisher = dataSet.publisher.flatMap(publisher => publisher.name.filter(!"".equals(_)).map(publisherName =>
       ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(Publisher)))
         .id(publisherName.toLowerCase)
         .source(Map(
           "identifier" -> publisher.identifier.toJson,
           "value" -> publisherName.toJson).toJson)))
 
-    val indexFormats = dataSet.distributions.filter(_.format.isDefined).map { distribution =>
+    val indexFormats = dataSet.distributions.filter(dist => dist.format.isDefined && !"".equals(dist.format.get)).map { distribution =>
       val format = distribution.format.get
 
       ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(Format)))

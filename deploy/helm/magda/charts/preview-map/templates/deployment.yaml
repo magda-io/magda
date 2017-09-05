@@ -18,6 +18,6 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         env:
         - name: NODE_ENV
-          value: prod
+          value: production
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}

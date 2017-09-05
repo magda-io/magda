@@ -4,7 +4,7 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import * as nock from "nock";
 ///<reference path="@magda/typescript-common/dist/test/jsverify.d.ts" />
-import jsc = require("jsverify");
+import * as jsc from "jsverify";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import * as _ from "lodash";
 import {

@@ -14,7 +14,7 @@ object CommandLine {
 
   val config = ConfigFactory.parseString(s"""
     akka.loglevel = "ERROR"
-  """).resolve().withFallback(AppConfig.conf(Some("local")))
+  """).resolve().withFallback(AppConfig.conf())
   implicit val system = ActorSystem("blah", config)
 
   val root = org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[ch.qos.logback.classic.Logger]

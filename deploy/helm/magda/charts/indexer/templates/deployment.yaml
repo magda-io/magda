@@ -15,14 +15,30 @@ spec:
       containers:
       - name: indexer
         env:
-        - name: SCALA_ENV
-          value: dev-na # TODO
         - name: S3_SECRET_KEY
           value: dummy
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        command: [
+            "/app/bin/magda-indexer",
+            "-Dhttp.port=80",
+            "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
+            "-DindexedServices.registry.baseUrl=http://registry-api/",
+            "-DindexedServices.registry.ignore=false",
+            "-Dindexer.readSnapshots=true",
+            "-Dindexer.makeSnapshots=true",
+            "-Dakka.loglevel=INFO",
+            "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300",
+{{- if .Values.elasticsearch.useGcsSnapshots }}
+            "-DelasticSearch.snapshotRepo.type=gcs",
+            "-DelasticSearch.snapshotRepo.types.gcs.bucket={{ .Values.elasticsearch.gcsSnapshotBucket }}",
+            "-DelasticSearch.snapshotRepo.types.gcs.service_account={{ .Values.elasticsearch.gcsSnapshotServiceAccount }}",
+{{- end }}
+            "-DelasticSearch.shardCount={{ .Values.elasticsearch.shards }}",
+            "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}"
+        ]
         volumeMounts:
         - mountPath: /usr/regions
           name: regions
