@@ -1,9 +1,11 @@
 {
-  "extends": "./tsconfig-build.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@magda/auth-api/dist/*": ["./node_modules/@magda/auth-api/src/*"]
+    "extends": "./tsconfig-build.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@magda/auth-api/dist/*": [
+                "./node_modules/@magda/auth-api/src/*"
+            ]
+        }
     }
-  }
 }
