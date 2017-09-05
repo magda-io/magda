@@ -199,7 +199,7 @@ describe("ld rating onRecordFound", function(
 
   function runPropertyTest({
     licenseArb = openLicenseArb(jsc),
-    formatArb = jsc.asciistring,
+    formatArb = stringArb(jsc),
     recordArb = jsc.suchthat(
       recordArbWithDistArbs(jsc, {
         license: licenseArb,
