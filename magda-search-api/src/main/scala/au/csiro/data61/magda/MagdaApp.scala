@@ -17,17 +17,16 @@ object MagdaApp extends App {
 
   implicit val logger = Logging(system, getClass)
 
-  logger.info("Starting API in env {} on port {}", AppConfig.getEnv, config.getString("http.port"))
+  logger.info("Starting Search API on port {}", config.getString("http.port"))
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
-  logger.debug("Starting API")
   val searchQueryer = ElasticSearchQueryer.apply
   val api = new SearchApi(searchQueryer)
 
   val interface = Option(System.getenv("npm_package_config_interface")).orElse(Option(config.getString("http.interface"))).getOrElse("127.0.0.1")
-  val port = Option(System.getenv("npm_package_config_port")).map(_.toInt).orElse(Option(config.getInt("http.port"))).getOrElse(6101)
+  val port = Option(System.getenv("npm_package_config_port")).map(_.toInt).orElse(Option(config.getInt("http.port"))).getOrElse(6102)
 
   Http().bindAndHandle(api.routes, interface, port)
 }

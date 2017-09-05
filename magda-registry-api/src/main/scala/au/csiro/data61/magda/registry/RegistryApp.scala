@@ -25,7 +25,7 @@ object RegistryApp extends App {
 
   val logger = Logging(system, getClass)
 
-  logger.info("Starting MAGDA! Registry with env {}", AppConfig.getEnv)
+  logger.info("Starting MAGDA Registry")
 
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
@@ -35,7 +35,7 @@ object RegistryApp extends App {
   val api = new Api(webHookActor, config, system, executor, materializer)
 
   val interface = Option(System.getenv("npm_package_config_interface")).orElse(Option(config.getString("http.interface"))).getOrElse("127.0.0.1")
-  val port = Option(System.getenv("npm_package_config_port")).map(_.toInt).orElse(Option(config.getInt("http.port"))).getOrElse(6100)
+  val port = Option(System.getenv("npm_package_config_port")).map(_.toInt).orElse(Option(config.getInt("http.port"))).getOrElse(6101)
 
   Http().bindAndHandle(api.routes, interface, port)
 }

@@ -74,7 +74,7 @@ package misc {
       indexed: Option[OffsetDateTime] = None,
       quality: Double) {
 
-    def uniqueId: String = java.net.URLEncoder.encode(catalog + "/" + identifier, "UTF-8")
+    def uniqueId: String = java.net.URLEncoder.encode(catalog.getOrElse("nocatalog") + "/" + identifier, "UTF-8")
 
     override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
 

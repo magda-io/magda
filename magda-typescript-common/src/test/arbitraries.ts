@@ -1,7 +1,7 @@
 ///<reference path="./jsverify.d.ts" />
-import jsverify = require("jsverify");
+import * as jsverify from "jsverify";
 const { curried2 } = require("jsverify/lib/utils");
-import { Record } from "../../src/generated/registry/api";
+import { Record } from "../generated/registry/api";
 const lazyseq = require("lazy-seq");
 import uuid = require("uuid/v4");
 import * as _ from "lodash";
@@ -316,7 +316,7 @@ export const recordArbWithDistArbs = (
     })
   });
 
-/** 
+/**
  * Randomly generates a record with the passed objects under its
  * distributions' dcat-distribution-strings aspect.
  */
@@ -354,7 +354,7 @@ export function someOf<T>(jsc: jsc, array: T[]): jsverify.Arbitrary<T[]> {
 }
 
 /**
- * Fuzzes a string, changing the case and putting random strings around it 
+ * Fuzzes a string, changing the case and putting random strings around it
  * and in spaces.
  */
 export function fuzzStringArb(
@@ -414,7 +414,7 @@ function charArb(jsc: jsc) {
   return jsc.integer(32, 0xff).smap(fromCode, toCode);
 }
 
-/** 
+/**
  * Generates a random string with characters greater than code 32 (so no random
  * TTY crap that can't be matched by any regex
  */

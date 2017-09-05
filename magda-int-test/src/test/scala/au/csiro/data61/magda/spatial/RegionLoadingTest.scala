@@ -64,7 +64,7 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
     val dir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "magda-test")
     implicit val config = ConfigFactory.parseMap(Map(
       "regionLoading.cachePath" -> dir.getFileName.toFile().toString()
-    )).withFallback(AppConfig.conf(None))
+    )).withFallback(AppConfig.conf())
 
     forAll(Generators.nonEmptyListOf(Generators.regionGen(Generators.geometryGen(5, Generators.coordGen(Generators.longGen(), Generators.latGen()))))) { regions =>
       whenever(!regions.isEmpty) {
@@ -81,7 +81,7 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
     def getCurrentDirectory = new java.io.File("./../regions")
     implicit val config = ConfigFactory.parseMap(Map(
       "regionLoading.cachePath" -> getCurrentDirectory.toString()
-    )).withFallback(AppConfig.conf(None))
+    )).withFallback(AppConfig.conf())
 
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)

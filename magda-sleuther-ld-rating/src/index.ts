@@ -1,4 +1,4 @@
-import sleuther from "@magda/sleuther-framework/src/index";
+import sleuther from "@magda/sleuther-framework/dist/index";
 import linkedDataAspectDef from "./linkedDataAspectDef";
 import datasetQualityAspectDef from "./linkedDataAspectDef";
 import onRecordFound from "./onRecordFound";
