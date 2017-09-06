@@ -6,7 +6,7 @@ import com.typesafe.config.ConfigResolveOptions
 
 object AppConfig {
   /** The global config, potentially including env-custom settings for libraries like akka */
-  def conf(envOption: Option[String] = None) = {
+  def conf() = {
     ConfigFactory.load().withFallback(ConfigFactory.parseResources("common.conf"))
   }
 }
