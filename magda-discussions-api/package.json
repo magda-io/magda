@@ -13,7 +13,7 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
-    "@magda/auth-api": "^0.0.29-SNAPSHOT",
+    "@magda/authorization-api": "^0.0.29-SNAPSHOT",
     "@magda/typescript-common": "^0.0.29-SNAPSHOT",
     "body-parser": "^1.13.2",
     "express": "^4.13.1",

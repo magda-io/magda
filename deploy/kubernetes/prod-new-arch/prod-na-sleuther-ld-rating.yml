@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: sleuther-ld-rating
+  name: sleuther-linked-data-rating
 spec:
   replicas: 1
   strategy:
@@ -10,11 +10,11 @@ spec:
   template:
     metadata:
       labels:
-        service: sleuther-ld-rating
+        service: sleuther-linked-data-rating
     spec:
       containers:
       
-      - name: sleuther-ld-rating
+      - name: sleuther-linked-data-rating
         env:
         - name: NODE_ENV
           value: prod
@@ -22,7 +22,7 @@ spec:
           value: "80"
         - name: REGISTRY_URL
           value: "http://registry-api/v0"
-        image: "data61/magda-sleuther-ld-rating:${version}"
+        image: "data61/magda-sleuther-linked-data-rating:${version}"
         imagePullPolicy: Always
         resources:
           requests:
@@ -35,12 +35,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: sleuther-ld-rating
+  name: sleuther-linked-data-rating
 spec:
   ports:
   - name: http
     port: 80
     targetPort: 80
   selector:
-    service: sleuther-ld-rating
+    service: sleuther-linked-data-rating
   type: "NodePort"

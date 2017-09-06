@@ -8,7 +8,7 @@ const argv = yargs
     .config()
     .help()
     .option('listenPort', {
-        describe: 'The TCP/IP port on which the auth-api should listen.',
+        describe: 'The TCP/IP port on which the authorization-api should listen.',
         type: 'number',
         default: 6104
     })

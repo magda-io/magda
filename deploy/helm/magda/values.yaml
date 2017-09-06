@@ -10,8 +10,8 @@ global:
     pullPolicy: Always
 tags:
   all: true
-  auth-api: false
-  auth-db: false
+  authorization-api: false
+  authorization-db: false
   combined-db: false
   elasticsearch: false
   gateway: false

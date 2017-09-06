@@ -1,5 +1,5 @@
 import { Router } from "express";
-import ApiClient from "@magda/auth-api/dist/ApiClient";
+import ApiClient from "@magda/authorization-api/dist/ApiClient";
 import Authenticator from "./Authenticator";
 import * as passport from "passport";
 

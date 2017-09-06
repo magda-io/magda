@@ -15,7 +15,7 @@ data:
         "methods": ["GET"]
     },
     "auth": {
-        "to": "http://auth-api/v0/public",
+        "to": "http://authorization-api/v0/public",
         "methods": ["GET"],
         "auth": true
     },

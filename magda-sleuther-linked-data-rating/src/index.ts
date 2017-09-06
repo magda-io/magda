@@ -3,7 +3,7 @@ import linkedDataAspectDef from "./linkedDataAspectDef";
 import datasetQualityAspectDef from "./linkedDataAspectDef";
 import onRecordFound from "./onRecordFound";
 
-const ID = "sleuther-ld-rating";
+const ID = "sleuther-linked-data-rating";
 const host = process.env.HOST || ID;
 
 function sleuthLinkedData() {

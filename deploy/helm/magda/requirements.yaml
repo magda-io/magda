@@ -1,14 +1,14 @@
 dependencies:
-  - name: auth-api
+  - name: authorization-api
     version: 0.1.0
     tags:
       - all
-      - auth-api
-  - name: auth-db
+      - authorization-api
+  - name: authorization-db
     version: 0.1.0
     tags:
       - all
-      - auth-db
+      - authorization-db
       - combined-db
   - name: combined-db
     version: 0.1.0

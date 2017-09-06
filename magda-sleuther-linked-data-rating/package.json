@@ -1,5 +1,5 @@
 {
-  "name": "@magda/sleuther-ld-rating",
+  "name": "@magda/sleuther-linked-data-rating",
   "description": "MAGDA Linked Data Rating Sleuther",
   "version": "0.0.29-SNAPSHOT",
   "scripts": {
@@ -38,7 +38,7 @@
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-sleuther-ld-rating",
+      "name": "data61/magda-sleuther-linked-data-rating",
       "include": "node_modules dist Dockerfile"
     }
   }

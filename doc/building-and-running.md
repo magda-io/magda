@@ -98,9 +98,9 @@ Running individual components is easy enough, but how do we get a fully working 
 | --------- | ------------ |
 | `magda-*-connector` | `magda-registry-api` |
 | `magda-*-sleuther` | `magda-registry-api` |
-| `magda-auth-api` | `magda-combined-db` |
+| `magda-authorization-api` | `magda-combined-db` |
 | `magda-discussions-api` | `magda-combined-db` |
-| `magda-gateway` | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-auth-api`, `magda-discussions-api` |
+| `magda-gateway` | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-authorization-api`, `magda-discussions-api` |
 | `magda-indexer` | `magda-elastic-search` |
 | `magda-registry-api` | `magda-combined-db` |
 | `magda-search-api` | `magda-elastic-search` |

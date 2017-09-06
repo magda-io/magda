@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: auth-api
+  name: authorization-api
 spec:
   strategy:
     rollingUpdate:
@@ -9,17 +9,17 @@ spec:
   template:
     metadata:
       labels:
-        service: auth-api
+        service: authorization-api
     spec:
       containers:
-      - name: auth-api
+      - name: authorization-api
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
-            "--dbHost", "auth-db",
+            "--dbHost", "authorization-db",
             "--dbPort", "5432"
         ]
         resources:

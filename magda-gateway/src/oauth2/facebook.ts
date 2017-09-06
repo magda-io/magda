@@ -3,7 +3,7 @@ import * as express from "express";
 import { Router } from "express";
 import { Passport, Profile } from "passport";
 
-import ApiClient from '@magda/auth-api/dist/ApiClient';
+import ApiClient from '@magda/authorization-api/dist/ApiClient';
 import createOrGetUserToken from "../createOrGetUserToken";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
 

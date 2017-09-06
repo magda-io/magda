@@ -1,5 +1,5 @@
 {
-  "name": "@magda/auth-api",
+  "name": "@magda/authorization-api",
   "version": "0.0.29-SNAPSHOT",
   "scripts": {
     "build": "npm run compile",
@@ -30,7 +30,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-auth-api",
+      "name": "data61/magda-authorization-api",
       "include": "node_modules dist Dockerfile"
     }
   }

@@ -20,7 +20,7 @@ spec:
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
             "--dockerRepo", {{ .Values.global.image.repository | quote }},
-            "--authApiUrl", "http://auth-api/v0",
+            "--authApiUrl", "http://authorization-api/v0",
             "--registryApiUrl", "http://registry-api/v0",
             "--imageTag", {{ .Values.image.tag | default .Values.global.image.tag }},
             "--kubernetesApiType", "cluster"

@@ -1,6 +1,6 @@
 import * as passport from "passport";
-import ApiClient from "@magda/auth-api/dist/ApiClient";
-import { User, UserToken } from "@magda/auth-api/dist/model";
+import ApiClient from "@magda/authorization-api/dist/ApiClient";
+import { User, UserToken } from "@magda/authorization-api/dist/model";
 
 export default function createOrGetUserToken(
     authApi: ApiClient,

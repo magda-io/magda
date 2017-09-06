@@ -1,5 +1,5 @@
 {
-  "name": "@magda/auth-db",
+  "name": "@magda/authorization-db",
   "version": "0.0.29-SNAPSHOT",
   "description": "The MAGDA database for storing users and other authorization data.",
   "license": "Apache-2.0",
@@ -10,7 +10,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-auth-db",
+      "name": "data61/magda-authorization-db",
       "include": "Dockerfile sql"
     }
   },
