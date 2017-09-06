@@ -19,7 +19,7 @@
     "@types/request": "^2.0.0",
     "@types/urijs": "^1.15.34",
     "@types/yargs": "^6.6.0",
-    "typescript": "~2.4.0"
+    "typescript": "~2.5.0"
   },
   "dependencies": {
     "@magda/registry-aspects": "^0.0.29-SNAPSHOT",

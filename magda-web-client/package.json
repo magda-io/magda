@@ -74,7 +74,7 @@
     "redux": "^3.6.0",
     "rss-parser": "^2.9.0",
     "traverse": "^0.6.6",
-    "typescript": "~2.4.0",
+    "typescript": "~2.5.0",
     "uuid": "^3.0.1",
     "vega-lite": "^2.0.0-beta.8",
     "vega": "^3.0.0-rc2"
