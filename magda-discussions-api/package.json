@@ -32,7 +32,7 @@
     "@types/passport-facebook": "^2.1.4",
     "@types/pg": "^6.1.40",
     "@types/yargs": "^8.0.2",
-    "typescript": "~2.4.0"
+    "typescript": "~2.5.0"
   },
   "config": {
     "docker": {

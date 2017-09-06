@@ -10,7 +10,7 @@
     "tmp": "0.0.31",
     "ts-node": "^3.0.4",
     "tsconfig-paths": "^2.2.0",
-    "typescript": "~2.4.0",
+    "typescript": "~2.5.0",
     "yargs": "^8.0.1"
   },
   "bin": {
