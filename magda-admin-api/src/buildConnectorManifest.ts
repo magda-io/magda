@@ -6,7 +6,7 @@ export type Options = {
     registryApiUrl: string;
 };
 
-export default function({
+export default function buildConnectorManifest({
     id,
     dockerImage,
     dockerImageTag,

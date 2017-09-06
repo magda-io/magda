@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as yargs from 'yargs';
 
-import ApiClient from "@magda/authorization-api/dist/ApiClient";
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 import createApiRouter from './createApiRouter';
 import Database from './Database';
 

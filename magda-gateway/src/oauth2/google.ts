@@ -2,7 +2,7 @@ import * as express from 'express';
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Passport, Profile } from 'passport';
 
-import ApiClient from '@magda/authorization-api/dist/ApiClient';
+import ApiClient from '@magda/typescript-common/dist/authorization-api/ApiClient';
 import createOrGetUserToken from '../createOrGetUserToken';
 import { redirectOnSuccess, redirectOnError } from './redirect';
 

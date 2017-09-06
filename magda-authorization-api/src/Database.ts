@@ -1,5 +1,5 @@
 import createPool from "./createPool";
-import { User } from './model';
+import { User } from "@magda/typescript-common/dist/authorization-api/model";
 import { Maybe } from 'tsmonad';
 import arrayToMaybe from '@magda/typescript-common/dist/util/arrayToMaybe';
 import * as pg from 'pg';

@@ -2,11 +2,11 @@ import * as express from "express";
 import { Maybe } from "tsmonad";
 
 import Database from "./Database";
-import { PublicUser } from "./model";
+import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
 import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
 
 export interface ApiRouterOptions {
-    database: Database
+    database: Database;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -14,7 +14,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
-    function handlePromise<T>(res: express.Response, promise: Promise<Maybe<T>>) {
+    function handlePromise<T>(
+        res: express.Response,
+        promise: Promise<Maybe<T>>
+    ) {
         return promise
             .then(user =>
                 user.caseOf({
@@ -29,21 +32,22 @@ export default function createApiRouter(options: ApiRouterOptions) {
             .then(() => res.send());
     }
 
-    router.get("/private/users/lookup", function (req, res) {
+    router.get("/private/users/lookup", function(req, res) {
         const source = req.query.source;
         const sourceId = req.query.sourceId;
 
         handlePromise(res, database.getUserByExternalDetails(source, sourceId));
     });
 
-    router.get("/private/users/:userId", function (req, res) {
+    router.get("/private/users/:userId", function(req, res) {
         const userId = req.params.userId;
 
         handlePromise(res, database.getUser(userId));
     });
 
-    router.post("/private/users", function (req, res) {
-        database.createUser(req.body)
+    router.post("/private/users", function(req, res) {
+        database
+            .createUser(req.body)
             .then(user => {
                 res.json(user);
                 res.status(201);
@@ -55,7 +59,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             .then(() => res.send());
     });
 
-    router.get("/public/users/whoami", function (req, res) {
+    router.get("/public/users/whoami", function(req, res) {
         getUserIdHandling(req, res, (userId: string) =>
             handlePromise(res, database.getUser(userId))
         );
@@ -81,7 +85,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
     if (process.env.NODE_ENV !== "production") {
-        router.get("public/jwt", function (req, res) {
+        router.get("public/jwt", function(req, res) {
             res.status(200);
             res.write("X-Magda-Session: " + req.header("X-Magda-Session"));
             res.send();

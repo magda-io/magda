@@ -20,7 +20,7 @@ export default function buildApiRouter(options: Options) {
 
     router.use(mustBeAdmin(options.authApiUrl));
 
-    router.get("/crawlers", (req, res) => {
+    router.get("/connectors", (req, res) => {
         Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
             .then(([connectorConfigMap, jobs]: [any, any]) => {
                 const crawlerStatus = _(jobs.items)
@@ -52,7 +52,7 @@ export default function buildApiRouter(options: Options) {
             });
     });
 
-    router.put("/crawlers/:id", (req, res) => {
+    router.put("/connectors/:id", (req, res) => {
         const id = req.params.id;
 
         k8sApi
@@ -64,11 +64,11 @@ export default function buildApiRouter(options: Options) {
             });
     });
 
-    router.delete("/crawlers/:id", (req, res) => {
+    router.delete("/connectors/:id", (req, res) => {
         const id = req.params.id;
 
         k8sApi
-            .deleteJobIfRunning(prefixId(id))
+            .deleteJobIfPresent(prefixId(id))
             .then(() => k8sApi.updateConnectorConfigMap(id, null))
             .then((result: any) => res.status(200).send(result))
             .catch((error: Error) => {
@@ -77,11 +77,11 @@ export default function buildApiRouter(options: Options) {
             });
     });
 
-    router.post("/crawlers/:id/start", (req, res) => {
+    router.post("/connectors/:id/start", (req, res) => {
         const id = req.params.id;
 
         k8sApi
-            .deleteJobIfRunning(prefixId(id))
+            .deleteJobIfPresent(prefixId(id))
             .then(() => k8sApi.getConnectorConfigMap())
             .then((configMap: any) => {
                 const config = connectorConfig({
@@ -102,7 +102,7 @@ export default function buildApiRouter(options: Options) {
             });
     });
 
-    router.post("/crawlers/:id/stop", (req, res) => {
+    router.post("/connectors/:id/stop", (req, res) => {
         const id = req.params.id;
 
         return k8sApi

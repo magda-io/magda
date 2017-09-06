@@ -45,7 +45,7 @@ export default class K8SApi {
         });
     }
 
-    deleteJobIfRunning(id: string) {
+    deleteJobIfPresent(id: string) {
         return this.getJobs({ path: `/${id}/status` }).then((result: any) => {
             if (result.items.length > 0) {
                 return this.deleteJob(id);

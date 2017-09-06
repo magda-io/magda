@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
+import { getUserIdHandling } from "../session/GetUserId";
 import ApiClient from "./ApiClient";
 
 export function mustBeLoggedIn(
