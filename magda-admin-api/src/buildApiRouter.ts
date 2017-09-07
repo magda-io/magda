@@ -1,8 +1,8 @@
 import * as express from "express";
-import connectorConfig from "./connectorConfig";
+import connectorConfig from "./buildConnectorManifest";
 import * as _ from "lodash";
 import K8SApi, { K8SApiType } from "./k8sApi";
-import { mustBeAdmin } from "@magda/authorization-api/dist/authMiddleware";
+import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 
 export interface Options {
     dockerRepo: string;
