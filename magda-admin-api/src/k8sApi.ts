@@ -8,7 +8,7 @@ import getMinikubeIP from "@magda/typescript-common/dist/util/getMinikubeIP";
 // var request = require('request');
 // require('request-debug')(request);
 
-export type K8SApiType = "minikube" | "cluster";
+export type K8SApiType = "minikube" | "cluster" | "test";
 
 export default class K8SApi {
     private batchApi: any;
@@ -99,6 +99,10 @@ export default class K8SApi {
                 ca: fs.readFileSync(path.join(minikubePath, "ca.crt")),
                 cert: fs.readFileSync(path.join(minikubePath, "apiserver.crt")),
                 key: fs.readFileSync(path.join(minikubePath, "apiserver.key"))
+            };
+        } else if (apiType === "test") {
+            return {
+                url: `https://example.com`
             };
         } else {
             return Api.config.getInCluster();

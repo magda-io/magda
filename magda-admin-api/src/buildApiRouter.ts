@@ -2,7 +2,7 @@ import * as express from "express";
 import connectorConfig from "./buildConnectorManifest";
 import * as _ from "lodash";
 import K8SApi, { K8SApiType } from "./k8sApi";
-import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+// import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 
 export interface Options {
     dockerRepo: string;
@@ -18,7 +18,7 @@ export default function buildApiRouter(options: Options) {
 
     const k8sApi = new K8SApi(options.kubernetesApiType);
 
-    router.use(mustBeAdmin(options.authApiUrl));
+    // router.use(mustBeAdmin(options.authApiUrl));
 
     router.get("/connectors", (req, res) => {
         Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
@@ -26,9 +26,19 @@ export default function buildApiRouter(options: Options) {
                 const crawlerStatus = _(jobs.items)
                     .map((item: any) => ({
                         name: item.metadata.name,
-                        status:
-                            item.status.active === 1 ? "active" : "inactive",
-                        startTime: item.status.startTime
+                        status: (() => {
+                            if (item.status.active === 1) {
+                                return "active";
+                            } else if (item.status.succeeded === 1) {
+                                return "succeeded";
+                            } else if (item.status.failed === 1) {
+                                return "failed";
+                            } else {
+                                return "inactive";
+                            }
+                        })(),
+                        startTime: item.status.startTime,
+                        completionTime: item.status.completionTime
                     }))
                     .keyBy((item: any) => item.name.slice("connector-".length))
                     .value();
