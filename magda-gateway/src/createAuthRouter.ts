@@ -1,5 +1,5 @@
 import { Router } from "express";
-import ApiClient from "@magda/auth-api/dist/ApiClient";
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 import Authenticator from "./Authenticator";
 import * as passport from "passport";
 
@@ -60,11 +60,11 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     ];
 
     // Define routes.
-    authRouter.get("/", function (req, res) {
+    authRouter.get("/", function(req, res) {
         res.render("home", { user: req.user });
     });
 
-    authRouter.get("/login", function (req, res) {
+    authRouter.get("/login", function(req, res) {
         res.render("login");
     });
 
@@ -74,21 +74,29 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
 
     authRouter.get("/providers", (req, res) => {
         res.json(
-            providers.filter(provider => provider.enabled).map(provider => provider.id)
+            providers
+                .filter(provider => provider.enabled)
+                .map(provider => provider.id)
         );
     });
 
     authRouter.get(
         "/profile",
         require("connect-ensure-login").ensureLoggedIn(),
-        function (req, res) {
-            authApi.getUser(req.user.id).then(user =>
-                res.render("profile", { user: user.valueOrThrow() })
-            );
+        function(req, res) {
+            authApi
+                .getUser(req.user.id)
+                .then(user =>
+                    res.render("profile", { user: user.valueOrThrow() })
+                )
+                .catch((error: Error) => {
+                    console.error(error);
+                    res.status(500).send("Error");
+                });
         }
     );
 
-    authRouter.get("/logout", function (req, res) {
+    authRouter.get("/logout", function(req, res) {
         req.logout();
         res.redirect("/auth");
     });

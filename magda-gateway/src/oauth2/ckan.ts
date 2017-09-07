@@ -4,7 +4,7 @@ import * as express from 'express';
 import { Router } from 'express';
 import { Strategy as LocalStrategy } from "passport-local";
 
-import ApiClient from '@magda/auth-api/dist/ApiClient';
+import ApiClient from '@magda/typescript-common/dist/authorization-api/ApiClient';
 import loginToCkan from "./loginToCkan";
 import createOrGetUserToken from '../createOrGetUserToken';
 import { redirectOnSuccess, redirectOnError } from './redirect';

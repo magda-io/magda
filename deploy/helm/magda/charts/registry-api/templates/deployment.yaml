@@ -6,7 +6,7 @@ spec:
   replicas: 1
   strategy:
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   template:
     metadata:
       labels:
@@ -15,7 +15,7 @@ spec:
       containers:
       - name: registry-api
         image: {{ template "dockerimage" . }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [
             "/app/bin/magda-registry-api",
             "-Dhttp.port=80",

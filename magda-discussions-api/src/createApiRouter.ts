@@ -5,7 +5,7 @@ import * as _ from "lodash";
 
 import Database from "./Database";
 import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
-import ApiClient from "@magda/auth-api/dist/ApiClient";
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 
 export interface ApiRouterOptions {
     database: Database;

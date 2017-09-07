@@ -2,17 +2,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: auth-db
+  name: authorization-db
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        service: auth-db
+        service: authorization-db
     spec:
       containers:
-      - name: auth-db
-        image: localhost:5000/data61/magda-auth-db:latest
+      - name: authorization-db
+        image: localhost:5000/data61/magda-authorization-db:latest
         ports:
         - containerPort: 5432
         volumeMounts:
@@ -26,7 +26,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-db
+  name: authorization-db
 spec:
   ports:
   - name: postgres
@@ -34,5 +34,5 @@ spec:
     targetPort: 5432
     nodePort: 30544
   selector:
-    service: auth-db
+    service: authorization-db
   type: "NodePort"

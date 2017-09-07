@@ -1,5 +1,24 @@
 global:
-  repository: "data61/"
-  tag: "0.0.28"
   useCombinedDb: true
   externalUrl: "http://localhost:6100"
+  rollingUpdate:
+    maxUnavailable: 0
+  exposeNodePorts: false
+  image:
+    repository: "data61/"
+    tag: "0.0.28"
+    pullPolicy: Always
+tags:
+  all: true
+  authorization-api: false
+  authorization-db: false
+  combined-db: false
+  elasticsearch: false
+  gateway: false
+  indexer: false
+  preview-map: false
+  registry-api: false
+  registry-datastore: false
+  search-api: false
+  session-store: false
+  web-server: false

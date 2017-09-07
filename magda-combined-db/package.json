@@ -12,11 +12,11 @@
   "config": {
     "docker": {
       "name": "data61/magda-combined-db",
-      "include": "Dockerfile node_modules/@magda/auth-db/sql node_modules/@magda/registry-datastore/sql node_modules/@magda/session-store/sql node_modules/@magda/discussions-db/sql"
+      "include": "Dockerfile node_modules/@magda/authorization-db/sql node_modules/@magda/registry-datastore/sql node_modules/@magda/session-store/sql node_modules/@magda/discussions-db/sql"
     }
   },
   "devDependencies": {
-    "@magda/auth-db": "^0.0.29-SNAPSHOT",
+    "@magda/authorization-db": "^0.0.29-SNAPSHOT",
     "@magda/discussions-db": "^0.0.29-SNAPSHOT",
     "@magda/registry-datastore": "^0.0.29-SNAPSHOT",
     "@magda/scripts": "^0.0.29-SNAPSHOT",

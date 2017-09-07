@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-db
+  name: authorization-db
 spec:
   ports:
   - name: postgres
     port: 5432
     targetPort: 5432
   selector:
-    service: {{- if .Values.global.useCombinedDb }} "combined-db" {{- else }} "auth-db" {{- end }}
+    service: {{- if .Values.global.useCombinedDb }} "combined-db" {{- else }} "authorization-db" {{- end }}

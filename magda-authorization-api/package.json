@@ -1,0 +1,36 @@
+{
+  "name": "@magda/authorization-api",
+  "version": "0.0.29-SNAPSHOT",
+  "scripts": {
+    "build": "npm run compile",
+    "compile": "tsc -p tsconfig-build.json",
+    "watch": "tsc -p tsconfig-build.json --watch",
+    "start": "node dist/index.js",
+    "dev": "run-typescript-in-nodemon src/index.ts",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+  },
+  "dependencies": {
+    "@magda/typescript-common": "^0.0.29-SNAPSHOT",
+    "body-parser": "^1.13.2",
+    "express": "^4.13.1",
+    "jsonwebtoken": "^7.4.1",
+    "pg": "^6.4.0",
+    "tsmonad": "^0.7.2",
+    "yargs": "^8.0.2"
+  },
+  "devDependencies": {
+    "@magda/scripts": "^0.0.29-SNAPSHOT",
+    "@types/express": "^4.0.35",
+    "@types/node": "^8.0.14",
+    "@types/pg": "^6.1.41",
+    "@types/yargs": "^8.0.2",
+    "typescript": "~2.5.0"
+  },
+  "config": {
+    "docker": {
+      "name": "data61/magda-authorization-api",
+      "include": "node_modules dist Dockerfile"
+    }
+  }
+}

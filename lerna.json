@@ -2,10 +2,11 @@
   "lerna": "2.1.2",
   "packages": [
     "deploy/",
-    "magda-auth-api/",
-    "magda-auth-db/",
+    "magda-admin-api/",
+    "magda-authorization-api/",
+    "magda-authorization-db/",
     "magda-sleuther-framework/",
-    "magda-sleuther-ld-rating/",
+    "magda-sleuther-linked-data-rating/",
     "magda-sleuther-broken-link/",
     "magda-ckan-connector/",
     "magda-combined-db/",
@@ -36,9 +37,9 @@
   "commands": {
     "docker-build-prod": {
       "ignore": [
-        "magda-auth-db",
+        "magda-authorization-db",
         "magda-discussions-db",
-        "magda-auth-api",
+        "magda-authorization-api",
         "magda-discussions-api"
       ]
     }

@@ -7,6 +7,9 @@ spec:
   - name: http
     port: {{ .Values.service.externalPort }}
     targetPort: {{ .Values.service.internalPort }}
+{{- if .Values.global.exposeNodePorts }}
+    nodePort: 30100
+{{- end }}
   selector:
     service: gateway
   type: {{ .Values.service.type }}

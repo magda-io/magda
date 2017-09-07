@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as yargs from 'yargs';
 
-import ApiClient from "@magda/auth-api/dist/ApiClient";
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 import createApiRouter from './createApiRouter';
 import Database from './Database';
 
@@ -9,7 +9,7 @@ const argv = yargs
     .config()
     .help()
     .option('listenPort', {
-        describe: 'The TCP/IP port on which the auth-api should listen.',
+        describe: 'The TCP/IP port on which the authorization-api should listen.',
         type: 'number',
         default: 6105
     })

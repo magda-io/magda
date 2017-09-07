@@ -1,17 +1,23 @@
 import * as express from "express";
 import { Router } from "express";
+import * as _ from "lodash";
 const httpProxy = require("http-proxy");
 const jwt = require("jsonwebtoken");
 
 import Authenticator from "./Authenticator";
 
+export interface ProxyTarget {
+    to: string;
+    methods?: string[];
+    auth?: boolean;
+}
+
 export interface ApiRouterOptions {
-    authenticator: Authenticator,
-    jwtSecret: string,
-    searchApi: string,
-    registryApi: string,
-    authenticationApi: string,
-    discussionApi: string
+    authenticator: Authenticator;
+    jwtSecret: string;
+    routes: {
+        [localRoute: string]: ProxyTarget;
+    };
 }
 
 export default function createApiRouter(options: ApiRouterOptions): Router {
@@ -22,19 +28,22 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
 
     const router: Router = express.Router();
 
-    proxy.on("proxyReq", function (
+    proxy.on("proxyReq", function(
         proxyReq: any,
         req: any,
         res: Response,
         options: any
     ) {
         if (jwtSecret && req.user) {
-            const token = jwt.sign({ userId: req.user.id, isAdmin: req.user.isAdmin }, jwtSecret);
+            const token = jwt.sign(
+                { userId: req.user.id, isAdmin: req.user.isAdmin },
+                jwtSecret
+            );
             proxyReq.setHeader("X-Magda-Session", token);
         }
     });
 
-    proxy.on("error", function (err: any, req: any, res: any) {
+    proxy.on("error", function(err: any, req: any, res: any) {
         res.writeHead(500, {
             "Content-Type": "text/plain"
         });
@@ -69,10 +78,9 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         return routeRouter;
     }
 
-    proxyRoute("/search", options.searchApi);
-    proxyRoute("/registry", options.registryApi, ["get"], true);
-    proxyRoute("/auth", options.authenticationApi, ["get"], true);
-    proxyRoute("/discussions", options.discussionApi, undefined, true);
+    _.forEach(options.routes, (value: ProxyTarget, key: string) => {
+        proxyRoute(`/${key}`, value.to, value.methods, !!value.auth);
+    });
 
     return router;
 }

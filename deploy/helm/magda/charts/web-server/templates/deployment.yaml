@@ -5,7 +5,7 @@ metadata:
 spec:
   strategy:
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   replicas: 1
   template:
     metadata:
@@ -25,7 +25,7 @@ spec:
         - name: NODE_ENV
           value: production
         image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         volumeMounts:
         - mountPath: "/etc"
           name: config

@@ -16,5 +16,5 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "dockerimage" -}}
-"{{ .Values.image.repository | default .Values.global.repository }}magda-{{ .Chart.Name }}:{{ .Values.image.tag | default .Values.global.tag }}"
+"{{ .Values.image.repository | default .Values.global.image.repository }}magda-{{ .Chart.Name }}:{{ .Values.image.tag | default .Values.global.image.tag }}"
 {{- end -}}

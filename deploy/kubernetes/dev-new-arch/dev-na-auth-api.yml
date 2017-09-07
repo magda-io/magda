@@ -1,16 +1,16 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: auth-api
+  name: authorization-api
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        service: auth-api
+        service: authorization-api
     spec:
       containers:
-      - name: auth-api
+      - name: authorization-api
         resources:
           requests:
             cpu: 0m
@@ -23,18 +23,18 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: jwt-secret
-        image: "data61/magda-auth-api:${version}"
+        image: "data61/magda-authorization-api:${version}"
         imagePullPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-api
+  name: authorization-api
 spec:
   ports:
   - name: http
     port: 80
     targetPort: 80
   selector:
-    service: auth-api
+    service: authorization-api
   type: "NodePort"

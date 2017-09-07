@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: admin-api
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  template:
+    metadata:
+      labels:
+        service: admin-api
+    spec:
+      containers:
+      - name: admin-api
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        command: [
+            "node",
+            "/usr/src/app/component/dist/index.js",
+            "--listenPort", "80",
+            "--dockerRepo", {{ .Values.global.image.repository | quote }},
+            "--authApiUrl", "http://authorization-api/v0",
+            "--registryApiUrl", "http://registry-api/v0",
+            "--imageTag", {{ .Values.image.tag | default .Values.global.image.tag }},
+            "--kubernetesApiType", "cluster"
+        ]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret

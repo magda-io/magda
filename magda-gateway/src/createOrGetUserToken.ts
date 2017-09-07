@@ -1,13 +1,22 @@
-import * as passport from 'passport';
-import ApiClient from '@magda/auth-api/dist/ApiClient';
-import { User, UserToken } from '@magda/auth-api/dist/model';
+import * as passport from "passport";
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
+import { User, UserToken } from "@magda/typescript-common/dist/authorization-api/model";
 
-export default function createOrGetUserToken(authApi: ApiClient, profile: passport.Profile, source: string): Promise<UserToken> {
-    return authApi.lookupUser(source, profile.id).then(maybe => maybe.caseOf({
-        just: user => Promise.resolve(userToUserToken(user)),
-        nothing: () => authApi.createUser(profileToUser(profile, source)).then(userToUserToken)
-    }));
-};
+export default function createOrGetUserToken(
+    authApi: ApiClient,
+    profile: passport.Profile,
+    source: string
+): Promise<UserToken> {
+    return authApi.lookupUser(source, profile.id).then(maybe =>
+        maybe.caseOf({
+            just: user => Promise.resolve(userToUserToken(user)),
+            nothing: () =>
+                authApi
+                    .createUser(profileToUser(profile, source))
+                    .then(userToUserToken)
+        })
+    );
+}
 
 function profileToUser(profile: passport.Profile, source: string): User {
     if (!profile.emails || profile.emails.length === 0) {
@@ -17,7 +26,10 @@ function profileToUser(profile: passport.Profile, source: string): User {
     return {
         displayName: profile.displayName,
         email: profile.emails[0].value,
-        photoURL: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : undefined,
+        photoURL:
+            profile.photos && profile.photos.length > 0
+                ? profile.photos[0].value
+                : undefined,
         source: source,
         sourceId: profile.id,
         isAdmin: false

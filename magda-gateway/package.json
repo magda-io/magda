@@ -13,7 +13,7 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
-    "@magda/auth-api": "^0.0.29-SNAPSHOT",
+    "@magda/typescript-common": "^0.0.29-SNAPSHOT",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "connect-ensure-login": "^0.1.1",
@@ -43,6 +43,7 @@
     "@magda/scripts": "^0.0.29-SNAPSHOT",
     "@types/cors": "^2.8.1",
     "@types/express": "^4.0.35",
+    "@types/lodash": "^4.14.74",
     "@types/node": "^8.0.14",
     "@types/passport": "^0.3.4",
     "@types/passport-facebook": "^2.1.4",

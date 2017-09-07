@@ -2,9 +2,9 @@
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: auth-db
+  name: authorization-db
 spec:
-  serviceName: auth-db
+  serviceName: authorization-db
   replicas: 1
 {{- if semverCompare "^1.7.0" (printf "%s" .Capabilities.KubeVersion) }}
   updateStrategy:
@@ -13,11 +13,11 @@ spec:
   template:
     metadata:
       labels:
-        service: auth-db
+        service: authorization-db
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: auth-db
+      - name: authorization-db
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}
