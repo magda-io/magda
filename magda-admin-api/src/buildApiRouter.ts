@@ -23,7 +23,7 @@ export default function buildApiRouter(options: Options) {
     router.get("/connectors", (req, res) => {
         Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
             .then(([connectorConfigMap, jobs]: [any, any]) => {
-                const crawlerStatus = _(jobs.items)
+                const connectorStatus = _(jobs.items)
                     .map((item: any) => ({
                         name: item.metadata.name,
                         status: (() => {
@@ -49,7 +49,7 @@ export default function buildApiRouter(options: Options) {
                         return {
                             ...connector,
                             id: key,
-                            job: crawlerStatus[key]
+                            job: connectorStatus[key]
                         };
                     }
                 );

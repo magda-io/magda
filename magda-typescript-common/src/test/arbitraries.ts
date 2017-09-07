@@ -367,3 +367,8 @@ export function fuzzStringArbResult(
         fuzzedString => undefined
     );
 }
+
+export const dateStringArb = jsc.datetime.smap(
+    date => date.toString(),
+    string => new Date(Date.parse(string))
+);
