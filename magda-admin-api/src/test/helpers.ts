@@ -6,7 +6,7 @@ import * as express from "express";
 import * as nock from "nock";
 import * as _ from "lodash";
 
-export function doGet(
+export function getConnectors(
     app: express.Application,
     isAdmin: boolean = true
 ): Promise<request.Response> {
@@ -70,5 +70,20 @@ export function mockJobs(
                   .pickBy(_.identity)
                   .value() as { [id: string]: JobState })
             : "fail"
+    );
+}
+
+export function putConnector(
+    app: express.Application,
+    id: string,
+    body: any,
+    isAdmin: boolean = true
+): Promise<request.Response> {
+    return mockAuthorization(
+        "http://admin.example.com",
+        isAdmin,
+        request(app)
+            .put(`/connectors/${id}`)
+            .send(body)
     );
 }

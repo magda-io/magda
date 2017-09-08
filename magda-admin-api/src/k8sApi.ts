@@ -102,7 +102,7 @@ export default class K8SApi {
             };
         } else if (apiType === "test") {
             return {
-                url: `https://example.com`
+                url: "https://kubernetes.example.com"
             };
         } else {
             return Api.config.getInCluster();
