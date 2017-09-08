@@ -17,8 +17,8 @@ export function doGet(
     );
 }
 
-export function setupNockForStatus(k8sApiScope: nock.Scope, status: string) {
-    setupNock(k8sApiScope, {
+export function getStateForStatus(status: string): State {
+    return {
         connector: {
             config: {
                 type: "type",
@@ -31,25 +31,44 @@ export function setupNockForStatus(k8sApiScope: nock.Scope, status: string) {
                 status
             }
         }
-    });
+    };
 }
 
 export function setupNock(k8sApiScope: nock.Scope, state: State) {
+    mockConnectorConfig(k8sApiScope, 200, state);
+    mockJobs(k8sApiScope, 200, state);
+}
+
+export function mockConnectorConfig(
+    k8sApiScope: nock.Scope,
+    statusCode: number,
+    state?: State
+) {
     k8sApiScope
         .get("/api/v1/namespaces/default/configmaps/connector-config")
         .reply(
-            200,
-            fixtures.getConfigMap(_(state)
-                .mapValues((value: ConnectorState) => value.config)
-                .pickBy(_.identity)
-                .value() as { [id: string]: ConfigState })
+            statusCode,
+            statusCode === 200
+                ? fixtures.getConfigMap(_(state)
+                      .mapValues((value: ConnectorState) => value.config)
+                      .pickBy(_.identity)
+                      .value() as { [id: string]: ConfigState })
+                : "fail"
         );
+}
 
+export function mockJobs(
+    k8sApiScope: nock.Scope,
+    statusCode: number,
+    state?: State
+) {
     k8sApiScope.get("/apis/batch/v1/namespaces/default/jobs").reply(
-        200,
-        fixtures.getJobs(_(state)
-            .mapValues((value: ConnectorState) => value.job)
-            .pickBy(_.identity)
-            .value() as { [id: string]: JobState })
+        statusCode,
+        statusCode === 200
+            ? fixtures.getJobs(_(state)
+                  .mapValues((value: ConnectorState) => value.job)
+                  .pickBy(_.identity)
+                  .value() as { [id: string]: JobState })
+            : "fail"
     );
 }

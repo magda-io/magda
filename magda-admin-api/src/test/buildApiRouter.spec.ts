@@ -5,7 +5,13 @@ import * as express from "express";
 // import * as sinon from "sinon";
 import * as nock from "nock";
 import jsc from "@magda/typescript-common/dist/test/jsverify";
-import { setupNock, doGet, setupNockForStatus } from "./helpers";
+import {
+    setupNock,
+    doGet,
+    getStateForStatus,
+    mockJobs,
+    mockConnectorConfig
+} from "./helpers";
 import * as request from "supertest";
 
 import buildApiRouter from "../buildApiRouter";
@@ -40,7 +46,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
     afterEach(afterEachInner);
 
     describe("GET /connectors", () => {
-        it("should show current status of crawlers from K8S API", () => {
+        it("should show information about everything recorded in the connector-config map, along with associated jobs if they exist", () => {
             return jsc.assert(
                 jsc.forall(stateArb, state => {
                     beforeEachInner();
@@ -108,14 +114,14 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
         describe("should display status", () => {
             ["active", "failed", "succeeded"].forEach(status =>
                 it(`${status} when ${status}`, () => {
-                    setupNockForStatus(k8sApiScope, status);
+                    setupNock(k8sApiScope, getStateForStatus(status));
                     return assertStatus(status);
                 })
             );
 
             ["", "blah", null].forEach(status =>
                 it(`inactive for '${status}'`, () => {
-                    setupNockForStatus(k8sApiScope, "");
+                    setupNock(k8sApiScope, getStateForStatus(status));
                     return assertStatus("inactive");
                 })
             );
@@ -139,6 +145,31 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             it("an authenticated user who isn't an admin", () => {
                 return doGet(app, false).then(res => {
                     expect(res.status).to.equal(401);
+                });
+            });
+        });
+
+        describe("should return 500 for", () => {
+            const state = getStateForStatus("active");
+
+            it("a failure to get jobs", () => {
+                mockConnectorConfig(k8sApiScope, 200, state);
+                mockJobs(k8sApiScope, 500);
+            });
+
+            it("a failure to get connector config", () => {
+                mockConnectorConfig(k8sApiScope, 500);
+                mockJobs(k8sApiScope, 200, state);
+            });
+
+            it("a failure to get both", () => {
+                mockConnectorConfig(k8sApiScope, 500);
+                mockJobs(k8sApiScope, 500);
+            });
+
+            afterEach(() => {
+                return doGet(app).then(res => {
+                    expect(res.status).to.equal(500);
                 });
             });
         });
