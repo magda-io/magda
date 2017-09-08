@@ -36,7 +36,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
     ) {
         if (jwtSecret && req.user) {
             const token = jwt.sign(
-                { userId: req.user.id, isAdmin: req.user.isAdmin },
+                { userId: req.user.id },
                 jwtSecret
             );
             proxyReq.setHeader("X-Magda-Session", token);

@@ -1,21 +1,15 @@
-import jsc from "@magda/typescript-common/dist/test/jsverify";
 import * as _ from "lodash";
 import {} from "mocha";
-import * as request from "supertest";
 import { expect } from "chai";
 import * as express from "express";
 // import * as sinon from "sinon";
 import * as nock from "nock";
+import jsc from "@magda/typescript-common/dist/test/jsverify";
+import { setupNock, doGet, setupNockForStatus } from "./helpers";
+import * as request from "supertest";
 
-import * as fixtures from "./fixtures";
 import buildApiRouter from "../buildApiRouter";
-import {
-    stateArb,
-    State,
-    ConnectorState,
-    ConfigState,
-    JobState
-} from "./arbitraries";
+import { stateArb } from "./arbitraries";
 
 describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
@@ -25,10 +19,10 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
     const beforeEachInner = () => {
         const apiRouter = buildApiRouter({
             dockerRepo: "dockerRepo",
-            authApiUrl: "http://example.com",
+            authApiUrl: "http://admin.example.com",
             imageTag: "imageTag",
             kubernetesApiType: "test",
-            registryApiUrl: "http://example.com"
+            registryApiUrl: "http://registry.example.com"
         });
 
         app = express();
@@ -50,9 +44,9 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             return jsc.assert(
                 jsc.forall(stateArb, state => {
                     beforeEachInner();
-                    setupNock(state);
+                    setupNock(k8sApiScope, state);
 
-                    return doGet()
+                    return doGet(app)
                         .then(res => {
                             expect(res.status).to.equal(200);
 
@@ -114,64 +108,39 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
         describe("should display status", () => {
             ["active", "failed", "succeeded"].forEach(status =>
                 it(`${status} when ${status}`, () => {
-                    setupNockForStatus(status);
+                    setupNockForStatus(k8sApiScope, status);
                     return assertStatus(status);
                 })
             );
 
             ["", "blah", null].forEach(status =>
                 it(`inactive for '${status}'`, () => {
-                    setupNockForStatus("");
+                    setupNockForStatus(k8sApiScope, "");
                     return assertStatus("inactive");
                 })
             );
 
             function assertStatus(status: string) {
-                return doGet().then(res => {
+                return doGet(app).then(res => {
                     expect(res.body[0].job.status).to.equal(status);
                 });
             }
         });
 
-        function doGet() {
-            return request(app).get("/connectors");
-        }
-
-        function setupNockForStatus(status: string) {
-            setupNock({
-                connector: {
-                    config: {
-                        type: "type",
-                        name: "name",
-                        sourceUrl: "sourceUrl"
-                    },
-                    job: {
-                        startTime: "startTime",
-                        completionTime: "completionTime",
-                        status
-                    }
-                }
+        describe("should reply 401 for", () => {
+            it("an unauthenticated user", () => {
+                return request(app)
+                    .get("/connectors")
+                    .then(res => {
+                        expect(res.status).to.equal(401);
+                    });
             });
-        }
 
-        function setupNock(state: State) {
-            k8sApiScope
-                .get("/api/v1/namespaces/default/configmaps/connector-config")
-                .reply(
-                    200,
-                    fixtures.getConfigMap(_(state)
-                        .mapValues((value: ConnectorState) => value.config)
-                        .pickBy(_.identity)
-                        .value() as { [id: string]: ConfigState })
-                );
-
-            k8sApiScope.get("/apis/batch/v1/namespaces/default/jobs").reply(
-                200,
-                fixtures.getJobs(_(state)
-                    .mapValues((value: ConnectorState) => value.job)
-                    .pickBy(_.identity)
-                    .value() as { [id: string]: JobState })
-            );
-        }
+            it("an authenticated user who isn't an admin", () => {
+                return doGet(app, false).then(res => {
+                    expect(res.status).to.equal(401);
+                });
+            });
+        });
     });
 });

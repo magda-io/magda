@@ -2,7 +2,7 @@ import * as express from "express";
 import connectorConfig from "./buildConnectorManifest";
 import * as _ from "lodash";
 import K8SApi, { K8SApiType } from "./k8sApi";
-// import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 
 export interface Options {
     dockerRepo: string;
@@ -18,7 +18,7 @@ export default function buildApiRouter(options: Options) {
 
     const k8sApi = new K8SApi(options.kubernetesApiType);
 
-    // router.use(mustBeAdmin(options.authApiUrl));
+    router.use(mustBeAdmin(options.authApiUrl));
 
     router.get("/connectors", (req, res) => {
         Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
