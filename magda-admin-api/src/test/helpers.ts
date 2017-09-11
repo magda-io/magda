@@ -41,27 +41,29 @@ export function getStateForStatus(
     };
 }
 
-export function setupNock(k8sApiScope: nock.Scope, state: State) {
-    mockConnectorConfig(k8sApiScope, 200, state);
-    mockJobs(k8sApiScope, 200, state);
-}
-
 export function mockConnectorConfig(
     k8sApiScope: nock.Scope,
     statusCode: number,
-    state?: State
+    state?: State,
+    optionally: boolean = false
 ) {
-    k8sApiScope
-        .get("/api/v1/namespaces/default/configmaps/connector-config")
-        .reply(
-            statusCode,
-            statusCode === 200
-                ? fixtures.getConfigMap(_(state)
-                      .mapValues((value: ConnectorState) => value.config)
-                      .pickBy(_.identity)
-                      .value() as { [id: string]: ConfigState })
-                : "fail"
-        );
+    const req = k8sApiScope.get(
+        "/api/v1/namespaces/default/configmaps/connector-config"
+    );
+
+    if (optionally) {
+        req.optionally();
+    }
+
+    return req.reply(
+        statusCode,
+        statusCode === 200
+            ? fixtures.getConfigMap(_(state)
+                  .mapValues((value: ConnectorState) => value.config)
+                  .pickBy(_.identity)
+                  .value() as { [id: string]: ConfigState })
+            : "fail"
+    );
 }
 
 export function mockJobs(
@@ -83,19 +85,26 @@ export function mockJobStatus(
     k8sApiScope: nock.Scope,
     statusCode: number,
     name: string,
-    state?: State
+    state?: State,
+    optionally: boolean = false
 ) {
-    k8sApiScope
-        .get(`/apis/batch/v1/namespaces/default/jobs/connector-${name}/status`)
-        .reply(
-            statusCode,
-            statusCode === 200
-                ? fixtures.getJobs(_(state)
-                      .mapValues((value: ConnectorState) => value.job)
-                      .pickBy(_.identity)
-                      .value() as { [id: string]: JobState }) as any
-                : "fail"
-        );
+    const req = k8sApiScope.get(
+        `/apis/batch/v1/namespaces/default/jobs/connector-${name}/status`
+    );
+
+    if (optionally) {
+        req.optionally();
+    }
+
+    return req.reply(
+        statusCode,
+        statusCode === 200
+            ? fixtures.getJobs(_(state)
+                  .mapValues((value: ConnectorState) => value.job)
+                  .pickBy(_.identity)
+                  .value() as { [id: string]: JobState }) as any
+            : "fail"
+    );
 }
 
 export function putConnector(
@@ -139,4 +148,34 @@ export function mockDeleteJob(
         .reply(statusCode, {
             code: statusCode
         });
+}
+
+export function mockCreateJob(
+    k8sApiScope: nock.Scope,
+    statusCode: number,
+    body?: any,
+    optionally: boolean = false
+) {
+    const req = k8sApiScope.post(
+        `/apis/batch/v1/namespaces/default/jobs`,
+        body
+    );
+
+    if (optionally) {
+        req.optionally();
+    }
+
+    return req.reply(statusCode, {});
+}
+
+export function startConnector(
+    app: express.Application,
+    id: string,
+    isAdmin: boolean = true
+): Promise<request.Response> {
+    return mockAuthorization(
+        "http://admin.example.com",
+        isAdmin,
+        request(app).post(`/connectors/${id}/start`)
+    );
 }

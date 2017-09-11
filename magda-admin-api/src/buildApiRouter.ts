@@ -94,17 +94,24 @@ export default function buildApiRouter(options: Options) {
             .deleteJobIfPresent(prefixId(id))
             .then(() => k8sApi.getConnectorConfigMap())
             .then((configMap: any) => {
-                const config = connectorConfig({
-                    id,
-                    dockerImage: configMap[id].type,
-                    dockerImageTag: options.imageTag,
-                    dockerRepo: options.dockerRepo,
-                    registryApiUrl: options.registryApiUrl
-                });
-
-                return k8sApi.createJob(config).then((result: any) => {
-                    res.status(200).send(result);
-                });
+                if (!configMap[id]) {
+                    res.status(404).send("No config for crawler id");
+                    return undefined;
+                } else {
+                    return k8sApi
+                        .createJob(
+                            connectorConfig({
+                                id,
+                                dockerImage: configMap[id].type,
+                                dockerImageTag: options.imageTag,
+                                dockerRepo: options.dockerRepo,
+                                registryApiUrl: options.registryApiUrl
+                            })
+                        )
+                        .then((result: any) => {
+                            res.status(200).send(result);
+                        });
+                }
             })
             .catch((err: Error) => {
                 console.error(err);

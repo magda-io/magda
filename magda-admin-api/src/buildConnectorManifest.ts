@@ -32,7 +32,7 @@ export default function buildConnectorManifest({
                     containers: [
                         {
                             name: jobName,
-                            image: `${dockerRepo}${dockerImage}:${dockerImageTag}`,
+                            image: `${dockerRepo}/${dockerImage}:${dockerImageTag}`,
                             command: [
                                 "node",
                                 "/usr/src/app/component/dist/index.js",

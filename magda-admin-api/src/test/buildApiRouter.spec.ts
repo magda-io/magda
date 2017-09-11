@@ -17,18 +17,8 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
     let k8sApiScope: nock.Scope;
 
     const beforeEachInner = () => {
-        const apiRouter = buildApiRouter({
-            dockerRepo: "dockerRepo",
-            authApiUrl: "http://admin.example.com",
-            imageTag: "imageTag",
-            kubernetesApiType: "test",
-            registryApiUrl: "http://registry.example.com"
-        });
-
-        app = express();
-        app.use(require("body-parser").json());
-        app.use(apiRouter);
         k8sApiScope = nock("https://kubernetes.example.com");
+        app = buildExpressApp();
     };
 
     beforeEach(beforeEachInner);
@@ -45,7 +35,8 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             return jsc.assert(
                 jsc.forall(stateArb, state => {
                     beforeEachInner();
-                    helpers.setupNock(k8sApiScope, state);
+                    helpers.mockConnectorConfig(k8sApiScope, 200, state);
+                    helpers.mockJobs(k8sApiScope, 200, state);
 
                     return helpers
                         .getConnectors(app)
@@ -111,8 +102,14 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
         describe("should display status", () => {
             ["active", "failed", "succeeded"].forEach(status =>
                 it(`${status} when ${status}`, () => {
-                    helpers.setupNock(
+                    helpers.mockConnectorConfig(
                         k8sApiScope,
+                        200,
+                        helpers.getStateForStatus(status)
+                    );
+                    helpers.mockJobs(
+                        k8sApiScope,
+                        200,
                         helpers.getStateForStatus(status)
                     );
                     return assertStatus(status);
@@ -121,8 +118,14 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
             ["", "blah", null].forEach(status =>
                 it(`inactive for '${status}'`, () => {
-                    helpers.setupNock(
+                    helpers.mockConnectorConfig(
                         k8sApiScope,
+                        200,
+                        helpers.getStateForStatus(status)
+                    );
+                    helpers.mockJobs(
+                        k8sApiScope,
+                        200,
                         helpers.getStateForStatus(status)
                     );
                     return assertStatus("inactive");
@@ -305,9 +308,6 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             });
         });
 
-        // helpers.mockJobs(k8sApiScope, 200, helpers.getBasicState("name"));
-        // helpers.mockJobDelete(k8sApiScope, "connector");
-
         silenceErrorLogs(() => {
             describe("should return 500", () => {
                 it("when patch config map call doesn't work", () => {
@@ -386,6 +386,206 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
         });
     });
 
+    describe("POST /connectors/:id/start", () => {
+        const name = "test";
+
+        describe("should create a new job with values in the config map", () => {
+            it("for imageTag latest", () => {
+                return doTest(
+                    "latest",
+                    body =>
+                        body.spec.template.spec.containers[0]
+                            .imagePullPolicy === "Always"
+                );
+            });
+
+            it("for imageTag 1.0.0", () => {
+                return doTest(
+                    "1.0.0",
+                    body =>
+                        body.spec.template.spec.containers[0]
+                            .imagePullPolicy === "IfNotPresent"
+                );
+            });
+
+            function doTest(tag: string, customMatch: (body: any) => boolean) {
+                const app = buildExpressApp(tag);
+                const connectorState = helpers.getStateForStatus(
+                    "active",
+                    name
+                );
+                helpers.mockJobStatus(k8sApiScope, 404, name);
+                helpers.mockConnectorConfig(k8sApiScope, 200, connectorState);
+                helpers.mockCreateJob(k8sApiScope, 200, (body: any) => {
+                    const metadataMatch = (metadata: any) =>
+                        metadata.name === `connector-${name}` &&
+                        metadata.magdaSleuther === true;
+
+                    const jobMetadataMatches = metadataMatch(body.metadata);
+                    const podMetadataMatches = metadataMatch(
+                        body.spec.template.metadata
+                    );
+
+                    const container = body.spec.template.spec.containers[0];
+                    const imageMatches =
+                        container.image === `dockerRepo/type:${tag}`;
+                    const commandMatches =
+                        container.command[5] === "http://registry.example.com";
+                    const customMatches = customMatch(body);
+
+                    const configMountMatches =
+                        body.spec.template.spec.volumes[0].configMap.items[0]
+                            .key === `${name}.json`;
+
+                    return (
+                        jobMetadataMatches &&
+                        podMetadataMatches &&
+                        imageMatches &&
+                        commandMatches &&
+                        customMatches &&
+                        configMountMatches
+                    );
+                });
+
+                return helpers.startConnector(app, name, true).then(res => {
+                    expect(res.status).to.equal(200);
+                });
+            }
+        });
+
+        it("should delete an existing job if one exists", () => {
+            const connectorState = helpers.getStateForStatus("active", name);
+            helpers.mockJobStatus(
+                k8sApiScope,
+                200,
+                name,
+                helpers.getBasicState(name)
+            );
+            helpers.mockDeleteJob(k8sApiScope, 200, name);
+            helpers.mockConnectorConfig(k8sApiScope, 200, connectorState);
+            helpers.mockCreateJob(k8sApiScope, 200);
+            return helpers.startConnector(app, name, true).then(res => {
+                expect(res.status).to.equal(200);
+            });
+        });
+
+        silenceErrorLogs(() => {
+            describe("should return 500", () => {
+                it("if getting existing job status fails", () => {
+                    helpers.mockJobStatus(k8sApiScope, 500, name);
+                    helpers.mockConnectorConfig(
+                        k8sApiScope,
+                        200,
+                        helpers.getStateForStatus("active", name),
+                        true
+                    );
+                    helpers.mockCreateJob(k8sApiScope, 200, () => true, true);
+
+                    return helpers.startConnector(app, name, true).then(res => {
+                        expect(res.status).to.equal(500);
+                    });
+                });
+
+                it("if getting connector config fails", () => {
+                    helpers.mockJobStatus(k8sApiScope, 404, name);
+                    helpers.mockConnectorConfig(k8sApiScope, 500, null);
+                    helpers.mockCreateJob(k8sApiScope, 200, () => true, true);
+
+                    return helpers.startConnector(app, name, true).then(res => {
+                        expect(res.status).to.equal(500);
+                    });
+                });
+
+                it("if deleting existing job fails", () => {
+                    const connectorState = helpers.getStateForStatus(
+                        "active",
+                        name
+                    );
+                    helpers.mockJobStatus(
+                        k8sApiScope,
+                        200,
+                        name,
+                        connectorState
+                    );
+                    helpers.mockDeleteJob(k8sApiScope, 500, name);
+                    helpers.mockConnectorConfig(
+                        k8sApiScope,
+                        200,
+                        connectorState,
+                        true
+                    );
+                    helpers.mockCreateJob(k8sApiScope, 200, () => true, true);
+
+                    return helpers.startConnector(app, name, true).then(res => {
+                        expect(res.status).to.equal(500);
+                    });
+                });
+
+                it("if creating existing job fails", () => {
+                    const connectorState = helpers.getStateForStatus(
+                        "active",
+                        name
+                    );
+                    helpers.mockJobStatus(
+                        k8sApiScope,
+                        200,
+                        name,
+                        connectorState
+                    );
+                    helpers.mockDeleteJob(k8sApiScope, 200, name);
+                    helpers.mockConnectorConfig(
+                        k8sApiScope,
+                        200,
+                        connectorState
+                    );
+                    helpers.mockCreateJob(k8sApiScope, 500, () => true);
+
+                    return helpers.startConnector(app, name, true).then(res => {
+                        expect(res.status).to.equal(500);
+                    });
+                });
+            });
+
+            describe("should reply 404 for", () => {
+                it("no config available for passed id", () => {
+                    const connectorState = helpers.getStateForStatus(
+                        "active",
+                        "otherJob"
+                    );
+                    helpers.mockJobStatus(k8sApiScope, 404, name);
+                    helpers.mockConnectorConfig(
+                        k8sApiScope,
+                        200,
+                        connectorState
+                    );
+                    helpers.mockCreateJob(k8sApiScope, 200, () => true, true);
+
+                    return helpers.startConnector(app, name, true).then(res => {
+                        expect(res.status).to.equal(404);
+                    });
+                });
+            });
+
+            describe("should reply 401 for", () => {
+                it("an unauthenticated user", () => {
+                    return request(app)
+                        .post(`/connectors/${name}/start`)
+                        .then(res => {
+                            expect(res.status).to.equal(401);
+                        });
+                });
+
+                it("an authenticated user who isn't an admin", () => {
+                    return helpers
+                        .startConnector(app, name, false)
+                        .then(res => {
+                            expect(res.status).to.equal(401);
+                        });
+                });
+            });
+        });
+    });
+
     function silenceErrorLogs(inner: () => void) {
         describe("(with silent console.error or console.warn)", () => {
             beforeEach(() => {
@@ -400,5 +600,21 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
             inner();
         });
+    }
+
+    function buildExpressApp(imageTag: string = "imageTag") {
+        const apiRouter = buildApiRouter({
+            dockerRepo: "dockerRepo",
+            authApiUrl: "http://admin.example.com",
+            imageTag,
+            kubernetesApiType: "test",
+            registryApiUrl: "http://registry.example.com"
+        });
+
+        const app = express();
+        app.use(require("body-parser").json());
+        app.use(apiRouter);
+
+        return app;
     }
 });
