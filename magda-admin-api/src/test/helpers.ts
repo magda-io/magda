@@ -17,9 +17,16 @@ export function getConnectors(
     );
 }
 
-export function getStateForStatus(status: string): State {
+export function getBasicState(connectorName: string = "connector"): State {
+    return getStateForStatus("active", connectorName);
+}
+
+export function getStateForStatus(
+    status: string,
+    connectorName: string = "connector"
+): State {
     return {
-        connector: {
+        [connectorName]: {
             config: {
                 type: "type",
                 name: "name",
@@ -72,6 +79,24 @@ export function mockJobs(
             : "fail"
     );
 }
+export function mockJobStatus(
+    k8sApiScope: nock.Scope,
+    statusCode: number,
+    name: string,
+    state?: State
+) {
+    k8sApiScope
+        .get(`/apis/batch/v1/namespaces/default/jobs/connector-${name}/status`)
+        .reply(
+            statusCode,
+            statusCode === 200
+                ? fixtures.getJobs(_(state)
+                      .mapValues((value: ConnectorState) => value.job)
+                      .pickBy(_.identity)
+                      .value() as { [id: string]: JobState }) as any
+                : "fail"
+        );
+}
 
 export function putConnector(
     app: express.Application,
@@ -86,4 +111,32 @@ export function putConnector(
             .put(`/connectors/${id}`)
             .send(body)
     );
+}
+
+export function deleteConnector(
+    app: express.Application,
+    id: string,
+    isAdmin: boolean = true
+): Promise<request.Response> {
+    return mockAuthorization(
+        "http://admin.example.com",
+        isAdmin,
+        request(app).delete(`/connectors/${id}`)
+    );
+}
+
+export function mockDeleteJob(
+    k8sApiScope: nock.Scope,
+    statusCode: number,
+    id: string
+) {
+    k8sApiScope
+        .delete(`/apis/batch/v1/namespaces/default/jobs/connector-${id}`, {
+            kind: "DeleteOptions",
+            apiVersion: "batch/v1",
+            propagationPolicy: "Background"
+        })
+        .reply(statusCode, {
+            code: statusCode
+        });
 }

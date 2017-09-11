@@ -154,7 +154,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             });
 
             describe("should return 500 for", () => {
-                const state = helpers.getStateForStatus("active");
+                const state = helpers.getBasicState();
 
                 it("a failure to get jobs", () => {
                     helpers.mockConnectorConfig(k8sApiScope, 200, state);
@@ -241,6 +241,143 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 it("an authenticated user who isn't an admin", () => {
                     return helpers
                         .putConnector(app, name, connectorConfig, false)
+                        .then(res => {
+                            expect(res.status).to.equal(401);
+                        });
+                });
+            });
+        });
+    });
+
+    describe("DELETE /connectors/:id", () => {
+        const name = "test";
+
+        describe("should remove the targeted entry from the connector-config configmap", () => {
+            it("when the corresponding job isn't present", () => {
+                const expectedConfigMap: any = {
+                    [`${name}.json`]: null
+                };
+
+                k8sApiScope
+                    .patch(
+                        "/api/v1/namespaces/default/configmaps/connector-config",
+                        {
+                            data: expectedConfigMap
+                        }
+                    )
+                    .reply(200, expectedConfigMap);
+
+                helpers.mockJobStatus(k8sApiScope, 404, name);
+
+                return helpers.deleteConnector(app, name).then(res => {
+                    expect(res.status).to.equal(200);
+
+                    k8sApiScope.done();
+                });
+            });
+
+            it("when the corresponding job is present, and delete the corresponding job first", () => {
+                const expectedConfigMap: any = {
+                    [`${name}.json`]: null
+                };
+
+                helpers.mockJobStatus(
+                    k8sApiScope,
+                    200,
+                    name,
+                    helpers.getBasicState(name)
+                );
+                helpers.mockDeleteJob(k8sApiScope, 200, name);
+                k8sApiScope
+                    .patch(
+                        "/api/v1/namespaces/default/configmaps/connector-config",
+                        {
+                            data: expectedConfigMap
+                        }
+                    )
+                    .reply(200, expectedConfigMap);
+
+                return helpers.deleteConnector(app, name).then(res => {
+                    expect(res.status).to.equal(200);
+
+                    k8sApiScope.done();
+                });
+            });
+        });
+
+        // helpers.mockJobs(k8sApiScope, 200, helpers.getBasicState("name"));
+        // helpers.mockJobDelete(k8sApiScope, "connector");
+
+        silenceErrorLogs(() => {
+            describe("should return 500", () => {
+                it("when patch config map call doesn't work", () => {
+                    helpers.mockJobStatus(k8sApiScope, 404, name);
+                    k8sApiScope
+                        .patch(
+                            "/api/v1/namespaces/default/configmaps/connector-config",
+                            () => true
+                        )
+                        .reply(500, "Oh noes");
+
+                    return helpers.deleteConnector(app, name).then(res => {
+                        expect(res.status).to.equal(500);
+
+                        k8sApiScope.done();
+                    });
+                });
+
+                it("when get jobs status call doesn't work", () => {
+                    helpers.mockJobStatus(k8sApiScope, 500, name);
+                    k8sApiScope
+                        .patch(
+                            "/api/v1/namespaces/default/configmaps/connector-config",
+                            () => true
+                        )
+                        .optionally()
+                        .reply(200, {});
+
+                    return helpers.deleteConnector(app, name).then(res => {
+                        expect(res.status).to.equal(500);
+                        k8sApiScope.done();
+                    });
+                });
+
+                it("when delete job call doesn't work", () => {
+                    helpers.mockJobStatus(
+                        k8sApiScope,
+                        200,
+                        name,
+                        helpers.getBasicState(name)
+                    );
+                    helpers.mockDeleteJob(k8sApiScope, 500, name);
+                    k8sApiScope
+                        .patch(
+                            "/api/v1/namespaces/default/configmaps/connector-config",
+                            () => true
+                        )
+                        .optionally()
+                        .reply(200, {});
+
+                    return helpers.deleteConnector(app, name).then(res => {
+                        expect(res.status).to.equal(500);
+
+                        k8sApiScope.done();
+                    });
+                });
+            });
+
+            describe("should reply 401 for", () => {
+                it("an unauthenticated user", () => {
+                    return request(app)
+                        .delete(`/connectors/${name}`)
+                        .then(res => {
+                            expect(res.status).to.equal(401);
+                        });
+                });
+
+                it("an authenticated user who isn't an admin", () => {
+                    return helpers
+                        .deleteConnector(app, name, false)
                         .then(res => {
                             expect(res.status).to.equal(401);
                         });
