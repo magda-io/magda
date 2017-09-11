@@ -28,7 +28,9 @@ libraryDependencies ++= {
     "net.virtual-void" %%  "json-lenses" % "0.6.2",
     "com.auth0" % "java-jwt" % "3.2.0",
     "org.flywaydb" % "flyway-core" % "4.2.0" % "test",
-    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
+    "org.sangria-graphql" %% "sangria" % "1.3.0",
+    "org.sangria-graphql" %% "sangria-spray-json" % "1.0.0"
   )
 }
 

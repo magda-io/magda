@@ -21,8 +21,15 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import scalikejdbc.config._
 import scalikejdbc._
+import sangria.execution.deferred.DeferredResolver
+import sangria.parser.QueryParser
+import sangria.execution.{ErrorWithResolver, Executor, QueryAnalysisError}
+import sangria.marshalling.sprayJson._
+import spray.json._
+
 
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
 import au.csiro.data61.magda.client.AuthApiClient
 
 class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends CorsDirectives with Protocols {
@@ -82,6 +89,12 @@ class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val co
           pathPrefix("aspects") { new AspectsService(config, authClient, system, materializer).route } ~
           pathPrefix("records") { new RecordsService(config, webHookActor, authClient, system, materializer).route } ~
           pathPrefix("hooks") { new HooksService(config, webHookActor, authClient, system, materializer).route } ~
+          (post & path("graphql")) {
+            GraphQLRoute.getRoute(ec)
+          } ~
+          path("graphiql") {
+            getFromResource("graphiql.html")
+          } ~
           new SwaggerDocService("localhost", 9001, config.getString("http.externalUrl.v0"), system).allRoutes ~
           pathPrefix("swagger") {
             getFromResourceDirectory("swagger") ~ pathSingleSlash(get(redirect("index.html", StatusCodes.PermanentRedirect)))
