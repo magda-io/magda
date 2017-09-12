@@ -179,3 +179,15 @@ export function startConnector(
         request(app).post(`/connectors/${id}/start`)
     );
 }
+
+export function stopConnector(
+    app: express.Application,
+    id: string,
+    isAdmin: boolean = true
+): Promise<request.Response> {
+    return mockAuthorization(
+        "http://admin.example.com",
+        isAdmin,
+        request(app).post(`/connectors/${id}/stop`)
+    );
+}

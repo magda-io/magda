@@ -129,7 +129,12 @@ export default function buildApiRouter(options: Options) {
             })
             .catch((err: Error) => {
                 console.error(err);
-                res.status(500).send("Error");
+                
+                if ((err as any).code === 404) {
+                    res.status(404).send("No running crawler " + id);
+                } else {
+                    res.status(500).send("Error");
+                }
             });
     });
 

@@ -586,6 +586,52 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
         });
     });
 
+    describe("POST /connectors/:id/stop", () => {
+        const name = "test";
+
+        it("should stop a currently running job", () => {
+            helpers.mockDeleteJob(k8sApiScope, 200, name);
+
+            return helpers.stopConnector(app, name).then(res => {
+                expect(res.status).to.equal(204);
+            });
+        });
+
+        silenceErrorLogs(() => {
+            it("should return 404 for a non-running job", () => {
+                helpers.mockDeleteJob(k8sApiScope, 404, name);
+
+                return helpers.stopConnector(app, name).then(res => {
+                    expect(res.status).to.equal(404);
+                });
+            });
+
+            it("should return 500 if the kubernetes delete job fails", () => {
+                helpers.mockDeleteJob(k8sApiScope, 500, name);
+
+                return helpers.stopConnector(app, name).then(res => {
+                    expect(res.status).to.equal(500);
+                });
+            });
+
+            describe("should reply 401 for", () => {
+                it("an unauthenticated user", () => {
+                    return request(app)
+                        .post(`/connectors/${name}/stop`)
+                        .then(res => {
+                            expect(res.status).to.equal(401);
+                        });
+                });
+
+                it("an authenticated user who isn't an admin", () => {
+                    return helpers.stopConnector(app, name, false).then(res => {
+                        expect(res.status).to.equal(401);
+                    });
+                });
+            });
+        });
+    });
+
     function silenceErrorLogs(inner: () => void) {
         describe("(with silent console.error or console.warn)", () => {
             beforeEach(() => {
