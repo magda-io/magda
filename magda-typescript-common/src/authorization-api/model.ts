@@ -12,6 +12,5 @@ export interface User extends PublicUser {
 }
 
 export interface UserToken {
-    id: string,
-    isAdmin: boolean
+    id: string
 }
