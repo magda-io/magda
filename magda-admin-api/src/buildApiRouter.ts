@@ -95,7 +95,7 @@ export default function buildApiRouter(options: Options) {
             .then(() => k8sApi.getConnectorConfigMap())
             .then((configMap: any) => {
                 if (!configMap[id]) {
-                    res.status(404).send("No config for crawler id");
+                    res.status(404).send("No config for connector id");
                     return undefined;
                 } else {
                     return k8sApi
@@ -131,7 +131,7 @@ export default function buildApiRouter(options: Options) {
                 console.error(err);
                 
                 if ((err as any).code === 404) {
-                    res.status(404).send("No running crawler " + id);
+                    res.status(404).send("No running connector " + id);
                 } else {
                     res.status(500).send("Error");
                 }
