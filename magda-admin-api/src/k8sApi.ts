@@ -8,7 +8,7 @@ import getMinikubeIP from "@magda/typescript-common/dist/util/getMinikubeIP";
 // var request = require('request');
 // require('request-debug')(request);
 
-export type K8SApiType = "minikube" | "cluster";
+export type K8SApiType = "minikube" | "cluster" | "test";
 
 export default class K8SApi {
     private batchApi: any;
@@ -20,23 +20,37 @@ export default class K8SApi {
         this.coreApi = new Api.Core(details);
     }
 
-    getJobs(options?: any): Promise<any> {
+    getJobs(): Promise<any> {
         return promisify(
             this.batchApi
                 .ns(this.namespace)
                 .jobs.get.bind(this.batchApi.ns.jobs)
-        )(options);
+        )();
+    }
+
+    getJobStatus(id: string): Promise<any> {
+        return promisify(
+            this.batchApi
+                .ns(this.namespace)
+                .jobs.get.bind(this.batchApi.ns.jobs)
+        )({ name: `${id}/status` });
     }
 
     createJob(body: any): Promise<any> {
         return promisify(
-            this.batchApi.ns.jobs.post.bind(this.batchApi.ns.jobs)
+            this.batchApi
+                .ns(this.namespace)
+                .jobs.post.bind(this.batchApi.ns.jobs)
         )({ body });
     }
 
-    deleteJob(prefixedId: string) {
-        return promisify(this.batchApi.delete.bind(this.batchApi))({
-            path: `/apis/batch/v1/namespaces/default/jobs/${prefixedId}`,
+    deleteJob(id: string) {
+        return promisify(
+            this.batchApi
+                .ns(this.namespace)
+                .jobs.delete.bind(this.batchApi.ns.jobs)
+        )({
+            name: id,
             body: {
                 kind: "DeleteOptions",
                 apiVersion: "batch/v1",
@@ -46,13 +60,17 @@ export default class K8SApi {
     }
 
     deleteJobIfPresent(id: string) {
-        return this.getJobs({ path: `/${id}/status` }).then((result: any) => {
-            if (result.items.length > 0) {
+        return this.getJobStatus(id)
+            .then((result: any) => {
                 return this.deleteJob(id);
-            } else {
-                return Promise.resolve();
-            }
-        });
+            })
+            .catch(e => {
+                if (e.code === 404) {
+                    return Promise.resolve();
+                } else {
+                    throw e;
+                }
+            });
     }
 
     getConnectorConfigMap() {
@@ -77,7 +95,7 @@ export default class K8SApi {
             name: "connector-config",
             body: {
                 data: {
-                    [`${id}.json`]: JSON.stringify(newConfig)
+                    [`${id}.json`]: newConfig && JSON.stringify(newConfig)
                 }
             }
         });
@@ -99,6 +117,10 @@ export default class K8SApi {
                 ca: fs.readFileSync(path.join(minikubePath, "ca.crt")),
                 cert: fs.readFileSync(path.join(minikubePath, "apiserver.crt")),
                 key: fs.readFileSync(path.join(minikubePath, "apiserver.key"))
+            };
+        } else if (apiType === "test") {
+            return {
+                url: "https://kubernetes.example.com"
             };
         } else {
             return Api.config.getInCluster();

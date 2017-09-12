@@ -32,7 +32,7 @@
     "scripts/"
   ],
   "version": "0.0.29-SNAPSHOT",
-  "hoist": ["tsmonad", "urijs", "@types/urijs"],
+  "hoist": ["tsmonad", "urijs", "@types/urijs", "express", "@types/express"],
   "concurrency": "1",
   "commands": {
     "docker-build-prod": {

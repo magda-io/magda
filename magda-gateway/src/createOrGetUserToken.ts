@@ -38,7 +38,6 @@ function profileToUser(profile: passport.Profile, source: string): User {
 
 function userToUserToken(user: User): UserToken {
     return {
-        id: <string>user.id,
-        isAdmin: <boolean>user.isAdmin
+        id: <string>user.id
     };
 }

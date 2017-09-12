@@ -23,12 +23,22 @@ export default function buildApiRouter(options: Options) {
     router.get("/connectors", (req, res) => {
         Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
             .then(([connectorConfigMap, jobs]: [any, any]) => {
-                const crawlerStatus = _(jobs.items)
+                const connectorStatus = _(jobs.items)
                     .map((item: any) => ({
                         name: item.metadata.name,
-                        status:
-                            item.status.active === 1 ? "active" : "inactive",
-                        startTime: item.status.startTime
+                        status: (() => {
+                            if (item.status.active === 1) {
+                                return "active";
+                            } else if (item.status.succeeded === 1) {
+                                return "succeeded";
+                            } else if (item.status.failed === 1) {
+                                return "failed";
+                            } else {
+                                return "inactive";
+                            }
+                        })(),
+                        startTime: item.status.startTime,
+                        completionTime: item.status.completionTime
                     }))
                     .keyBy((item: any) => item.name.slice("connector-".length))
                     .value();
@@ -39,7 +49,7 @@ export default function buildApiRouter(options: Options) {
                         return {
                             ...connector,
                             id: key,
-                            job: crawlerStatus[key]
+                            job: connectorStatus[key]
                         };
                     }
                 );
@@ -84,17 +94,24 @@ export default function buildApiRouter(options: Options) {
             .deleteJobIfPresent(prefixId(id))
             .then(() => k8sApi.getConnectorConfigMap())
             .then((configMap: any) => {
-                const config = connectorConfig({
-                    id,
-                    dockerImage: configMap[id].type,
-                    dockerImageTag: options.imageTag,
-                    dockerRepo: options.dockerRepo,
-                    registryApiUrl: options.registryApiUrl
-                });
-
-                return k8sApi.createJob(config).then((result: any) => {
-                    res.status(200).send(result);
-                });
+                if (!configMap[id]) {
+                    res.status(404).send("No config for connector id");
+                    return undefined;
+                } else {
+                    return k8sApi
+                        .createJob(
+                            connectorConfig({
+                                id,
+                                dockerImage: configMap[id].type,
+                                dockerImageTag: options.imageTag,
+                                dockerRepo: options.dockerRepo,
+                                registryApiUrl: options.registryApiUrl
+                            })
+                        )
+                        .then((result: any) => {
+                            res.status(200).send(result);
+                        });
+                }
             })
             .catch((err: Error) => {
                 console.error(err);
@@ -112,7 +129,12 @@ export default function buildApiRouter(options: Options) {
             })
             .catch((err: Error) => {
                 console.error(err);
-                res.status(500).send("Error");
+                
+                if ((err as any).code === 404) {
+                    res.status(404).send("No running connector " + id);
+                } else {
+                    res.status(500).send("Error");
+                }
             });
     });
 
