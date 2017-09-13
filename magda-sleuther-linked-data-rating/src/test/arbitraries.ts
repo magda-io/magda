@@ -15,18 +15,20 @@ import * as _ from "lodash";
 /** Generates strings with the words of open licenses embedded in them */
 export const openLicenseArb = fuzzStringArbResult(jsc.elements(openLicenses));
 
+/**
+ *  Regex containing all possible format words with a lookahead to allow overlap,
+ *  as per https://stackoverflow.com/questions/20833295/how-can-i-match-overlapping-strings-with-regex
+ */
 const allFormatWords = new RegExp(
-    _(openFormats)
-        .values()
-        .flatten()
-        .flatMap((format: string) => format.split(" "))
-        .join("|"),
-    "i"
+    "(?=(" +
+        _(openFormats)
+            .values()
+            .flatten()
+            .flatMap((format: string) => format.split(" "))
+            .join("|") +
+        ")).",
+    "ig"
 );
-
-const fuzzArb = jsc.suchthat(stringArb, (string: string) => {
-    return !allFormatWords.test(string);
-});
 
 /**
  * Generates a format string that will match the desired star count.
@@ -37,10 +39,20 @@ export const formatArb = (starCount: number): jsc.Arbitrary<string> => {
     } else if (starCount === 1) {
         return jsc.elements(ZERO_STAR_LICENSES);
     } else {
-        return fuzzStringArbResult(
+        const innerArb = fuzzStringArbResult(
             jsc.elements(openFormats[starCount]),
-            fuzzArb
+            stringArb
         );
+
+        return jsc.suchthat(innerArb, string => {
+            let i = 0;
+
+            while (allFormatWords.exec(string) != null) {
+                i++;
+            }
+
+            return i <= 1;
+        });
     }
 };
 
