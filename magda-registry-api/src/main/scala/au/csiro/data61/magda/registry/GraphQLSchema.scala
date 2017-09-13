@@ -152,32 +152,32 @@ object GraphQLSchema {
 
   import AspectJsonProtocol._
 
-  val s = OptionType(IntType)
 
-  // val UserType = ObjectType("User", fields[Unit, JsObject](
-  //   Field("id", StringType, resolve =  _.value.fields("id").asInstanceOf[JsString].value),
-  //   Field("name", OptionType(StringType), resolve = _.value.fields.get("name").map(_.asInstanceOf[JsString].value))))
+  case class Record(id: String, name: String, aspectsList: List[String], aspects: JsObject) // might want to change aspects to a Map[String, JsValue sometime]
 
-  // val QueryType= ObjectType("Query", fields[Unit, Unit](
-  //   Field("someUsers", ListType(UserType), resolve = _ ⇒ {
-  //     // load users from some other place as JSON (JsValue in parsed form)
-  //     // here is just return some stub data
+  lazy val RecordType = ObjectType(
+    "Record",
+    () => fields[Unit, Record](
+      Field("id", StringType, resolve = _.value.id),
+      Field("name", StringType, resolve = _.value.name),
+      Field("aspectsList", ListType(StringType), resolve = _.value.aspectsList),
+      Field("aspects", Aspects, resolve = _.value.aspects)
+    )
+  )
 
-  //     List(
-  //       JsObject("id" → JsString("one"), "name" → JsString("Bob")),
-  //       JsObject("id" → JsString("two")))
-  //   })))
+  case class RecordsPageGraphQL(records: List[Record], nextPageToken: String)
 
-  // val schema = Schema(QueryType)
+  val RecordsPageGraphQLType = ObjectType("RecordsPage", fields[Unit,RecordsPageGraphQL](
+    Field("records", ListType(RecordType), resolve = _.value.records),
+    Field("nextPageToken", StringType, resolve = _.value.nextPageToken)
+  ))
 
-
-
-  lazy val Query = ObjectType(
-    "Query", () => fields[Unit, Unit](
-      Field("id", StringType, resolve = _ => FutureValue(Future.successful("random-id-2342"))),
-      Field("name", StringType, resolve = _ => Value("something")),
-      Field("aspectsList", ListType(StringType), resolve = _ => Value(List("aspect1", "aspect2", "aspect3"))),
-      Field("aspects", Aspects, resolve = _ => JsObject("source_link_status" -> JsObject("httpStatusCode" -> JsNumber(404.5), "errorDetails" -> JsString("Page not found"))))
+  val pageTokenArg = Argument("pageToken", OptionInputType(StringType))
+  val Query = ObjectType(
+    "Query", fields[GraphQLDataFetcher, Unit](
+      Field("allRecords", RecordsPageGraphQLType,
+      arguments = pageTokenArg :: Nil,
+      resolve = ctx => ctx.ctx.getRecordsPage(ctx.arg(pageTokenArg)))
     )
   )
 

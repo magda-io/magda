@@ -37,6 +37,7 @@ object GraphQLRoute {
       // query parsed successfully, time to execute it!
       case Success(queryAst) ⇒
         complete(Executor.execute(GraphQLSchema.MagdaSchema, queryAst,
+            userContext = new GraphQLDataFetcher,
             variables = vars,
             operationName = operation)
           .map(OK → _)
