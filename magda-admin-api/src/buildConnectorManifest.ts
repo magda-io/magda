@@ -4,6 +4,7 @@ export type Options = {
     dockerImageTag: string;
     dockerRepo: string;
     registryApiUrl: string;
+    pullPolicy: string;
 };
 
 export default function buildConnectorManifest({
@@ -11,7 +12,8 @@ export default function buildConnectorManifest({
     dockerImage,
     dockerImageTag,
     dockerRepo,
-    registryApiUrl
+    registryApiUrl,
+    pullPolicy
 }: Options) {
     const jobName = `connector-${id}`;
 
@@ -41,10 +43,7 @@ export default function buildConnectorManifest({
                                 "--registryUrl",
                                 registryApiUrl
                             ],
-                            imagePullPolicy:
-                                dockerImageTag === "latest"
-                                    ? "Always"
-                                    : "IfNotPresent",
+                            imagePullPolicy: pullPolicy,
                             resources: {
                                 requests: {
                                     cpu: "0m"
