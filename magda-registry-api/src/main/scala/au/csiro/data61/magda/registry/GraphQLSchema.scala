@@ -83,16 +83,29 @@ object GraphQLSchema {
 // Aspect =
 
 
+  def isRecordLink(link: JsObject): Boolean = {
+    link.getFields("href", "rel") match {
+      case Seq(JsString(href), JsString(rel)) => href == "/api/v0/registry/records/{$}" && rel == "item"
+      case _ => false
+    }
+  }
   object AspectJsonProtocol extends DefaultJsonProtocol {
-    def makeResolver(name: String, outputType: OutputType[_])(ctx: Context[Unit, JsObject]): Action[Unit, _] = {
+    def makeResolver(name: String, outputType: OutputType[_])(ctx: Context[GraphQLDataFetcher, JsObject]): Action[GraphQLDataFetcher, _] = {
       println(ctx.value)
-      ctx.value.fields.get(name).map(x => outputType match {
-        case StringType => x.convertTo[String]
-        case IntType => x.convertTo[Int]
-        case ListType(_) => x.convertTo[List[JsValue]]
-        case ObjectType(_,_,_,_,_,_) => x.asJsObject
-        case _ => None
-      })
+      // Logic below needs to be migrated to somewhere with access to schema,
+      //  then maybe just add another OutputType to the match (RecordType)
+      ctx.value.fields.get("links").map(x => {
+        if (isRecordLink(x.asInstanceOf[JsArray].elements(0).asJsObject))
+          ctx.ctx.getRecord(ctx.value)
+      }) orElse {
+        ctx.value.fields.get(name).map(x => outputType match {
+          case StringType => x.convertTo[String]
+          case IntType => x.convertTo[Int]
+          case ListType(_) => x.convertTo[List[JsValue]]
+          case ObjectType(_,_,_,_,_,_) => x.asJsObject
+          case _ => None
+        })
+      }
     }
 
     def constructField(name: String, outType: OutputType[Any]) = {
@@ -106,7 +119,7 @@ object GraphQLSchema {
         case JsonSchemaType.Array => schema.fields.get("items").map(_.asJsObject).flatMap(x => constructSchemaDefinition(path + "_items", x)).map(x => ListType(x))
         case JsonSchemaType.Object => schema.fields.get("properties").map(_.asJsObject.convertTo[Map[String, JsValue]].toList.flatMap({
           case (name, schema) => constructSchemaDefinition(path + "_" + name, schema.asJsObject).map(outType => constructField(name, outType))
-        })).map(x => ObjectType(path, fields[Unit, JsObject](x:_*)))
+        })).map(x => ObjectType(path, fields[GraphQLDataFetcher, JsObject](x:_*)))
         case _ => None
 
       })
@@ -157,7 +170,7 @@ object GraphQLSchema {
 
   lazy val RecordType = ObjectType(
     "Record",
-    () => fields[Unit, Record](
+    () => fields[GraphQLDataFetcher, Record](
       Field("id", StringType, resolve = _.value.id),
       Field("name", StringType, resolve = _.value.name),
       Field("aspectsList", ListType(StringType), resolve = _.value.aspectsList),
@@ -165,9 +178,11 @@ object GraphQLSchema {
     )
   )
 
+  Projector
+
   case class RecordsPageGraphQL(records: List[Record], nextPageToken: String)
 
-  val RecordsPageGraphQLType = ObjectType("RecordsPage", fields[Unit,RecordsPageGraphQL](
+  val RecordsPageGraphQLType = ObjectType("RecordsPage", fields[GraphQLDataFetcher,RecordsPageGraphQL](
     Field("records", ListType(RecordType), resolve = _.value.records),
     Field("nextPageToken", StringType, resolve = _.value.nextPageToken)
   ))
@@ -186,7 +201,7 @@ object GraphQLSchema {
   })
   val Aspects = ObjectType(
     "Aspects",
-    fields[Unit, JsObject](aspectFields:_*)
+    fields[GraphQLDataFetcher, JsObject](aspectFields:_*)
   )
 
   val MagdaSchema = Schema(Query)
