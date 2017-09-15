@@ -94,10 +94,10 @@ object GraphQLSchema {
       println(ctx.value)
       // Logic below needs to be migrated to somewhere with access to schema,
       //  then maybe just add another OutputType to the match (RecordType)
-      ctx.value.fields.get("links").map(x => {
-        if (isRecordLink(x.asInstanceOf[JsArray].elements(0).asJsObject))
-          ctx.ctx.getRecord(ctx.value)
-      }) orElse {
+//      ctx.value.fields.get("links").map(x => {
+//        if (isRecordLink(x.asInstanceOf[JsArray].elements(0).asJsObject))
+//          ctx.ctx.getRecord(ctx.value)
+//      }) orElse {
         ctx.value.fields.get(name).map(x => outputType match {
           case StringType => x.convertTo[String]
           case IntType => x.convertTo[Int]
@@ -105,7 +105,7 @@ object GraphQLSchema {
           case ObjectType(_,_,_,_,_,_) => x.asJsObject
           case _ => None
         })
-      }
+//      }
     }
 
     def constructField(name: String, outType: OutputType[Any]) = {
@@ -124,41 +124,6 @@ object GraphQLSchema {
 
       })
     }
-
-    // implicit object SchemaJsonFormat extends RootJsonFormat[SchemaClass] {
-    //   def read(value: JsObject) = {
-    //     constructSchemaDefinition("root", value)
-    //   }
-    // }
-    // def constructField(name: String, schema: JsObject): Option[Field[_,_]] = {
-    //   schema.fields.get("type").map(_.asInstanceOf[JsString].value).map({
-    //     case "string" => Field(name, OptionType(StringType), resolve = _.value.fields.get(name).map(_.asInstanceOf[JsString].value))
-    //     case "integer" => Field(name, OptionType(IntType), resolve = _.value.fields.get(name).map(_.convertTo[Int]))
-    //     case "array" => Field(name, OptionType(ArrayT))
-    //   })
-    // }
-    // implicit object ObjectTypeJsonFormat extends RootJsonFormat[OutputType] {
-    //   def read(value: JsValue) = {
-    //     value
-    //   }
-    // }
-    // implicit object PropTypeJsonFormat extends RootJsonFormat[PropType] {
-    //   def write(obj: PropType) = obj.toString.toLowerCase.toJson
-    //   def read(value: JsValue) = {
-    //     PropType.withName(value.convertTo[String].toUpperCase)
-    //   }
-    // }
-    // implicit object SchemaJsonFormat extends RootJsonFormat[SchemaClass] {
-    //   def write(obj: SchemaClass) = obj.toJson
-    //   def read(value: JsValue) = {
-    //     val propTypesMap = for {
-    //       properties <- value.asJsObject.fields.get("properties")
-    //       asMap <- Some(properties.convertTo[Map[String, JsValue]])
-    //       asPropTypesMap <- Some(asMap mapValues { _.asJsObject.fields.get("type") map {x => println(x); x.convertTo[PropType]} } collect { case (key, Some(value)) => (key, value)})
-    //     } yield asPropTypesMap
-    //     SchemaClass(propTypesMap)
-    //   }
-    // }
     // implicit val aspectFormat = jsonFormat(Aspect, "name", "schema")
     // implicit val aspectsFormat = jsonFormat(Aspects, "aspects")
   }
@@ -174,11 +139,9 @@ object GraphQLSchema {
       Field("id", StringType, resolve = _.value.id),
       Field("name", StringType, resolve = _.value.name),
       Field("aspectsList", ListType(StringType), resolve = _.value.aspectsList),
-      Field("aspects", Aspects, resolve = _.value.aspects)
+      Field("aspects", Aspects, resolve = _.value.aspects, tags = ProjectionExclude :: Nil)
     )
   )
-
-  Projector
 
   case class RecordsPageGraphQL(records: List[Record], nextPageToken: String)
 
@@ -187,12 +150,17 @@ object GraphQLSchema {
     Field("nextPageToken", StringType, resolve = _.value.nextPageToken)
   ))
 
-  val pageTokenArg = Argument("pageToken", OptionInputType(StringType))
+  val PageTokenArg = Argument("pageToken", OptionInputType(StringType))
+  val RequiredAspectsArg = Argument("requiredAspects", ListInputType(StringType))
   val Query = ObjectType(
     "Query", fields[GraphQLDataFetcher, Unit](
       Field("allRecords", RecordsPageGraphQLType,
-      arguments = pageTokenArg :: Nil,
-      resolve = ctx => ctx.ctx.getRecordsPage(ctx.arg(pageTokenArg)))
+        arguments = PageTokenArg :: RequiredAspectsArg :: Nil,
+        resolve = Projector((ctx,prj) => {
+          prj.foreach { x => println(x.asVector) }
+          ctx.ctx.getRecordsPage(ctx.arg(PageTokenArg))
+        })
+      )
     )
   )
 
