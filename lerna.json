@@ -31,8 +31,14 @@
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.29-SNAPSHOT",
-  "hoist": ["tsmonad", "urijs", "@types/urijs", "express", "@types/express"],
+  "version": "0.0.29",
+  "hoist": [
+    "tsmonad",
+    "urijs",
+    "@types/urijs",
+    "express",
+    "@types/express"
+  ],
   "concurrency": "1",
   "commands": {
     "docker-build-prod": {
