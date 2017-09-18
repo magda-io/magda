@@ -2,18 +2,17 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router";
 import { bindActionCreators } from "redux";
+import {fetchConnectorsIfNeeded} from '../../actions/connectorsActions';
 import Login from "../Account/Login";
 
 class Connectors extends React.Component {
+  componentWillMount(){
+    this.props.fetchConnectorsIfNeeded();
+  }
 
   renderByUser(user){
     if(!user){
-      return <Login
-        signInError={
-          this.props.location.state && this.props.location.state.signInError
-        }
-        providers={this.props.providers}
-      />
+      return <div> <Link to="/account">Sign in</Link> as admin to veiw a list of connectors available</div>
     }
     else if(!user.isAdmin){
       return <div>unauthorised</div>
@@ -23,24 +22,25 @@ class Connectors extends React.Component {
   }
 
   render() {
+    debugger
     // return this.renderByUser(this.props.user);
-    return this.renderByUser(this.props.user)
+    return <div className='container'>{this.renderByUser(this.props.user)}</div>
   }
 }
 
 function mapStateToProps(state) {
-  let { userManagement: { user, providers, providersError } } = state;
+  let { userManagement: { user }} = state;
+  let { connectors: { connectors }} = state;
 
   return {
     user,
-    providers,
-    providersError
+    connectors
   };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<*>) => {
   return bindActionCreators(
-    {},
+    {fetchConnectorsIfNeeded: fetchConnectorsIfNeeded},
     dispatch
   );
 };
