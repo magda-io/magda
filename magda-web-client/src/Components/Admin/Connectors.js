@@ -15,14 +15,16 @@ class Connectors extends React.Component {
       return <div> <Link to="/account">Sign in</Link> as admin to veiw a list of connectors available</div>
     }
     else if(!user.isAdmin){
-      return <div>unauthorised</div>
+      return <div> not authorised </div>
     }
-    return <div className='connectors'>connectors</div>
+    return <table className='table'><tbody>{this.props.connectors.map(c=>this.renderConnector(c))}</tbody></table>
+  }
 
+  renderConnector(connector){
+    return <tr key={connector.id}><td>{connector.name}</td><td>{connector.schedule}</td><td>{connector.sourceUrl} </td></tr>
   }
 
   render() {
-    debugger
     // return this.renderByUser(this.props.user);
     return <div className='container'>{this.renderByUser(this.props.user)}</div>
   }

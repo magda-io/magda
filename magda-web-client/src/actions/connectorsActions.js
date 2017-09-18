@@ -22,7 +22,7 @@ export function requestConnectors() {
   }
 }
 
-export function receiveConnectors(json: RawConnectors) {
+export function receiveConnectors(json: ConnectorProps ) {
   return {
     type: actionTypes.RECEIVE_CONNECTORS,
     json,
@@ -36,15 +36,13 @@ export function requestConnectorsError(error: number) {
   }
 }
 
-
-
 export function updateConnector(){
   return {
     type: actionTypes.UPDATE_CONNECTOR
   }
 }
 
-export function updateConnectorSuccess(json: ConnectorProps){
+export function updateConnectorSuccess(json){
   return {
     type: actionTypes.UPDATE_CONNECTOR_SUCCESS,
     json
@@ -59,7 +57,7 @@ export function updateConnectorFailure(){
 
 
 
-export function updateConnectorStatus(connector: ConnectorProps){
+export function updateConnectorStatus(connector){
   return (dispatch: Dispatch) => {
     dispatch(updateConnector());
     const url = `${config.registryApiUrl}records/${connector.id}/aspects/connector`;
@@ -80,7 +78,7 @@ export function updateConnectorStatus(connector: ConnectorProps){
         }
         return dispatch(updateConnectorFailure(response.status))
       })
-      .then((result:ConnectorProps)=>{
+      .then((result)=>{
         if(result.error){
           return false;
         }
@@ -92,17 +90,23 @@ export function updateConnectorStatus(connector: ConnectorProps){
 export function fetchConnectorsFromRegistry(start: number):Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestConnectors())
-    let url : string = `${config.registryApiUrl}admin/connectors/`;
+    let url : string = `${config.adminApiUrl}connectors/`;
     console.log(url);
-    return fetch(url)
+    return fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      credentials: "include"
+    })
     .then(response => {
         if (response.status >= 400) {
             return dispatch(requestConnectorsError(response.status));
         }
         return response.json();
     })
-    .then((json: Object) => dispatch(receiveConnectors(json))
-    )
+    .then((json: Object) => {if(!json.error){dispatch(receiveConnectors(json))}
+    })
   }
 }
 
