@@ -10,6 +10,7 @@ export interface Options {
     imageTag: string;
     kubernetesApiType: K8SApiType;
     registryApiUrl: string;
+    pullPolicy: string;
 }
 
 export default function buildApiRouter(options: Options) {
@@ -105,7 +106,8 @@ export default function buildApiRouter(options: Options) {
                                 dockerImage: configMap[id].type,
                                 dockerImageTag: options.imageTag,
                                 dockerRepo: options.dockerRepo,
-                                registryApiUrl: options.registryApiUrl
+                                registryApiUrl: options.registryApiUrl,
+                                pullPolicy: options.pullPolicy
                             })
                         )
                         .then((result: any) => {
@@ -129,7 +131,7 @@ export default function buildApiRouter(options: Options) {
             })
             .catch((err: Error) => {
                 console.error(err);
-                
+
                 if ((err as any).code === 404) {
                     res.status(404).send("No running connector " + id);
                 } else {

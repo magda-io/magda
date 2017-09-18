@@ -37,7 +37,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-discussions-api",
-      "include": "node_modules dist config Dockerfile"
+      "include": "node_modules dist Dockerfile"
     }
   }
 }
