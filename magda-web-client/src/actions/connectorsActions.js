@@ -57,15 +57,13 @@ export function updateConnectorFailure(){
 
 
 
-export function updateConnectorStatus(connector){
+export function updateConnectorStatus(connectorId: string, action: string){
   return (dispatch: Dispatch) => {
     dispatch(updateConnector());
-    const url = `${config.registryApiUrl}records/${connector.id}/aspects/connector`;
-    const body = [{ "op": "replace", "path": "/status", "value": connector.status === 'open' ? 'closed' : 'open' }]
+    const url = `${config.adminApiUrl}connectors/${connectorId}/${action}`;
       return fetch(url,
       {
-        method: 'PATCH',
-        body: JSON.stringify(body),
+        method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -75,6 +73,7 @@ export function updateConnectorStatus(connector){
       .then(response => {
         if(response.status === 200){
           return response.json()
+
         }
         return dispatch(updateConnectorFailure(response.status))
       })
@@ -82,12 +81,13 @@ export function updateConnectorStatus(connector){
         if(result.error){
           return false;
         }
+        dispatch(fetchConnectorsIfNeeded())
         dispatch(updateConnectorSuccess(result))
       })
   }
 }
 
-export function fetchConnectorsFromRegistry(start: number):Object{
+export function fetchConnectorsFromRegistry():Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestConnectors())
     let url : string = `${config.adminApiUrl}connectors/`;
@@ -111,10 +111,10 @@ export function fetchConnectorsFromRegistry(start: number):Object{
 }
 
 
-export function fetchConnectorsIfNeeded(start: number){
+export function fetchConnectorsIfNeeded(){
   return (dispatch: Dispatch, getState: GetState)=>{
     if(!getState().connectors.isFetching){
-          return dispatch(fetchConnectorsFromRegistry(start))
+          return dispatch(fetchConnectorsFromRegistry())
       } else{
           return Promise.resolve();
       }
