@@ -44,13 +44,7 @@ fse.emptyDirSync(dockerContextDir);
 fse.ensureDirSync(componentDestDir);
 fse.ensureSymlinkSync(path.resolve(componentSrcDir, '..', 'node_modules'), path.resolve(dockerContextDir, 'node_modules'), 'junction');
 
-// Get the list of production packages.
-const productionPackageResult = JSON.parse(childProcess.spawnSync(
-    'npm', ['list', '--prod', '--json'],
-    { encoding: 'utf8', cwd: componentSrcDir, shell: true }).stdout);
-const productionPackages = getPackageList(productionPackageResult.dependencies, path.join(componentSrcDir, 'node_modules'), []);
-
-preparePackage(componentSrcDir, componentDestDir, productionPackages);
+preparePackage(componentSrcDir, componentDestDir);
 
 const tar = process.platform === 'darwin' ? 'gtar' : 'tar';
 
@@ -133,7 +127,7 @@ if (argv.build) {
     });
 }
 
-function preparePackage(packageDir, destDir, productionPackages) {
+function preparePackage(packageDir, destDir) {
     const packageJson = require(path.join(packageDir, 'package.json'));
     const dockerIncludesFromPackageJson = packageJson.config && packageJson.config.docker && packageJson.config.docker.include;
 
@@ -156,6 +150,13 @@ function preparePackage(packageDir, destDir, productionPackages) {
 
         if (include === 'node_modules') {
             fse.ensureDirSync(dest);
+
+            // Get the list of production packages required by this package.
+            const productionPackageResult = JSON.parse(childProcess.spawnSync(
+                'npm', ['list', '--prod', '--json'],
+                { encoding: 'utf8', cwd: packageDir, shell: true }).stdout);
+            const productionPackages = getPackageList(productionPackageResult.dependencies, path.join(packageDir, 'node_modules'), []);
+
             prepareNodeModules(src, dest, productionPackages);
             return;
         }
@@ -196,7 +197,7 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
         if (stat.isSymbolicLink()) {
             // This is a link to another package, presumably created by Lerna.
             fse.ensureDirSync(dest);
-            preparePackage(src, dest, productionPackages);
+            preparePackage(src, dest);
             return;
         }
 
