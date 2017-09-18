@@ -21,7 +21,7 @@ class Connectors extends React.Component {
   }
 
   renderConnector(connector){
-    return <tr key={connector.id}><td>{connector.name}</td><td>{connector.schedule}</td><td>{connector.sourceUrl} </td></tr>
+    return <tr key={connector.id}><td>{connector.name}</td><td>{connector.schedule}</td><td>{connector.sourceUrl}</td><td><button className='btn btn-success' type='button'>Start</button></td><td><button className='btn btn-danger'>Delete</button></td></tr>
   }
 
   render() {
