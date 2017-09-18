@@ -36,6 +36,11 @@ const argv = yargs
         type: "string",
         choices: ["minikube", "cluster"],
         default: "minikube"
+    })
+    .option("pullPolicy", {
+        describe: "K8S pull policy for created jobs",
+        type: "string",
+        default: "Always"
     }).argv;
 
 // Create a new Express application.
@@ -49,7 +54,8 @@ app.use(
         authApiUrl: argv.authApiUrl,
         imageTag: argv.imageTag,
         kubernetesApiType: argv.kubernetesApiType,
-        registryApiUrl: argv.registryApiUrl
+        registryApiUrl: argv.registryApiUrl,
+        pullPolicy: argv.pullPolicy
     })
 );
 

@@ -22,7 +22,7 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 
-  var lastCrawl: Option[Future[Unit]] = None
+  var lastCrawl: Option[Future[Unit]] = Some(crawler.crawl(indexer))
 
   def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
 

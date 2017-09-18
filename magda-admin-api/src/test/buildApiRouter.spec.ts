@@ -389,68 +389,47 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
     describe("POST /connectors/:id/start", () => {
         const name = "test";
 
-        describe("should create a new job with values in the config map", () => {
-            it("for imageTag latest", () => {
-                return doTest(
-                    "latest",
-                    body =>
-                        body.spec.template.spec.containers[0]
-                            .imagePullPolicy === "Always"
+        it("should create a new job with values in the config map", () => {
+            const tag = "latest";
+            const app = buildExpressApp(tag);
+            const connectorState = helpers.getStateForStatus("active", name);
+            helpers.mockJobStatus(k8sApiScope, 404, name);
+            helpers.mockConnectorConfig(k8sApiScope, 200, connectorState);
+            helpers.mockCreateJob(k8sApiScope, 200, (body: any) => {
+                const metadataMatch = (metadata: any) =>
+                    metadata.name === `connector-${name}` &&
+                    metadata.magdaSleuther === true;
+
+                const jobMetadataMatches = metadataMatch(body.metadata);
+                const podMetadataMatches = metadataMatch(
+                    body.spec.template.metadata
+                );
+
+                const container = body.spec.template.spec.containers[0];
+                const imageMatches =
+                    container.image === `dockerRepo/type:${tag}`;
+                const commandMatches =
+                    container.command[5] === "http://registry.example.com";
+                const pullPolicyMatches =
+                    container.imagePullPolicy === "pullPolicy";
+
+                const configMountMatches =
+                    body.spec.template.spec.volumes[0].configMap.items[0]
+                        .key === `${name}.json`;
+
+                return (
+                    jobMetadataMatches &&
+                    podMetadataMatches &&
+                    imageMatches &&
+                    commandMatches &&
+                    pullPolicyMatches &&
+                    configMountMatches
                 );
             });
 
-            it("for imageTag 1.0.0", () => {
-                return doTest(
-                    "1.0.0",
-                    body =>
-                        body.spec.template.spec.containers[0]
-                            .imagePullPolicy === "IfNotPresent"
-                );
+            return helpers.startConnector(app, name, true).then(res => {
+                expect(res.status).to.equal(200);
             });
-
-            function doTest(tag: string, customMatch: (body: any) => boolean) {
-                const app = buildExpressApp(tag);
-                const connectorState = helpers.getStateForStatus(
-                    "active",
-                    name
-                );
-                helpers.mockJobStatus(k8sApiScope, 404, name);
-                helpers.mockConnectorConfig(k8sApiScope, 200, connectorState);
-                helpers.mockCreateJob(k8sApiScope, 200, (body: any) => {
-                    const metadataMatch = (metadata: any) =>
-                        metadata.name === `connector-${name}` &&
-                        metadata.magdaSleuther === true;
-
-                    const jobMetadataMatches = metadataMatch(body.metadata);
-                    const podMetadataMatches = metadataMatch(
-                        body.spec.template.metadata
-                    );
-
-                    const container = body.spec.template.spec.containers[0];
-                    const imageMatches =
-                        container.image === `dockerRepo/type:${tag}`;
-                    const commandMatches =
-                        container.command[5] === "http://registry.example.com";
-                    const customMatches = customMatch(body);
-
-                    const configMountMatches =
-                        body.spec.template.spec.volumes[0].configMap.items[0]
-                            .key === `${name}.json`;
-
-                    return (
-                        jobMetadataMatches &&
-                        podMetadataMatches &&
-                        imageMatches &&
-                        commandMatches &&
-                        customMatches &&
-                        configMountMatches
-                    );
-                });
-
-                return helpers.startConnector(app, name, true).then(res => {
-                    expect(res.status).to.equal(200);
-                });
-            }
         });
 
         it("should delete an existing job if one exists", () => {
@@ -654,7 +633,8 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             authApiUrl: "http://admin.example.com",
             imageTag,
             kubernetesApiType: "test",
-            registryApiUrl: "http://registry.example.com"
+            registryApiUrl: "http://registry.example.com",
+            pullPolicy: "pullPolicy"
         });
 
         const app = express();
