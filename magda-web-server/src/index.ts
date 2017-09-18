@@ -19,7 +19,7 @@ const argv = yargs
     .option('baseUrl', {
         describe: 'The base URL of the MAGDA Gateway.',
         type: 'string',
-        default: 'http://localhost:6100/'
+        default: '/'
     })
     .option('apiBaseUrl', {
         describe: 'The base URL of the MAGDA API Gateway.  If not specified, the URL is built from the baseUrl.',

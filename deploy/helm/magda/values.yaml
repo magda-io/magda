@@ -5,7 +5,7 @@ global:
     maxUnavailable: 0
   exposeNodePorts: false
   image:
-    repository: "data61/"
+    repository: "data61"
     tag: "0.0.28"
     pullPolicy: Always
 tags:

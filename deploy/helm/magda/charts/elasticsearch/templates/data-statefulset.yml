@@ -80,8 +80,6 @@ spec:
         volumeMounts:
         - name: storage
           mountPath: /data
-  updateStrategy:
-    type: RollingUpdate
   volumeClaimTemplates:
   - metadata:
       name: storage
