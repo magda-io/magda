@@ -2,7 +2,8 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router";
 import { bindActionCreators } from "redux";
-import {fetchConnectorsIfNeeded, updateConnectorStatus} from '../../actions/connectorsActions';
+import {fetchConnectorsIfNeeded, updateConnectorStatus, deleteConnector} from '../../actions/connectorsActions';
+import ProgressBar from '../../UI/ProgressBar';
 import Login from "../Account/Login";
 
 class Connectors extends React.Component {
@@ -25,8 +26,8 @@ class Connectors extends React.Component {
     this.props.updateConnectorStatus(connector.id, action)
   }
 
-  deleteConnector(id){
-    console.log(id);
+  deleteConnector(connector){
+    this.props.deleteConnector(connector.id)
   }
 
   renderConnector(connector){
@@ -35,30 +36,35 @@ class Connectors extends React.Component {
     <td>{connector.schedule}</td>
     <td>{connector.sourceUrl}</td>
     <td><button className={`btn ${!connector.job ? 'btn-success': 'btn-warning'}`} type='button' onClick={this.toggleConnector.bind(this, connector)}>{!connector.job ? 'Start' : 'Stop'}</button></td>
-    <td><button className='btn btn-danger' onClick={this.deleteConnector.bind(this, connector.id)}>Delete</button></td>
+    <td><button className='btn btn-danger' onClick={this.deleteConnector.bind(this, connector)}>Delete</button></td>
     </tr>)
   }
 
   render() {
-    // return this.renderByUser(this.props.user);
-    return <div className='container'>{this.renderByUser(this.props.user)}</div>
+    debugger
+    return (<div>
+            {this.props.isFetching && <ProgressBar/>}
+            <div className='container'>{this.renderByUser(this.props.user)}</div>
+          </div>)
   }
 }
 
 function mapStateToProps(state) {
   let { userManagement: { user }} = state;
-  let { connectors: { connectors }} = state;
+  let { connectors: { connectors, isFetching }} = state;
 
   return {
     user,
-    connectors
+    connectors,
+    isFetching
   };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<*>) => {
   return bindActionCreators(
     {fetchConnectorsIfNeeded,
-    updateConnectorStatus},
+    updateConnectorStatus,
+    deleteConnector},
     dispatch
   );
 };

@@ -34,10 +34,10 @@ const connectors = (state: ConnectorsResult = initialData, action: ConnectorActi
 
     case 'UPDATE_CONNECTOR':
       return Object.assign({}, state, {
+        isFetching: true,
         error: null,
       })
     case 'UPDATE_CONNECTOR_SUCCESS':
-      const newConnector = Object.assign({}, state.connector, action.json)
       return Object.assign({}, state, {
         isFetching: false,
         error: null,

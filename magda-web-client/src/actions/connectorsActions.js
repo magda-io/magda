@@ -81,8 +81,41 @@ export function updateConnectorStatus(connectorId: string, action: string){
         if(result.error){
           return false;
         }
-        dispatch(fetchConnectorsIfNeeded())
         dispatch(updateConnectorSuccess(result))
+        dispatch(fetchConnectorsIfNeeded())
+
+      })
+  }
+}
+
+
+export function deleteConnector(connectorId: string){
+  return (dispatch: Dispatch) => {
+    dispatch(updateConnector());
+    const url = `${config.adminApiUrl}connectors/${connectorId}/`;
+      return fetch(url,
+      {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: "include"
+      })
+      .then(response => {
+        if(response.status === 200){
+          return response.json()
+
+        }
+        return dispatch(updateConnectorFailure(response.status))
+      })
+      .then((result)=>{
+        if(result.error){
+          return false;
+        }
+        dispatch(updateConnectorSuccess(result))
+        dispatch(fetchConnectorsIfNeeded())
+
       })
   }
 }
