@@ -20,8 +20,9 @@ class Connectors extends React.Component {
     return <table className='table'><tbody>{this.props.connectors.map(c=>this.renderConnector(c))}</tbody></table>
   }
 
-  startConnector(id){
-    this.props.updateConnectorStatus(id, 'start')
+  toggleConnector(connector){
+    const action = connector.job ? 'stop' : 'start';
+    this.props.updateConnectorStatus(connector.id, action)
   }
 
   deleteConnector(id){
@@ -33,7 +34,7 @@ class Connectors extends React.Component {
     <td>{connector.name}</td>
     <td>{connector.schedule}</td>
     <td>{connector.sourceUrl}</td>
-    <td><button className={`btn ${!connector.job ? 'btn-success': 'btn-warning'}`} type='button' onClick={this.startConnector.bind(this, connector.id)}>{!connector.job ? 'Start' : 'Stop'}</button></td>
+    <td><button className={`btn ${!connector.job ? 'btn-success': 'btn-warning'}`} type='button' onClick={this.toggleConnector.bind(this, connector)}>{!connector.job ? 'Start' : 'Stop'}</button></td>
     <td><button className='btn btn-danger' onClick={this.deleteConnector.bind(this, connector.id)}>Delete</button></td>
     </tr>)
   }
