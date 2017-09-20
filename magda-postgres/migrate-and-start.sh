@@ -14,4 +14,48 @@ for d in /flyway/sql/*; do
 done
 
 pg_ctl -D "$PGDATA" -m fast -w stop
-exec "$@"
+
+local BACKUP_COMMAND_LINE_ARGS=""
+local MEMORY_COMMAND_LINE_ARGS=""
+
+#https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
+if [ -z "${MEMORY_LIMIT}" ]; then
+    local SHARED_BUFFERS=$(expr $MEMORY_LIMIT / 4)
+    local EFFECTIVE_CACHE_SIZE=$(expr $MEMORY_LIMIT / 2)
+    MEMORY_COMMAND_LINE_ARGS="\
+        -c shared_buffers=${SHARED_BUFFERS}KB \
+        -c effective_cache_size=${EFFECTIVE_CACHE_SIZE}KB"
+fi
+
+if [ -z "${BACKUP}" ]; then
+    #https://github.com/wal-e/wal-e/issues/200
+    local FIRST_RUN=true
+    periodically_backup () {
+        while true; do
+            sleep 45
+
+            local CURRENT_TIME=$(date +"%H:%M")
+            if [[ "$CURRENT_TIME" == "$BACKUP_EXECUTION_TIME" ]] || [$FIRST_RUN = true]; then
+                wal-e backup-push "$DATA_DIRECTORY"
+                wal-e delete --confirm retain 30
+                FIRST_RUN=false
+            fi
+        done
+    }
+
+    periodically_backup &
+
+fi
+
+if [[ "${BACKUP}" == "WAL" ]]; then
+    BACKUP_COMMAND_LINE_ARGS="-c wal_level = replica \
+        -c archive_mode = on \
+        -c archive_command = 'wal-e wal-push %p' \
+        -c archive_timeout = 60 \
+        -c restore_command 'wal-e wal-fetch %f %p'"
+fi
+
+
+exec "$@ \
+    $MEMORY_COMMAND_LINE_ARGS \
+    $BACKUP_COMMAND_LINE_ARGS"

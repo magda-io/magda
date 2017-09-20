@@ -6,6 +6,10 @@ RUN chown -R postgres /flyway
 COPY component/flyway-commandline-4.2.0-linux-x64.tar.gz /flyway
 COPY component/migrate-and-start.sh /usr/local/bin/
 
+# Install wall-e
+RUN sudo apt-get install python-pip && \
+    sudo pip install wal-e aws azure google swift
+
 # docker-entrypoint.sh (from the parent image) frustratingly only creates the database
 # if the "next" command it runs is "postgres".  But we want to do a migration after
 # the normal startup, so we can't simply launch postgres.  So here we monkey patch
