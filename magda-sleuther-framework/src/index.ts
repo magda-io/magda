@@ -235,12 +235,15 @@ export default async function sleuther(
               ? previous.nextPageToken
               : "<first page>")
         );
+
+        // TODO: Retry with reduced limit if entity size too large error.
         return registry
           .getRecords<Record>(
             options.aspects,
             options.optionalAspects,
             previous && previous.nextPageToken,
-            true
+            true,
+            50
           )
           .then(unionToThrowable)
           .then(page => {
