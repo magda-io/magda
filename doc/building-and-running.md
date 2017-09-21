@@ -163,11 +163,10 @@ kubectl create configmap connector-config --from-file deploy/connector-config
 deploy/helm/create-auth-secrets.sh
 ```
 
-```
 To install _everything_:
 
 ```bash
-helm install --name magda deploy/helm/magda
+helm install --name magda deploy/helm/magda -f deploy/helm/minikube.dev.yml
 ```
 
 If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the `all` tag to `false` and the tag for the pod you want to `true`, e.g.
