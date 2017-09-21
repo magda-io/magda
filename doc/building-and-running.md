@@ -166,13 +166,13 @@ deploy/helm/create-auth-secrets.sh
 To install _everything_:
 
 ```bash
-helm install --name magda deploy/helm/magda -f deploy/helm/minikube.dev.yml
+helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml
 ```
 
 If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the `all` tag to `false` and the tag for the pod you want to `true`, e.g.
 
 ```bash
-helm install --name combined-db --set tags.all=false --set tags.combined-db=true deploy/helm/magda
+helm install --name combined-db --set tags.all=false --set tags.combined-db=true deploy/helm/magda -f deploy/helm/minikube-dev.yml
 ```
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30000.  The IP address may be different on your system.  Get the real IP address by running:
