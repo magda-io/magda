@@ -65,8 +65,17 @@ Helm is the package manager for Kubernetes - we use it to make it so that you ca
 This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
 
 ```bash
+helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 helm install --name docker-registry incubator/docker-registry
 helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
+```
+
+### Crawl Data
+```bash
+cd depoy
+npm run create-connector-configmap
+npm run generate-connector-jobs-local
+kubectl create -f kubernetes/generated/local/
 ```
 
 ## Running on your local machine
