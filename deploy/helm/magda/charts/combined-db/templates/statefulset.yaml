@@ -25,9 +25,10 @@ spec:
         env:
         - name: PGDATA
           value: /var/pv/data
+        {{- template "magda.postgres-env" . }}
         volumeMounts:
-        - mountPath: /var/pv
-          name: combined-db
+        - name: combined-db
+          mountPath: /var/pv
   volumeClaimTemplates:
   - metadata:
       name: combined-db
