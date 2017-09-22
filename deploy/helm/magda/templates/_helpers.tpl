@@ -58,4 +58,6 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
           value: {{ .Values.waleBackup.swiftAuthVersion }}
         - name: SWIFT_ENDPOINT_TYPE
           value: {{ .Values.waleBackup.swiftEndpointType }}
+        - name: BACKUP_EXECUTION_TIME
+          value: {{ .Values.waleBackup.executionTime }}
 {{- end }}

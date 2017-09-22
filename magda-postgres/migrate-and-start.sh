@@ -11,25 +11,6 @@ if [[ ! -z $MEMORY_LIMIT ]]; then
         "-c" "effective_cache_size=${EFFECTIVE_CACHE_SIZE}KB" )
 fi
 
-if [[ ! -z "${BACKUP}" ]]; then
-    #https://github.com/wal-e/wal-e/issues/200
-    FIRST_RUN=true
-    periodically_backup () {
-        while true; do
-            sleep 45
-
-            local CURRENT_TIME=$(date +"%H:%M")
-            if [ "$CURRENT_TIME" == "$BACKUP_EXECUTION_TIME" ] || [ $FIRST_RUN == true ]; then
-                /usr/local/bin/wal-e backup-push "$PGDATA"
-                /usr/local/bin/wal-e delete --confirm retain 30
-                FIRST_RUN=false
-            fi
-        done
-    }
-
-    periodically_backup &
-fi
-
 if [[ "${BACKUP}" == "WAL" ]]; then
     #TODO: This needs to have no apostrophes for the postgres thing and still have apostrophes for the pgctl thing
     BACKUP_COMMAND_LINE_ARGS=(\
@@ -48,7 +29,7 @@ JOINED_BACKUP_COMMAND_LINE_ARGS=$(join_by " " "${BACKUP_COMMAND_LINE_ARGS[@]}")
 cd /flyway
 tar xzf flyway-commandline-4.2.0-linux-x64.tar.gz
 cd flyway-4.2.0
-PGARGS="-c listen_addresses='localhost' -c max_prepared_transactions=0 $JOINED_MEMORY_COMMAND_LINE_ARGS $JOINED_BACKUP_COMMAND_LINE_ARGS"
+PGARGS="-c listen_addresses='*' -c max_prepared_transactions=0 $JOINED_MEMORY_COMMAND_LINE_ARGS $JOINED_BACKUP_COMMAND_LINE_ARGS"
 PGUSER="${PGUSER:-postgres}" pg_ctl -D "$PGDATA" -o "$PGARGS" -w start
 
 for d in /flyway/sql/*; do
@@ -61,6 +42,25 @@ for d in /flyway/sql/*; do
 done
 
 pg_ctl -D "$PGDATA" -m fast -w stop
+
+if [[ ! -z "${BACKUP}" ]]; then
+    #https://github.com/wal-e/wal-e/issues/200
+    FIRST_RUN=true
+    periodically_backup () {
+        while true; do
+            sleep 45
+
+            local CURRENT_TIME=$(date +"%H:%M")
+            if [ "$CURRENT_TIME" == "$BACKUP_EXECUTION_TIME" ] || [ $FIRST_RUN == true ]; then
+                /usr/local/bin/wal-e backup-push "$PGDATA"
+                /usr/local/bin/wal-e delete --confirm retain 30
+                FIRST_RUN=false
+            fi
+        done
+    }
+
+    periodically_backup &
+fi
 
 # Why this elaborate way of running the command? It lets us use the same string of PGARGS for running pg_ctl (above) as it does for postgres (below).
 # Without it we get all these issues with exec expecting an array of strings vs pg_ctl -o expecting one big string.
