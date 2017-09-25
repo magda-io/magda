@@ -7,6 +7,11 @@ import Login from "../Account/Login";
 import { Link } from "react-router";
 
 class Connectors extends React.Component {
+  constructor(props) {
+   super(props);
+   this.state = {newConnectorFormIsOpen: true};
+ }
+
   componentWillMount(){
     this.props.fetchConnectorsIfNeeded();
   }
@@ -18,7 +23,31 @@ class Connectors extends React.Component {
     else if(!user.isAdmin){
       return <div> not authorised </div>
     }
-    return <table className='table'><tbody>{this.props.connectors.map(c=>this.renderConnector(c))}</tbody></table>
+    return (<div>
+              <table className='table'><tbody>{this.props.connectors.map(c=>this.renderConnector(c))}</tbody></table>
+              <button className='btn btn-primary' onClick={this.openConnectorForm}>Create a new connector</button>
+              {this.state.newConnectorFormIsOpen && this.renderConnectorForm()}
+            </div>)
+  }
+
+  openConnectorForm(){
+    this.setState({
+      newConnectorFormIsOpen: true
+    })
+  }
+
+  renderConnectorForm(){
+    return <form>
+              <label>
+                  Name:
+                  <input type="text" name="name" />
+              </label>
+              <label>
+                  Type:
+                  <input type="text" name="type" />
+              </label>
+                <input type="submit" value="Submit" className='btn btn-primary' />
+            </form>
   }
 
   toggleConnector(connector){
@@ -41,7 +70,6 @@ class Connectors extends React.Component {
   }
 
   render() {
-    debugger
     return (<div>
             {this.props.isFetching && <ProgressBar/>}
             <div className='container'>{this.renderByUser(this.props.user)}</div>
