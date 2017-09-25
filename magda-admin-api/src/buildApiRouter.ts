@@ -140,5 +140,14 @@ export default function buildApiRouter(options: Options) {
             });
     });
 
+    // Get a source (pre-transformation to aspects) dataset, distribution, or organization.
+    // Optionally an item with a specific ID can be requested (otherwise a random one is provided).
+    //   /connectors/:id/interactive/dataset
+    //   /connectors/:id/interactive/distribution?id=foo
+    //   /connectors/:id/interactive/organization
+    //
+    //   /connectors/:id/interactive/harness
+    //     createDatasetRecord(aspectBuilders, sourceDataset)
+
     return router;
 }

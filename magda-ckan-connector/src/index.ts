@@ -1,10 +1,8 @@
 import AspectBuilder from '@magda/typescript-common/dist/AspectBuilder';
-import Ckan from './Ckan';
-import CkanConnector from './CkanConnector';
-import Registry from '@magda/typescript-common/dist/Registry';
+import createConnector from './createConnector';
+import * as express from 'express';
 import * as fs from 'fs';
-import * as moment from 'moment';
-import * as URI from 'urijs';
+import * as request from 'request';
 import * as yargs from 'yargs';
 
 const argv = yargs
@@ -35,17 +33,17 @@ const argv = yargs
         type: 'string',
         default: 'http://localhost:6101/v0'
     })
+    .option('interactive', {
+        describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
+        type: 'boolean',
+        default: false
+    })
+    .option('listenPort', {
+        describe: 'The port on which to run the REST API when in interactive model.',
+        type: 'number',
+        default: 6112
+    })
     .argv;
-
-const ckan = new Ckan({
-    baseUrl: argv.sourceUrl,
-    name: argv.name,
-    pageSize: argv.pageSize
-});
-
-const registry = new Registry({
-    baseUrl: argv.registryUrl
-});
 
 const datasetAspectBuilders: AspectBuilder[] = [
     {
@@ -82,6 +80,8 @@ const datasetAspectBuilders: AspectBuilder[] = [
         builderFunctionString: fs.readFileSync('aspect-templates/temporal-coverage.js', 'utf8')
     }
 ];
+
+//fs.writeFileSync('datasetAspectBuilders.json', JSON.stringify(datasetAspectBuilders, undefined, '  '), 'utf8');
 
 const distributionAspectBuilders: AspectBuilder[] = [
     {
@@ -129,19 +129,43 @@ const organizationAspectBuilders: AspectBuilder[] = [
     }
 ];
 
-const connector = new CkanConnector({
-    source: ckan,
-    registry: registry,
+const options = {
+    name: argv.name,
+    sourceUrl: argv.sourceUrl,
+    pageSize: argv.pageSize,
     ignoreHarvestSources: argv.ignoreHarvestSources,
-    datasetAspectBuilders: datasetAspectBuilders,
-    distributionAspectBuilders: distributionAspectBuilders,
-    organizationAspectBuilders: organizationAspectBuilders,
-    libraries: {
-        moment: moment,
-        URI: URI
-    },
-});
+    registryUrl: argv.registryUrl,
+    datasetAspectBuilders,
+    distributionAspectBuilders,
+    organizationAspectBuilders
+};
 
-connector.run().then(result => {
-    console.log(result.summarize());
-});
+const connector = createConnector(options);
+
+if (!argv.interactive) {
+    connector.run().then(result => {
+        console.log(result.summarize());
+    });
+} else {
+    const ckan = connector.ckan;
+
+    var app = express();
+    app.use(require("body-parser").json());
+
+    app.get('/v0/config', (req, res) => {
+        res.send(options);
+    });
+
+    app.get('/v0/dataset', (req, res) => {
+        const packageShowUrl = ckan.getPackageShowUrl(req.query.id);
+        request.get(packageShowUrl, (error, response, body) => {
+            const json = JSON.parse(body);
+            res.send(json.result);
+        });
+    });
+
+    app.use('/v0/test-harness.js', express.static('dist/test-harness.js'));
+    app.use('/v0/example.html', express.static('example.html'));
+
+    app.listen(argv.listenPort);
+}

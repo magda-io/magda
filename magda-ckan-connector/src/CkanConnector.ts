@@ -3,7 +3,7 @@ import JsonConnector, { JsonConnectorOptions } from '@magda/typescript-common/di
 import Ckan from './Ckan';
 
 export default class CkanConnector extends JsonConnector {
-    private ckan: Ckan;
+    public readonly ckan: Ckan;
     private ignoreHarvestSources: string[];
 
     constructor(options: CkanConnectorOptions) {
