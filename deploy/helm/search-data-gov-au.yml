@@ -1,8 +1,9 @@
 global:
     useCombinedDb: false
-    externalUrl: http://search.data.gov.au
+    externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
+        tag: "0.0.29"
 elasticsearch:
     production: true
     client:
@@ -57,6 +58,14 @@ web-server:
         requests:
             cpu: 300m
             memory: 200Mi
+sleuther-linked-data-rating:
+    resources:
+        requests:
+            cpu: 100m
+            memory: 200Mi
+        limits:
+            cpu: 500m
+            memory: 500Mi
 indexer:
   elasticsearch:
     shards: 2

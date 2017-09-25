@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router";
 import { bindActionCreators } from "redux";
 import {fetchConnectorsIfNeeded, updateConnectorStatus, deleteConnector} from '../../actions/connectorsActions';
 import ProgressBar from '../../UI/ProgressBar';

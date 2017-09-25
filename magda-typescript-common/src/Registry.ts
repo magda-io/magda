@@ -129,7 +129,8 @@ export default class Registry {
     aspect?: Array<string>,
     optionalAspect?: Array<string>,
     pageToken?: string,
-    dereference?: boolean
+    dereference?: boolean,
+    limit?: number
   ): Promise<RecordsPage<I> | Error> {
     const operation = (pageToken: string) => () =>
       this.recordsApi.getAll(
@@ -137,7 +138,7 @@ export default class Registry {
         optionalAspect,
         pageToken,
         undefined,
-        undefined,
+        limit,
         dereference
       );
     return <any>retry(
