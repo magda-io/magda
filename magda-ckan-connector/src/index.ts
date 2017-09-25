@@ -1,5 +1,8 @@
 import AspectBuilder from '@magda/typescript-common/dist/AspectBuilder';
-import createConnector from './createConnector';
+import Ckan from './Ckan';
+import createTransformer from './createTransformer';
+import JsonConnector from '@magda/typescript-common/dist/JsonConnector';
+import Registry from '@magda/typescript-common/dist/Registry';
 import * as express from 'express';
 import * as fs from 'fs';
 import * as request from 'request';
@@ -129,7 +132,18 @@ const organizationAspectBuilders: AspectBuilder[] = [
     }
 ];
 
-const options = {
+const ckan = new Ckan({
+    baseUrl: argv.sourceUrl,
+    name: argv.name,
+    pageSize: argv.pageSize,
+    ignoreHarvestSources: argv.ignoreHarvestSources,
+});
+
+const registry = new Registry({
+    baseUrl: argv.registryUrl
+});
+
+const transformerOptions = {
     name: argv.name,
     sourceUrl: argv.sourceUrl,
     pageSize: argv.pageSize,
@@ -140,31 +154,35 @@ const options = {
     organizationAspectBuilders
 };
 
-const connector = createConnector(options);
+const transformer = createTransformer(transformerOptions);
+
+const connector = new JsonConnector({
+    source: ckan,
+    transformer: transformer,
+    registry: registry,
+});
 
 if (!argv.interactive) {
     connector.run().then(result => {
         console.log(result.summarize());
     });
 } else {
-    const ckan = connector.ckan;
-
     var app = express();
     app.use(require("body-parser").json());
 
     app.get('/v0/config', (req, res) => {
-        res.send(options);
+        res.send(transformerOptions);
     });
 
     app.get('/v0/dataset', (req, res) => {
-        const packageShowUrl = ckan.getPackageShowUrl(req.query.id);
+        const packageShowUrl = ckan.urlBuilder.getPackageShowUrl(req.query.id);
         request.get(packageShowUrl, (error, response, body) => {
             const json = JSON.parse(body);
             res.send(json.result);
         });
     });
 
-    app.use('/v0/test-harness.js', express.static('dist/test-harness.js'));
+    app.use('/v0/test-harness.js', express.static('dist/createTransformerForBrowser.js'));
     app.use('/v0/example.html', express.static('example.html'));
 
     app.listen(argv.listenPort);

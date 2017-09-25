@@ -1,5 +1,7 @@
 import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
+import CkanUrlBuilder from './CkanUrlBuilder';
 import formatServiceError from '@magda/typescript-common/dist/formatServiceError';
+import { IConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
 import retry from '@magda/typescript-common/dist/retry';
 import * as request from 'request';
 import * as URI from 'urijs';
@@ -43,36 +45,41 @@ export interface CkanOptions {
     pageSize?: number;
     maxRetries?: number;
     secondsBetweenRetries?: number;
+    ignoreHarvestSources?: string[];
 }
 
-export default class Ckan {
-    public readonly baseUrl: uri.URI;
+export default class Ckan implements IConnectorSource {
     public readonly name: string;
-    public readonly apiBaseUrl: uri.URI;
     public readonly pageSize: number;
     public readonly maxRetries: number;
     public readonly secondsBetweenRetries: number;
+    public readonly urlBuilder: CkanUrlBuilder;
+    private ignoreHarvestSources: string[];
 
     constructor({
         baseUrl,
         name,
-        apiBaseUrl = baseUrl,
+        apiBaseUrl,
         pageSize = 1000,
         maxRetries = 10,
-        secondsBetweenRetries = 10
+        secondsBetweenRetries = 10,
+        ignoreHarvestSources = []
     }: CkanOptions) {
-        this.baseUrl = new URI(baseUrl);
         this.name = name;
-        this.apiBaseUrl = new URI(apiBaseUrl);
         this.pageSize = pageSize;
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
+        this.urlBuilder = new CkanUrlBuilder({
+            name: name,
+            baseUrl,
+            apiBaseUrl
+        });
     }
 
     public packageSearch(options?: {
         ignoreHarvestSources?: string[];
     }): AsyncPage<CkanPackageSearchResponse> {
-        const url = this.apiBaseUrl.clone().segment('api/3/action/package_search');
+        const url = new URI(this.urlBuilder.getPackageSearchUrl());
 
         let fqComponent = '';
         if (options && options.ignoreHarvestSources && options.ignoreHarvestSources.length > 0) {
@@ -100,7 +107,7 @@ export default class Ckan {
     }
 
     public organizationList(): AsyncPage<CkanOrganizationListResponse> {
-        const url = this.apiBaseUrl.clone().segment('api/3/action/organization_list').addSearch('all_fields', 'true');
+        const url = new URI(this.urlBuilder.getOrganizationListUrl()).addSearch('all_fields', 'true');
 
         let startIndex = 0;
         return AsyncPage.create<CkanOrganizationListResponse>(previous => {
@@ -115,20 +122,20 @@ export default class Ckan {
         });
     }
 
-    public getPackageShowUrl(id: string): string {
-        return this.apiBaseUrl.clone().segment('api/3/action/package_show').addSearch('id', id).toString();
+    public getJsonOrganizations(): AsyncPage<object[]> {
+        const organizationPages = this.organizationList();
+        return organizationPages.map((organizationPage) => organizationPage.result);
     }
 
-    public getResourceShowUrl(id: string): string {
-        return this.apiBaseUrl.clone().segment('api/3/action/resource_show').addSearch('id', id).toString();
+    public getJsonDatasets(): AsyncPage<object[]> {
+        const packagePages = this.packageSearch({
+            ignoreHarvestSources: this.ignoreHarvestSources
+        });
+        return packagePages.map((packagePage) => packagePage.result.results);
     }
 
-    public getOrganizationShowUrl(id: string): string {
-        return this.apiBaseUrl.clone().segment('api/3/action/organization_show').addSearch('id', id).toString();
-    }
-
-    public getDatasetLandingPageUrl(id: string): string {
-        return this.baseUrl.clone().segment('dataset').segment(id).toString();
+    public getJsonDistributions(dataset: any): AsyncPage<object[]> {
+        return AsyncPage.single<object[]>(dataset.resources || []);
     }
 
     private requestPackageSearchPage(url: uri.URI, fqComponent: string, startIndex: number): Promise<CkanPackageSearchResponse> {

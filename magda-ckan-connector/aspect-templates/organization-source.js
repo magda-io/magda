@@ -1,4 +1,6 @@
+var ckan = libraries.ckan;
+
 return {
     type: 'ckan-organization',
-    url: source.getOrganizationShowUrl(organization.id)
+    url: ckan.getOrganizationShowUrl(organization.id)
 };

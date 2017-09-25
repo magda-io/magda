@@ -1,11 +1,11 @@
 const path = require('path');
 
 module.exports = {
-    entry: './src/createConnectorForBrowser.ts',
+    entry: './src/createTransformer.ts',
     output: {
-        filename: 'createConnectorForBrowser.js',
-        path: path.join(__dirname, '..', 'web'),
-        library: 'Connector'
+        filename: 'createTransformerForBrowser.js',
+        path: path.join(__dirname, '..', 'dist'),
+        library: 'createTransformer'
     },
     devtool: 'source-map',
     module: {
@@ -21,6 +21,13 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: [ ".tsx", ".ts", ".js" ]
-    },
+        extensions: [ ".tsx", ".ts", ".js" ],
+        // Unfortunately ts-loader current ignores the `paths` property in tsconfig.json.
+        // So we accomplish the same thing with webpack aliases here.
+        // https://github.com/TypeStrong/ts-loader/issues/213
+        alias: {
+            '@magda/registry-aspects/dist': path.resolve(__dirname, '../node_modules/@magda/registry-aspects/src'),
+            '@magda/typescript-common/dist': path.resolve(__dirname, '../node_modules/@magda/typescript-common/src')
+        }
+    }
 };
