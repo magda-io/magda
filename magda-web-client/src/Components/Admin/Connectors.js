@@ -4,6 +4,7 @@ import { bindActionCreators } from "redux";
 import {fetchConnectorsIfNeeded, updateConnectorStatus, deleteConnector} from '../../actions/connectorsActions';
 import ProgressBar from '../../UI/ProgressBar';
 import Login from "../Account/Login";
+import { Link } from "react-router";
 
 class Connectors extends React.Component {
   componentWillMount(){
