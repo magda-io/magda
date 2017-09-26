@@ -11,6 +11,12 @@ if [[ ! -z $MEMORY_LIMIT ]]; then
         "-c" "effective_cache_size=${EFFECTIVE_CACHE_SIZE}KB" )
 fi
 
+if [[ ! -z "${BACKUP}" ]]; then
+    if [ ! -f "$PGDATA/recovery.done" ]; then
+        wal-e backup-fetch $PGDATA LATEST
+    fi
+fi
+
 if [[ "${BACKUP}" == "WAL" ]]; then
     #TODO: This needs to have no apostrophes for the postgres thing and still have apostrophes for the pgctl thing
     BACKUP_COMMAND_LINE_ARGS=(\
@@ -19,7 +25,9 @@ if [[ "${BACKUP}" == "WAL" ]]; then
         "-c" "archive_command='/usr/local/bin/wal-e wal-push $PGDATA/%p'" \
         "-c" "archive_timeout=60")
 
-    echo "restore_command = '/usr/local/bin/wal-e wal-fetch %f %p'" > ${PGDATA}/recovery.conf
+    if [ ! -f "$PGDATA/recovery.done" ]; then
+        echo "restore_command = '/usr/local/bin/wal-e wal-fetch %f %p'" > ${PGDATA}/recovery.conf
+    fi
 fi
 
 function join_by { local IFS="$1"; shift; echo "$*"; }

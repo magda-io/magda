@@ -40,9 +40,9 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
           value: {{ .Values.waleBackup.wabsSasToken }}
         - name: WALE_GS_PREFIX
           value: {{ .Values.waleBackup.gsPrefix }}
-        {{- if .Values.waleBackup.googleApplicationCredentials }}
+        {{- if .Values.waleBackup.googleApplicationCreds }}
         - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: {{ .Values.waleBackup.googleApplicationCredentials }}
+          value: "/var/{{ .Values.waleBackup.googleApplicationCreds.secretName }}/{{ .Values.waleBackup.googleApplicationCreds.fileName }}"
         {{- end }}
         - name: WALE_SWIFT_PREFIX
           value: {{ .Values.waleBackup.swiftPrefix }}
@@ -60,4 +60,20 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
           value: {{ .Values.waleBackup.swiftEndpointType }}
         - name: BACKUP_EXECUTION_TIME
           value: {{ .Values.waleBackup.executionTime }}
+{{- end }}
+
+{{- define "magda.waleGoogleStorageCredentials.volumeMount" }}
+{{- if .Values.waleBackup.googleApplicationCreds }}
+        - name: wale-google-account-credentials
+          mountPath: "/var/{{ .Values.waleBackup.googleApplicationCreds.secretName }}"
+          readOnly: true
+{{- end }}
+{{- end }}
+
+{{- define "magda.waleGoogleStorageCredentials.volume" }}
+{{- if .Values.waleBackup.googleApplicationCreds }}
+        - name: wale-google-account-credentials
+          secret:
+            secretName: {{ .Values.waleBackup.googleApplicationCreds.secretName }}
+{{- end }}
 {{- end }}

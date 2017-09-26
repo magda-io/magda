@@ -3,7 +3,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.29"
+    tag: "0.0.30-0"
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:
@@ -16,9 +16,7 @@ combined-db:
   limits:
     cpu: 1000m
     memory: 1500m
-  image:
-    tag: "0.0.30-0"
   waleBackup:
     method: WAL
     gsPrefix: "gs://magda-postgres-backups-asia/dev"
-    backupTime: 03:00
+    executionTime: 03:00

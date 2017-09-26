@@ -26,18 +26,12 @@ spec:
         - name: PGDATA
           value: /var/pv/data
         {{- template "magda.postgres-env" . }}
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /var/storage-account-credentials/TerriaJS-5e042b649f8a.json
         volumeMounts:
         - name: combined-db
           mountPath: /var/pv
-        - name: storage-account-credentials
-          mountPath: "/var/storage-account-credentials"
-          readOnly: true
+        {{- template "magda.waleGoogleStorageCredentials.volumeMount" . }}
       volumes:
-        - name: storage-account-credentials
-          secret:
-            secretName: storage-account-credentials
+      {{- template "magda.waleGoogleStorageCredentials.volume" . }}
   volumeClaimTemplates:
   - metadata:
       name: combined-db
