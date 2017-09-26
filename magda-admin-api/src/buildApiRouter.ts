@@ -11,13 +11,14 @@ export interface Options {
     kubernetesApiType: K8SApiType;
     registryApiUrl: string;
     pullPolicy: string;
+    namespace?: string;
 }
 
 export default function buildApiRouter(options: Options) {
     const router: express.Router = express.Router();
     const prefixId = (id: string) => `connector-${id}`;
 
-    const k8sApi = new K8SApi(options.kubernetesApiType);
+    const k8sApi = new K8SApi(options.kubernetesApiType, options.namespace);
 
     router.use(mustBeAdmin(options.authApiUrl));
 
