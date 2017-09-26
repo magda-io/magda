@@ -10,8 +10,8 @@ import {browserHistory} from 'react-router';
 export type ConnectorProps = {
   type: string,
   name: string,
-  sourceUrl: string,
-  schedule: string,
+  sourceUrl: ?string,
+  schedule: ?string,
   id: string
 }
 
@@ -64,6 +64,39 @@ export function updateConnectorStatus(connectorId: string, action: string){
       return fetch(url,
       {
         method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: "include"
+      })
+      .then(response => {
+        if(response.status === 200){
+          return response.json()
+
+        }
+        return dispatch(updateConnectorFailure(response.status))
+      })
+      .then((result)=>{
+        if(result.error){
+          return false;
+        }
+        dispatch(updateConnectorSuccess(result))
+        dispatch(fetchConnectorsIfNeeded())
+
+      })
+  }
+}
+
+
+export function createConnector(connectorProps: ConnectorProps){
+  return (dispatch: Dispatch) => {
+    dispatch(updateConnector());
+    const url = `${config.adminApiUrl}connectors/${connectorProps.id}`;
+      return fetch(url,
+      {
+        method: 'PUT',
+        body: JSON.stringify(connectorProps),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
