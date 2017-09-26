@@ -4,7 +4,6 @@ import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import type { Dispatch, GetState } from '../types';
-import {browserHistory} from 'react-router';
 
 
 export type ConnectorProps = {

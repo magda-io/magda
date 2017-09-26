@@ -3,9 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import {fetchConnectorsIfNeeded, updateConnectorStatus, deleteConnector, createConnector} from '../../actions/connectorsActions';
-import type {ConnectorProps} from '../../actions/connectorsActions';
 import ProgressBar from '../../UI/ProgressBar';
-import Login from "../Account/Login";
 import { Link } from "react-router";
 
 import './Connectors.css';
