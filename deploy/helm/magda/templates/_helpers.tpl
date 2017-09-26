@@ -20,8 +20,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "magda.postgres-env" }}
+        {{- if .Values.limits }}
         - name: MEMORY_LIMIT
           value: {{ .Values.limits.memory }}
+        {{- end }}
+        {{- if .Values.waleBackup }}
         - name: BACKUP
           value: {{ .Values.waleBackup.method | quote }}
         - name: WALE_S3_PREFIX
@@ -62,20 +65,25 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
           value: {{ .Values.waleBackup.swiftEndpointType }}
         - name: BACKUP_EXECUTION_TIME
           value: {{ .Values.waleBackup.executionTime }}
+        {{- end }}
 {{- end }}
 
 {{- define "magda.waleGoogleStorageCredentials.volumeMount" }}
+{{- if and .Values.waleBackup }}
 {{- if .Values.waleBackup.googleApplicationCreds }}
         - name: wale-google-account-credentials
           mountPath: "/var/{{ .Values.waleBackup.googleApplicationCreds.secretName }}"
           readOnly: true
 {{- end }}
 {{- end }}
+{{- end }}
 
 {{- define "magda.waleGoogleStorageCredentials.volume" }}
+{{- if and .Values.waleBackup }}
 {{- if .Values.waleBackup.googleApplicationCreds }}
         - name: wale-google-account-credentials
           secret:
             secretName: {{ .Values.waleBackup.googleApplicationCreds.secretName }}
+{{- end }}
 {{- end }}
 {{- end }}
