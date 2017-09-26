@@ -19,7 +19,7 @@ type State = {
 
 class Connectors extends React.Component {
   state: State = {
-    newConnectorFormIsOpen: true,
+    newConnectorFormIsOpen: false,
     newConnectorName: '',
     newConnectorType: '',
     error: null
@@ -37,14 +37,16 @@ class Connectors extends React.Component {
       return <div> not authorised </div>
     }
     return (<div>
+              <div className='header'><button className='btn btn-primary' onClick={()=>this.openConnectorForm()}>Create a new connector</button></div>
               <table className='table'><tbody>
               <tr>
                 <th>Name</th>
                 <th>type</th>
                 <th>url</th>
+                <th>action</th>
+                <th>remove</th>
               </tr>
               {this.props.connectors.map(c=>this.renderConnector(c))}</tbody></table>
-                <button className='btn btn-primary' onClick={()=>this.openConnectorForm()}>Create a new connector</button>
               {this.state.newConnectorFormIsOpen && this.renderConnectorForm()}
             </div>)
   }
@@ -56,8 +58,8 @@ class Connectors extends React.Component {
   }
 
   renderConnectorForm(){
-    return  <div className='create-connector-form-wrapper'>
-              <form className='create-connector-form'>
+    return  <div className='create-connector-form-wrapper' onClick={()=>{this.setState({newConnectorFormIsOpen: false})}}>
+              <form className='create-connector-form' onClick={(event)=>{event.stopPropagation()}}>
               {this.state.error && <div className="alert alert-danger">{this.state.error}</div>}
               <div>
                 <label>
@@ -114,7 +116,7 @@ class Connectors extends React.Component {
   }
 
   render() {
-    return (<div>
+    return (<div className='connectors'>
             {this.props.isFetching && <ProgressBar/>}
             <div className='container'>{this.renderByUser(this.props.user)}</div>
           </div>)
