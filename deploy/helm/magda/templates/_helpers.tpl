@@ -20,6 +20,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "magda.postgres-env" }}
+        - name: MEMORY_LIMIT
+          value: {{ .Values.limits.memory }}
         - name: BACKUP
           value: {{ .Values.waleBackup.method | quote }}
         - name: WALE_S3_PREFIX

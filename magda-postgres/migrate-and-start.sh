@@ -4,11 +4,21 @@ MEMORY_COMMAND_LINE_ARGS=()
 
 #https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
 if [[ ! -z $MEMORY_LIMIT ]]; then
-    SHARED_BUFFERS=$(expr $MEMORY_LIMIT / 4)
-    EFFECTIVE_CACHE_SIZE=$(expr $MEMORY_LIMIT / 2)
-    MEMORY_COMMAND_LINE_ARGS=(
-        "-c" "shared_buffers=${SHARED_BUFFERS}KB" \
-        "-c" "effective_cache_size=${EFFECTIVE_CACHE_SIZE}KB" )
+    MEMORY_IN_BYTES=$(echo $MEMORY_LIMIT | awk '{
+        ex = index("kmgtpezy", substr($1, length($1)))
+        val = substr($1, 0, length($1) - 1)
+
+        prod = val * 10^(ex * 3)
+
+        sum += prod
+    }
+    END {print sum}')
+
+    SHARED_BUFFERS=$(expr $MEMORY_IN_BYTES / 4 / 100)
+    EFFECTIVE_CACHE_SIZE=$(expr $MEMORY_IN_BYTES / 2 / 100)
+    MEMORY_COMMAND_LINE_ARGS=( \
+        "-c" "shared_buffers=${SHARED_BUFFERS}kB" \
+        "-c" "effective_cache_size=${EFFECTIVE_CACHE_SIZE}kB" )
 fi
 
 if [[ ! -z "${BACKUP}" ]]; then
