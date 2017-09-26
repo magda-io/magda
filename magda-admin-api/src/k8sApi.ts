@@ -63,9 +63,7 @@ export default class K8SApi {
     }
 
     getConnectorConfigMap() {
-        return promisify(
-            this.configMaps.get.bind(this.configMaps)
-        )({
+        return promisify(this.configMaps.get.bind(this.configMaps))({
             name: "connector-config"
         }).then((result: any) =>
             _(result.data)
@@ -78,13 +76,12 @@ export default class K8SApi {
     }
 
     updateConnectorConfigMap(id: string, newConfig: any) {
-        return promisify(
-            this.configMaps.patch.bind(this.configMaps)
-        )({
+        return promisify(this.configMaps.patch.bind(this.configMaps))({
             name: "connector-config",
             body: {
                 data: {
-                    [`${id}.json`]: newConfig && JSON.stringify(newConfig)
+                    [`${id}.json`]:
+                        newConfig && JSON.stringify(newConfig, null, 2)
                 }
             }
         });

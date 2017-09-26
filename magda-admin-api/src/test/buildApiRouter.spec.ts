@@ -207,7 +207,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
         it("should put a new entry in the k8s connector-config configmap", () => {
             const expectedConfigMap = {
-                [`${name}.json`]: JSON.stringify(connectorConfig)
+                [`${name}.json`]: JSON.stringify(connectorConfig, null, 2)
             };
 
             k8sApiScope
@@ -502,7 +502,12 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
                 it("if getting connector config fails", () => {
                     helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
-                    helpers.mockConnectorConfig(k8sApiScope, 500, namespace, null);
+                    helpers.mockConnectorConfig(
+                        k8sApiScope,
+                        500,
+                        namespace,
+                        null
+                    );
                     helpers.mockCreateJob(
                         k8sApiScope,
                         200,
