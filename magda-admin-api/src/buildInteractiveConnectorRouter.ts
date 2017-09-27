@@ -124,15 +124,17 @@ async function ensureInteractiveConnector(k8sApi: K8SApi, id: any, options: Opti
     } else {
         // The Admin API is running inside the cluster.
         // We just need the IP address of the pod and we can talk to it directly.
-        //const pods = await k8sApi.getPodsWithSelector(job.spec.selector.matchLabels);
+        const pods = await k8sApi.getPodsWithSelector(job.spec.selector.matchLabels);
+        const podsWithIP = pods.items.filter((pod: any) => pod.status && pod.status.podIP);
+        if (podsWithIP.length === 0) {
+            console.log('no pods have an IP');
+            // TODO: Maybe we need to wait for it to start up?  Or it already shut down
+            throw new Error("TODO");
+        }
 
-        // TODO: the pod might not be ready yet if it was just started
-        // TODO: what if the admin API is running outside the cluster?  Need a service with a nodePort?
-        // pods.items.forEach(pod => {
-        //     pod.status.podIP
-        // });
-
-        connectorUrl = `http://example.com/TODO`;
+        const ip = podsWithIP[0].status.podIP;
+        connectorUrl = `http://${ip}/v0`;
+        console.log(connectorUrl);
     }
 
     // Access the interactive connector's /status service.
