@@ -11,45 +11,34 @@ import getMinikubeIP from "@magda/typescript-common/dist/util/getMinikubeIP";
 export type K8SApiType = "minikube" | "cluster" | "test";
 
 export default class K8SApi {
-    private batchApi: any;
-    private coreApi: any;
+    private jobs: any;
+    private configMaps: any;
+    private getJobsInner: any;
 
     constructor(apiType: K8SApiType, private namespace: string = "default") {
         const details = K8SApi.getDetails(apiType);
-        this.batchApi = new Api.Batch(details);
-        this.coreApi = new Api.Core(details);
+        const batchApi = new Api.Batch(details);
+        this.jobs = batchApi.ns(this.namespace).jobs;
+        this.getJobsInner = promisify(this.jobs.get.bind(this.jobs));
+
+        const coreApi = new Api.Core(details);
+        this.configMaps = coreApi.ns(this.namespace).configmaps;
     }
 
     getJobs(): Promise<any> {
-        return promisify(
-            this.batchApi
-                .ns(this.namespace)
-                .jobs.get.bind(this.batchApi.ns.jobs)
-        )();
+        return this.getJobsInner();
     }
 
     getJobStatus(id: string): Promise<any> {
-        return promisify(
-            this.batchApi
-                .ns(this.namespace)
-                .jobs.get.bind(this.batchApi.ns.jobs)
-        )({ name: `${id}/status` });
+        return this.getJobsInner({ name: `${id}/status` });
     }
 
     createJob(body: any): Promise<any> {
-        return promisify(
-            this.batchApi
-                .ns(this.namespace)
-                .jobs.post.bind(this.batchApi.ns.jobs)
-        )({ body });
+        return promisify(this.jobs.post.bind(this.jobs))({ body });
     }
 
     deleteJob(id: string) {
-        return promisify(
-            this.batchApi
-                .ns(this.namespace)
-                .jobs.delete.bind(this.batchApi.ns.jobs)
-        )({
+        return promisify(this.jobs.delete.bind(this.jobs))({
             name: id,
             body: {
                 kind: "DeleteOptions",
@@ -74,9 +63,7 @@ export default class K8SApi {
     }
 
     getConnectorConfigMap() {
-        return promisify(
-            this.coreApi.ns.configmaps.get.bind(this.coreApi.ns.configmaps)
-        )({
+        return promisify(this.configMaps.get.bind(this.configMaps))({
             name: "connector-config"
         }).then((result: any) =>
             _(result.data)
@@ -89,13 +76,12 @@ export default class K8SApi {
     }
 
     updateConnectorConfigMap(id: string, newConfig: any) {
-        return promisify(
-            this.coreApi.ns.configmaps.patch.bind(this.coreApi.ns.configmaps)
-        )({
+        return promisify(this.configMaps.patch.bind(this.configMaps))({
             name: "connector-config",
             body: {
                 data: {
-                    [`${id}.json`]: newConfig && JSON.stringify(newConfig)
+                    [`${id}.json`]:
+                        newConfig && JSON.stringify(newConfig, null, 2)
                 }
             }
         });
