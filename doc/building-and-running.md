@@ -65,8 +65,17 @@ Helm is the package manager for Kubernetes - we use it to make it so that you ca
 This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
 
 ```bash
+helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 helm install --name docker-registry incubator/docker-registry
 helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
+```
+
+### Crawl Data
+```bash
+cd depoy
+npm run create-connector-configmap
+npm run generate-connector-jobs-local
+kubectl create -f kubernetes/generated/local/
 ```
 
 ## Running on your local machine
@@ -163,17 +172,16 @@ kubectl create configmap connector-config --from-file deploy/connector-config
 deploy/helm/create-auth-secrets.sh
 ```
 
-```
 To install _everything_:
 
 ```bash
-helm install --name magda deploy/helm/magda
+helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml
 ```
 
 If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the `all` tag to `false` and the tag for the pod you want to `true`, e.g.
 
 ```bash
-helm install --name combined-db --set tags.all=false --set tags.combined-db=true deploy/helm/magda
+helm install --name combined-db --set tags.all=false --set tags.combined-db=true deploy/helm/magda -f deploy/helm/minikube-dev.yml
 ```
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30000.  The IP address may be different on your system.  Get the real IP address by running:

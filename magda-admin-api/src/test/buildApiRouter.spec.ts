@@ -13,6 +13,7 @@ import { stateArb } from "./arbitraries";
 
 describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
+    const namespace = "THISISANAMESPACE";
     let app: express.Express;
     let k8sApiScope: nock.Scope;
 
@@ -35,8 +36,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             return jsc.assert(
                 jsc.forall(stateArb, state => {
                     beforeEachInner();
-                    helpers.mockConnectorConfig(k8sApiScope, 200, state);
-                    helpers.mockJobs(k8sApiScope, 200, state);
+                    helpers.mockConnectorConfig(
+                        k8sApiScope,
+                        200,
+                        namespace,
+                        state
+                    );
+                    helpers.mockJobs(k8sApiScope, 200, namespace, state);
 
                     return helpers
                         .getConnectors(app)
@@ -105,11 +111,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                     helpers.mockConnectorConfig(
                         k8sApiScope,
                         200,
+                        namespace,
                         helpers.getStateForStatus(status)
                     );
                     helpers.mockJobs(
                         k8sApiScope,
                         200,
+                        namespace,
                         helpers.getStateForStatus(status)
                     );
                     return assertStatus(status);
@@ -121,11 +129,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                     helpers.mockConnectorConfig(
                         k8sApiScope,
                         200,
+                        namespace,
                         helpers.getStateForStatus(status)
                     );
                     helpers.mockJobs(
                         k8sApiScope,
                         200,
+                        namespace,
                         helpers.getStateForStatus(status)
                     );
                     return assertStatus("inactive");
@@ -160,18 +170,23 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 const state = helpers.getBasicState();
 
                 it("a failure to get jobs", () => {
-                    helpers.mockConnectorConfig(k8sApiScope, 200, state);
-                    helpers.mockJobs(k8sApiScope, 500);
+                    helpers.mockConnectorConfig(
+                        k8sApiScope,
+                        200,
+                        namespace,
+                        state
+                    );
+                    helpers.mockJobs(k8sApiScope, 500, namespace);
                 });
 
                 it("a failure to get connector config", () => {
-                    helpers.mockConnectorConfig(k8sApiScope, 500);
-                    helpers.mockJobs(k8sApiScope, 200, state);
+                    helpers.mockConnectorConfig(k8sApiScope, 500, namespace);
+                    helpers.mockJobs(k8sApiScope, 200, namespace, state);
                 });
 
                 it("a failure to get both", () => {
-                    helpers.mockConnectorConfig(k8sApiScope, 500);
-                    helpers.mockJobs(k8sApiScope, 500);
+                    helpers.mockConnectorConfig(k8sApiScope, 500, namespace);
+                    helpers.mockJobs(k8sApiScope, 500, namespace);
                 });
 
                 afterEach(() => {
@@ -192,12 +207,12 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
         it("should put a new entry in the k8s connector-config configmap", () => {
             const expectedConfigMap = {
-                [`${name}.json`]: JSON.stringify(connectorConfig)
+                [`${name}.json`]: JSON.stringify(connectorConfig, null, 2)
             };
 
             k8sApiScope
                 .patch(
-                    "/api/v1/namespaces/default/configmaps/connector-config",
+                    `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
                     {
                         data: expectedConfigMap
                     }
@@ -217,7 +232,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             it("should return 500 if k8s call doesn't work", () => {
                 k8sApiScope
                     .patch(
-                        "/api/v1/namespaces/default/configmaps/connector-config",
+                        `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
                         () => true
                     )
                     .reply(500, "Oh noes");
@@ -263,14 +278,14 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
                 k8sApiScope
                     .patch(
-                        "/api/v1/namespaces/default/configmaps/connector-config",
+                        `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
                         {
                             data: expectedConfigMap
                         }
                     )
                     .reply(200, expectedConfigMap);
 
-                helpers.mockJobStatus(k8sApiScope, 404, name);
+                helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
 
                 return helpers.deleteConnector(app, name).then(res => {
                     expect(res.status).to.equal(200);
@@ -288,12 +303,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                     k8sApiScope,
                     200,
                     name,
+                    namespace,
                     helpers.getBasicState(name)
                 );
-                helpers.mockDeleteJob(k8sApiScope, 200, name);
+                helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
                 k8sApiScope
                     .patch(
-                        "/api/v1/namespaces/default/configmaps/connector-config",
+                        `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
                         {
                             data: expectedConfigMap
                         }
@@ -311,10 +327,10 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
         silenceErrorLogs(() => {
             describe("should return 500", () => {
                 it("when patch config map call doesn't work", () => {
-                    helpers.mockJobStatus(k8sApiScope, 404, name);
+                    helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
                     k8sApiScope
                         .patch(
-                            "/api/v1/namespaces/default/configmaps/connector-config",
+                            `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
                             () => true
                         )
                         .reply(500, "Oh noes");
@@ -327,10 +343,10 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 });
 
                 it("when get jobs status call doesn't work", () => {
-                    helpers.mockJobStatus(k8sApiScope, 500, name);
+                    helpers.mockJobStatus(k8sApiScope, 500, name, namespace);
                     k8sApiScope
                         .patch(
-                            "/api/v1/namespaces/default/configmaps/connector-config",
+                            `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
                             () => true
                         )
                         .optionally()
@@ -347,12 +363,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         k8sApiScope,
                         200,
                         name,
+                        namespace,
                         helpers.getBasicState(name)
                     );
-                    helpers.mockDeleteJob(k8sApiScope, 500, name);
+                    helpers.mockDeleteJob(k8sApiScope, 500, name, namespace);
                     k8sApiScope
                         .patch(
-                            "/api/v1/namespaces/default/configmaps/connector-config",
+                            `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
                             () => true
                         )
                         .optionally()
@@ -393,9 +410,14 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             const tag = "latest";
             const app = buildExpressApp(tag);
             const connectorState = helpers.getStateForStatus("active", name);
-            helpers.mockJobStatus(k8sApiScope, 404, name);
-            helpers.mockConnectorConfig(k8sApiScope, 200, connectorState);
-            helpers.mockCreateJob(k8sApiScope, 200, (body: any) => {
+            helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
+            helpers.mockConnectorConfig(
+                k8sApiScope,
+                200,
+                namespace,
+                connectorState
+            );
+            helpers.mockCreateJob(k8sApiScope, 200, namespace, (body: any) => {
                 const metadataMatch = (metadata: any) =>
                     metadata.name === `connector-${name}` &&
                     metadata.magdaSleuther === true;
@@ -438,11 +460,17 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 k8sApiScope,
                 200,
                 name,
+                namespace,
                 helpers.getBasicState(name)
             );
-            helpers.mockDeleteJob(k8sApiScope, 200, name);
-            helpers.mockConnectorConfig(k8sApiScope, 200, connectorState);
-            helpers.mockCreateJob(k8sApiScope, 200);
+            helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
+            helpers.mockConnectorConfig(
+                k8sApiScope,
+                200,
+                namespace,
+                connectorState
+            );
+            helpers.mockCreateJob(k8sApiScope, 200, namespace);
             return helpers.startConnector(app, name, true).then(res => {
                 expect(res.status).to.equal(200);
             });
@@ -451,14 +479,21 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
         silenceErrorLogs(() => {
             describe("should return 500", () => {
                 it("if getting existing job status fails", () => {
-                    helpers.mockJobStatus(k8sApiScope, 500, name);
+                    helpers.mockJobStatus(k8sApiScope, 500, name, namespace);
                     helpers.mockConnectorConfig(
                         k8sApiScope,
                         200,
+                        namespace,
                         helpers.getStateForStatus("active", name),
                         true
                     );
-                    helpers.mockCreateJob(k8sApiScope, 200, () => true, true);
+                    helpers.mockCreateJob(
+                        k8sApiScope,
+                        200,
+                        namespace,
+                        () => true,
+                        true
+                    );
 
                     return helpers.startConnector(app, name, true).then(res => {
                         expect(res.status).to.equal(500);
@@ -466,9 +501,20 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 });
 
                 it("if getting connector config fails", () => {
-                    helpers.mockJobStatus(k8sApiScope, 404, name);
-                    helpers.mockConnectorConfig(k8sApiScope, 500, null);
-                    helpers.mockCreateJob(k8sApiScope, 200, () => true, true);
+                    helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
+                    helpers.mockConnectorConfig(
+                        k8sApiScope,
+                        500,
+                        namespace,
+                        null
+                    );
+                    helpers.mockCreateJob(
+                        k8sApiScope,
+                        200,
+                        namespace,
+                        () => true,
+                        true
+                    );
 
                     return helpers.startConnector(app, name, true).then(res => {
                         expect(res.status).to.equal(500);
@@ -484,16 +530,24 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         k8sApiScope,
                         200,
                         name,
+                        namespace,
                         connectorState
                     );
-                    helpers.mockDeleteJob(k8sApiScope, 500, name);
+                    helpers.mockDeleteJob(k8sApiScope, 500, name, namespace);
                     helpers.mockConnectorConfig(
                         k8sApiScope,
                         200,
+                        namespace,
                         connectorState,
                         true
                     );
-                    helpers.mockCreateJob(k8sApiScope, 200, () => true, true);
+                    helpers.mockCreateJob(
+                        k8sApiScope,
+                        200,
+                        namespace,
+                        () => true,
+                        true
+                    );
 
                     return helpers.startConnector(app, name, true).then(res => {
                         expect(res.status).to.equal(500);
@@ -509,15 +563,22 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         k8sApiScope,
                         200,
                         name,
+                        namespace,
                         connectorState
                     );
-                    helpers.mockDeleteJob(k8sApiScope, 200, name);
+                    helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
                     helpers.mockConnectorConfig(
                         k8sApiScope,
                         200,
+                        namespace,
                         connectorState
                     );
-                    helpers.mockCreateJob(k8sApiScope, 500, () => true);
+                    helpers.mockCreateJob(
+                        k8sApiScope,
+                        500,
+                        namespace,
+                        () => true
+                    );
 
                     return helpers.startConnector(app, name, true).then(res => {
                         expect(res.status).to.equal(500);
@@ -531,13 +592,20 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         "active",
                         "otherJob"
                     );
-                    helpers.mockJobStatus(k8sApiScope, 404, name);
+                    helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
                     helpers.mockConnectorConfig(
                         k8sApiScope,
                         200,
+                        namespace,
                         connectorState
                     );
-                    helpers.mockCreateJob(k8sApiScope, 200, () => true, true);
+                    helpers.mockCreateJob(
+                        k8sApiScope,
+                        200,
+                        namespace,
+                        () => true,
+                        true
+                    );
 
                     return helpers.startConnector(app, name, true).then(res => {
                         expect(res.status).to.equal(404);
@@ -569,7 +637,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
         const name = "test";
 
         it("should stop a currently running job", () => {
-            helpers.mockDeleteJob(k8sApiScope, 200, name);
+            helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
 
             return helpers.stopConnector(app, name).then(res => {
                 expect(res.status).to.equal(204);
@@ -578,7 +646,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
         silenceErrorLogs(() => {
             it("should return 404 for a non-running job", () => {
-                helpers.mockDeleteJob(k8sApiScope, 404, name);
+                helpers.mockDeleteJob(k8sApiScope, 404, name, namespace);
 
                 return helpers.stopConnector(app, name).then(res => {
                     expect(res.status).to.equal(404);
@@ -586,7 +654,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             });
 
             it("should return 500 if the kubernetes delete job fails", () => {
-                helpers.mockDeleteJob(k8sApiScope, 500, name);
+                helpers.mockDeleteJob(k8sApiScope, 500, name, namespace);
 
                 return helpers.stopConnector(app, name).then(res => {
                     expect(res.status).to.equal(500);
@@ -634,7 +702,8 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             imageTag,
             kubernetesApiType: "test",
             registryApiUrl: "http://registry.example.com",
-            pullPolicy: "pullPolicy"
+            pullPolicy: "pullPolicy",
+            namespace
         });
 
         const app = express();

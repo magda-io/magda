@@ -6,7 +6,7 @@ global:
   exposeNodePorts: false
   image:
     repository: "data61"
-    tag: "0.0.28"
+    tag: "0.0.29"
     pullPolicy: Always
 tags:
   all: true
@@ -22,3 +22,5 @@ tags:
   search-api: false
   session-store: false
   web-server: false
+  sleuther-broken-link: false
+  sleuther-linked-data-rating: false

@@ -135,7 +135,8 @@ export default class K8SApi {
             name: "connector-config",
             body: {
                 data: {
-                    [`${id}.json`]: newConfig && JSON.stringify(newConfig)
+                    [`${id}.json`]:
+                        newConfig && JSON.stringify(newConfig, null, 2)
                 }
             }
         });
