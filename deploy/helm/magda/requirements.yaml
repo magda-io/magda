@@ -67,3 +67,13 @@ dependencies:
     tags:
       - all
       - admin-api
+  - name: sleuther-broken-link
+    version: 0.1.0
+    tags:
+      - all
+      - sleuther-broken-link
+  - name: sleuther-linked-data-rating
+    version: 0.1.0
+    tags:
+      - all
+      - sleuther-linked-data-rating
