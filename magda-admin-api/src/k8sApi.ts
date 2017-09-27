@@ -109,7 +109,7 @@ export default class K8SApi {
             });
     }
 
-    getConnectorConfigMap() {
+    getConnectorConfigMap(): Promise<any> {
         const configmaps = this.coreApi
             .ns(this.namespace)
             .configmaps;

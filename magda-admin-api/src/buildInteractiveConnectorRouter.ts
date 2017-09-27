@@ -1,3 +1,4 @@
+import "isomorphic-fetch";
 import buildConnectorManifest from "./buildConnectorManifest";
 import K8SApi from "./k8sApi";
 import * as express from "express";
@@ -39,7 +40,12 @@ export default function buildInteractiveConnectorRouter(options: Options) {
             });
     });
 
-    router.get("/test-harness.js", (req, res) => {
+    router.get([
+        "/test-harness.js",
+        "/dataset",
+        "/distribution",
+        "/organization"
+    ], (req, res) => {
         req.connectorProxy.web(req, res);
     });
 
@@ -48,100 +54,109 @@ export default function buildInteractiveConnectorRouter(options: Options) {
 
 const prefixId = (id: string) => `connector-interactive-${id}`;
 
-function ensureInteractiveConnector(k8sApi: K8SApi, id: any, options: Options): Promise<HttpProxy> {
-    // Get its IP, send it a status request.  If it responds OK, use it!
-    // Otherwise, restart the job and try again.
+async function createInteractiveJob(k8sApi: K8SApi, id: any, options: Options): Promise<any> {
+    await k8sApi.deleteJobIfPresent(prefixId(id));
 
-    // See if there is already a running interactive job.
-    const jobPromise = k8sApi.getJob(prefixId(id)).catch(function(e) {
-        // Job does not exist, we'll need to create it.
-        return undefined;
-    }).then(function(job) {
-        if (job === undefined || job.status.active === 0) {
-            // Job does not exist or is not running, so (re)create it.
-            return k8sApi.deleteJobIfPresent(prefixId(id)).then(function() {
-                return k8sApi.getConnectorConfigMap();
-            }).then((configMap: any) => {
-                if (!configMap[id]) {
-                    throw new Error("No config for connector ID: " + id);
-                } else {
-                    return k8sApi.createJob(
-                        buildConnectorManifest({
-                            id,
-                            dockerImage: configMap[id].type,
-                            dockerImageTag: options.imageTag,
-                            dockerRepo: options.dockerRepo,
-                            registryApiUrl: options.registryApiUrl,
-                            pullPolicy: options.pullPolicy,
-                            interactive: true
-                        }));
-                }
-            }).then(function() {
-                return k8sApi.getJob(prefixId(id));
-            });
+    const configMap = await k8sApi.getConnectorConfigMap();
+    if (!configMap[id]) {
+        throw new Error("No config for connector ID: " + id);
+    }
+
+    return k8sApi.createJob(buildConnectorManifest({
+        id,
+        dockerImage: configMap[id].type,
+        dockerImageTag: options.imageTag,
+        dockerRepo: options.dockerRepo,
+        registryApiUrl: options.registryApiUrl,
+        pullPolicy: options.pullPolicy,
+        interactive: true
+    }));
+}
+
+async function ensureInteractiveConnector(k8sApi: K8SApi, id: any, options: Options, retries?: number): Promise<HttpProxy> {
+    let job = await k8sApi.getJob(prefixId(id)).catch(e => undefined);
+
+    if (job === undefined || job.status === undefined || job.status.active === 0) {
+        job = await createInteractiveJob(k8sApi, id, options);
+        if (job === undefined) {
+            throw new Error("Could not create interactive connector: " + id);
         }
-        return job;
-    });
+    }
 
-    if (k8sApi.apiType === 'minikube') {
+    let connectorUrl: string;
+    if (k8sApi.apiType === "minikube") {
         // The Admin API is running outside the cluster.
         // We need a Service with a nodePort in order to be able to call into the connector
         // running inside the cluster.
 
-        return jobPromise.then(function(job) {
-            return k8sApi.getService(prefixId(id)).catch(function(e) {
-                // Service does not exist, create it.
-                return k8sApi.createService({
-                    apiVersion: 'v1',
-                    kind: 'Service',
-                    metadata: {
-                        name: prefixId(id)
-                    },
-                    spec: {
-                        ports: [
-                            {
-                                name: 'http',
-                                port: 80,
-                                targetPort: 80
-                            }
-                        ],
-                        type: 'NodePort',
-                        selector: job.spec.selector.matchLabels
-                    }
-                }).catch(function(e) {
-                    console.log(e);
-                }).then(function() {
-                    return k8sApi.getService(prefixId(id));
-                });
+        let service = await k8sApi.getService(prefixId(id)).catch(e => undefined);
+        if (service === undefined) {
+            // Service does not exist, create it.
+
+            // We're letting k8s assign a nodePort automatically, since we
+            // don't care what it is.  The risk is that it will pick a port that
+            // we've explicitly allocated to other pods, those pods will not have started
+            // yet when this code runs, and later when they do start they will fail
+            // because this service is already bound to their port.  This seems
+            // like a fairly remote possibility, and it will only happen in development
+            // (never in anything resembling a real deployment), so ¯\_(ツ)_/¯.
+            service = await k8sApi.createService({
+                apiVersion: 'v1',
+                kind: 'Service',
+                metadata: {
+                    name: prefixId(id)
+                },
+                spec: {
+                    ports: [
+                        {
+                            name: 'http',
+                            port: 80,
+                            targetPort: 80
+                        }
+                    ],
+                    type: 'NodePort',
+                    selector: job.spec.selector.matchLabels
+                }
             });
-        }).then(function(service) {
-            const proxy = HttpProxy.createProxyServer({
-                target: `http://${k8sApi.minikubeIP}:${service.spec.ports[0].nodePort}/v0`
-            });
-            return proxy;
-        });
+        }
+
+        connectorUrl = `http://${k8sApi.minikubeIP}:${service.spec.ports[0].nodePort}/v0`;
     } else {
         // The Admin API is running inside the cluster.
         // We just need the IP address of the pod and we can talk to it directly.
+        //const pods = await k8sApi.getPodsWithSelector(job.spec.selector.matchLabels);
 
-        // Find the associated pod.
-        return jobPromise.then(function(job) {
-            if (job === undefined || job.status === undefined || job.status.active === 0) {
-                throw new Error("Failed to start interactive connector job with ID: " + id);
-            }
+        // TODO: the pod might not be ready yet if it was just started
+        // TODO: what if the admin API is running outside the cluster?  Need a service with a nodePort?
+        // pods.items.forEach(pod => {
+        //     pod.status.podIP
+        // });
 
-            return k8sApi.getPodsWithSelector(job.spec.selector.matchLabels);
-        }).then(function(pods) {
-            // TODO: the pod might be ready yet if it was just started
-            // TODO: what if the admin API is running outside the cluster?  Need a service with a nodePort?
-            // pods.items.forEach(pod => {
-            //     pod.status.podIP
-            // });
-            const proxy = HttpProxy.createProxyServer({
-                target: 'https://putsreq.com/u2uluuEEWV0FflwqlO6k',
-                secure: false
-            });
-            return proxy;
-        });
+        connectorUrl = `http://example.com/TODO`;
     }
+
+    // Access the interactive connector's /status service.
+    // This does two things:
+    // 1. It makes sure the interactive connector is running.
+    // 2. It resets the timeout, guaranteeing that the connector won't shut itself down
+    //    before our real request comes through (assuming that the timeout is much longer
+    //    than any reasonable single request).
+    const status = await fetch(connectorUrl + '/status');
+
+    if (!status.ok) {
+        // The job exists and appears to be running, but it's not responding correctly.
+        // The most likely cause is that it just timed out and shut down.  Let's restart
+        // it and try again.  Unless we've already tried that.
+        if (retries !== undefined && retries > 0) {
+            throw new Error("Could not create a working interactive connector: " + id);
+        }
+        await k8sApi.deleteJobIfPresent(prefixId(id));
+        return ensureInteractiveConnector(k8sApi, id, options, 1);
+    }
+
+    const proxy = HttpProxy.createProxyServer({
+        target: connectorUrl
+    });
+
+    return proxy;
 }
