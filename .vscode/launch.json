@@ -9,7 +9,7 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Launch CKAN Connector",
+            "name": "Launch Admin API",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
@@ -18,9 +18,8 @@
                 "src/index.ts"
             ],
             "args":[
-                "--name", "foo", "--sourceUrl", "bar"
             ],
-            "cwd": "${workspaceRoot}/magda-ckan-connector"
+            "cwd": "${workspaceRoot}/magda-admin-api"
         },
         {
             "type": "node",

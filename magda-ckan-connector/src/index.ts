@@ -44,7 +44,12 @@ const argv = yargs
     .option('listenPort', {
         describe: 'The port on which to run the REST API when in interactive model.',
         type: 'number',
-        default: 6112
+        default: 6113
+    })
+    .option('timeout', {
+        describe: 'When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.',
+        type: 'number',
+        default: 0
     })
     .argv;
 
@@ -83,8 +88,6 @@ const datasetAspectBuilders: AspectBuilder[] = [
         builderFunctionString: fs.readFileSync('aspect-templates/temporal-coverage.js', 'utf8')
     }
 ];
-
-//fs.writeFileSync('datasetAspectBuilders.json', JSON.stringify(datasetAspectBuilders, undefined, '  '), 'utf8');
 
 const distributionAspectBuilders: AspectBuilder[] = [
     {
@@ -169,6 +172,33 @@ if (!argv.interactive) {
 } else {
     var app = express();
     app.use(require("body-parser").json());
+
+    if (argv.timeout > 0) {
+        // Arrange to shut down the process after the idle timeout expires.
+        let timeoutId: NodeJS.Timer;
+
+        function resetTimeout() {
+            if (timeoutId !== undefined) {
+                clearTimeout(timeoutId);
+            }
+
+            timeoutId = setTimeout(function() {
+                console.log('Shutting down due to idle timeout.');
+                process.exit(0);
+            }, argv.timeout * 1000);
+        }
+
+        app.use(function(req, res, next) {
+            resetTimeout();
+            next();
+        });
+
+        resetTimeout();
+    }
+
+    app.get('/v0/status', (req, res) => {
+        res.send('OK');
+    });
 
     app.get('/v0/config', (req, res) => {
         res.send(transformerOptions);

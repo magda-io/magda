@@ -20,12 +20,23 @@
               "--config",
               "/etc/config/connector.json",
               "--registryUrl",
-              "http://registry-api/v0"
+              "http://registry-api/v0",
+              "--interactive"
+            ],
+            "ports": [
+                {
+                    "containerPort": 6112
+                }
             ],
             "imagePullPolicy": "Always",
             "resources": {
               "requests": {
-                "cpu": "0m"
+                "cpu": "100m",
+                "memory": "100Mi"
+              },
+              "limits": {
+                "cpu": "200m",
+                "memory": "200Mi"
               }
             },
             "volumeMounts": [

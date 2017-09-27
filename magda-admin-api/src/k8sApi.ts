@@ -1,6 +1,6 @@
-const Api = require("kubernetes-client");
-const fs = require("fs");
 require("util.promisify/shim")();
+import * as Api from "kubernetes-client";
+import * as fs from "fs";
 import { promisify } from "util";
 import * as _ from "lodash";
 import * as path from "path";
@@ -13,43 +13,79 @@ export type K8SApiType = "minikube" | "cluster" | "test";
 export default class K8SApi {
     private batchApi: any;
     private coreApi: any;
+    public readonly minikubeIP: string;
 
-    constructor(apiType: K8SApiType, private namespace: string = "default") {
+    constructor(public readonly apiType: K8SApiType, private namespace: string = "default") {
         const details = K8SApi.getDetails(apiType);
         this.batchApi = new Api.Batch(details);
         this.coreApi = new Api.Core(details);
+
+        // minikubeIP will only be defined if apiType === "minikube".
+        this.minikubeIP = details.minikubeIP;
     }
 
     getJobs(): Promise<any> {
-        return promisify(
-            this.batchApi
-                .ns(this.namespace)
-                .jobs.get.bind(this.batchApi.ns.jobs)
-        )();
+        const jobs = this.batchApi
+            .ns(this.namespace)
+            .jobs;
+        return promisify(jobs.get.bind(jobs))();
+    }
+
+    getJob(id: string): Promise<any> {
+        const jobs = this.batchApi
+            .ns(this.namespace)
+            .jobs(id);
+        return promisify(jobs.get.bind(jobs))();
+    }
+
+    getPodsWithSelector(selector: any): Promise<any> {
+        const pods = this.coreApi
+            .ns(this.namespace)
+            .pods
+            .matchLabels(selector);
+        return promisify(pods.get.bind(pods))();
+    }
+
+    getService(id: string): Promise<any> {
+        const services = this.coreApi
+            .ns(this.namespace)
+            .services(id);
+        return promisify(services.get.bind(services))();
     }
 
     getJobStatus(id: string): Promise<any> {
-        return promisify(
-            this.batchApi
-                .ns(this.namespace)
-                .jobs.get.bind(this.batchApi.ns.jobs)
-        )({ name: `${id}/status` });
+        const jobs = this.batchApi
+            .ns(this.namespace)
+            .jobs(id);
+        return promisify(jobs.get.bind(jobs))({
+            name: `${id}/status`
+        });
     }
 
     createJob(body: any): Promise<any> {
-        return promisify(
-            this.batchApi
-                .ns(this.namespace)
-                .jobs.post.bind(this.batchApi.ns.jobs)
-        )({ body });
+        const jobs = this.batchApi
+            .ns(this.namespace)
+            .jobs;
+        return promisify(jobs.post.bind(jobs))({
+            body
+        });
+    }
+
+    createService(body: any): Promise<any> {
+        const services = this.coreApi
+            .ns(this.namespace)
+            .services;
+        return promisify(services.post.bind(services))({
+            body
+        });
     }
 
     deleteJob(id: string) {
-        return promisify(
-            this.batchApi
-                .ns(this.namespace)
-                .jobs.delete.bind(this.batchApi.ns.jobs)
-        )({
+        const jobs = this.batchApi
+            .ns(this.namespace)
+            .jobs;
+
+        return promisify(jobs.delete.bind(jobs))({
             name: id,
             body: {
                 kind: "DeleteOptions",
@@ -74,9 +110,11 @@ export default class K8SApi {
     }
 
     getConnectorConfigMap() {
-        return promisify(
-            this.coreApi.ns.configmaps.get.bind(this.coreApi.ns.configmaps)
-        )({
+        const configmaps = this.coreApi
+            .ns(this.namespace)
+            .configmaps;
+
+        return promisify(configmaps.get.bind(configmaps))({
             name: "connector-config"
         }).then((result: any) =>
             _(result.data)
@@ -89,9 +127,11 @@ export default class K8SApi {
     }
 
     updateConnectorConfigMap(id: string, newConfig: any) {
-        return promisify(
-            this.coreApi.ns.configmaps.patch.bind(this.coreApi.ns.configmaps)
-        )({
+        const configmaps = this.coreApi
+            .ns(this.namespace)
+            .configmaps;
+
+        return promisify(configmaps.patch.bind(configmaps))({
             name: "connector-config",
             body: {
                 data: {
@@ -113,6 +153,7 @@ export default class K8SApi {
             );
 
             return {
+                minikubeIP: minikubeIP,
                 url: `https://${minikubeIP}:8443`,
                 ca: fs.readFileSync(path.join(minikubePath, "ca.crt")),
                 cert: fs.readFileSync(path.join(minikubePath, "apiserver.crt")),
