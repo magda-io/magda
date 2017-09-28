@@ -39,6 +39,7 @@ class Connectors extends React.Component {
                 <th>type</th>
                 <th>url</th>
                 <th>action</th>
+                <th>job status</th>
                 <th>remove</th>
               </tr>
               {this.props.connectors.map(c=>this.renderConnector(c))}</tbody></table>
@@ -116,7 +117,8 @@ class Connectors extends React.Component {
     <td>{connector.name}</td>
     <td>{connector.type}</td>
     <td>{connector.sourceUrl}</td>
-    <td><button className={`btn ${!connector.job ? 'btn-success': 'btn-warning'}`} type='button' onClick={this.toggleConnector.bind(this, connector)}>{!connector.job ? 'Start' : 'Stop'}</button></td>
+    <td><button className={`btn ${connector.job && connector.job.status === 'active'? 'btn-warning ': 'btn-success'}`} type='button' onClick={this.toggleConnector.bind(this, connector)}>{connector.job && connector.job.status === 'active' ? 'Stop' : 'Start'}</button></td>
+    <td className={connector.job ? connector.job.status :''}>{connector.job && connector.job.status}</td>
     <td><button className='btn btn-danger' onClick={this.deleteConnector.bind(this, connector)}>Delete</button></td>
     </tr>)
   }
