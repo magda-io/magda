@@ -62,6 +62,7 @@ class Connectors extends React.Component {
   }
 
   renderConnectorForm(){
+    const disableSubmit = this.props.error || this.props.isFetching || !this.state.newConnectorName.length || !this.state.newConnectorType.length;
     return  <div className='create-connector-form-wrapper' onClick={()=>{this.closeConnectorForm()}}>
               <form className='create-connector-form' onClick={(event)=>{event.stopPropagation()}}>
               {this.props.error && <div className="alert alert-danger">{this.props.error}</div>}
@@ -77,7 +78,7 @@ class Connectors extends React.Component {
                 </label>
                     <input type="text" name="type" onBlur={(event)=>{this.validateField(event.target.value, 'type')}} onChange={(event)=>{this.setState({newConnectorType: event.target.value, error: null})}} value={this.state.newConnectorType}/>
                 </div>
-                <input type="button" value="Submit" onClick={()=>this.submitNewConnector()} disabled={this.props.error || this.props.isFetching} className='btn btn-primary' />
+                <input type="button" value="Submit" onClick={()=>this.submitNewConnector()} disabled={disableSubmit} className='btn btn-primary' />
             </form>
           </div>
   }

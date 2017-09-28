@@ -90,7 +90,7 @@ export function resetConnectorForm(){
 export function validateConnectorName(name){
   return (dispatch: Dispatch)=>{
     if(!name || name.length === 0){
-      return dispatch(createConnectorError("name field cannot be empty"));
+      return dispatch(createConnectorError("Your new connector must have a type 😈"));
     }
     dispatch(requestConnectors())
     let url : string = `${config.adminApiUrl}connectors/`;
@@ -114,7 +114,7 @@ export function validateConnectorName(name){
         dispatch(receiveConnectors(json))
         if(json.some(item => item.id === encodeURI(name))){
           // illegal user name, dispatch error
-          return dispatch(createConnectorError("connector name already exists"));
+          return dispatch(createConnectorError("Connector name already taken 😩"));
         }
       }
     })
@@ -124,7 +124,7 @@ export function validateConnectorName(name){
 export function validateConnectorType(type){
   return (dispatch: Dispatch)=>{
     if(!type || type.length ===0){
-      return dispatch(createConnectorError("type name cannot be empty"));
+      return dispatch(createConnectorError("Your new connector must have a type 😈"));
     }
   }
 }
