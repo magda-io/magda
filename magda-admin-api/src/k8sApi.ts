@@ -96,7 +96,7 @@ export default class K8SApi {
     }
 
     deleteJobIfPresent(id: string) {
-        return this.getJobStatus(id)
+        return this.getJob(id)
             .then((result: any) => {
                 return this.deleteJob(id);
             })
@@ -107,6 +107,14 @@ export default class K8SApi {
                     throw e;
                 }
             });
+    }
+
+    deleteService(id: string) {
+        const services = this.coreApi
+            .ns(this.namespace)
+            .services(id);
+
+        return promisify(services.delete.bind(services))();
     }
 
     getConnectorConfigMap(): Promise<any> {
