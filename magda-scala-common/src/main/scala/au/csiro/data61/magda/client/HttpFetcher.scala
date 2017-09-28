@@ -16,8 +16,13 @@ import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.util.Http.getPort
 import java.net.URL
 
-class HttpFetcher(baseUrl: URL)(implicit val system: ActorSystem,
-                                val materializer: Materializer, val ec: ExecutionContext) {
+trait HttpFetcher {
+  def get(path: String): Future[HttpResponse]
+  def post[T](path: String, payload: T)(implicit m: ToEntityMarshaller[T]): Future[HttpResponse]
+}
+
+class HttpFetcherImpl(baseUrl: URL)(implicit val system: ActorSystem,
+                                    val materializer: Materializer, val ec: ExecutionContext) extends HttpFetcher {
   lazy val connectionFlow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
     val host = baseUrl.getHost
     val port = getPort(baseUrl)
@@ -45,4 +50,9 @@ class HttpFetcher(baseUrl: URL)(implicit val system: ActorSystem,
       case (response, _) => response.get
     }
   }
+}
+
+object HttpFetcher {
+  def apply(baseUrl: URL)(implicit system: ActorSystem,
+                          materializer: Materializer, ec: ExecutionContext) = new HttpFetcherImpl(baseUrl)
 }

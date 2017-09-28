@@ -20,6 +20,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import au.csiro.data61.magda.indexer.external.registry.RegistryConstants
 import au.csiro.data61.magda.client.HttpFetcher
+import au.csiro.data61.magda.client.HttpFetcherImpl
 
 class RegisterWebhookSpec extends BaseRegistryApiSpec {
   implicit val config = TestActorSystem.config
@@ -55,7 +56,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
   }
 
   class MockedHttpFetcher(interfaceConfig: InterfaceConfig, registryApi: RegistryApi)(override implicit val system: ActorSystem,
-                                                                                      override implicit val materializer: Materializer, override implicit val ec: ExecutionContext) extends HttpFetcher(interfaceConfig.baseUrl) {
+                                                                                      override implicit val materializer: Materializer, override implicit val ec: ExecutionContext) extends HttpFetcherImpl(interfaceConfig.baseUrl) {
     override lazy val connectionFlow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
       Flow[(HttpRequest, Int)].map {
         case (request, int) =>

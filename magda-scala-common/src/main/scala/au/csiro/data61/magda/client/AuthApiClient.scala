@@ -16,7 +16,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
 class AuthApiClient(httpFetcher: HttpFetcher)(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends AuthProtocols {
   def this()(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
-    this(new HttpFetcher(new URL(config.getString("authApi.baseUrl"))))(config, system, executor, materializer)
+    this(HttpFetcher(new URL(config.getString("authApi.baseUrl"))))(config, system, executor, materializer)
   }
 
   def getUserPublic(userId: String): Future[User] = {

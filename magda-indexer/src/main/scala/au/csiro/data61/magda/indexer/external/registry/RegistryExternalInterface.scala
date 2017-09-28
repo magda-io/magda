@@ -20,7 +20,7 @@ import java.time.ZoneOffset
 
 class RegistryExternalInterface(httpFetcher: HttpFetcher, interfaceConfig: InterfaceConfig)(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends RegistryIndexerProtocols with RegistryConverters {
   def this(interfaceConfig: InterfaceConfig)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
-    this(new HttpFetcher(interfaceConfig.baseUrl), interfaceConfig)(config, system, executor, materializer)
+    this(HttpFetcher(interfaceConfig.baseUrl), interfaceConfig)(config, system, executor, materializer)
   }
 
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
