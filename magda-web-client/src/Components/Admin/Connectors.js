@@ -2,17 +2,15 @@
 import React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import {fetchConnectorsIfNeeded, updateConnectorStatus, deleteConnector, createConnector} from '../../actions/connectorsActions';
+import {fetchConnectorsIfNeeded, updateConnectorStatus, deleteConnector, createNewConnector, validateConnectorName, validateConnectorType, resetConnectorForm} from '../../actions/connectorsActions';
 import ProgressBar from '../../UI/ProgressBar';
 import { Link } from "react-router";
 
 import './Connectors.css';
-const uuidV1 = require('uuid/v1');
 type State = {
   newConnectorName: string,
   newConnectorType: string,
   newConnectorFormIsOpen: boolean,
-  error: ?string
 }
 
 class Connectors extends React.Component {
@@ -20,7 +18,6 @@ class Connectors extends React.Component {
     newConnectorFormIsOpen: false,
     newConnectorName: '',
     newConnectorType: '',
-    error: null
   };
 
   componentWillMount(){
@@ -29,7 +26,7 @@ class Connectors extends React.Component {
 
   renderByUser(user){
     if(!user){
-      return <div> <Link to="/account">Sign in</Link> as admin to veiw a list of connectors available</div>
+      return <div> <Link to="/account">Sign in</Link> as admin manage connectors</div>
     }
     else if(!user.isAdmin){
       return <div> not authorised </div>
@@ -51,47 +48,57 @@ class Connectors extends React.Component {
 
   openConnectorForm(){
     this.setState({
+      newConnectorName: '',
+      newConnectorType: '',
       newConnectorFormIsOpen: true
     })
   }
 
+  closeConnectorForm(){
+    this.props.resetConnectorForm();
+    this.setState({
+      newConnectorFormIsOpen: false,
+    })
+  }
+
   renderConnectorForm(){
-    return  <div className='create-connector-form-wrapper' onClick={()=>{this.setState({newConnectorFormIsOpen: false})}}>
+    return  <div className='create-connector-form-wrapper' onClick={()=>{this.closeConnectorForm()}}>
               <form className='create-connector-form' onClick={(event)=>{event.stopPropagation()}}>
-              {this.state.error && <div className="alert alert-danger">{this.state.error}</div>}
+              {this.props.error && <div className="alert alert-danger">{this.props.error}</div>}
               <div>
                 <label>
                     Name:
                 </label>
-                    <input type="text" name="name" onChange={(event)=>{this.setState({newConnectorName: event.target.value, error: null})}} value={this.state.newConnectorName}/>
+                    <input type="text" name="name" onBlur={(event)=>{this.validateField(event.target.value, 'name')}} onChange={(event)=>{this.setState({newConnectorName: event.target.value, error: null})}} value={this.state.newConnectorName}/>
               </div>
               <div>
                 <label>
                     Type:
                 </label>
-                    <input type="text" name="type" onChange={(event)=>{this.setState({newConnectorType: event.target.value, error: null})}} value={this.state.newConnectorType}/>
+                    <input type="text" name="type" onBlur={(event)=>{this.validateField(event.target.value, 'type')}} onChange={(event)=>{this.setState({newConnectorType: event.target.value, error: null})}} value={this.state.newConnectorType}/>
                 </div>
-                <input type="button" value="Submit" onClick={()=>this.submitNewConnector()} className='btn btn-primary' />
+                <input type="button" value="Submit" onClick={()=>this.submitNewConnector()} disabled={this.props.error || this.props.isFetching} className='btn btn-primary' />
             </form>
           </div>
   }
 
+  validateField(value, type){
+    if(type === 'name'){
+      this.props.validateConnectorName(value);
+    } else if(type === 'type'){
+      this.props.validateConnectorType(value);
+    }
+  }
+
   submitNewConnector(){
-    if(this.state.newConnectorName.length > 0 && this.state.newConnectorType.length > 0){
-      this.props.createConnector({
+      this.props.createNewConnector({
         name: this.state.newConnectorName,
         type: this.state.newConnectorType,
-        id: uuidV1()
+        id: encodeURI(this.state.newConnectorName)
       });
       this.setState({
         newConnectorFormIsOpen: false
       })
-    } else{
-      this.setState({
-        error: "Field cannot be empty"
-      })
-    }
-
   }
 
   toggleConnector(connector){
@@ -104,7 +111,7 @@ class Connectors extends React.Component {
   }
 
   renderConnector(connector){
-    return (<tr key={connector.id}>
+    return (<tr key={connector.id} className={`${connector.name === this.state.newConnectorName ? 'success': ''}`}>
     <td>{connector.name}</td>
     <td>{connector.type}</td>
     <td>{connector.sourceUrl}</td>
@@ -123,12 +130,13 @@ class Connectors extends React.Component {
 
 function mapStateToProps(state) {
   let { userManagement: { user }} = state;
-  let { connectors: { connectors, isFetching }} = state;
+  let { connectors: { connectors, isFetching, error }} = state;
 
   return {
     user,
     connectors,
-    isFetching
+    isFetching,
+    error
   };
 }
 
@@ -137,7 +145,10 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
     {fetchConnectorsIfNeeded,
     updateConnectorStatus,
     deleteConnector,
-    createConnector},
+    createNewConnector,
+    validateConnectorName,
+    validateConnectorType,
+    resetConnectorForm},
     dispatch
   );
 };

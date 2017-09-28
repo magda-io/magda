@@ -47,6 +47,28 @@ const connectors = (state: ConnectorsResult = initialData, action: ConnectorActi
         isFetching: false,
         error: action.error
       })
+    case 'CREATE_CONNECTOR':
+      return Object.assign({}, state, {
+        isFetching: true,
+        error: null,
+      })
+    case 'CREATE_CONNECTOR_SUCCESS':
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: null,
+      })
+    case 'CREATE_CONNECTOR_ERROR':
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: action.error
+      })
+    case 'RESET_CREATE_CONNECTOR': {
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: null
+      })
+    }
+
     default:
       return state
   }
