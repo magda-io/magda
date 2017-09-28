@@ -44,11 +44,12 @@ export function getStateForStatus(
 export function mockConnectorConfig(
     k8sApiScope: nock.Scope,
     statusCode: number,
+    namespace: string,
     state?: State,
     optionally: boolean = false
 ) {
     const req = k8sApiScope.get(
-        "/api/v1/namespaces/default/configmaps/connector-config"
+        `/api/v1/namespaces/${namespace}/configmaps/connector-config`
     );
 
     if (optionally) {
@@ -69,9 +70,10 @@ export function mockConnectorConfig(
 export function mockJobs(
     k8sApiScope: nock.Scope,
     statusCode: number,
+    namespace: string,
     state?: State
 ) {
-    k8sApiScope.get("/apis/batch/v1/namespaces/default/jobs").reply(
+    k8sApiScope.get(`/apis/batch/v1/namespaces/${namespace}/jobs`).reply(
         statusCode,
         statusCode === 200
             ? fixtures.getJobs(_(state)
@@ -85,11 +87,12 @@ export function mockJobStatus(
     k8sApiScope: nock.Scope,
     statusCode: number,
     name: string,
+    namespace: string,
     state?: State,
     optionally: boolean = false
 ) {
     const req = k8sApiScope.get(
-        `/apis/batch/v1/namespaces/default/jobs/connector-${name}/status`
+        `/apis/batch/v1/namespaces/${namespace}/jobs/connector-${name}/status`
     );
 
     if (optionally) {
@@ -137,10 +140,11 @@ export function deleteConnector(
 export function mockDeleteJob(
     k8sApiScope: nock.Scope,
     statusCode: number,
-    id: string
+    id: string,
+    namespace: string
 ) {
     k8sApiScope
-        .delete(`/apis/batch/v1/namespaces/default/jobs/connector-${id}`, {
+        .delete(`/apis/batch/v1/namespaces/${namespace}/jobs/connector-${id}`, {
             kind: "DeleteOptions",
             apiVersion: "batch/v1",
             propagationPolicy: "Background"
@@ -153,11 +157,12 @@ export function mockDeleteJob(
 export function mockCreateJob(
     k8sApiScope: nock.Scope,
     statusCode: number,
+    namespace: string,
     body?: any,
     optionally: boolean = false
 ) {
     const req = k8sApiScope.post(
-        `/apis/batch/v1/namespaces/default/jobs`,
+        `/apis/batch/v1/namespaces/${namespace}/jobs`,
         body
     );
 

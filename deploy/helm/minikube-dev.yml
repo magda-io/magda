@@ -4,9 +4,21 @@ global:
     maxUnavailable: 1
   exposeNodePorts: true
   image:
-    repository: "localhost:5000/data61/"
+    repository: "localhost:5000/data61"
     tag: "latest"
 gateway:
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+combined-db:
+  image:
+    tag: "latest"
+  # Uncomment this if you want to test postgres backups locally - download a private key from
+  # google cloud, mount it as a secret and change the filename to it.
+  # waleBackup:
+  #   method: WAL
+  #   gsPrefix: "gs://magda-postgres-backups/test"
+  #   executionTime: 03:00
+  #   googleApplicationCreds:
+  #     secretName: storage-account-credentials
+  #     fileName: <fileName>
