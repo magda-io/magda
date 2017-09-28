@@ -41,10 +41,13 @@ export default function buildInteractiveConnectorRouter(options: Options) {
     });
 
     router.get([
+        "/status",
+        "/config",
         "/test-harness.js",
         "/dataset",
         "/distribution",
-        "/organization"
+        "/organization",
+        "/example.html"
     ], (req, res) => {
         req.connectorProxy.web(req, res);
     });

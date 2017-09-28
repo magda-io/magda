@@ -42,7 +42,7 @@
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-ckan-connector",
-      "include": "node_modules aspect-templates dist Dockerfile"
+      "include": "node_modules aspect-templates dist Dockerfile example.html"
     }
   }
 }

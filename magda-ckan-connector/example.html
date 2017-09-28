@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="/v0/test-harness.js"></script>
+    <script src="test-harness.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <title>Test Harness Example</title>
   </head>
@@ -11,7 +11,7 @@
     <div id="root"></div>
     <script>
         $.ajax({
-            url: '/v0/config',
+            url: 'config',
             success: function(config) {
                 config.datasetAspectBuilders[0].builderFunctionString = 'return { custom: "connectorness" };';
 
@@ -20,7 +20,7 @@
                 var idMatch = document.location.href.match(/id=([^&]+)/);
                 var id = idMatch ? idMatch[1] : '106f4e62-3c8e-4037-8e7d-6983e897342c';
                 $.ajax({
-                    url: '/v0/dataset?id=' + id,
+                    url: 'dataset?id=' + id,
                     success: function(result) {
                         var record = transformer.datasetJsonToRecord(result);
                         document.write('<pre>' + JSON.stringify(record, undefined, '  ') + '</pre>');
