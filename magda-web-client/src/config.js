@@ -13,12 +13,15 @@ const registryApiUrl =
 const previewMapUrl = serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
 
+const adminApiUrl = "http://magda-dev.terria.io/api/v0/admin/"
+
 export const config = {
   appName: "data.gov.au",
   baseUrl: serverConfig.baseUrl || fallbackApiHost,
   searchApiUrl:
     serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
   registryApiUrl: registryApiUrl,
+  adminApiUrl: adminApiUrl,
   authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",
   discussionsApiUrl:
     serverConfig.discussionsApiBaseUrl ||
