@@ -1,4 +1,4 @@
-name := "magda-scala-common"
+	name := "magda-scala-common"
 
 resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
@@ -22,6 +22,7 @@ libraryDependencies ++= {
        "com.sksamuel.elastic4s" %% "elastic4s-tcp" % "5.4.3",
        "com.mchange" %% "leftright" % "0.0.1",
        "com.beachape" %% "enumeratum" % "1.5.10",
-       "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.9.1"
+       "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.9.1",
+       "com.auth0" % "java-jwt" % "3.2.0"
      )
 }

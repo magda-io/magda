@@ -28,9 +28,7 @@ import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.indexer.crawler.Crawler
 import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.indexer.external.HttpFetcher
-import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.client.HttpFetcher
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
@@ -78,7 +76,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
       val externalInterface = filteredSource match {
         case (dataSets, interfaceConfig) =>
-          val fetcher = new HttpFetcher(interfaceConfig)
+          val fetcher = new HttpFetcher(interfaceConfig.baseUrl)
           new RegistryExternalInterface(fetcher, interfaceConfig) {
             override def getInterfaceConfig(): InterfaceConfig = interfaceConfig
             override def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
@@ -118,21 +116,19 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
       refresh(indexId)
 
-      withClue("This might not be just a failure!!!" + allDataSets.map(_._1.uniqueId)) {
-        try {
-          blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
-        } catch {
-          case (e: Throwable) =>
-            val sizeQuery = search(indexId / indices.getType(Indices.DataSetsIndexType)).size(10000)
-            val result = client.execute(sizeQuery).await(60 seconds)
-            logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
-            logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${result.totalHits}" +
-              s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
-            logger.error(s"Returned results: ${result.hits}")
-            logger.error(s"First index: ${source._1.map(_.normalToString)}")
-            logger.error(s"Second index: ${source._2.map(_.normalToString)}")
-            throw e
-        }
+      try {
+        blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+      } catch {
+        case (e: Throwable) =>
+          val sizeQuery = search(indexId / indices.getType(Indices.DataSetsIndexType)).size(10000)
+          val result = client.execute(sizeQuery).await(60 seconds)
+          logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
+          logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${result.totalHits}" +
+            s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
+          logger.error(s"Returned results: ${result.hits}")
+          logger.error(s"First index: ${source._1.map(_.normalToString)}")
+          logger.error(s"Second index: ${source._2.map(_.normalToString)}")
+          throw e
       }
 
       Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {

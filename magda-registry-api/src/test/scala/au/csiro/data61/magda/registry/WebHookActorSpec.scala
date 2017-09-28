@@ -4,10 +4,13 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
 import akka.pattern.ask
 import akka.util.Timeout
-import au.csiro.data61.magda.model.Registry.{EventType, WebHook, WebHookConfig}
+import au.csiro.data61.magda.model.Registry.{ EventType, WebHook, WebHookConfig }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import akka.http.scaladsl.model.headers.RawHeader
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 
 class WebHookActorSpec extends ApiSpec {
   implicit val timeout = Timeout(5 seconds)
@@ -23,7 +26,7 @@ class WebHookActorSpec extends ApiSpec {
 
   it("initially is not processing") { _ =>
     val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/"))
-    Await.result(actor ? WebHookActor.GetStatus, 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (Some(false))
+    Await.result(actor ? WebHookActor.GetStatus, 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(Some(false))
   }
 
   it("creates a processor for newly-created web hooks") { param =>
@@ -31,7 +34,7 @@ class WebHookActorSpec extends ApiSpec {
 
     processAndWaitUntilDone(actor)
 
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
 
     val hook = WebHook(
       id = Some("abc"),
@@ -47,11 +50,10 @@ class WebHookActorSpec extends ApiSpec {
         includeEvents = Some(true),
         includeRecords = Some(true),
         includeAspectDefinitions = Some(true),
-        dereference = Some(true)
-      )
-    )
+        dereference = Some(true)))
 
-    Post("/v0/hooks", hook) ~> param.api.routes ~> check {
+    val algorithm = Algorithm.HMAC256("squirrel")
+    Post("/v0/hooks", hook).withHeaders(RawHeader("X-Magda-Session", JWT.create().withClaim("userId", "1").sign(algorithm))) ~> param.api.routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
@@ -76,9 +78,7 @@ class WebHookActorSpec extends ApiSpec {
         includeEvents = Some(true),
         includeRecords = Some(true),
         includeAspectDefinitions = Some(true),
-        dereference = Some(true)
-      )
-    )
+        dereference = Some(true)))
 
     Post("/v0/hooks", hook) ~> param.api.routes ~> check {
       status shouldEqual StatusCodes.OK
@@ -94,6 +94,6 @@ class WebHookActorSpec extends ApiSpec {
 
     processAndWaitUntilDone(actor)
 
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
   }
 }

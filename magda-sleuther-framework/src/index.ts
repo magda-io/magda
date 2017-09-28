@@ -243,7 +243,7 @@ export default async function sleuther(
             options.optionalAspects,
             previous && previous.nextPageToken,
             true,
-            50
+            10
           )
           .then(unionToThrowable)
           .then(page => {

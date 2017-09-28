@@ -15,7 +15,6 @@ case class InterfaceConfig(
   baseUrl: URL,
   pageSize: Long,
   landingPageUrl: (String*) => Option[String] = _ => None,
-  fakeConfig: Option[FakeConfig] = None,
   ignore: Boolean = false,
   defaultPublisherName: Option[String] = None,
   raw: Config = ConfigFactory.empty())
@@ -39,15 +38,7 @@ object InterfaceConfig {
         else None,
       ignore = config.hasPath("ignore") && config.getBoolean("ignore"),
       defaultPublisherName = if (config.hasPath("defaultPublisherName")) Some(config.getString("defaultPublisherName")) else None,
-      fakeConfig = {
-        if (isFaked && config.hasPath("fake"))
-          Some(new FakeConfig(
-            config.getString("fake.dataFilePath"),
-            config.getString("fake.mimeType")))
-        else None
-      },
-      raw = config
-    )
+      raw = config)
   }
 
   def all(implicit config: Config): Map[String, InterfaceConfig] = config.getConfig("indexedServices").root().foldRight(Map[String, InterfaceConfig]()) {
