@@ -14,15 +14,30 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.TestProbe
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.client.HttpFetcher
+import au.csiro.data61.magda.model.Auth.{ User, AuthProtocols }
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import scalikejdbc._
 import org.scalamock.scalatest.MockFactory
 import org.scalamock.proxy.ProxyMockFactory
 import org.scalamock.proxy.Mock
+import scala.concurrent.Future
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.HttpEntity
+import akka.http.scaladsl.model.ResponseEntity
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.marshalling.Marshal
+import scala.concurrent.ExecutionContext
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.marshalling.ToEntityMarshaller
+import com.auth0.jwt.JWT
+import akka.http.scaladsl.model.headers.CustomHeader
+import com.auth0.jwt.algorithms.Algorithm
+import au.csiro.data61.magda.directives.AuthDirectives
+import akka.http.scaladsl.model.headers.RawHeader
 
-abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with ProxyMockFactory {
-  case class FixtureParam(api: Api, webHookActorProbe: TestProbe, httpFetcher: HttpFetcher with Mock)
+abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with ProxyMockFactory with AuthProtocols {
+  case class FixtureParam(api: Api, webHookActorProbe: TestProbe, asAdmin: HttpRequest => HttpRequest)
 
   val databaseUrl = Option(System.getenv("npm_package_config_databaseUrl")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
@@ -45,6 +60,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   override def withFixture(test: OneArgTest) = {
     val webHookActorProbe = TestProbe()
     val httpFetcher = mock[HttpFetcher]
+
     val authClient = new AuthApiClient(httpFetcher)(testConfig, system, executor, materializer)
     val api = new Api(webHookActorProbe.ref, authClient, testConfig, system, executor, materializer)
 
@@ -57,10 +73,17 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
     flyway.migrate()
 
-    super.withFixture(test.toNoArgTest(FixtureParam(api, webHookActorProbe, httpFetcher)))
+    def asAdmin = (req: HttpRequest) => {
+      expectAdmin(httpFetcher)
+      req.withHeaders(new RawHeader("X-Magda-Session", JWT.create().withClaim("userId", "1").sign(AuthDirectives.algorithm)))
+    }
+
+    super.withFixture(test.toNoArgTest(FixtureParam(api, webHookActorProbe, asAdmin)))
   }
 
   def expectAdmin(httpFetcher: HttpFetcher with Mock) {
-    httpFetcher expects 'get 
+    val resFuture = Marshal(User(true)).to[ResponseEntity].map(user => HttpResponse(status = 200, entity = user))
+
+    httpFetcher.expects('get)("/v0/public/users/1").returns(resFuture)
   }
 }

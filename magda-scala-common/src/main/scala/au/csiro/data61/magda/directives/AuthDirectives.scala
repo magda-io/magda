@@ -26,7 +26,7 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
 
 object AuthDirectives {
-  val algorithm = Algorithm.HMAC256(Option(System.getenv("JWT_SECRET")).orElse(Option(System.getenv("npm_package_config_databaseUrl"))).getOrElse("squirrel"))
+  val algorithm = Algorithm.HMAC256(Option(System.getenv("JWT_SECRET")).orElse(Option(System.getenv("npm_package_config_jwtSecret"))).getOrElse("squirrel"))
   val jwt = JWT.require(algorithm).build
 
   val requireUserId: Directive1[String] = {
