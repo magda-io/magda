@@ -5,6 +5,7 @@ import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import spray.json._
 import au.csiro.data61.magda.model.Registry._
+import akka.http.scaladsl.server.AuthenticationFailedRejection
 
 class AspectsServiceSpec extends ApiSpec {
   describe("GET") {
@@ -65,6 +66,11 @@ class AspectsServiceSpec extends ApiSpec {
           responseAs[BadRequest].message should include("already exists")
         }
       }
+    }
+
+    checkMustBeAdmin {
+      val aspectDefinition = AspectDefinition("testId", "testName", None)
+      Post("/v0/aspects", aspectDefinition)
     }
   }
 
@@ -144,6 +150,11 @@ class AspectsServiceSpec extends ApiSpec {
         }
       }
     }
+
+    checkMustBeAdmin {
+      val aspectDefinition = AspectDefinition("testId", "testName", None)
+      Put("/v0/aspects/testId", aspectDefinition)
+    }
   }
 
   describe("PATCH") {
@@ -198,6 +209,11 @@ class AspectsServiceSpec extends ApiSpec {
           responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("baz"))))
         }
       }
+    }
+
+    checkMustBeAdmin {
+      val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
+      Patch("/v0/aspects/testId", patch)
     }
   }
 }

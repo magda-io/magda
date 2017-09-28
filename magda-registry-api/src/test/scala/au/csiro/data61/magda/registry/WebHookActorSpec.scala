@@ -52,8 +52,7 @@ class WebHookActorSpec extends ApiSpec {
         includeAspectDefinitions = Some(true),
         dereference = Some(true)))
 
-    val algorithm = Algorithm.HMAC256("squirrel")
-    Post("/v0/hooks", hook).withHeaders(RawHeader("X-Magda-Session", JWT.create().withClaim("userId", "1").sign(algorithm))) ~> param.api.routes ~> check {
+    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
@@ -80,7 +79,7 @@ class WebHookActorSpec extends ApiSpec {
         includeAspectDefinitions = Some(true),
         dereference = Some(true)))
 
-    Post("/v0/hooks", hook) ~> param.api.routes ~> check {
+    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
@@ -88,7 +87,7 @@ class WebHookActorSpec extends ApiSpec {
 
     Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be (None)
 
-    Delete("/v0/hooks/abc") ~> param.api.routes ~> check {
+    param.asAdmin(Delete("/v0/hooks/abc")) ~> param.api.routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 

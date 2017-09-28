@@ -24,6 +24,8 @@ import au.csiro.data61.magda.model.Auth.User
 import akka.http.scaladsl.model.headers.CustomHeader
 import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
+import akka.http.scaladsl.server.AuthenticationFailedRejection
+import akka.http.scaladsl.model.headers.HttpChallenge
 
 object AuthDirectives {
   val algorithm = Algorithm.HMAC256(Option(System.getenv("JWT_SECRET")).orElse(Option(System.getenv("npm_package_config_jwtSecret"))).getOrElse("squirrel"))
@@ -41,16 +43,16 @@ object AuthDirectives {
           try {
             provide(jwt.verify(header.value()).getClaim("userId").asString())
           } catch {
-            case NonFatal(_) => complete(StatusCodes.Unauthorized)
+            case NonFatal(_) => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, HttpChallenge("magda", None)))
           }
-        case None => complete(StatusCodes.Unauthorized)
+        case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, HttpChallenge("magda", None)))
       }
     }
   }
 
   def requireIsAdmin(authApiClient: AuthApiClient): Directive1[String] = {
     implicit val ec = authApiClient.executor
-    
+
     requireUserId flatMap { userId =>
       extractActorSystem flatMap { actorSystem =>
         extractMaterializer flatMap { materializer =>

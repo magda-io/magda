@@ -35,9 +35,11 @@ import akka.http.scaladsl.model.headers.CustomHeader
 import com.auth0.jwt.algorithms.Algorithm
 import au.csiro.data61.magda.directives.AuthDirectives
 import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.server.AuthenticationFailedRejection
+import akka.http.scaladsl.server.AuthorizationFailedRejection
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with ProxyMockFactory with AuthProtocols {
-  case class FixtureParam(api: Api, webHookActorProbe: TestProbe, asAdmin: HttpRequest => HttpRequest)
+  case class FixtureParam(api: Api, webHookActorProbe: TestProbe, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest)
 
   val databaseUrl = Option(System.getenv("npm_package_config_databaseUrl")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
@@ -73,17 +75,67 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
     flyway.migrate()
 
-    def asAdmin = (req: HttpRequest) => {
-      expectAdmin(httpFetcher)
-      req.withHeaders(new RawHeader("X-Magda-Session", JWT.create().withClaim("userId", "1").sign(AuthDirectives.algorithm)))
+    def asNonAdmin(req: HttpRequest): HttpRequest = {
+      expectAdmin(httpFetcher, false)
+      asUser(req)
     }
 
-    super.withFixture(test.toNoArgTest(FixtureParam(api, webHookActorProbe, asAdmin)))
+    def asAdmin(req: HttpRequest): HttpRequest = {
+      expectAdmin(httpFetcher, true)
+      asUser(req)
+    }
+
+    super.withFixture(test.toNoArgTest(FixtureParam(api, webHookActorProbe, asAdmin, asNonAdmin)))
   }
 
-  def expectAdmin(httpFetcher: HttpFetcher with Mock) {
-    val resFuture = Marshal(User(true)).to[ResponseEntity].map(user => HttpResponse(status = 200, entity = user))
+  def asUser(req: HttpRequest): HttpRequest = {
+    req.withHeaders(new RawHeader("X-Magda-Session", JWT.create().withClaim("userId", "1").sign(AuthDirectives.algorithm)))
+  }
+
+  def expectAdmin(httpFetcher: HttpFetcher with Mock, isAdmin: Boolean) {
+    val resFuture = Marshal(User(isAdmin)).to[ResponseEntity].map(user => HttpResponse(status = 200, entity = user))
 
     httpFetcher.expects('get)("/v0/public/users/1").returns(resFuture)
   }
+
+  def checkMustBeAdmin(fn: => HttpRequest) {
+    describe("should only work when logged in as admin") {
+      it("rejects with credentials missing if not signed in") { param =>
+        fn ~> param.api.routes ~> check {
+          expectCredentialsMissingRejection()
+        }
+      }
+
+      it("rejects with credentials rejected if credentials are bad") { param =>
+        fn.withHeaders(RawHeader("X-Magda-Session", "aergiajreog")) ~> param.api.routes ~> check {
+          expectCredentialsRejectedRejection()
+        }
+      }
+
+      it("rejects with AuthorizationFailedRejection if not admin") { param =>
+        param.asNonAdmin(fn) ~> param.api.routes ~> check {
+          expectUnauthorizedRejection()
+        }
+      }
+    }
+    
+    def expectCredentialsMissingRejection() = {
+      rejection match {
+        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, _) => // success 
+        case _ => fail()
+      }
+    }
+
+    def expectCredentialsRejectedRejection() = {
+      rejection match {
+        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, _) => // success 
+        case _ => fail(s"Rejection was $rejection")
+      }
+    }
+
+    def expectUnauthorizedRejection() = {
+      rejection shouldEqual AuthorizationFailedRejection
+    }
+  }
+
 }
