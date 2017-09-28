@@ -104,7 +104,7 @@ class Connectors extends React.Component {
   }
 
   toggleConnector(connector){
-    const action = connector.job ? 'stop' : 'start';
+    const action = connector.job && connector.job.status === 'active' ? 'stop' : 'start';
     this.props.updateConnectorStatus(connector.id, action)
   }
 
