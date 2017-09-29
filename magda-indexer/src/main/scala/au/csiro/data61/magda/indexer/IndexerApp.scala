@@ -9,7 +9,6 @@ import akka.actor.Props
 import akka.event.Logging
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
@@ -17,7 +16,7 @@ import akka.http.scaladsl.Http
 
 import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.client.RegistryExternalInterface
 
 object IndexerApp extends App {
   implicit val config = AppConfig.conf()
@@ -33,17 +32,13 @@ object IndexerApp extends App {
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
-  val interfaceConfigs = InterfaceConfig.all
-
   logger.debug("Starting Crawler")
 
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
-  val crawler = new RegistryCrawler(new RegistryExternalInterface(interfaceConfigs("registry")))
+  val crawler = new RegistryCrawler(new RegistryExternalInterface())
 
   if (config.getBoolean("registry.registerForWebhooks")) {
-    val registryConfig = interfaceConfigs("registry")
-
-    RegisterWebhook.registerWebhook(registryConfig)
+    RegisterWebhook.registerWebhook
       .recover {
         case e: Throwable =>
           // This is a super massive problem - might as well just crash to make it super-obvious and to

@@ -3,7 +3,7 @@ package au.csiro.data61.magda.indexer
 import au.csiro.data61.magda.registry.{ ApiSpec => BaseRegistryApiSpec }
 import au.csiro.data61.magda.registry.{ Api => RegistryApi }
 import au.csiro.data61.magda.model.Registry.WebHook
-import au.csiro.data61.magda.indexer.external.InterfaceConfig
+import au.csiro.data61.magda.model.Registry.RegistryConstants
 import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
 import au.csiro.data61.magda.test.util.TestActorSystem
 import akka.actor.ActorSystem
@@ -15,20 +15,17 @@ import scala.util.Try
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.HttpMethods
-import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.client.RegistryExternalInterface
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import au.csiro.data61.magda.indexer.external.registry.RegistryConstants
 import au.csiro.data61.magda.client.HttpFetcher
 import au.csiro.data61.magda.client.HttpFetcherImpl
+import java.net.URL
 
 class RegisterWebhookSpec extends BaseRegistryApiSpec {
   implicit val config = TestActorSystem.config
 
   describe("indexer should register itself") {
-    val interfaceConfigs = InterfaceConfig.all
-    val registryConfig = interfaceConfigs("registry").copy(name = "original-registry")
-
     it("on startup") { param =>
       registerIndexer(param.api)
     }
@@ -39,8 +36,8 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
     }
 
     def registerIndexer(registryApi: RegistryApi, aspects: List[String] = RegistryConstants.aspects, optionalAspects: List[String] = RegistryConstants.optionalAspects) = {
-      val mockedFetcher = new MockedHttpFetcher(registryConfig, registryApi)
-      val interface = new RegistryExternalInterface(mockedFetcher, registryConfig)(config, system, executor, materializer)
+      val mockedFetcher = new MockedHttpFetcher(registryApi, new URL("http://localhost:6103"))
+      val interface = new RegistryExternalInterface(mockedFetcher)(config, system, executor, materializer)
 
       Await.result(RegisterWebhook.registerWebhook(interface, aspects, optionalAspects), 10 seconds)
 
@@ -55,8 +52,8 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
     }
   }
 
-  class MockedHttpFetcher(interfaceConfig: InterfaceConfig, registryApi: RegistryApi)(override implicit val system: ActorSystem,
-                                                                                      override implicit val materializer: Materializer, override implicit val ec: ExecutionContext) extends HttpFetcherImpl(interfaceConfig.baseUrl) {
+  class MockedHttpFetcher(registryApi: RegistryApi, baseUrl: URL)(override implicit val system: ActorSystem,
+                                                                  override implicit val materializer: Materializer, override implicit val ec: ExecutionContext) extends HttpFetcherImpl(baseUrl) {
     override lazy val connectionFlow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
       Flow[(HttpRequest, Int)].map {
         case (request, int) =>

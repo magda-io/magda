@@ -1,4 +1,4 @@
-	name := "magda-scala-common"
+name := "magda-scala-common"
 
 resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
@@ -23,6 +23,7 @@ libraryDependencies ++= {
        "com.mchange" %% "leftright" % "0.0.1",
        "com.beachape" %% "enumeratum" % "1.5.10",
        "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.9.1",
-       "com.auth0" % "java-jwt" % "3.2.0"
+       "com.auth0" % "java-jwt" % "3.2.0",
+       "net.virtual-void" %%  "json-lenses" % "0.6.2"
      )
 }
