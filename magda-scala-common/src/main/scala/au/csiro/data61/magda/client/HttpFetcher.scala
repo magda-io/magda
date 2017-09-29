@@ -15,10 +15,11 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.util.Http.getPort
 import java.net.URL
+import akka.http.scaladsl.model.HttpHeader
 
 trait HttpFetcher {
-  def get(path: String): Future[HttpResponse]
-  def post[T](path: String, payload: T)(implicit m: ToEntityMarshaller[T]): Future[HttpResponse]
+  def get(path: String, headers: Seq[HttpHeader] = Seq()): Future[HttpResponse]
+  def post[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(implicit m: ToEntityMarshaller[T]): Future[HttpResponse]
 }
 
 class HttpFetcherImpl(baseUrl: URL)(implicit val system: ActorSystem,
@@ -33,19 +34,20 @@ class HttpFetcherImpl(baseUrl: URL)(implicit val system: ActorSystem,
     }
   }
 
-  def get(path: String): Future[HttpResponse] = {
+  def get(path: String, headers: Seq[HttpHeader] = Seq()): Future[HttpResponse] = {
     val url = s"${baseUrl.getPath}${path}"
-    system.log.debug("Making request to {}{}", baseUrl.getHost, url)
-    val request = RequestBuilding.Get(url)
+    system.log.debug("Making request to {}{}", baseUrl.getHost, url)    
+    val request = RequestBuilding.Get(url).withHeaders(scala.collection.immutable.Seq.concat(headers))
+    println(request.headers)
     Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
       case (response, _) => response.get
     }
   }
 
-  def post[T](path: String, payload: T)(implicit m: ToEntityMarshaller[T]): Future[HttpResponse] = {
+  def post[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(implicit m: ToEntityMarshaller[T]): Future[HttpResponse] = {
     val url = s"${baseUrl.getPath}${path}"
     system.log.debug("Making request to {}{} with {}", baseUrl.getHost, url, payload)
-    val request = RequestBuilding.Post(url, payload)
+    val request = RequestBuilding.Post(url, payload).withHeaders(scala.collection.immutable.Seq.concat(headers))
     Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
       case (response, _) => response.get
     }

@@ -7,9 +7,6 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -26,22 +23,23 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
 import akka.http.scaladsl.server.AuthenticationFailedRejection
 import akka.http.scaladsl.model.headers.HttpChallenge
+import au.csiro.data61.magda.Authentication
 
 object AuthDirectives {
-  val algorithm = Algorithm.HMAC256(Option(System.getenv("JWT_SECRET")).orElse(Option(System.getenv("npm_package_config_jwtSecret"))).getOrElse("squirrel"))
-  val jwt = JWT.require(algorithm).build
 
   val requireUserId: Directive1[String] = {
     extractRequest flatMap { request =>
       val sessionToken = request.headers.find {
-        case headers.RawHeader("X-Magda-Session", value) => true
+        case headers.RawHeader(Authentication.headerName, value) => true
         case _ => false
       }
+      
+      println(sessionToken)
 
       sessionToken match {
         case Some(header) =>
           try {
-            provide(jwt.verify(header.value()).getClaim("userId").asString())
+            provide(Authentication.jwt.verify(header.value()).getClaim("userId").asString())
           } catch {
             case NonFatal(_) => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, HttpChallenge("magda", None)))
           }

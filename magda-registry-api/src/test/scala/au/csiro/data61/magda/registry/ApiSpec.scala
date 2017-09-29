@@ -37,9 +37,10 @@ import au.csiro.data61.magda.directives.AuthDirectives
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.AuthenticationFailedRejection
 import akka.http.scaladsl.server.AuthorizationFailedRejection
+import au.csiro.data61.magda.Authentication
 
-abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with ProxyMockFactory with AuthProtocols {
-  case class FixtureParam(api: Api, webHookActorProbe: TestProbe, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest)
+abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
+  case class FixtureParam(api: Api, webHookActorProbe: TestProbe, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher)
 
   val databaseUrl = Option(System.getenv("npm_package_config_databaseUrl")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
@@ -85,17 +86,17 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
       asUser(req)
     }
 
-    super.withFixture(test.toNoArgTest(FixtureParam(api, webHookActorProbe, asAdmin, asNonAdmin)))
+    super.withFixture(test.toNoArgTest(FixtureParam(api, webHookActorProbe, asAdmin, asNonAdmin, httpFetcher)))
   }
 
   def asUser(req: HttpRequest): HttpRequest = {
-    req.withHeaders(new RawHeader("X-Magda-Session", JWT.create().withClaim("userId", "1").sign(AuthDirectives.algorithm)))
+    req.withHeaders(new RawHeader("X-Magda-Session", JWT.create().withClaim("userId", "1").sign(Authentication.algorithm)))
   }
 
-  def expectAdmin(httpFetcher: HttpFetcher with Mock, isAdmin: Boolean) {
+  def expectAdmin(httpFetcher: HttpFetcher, isAdmin: Boolean) {
     val resFuture = Marshal(User(isAdmin)).to[ResponseEntity].map(user => HttpResponse(status = 200, entity = user))
 
-    httpFetcher.expects('get)("/v0/public/users/1").returns(resFuture)
+    (httpFetcher.get _).expects("/v0/public/users/1", *).returns(resFuture)
   }
 
   def checkMustBeAdmin(fn: => HttpRequest) {
