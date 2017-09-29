@@ -26,6 +26,7 @@
     "magda-session-store/",
     "magda-typescript-common/",
     "magda-web-client/",
+    "magda-web-admin/",
     "magda-web-server/",
     "scripts/"
   ],
