@@ -5,6 +5,8 @@ import JsonConnector from '@magda/typescript-common/dist/JsonConnector';
 import Registry from '@magda/typescript-common/dist/Registry';
 import * as express from 'express';
 import * as fs from 'fs';
+import * as path from 'path';
+import * as process from 'process';
 import * as request from 'request';
 import * as yargs from 'yargs';
 
@@ -212,7 +214,11 @@ if (!argv.interactive) {
         });
     });
 
-    app.use('/v0/test-harness.js', express.static('dist/createTransformerForBrowser.js'));
+    app.get('/v0/test-harness.js', function(req, res) {
+      res.sendFile(path.resolve(process.cwd(), 'dist', 'createTransformerForBrowser.js'));
+    });
+    app.use('/v0/createTransformerForBrowser.js', express.static('dist/createTransformerForBrowser.js'));
+    app.use('/v0/dist', express.static('dist'));
     app.use('/v0/example.html', express.static('example.html'));
 
     app.listen(argv.listenPort);

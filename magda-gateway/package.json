@@ -28,6 +28,7 @@
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-form-data": "^1.0.0",
     "jsonwebtoken": "^7.4.1",
+    "lodash": "^4.17.4",
     "morgan": "^1.6.1",
     "node-http-proxy": "^0.2.3",
     "passport": "^0.2.2",
