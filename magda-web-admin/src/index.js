@@ -16,11 +16,11 @@ import {
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
-import Home from "./Components/Home";
 import AppContainer from "./Components/AppContainer";
 
 import Account from "./Components/Account/Account";
-import Connectors from "./Components/Admin/Connectors";
+import Connectors from "./Components/Connectors/Connectors";
+import ConnectorConfig from "./Components/Connectors/ConnectorConfig";
 import signInRedirect from "./Components/Account/SignInRedirect";
 
 import { Provider } from "react-redux";
@@ -62,9 +62,10 @@ ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
       <Route path="/" component={AppContainer} onEnter={loadDefaultData(store)}>
-        <IndexRoute component={Home} />
+        <IndexRoute component={Account} />
         <Route path="account" component={Account} />
-        <Route path="admin/connectors" component={Connectors} />
+        <Route path="connectors" component={Connectors} />
+        <Route path="connectors/:connectorId" component={ConnectorConfig} />
       </Route>
     </Router>
   </Provider>,

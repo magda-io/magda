@@ -2,15 +2,15 @@
 type ConnectorsResult = {
   isFetching : boolean,
   connectors: Array<Object>,
-  connector: ?Object,
+  connectorConfig: ?Object,
   error: ?number,
-  showNotification?: boolean
 }
 
 const initialData = {
   isFetching: false,
   error: null,
-  connectors: []
+  connectors: [],
+  connectorConfig: null
 }
 
 
@@ -27,6 +27,22 @@ const connectors = (state: ConnectorsResult = initialData, action: ConnectorActi
         connectors: action.json && action.json,
       })
     case 'REQUEST_CONNECTORS_ERROR':
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: action.error,
+      })
+
+    case 'REQUEST_CONNECTOR_CONFIG':
+      return Object.assign({}, state, {
+        isFetching: true,
+        error: null
+      })
+    case 'RECEIVE_CONNECTOR_CONFIG':
+      return Object.assign({}, state, {
+        isFetching: false,
+        connectorConfig: action.json && action.json,
+      })
+    case 'REQUEST_CONNECTOR_CONFIG_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,

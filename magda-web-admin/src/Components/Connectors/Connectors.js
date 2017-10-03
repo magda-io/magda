@@ -2,7 +2,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import {fetchConnectorsIfNeeded, updateConnectorStatus, deleteConnector, createNewConnector, validateConnectorName, validateConnectorType, resetConnectorForm} from '../../actions/connectorsActions';
+import {fetchConnectorsIfNeeded, updateConnectorsStatus, deleteConnector, createNewConnector, validateConnectorName, validateConnectorType, resetConnectorForm} from '../../actions/connectorsActions';
 import ProgressBar from '../../UI/ProgressBar';
 import { Link } from "react-router";
 
@@ -105,7 +105,7 @@ class Connectors extends React.Component {
 
   toggleConnector(connector){
     const action = connector.job && connector.job.status === 'active' ? 'stop' : 'start';
-    this.props.updateConnectorStatus(connector.id, action)
+    this.props.updateConnectorsStatus(connector.id, action)
   }
 
   deleteConnector(connector){
@@ -120,6 +120,7 @@ class Connectors extends React.Component {
     <td><button className={`btn ${connector.job && connector.job.status === 'active'? 'btn-warning ': 'btn-success'}`} type='button' onClick={this.toggleConnector.bind(this, connector)}>{connector.job && connector.job.status === 'active' ? 'Stop' : 'Start'}</button></td>
     <td className={connector.job ? connector.job.status :''}>{connector.job && connector.job.status}</td>
     <td><button className='btn btn-danger' onClick={this.deleteConnector.bind(this, connector)}>Delete</button></td>
+    <td><Link to={`connectors/${connector.id}`}>Edit</Link></td>
     </tr>)
   }
 
@@ -146,7 +147,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch: Dispatch<*>) => {
   return bindActionCreators(
     {fetchConnectorsIfNeeded,
-    updateConnectorStatus,
+    updateConnectorsStatus,
     deleteConnector,
     createNewConnector,
     validateConnectorName,

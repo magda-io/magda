@@ -35,7 +35,28 @@ export function requestConnectorsError(error: number) {
   }
 }
 
-export function updateConnector(){
+
+export function requestConnectorConfig() {
+  return {
+    type: actionTypes.REQUEST_CONNECTOR_CONFIG,
+  }
+}
+
+export function receiveConnectorConfig(json ) {
+  return {
+    type: actionTypes.RECEIVE_CONNECTOR_CONFIG,
+    json,
+  }
+}
+
+export function requestConnectorConfigError(error: number) {
+  return {
+    type: actionTypes.REQUEST_CONNECTOR_CONFIG_ERROR,
+    error,
+  }
+}
+
+export function updateConnectorConfig(){
   return {
     type: actionTypes.UPDATE_CONNECTOR
   }
@@ -87,6 +108,21 @@ export function resetConnectorForm(){
 }
 
 
+export function fetchConnectorConfigIfNeeded(connectorId){
+  return (dispatch: Dispatch, getState: GetState)=>{
+    if(!getState().connectors.isFetching){
+          return dispatch(fetchConnectorConfigFromRegistry(connectorId))
+      } else{
+          return Promise.resolve();
+      }
+  }
+}
+
+export function updateConnectorStatus(){
+
+}
+
+
 export function validateConnectorName(name){
   return (dispatch: Dispatch)=>{
     if(!name || name.length === 0){
@@ -130,9 +166,9 @@ export function validateConnectorType(type){
 }
 
 
-export function updateConnectorStatus(connectorId: string, action: string){
+export function updateConnectorsStatus(connectorId: string, action: string){
   return (dispatch: Dispatch) => {
-    dispatch(updateConnector());
+    dispatch(updateConnectorConfig());
     const url = `${config.adminApiUrl}connectors/${connectorId}/${action}`;
       return fetch(url,
       {
@@ -196,7 +232,7 @@ export function createNewConnector(connectorProps: ConnectorProps){
 
 export function deleteConnector(connectorId: string){
   return (dispatch: Dispatch) => {
-    dispatch(updateConnector());
+    dispatch(updateConnectorConfig());
     const url = `${config.adminApiUrl}connectors/${connectorId}/`;
       return fetch(url,
       {
@@ -244,6 +280,30 @@ export function fetchConnectorsFromRegistry():Object{
         return response.json();
     })
     .then((json: Object) => {if(!json.error){dispatch(receiveConnectors(json))}
+    })
+  }
+}
+
+
+export function fetchConnectorConfigFromRegistry(connectorId):Object{
+  return (dispatch: Dispatch)=>{
+    dispatch(requestConnectorConfig())
+    let url : string = `${config.adminApiUrl}connectors/${connectorId}/interactive/config`;
+    console.log(url);
+    return fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      credentials: "include"
+    })
+    .then(response => {
+        if (response.status >= 400) {
+            return dispatch(requestConnectorConfigError(response.status));
+        }
+        return response.json();
+    })
+    .then((json: Object) => {if(!json.error){dispatch(receiveConnectorConfig(json))}
     })
   }
 }
