@@ -54,8 +54,9 @@ export default class AspectBuilder extends Component {
 
   }
 
-  renderResult(result){
+  renderResult(_result){
     const JsonTree = this.state.jsonTree;
+    const result = _result || {data: undefined};
     if(JsonTree){
       return <JsonTree data={result}/>
     }
