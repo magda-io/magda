@@ -214,6 +214,14 @@ if (!argv.interactive) {
         });
     });
 
+    app.get('/v0/distribution', (req, res) => {
+        const resourceShowUrl = ckan.urlBuilder.getResourceShowUrl(req.query.id);
+        request.get(resourceShowUrl, (error, response, body) => {
+            const json = JSON.parse(body);
+            res.send(json.result);
+        });
+    });
+
     app.get('/v0/test-harness.js', function(req, res) {
       res.sendFile(path.resolve(process.cwd(), 'dist', 'createTransformerForBrowser.js'));
     });
