@@ -41,6 +41,7 @@
     "react-ace": "^5.2.2",
     "react-document-title": "^2.0.3",
     "react-dom": "^15.3.1",
+    "react-json-tree": "^0.10.9",
     "react-load-script": "0.0.6",
     "react-redux": "^4.4.6",
     "react-router": "^3.0.4",
