@@ -83,7 +83,7 @@ export default class AspectBuilder extends Component {
               </div>
             </div>
             <div className='col-sm-6'>
-              {this.props.result && this.renderResult(this.props.result)}
+              {this.renderResult(this.props.result)}
               </div>
             </div>
       </div>
