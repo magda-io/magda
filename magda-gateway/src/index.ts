@@ -54,7 +54,7 @@ const argv = yargs
     })
     .option("jwtSecret", {
         describe:
-            "The secret to use to sign JSON Web Token (JKT) for authenticated requests.  This can also be specified with the JWT_SECRET environment variable.",
+            "The secret to use to sign JSON Web Token (JWT) for authenticated requests.  This can also be specified with the JWT_SECRET environment variable.",
         type: "string",
         default:
             process.env.JWT_SECRET || process.env.npm_package_config_JWT_SECRET,

@@ -2,19 +2,15 @@ import { Request, Response } from "express";
 import { getUserIdHandling } from "../session/GetUserId";
 import ApiClient from "./ApiClient";
 
-export function mustBeLoggedIn(
-    this: any,
-    req: Request,
-    res: Response,
-    next: () => void
-) {
-    getUserIdHandling(req, res, (userId: string) => {
-        this.userId = userId;
-        next();
-    });
-}
+export const mustBeLoggedIn = (jwtSecret: string) =>
+    function(this: any, req: Request, res: Response, next: () => void) {
+        getUserIdHandling(req, res, jwtSecret, (userId: string) => {
+            this.userId = userId;
+            next();
+        });
+    };
 
-export const mustBeAdmin = (baseAuthUrl: string) => (
+export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => (
     req: Request,
     res: Response,
     next: () => void
@@ -22,7 +18,7 @@ export const mustBeAdmin = (baseAuthUrl: string) => (
     const rejectNoAuth = () => res.status(401).send("Not authorized.");
     const apiClient = new ApiClient(baseAuthUrl);
 
-    getUserIdHandling(req, res, (userId: string) => {
+    getUserIdHandling(req, res, jwtSecret, (userId: string) => {
         apiClient.getUser(userId).then(maybeUser => {
             maybeUser.caseOf({
                 just: user => {

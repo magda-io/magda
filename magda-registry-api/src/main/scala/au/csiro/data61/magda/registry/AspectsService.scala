@@ -34,16 +34,15 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
 
   @ApiOperation(value = "Create a new aspect", nickname = "create", httpMethod = "POST", response = classOf[AspectDefinition])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The definition of the new aspect.")))
+    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The definition of the new aspect."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def create = post {
     pathEnd {
-      requireIsAdmin(authClient) { _ =>
-        entity(as[AspectDefinition]) { aspect =>
-          DB localTx { session =>
-            AspectPersistence.create(session, aspect) match {
-              case Success(result)    => complete(result)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-            }
+      entity(as[AspectDefinition]) { aspect =>
+        DB localTx { session =>
+          AspectPersistence.create(session, aspect) match {
+            case Success(result)    => complete(result)
+            case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
         }
       }
@@ -72,17 +71,16 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
     notes = "Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
-    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The aspect to save.")))
+    new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The aspect to save."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById = put {
     path(Segment) { (id: String) =>
       {
-        requireIsAdmin(authClient) { _ =>
-          entity(as[AspectDefinition]) { aspect =>
-            DB localTx { session =>
-              AspectPersistence.putById(session, id, aspect) match {
-                case Success(result)    => complete(result)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-              }
+        entity(as[AspectDefinition]) { aspect =>
+          DB localTx { session =>
+            AspectPersistence.putById(session, id, aspect) match {
+              case Success(result)    => complete(result)
+              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
         }
@@ -95,17 +93,16 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
-    new ApiImplicitParam(name = "aspectPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect.")))
+    new ApiImplicitParam(name = "aspectPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById = patch {
     path(Segment) { (id: String) =>
       {
-        requireIsAdmin(authClient) { _ =>
-          entity(as[JsonPatch]) { aspectPatch =>
-            DB localTx { session =>
-              AspectPersistence.patchById(session, id, aspectPatch) match {
-                case Success(result)    => complete(result)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-              }
+        entity(as[JsonPatch]) { aspectPatch =>
+          DB localTx { session =>
+            AspectPersistence.patchById(session, id, aspectPatch) match {
+              case Success(result)    => complete(result)
+              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
         }
@@ -115,8 +112,10 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
 
   def route =
     getAll ~
-      create ~
       getById ~
-      putById ~
-      patchById
+      requireIsAdmin(authClient) { _ =>
+        create ~
+          putById ~
+          patchById
+      }
 }

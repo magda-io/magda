@@ -20,6 +20,8 @@ import au.csiro.data61.magda.client.AuthApiClient
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
 class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all web hooks", nickname = "getAll", httpMethod = "GET", response = classOf[WebHook], responseContainer = "List")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def getAll = get {
     pathEnd {
       complete {
@@ -32,7 +34,8 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
   @ApiOperation(value = "Create a new web hook", nickname = "create", httpMethod = "POST", response = classOf[WebHook])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHook", paramType = "body", value = "The definition of the new web hook.")))
+    new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHook", paramType = "body", value = "The definition of the new web hook."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def create = post {
     pathEnd {
       entity(as[WebHook]) { hook =>
@@ -49,7 +52,8 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
   @Path("/{id}")
   @ApiOperation(value = "Get a web hook by ID", nickname = "getById", httpMethod = "GET", response = classOf[WebHook])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to be fetched.")))
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to be fetched."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def getById = get {
     path(Segment) { (id: String) =>
       {
@@ -68,7 +72,8 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     notes = "Modifies the web hook with a given ID.  If a web hook with the ID does not yet exist, it is created.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
-    new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHook", paramType = "body", value = "The web hook to save.")))
+    new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHook", paramType = "body", value = "The web hook to save."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById = put {
     path(Segment) { (id: String) =>
       {
@@ -87,7 +92,8 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
   @Path("/{hookId}")
   @ApiOperation(value = "Delete a web hook", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "hookId", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to delete.")))
+    new ApiImplicitParam(name = "hookId", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to delete."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The web hook could not be deleted.", response = classOf[BadRequest])))
   def deleteById = delete {
@@ -110,7 +116,8 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     notes = "Acknowledges a previously-deferred web hook with a given ID.  Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to be acknowledged."),
-    new ApiImplicitParam(name = "acknowledgement", required = true, dataType = "au.csiro.data61.magda.registry.WebHookAcknowledgement", paramType = "body", value = "The details of the acknowledgement.")))
+    new ApiImplicitParam(name = "acknowledgement", required = true, dataType = "au.csiro.data61.magda.registry.WebHookAcknowledgement", paramType = "body", value = "The details of the acknowledgement."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def ack = post {
     path(Segment / "ack") { (id: String) =>
       entity(as[WebHookAcknowledgement]) { acknowledgement =>

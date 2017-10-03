@@ -33,45 +33,44 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The definition of the new record.")))
+    new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The definition of the new record."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
   def create = post {
     pathEnd {
-      requireIsAdmin(authClient) { _ =>
-        entity(as[Record]) { record =>
-          val result = DB localTx { session =>
-            RecordPersistence.createRecord(session, record) match {
-              case Success(result)    => complete(result)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-            }
+      entity(as[Record]) { record =>
+        val result = DB localTx { session =>
+          RecordPersistence.createRecord(session, record) match {
+            case Success(result)    => complete(result)
+            case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
-          webHookActor ! WebHookActor.Process
-          result
         }
+        webHookActor ! WebHookActor.Process
+        result
       }
+
     }
   }
 
   @Path("/{recordId}")
   @ApiOperation(value = "Delete a record", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to delete.")))
+    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to delete."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])))
   def deleteById = delete {
     path(Segment) { (recordId: String) =>
-      requireIsAdmin(authClient) { _ =>
-        {
-          val result = DB localTx { session =>
-            RecordPersistence.deleteRecord(session, recordId) match {
-              case Success(result)    => complete(DeleteResult(result))
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-            }
+      {
+        val result = DB localTx { session =>
+          RecordPersistence.deleteRecord(session, recordId) match {
+            case Success(result)    => complete(DeleteResult(result))
+            case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
-          webHookActor ! WebHookActor.Process
-          result
         }
+        webHookActor ! WebHookActor.Process
+        result
       }
     }
   }
@@ -93,21 +92,20 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     notes = "Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
-    new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The record to save.")))
+    new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The record to save."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById = put {
     path(Segment) { (id: String) =>
       {
-        requireIsAdmin(authClient) { _ =>
-          entity(as[Record]) { record =>
-            val result = DB localTx { session =>
-              RecordPersistence.putRecordById(session, id, record) match {
-                case Success(aspect)    => complete(record)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-              }
+        entity(as[Record]) { record =>
+          val result = DB localTx { session =>
+            RecordPersistence.putRecordById(session, id, record) match {
+              case Success(aspect)    => complete(record)
+              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
-            webHookActor ! WebHookActor.Process
-            result
           }
+          webHookActor ! WebHookActor.Process
+          result
         }
       }
     }
@@ -118,21 +116,20 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
-    new ApiImplicitParam(name = "recordPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect.")))
+    new ApiImplicitParam(name = "recordPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById = patch {
     path(Segment) { (id: String) =>
       {
-        requireIsAdmin(authClient) { _ =>
-          entity(as[JsonPatch]) { recordPatch =>
-            val result = DB localTx { session =>
-              RecordPersistence.patchRecordById(session, id, recordPatch) match {
-                case Success(result)    => complete(result)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-              }
+        entity(as[JsonPatch]) { recordPatch =>
+          val result = DB localTx { session =>
+            RecordPersistence.patchRecordById(session, id, recordPatch) match {
+              case Success(result)    => complete(result)
+              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
-            webHookActor ! WebHookActor.Process
-            result
           }
+          webHookActor ! WebHookActor.Process
+          result
         }
       }
     }
@@ -141,11 +138,13 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   val route =
     getAll ~
       getById ~
-      putById ~
-      patchById ~
-      create ~
-      deleteById ~
-      new RecordAspectsService(webHookActor, system, materializer).route ~
+      requireIsAdmin(authClient) { _ =>
+        putById ~
+          patchById ~
+          create ~
+          deleteById
+      } ~
+      new RecordAspectsService(webHookActor, authClient, system, materializer).route ~
       new RecordHistoryService(system, materializer).route
 
   private def getAllWithAspects(aspects: Iterable[String],

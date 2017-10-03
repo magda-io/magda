@@ -2,7 +2,8 @@ import * as express from "express";
 import { Router } from "express";
 import * as _ from "lodash";
 const httpProxy = require("http-proxy");
-const jwt = require("jsonwebtoken");
+
+import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 
 import Authenticator from "./Authenticator";
 
@@ -35,11 +36,10 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         options: any
     ) {
         if (jwtSecret && req.user) {
-            const token = jwt.sign(
-                { userId: req.user.id },
-                jwtSecret
+            proxyReq.setHeader(
+                "X-Magda-Session",
+                buildJwt(jwtSecret, req.user.userId)
             );
-            proxyReq.setHeader("X-Magda-Session", token);
         }
     });
 
