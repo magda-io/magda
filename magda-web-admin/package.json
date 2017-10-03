@@ -22,6 +22,7 @@
     "es6-shim": "^0.35.3",
     "es6-symbol": "^3.1.1",
     "expect": "^1.20.2",
+    "isomorphic-fetch": "^2.2.1",
     "lodash.debounce": "^4.0.8",
     "lodash.find": "^4.6.0",
     "lodash.findindex": "^4.6.0",
