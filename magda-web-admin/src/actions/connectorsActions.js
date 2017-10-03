@@ -101,12 +101,34 @@ export function resetCreateConnector(){
   }
 }
 
+
+export function requestDatasetFromConnector(){
+  return{
+    type: actionTypes.REQUEST_DATASET_FROM_CONNECTOR,
+  }
+}
+
+
+
+export function requestDatasetFromConnectorError(error){
+  return{
+    type: actionTypes.REQUEST_DATASET_FROM_CONNECTOR_ERROR,
+    error
+  }
+}
+
+export function receiveDatasetFromConnector(json){
+  return{
+    type: actionTypes.RECEIVE_DATASET_FROM_CONNECTOR,
+    json
+  }
+}
+
 export function resetConnectorForm(){
   return (dispatch: Dispatch)=>{
     return dispatch(resetCreateConnector());
   }
 }
-
 
 export function fetchConnectorConfigIfNeeded(connectorId){
   return (dispatch: Dispatch, getState: GetState)=>{
@@ -120,6 +142,30 @@ export function fetchConnectorConfigIfNeeded(connectorId){
 
 export function updateConnectorStatus(){
 
+}
+
+
+export function fetchDatasetFromConnector(connectorId, datasetId){
+  return (dispatch: Dispatch)=>{
+    dispatch(requestDatasetFromConnector())
+    let url : string = `${config.adminApiUrl}connectors/${connectorId}/interactive/dataset?id=${datasetId}`;
+    console.log(url);
+    return fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      credentials: "include"
+    })
+    .then(response => {
+        if (response.status >= 400) {
+            return dispatch(requestDatasetFromConnectorError(response.status));
+        }
+        return response.json();
+    })
+    .then((json: Object) => {if(!json.error){dispatch(receiveDatasetFromConnector(json))}
+    })
+  }
 }
 
 

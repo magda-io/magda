@@ -4,13 +4,15 @@ type ConnectorsResult = {
   connectors: Array<Object>,
   connectorConfig: ?Object,
   error: ?number,
+  dataset: ?Object
 }
 
 const initialData = {
   isFetching: false,
   error: null,
   connectors: [],
-  connectorConfig: null
+  connectorConfig: null,
+  dataset: null
 }
 
 
@@ -27,6 +29,22 @@ const connectors = (state: ConnectorsResult = initialData, action: ConnectorActi
         connectors: action.json && action.json,
       })
     case 'REQUEST_CONNECTORS_ERROR':
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: action.error,
+      })
+
+    case 'REQUEST_DATASET_FROM_CONNECTOR':
+      return Object.assign({}, state, {
+        isFetching: true,
+        error: null
+      })
+    case 'RECEIVE_DATASET_FROM_CONNECTOR':
+      return Object.assign({}, state, {
+        isFetching: false,
+        dataset: action.json && action.json,
+      })
+    case 'REQUEST_DATASET_FROM_CONNECTOR_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,

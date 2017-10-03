@@ -10,24 +10,56 @@ export default class AspectBuilder extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      editor: null
+      editor: null,
+      jsonTree: null,
+      code: ''
     };
     this.onChange = this.onChange.bind(this);
+    this.onRunCode = this.onRunCode.bind(this);
+    this.onSaveCode = this.onSaveCode.bind(this);
+
   }
+
+  getJsonTreeComponent(){
+      return import('react-json-tree').then(module => module.default)
+  }
+
   onChange(newValue) {
-    console.log('change',newValue);
+    this.setState({code: newValue});
   }
 
   getEditor(){
       return import('react-ace').then(module => module.default)
-    }
+  }
 
   componentWillMount(){
       if(!this.state.editor){
         this.getEditor().then(editor=>{
-          this.setState({editor})
+          this.setState({editor: editor, code: this.props.data.builderFunctionString})
         })
       }
+
+      if(!this.state.jsonTree){
+        this.getJsonTreeComponent().then(jsonTree=>{
+          this.setState({jsonTree: jsonTree})
+        })
+      }
+  }
+
+  onRunCode(){
+    this.props.createTransformer(this.state.code)
+  }
+
+  onSaveCode(){
+
+  }
+
+  renderResult(result){
+    const JsonTree = this.state.jsonTree;
+    if(JsonTree){
+      return <JsonTree data={result}/>
+    }
+    return null;
   }
 
 
@@ -36,18 +68,24 @@ export default class AspectBuilder extends Component {
     return (
       <div>
         <h3>{this.props.data.aspectDefinition.name}</h3>
-        {Editor && <Editor
-                    mode="javascript"
-                    theme="github"
-                    onChange={this.onChange}
-                    name="UNIQUE_ID_OF_DIV"
-                    value={this.props.data.builderFunctionString}
-                    editorProps={{$blockScrolling: true}}
-                    height={'200px'}/>}
-          <div>
-            <button className='btn btn-primary'>Run</button>
-            <button className='btn btn-primary'>Save</button>
-          </div>
+        <div className='row'>
+          <div className='col-sm-6'>
+              {Editor && <Editor
+                          mode="javascript"
+                          theme="github"
+                          onChange={this.onChange}
+                          name="UNIQUE_ID_OF_DIV"
+                          value={this.state.code}
+                          editorProps={{$blockScrolling: true}}/>}
+                <div>
+                  <button className='btn btn-primary' onClick={this.onRunCode}>Run</button>
+                  <button className='btn btn-primary'onClick={this.onSaveCode} >Save</button>
+              </div>
+            </div>
+            <div className='col-sm-6'>
+              {this.props.result && this.renderResult(this.props.result)}
+              </div>
+            </div>
       </div>
     )
   }
