@@ -207,16 +207,24 @@ if (!argv.interactive) {
     });
 
     app.get('/v0/dataset', (req, res) => {
-        const packageShowUrl = ckan.urlBuilder.getPackageShowUrl(req.query.id);
-        request.get(packageShowUrl, (error, response, body) => {
+        const showUrl = ckan.urlBuilder.getPackageShowUrl(req.query.id);
+        request.get(showUrl, (error, response, body) => {
             const json = JSON.parse(body);
             res.send(json.result);
         });
     });
 
     app.get('/v0/distribution', (req, res) => {
-        const resourceShowUrl = ckan.urlBuilder.getResourceShowUrl(req.query.id);
-        request.get(resourceShowUrl, (error, response, body) => {
+        const showUrl = ckan.urlBuilder.getResourceShowUrl(req.query.id);
+        request.get(showUrl, (error, response, body) => {
+            const json = JSON.parse(body);
+            res.send(json.result);
+        });
+    });
+
+    app.get('/v0/organization', (req, res) => {
+        const showUrl = ckan.urlBuilder.getOrganizationShowUrl(req.query.id);
+        request.get(showUrl, (error, response, body) => {
             const json = JSON.parse(body);
             res.send(json.result);
         });
