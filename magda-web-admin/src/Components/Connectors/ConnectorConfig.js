@@ -8,14 +8,14 @@ import { fetchConnectorConfigIfNeeded, updateConnectorStatus } from '../../actio
 import ReactDocumentTitle from "react-document-title";
 import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
+import AspectBuilder from "../../UI/AspectBuilder";
 import LazyComponent from '../../Components/LazyComponent';
 
 class ConnectorConfig extends Component {
 
-  getComponent(){
+  getJsonTreeComponent(){
       return import('react-json-tree').then(module => module.default)
     }
-
 
   componentWillMount() {
     this.props.fetchConnectorConfigIfNeeded(this.props.params.connectorId);
@@ -27,15 +27,20 @@ class ConnectorConfig extends Component {
     }
   }
 
+
   render() {
     if (this.props.error) {
       return <ErrorHandler errorCode={this.props.error} />;
     } else if (!this.props.isFetching && this.props.connectorConfig) {
+      const connectorConfig = this.props.connectorConfig;
       return (
-        <ReactDocumentTitle title={this.props.connectorConfig.name + "|" + config.appName}>
+        <ReactDocumentTitle title={connectorConfig.name + "|" + config.appName}>
           <div className='container'>
-            <h1>{this.props.connectorConfig.name}</h1>
-            <LazyComponent data={{data: this.props.connectorConfig}} getComponent={this.getComponent}/>
+            <h1>{connectorConfig.name}</h1>
+            <div><h2>Dataset aspect builders</h2>{connectorConfig.datasetAspectBuilders.map(aspect => <AspectBuilder key={aspect.aspectDefinition.id} data={aspect}/>)}</div>
+            <div><h2>Distribution aspect builders</h2></div>
+            <div><h2>Organization aspect builders</h2></div>
+            <LazyComponent data={{data: this.props.connectorConfig}} getComponent={this.getJsonTreeComponent}/>
           </div>
         </ReactDocumentTitle>
       );

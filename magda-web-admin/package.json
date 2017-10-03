@@ -55,5 +55,8 @@
     "docker": {
       "include": "node_modules build"
     }
+  },
+  "dependencies": {
+    "react-ace-editor": "0.0.2"
   }
 }
