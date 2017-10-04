@@ -21,7 +21,7 @@ spec:
             "--listenPort", "80",
             "--dbHost", "discussions-db",
             "--dbPort", "5432",
-            "--authenticationApi", "http://authorization-api/v0"
+            "--authorizationApi", "http://authorization-api/v0"
         ]
         resources:
 {{ toYaml .Values.resources | indent 10 }}

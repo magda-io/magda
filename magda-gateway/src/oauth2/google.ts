@@ -7,7 +7,7 @@ import createOrGetUserToken from '../createOrGetUserToken';
 import { redirectOnSuccess, redirectOnError } from './redirect';
 
 export interface GoogleOptions {
-    authenticationApi: ApiClient;
+    authorizationApi: ApiClient;
     passport: Passport;
     clientId: string;
     clientSecret: string;
@@ -15,7 +15,7 @@ export interface GoogleOptions {
 }
 
 export default function google(options: GoogleOptions) {
-    const authenticationApi = options.authenticationApi;
+    const authorizationApi = options.authorizationApi;
     const passport = options.passport;
     const clientId = options.clientId;
     const clientSecret = options.clientSecret;
@@ -34,7 +34,7 @@ export default function google(options: GoogleOptions) {
                 callbackURL: `${loginBaseUrl}/google/return`
             },
             function (accessToken: string, refreshToken: string, profile: Profile, cb: (error: any, user?: any, info?: any) => void) {
-                createOrGetUserToken(authenticationApi, profile, 'google').then(userId => cb(null, userId)).catch(error => cb(error));
+                createOrGetUserToken(authorizationApi, profile, 'google').then(userId => cb(null, userId)).catch(error => cb(error));
             }
         )
     );

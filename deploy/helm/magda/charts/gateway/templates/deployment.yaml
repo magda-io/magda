@@ -30,7 +30,7 @@ spec:
 {{- end }}
             "--proxyRoutesPath", "/etc/routes/routes.json",
             "--web", "http://web",
-            "--authenticationApi", "http://authorization-api/v0",
+            "--authorizationApi", "http://authorization-api/v0",
             "--previewMap", "http://preview-map:6110",
             "--ckanUrl", "https://data.gov.au",
         ]

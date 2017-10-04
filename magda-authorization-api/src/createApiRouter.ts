@@ -7,6 +7,7 @@ import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUser
 
 export interface ApiRouterOptions {
     database: Database;
+    jwtSecret: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -60,7 +61,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     router.get("/public/users/whoami", function(req, res) {
-        getUserIdHandling(req, res, (userId: string) =>
+        getUserIdHandling(req, res, options.jwtSecret, (userId: string) =>
             handlePromise(res, database.getUser(userId))
         );
     });

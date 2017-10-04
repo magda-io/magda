@@ -37,8 +37,8 @@ const argv = yargs
         type: "string",
         default: "../local-routes.json"
     })
-    .option("authenticationApi", {
-        describe: "The base URL of the authentication API.",
+    .option("authorizationApi", {
+        describe: "The base URL of the authorization API.",
         type: "string",
         default: "http://localhost:6104/v0"
     })
@@ -57,7 +57,7 @@ const argv = yargs
             "The secret to use to sign JSON Web Token (JWT) for authenticated requests.  This can also be specified with the JWT_SECRET environment variable.",
         type: "string",
         default:
-            process.env.JWT_SECRET || process.env.npm_package_config_JWT_SECRET,
+            process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret,
         demand: true
     })
     .option("sessionSecret", {
@@ -126,7 +126,7 @@ app.use(
         googleClientId: argv.googleClientId,
         googleClientSecret: argv.googleClientSecret,
         ckanUrl: argv.ckanUrl,
-        authenticationApi: argv.authenticationApi,
+        authorizationApi: argv.authorizationApi,
         externalUrl: argv.externalUrl
     })
 );
