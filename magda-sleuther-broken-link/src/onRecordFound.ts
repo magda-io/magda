@@ -272,7 +272,7 @@ function retrieveHttp(
     retries: number
 ): Promise<BrokenLinkAspect> {
     const operation: () => Promise<number> = () => {
-        return new Promise((resolve, reject) =>
+        return new Promise((resolve, reject) => {
             request.head(url, (err: Error, response: http.IncomingMessage) => {
                 if (err) {
                     reject(err);
@@ -293,8 +293,8 @@ function retrieveHttp(
                         );
                     }
                 }
-            })
-        );
+            });
+        });
     };
 
     const onRetry = (err: BadHttpResponseError, retries: number) => {
