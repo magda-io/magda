@@ -65,16 +65,18 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById = put {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      {
-        entity(as[JsObject]) { aspect =>
-          val result = DB localTx { session =>
-            RecordPersistence.putRecordAspectById(session, recordId, aspectId, aspect) match {
-              case Success(result)    => complete(result)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      requireIsAdmin(authClient) { _ =>
+        {
+          entity(as[JsObject]) { aspect =>
+            val result = DB localTx { session =>
+              RecordPersistence.putRecordAspectById(session, recordId, aspectId, aspect) match {
+                case Success(result)    => complete(result)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              }
             }
+            webHookActor ! WebHookActor.Process
+            result
           }
-          webHookActor ! WebHookActor.Process
-          result
         }
       }
     }
@@ -89,7 +91,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def deleteById = delete {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      {
+      requireIsAdmin(authClient) { _ =>
         DB localTx { session =>
           RecordPersistence.deleteRecordAspect(session, recordId, aspectId) match {
             case Success(result)    => complete(DeleteResult(result))
@@ -110,12 +112,14 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById = patch {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      {
-        entity(as[JsonPatch]) { aspectPatch =>
-          DB localTx { session =>
-            RecordPersistence.patchRecordAspectById(session, recordId, aspectId, aspectPatch) match {
-              case Success(result)    => complete(result)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      requireIsAdmin(authClient) { _ =>
+        {
+          entity(as[JsonPatch]) { aspectPatch =>
+            DB localTx { session =>
+              RecordPersistence.patchRecordAspectById(session, recordId, aspectId, aspectPatch) match {
+                case Success(result)    => complete(result)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              }
             }
           }
         }
@@ -126,9 +130,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
   val route =
     getAll ~
       getById ~
-      requireIsAdmin(authClient) { _ =>
-        putById ~
-          deleteById ~
-          patchById
-      }
+      putById ~
+      deleteById ~
+      patchById
 }

@@ -42,6 +42,13 @@ const argv = yargs
         type: "string",
         default: "Always"
     })
+    .option("userId", {
+        describe:
+            "The user id to use when making authenticated requests to the registry",
+        type: "string",
+        demand: true,
+        default: process.env.USER_ID || process.env.npm_package_config_userId
+    })
     .option("jwtSecret", {
         describe:
             "Secret for decoding JWTs to determine if the caller is an admin",
@@ -64,7 +71,8 @@ app.use(
         kubernetesApiType: argv.kubernetesApiType,
         registryApiUrl: argv.registryApiUrl,
         pullPolicy: argv.pullPolicy,
-        jwtSecret: argv.jwtSecret
+        jwtSecret: argv.jwtSecret,
+        userId: argv.userId
     })
 );
 

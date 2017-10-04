@@ -12,6 +12,7 @@ export interface Options {
     registryApiUrl: string;
     pullPolicy: string;
     jwtSecret: string;
+    userId: string;
     namespace?: string;
 }
 
@@ -109,7 +110,8 @@ export default function buildApiRouter(options: Options) {
                                 dockerImageTag: options.imageTag,
                                 dockerRepo: options.dockerRepo,
                                 registryApiUrl: options.registryApiUrl,
-                                pullPolicy: options.pullPolicy
+                                pullPolicy: options.pullPolicy,
+                                userId: options.userId
                             })
                         )
                         .then((result: any) => {

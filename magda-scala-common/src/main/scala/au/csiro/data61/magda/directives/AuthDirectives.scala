@@ -33,7 +33,7 @@ object AuthDirectives {
         case headers.RawHeader(Authentication.headerName, value) => true
         case _ => false
       }
-      
+
       println(sessionToken)
 
       sessionToken match {

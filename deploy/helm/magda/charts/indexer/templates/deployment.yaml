@@ -17,6 +17,11 @@ spec:
         env:
         - name: S3_SECRET_KEY
           value: dummy
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}
@@ -37,7 +42,8 @@ spec:
             "-DelasticSearch.snapshotRepo.types.gcs.service_account={{ .Values.elasticsearch.gcsSnapshotServiceAccount }}",
 {{- end }}
             "-DelasticSearch.shardCount={{ .Values.elasticsearch.shards }}",
-            "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}"
+            "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}",
+            "-Dauth.userId={{ .Values.global.defaultAdminUserId }}"
         ]
         volumeMounts:
         - mountPath: /usr/regions

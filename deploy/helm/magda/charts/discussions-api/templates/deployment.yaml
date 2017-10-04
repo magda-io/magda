@@ -28,10 +28,8 @@ spec:
         env:
         - name: NODE_ENV
           value: production
-{{- if .Values.auth.enabled }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- end }}

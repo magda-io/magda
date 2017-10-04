@@ -38,11 +38,13 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def create = post {
     pathEnd {
-      entity(as[AspectDefinition]) { aspect =>
-        DB localTx { session =>
-          AspectPersistence.create(session, aspect) match {
-            case Success(result)    => complete(result)
-            case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      requireIsAdmin(authClient) { _ =>
+        entity(as[AspectDefinition]) { aspect =>
+          DB localTx { session =>
+            AspectPersistence.create(session, aspect) match {
+              case Success(result)    => complete(result)
+              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+            }
           }
         }
       }
@@ -76,11 +78,13 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
   def putById = put {
     path(Segment) { (id: String) =>
       {
-        entity(as[AspectDefinition]) { aspect =>
-          DB localTx { session =>
-            AspectPersistence.putById(session, id, aspect) match {
-              case Success(result)    => complete(result)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+        requireIsAdmin(authClient) { _ =>
+          entity(as[AspectDefinition]) { aspect =>
+            DB localTx { session =>
+              AspectPersistence.putById(session, id, aspect) match {
+                case Success(result)    => complete(result)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              }
             }
           }
         }
@@ -98,11 +102,13 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
   def patchById = patch {
     path(Segment) { (id: String) =>
       {
-        entity(as[JsonPatch]) { aspectPatch =>
-          DB localTx { session =>
-            AspectPersistence.patchById(session, id, aspectPatch) match {
-              case Success(result)    => complete(result)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+        requireIsAdmin(authClient) { _ =>
+          entity(as[JsonPatch]) { aspectPatch =>
+            DB localTx { session =>
+              AspectPersistence.patchById(session, id, aspectPatch) match {
+                case Success(result)    => complete(result)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              }
             }
           }
         }
@@ -113,9 +119,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
   def route =
     getAll ~
       getById ~
-      requireIsAdmin(authClient) { _ =>
-        create ~
-          putById ~
-          patchById
-      }
+      putById ~
+      patchById ~
+      create
 }

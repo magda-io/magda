@@ -38,18 +38,19 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
   def create = post {
-    pathEnd {
-      entity(as[Record]) { record =>
-        val result = DB localTx { session =>
-          RecordPersistence.createRecord(session, record) match {
-            case Success(result)    => complete(result)
-            case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+    requireIsAdmin(authClient) { _ =>
+      pathEnd {
+        entity(as[Record]) { record =>
+          val result = DB localTx { session =>
+            RecordPersistence.createRecord(session, record) match {
+              case Success(result)    => complete(result)
+              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+            }
           }
+          webHookActor ! WebHookActor.Process
+          result
         }
-        webHookActor ! WebHookActor.Process
-        result
       }
-
     }
   }
 
@@ -61,16 +62,18 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])))
   def deleteById = delete {
-    path(Segment) { (recordId: String) =>
-      {
-        val result = DB localTx { session =>
-          RecordPersistence.deleteRecord(session, recordId) match {
-            case Success(result)    => complete(DeleteResult(result))
-            case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+    requireIsAdmin(authClient) { _ =>
+      path(Segment) { (recordId: String) =>
+        {
+          val result = DB localTx { session =>
+            RecordPersistence.deleteRecord(session, recordId) match {
+              case Success(result)    => complete(DeleteResult(result))
+              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+            }
           }
+          webHookActor ! WebHookActor.Process
+          result
         }
-        webHookActor ! WebHookActor.Process
-        result
       }
     }
   }
@@ -96,16 +99,18 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById = put {
     path(Segment) { (id: String) =>
-      {
-        entity(as[Record]) { record =>
-          val result = DB localTx { session =>
-            RecordPersistence.putRecordById(session, id, record) match {
-              case Success(aspect)    => complete(record)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      requireIsAdmin(authClient) { _ =>
+        {
+          entity(as[Record]) { record =>
+            val result = DB localTx { session =>
+              RecordPersistence.putRecordById(session, id, record) match {
+                case Success(aspect)    => complete(record)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              }
             }
+            webHookActor ! WebHookActor.Process
+            result
           }
-          webHookActor ! WebHookActor.Process
-          result
         }
       }
     }
@@ -120,16 +125,18 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById = patch {
     path(Segment) { (id: String) =>
-      {
-        entity(as[JsonPatch]) { recordPatch =>
-          val result = DB localTx { session =>
-            RecordPersistence.patchRecordById(session, id, recordPatch) match {
-              case Success(result)    => complete(result)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      requireIsAdmin(authClient) { _ =>
+        {
+          entity(as[JsonPatch]) { recordPatch =>
+            val result = DB localTx { session =>
+              RecordPersistence.patchRecordById(session, id, recordPatch) match {
+                case Success(result)    => complete(result)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              }
             }
+            webHookActor ! WebHookActor.Process
+            result
           }
-          webHookActor ! WebHookActor.Process
-          result
         }
       }
     }
@@ -138,12 +145,10 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   val route =
     getAll ~
       getById ~
-      requireIsAdmin(authClient) { _ =>
-        putById ~
-          patchById ~
-          create ~
-          deleteById
-      } ~
+      putById ~
+      patchById ~
+      deleteById ~
+      create ~
       new RecordAspectsService(webHookActor, authClient, system, materializer).route ~
       new RecordHistoryService(system, materializer).route
 

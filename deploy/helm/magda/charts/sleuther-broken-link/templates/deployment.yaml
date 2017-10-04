@@ -21,3 +21,10 @@ spec:
           value: "80"
         - name: REGISTRY_URL
           value: "http://registry-api/v0"
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
