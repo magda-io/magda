@@ -26,8 +26,6 @@ spec:
         env:
         - name: PGDATA
           value: /var/pv/data
-        - name: DEFAULT_ADMIN_USER_ID
-          value: "{{ .Values.global.defaultAdminUserId }}"
         volumeMounts:
         - mountPath: /var/pv
           name: registrydata

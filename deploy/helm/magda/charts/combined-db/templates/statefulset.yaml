@@ -26,8 +26,6 @@ spec:
         - name: PGDATA
           value: /var/pv/data
         {{- template "magda.postgres-env" . }}
-        - name: DEFAULT_ADMIN_USER_ID
-          value: "{{ .Values.global.defaultAdminUserId }}"
         volumeMounts:
         - name: combined-db
           mountPath: /var/pv
