@@ -33,7 +33,7 @@ spec:
             "-Dregistry.baseUrl=http://registry-api",
             "-Dindexer.readSnapshots=true",
             "-Dindexer.makeSnapshots=true",
-            "-Dakka.loglevel=INFO",
+            "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300",
 {{- if .Values.elasticsearch.useGcsSnapshots }}
             "-DelasticSearch.snapshotRepo.type=gcs",

@@ -161,9 +161,11 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 });
 
                 it("an authenticated user who isn't an admin", () => {
-                    return helpers.getConnectors(app, jwtSecret, false).then(res => {
-                        expect(res.status).to.equal(401);
-                    });
+                    return helpers
+                        .getConnectors(app, jwtSecret, false)
+                        .then(res => {
+                            expect(res.status).to.equal(401);
+                        });
                 });
             });
 
@@ -259,7 +261,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
                 it("an authenticated user who isn't an admin", () => {
                     return helpers
-                        .putConnector(app, name, connectorConfig, jwtSecret, false)
+                        .putConnector(
+                            app,
+                            name,
+                            connectorConfig,
+                            jwtSecret,
+                            false
+                        )
                         .then(res => {
                             expect(res.status).to.equal(401);
                         });
@@ -288,11 +296,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
 
                 helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
 
-                return helpers.deleteConnector(app, name, jwtSecret).then(res => {
-                    expect(res.status).to.equal(200);
+                return helpers
+                    .deleteConnector(app, name, jwtSecret)
+                    .then(res => {
+                        expect(res.status).to.equal(200);
 
-                    k8sApiScope.done();
-                });
+                        k8sApiScope.done();
+                    });
             });
 
             it("when the corresponding job is present, and delete the corresponding job first", () => {
@@ -317,11 +327,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                     )
                     .reply(200, expectedConfigMap);
 
-                return helpers.deleteConnector(app, name, jwtSecret).then(res => {
-                    expect(res.status).to.equal(200);
+                return helpers
+                    .deleteConnector(app, name, jwtSecret)
+                    .then(res => {
+                        expect(res.status).to.equal(200);
 
-                    k8sApiScope.done();
-                });
+                        k8sApiScope.done();
+                    });
             });
         });
 
@@ -336,11 +348,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         )
                         .reply(500, "Oh noes");
 
-                    return helpers.deleteConnector(app, name, jwtSecret).then(res => {
-                        expect(res.status).to.equal(500);
+                    return helpers
+                        .deleteConnector(app, name, jwtSecret)
+                        .then(res => {
+                            expect(res.status).to.equal(500);
 
-                        k8sApiScope.done();
-                    });
+                            k8sApiScope.done();
+                        });
                 });
 
                 it("when get jobs status call doesn't work", () => {
@@ -353,10 +367,12 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         .optionally()
                         .reply(200, {});
 
-                    return helpers.deleteConnector(app, name, jwtSecret).then(res => {
-                        expect(res.status).to.equal(500);
-                        k8sApiScope.done();
-                    });
+                    return helpers
+                        .deleteConnector(app, name, jwtSecret)
+                        .then(res => {
+                            expect(res.status).to.equal(500);
+                            k8sApiScope.done();
+                        });
                 });
 
                 it("when delete job call doesn't work", () => {
@@ -376,11 +392,13 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         .optionally()
                         .reply(200, {});
 
-                    return helpers.deleteConnector(app, name, jwtSecret).then(res => {
-                        expect(res.status).to.equal(500);
+                    return helpers
+                        .deleteConnector(app, name, jwtSecret)
+                        .then(res => {
+                            expect(res.status).to.equal(500);
 
-                        k8sApiScope.done();
-                    });
+                            k8sApiScope.done();
+                        });
                 });
             });
 
@@ -450,9 +468,11 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 );
             });
 
-            return helpers.startConnector(app, name, jwtSecret, true).then(res => {
-                expect(res.status).to.equal(200);
-            });
+            return helpers
+                .startConnector(app, name, jwtSecret, true)
+                .then(res => {
+                    expect(res.status).to.equal(200);
+                });
         });
 
         it("should delete an existing job if one exists", () => {
@@ -465,11 +485,18 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 helpers.getBasicState(name)
             );
             helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
-            helpers.mockConnectorConfig(k8sApiScope, 200, namespace, connectorState);
+            helpers.mockConnectorConfig(
+                k8sApiScope,
+                200,
+                namespace,
+                connectorState
+            );
             helpers.mockCreateJob(k8sApiScope, 200, namespace);
-            return helpers.startConnector(app, name, jwtSecret, true).then(res => {
-                expect(res.status).to.equal(200);
-            });
+            return helpers
+                .startConnector(app, name, jwtSecret, true)
+                .then(res => {
+                    expect(res.status).to.equal(200);
+                });
         });
 
         silenceErrorLogs(() => {
@@ -491,9 +518,11 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         true
                     );
 
-                    return helpers.startConnector(app, name, jwtSecret, true).then(res => {
-                        expect(res.status).to.equal(500);
-                    });
+                    return helpers
+                        .startConnector(app, name, jwtSecret, true)
+                        .then(res => {
+                            expect(res.status).to.equal(500);
+                        });
                 });
 
                 it("if getting connector config fails", () => {
@@ -512,9 +541,11 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         true
                     );
 
-                    return helpers.startConnector(app, name, jwtSecret, true).then(res => {
-                        expect(res.status).to.equal(500);
-                    });
+                    return helpers
+                        .startConnector(app, name, jwtSecret, true)
+                        .then(res => {
+                            expect(res.status).to.equal(500);
+                        });
                 });
 
                 it("if deleting existing job fails", () => {
@@ -545,9 +576,11 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         true
                     );
 
-                    return helpers.startConnector(app, name, jwtSecret, true).then(res => {
-                        expect(res.status).to.equal(500);
-                    });
+                    return helpers
+                        .startConnector(app, name, jwtSecret, true)
+                        .then(res => {
+                            expect(res.status).to.equal(500);
+                        });
                 });
 
                 it("if creating existing job fails", () => {
@@ -576,9 +609,11 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         () => true
                     );
 
-                    return helpers.startConnector(app, name, jwtSecret, true).then(res => {
-                        expect(res.status).to.equal(500);
-                    });
+                    return helpers
+                        .startConnector(app, name, jwtSecret, true)
+                        .then(res => {
+                            expect(res.status).to.equal(500);
+                        });
                 });
             });
 
@@ -603,9 +638,11 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                         true
                     );
 
-                    return helpers.startConnector(app, name, jwtSecret, true).then(res => {
-                        expect(res.status).to.equal(404);
-                    });
+                    return helpers
+                        .startConnector(app, name, jwtSecret, true)
+                        .then(res => {
+                            expect(res.status).to.equal(404);
+                        });
                 });
             });
 
@@ -667,9 +704,11 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
                 });
 
                 it("an authenticated user who isn't an admin", () => {
-                    return helpers.stopConnector(app, name, jwtSecret, false).then(res => {
-                        expect(res.status).to.equal(401);
-                    });
+                    return helpers
+                        .stopConnector(app, name, jwtSecret, false)
+                        .then(res => {
+                            expect(res.status).to.equal(401);
+                        });
                 });
             });
         });
@@ -700,7 +739,8 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             registryApiUrl: "http://registry.example.com",
             pullPolicy: "pullPolicy",
             namespace,
-            jwtSecret: "secret"
+            jwtSecret: "secret",
+            userId: "user"
         });
 
         const app = express();

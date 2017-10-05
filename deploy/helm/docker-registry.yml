@@ -1,2 +1,3 @@
 persistentVolume:
   enabled: true
+  storageClass: standard

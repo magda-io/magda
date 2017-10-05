@@ -38,7 +38,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         if (jwtSecret && req.user) {
             proxyReq.setHeader(
                 "X-Magda-Session",
-                buildJwt(jwtSecret, req.user.userId)
+                buildJwt(jwtSecret, req.user.id)
             );
         }
     });
@@ -66,11 +66,12 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         }
 
         verbs.forEach((verb: string) =>
-            routeRouter[
-                verb.toLowerCase()
-            ]("*", (req: express.Request, res: express.Response) => {
-                proxy.web(req, res, { target });
-            })
+            routeRouter[verb.toLowerCase()](
+                "*",
+                (req: express.Request, res: express.Response) => {
+                    proxy.web(req, res, { target });
+                }
+            )
         );
 
         router.use(baseRoute, routeRouter);
