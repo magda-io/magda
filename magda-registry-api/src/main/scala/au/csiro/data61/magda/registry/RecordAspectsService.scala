@@ -17,10 +17,11 @@ import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 import scala.util.Failure
 import scala.util.Success
 import au.csiro.data61.magda.client.AuthApiClient
+import com.typesafe.config.Config
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(value = "record aspects", produces = "application/json")
-class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, config: Config) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all aspects of a record", nickname = "getAll", httpMethod = "GET", response = classOf[Aspect], responseContainer = "Map")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch aspects.")))
@@ -65,7 +66,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById = put {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      requireIsAdmin(authClient)(system) { _ =>
+      requireIsAdmin(authClient)(system, config) { _ =>
         {
           entity(as[JsObject]) { aspect =>
             val result = DB localTx { session =>
@@ -91,7 +92,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def deleteById = delete {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      requireIsAdmin(authClient)(system) { _ =>
+      requireIsAdmin(authClient)(system, config) { _ =>
         DB localTx { session =>
           RecordPersistence.deleteRecordAspect(session, recordId, aspectId) match {
             case Success(result)    => complete(DeleteResult(result))
@@ -112,7 +113,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById = patch {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      requireIsAdmin(authClient)(system) { _ =>
+      requireIsAdmin(authClient)(system, config) { _ =>
         {
           entity(as[JsonPatch]) { aspectPatch =>
             DB localTx { session =>

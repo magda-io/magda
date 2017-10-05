@@ -58,6 +58,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
       |authorization.skip = true
       |akka.loglevel = INFO
       |authApi.baseUrl = "http://localhost:6104"
+      |authorization.skip=false
     """.stripMargin
 
   override def withFixture(test: OneArgTest) = {

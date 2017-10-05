@@ -22,7 +22,7 @@ export default function commonYargs(
         .option("internalUrl", {
             describe: "The base external URL of the gateway.",
             type: "string",
-            default: process.env.HOST || id || defaultInternalUrl
+            default: process.env.INTERNAL_URL || defaultInternalUrl
         })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",

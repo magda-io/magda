@@ -29,7 +29,8 @@ spec:
             "-Ddb.default.url=jdbc:postgresql://registry-datastore/postgres",
             "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DauthApi.baseUrl=http://authorization-api",
-            "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}"
+            "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}",
+            "-Dauthorization.skip=false"
         ]
         ports:
         - containerPort: 80

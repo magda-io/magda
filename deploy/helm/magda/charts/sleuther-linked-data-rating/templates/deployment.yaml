@@ -23,6 +23,8 @@ spec:
           value: "http://registry-api/v0"
         - name: USER_ID
           value: {{ .Values.global.defaultAdminUserId }}
+        - name: INTERNAL_URL
+          value: "http://sleuther-linked-data-rating"
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
