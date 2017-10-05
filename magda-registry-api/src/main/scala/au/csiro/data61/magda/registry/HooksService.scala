@@ -134,7 +134,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
   }
 
   def route =
-    requireIsAdmin(authClient) { _ =>
+    requireIsAdmin(authClient)(system) { _ =>
       getAll ~
         create ~
         getById ~

@@ -38,7 +38,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
   def create = post {
-    requireIsAdmin(authClient) { _ =>
+    requireIsAdmin(authClient)(system) { _ =>
       pathEnd {
         entity(as[Record]) { record =>
           val result = DB localTx { session =>
@@ -62,7 +62,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])))
   def deleteById = delete {
-    requireIsAdmin(authClient) { _ =>
+    requireIsAdmin(authClient)(system) { _ =>
       path(Segment) { (recordId: String) =>
         {
           val result = DB localTx { session =>
@@ -99,7 +99,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById = put {
     path(Segment) { (id: String) =>
-      requireIsAdmin(authClient) { _ =>
+      requireIsAdmin(authClient)(system) { _ =>
         {
           entity(as[Record]) { record =>
             val result = DB localTx { session =>
@@ -125,7 +125,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById = patch {
     path(Segment) { (id: String) =>
-      requireIsAdmin(authClient) { _ =>
+      requireIsAdmin(authClient)(system) { _ =>
         {
           entity(as[JsonPatch]) { recordPatch =>
             val result = DB localTx { session =>

@@ -74,7 +74,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const publicUser: PublicUser = {
                     id: user.id,
                     photoURL: user.photoURL,
-                    displayName: user.displayName
+                    displayName: user.displayName,
+                    isAdmin: user.isAdmin
                 };
 
                 return publicUser;

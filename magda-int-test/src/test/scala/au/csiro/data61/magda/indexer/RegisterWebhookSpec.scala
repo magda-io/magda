@@ -33,32 +33,21 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
       registerIndexer(param)
     }
 
-    it("except if already registered") { param =>
-      registerIndexer(param)
-      registerIndexer(param, false)
-    }
-
-    def registerIndexer(param: FixtureParam, shouldPostNew: Boolean = true) = {
+    def registerIndexer(param: FixtureParam) = {
       val aspects: List[String] = RegistryConstants.aspects
       val optionalAspects: List[String] = RegistryConstants.optionalAspects
 
-      (param.fetcher.get _).expects("/v0/hooks", *).onCall((url: String, headers: Seq[HttpHeader]) => {
-        val request = Get(url).withHeaders(scala.collection.immutable.Seq.concat(headers))
+      expectAdmin(param.fetcher, true)
+
+      (param.fetcher.put(_: String, _: WebHook, _: Seq[HttpHeader])(_: ToEntityMarshaller[WebHook])).expects(*, *, *, *).onCall((url: String, webhook: WebHook, headers: Seq[HttpHeader], marshaller: ToEntityMarshaller[WebHook]) => {
+        val request = Put(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
+        
+        assert(webhook.id.isDefined)
+        
         request ~> param.api.routes ~> check {
           Future.successful(response)
         }
       })
-      expectAdmin(param.fetcher, true)
-
-      if (shouldPostNew) {
-        expectAdmin(param.fetcher, true)
-        (param.fetcher.post(_: String, _: WebHook, _: Seq[HttpHeader])(_: ToEntityMarshaller[WebHook])).expects(*, *, *, *).onCall((url: String, webhook: WebHook, headers: Seq[HttpHeader], marshaller: ToEntityMarshaller[WebHook]) => {
-          val request = Post(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
-          request ~> param.api.routes ~> check {
-            Future.successful(response)
-          }
-        })
-      }
 
       val interface = new RegistryExternalInterface(param.fetcher)(config, system, executor, materializer)
 

@@ -41,9 +41,11 @@ object IndexerApp extends App {
     RegisterWebhook.registerWebhook
       .recover {
         case e: Throwable =>
+          logger.error(e, "Error while registering webhook")
+          
           // This is a super massive problem - might as well just crash to make it super-obvious and to
           // use K8S' restart logic
-          system.log.error("Failure to register webhook is an unrecoverable and drastic error, crashing")
+          logger.error("Failure to register webhook is an unrecoverable and drastic error, crashing")
           System.exit(1)
       }
   }

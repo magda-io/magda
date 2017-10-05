@@ -24,38 +24,48 @@ import au.csiro.data61.magda.client.AuthApiClient
 import akka.http.scaladsl.server.AuthenticationFailedRejection
 import akka.http.scaladsl.model.headers.HttpChallenge
 import au.csiro.data61.magda.Authentication
+import akka.event.Logging
 
 object AuthDirectives {
 
-  val requireUserId: Directive1[String] = {
+  def requireUserId(implicit system: ActorSystem): Directive1[String] = {
+    val log = Logging(system, getClass)
     extractRequest flatMap { request =>
       val sessionToken = request.headers.find {
         case headers.RawHeader(Authentication.headerName, value) => true
         case _ => false
       }
 
-      println(sessionToken)
-
       sessionToken match {
         case Some(header) =>
           try {
             provide(Authentication.jwt.verify(header.value()).getClaim("userId").asString())
           } catch {
-            case NonFatal(_) => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, HttpChallenge("magda", None)))
+            case NonFatal(_) =>
+              log.debug("Could not verify X-Magda-Session header in request")
+              reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, HttpChallenge("magda", None)))
           }
-        case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, HttpChallenge("magda", None)))
+        case None =>
+          log.debug("Could not find X-Magda-Session header in request")
+          reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, HttpChallenge("magda", None)))
+
       }
     }
   }
 
-  def requireIsAdmin(authApiClient: AuthApiClient): Directive1[String] = {
+  def requireIsAdmin(authApiClient: AuthApiClient)(implicit system: ActorSystem): Directive1[String] = {
     implicit val ec = authApiClient.executor
+    val log = Logging(system, getClass)
 
     requireUserId flatMap { userId =>
+      log.debug("Authenticated as user with id {}", userId)
       extractActorSystem flatMap { actorSystem =>
         extractMaterializer flatMap { materializer =>
           extractExecutionContext flatMap { executionContext =>
-            authorizeAsync(_ => authApiClient.getUserPublic(userId).map(_.isAdmin)) tflatMap { _ =>
+            authorizeAsync(_ => authApiClient.getUserPublic(userId).map { user =>
+              log.debug("Retrieved user from auth api: {}", user)
+              user.isAdmin
+            }) tflatMap { _ =>
               provide(userId)
             }
           }

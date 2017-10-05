@@ -27,7 +27,9 @@ spec:
             "-Dhttp.port=80",
             "-Dhttp.externalUrl.v0={{ .Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-datastore/postgres",
-            "-Dakka.loglevel=INFO"
+            "-Dakka.loglevel=DEBUG",
+            "-DauthApi.baseUrl=http://authorization-api",
+            "-Dscalikejdbc.global.loggingSQLAndTime.logLevel=info"
         ]
         ports:
         - containerPort: 80
