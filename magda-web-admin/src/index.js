@@ -21,6 +21,7 @@ import AppContainer from "./Components/AppContainer";
 import Account from "./Components/Account/Account";
 import Connectors from "./Components/Connectors/Connectors";
 import ConnectorConfig from "./Components/Connectors/ConnectorConfig";
+import SelectDataset from "./Components/Connectors/SelectDataset";
 import signInRedirect from "./Components/Account/SignInRedirect";
 
 import { Provider } from "react-redux";
@@ -65,7 +66,8 @@ ReactDOM.render(
         <IndexRoute component={Account} />
         <Route path="account" component={Account} />
         <Route path="connectors" component={Connectors} />
-        <Route path="connectors/:connectorId" component={ConnectorConfig} />
+        <Route path="connectors/:connectorId" component={SelectDataset} />
+        <Route path="connectors/:connectorId/:datasetId" component={ConnectorConfig} />
       </Route>
     </Router>
   </Provider>,

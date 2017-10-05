@@ -20,7 +20,7 @@ class LazyComponent extends Component {
       if(!Component){
         return null
       }
-      return <Component data={this.props.data.data}/>
+      return <Component data={this.props.data}/>
     }
 }
 
