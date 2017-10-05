@@ -5,6 +5,7 @@ import CreationFailure from './CreationFailure';
 import JsonTransformer from './JsonTransformer';
 import Registry from './Registry';
 import * as express from 'express';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
 
@@ -162,32 +163,16 @@ export default class JsonConnector {
     }
 
     runInteractive(options: JsonConnectorRunInteractiveOptions) {
+        const transformerForBrowserPath = path.resolve(process.cwd(), 'dist', 'createTransformerForBrowser.js');
+        if (!fs.existsSync(transformerForBrowserPath)) {
+            throw new Error('Cannot run this connector in interactive mode because dist/createTransformerForBrowser.js does not exist.');
+        }
+
         var app = express();
         app.use(require("body-parser").json());
 
         if (options.timeoutSeconds > 0) {
-            // Arrange to shut down the process after the idle timeout expires.
-            let timeoutId: NodeJS.Timer;
-
-            function resetTimeout() {
-                if (timeoutId !== undefined) {
-                    clearTimeout(timeoutId);
-                }
-
-                timeoutId = setTimeout(function() {
-                    console.log('Shutting down due to idle timeout.');
-
-                    // Should just shut down the HTTP server instead of the whole process.
-                    process.exit(0);
-                }, options.timeoutSeconds * 1000);
-            }
-
-            app.use(function(req, res, next) {
-                resetTimeout();
-                next();
-            });
-
-            resetTimeout();
+            this.shutdownOnIdle(app, options.timeoutSeconds);
         }
 
         app.get('/v0/status', (req, res) => {
@@ -241,12 +226,37 @@ export default class JsonConnector {
             }
 
         app.get('/v0/test-harness.js', function(req, res) {
-          res.sendFile(path.resolve(process.cwd(), 'dist', 'createTransformerForBrowser.js'));
+          res.sendFile(transformerForBrowserPath);
         });
 
         app.use('/v0/example.html', express.static('example.html'));
 
         app.listen(options.listenPort);
+    }
+
+    private shutdownOnIdle(express: express.Express, timeoutSeconds: number) {
+        // Arrange to shut down the Express server after the idle timeout expires.
+        let timeoutId: NodeJS.Timer;
+
+        function resetTimeout() {
+            if (timeoutId !== undefined) {
+                clearTimeout(timeoutId);
+            }
+
+            timeoutId = setTimeout(function () {
+                console.log('Shutting down due to idle timeout.');
+
+                // TODO: Should just shut down the HTTP server instead of the whole process.
+                process.exit(0);
+            }, timeoutSeconds * 1000);
+        }
+
+        express.use(function (req, res, next) {
+            resetTimeout();
+            next();
+        });
+
+        resetTimeout();
     }
 }
 
