@@ -148,7 +148,7 @@ export function updateConnectorStatus(){
 export function fetchDatasetFromConnector(connectorId, datasetId){
   return (dispatch: Dispatch)=>{
     dispatch(requestDatasetFromConnector())
-    let url : string = `${config.adminApiUrl}connectors/${connectorId}/interactive/dataset?id=${datasetId}`;
+    let url : string = `${config.adminApiUrl}connectors/${connectorId}/interactive/datasets/${encodeURIComponent(datasetId)}`;
     console.log(url);
     return fetch(url, {
       headers: {
