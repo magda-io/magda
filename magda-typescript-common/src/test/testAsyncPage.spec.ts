@@ -29,6 +29,46 @@ describe('AsyncPage', function() {
                 expect(calls).to.equal(1);
             });
         });
+
+        it('can take 0', function() {
+            const value = {};
+            const page = AsyncPage.single(value).take(0);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+            }).then(() => {
+                expect(calls).to.equal(0);
+            });
+        });
+
+        it('can take 1', function() {
+            const value = {};
+            const page = AsyncPage.single(value).take(1);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+                expect(calls).to.equal(1);
+                expect(item).to.equal(value);
+            }).then(() => {
+                expect(calls).to.equal(1);
+            });
+        });
+
+        it('can take 2', function() {
+            const value = {};
+            const page = AsyncPage.single(value).take(2);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+                expect(calls).to.equal(1);
+                expect(item).to.equal(value);
+            }).then(() => {
+                expect(calls).to.equal(1);
+            });
+        });
     });
 
     describe('none', function() {
@@ -42,6 +82,39 @@ describe('AsyncPage', function() {
             const page = AsyncPage.none<number>().map(v => v + 1);
             return page.forEach(item => {
                 expect.fail('no items', 'an item');
+            });
+        });
+
+        it('can take 0', function() {
+            const page = AsyncPage.none().take(0);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+            }).then(() => {
+                expect(calls).to.equal(0);
+            });
+        });
+
+        it('can take 1', function() {
+            const page = AsyncPage.none().take(1);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+            }).then(() => {
+                expect(calls).to.equal(0);
+            });
+        });
+
+        it('can take 2', function() {
+            const page = AsyncPage.none().take(2);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+            }).then(() => {
+                expect(calls).to.equal(0);
             });
         });
     });
@@ -73,6 +146,52 @@ describe('AsyncPage', function() {
                 ++calls;
                 expect(calls).to.equal(1);
                 expect(item).to.equal(2);
+            }).then(() => {
+                expect(calls).to.equal(1);
+            });
+        });
+
+        it('can take 0', function() {
+            const o = {};
+            const page = AsyncPage.singlePromise(new Promise((resolve, reject) => {
+                resolve(o);
+            })).take(0);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+            }).then(() => {
+                expect(calls).to.equal(0);
+            });
+        });
+
+        it('can take 1', function() {
+            const o = {};
+            const page = AsyncPage.singlePromise(new Promise((resolve, reject) => {
+                resolve(o);
+            })).take(1);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+                expect(calls).to.equal(1);
+                expect(item).to.equal(o);
+            }).then(() => {
+                expect(calls).to.equal(1);
+            });
+        });
+
+        it('can take 2', function() {
+            const o = {};
+            const page = AsyncPage.singlePromise(new Promise((resolve, reject) => {
+                resolve(o);
+            })).take(2);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+                expect(calls).to.equal(1);
+                expect(item).to.equal(o);
             }).then(() => {
                 expect(calls).to.equal(1);
             });
@@ -120,6 +239,73 @@ describe('AsyncPage', function() {
                 ++calls;
             }).then(() => {
                 expect(calls).to.equal(11);
+            });
+        });
+
+        it('can take 0', function() {
+            let selectorCalls = 0;
+            const page = AsyncPage.create<number>(value => {
+                ++selectorCalls;
+                if (value === undefined) {
+                    return Promise.resolve(0);
+                } else if (value < 10) {
+                    return Promise.resolve(value + 1);
+                } else {
+                    return undefined;
+                }
+            }).take(0);
+
+            let calls = 0;
+            return page.forEach(item => {
+                ++calls;
+            }).then(() => {
+                expect(calls).to.equal(0);
+            });
+        });
+
+        it('can take 1', function() {
+            let selectorCalls = 0;
+            const page = AsyncPage.create<number>(value => {
+                ++selectorCalls;
+                if (value === undefined) {
+                    return Promise.resolve(0);
+                } else if (value < 10) {
+                    return Promise.resolve(value + 1);
+                } else {
+                    return undefined;
+                }
+            }).take(1);
+
+            let calls = 0;
+            return page.forEach(item => {
+                expect(item).to.equal(calls);
+                ++calls;
+            }).then(() => {
+                expect(calls).to.equal(1);
+                expect(selectorCalls).to.equal(2);
+            });
+        });
+
+        it('can take 2', function() {
+            let selectorCalls = 0;
+            const page = AsyncPage.create<number>(value => {
+                ++selectorCalls;
+                if (value === undefined) {
+                    return Promise.resolve(0);
+                } else if (value < 10) {
+                    return Promise.resolve(value + 1);
+                } else {
+                    return undefined;
+                }
+            }).take(2);
+
+            let calls = 0;
+            return page.forEach(item => {
+                expect(item).to.equal(calls);
+                ++calls;
+            }).then(() => {
+                expect(calls).to.equal(2);
+                expect(selectorCalls).to.equal(3);
             });
         });
     });

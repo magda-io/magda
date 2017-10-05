@@ -33,12 +33,20 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Launch CSW Connector",
-            "program": "${workspaceRoot}/magda-csw-connector/bin/index.js",
-            "args":[
-                "--config", "${workspaceRoot}/deploy/connector-config/australian-institute-of-marine-science.json"
+            "name": "Launch CKAN Connector",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs": [
+                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/index.ts"
             ],
-            "cwd": "${workspaceRoot}/magda-csw-connector"
+            "args":[
+                "--config", "${workspaceRoot}/deploy/connector-config/data-gov-au.json",
+                "--interactive"
+            ],
+            "cwd": "${workspaceRoot}/magda-ckan-connector"
         },
         {
             "type": "node",

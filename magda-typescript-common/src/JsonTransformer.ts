@@ -105,8 +105,6 @@ export default abstract class JsonTransformer {
         ]);
     }
 
-    abstract getJsonDatasetPublisher(dataset: object): string | object;
-
     abstract getIdFromJsonOrganization(jsonOrganization: object): string;
     abstract getIdFromJsonDataset(jsonDataset: object): string;
     abstract getIdFromJsonDistribution(jsonDistribution: object, jsonDataset: object): string;

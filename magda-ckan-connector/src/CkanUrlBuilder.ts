@@ -42,6 +42,10 @@ export default class CkanUrlBuilder {
         return this.apiBaseUrl.clone().segment('3/action/organization_show').addSearch('id', id).toString();
     }
 
+    public getOrganizationAutocompleteUrl(query: string): string {
+        return this.apiBaseUrl.clone().segment('3/action/organization_autocomplete').addSearch('q', query).toString();
+    }
+
     public getDatasetLandingPageUrl(id: string): string {
         return this.baseUrl.clone().segment('dataset').segment(id).toString();
     }

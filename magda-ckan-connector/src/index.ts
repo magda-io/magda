@@ -3,11 +3,7 @@ import Ckan from './Ckan';
 import createTransformer from './createTransformer';
 import JsonConnector from '@magda/typescript-common/dist/JsonConnector';
 import Registry from '@magda/typescript-common/dist/Registry';
-import * as express from 'express';
 import * as fs from 'fs';
-import * as path from 'path';
-import * as process from 'process';
-import * as request from 'request';
 import * as yargs from 'yargs';
 
 const argv = yargs
@@ -172,70 +168,9 @@ if (!argv.interactive) {
         console.log(result.summarize());
     });
 } else {
-    var app = express();
-    app.use(require("body-parser").json());
-
-    if (argv.timeout > 0) {
-        // Arrange to shut down the process after the idle timeout expires.
-        let timeoutId: NodeJS.Timer;
-
-        function resetTimeout() {
-            if (timeoutId !== undefined) {
-                clearTimeout(timeoutId);
-            }
-
-            timeoutId = setTimeout(function() {
-                console.log('Shutting down due to idle timeout.');
-                process.exit(0);
-            }, argv.timeout * 1000);
-        }
-
-        app.use(function(req, res, next) {
-            resetTimeout();
-            next();
-        });
-
-        resetTimeout();
-    }
-
-    app.get('/v0/status', (req, res) => {
-        res.send('OK');
+    connector.runInteractive({
+        timeoutSeconds: argv.timeout,
+        listenPort: argv.listenPort,
+        transformerOptions: transformerOptions
     });
-
-    app.get('/v0/config', (req, res) => {
-        res.send(transformerOptions);
-    });
-
-    app.get('/v0/dataset', (req, res) => {
-        const showUrl = ckan.urlBuilder.getPackageShowUrl(req.query.id);
-        request.get(showUrl, (error, response, body) => {
-            const json = JSON.parse(body);
-            res.send(json.result);
-        });
-    });
-
-    app.get('/v0/distribution', (req, res) => {
-        const showUrl = ckan.urlBuilder.getResourceShowUrl(req.query.id);
-        request.get(showUrl, (error, response, body) => {
-            const json = JSON.parse(body);
-            res.send(json.result);
-        });
-    });
-
-    app.get('/v0/organization', (req, res) => {
-        const showUrl = ckan.urlBuilder.getOrganizationShowUrl(req.query.id);
-        request.get(showUrl, (error, response, body) => {
-            const json = JSON.parse(body);
-            res.send(json.result);
-        });
-    });
-
-    app.get('/v0/test-harness.js', function(req, res) {
-      res.sendFile(path.resolve(process.cwd(), 'dist', 'createTransformerForBrowser.js'));
-    });
-    app.use('/v0/createTransformerForBrowser.js', express.static('dist/createTransformerForBrowser.js'));
-    app.use('/v0/dist', express.static('dist'));
-    app.use('/v0/example.html', express.static('example.html'));
-
-    app.listen(argv.listenPort);
 }

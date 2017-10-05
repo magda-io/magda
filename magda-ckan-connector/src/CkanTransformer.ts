@@ -5,13 +5,6 @@ export default class CkanTransformer extends JsonTransformer {
         super(options);
     }
 
-    getJsonDatasetPublisher(dataset: any): any {
-        if (!dataset.organization) {
-            return undefined;
-        }
-        return dataset.organization.id;
-    }
-
     getIdFromJsonOrganization(jsonOrganization: any): string {
         return jsonOrganization.id;
     }

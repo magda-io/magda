@@ -1,15 +1,18 @@
 import { AspectDefinition, Record } from './generated/registry/api';
-import AsyncPage, { forEachAsync } from './AsyncPage';
+import AsyncPage, { forEachAsync, asyncPageToArray } from './AsyncPage';
 import ConnectionResult from './ConnectionResult';
 import CreationFailure from './CreationFailure';
 import JsonTransformer from './JsonTransformer';
 import Registry from './Registry';
+import * as express from 'express';
+import * as path from 'path';
+import * as process from 'process';
 
 /**
  * A base class for connectors for most any JSON-based catalog source.
  */
 export default class JsonConnector {
-    public readonly source: IConnectorSource;
+    public readonly source: ConnectorSource;
     public readonly transformer: JsonTransformer;
     public readonly registry: Registry;
     public readonly maxConcurrency: number;
@@ -59,18 +62,20 @@ export default class JsonConnector {
     async createOrganizations(): Promise<ConnectionResult> {
         const result = new ConnectionResult();
 
-        const organizations = this.source.getJsonOrganizations();
-        await forEachAsync(organizations, this.maxConcurrency, async organization => {
-            const recordOrError = await this.createOrganization(organization);
-            if (recordOrError instanceof Error) {
-                result.organizationFailures.push(new CreationFailure(
-                    this.transformer.getIdFromJsonOrganization(organization),
-                    undefined,
-                    recordOrError));
-            } else {
-                ++result.organizationsConnected;
-            }
-        });
+        if (this.source.hasFirstClassOrganizations) {
+            const organizations = this.source.getJsonFirstClassOrganizations();
+            await forEachAsync(organizations, this.maxConcurrency, async organization => {
+                const recordOrError = await this.createOrganization(organization);
+                if (recordOrError instanceof Error) {
+                    result.organizationFailures.push(new CreationFailure(
+                        this.transformer.getIdFromJsonOrganization(organization),
+                        undefined,
+                        recordOrError));
+                } else {
+                    ++result.organizationsConnected;
+                }
+            });
+        }
 
         return result;
     }
@@ -103,21 +108,26 @@ export default class JsonConnector {
                 };
             }
 
-            const publisher = this.transformer.getJsonDatasetPublisher(dataset);
-            if (typeof publisher === 'string' || publisher instanceof String) {
-                record.aspects['dataset-publisher'] = {
-                    publisher: publisher
-                };
-            } else if (typeof publisher === 'object') {
+            if (this.source.hasFirstClassOrganizations) {
+                const publisher = this.source.getJsonDatasetPublisherId(dataset);
+                if (publisher) {
+                    record.aspects['dataset-publisher'] = {
+                        publisher: publisher
+                    };
+                }
+            } else {
+                const publisher = await this.source.getJsonDatasetPublisher(dataset);
+                const publisherId = this.transformer.getIdFromJsonOrganization(publisher);
+
                 const recordOrError = await this.createOrganization(publisher);
                 if (recordOrError instanceof Error) {
                     result.organizationFailures.push(new CreationFailure(
-                        this.transformer.getIdFromJsonOrganization(publisher),
+                        publisherId,
                         undefined,
                         recordOrError));
                 } else {
                     record.aspects['dataset-publisher'] = {
-                        publisher: this.transformer.getIdFromJsonOrganization(publisher)
+                        publisher: publisherId
                     };
                     ++result.organizationsConnected;
                 }
@@ -150,17 +160,191 @@ export default class JsonConnector {
         const datasetAndDistributionResult = await this.createDatasetsAndDistributions();
         return ConnectionResult.combine(aspectResult, organizationResult, datasetAndDistributionResult);
     }
+
+    runInteractive(options: JsonConnectorRunInteractiveOptions) {
+        var app = express();
+        app.use(require("body-parser").json());
+
+        if (options.timeoutSeconds > 0) {
+            // Arrange to shut down the process after the idle timeout expires.
+            let timeoutId: NodeJS.Timer;
+
+            function resetTimeout() {
+                if (timeoutId !== undefined) {
+                    clearTimeout(timeoutId);
+                }
+
+                timeoutId = setTimeout(function() {
+                    console.log('Shutting down due to idle timeout.');
+
+                    // Should just shut down the HTTP server instead of the whole process.
+                    process.exit(0);
+                }, options.timeoutSeconds * 1000);
+            }
+
+            app.use(function(req, res, next) {
+                resetTimeout();
+                next();
+            });
+
+            resetTimeout();
+        }
+
+        app.get('/v0/status', (req, res) => {
+            res.send('OK');
+        });
+
+        app.get('/v0/config', (req, res) => {
+            res.send(options.transformerOptions);
+        });
+
+        app.get('/v0/datasets/:id', (req, res) => {
+            this.source.getJsonDataset(req.params.id).then(function(dataset) {
+                res.send(dataset);
+            });
+        });
+
+        app.get('/v0/datasets/:id/distributions', (req, res) => {
+            this.source.getJsonDataset(req.params.id).then(dataset => {
+                return asyncPageToArray(this.source.getJsonDistributions(dataset)).then(distributions => {
+                    res.send(distributions);
+                })
+            });
+        });
+
+        app.get('/v0/datasets/:id/publisher', (req, res) => {
+            this.source.getJsonDataset(req.params.id).then(dataset => {
+                return this.source.getJsonDatasetPublisher(dataset).then(publisher => {
+                    res.send(publisher);
+                })
+            });
+        });
+
+        app.get('/v0/search/datasets', (req, res) => {
+            asyncPageToArray(this.source.searchDatasetsByTitle(req.query.title, 10)).then(datasets => {
+                res.send(datasets);
+            });
+        });
+
+        if (this.source.hasFirstClassOrganizations) {
+            app.get('/v0/organizations/:id', (req, res) => {
+                this.source.getJsonFirstClassOrganization(req.params.id).then(function(organization) {
+                    res.send(organization);
+                });
+            });
+
+            app.get('/v0/search/organizations', (req, res) => {
+                asyncPageToArray(this.source.searchFirstClassOrganizationsByTitle(req.query.title, 5)).then(organizations => {
+                    res.send(organizations);
+                });
+            });
+            }
+
+        app.get('/v0/test-harness.js', function(req, res) {
+          res.sendFile(path.resolve(process.cwd(), 'dist', 'createTransformerForBrowser.js'));
+        });
+
+        app.use('/v0/example.html', express.static('example.html'));
+
+        app.listen(options.listenPort);
+    }
 }
 
-export interface IConnectorSource {
-    getJsonOrganizations(): AsyncPage<object[]>;
-    getJsonDatasets(): AsyncPage<object[]>;
-    getJsonDistributions(dataset: object): AsyncPage<object[]>;
+export interface ConnectorSource {
+    /**
+     * Get all of the datasets as pages of objects.
+     *
+     * @returns {AsyncPage<any[]>} A page of datasets.
+     */
+    getJsonDatasets(): AsyncPage<any[]>;
+
+    /**
+     * Get a particular dataset given its ID.
+     *
+     * @param {string} id The ID of the dataset.
+     * @returns {Promise<any>} The dataset object with the given ID.
+     */
+    getJsonDataset(id: string): Promise<any>;
+
+    /**
+     * Search datasets for those that have a particular case-insensitive string
+     * in their title.
+     *
+     * @param {string} title The string to search for the in the title.
+     * @param {number} maxResults The maximum number of results to return.
+     * @returns {AsyncPage<any[]>} A page of matching datasets.
+     */
+    searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<any[]>;
+
+    /**
+     * Gets the distributions of a given dataset.
+     *
+     * @param {object} dataset The dataset.
+     * @returns {AsyncPage<any[]>} A page of distributions of the dataset.
+     */
+    getJsonDistributions(dataset: any): AsyncPage<any[]>;
+
+    /**
+     * True if the source provides organizations as first-class objects that can be enumerated and retrieved
+     * by ID.  False if organizations are just fields on datasets or distributions, or if they're not
+     * available at all.
+     */
+    readonly hasFirstClassOrganizations: boolean;
+
+    /**
+     * Enumerates first-class organizations.  If {@link hasFirstClassOrganizations} is false, this
+     * method returns undefined.
+     *
+     * @returns {AsyncPage<any[]>} A page of organizations, or undefined if first-class organizations are not available.
+     */
+    getJsonFirstClassOrganizations(): AsyncPage<any[]>;
+
+    /**
+     * Gets a first-class organization by ID. If {@link hasFirstClassOrganizations} is false, this
+     * method returns undefined.
+     *
+     * @param {string} id The ID of the organization to retrieve.
+     * @returns {Promise<any>} A promise for the organization, or undefined if first-class organizations are not available.
+     */
+    getJsonFirstClassOrganization(id: string): Promise<any>;
+
+    /**
+     * Search first-class organizations for those that have a particular case-insensitive string
+     * in their title.
+     *
+     * @param {string} title The string to search for the in the title.
+     * @param {number} maxResults The maximum number of results to return.
+     * @returns {AsyncPage<any[]>} A page of matching organizations, or undefined if first-class organizations are not available.
+     */
+    searchFirstClassOrganizationsByTitle(title: string, maxResults: number): AsyncPage<any[]>;
+
+    /**
+     * Gets the ID of the publisher of this dataset.  This method will return undefined if {@link hasFirstClassOrganizations}
+     * is false because non-first-class organizations do not have IDs.
+     *
+     * @param {any} dataset The dataset from which to get the publisher ID.
+     * @returns {string} The ID of the dataset's publisher.
+     */
+    getJsonDatasetPublisherId(dataset: any): string;
+
+    /**
+     * Gets the publisher organization of this dataset.
+     *
+     * @param {any} dataset The dataset from which to get the publisher.
+     * @returns {Promise<object>} A promise for the organization that published this dataset.
+     */
+    getJsonDatasetPublisher(dataset: any): Promise<any>;
 }
 
 export interface JsonConnectorOptions {
-    source: IConnectorSource,
-    transformer: JsonTransformer,
-    registry: Registry,
-    maxConcurrency?: number
+    source: ConnectorSource;
+    transformer: JsonTransformer;
+    registry: Registry;
+    maxConcurrency?: number;
+}
+
+export interface JsonConnectorRunInteractiveOptions {
+    timeoutSeconds: number;
+    listenPort: number;
+    transformerOptions: any;
 }
