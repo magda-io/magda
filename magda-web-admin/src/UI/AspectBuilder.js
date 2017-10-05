@@ -5,6 +5,8 @@ import AceEditor from 'react-ace';
 
 import 'brace/mode/javascript';
 import 'brace/theme/github';
+import './AspectBuilder.css';
+
 
 export default class AspectBuilder extends Component {
   constructor(props) {
@@ -35,7 +37,7 @@ export default class AspectBuilder extends Component {
   componentWillMount(){
       if(!this.state.editor){
         this.getEditor().then(editor=>{
-          this.setState({editor: editor, code: this.props.data.builderFunctionString})
+          this.setState({editor: editor, code: this.props.aspectConfig.builderFunctionString})
         })
       }
 
@@ -68,9 +70,7 @@ export default class AspectBuilder extends Component {
     const Editor = this.state.editor;
     return (
       <div>
-        <h3>{this.props.data.aspectDefinition.name}</h3>
-        <div className='row'>
-          <div className='col-sm-6'>
+        <h3>{this.props.aspectConfig.aspectDefinition.name}</h3>
               {Editor && <Editor
                           mode="javascript"
                           theme="github"
@@ -82,11 +82,16 @@ export default class AspectBuilder extends Component {
                   <button className='btn btn-primary' onClick={this.onRunCode}>Run</button>
                   <button className='btn btn-primary'onClick={this.onSaveCode} >Save</button>
               </div>
-            </div>
-            <div className='col-sm-6'>
-              {this.renderResult(this.props.result)}
-              </div>
-            </div>
+              <div>
+                <ul className="nav nav-tabs">
+                  <li className="active" data-toggle="tab"><button>Output</button></li>
+                  <li><button>UI</button></li>
+                  <li><button>Documentation</button></li>
+                </ul>
+                <div  className="tab-content">
+                  <div id="output" className="tab-pane fade in active">{this.renderResult(this.props.result)}</div>
+                </div>
+          </div>
       </div>
     )
   }

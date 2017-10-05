@@ -9,19 +9,26 @@ import ReactDocumentTitle from "react-document-title";
 import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
 import AspectBuilder from "../../UI/AspectBuilder";
+import LazyComponent from "../../Components/LazyComponent";
 import Script from 'react-load-script'
 
 class ConnectorConfig extends Component {
   constructor(props) {
     super(props);
     this.createTransformer = this.createTransformer.bind(this);
+    this.renderAspectSelector = this.renderAspectSelector.bind(this);
+    this.onSelectAspect = this.onSelectAspect.bind(this);
     this.state ={
       testDatasetId: 'a0f2aa22-512d-4c08-9b7d-bb8a51163f4c',
       connectorConfig: null,
-      scriptLoaded: false
+      scriptLoaded: false,
+      aspect: ['datasetAspectBuilders','ckan-dataset'],
     }
   }
 
+  getJsonTreeComponent(){
+      return import('react-json-tree').then(module => module.default)
+  }
 
 
   componentWillMount() {
@@ -72,6 +79,34 @@ class ConnectorConfig extends Component {
     </ReactDocumentTitle>)
   }
 
+
+  onSelectAspect(event){
+      this.setState({
+        aspect: event.target.value.split(',')
+      });
+  }
+
+  renderAspectSelector(){
+    return (<select onChange={this.onSelectAspect}>
+                <optgroup label="Dataset Aspect Builders">
+                  <option value={['datasetAspectBuilders','ckan-dataset']}>Ckan Dataset</option>
+                  <option value={['datasetAspectBuilders','dcat-dataset-strings']}>DCAT Dataset properties as strings</option>
+                  <option value={['datasetAspectBuilders','source']}>Source</option>
+                </optgroup>
+                <optgroup label="Distribution Aspect Builders">
+                  <option value={["distributionAspectBuilders", "ckan-resource"]}>CKAN Resource</option>
+                  <option value={["distributionAspectBuilders", "dcat-distribution-strings"]}>DCAT Distribution properties as strings</option>
+                  <option value={["distributionAspectBuilders", "source"]}>Source</option>
+                </optgroup>
+
+                <optgroup label="Organization Aspect Builders">
+                  <option value={["organizationAspectBuilders", "source"]}>Source</option>
+                  <option value={["organizationAspectBuilders", "organization-details"]}>Organization</option>
+                </optgroup>
+
+              </select>);
+  }
+
   renderBody() {
     if (this.props.error) {
       return <ErrorHandler errorCode={this.props.error} />;
@@ -80,15 +115,20 @@ class ConnectorConfig extends Component {
       const connectorConfig = this.state.connectorConfig;
       const dataset = this.props.dataset;
       const record = transformer.datasetJsonToRecord(dataset);
-      console.log(record);
-
+      const aspectConfig = connectorConfig[this.state.aspect[0]].filter(aspect =>aspect.aspectDefinition.id === this.state.aspect[1])[0];
       return (
         <div className='container'>
           <h1>{connectorConfig.name}</h1>
-          <div>Test Dataset: {this.state.testDatasetId}</div>
-          <div><h2>Dataset aspect builders</h2>{connectorConfig.datasetAspectBuilders.map((aspect, index) => <AspectBuilder key={aspect.aspectDefinition.id} data={aspect} createTransformer={this.createTransformer.bind(this,'datasetAspectBuilders', index)} result={record['aspects'][aspect.aspectDefinition.id]}/>)}</div>
-          <div><h2>Distribution aspect builders</h2></div>
-          <div><h2>Organization aspect builders</h2></div>
+          <div className='row'>
+          <div className='col-sm-4'>
+            <div>Test Dataset: {this.state.testDatasetId}</div>
+            <LazyComponent data={dataset} getComponent={this.getJsonTreeComponent}/>
+          </div>
+          <div className='col-sm-8'>
+          {this.renderAspectSelector()}
+          <AspectBuilder key={this.state.aspect[1]} aspectConfig={aspectConfig} createTransformer={this.createTransformer.bind(this,this.state.aspect[0], this.state.aspect[1])} result={record['aspects'][this.state.aspect[1]]}/>
+          </div>
+          </div>
         </div>
       );
     }
