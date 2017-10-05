@@ -58,7 +58,7 @@ export default class AspectBuilder extends Component {
 
   renderResult(_result){
     const JsonTree = this.state.jsonTree;
-    const result = _result || {data: undefined};
+    const result = _result || {};
     if(JsonTree){
       return <JsonTree data={result}/>
     }
@@ -77,6 +77,7 @@ export default class AspectBuilder extends Component {
                           onChange={this.onChange}
                           name="UNIQUE_ID_OF_DIV"
                           value={this.state.code}
+                          width={'100%'}
                           editorProps={{$blockScrolling: true}}/>}
                 <div>
                   <button className='btn btn-primary' onClick={this.onRunCode}>Run</button>

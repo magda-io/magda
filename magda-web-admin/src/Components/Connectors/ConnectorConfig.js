@@ -19,7 +19,6 @@ class ConnectorConfig extends Component {
     this.renderAspectSelector = this.renderAspectSelector.bind(this);
     this.onSelectAspect = this.onSelectAspect.bind(this);
     this.state ={
-      testDatasetId: 'a0f2aa22-512d-4c08-9b7d-bb8a51163f4c',
       connectorConfig: null,
       scriptLoaded: false,
       aspect: ['datasetAspectBuilders','ckan-dataset'],
@@ -33,23 +32,28 @@ class ConnectorConfig extends Component {
 
   componentWillMount() {
     this.props.fetchConnectorConfigIfNeeded(this.props.params.connectorId);
-    this.props.fetchDatasetFromConnector(this.props.params.connectorId, this.state.testDatasetId);
+    this.props.fetchDatasetFromConnector(this.props.params.connectorId, this.props.params.datasetId);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.params.connectorId !== nextProps.params.connectorId) {
       this.props.fetchConnectorConfigIfNeeded(nextProps.params.connectorId);
-      this.props.fetchDatasetFromConnector(this.props.params.connectorId, this.state.testDatasetId);
+      this.props.fetchDatasetFromConnector(this.props.params.connectorId, this.props.params.datasetId);
     }
 
     if(nextProps.connectorConfig){
-      this.setState({
-        connectorConfig: nextProps.connectorConfig
-      })
+      if(!this.props.config){
+        debugger
+        //only set it the first time when it's fecthed
+        this.setState({
+          connectorConfig: nextProps.connectorConfig
+        })
+      }
     }
   }
 
   createTransformer(type, index, code){
+    debugger
     const config = this.state.connectorConfig;
     config[type][index]['builderFunctionString'] = code;
     this.setState({
@@ -62,7 +66,6 @@ class ConnectorConfig extends Component {
   }
 
   handleScriptError(){
-    debugger
   }
 
   render(){
@@ -115,18 +118,20 @@ class ConnectorConfig extends Component {
       const connectorConfig = this.state.connectorConfig;
       const dataset = this.props.dataset;
       const record = transformer.datasetJsonToRecord(dataset);
-      const aspectConfig = connectorConfig[this.state.aspect[0]].filter(aspect =>aspect.aspectDefinition.id === this.state.aspect[1])[0];
+      const aspectConfigIndex = connectorConfig[this.state.aspect[0]].findIndex(aspect =>aspect.aspectDefinition.id === this.state.aspect[1]);
+      const aspectConfig = connectorConfig[this.state.aspect[0]][aspectConfigIndex];
       return (
         <div className='container'>
           <h1>{connectorConfig.name}</h1>
           <div className='row'>
           <div className='col-sm-4'>
-            <div>Test Dataset: {this.state.testDatasetId}</div>
+            <div>Test Dataset ID: {this.state.testDatasetId}</div>
+            <button className='btn btn-primary'> Select a dataset </button>
             <LazyComponent data={dataset} getComponent={this.getJsonTreeComponent}/>
           </div>
           <div className='col-sm-8'>
           {this.renderAspectSelector()}
-          <AspectBuilder key={this.state.aspect[1]} aspectConfig={aspectConfig} createTransformer={this.createTransformer.bind(this,this.state.aspect[0], this.state.aspect[1])} result={record['aspects'][this.state.aspect[1]]}/>
+          <AspectBuilder key={this.state.aspect[1]} aspectConfig={aspectConfig} createTransformer={this.createTransformer.bind(this,this.state.aspect[0], aspectConfigIndex)} result={record['aspects'][this.state.aspect[1]]}/>
           </div>
           </div>
         </div>
