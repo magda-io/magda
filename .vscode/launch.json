@@ -33,7 +33,7 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Launch CKAN Connector",
+            "name": "Launch CSW Connector",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
@@ -43,10 +43,10 @@
                 "src/index.ts"
             ],
             "args":[
-                "--config", "${workspaceRoot}/deploy/connector-config/data-gov-au.json",
+                "--config", "${workspaceRoot}/deploy/connector-config/australian-bureau-of-meteorology.json",
                 "--interactive"
             ],
-            "cwd": "${workspaceRoot}/magda-ckan-connector"
+            "cwd": "${workspaceRoot}/magda-csw-connector"
         },
         {
             "type": "node",

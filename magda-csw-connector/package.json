@@ -4,7 +4,9 @@
   "version": "0.0.30-0",
   "scripts": {
     "build": "npm run compile",
-    "compile": "tsc -p tsconfig-build.json",
+    "compile": "npm run compile-node && npm run compile-browser",
+    "compile-node": "tsc -p tsconfig-build.json",
+    "compile-browser": "webpack --config src/webpack.config.js",
     "watch": "tsc -p tsconfig-build.json --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
@@ -22,7 +24,9 @@
     "@types/xml2js": "0.0.33",
     "@types/xmldom": "^0.1.29",
     "@types/yargs": "^6.6.0",
-    "typescript": "~2.5.0"
+    "ts-loader": "^2.3.7",
+    "typescript": "~2.5.0",
+    "webpack": "^3.6.0"
   },
   "dependencies": {
     "@magda/registry-aspects": "^0.0.30-0",

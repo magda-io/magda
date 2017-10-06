@@ -1,44 +1,40 @@
-import { IConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
+import { ConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
 import * as URI from 'urijs';
 import * as request from 'request';
 import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
+import CswUrlBuilder from './CswUrlBuilder';
 import retry from '@magda/typescript-common/dist/retry';
 import formatServiceError from '@magda/typescript-common/dist/formatServiceError';
 import * as xmldom from 'xmldom';
+import * as xml2js from 'xml2js';
+import * as jsonpath from 'jsonpath';
+import { groupBy } from 'lodash';
 
-export default class Csw implements IConnectorSource {
+export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
     public readonly name: string;
-    public readonly parameters: object;
     public readonly pageSize: number;
     public readonly maxRetries: number;
     public readonly secondsBetweenRetries: number;
+    public readonly urlBuilder: CswUrlBuilder;
 
     private readonly xmlParser = new xmldom.DOMParser();
-
-    public static readonly defaultGetRecordsParameters = Object.freeze({
-        service: 'CSW',
-        version: '2.0.2',
-        request: 'GetRecords',
-        constraintLanguage: 'FILTER',
-        resultType: 'results',
-        elementsetname: 'full',
-        outputschema: 'http://www.isotc211.org/2005/gmd',
-        typeNames: 'gmd:MD_Metadata'
-    });
+    private readonly xmlSerializer = new xmldom.XMLSerializer();
 
     constructor(options: CswOptions) {
         this.baseUrl = new URI(options.baseUrl);
         this.name = options.name;
-        this.parameters = Object.assign({}, options.parameters);
         this.pageSize = options.pageSize || 10;
         this.maxRetries = options.maxRetries || 10;
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
+        this.urlBuilder = new CswUrlBuilder({
+            name: options.name,
+            baseUrl: options.baseUrl
+        });
     }
 
-    getRecords(): AsyncPage<Document> {
-        const parameters = Object.assign({}, Csw.defaultGetRecordsParameters, this.parameters);
-        const url = this.baseUrl.clone().addSearch(parameters);
+    public getRecords(): AsyncPage<Document> {
+        const url = new URI(this.urlBuilder.getRecordsUrl());
 
         let startIndex = 0;
 
@@ -59,6 +55,109 @@ export default class Csw implements IConnectorSource {
 
             return this.requestRecordsPage(url, startIndex);
         });
+    }
+
+    public getJsonDatasets(): AsyncPage<any[]> {
+        const recordPages = this.getRecords();
+        return recordPages.map(pageXml => {
+            const searchResults = pageXml.documentElement.getElementsByTagNameNS('*', 'SearchResults')[0];
+            const records = searchResults.getElementsByTagNameNS('*', 'MD_Metadata');
+
+            const result = [];
+
+            for (let i = 0; i < records.length; ++i) {
+                const recordXml = records.item(i);
+                result.push(this.xmlRecordToJsonRecord(recordXml));
+            }
+
+            return result;
+        });
+    }
+
+    public getJsonDataset(id: string): Promise<any> {
+        const url = this.urlBuilder.getRecordByIdUrl(id);
+
+        const xmlPromise = new Promise<any>((resolve, reject) => {
+            request(url.toString(), {}, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                resolve(this.xmlParser.parseFromString(body));
+            });
+        });
+
+        return xmlPromise.then(xml => {
+            const recordXml = xml.documentElement.getElementsByTagNameNS('*', 'MD_Metadata')[0];
+            return this.xmlRecordToJsonRecord(recordXml);
+        });
+    }
+
+    public searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<any[]> {
+        throw 1;
+    }
+
+    public getJsonDistributions(dataset: any): AsyncPage<object[]> {
+        return AsyncPage.single<object[]>(this.getJsonDistributionsArray(dataset));
+    }
+
+    public readonly hasFirstClassOrganizations = false;
+
+    public getJsonFirstClassOrganizations(): AsyncPage<object[]> {
+        return undefined;
+    }
+
+    public getJsonFirstClassOrganization(id: string): Promise<object> {
+        return undefined;
+    }
+
+    public searchFirstClassOrganizationsByTitle(title: string, maxResults: number): AsyncPage<any[]> {
+        return undefined;
+    }
+
+    public getJsonDatasetPublisherId(dataset: any): string {
+        return undefined;
+    }
+
+    public getJsonDatasetPublisher(dataset: any): Promise<any> {
+        // Find all parties that are publishers, owners, or custodians.
+        const responsibleParties = jsonpath.query(dataset.json, '$..CI_ResponsibleParty[*]');
+        const byRole = groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
+        const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian;
+        if (!datasetOrgs || datasetOrgs.length === 0) {
+            return undefined;
+        }
+
+        return Promise.resolve(datasetOrgs[0]);
+    }
+
+    private getJsonDistributionsArray(dataset: any): any[] {
+        return jsonpath.query(dataset.json, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
+    }
+
+    private xmlRecordToJsonRecord(recordXml: Element) {
+        const xml2jsany: any = xml2js; // needed because the current TypeScript declarations don't know about xml2js.processors.
+        const parser = new xml2js.Parser({
+            xmlns: true,
+            tagNameProcessors: [ xml2jsany.processors.stripPrefix ],
+            async: false,
+            explicitRoot: false
+        });
+
+        const xmlString = this.xmlSerializer.serializeToString(recordXml);
+        let json: any = {};
+        parser.parseString(xmlString, function(error: any, result: any) {
+            if (error) {
+                return;
+            }
+            json = result;
+        });
+
+        return {
+            json: json,
+//            xml: recordXml,
+            xmlString: xmlString
+        };
     }
 
     private requestRecordsPage(url: uri.URI, startIndex: number): Promise<any> {
@@ -85,7 +184,6 @@ export default class Csw implements IConnectorSource {
 export interface CswOptions {
     baseUrl: string;
     name: string;
-    parameters?: object;
     pageSize?: number;
     maxRetries?: number;
     secondsBetweenRetries?: number;
