@@ -112,7 +112,7 @@ export default class Csw implements ConnectorSource {
             <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:dc="http://purl.org/dc/elements/1.1/">
                 <ogc:PropertyIsLike escapeChar="\\" singleChar="?" wildCard="*">
                     <ogc:PropertyName>Title</ogc:PropertyName>
-                    <ogc:Literal>*${title}*</ogc:Literal>
+                        <ogc:Literal>*${title.replace(/\\/g, '\\\\').replace(/\*/g, '\\*').replace(/\?/g, '\\?')}*</ogc:Literal>
                 </ogc:PropertyIsLike>
             </ogc:Filter>`.replace(/\s\s+/g, ' ');
         return this.getJsonDatasets(constraint, 10);
