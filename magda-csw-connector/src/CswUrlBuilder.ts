@@ -15,6 +15,7 @@ export default class CswUrlBuilder {
         version: '2.0.2',
         request: 'GetRecords',
         constraintLanguage: 'FILTER',
+        constraint_language_version: '1.1.0',
         resultType: 'results',
         elementsetname: 'full',
         outputschema: 'http://www.isotc211.org/2005/gmd',
@@ -35,8 +36,12 @@ export default class CswUrlBuilder {
         this.baseUrl = new URI(options.baseUrl);
     }
 
-    public getRecordsUrl(): string {
-        return this.baseUrl.clone().addSearch(this.GetRecordsParameters).toString();
+    public getRecordsUrl(constraint?: string): string {
+        const url = this.baseUrl.clone().addSearch(this.GetRecordsParameters);
+        if (constraint) {
+            url.addSearch('constraint', constraint);
+        }
+        return url.toString();
     }
 
     public getRecordByIdUrl(id: string): string {

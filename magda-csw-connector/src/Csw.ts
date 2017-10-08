@@ -33,10 +33,17 @@ export default class Csw implements ConnectorSource {
         });
     }
 
-    public getRecords(): AsyncPage<Document> {
-        const url = new URI(this.urlBuilder.getRecordsUrl());
+    public getRecords(options?: {
+        constraint?: string,
+        start?: number,
+        maxResults?: number
+    }): AsyncPage<Document> {
+        options = options || {};
 
-        let startIndex = 0;
+        const url = new URI(this.urlBuilder.getRecordsUrl(options.constraint));
+
+        const startStart = options.start || 0;
+        let startIndex = startStart;
 
         return AsyncPage.create<any>(previous => {
             if (previous) {
@@ -46,19 +53,26 @@ export default class Csw implements ConnectorSource {
 
                 const nextStartIndex = nextRecord - 1;
 
-                if (nextRecord >= numberOfRecordsMatched || nextStartIndex === startIndex) {
+                const remaining = options.maxResults ? (options.maxResults - (nextStartIndex - startStart)) : undefined;
+
+                if (nextRecord === 0 || nextRecord >= numberOfRecordsMatched || nextStartIndex === startIndex || remaining <= 0) {
                     return undefined;
                 }
 
                 startIndex = nextStartIndex;
-            }
 
-            return this.requestRecordsPage(url, startIndex);
+                return this.requestRecordsPage(url, startIndex, remaining);
+            } else {
+                return this.requestRecordsPage(url, startIndex, options.maxResults);
+            }
         });
     }
 
-    public getJsonDatasets(): AsyncPage<any[]> {
-        const recordPages = this.getRecords();
+    public getJsonDatasets(constraint?: string, maxResults?: number): AsyncPage<any[]> {
+        const recordPages = this.getRecords({
+            constraint: constraint,
+            maxResults: maxResults
+        });
         return recordPages.map(pageXml => {
             const searchResults = pageXml.documentElement.getElementsByTagNameNS('*', 'SearchResults')[0];
             const records = searchResults.getElementsByTagNameNS('*', 'MD_Metadata');
@@ -94,7 +108,14 @@ export default class Csw implements ConnectorSource {
     }
 
     public searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<any[]> {
-        throw 1;
+        const constraint = `
+            <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:dc="http://purl.org/dc/elements/1.1/">
+                <ogc:PropertyIsLike escapeChar="\\" singleChar="?" wildCard="*">
+                    <ogc:PropertyName>Title</ogc:PropertyName>
+                    <ogc:Literal>*${title}*</ogc:Literal>
+                </ogc:PropertyIsLike>
+            </ogc:Filter>`.replace(/\s\s+/g, ' ');
+        return this.getJsonDatasets(constraint, 10);
     }
 
     public getJsonDistributions(dataset: any): AsyncPage<object[]> {
@@ -160,10 +181,12 @@ export default class Csw implements ConnectorSource {
         };
     }
 
-    private requestRecordsPage(url: uri.URI, startIndex: number): Promise<any> {
+    private requestRecordsPage(url: uri.URI, startIndex: number, maxResults: number): Promise<any> {
+        const pageSize = maxResults && maxResults < this.pageSize ? maxResults : this.pageSize;
+
         const pageUrl = url.clone();
         pageUrl.addSearch('startPosition', startIndex + 1);
-        pageUrl.addSearch('maxRecords', this.pageSize);
+        pageUrl.addSearch('maxRecords', pageSize);
 
         const operation = () => new Promise<any>((resolve, reject) => {
             console.log('Requesting ' + pageUrl.toString());

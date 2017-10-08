@@ -116,7 +116,7 @@ export default class Ckan implements ConnectorSource {
         return AsyncPage.create<CkanPackageSearchResponse>(previous => {
             if (previous) {
                 startIndex += previous.result.results.length;
-                if (startIndex >= previous.result.count || (options.maxResults && startIndex >= options.maxResults)) {
+                if (startIndex >= previous.result.count || (options.maxResults && (startIndex - startStart) >= options.maxResults)) {
                     return undefined;
                 }
             }
