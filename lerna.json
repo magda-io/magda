@@ -37,7 +37,8 @@
     "urijs",
     "@types/urijs",
     "express",
-    "@types/express"
+    "@types/express",
+    "@types/supertest"
   ],
   "concurrency": "1",
   "commands": {
