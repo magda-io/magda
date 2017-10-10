@@ -1,3 +1,15 @@
 .left-panel{
   height: 200px;
 }
+
+.aspect-builder{
+  .nav-tabs{
+    margin-top: 20px;
+  }
+  .actions{
+    text-align: right;
+    .btn{
+      margin-left: 10px;
+    }
+  }
+}

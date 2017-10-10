@@ -14,12 +14,13 @@ export default class AspectBuilder extends Component {
     super(props);
     this.state = {
       editor: null,
-      code: ''
+      code: '',
+      activeTab: 'json'
     };
     this.onChange = this.onChange.bind(this);
     this.onRunCode = this.onRunCode.bind(this);
     this.onSaveCode = this.onSaveCode.bind(this);
-
+    this.toggleTab = this.toggleTab.bind(this);
   }
 
 
@@ -48,14 +49,37 @@ export default class AspectBuilder extends Component {
   }
 
   renderResult(dataset){
-    return <LazyComponent data={{dataset}} getComponent={this.props.getComponent}/>
+    switch(this.state.activeTab) {
+      case 'json':
+          return <LazyComponent data={{dataset}} getComponent={this.props.getComponent}/>
+      case 'ui':
+          return 'display dataset ui'
+      case 'doc':
+          return 'some documentation'
+        }
+  }
+
+  toggleTab(tabName){
+    this.setState({
+      activeTab: tabName
+    })
   }
 
 
   render() {
-    const Editor = this.state.editor;
+    const that = this;
+    function getTabClass(tabName){
+      if(tabName === that.state.activeTab){
+        return 'active'
+      }
+    }
+    const Editor = that.state.editor;
     return (
-      <div>
+      <div className='aspect-builder'>
+      <div className='actions'>
+        <button className='btn btn-primary' onClick={this.onRunCode}>Run</button>
+        <button className='btn btn-primary'onClick={this.onSaveCode} >Save</button>
+      </div>
         <h3>{this.props.aspectConfig.aspectDefinition.name}</h3>
               {Editor && <Editor
                           mode="javascript"
@@ -65,15 +89,12 @@ export default class AspectBuilder extends Component {
                           value={this.state.code}
                           width={'100%'}
                           editorProps={{$blockScrolling: true}}/>}
-                <div>
-                  <button className='btn btn-primary' onClick={this.onRunCode}>Run</button>
-                  <button className='btn btn-primary'onClick={this.onSaveCode} >Save</button>
-              </div>
+
               <div>
                 <ul className="nav nav-tabs">
-                  <li className="active" data-toggle="tab"><button className='btn btn-reset'>Output</button></li>
-                  <li><button className='btn btn-reset'>UI</button></li>
-                  <li><button className='btn btn-reset'>Documentation</button></li>
+                  <li data-toggle="tab" className={getTabClass('json')}><a onClick={this.toggleTab.bind(this, 'json')}>Output</a></li>
+                  <li className={getTabClass('ui')}><a onClick={this.toggleTab.bind(this, 'ui')}>UI</a></li>
+                  <li className={getTabClass('doc')}><a onClick={this.toggleTab.bind(this, 'doc')}>Documentation</a></li>
                 </ul>
                 <div  className="tab-content">
                   <div id="output" className="tab-pane fade in active">{this.renderResult(this.props.result)}</div>

@@ -123,12 +123,15 @@ class ConnectorConfig extends Component {
           <h1>{connectorConfig.name}</h1>
           <div className='row'>
           <div className='col-sm-4'>
-            <div>Test Dataset ID: {this.state.testDatasetId}</div>
-            <button className='btn btn-primary'> Select a dataset </button>
+            <div>Test Dataset ID: {this.props.params.datasetId}</div>
+            <Link to={`/connectors/${this.props.params.connectorId}`}> Select a different dataset for testing </Link>
             <LazyComponent data={{dataset}} getComponent={this.getJsonTreeComponent}/>
           </div>
           <div className='col-sm-8'>
+          <label>
+          Select an aspect to config:
           {this.renderAspectSelector()}
+          </label>
           <AspectBuilder key={this.state.aspect[1]} getComponent={this.getJsonTreeComponent} aspectConfig={aspectConfig} createTransformer={this.createTransformer.bind(this,this.state.aspect[0], aspectConfigIndex)} result={record['aspects'][this.state.aspect[1]]}/>
           </div>
           </div>
