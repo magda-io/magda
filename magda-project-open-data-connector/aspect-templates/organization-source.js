@@ -1,5 +1,7 @@
+var projectOpenData = libraries.projectOpenData;
+
 return {
     type: 'project-open-data-organization',
-    url: source.url,
-    name: connector.name
+    url: projectOpenData.url,
+    name: projectOpenData.name
 };

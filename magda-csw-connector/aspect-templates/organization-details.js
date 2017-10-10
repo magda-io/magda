@@ -1,4 +1,4 @@
-const name = connector.getNameFromJsonOrganization(organization);
+const name = transformer.getNameFromJsonOrganization(organization);
 
 return {
     name: name,
