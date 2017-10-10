@@ -1,0 +1,22 @@
+.progress-bar {
+  width: 100%;
+  background: #f5f5f5;
+  box-shadow: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0; }
+
+.progress {
+  background: linear-gradient(to right, #c0392b, #f1c40f, #c0392b, #f1c40f);
+  border-radius: 1px;
+  animation: gradient 3s linear infinite;
+  background-position: 0% 0%;
+  background-size: 500% auto;
+  height: 10px; }
+
+@keyframes gradient {
+  0% {
+    background-position: 0 0; }
+  100% {
+    background-position: 100% 0; } }

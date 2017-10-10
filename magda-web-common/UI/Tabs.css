@@ -1,0 +1,29 @@
+.tabs {
+  margin-top: 15px;
+  display: block;
+  border-bottom: 1px solid #ddd; }
+  .tabs .nav-tabs {
+    border-bottom: 0;
+    padding-left: 15px; }
+  .tabs .active {
+    border-bottom: 3px solid #2980B9;
+    color: #000; }
+  .tabs a {
+    color: #888;
+    padding-left: 0; }
+  .tabs .nav-tabs > li > a {
+    padding: 10px 0;
+    margin-right: 10px; }
+    .tabs .nav-tabs > li > a:hover, .tabs .nav-tabs > li > a:focus {
+      border-color: #fff;
+      color: #000;
+      border-bottom: 3px solid #2980B9; }
+
+.tab-content {
+  background: #f7f7f7;
+  min-height: 400px; }
+
+@media (max-width: 768px) {
+  .tabs li {
+    display: block;
+    clear: both; } }

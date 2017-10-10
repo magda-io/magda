@@ -1,0 +1,32 @@
+.star {
+  position: relative; }
+
+.star__btn,
+.star__btn:focus {
+  background: rgba(255, 255, 255, 0);
+  vertical-align: text-top;
+  color: #bbb; }
+
+.star__info {
+  position: absolute;
+  left: -20px;
+  top: 37px;
+  width: 170px;
+  padding: 10px;
+  border: 1px solid #ecf0f1;
+  background: #fff;
+  z-index: 9; }
+
+.star__info:before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  display: block;
+  background: #fff;
+  border: #ecf0f1;
+  position: absolute;
+  border-top: 1px solid #ecf0f1;
+  border-right: 1px solid #ecf0f1;
+  top: -10.14px;
+  transform: rotate(-45deg);
+  left: 28px; }

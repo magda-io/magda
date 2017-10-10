@@ -1,0 +1,42 @@
+.notification__error .notification__heading {
+  background: #e74c3c;
+  color: #fff;
+  padding: 10px; }
+
+.notification__error button {
+  padding: 5px 10px;
+  margin: 10px;
+  background: #e74c3c;
+  color: #fff; }
+
+.notification__error button:hover,
+.notification__error button:focus {
+  color: #fff;
+  background: #e67e22; }
+
+.notification {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999; }
+
+.notification__inner {
+  background: #fff; }
+
+.notification__body {
+  padding: 10px; }
+
+.notification__inner {
+  height: auto;
+  width: 300px;
+  margin: 0 auto;
+  max-height: 500px;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%); }
+
+.notification__heading {
+  text-transform: uppercase; }
