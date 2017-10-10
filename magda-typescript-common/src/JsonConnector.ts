@@ -4,7 +4,7 @@ import AsyncPage, { forEachAsync } from './AsyncPage';
 import ConnectionResult from './ConnectionResult';
 import createServiceError from './createServiceError';
 import CreationFailure from './CreationFailure';
-import Registry from './Registry';
+import Registry from './registry/AuthorizedRegistryClient';
 
 /**
  * A base class for connectors for most any JSON-based catalog source.

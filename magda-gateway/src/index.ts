@@ -1,13 +1,19 @@
-require("isomorphic-fetch");
+import "isomorphic-fetch";
 import * as cors from "cors";
 import * as express from "express";
 import * as path from "path";
 import * as yargs from "yargs";
+import * as ejs from "ejs";
 
 import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
+
+// Tell typescript about the semi-private __express field of ejs.
+declare module "ejs" {
+    var __express: any;
+}
 
 const argv = yargs
     .config()
@@ -37,8 +43,8 @@ const argv = yargs
         type: "string",
         default: "../local-routes.json"
     })
-    .option("authenticationApi", {
-        describe: "The base URL of the authentication API.",
+    .option("authorizationApi", {
+        describe: "The base URL of the authorization API.",
         type: "string",
         default: "http://localhost:6104/v0"
     })
@@ -54,10 +60,10 @@ const argv = yargs
     })
     .option("jwtSecret", {
         describe:
-            "The secret to use to sign JSON Web Token (JKT) for authenticated requests.  This can also be specified with the JWT_SECRET environment variable.",
+            "The secret to use to sign JSON Web Token (JWT) for authenticated requests.  This can also be specified with the JWT_SECRET environment variable.",
         type: "string",
         default:
-            process.env.JWT_SECRET || process.env.npm_package_config_JWT_SECRET,
+            process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret,
         demand: true
     })
     .option("sessionSecret", {
@@ -114,6 +120,7 @@ app.use(configuredCors);
 // Configure view engine to render EJS templates.
 app.set("views", path.join(__dirname, "..", "views"));
 app.set("view engine", "ejs");
+app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
 app.use(require("morgan")("combined"));
 
 app.use(
@@ -126,7 +133,7 @@ app.use(
         googleClientId: argv.googleClientId,
         googleClientSecret: argv.googleClientSecret,
         ckanUrl: argv.ckanUrl,
-        authenticationApi: argv.authenticationApi,
+        authorizationApi: argv.authorizationApi,
         externalUrl: argv.externalUrl
     })
 );

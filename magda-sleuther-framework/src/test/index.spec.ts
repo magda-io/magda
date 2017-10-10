@@ -6,6 +6,7 @@ import jsc from "@magda/typescript-common/dist/test/jsverify";
 import * as express from "express";
 import * as request from "supertest";
 import * as _ from "lodash";
+const portfinder = require("portfinder");
 import {
     Record,
     WebHook,
@@ -19,6 +20,9 @@ import {
 } from "@magda/typescript-common/dist/test/arbitraries";
 import sleuther, { SleutherOptions } from "../index";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
+import { SleutherArguments } from "../commonYargs";
+import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
+import { Server } from "http";
 
 const aspectArb = jsc.record({
     id: jsc.string,
@@ -81,8 +85,10 @@ function arraysEqual(a: any[], b: any[]) {
 }
 
 describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
-    this.timeout(10000);
+    this.timeout(100000);
     let expressApp: express.Express;
+    let expressServer: Server;
+    let listenPort: number;
 
     before(() => {
         sinon.stub(console, "info");
@@ -95,6 +101,10 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                 originalConsoleError(...args);
             }
         });
+
+        return portfinder.getPortPromise().then((port: number) => {
+            listenPort = port;
+        });
     });
 
     after(() => {
@@ -102,74 +112,47 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
     });
 
     const beforeEachProperty = () => {
-        expressApp = express();
-        process.env.NODE_PORT = "";
-        process.env.REGISTRY_URL = "";
-        process.env.npm_package_config_registryUrl = "";
-        sinon.stub(expressApp, "listen");
-    };
-
-    type RegistryUrlMethod = "env var" | "package.json" | "both" | "none";
-
-    type RegistryUrlArbResult = {
-        domain: string;
-        method: RegistryUrlMethod;
-    };
-
-    const registryUrlArb: jsc.Arbitrary<RegistryUrlArbResult> = jsc.record({
-        domain: lcAlphaNumStringArbNe,
-        method: jsc.oneof([
-            jsc.constant("none"),
-            jsc.constant("env var"),
-            jsc.constant("package.json"),
-            jsc.constant("both")
-        ]) as jsc.Arbitrary<RegistryUrlMethod>
-    });
-
-    const setRegistryUrl = (arbResult: RegistryUrlArbResult) => {
-        if (arbResult.method === "none") {
-            return "http://localhost:6101/v0";
-        } else {
-            const registryUrl = `http://${arbResult.domain}.com`;
-            if (arbResult.method === "env var") {
-                process.env.REGISTRY_URL = registryUrl;
-            } else if (arbResult.method === "package.json") {
-                process.env.npm_package_config_registryUrl = registryUrl;
-            } else if (arbResult.method === "both") {
-                process.env.REGISTRY_URL = registryUrl;
-                process.env.npm_package_config_registryUrl = registryUrl;
-            }
-
-            return registryUrl;
+        if (expressServer) {
+            expressServer.close();
         }
+        expressApp = express();
+        const originalListen = expressApp.listen;
+        sinon.stub(expressApp, "listen").callsFake(port => {
+            expressServer = originalListen.bind(expressApp)(port);
+            return expressServer;
+        });
     };
 
     jsc.property(
         "Should register aspects, hooks and start listening for webhook events",
         jsc.array(aspectArb),
         jsc.nestring,
-        registryUrlArb,
+        lcAlphaNumStringArbNe,
         lcAlphaNumStringArbNe,
         jsc.array(jsc.nestring),
         jsc.array(jsc.nestring),
-        jsc.suchthat(jsc.integer, int => int > 0 && int < 65000),
+        lcAlphaNumStringArbNe,
+        lcAlphaNumStringArbNe,
         (
             aspectDefs: AspectDefinition[],
             id: string,
-            registry: RegistryUrlArbResult,
+            registryHost: string,
             listenDomain: string,
             aspects: string[],
             optionalAspects: string[],
-            defaultPort: number
+            jwtSecret: string,
+            userId: string
         ) => {
             beforeEachProperty();
-            const registryUrl = setRegistryUrl(registry);
+            const registryUrl = `http://${registryHost}.com`;
             const registryScope = nock(registryUrl);
+
+            const internalUrl = `http://${listenDomain}.com:${listenPort}`;
 
             const hook: WebHook = {
                 id: id,
                 name: id,
-                url: `http://${listenDomain}.com:${defaultPort}/hook`,
+                url: `${internalUrl}/hook`,
                 active: true,
                 userId: 0,
                 eventTypes: [
@@ -196,12 +179,17 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                 registryScope
                     .put(
                         `/aspects/${encodeURIComponentWithApost(aspectDef.id)}`,
-                        aspectDef
+                        aspectDef,
+                        {
+                            reqheaders: reqHeaders(jwtSecret, userId)
+                        }
                     )
                     .reply(201, aspectDef);
             });
             registryScope
-                .put(`/hooks/${encodeURIComponentWithApost(hook.id)}`, hook)
+                .put(`/hooks/${encodeURIComponentWithApost(hook.id)}`, hook, {
+                    reqheaders: reqHeaders(jwtSecret, userId)
+                })
                 .reply(201, hook);
 
             registryScope
@@ -210,8 +198,12 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                 .reply(200, { records: [] });
 
             const options: SleutherOptions = {
-                host: `${listenDomain}.com`,
-                defaultPort: defaultPort,
+                argv: fakeArgv({
+                    internalUrl,
+                    registryUrl,
+                    jwtSecret,
+                    userId
+                }),
                 id,
                 aspects: hook.config.aspects,
                 optionalAspects: hook.config.optionalAspects,
@@ -229,14 +221,24 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
     jsc.property(
         "should properly crawl existing",
-        registryUrlArb,
+        lcAlphaNumStringArbNe,
         jsc.array(jsc.nestring),
         jsc.array(jsc.nestring),
         jsc.array(recordArb),
         jsc.suchthat(jsc.integer, int => int > 3000 && int < 3100),
-        (registry, aspects, optionalAspects, records, pageSize) => {
+        lcAlphaNumStringArbNe,
+        lcAlphaNumStringArbNe,
+        (
+            registryHost,
+            aspects,
+            optionalAspects,
+            records,
+            pageSize,
+            jwtSecret,
+            userId
+        ) => {
             beforeEachProperty();
-            const registryUrl = setRegistryUrl(registry);
+            const registryUrl = `http://${registryHost}.com`;
             const registryScope = nock(registryUrl);
             registryScope.put(/\/hooks\/.*/).reply(201);
 
@@ -282,8 +284,12 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
             const resolves: (() => void)[] = [];
             const options: SleutherOptions = {
-                host: `example.com`,
-                defaultPort: 80,
+                argv: fakeArgv({
+                    internalUrl: `http://example.com`,
+                    registryUrl,
+                    jwtSecret,
+                    userId
+                }),
                 id: "id",
                 aspects: aspects,
                 optionalAspects: optionalAspects,
@@ -346,10 +352,10 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
                 type Batch = {
                     /** Each record in the batch and whether it should succeed when
-         *  onRecordFound is called */
+                    *  onRecordFound is called */
                     records: { record: Record; success: boolean }[];
                     /** Whether the overall batch should succeed - to succeed, every record
-         *  should succeed, to fail then at least one record should fail. */
+                    *  should succeed, to fail then at least one record should fail. */
                     overallSuccess: boolean;
                 };
 
@@ -370,16 +376,19 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                         batches.map(({ overallSuccess }) => overallSuccess)
                 );
 
+                /** Global hook id generator - incremented every time we create another hook */
+                let lastHookId = 0;
                 return jsc.assert(
                     jsc.forall(
                         batchArb,
                         lcAlphaNumStringArbNe,
-                        (recordsBatches: Batch[], domain: string) => {
+                        lcAlphaNumStringArbNe,
+                        lcAlphaNumStringArbNe,
+                        (recordsBatches, domain, jwtSecret, userId) => {
                             beforeEachProperty();
 
                             const registryDomain = "example";
                             const registryUrl = `http://${registryDomain}.com:80`;
-                            process.env.REGISTRY_URL = registryUrl;
                             const registryScope = nock(registryUrl);
 
                             registryScope.put(/\/hooks\/.*/).reply(201);
@@ -395,9 +404,15 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                             );
                             (fakeError as any).ignore = true;
 
+                            const internalUrl = `http://${domain}.com`;
+
                             const options: SleutherOptions = {
-                                host: `${domain}.com`,
-                                defaultPort: 80,
+                                argv: fakeArgv({
+                                    internalUrl,
+                                    registryUrl,
+                                    jwtSecret,
+                                    userId
+                                }),
                                 id: "id",
                                 aspects: [],
                                 optionalAspects: [],
@@ -425,8 +440,6 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                                 .query(true)
                                 .reply(200, { records: [] });
 
-                            /** Global hook id generator - incremented every time we create another hook */
-                            let lastHookId = 0;
                             return sleuther(options)
                                 .then(() =>
                                     Promise.all(
@@ -449,7 +462,7 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                                             }
 
                                             // Send the hook payload to the sleuther
-                                            const test = request(expressApp)
+                                            const test = request(expressServer)
                                                 .post("/hook")
                                                 .set(
                                                     "Content-Type",
@@ -461,6 +474,15 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                                                     ),
                                                     deferredResponseUrl: `${registryUrl}/hooks/${lastHookId}`,
                                                     lastEventId: lastHookId
+                                                })
+                                                .expect((response: any) => {
+                                                    if (
+                                                        response.status !==
+                                                            201 &&
+                                                        response.status !== 500
+                                                    ) {
+                                                        console.log(response);
+                                                    }
                                                 })
                                                 // The hook should only return 500 if it's failed synchronously.
                                                 .expect(
@@ -516,8 +538,11 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
 
     type input = {
         port: number;
-        host: string;
+        internalUrl: string;
         id: string;
+        jwtSecret: string;
+        userId: string;
+        registryUrl: string;
         aspects: string[];
         optionalAspects: string[];
     };
@@ -527,26 +552,44 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
         jsc.suchthat(
             jsc.record({
                 port: jsc.integer,
-                host: lcAlphaNumStringArb,
+                internalUrl: lcAlphaNumStringArb,
                 id: lcAlphaNumStringArb,
                 aspects: jsc.array(lcAlphaNumStringArb),
-                optionalAspects: jsc.array(lcAlphaNumStringArb)
+                optionalAspects: jsc.array(lcAlphaNumStringArb),
+                jwtSecret: lcAlphaNumStringArb,
+                userId: lcAlphaNumStringArb,
+                registryUrl: lcAlphaNumStringArb
             }),
             (record: input) =>
-                // return true;
                 record.port <= 0 ||
                 record.port >= 65535 ||
-                record.host === "" ||
+                record.internalUrl === "" ||
                 record.id === "" ||
                 containsBlanks(record.aspects) ||
-                containsBlanks(record.optionalAspects)
+                containsBlanks(record.optionalAspects) ||
+                record.jwtSecret === "" ||
+                record.userId === "" ||
+                record.registryUrl === ""
         ),
-        ({ port, host, id, aspects, optionalAspects }: input) => {
+        ({
+            port,
+            internalUrl,
+            id,
+            aspects,
+            optionalAspects,
+            jwtSecret,
+            userId
+        }: input) => {
             beforeEachProperty();
 
             const options: SleutherOptions = {
-                host: host,
-                defaultPort: port,
+                argv: fakeArgv({
+                    internalUrl: internalUrl,
+                    listenPort: port,
+                    registryUrl: "",
+                    jwtSecret,
+                    userId
+                }),
                 id: id,
                 aspects: aspects,
                 optionalAspects: optionalAspects,
@@ -562,4 +605,25 @@ describe("Sleuther framework", function(this: Mocha.ISuiteCallbackContext) {
                 .catch(() => true);
         }
     );
+
+    function fakeArgv(options: {
+        internalUrl: string;
+        registryUrl: string;
+        jwtSecret: string;
+        userId: string;
+        listenPort?: number;
+    }): SleutherArguments {
+        return {
+            listenPort: listenPort,
+            ...options,
+            $0: "",
+            _: []
+        };
+    }
 });
+
+function reqHeaders(jwtSecret: string, userId: string) {
+    return {
+        "X-Magda-Session": buildJwt(jwtSecret, userId)
+    };
+}

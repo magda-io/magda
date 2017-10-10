@@ -28,18 +28,25 @@ import {
     failureCodeArb
 } from "./arbitraries";
 import FtpHandler from "../FtpHandler";
+import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(20000);
     nock.disableNetConnect();
     const registryUrl = "http://example.com";
-    process.env.REGISTRY_URL = registryUrl;
+    const secret = "secret!";
+    const registry = new AuthorizedRegistryClient({
+        baseUrl: registryUrl,
+        jwtSecret: secret,
+        userId: "1"
+    });
     let registryScope: nock.Scope;
     let clients: { [s: string]: Client[] };
     let ftpSuccesses: { [url: string]: CheckResult };
 
     before(() => {
         sinon.stub(console, "info");
+        nock.disableNetConnect();
 
         nock.emitter.on("no match", onMatchFail);
     });
@@ -305,7 +312,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         .reply(201);
                 }
 
-                return onRecordFound(record, 0, 0, 0, fakeFtpHandler)
+                return onRecordFound(record, registry, 0, 0, 0, fakeFtpHandler)
                     .then(() => {
                         distScopes.forEach(scope => scope.done());
                         registryScope.done();
@@ -515,7 +522,12 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                     .reply(201);
                             }
 
-                            return onRecordFound(record, 0, retryCount)
+                            return onRecordFound(
+                                record,
+                                registry,
+                                retryCount,
+                                0
+                            )
                                 .then(() => {
                                     registryScope.done();
                                     distScopes.forEach(scope => scope.done());
@@ -592,12 +604,12 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
                             const scope = scopeLookup[base];
 
-                            failures.forEach(failureCode =>
+                            failures.forEach(failureCode => {
                                 scope
                                     .head(uri.path())
                                     .delay(delayMs)
-                                    .reply(failureCode)
-                            );
+                                    .reply(failureCode);
+                            });
 
                             scope
                                 .head(uri.path())
@@ -631,7 +643,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         .times(allDists.length)
                         .reply(201);
 
-                    return onRecordFound(record, 0, failures.length)
+                    return onRecordFound(record, registry, failures.length, 0)
                         .then(() => {
                             _.values(distScopes).forEach(scope => scope.done());
                         })
@@ -668,7 +680,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         record => {
             beforeEachProperty();
 
-            return onRecordFound(record).then(() => {
+            return onRecordFound(record, registry).then(() => {
                 afterEachProperty();
 
                 registryScope.done();
