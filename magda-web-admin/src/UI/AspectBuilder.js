@@ -85,9 +85,9 @@ export default class AspectBuilder extends Component {
               </div>
               <div>
                 <ul className="nav nav-tabs">
-                  <li className="active" data-toggle="tab"><button>Output</button></li>
-                  <li><button>UI</button></li>
-                  <li><button>Documentation</button></li>
+                  <li className="active" data-toggle="tab"><button className='btn btn-reset'>Output</button></li>
+                  <li><button className='btn btn-reset'>UI</button></li>
+                  <li><button className='btn btn-reset'>Documentation</button></li>
                 </ul>
                 <div  className="tab-content">
                   <div id="output" className="tab-pane fade in active">{this.renderResult(this.props.result)}</div>

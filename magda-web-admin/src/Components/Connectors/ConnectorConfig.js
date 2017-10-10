@@ -43,7 +43,6 @@ class ConnectorConfig extends Component {
 
     if(nextProps.connectorConfig){
       if(!this.props.config){
-        debugger
         //only set it the first time when it's fecthed
         this.setState({
           connectorConfig: nextProps.connectorConfig
@@ -53,7 +52,6 @@ class ConnectorConfig extends Component {
   }
 
   createTransformer(type, index, code){
-    debugger
     const config = this.state.connectorConfig;
     config[type][index]['builderFunctionString'] = code;
     this.setState({

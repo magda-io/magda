@@ -32,7 +32,7 @@ export default class SelectDataset extends React.Component {
             <div>Dataset ID <input type="text" className="form-control" onChange={this.onChange.bind(this,'testDatasetId')} value={this.state.testDatasetId}/></div>
             <div>Dataset URL <input type="text" className="form-control" onChange={this.onChange.bind(this, 'testDatasetUrl')} value={this.state.testDatasetUrl}/></div>
             <div>Search by title <input type="text" className="form-control" onChange={this.onChange.bind(this, 'testDatasetSearchText')} value={this.state.testDatasetSearchText}/></div>
-            <Link className='btn btn-primary' disabled={!this.state.testDatasetId} to={`connectors/${this.props.params.connectorId}/${this.state.testDatasetId}`}>Go</Link>
+            <Link className='btn btn-primary' disabled={!this.state.testDatasetId} to={`/connectors/${this.props.params.connectorId}/${this.state.testDatasetId}`}>Go</Link>
           </div>
         </div>
       </ReactDocumentTitle>
