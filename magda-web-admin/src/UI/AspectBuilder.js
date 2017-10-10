@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { render } from 'react-dom';
 import brace from 'brace';
 import AceEditor from 'react-ace';
+import LazyComponent from "../Components/LazyComponent";
 
 import 'brace/mode/javascript';
 import 'brace/theme/github';
@@ -13,7 +14,6 @@ export default class AspectBuilder extends Component {
     super(props);
     this.state = {
       editor: null,
-      jsonTree: null,
       code: ''
     };
     this.onChange = this.onChange.bind(this);
@@ -22,9 +22,6 @@ export default class AspectBuilder extends Component {
 
   }
 
-  getJsonTreeComponent(){
-      return import('react-json-tree').then(module => module.default)
-  }
 
   onChange(newValue) {
     this.setState({code: newValue});
@@ -40,12 +37,6 @@ export default class AspectBuilder extends Component {
           this.setState({editor: editor, code: this.props.aspectConfig.builderFunctionString})
         })
       }
-
-      if(!this.state.jsonTree){
-        this.getJsonTreeComponent().then(jsonTree=>{
-          this.setState({jsonTree: jsonTree})
-        })
-      }
   }
 
   onRunCode(){
@@ -56,13 +47,8 @@ export default class AspectBuilder extends Component {
 
   }
 
-  renderResult(_result){
-    const JsonTree = this.state.jsonTree;
-    const result = _result || {};
-    if(JsonTree){
-      return <JsonTree data={result}/>
-    }
-    return null;
+  renderResult(dataset){
+    return <LazyComponent data={{dataset}} getComponent={this.props.getComponent}/>
   }
 
 
