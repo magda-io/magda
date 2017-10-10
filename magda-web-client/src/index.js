@@ -32,6 +32,7 @@ import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
 import { staticPageRegister } from "./content/register";
 import DatasetDetails from "./Dataset/DatasetDetails";
+import DatasetSummary from "./Dataset/DatasetSummary";
 import DatasetDiscussion from "./Dataset/DatasetDiscussion";
 import DatasetPublisher from "./Dataset/DatasetPublisher";
 
@@ -110,8 +111,7 @@ ReactDOM.render(
           <Route path={`page/:id`} key={item.path} component={item.component} />
         )}
         <Redirect from="/about" to="page/about" />
-
-        <Route path="admin/connectors" component={Connectors} />
+        <Route path="preivew/dataset/:datasetpreviewjson" component={DatasetSummary}/>
 
       </Route>
     </Router>

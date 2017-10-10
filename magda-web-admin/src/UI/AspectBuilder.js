@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { render } from 'react-dom';
 import brace from 'brace';
 import AceEditor from 'react-ace';
-import LazyComponent from "../Components/LazyComponent";
+import LazyJsonTree from "../Components/LazyJsonTree";
 
 import 'brace/mode/javascript';
 import 'brace/theme/github';
@@ -48,12 +48,20 @@ export default class AspectBuilder extends Component {
 
   }
 
+  renderSchema(config){
+    const schema = config.aspectDefinition.jsonSchema;
+    return <div><table className='table table-striped'><caption>{schema.description}</caption><tbody><tr><th>Title</th><th>Description</th><th>Type</th></tr>{Object.keys(schema.properties).map(key => <tr key={key}><td>{key}</td><td>{schema.properties[key].title}</td><td className='code'>{schema.properties[key].type}</td></tr>)}</tbody></table></div>
+  }
+
   renderResult(dataset){
     switch(this.state.activeTab) {
       case 'json':
-          return <LazyComponent data={{dataset}} getComponent={this.props.getComponent}/>
+          return <LazyJsonTree data={{dataset}} getComponent={this.props.getComponent}/>
       case 'ui':
-          return 'display dataset ui'
+          const datasetJsonEncoded = encodeURIComponent(JSON.stringify(dataset));
+          return <iframe src={`http://localhost:6108/preivew/dataset/${datasetJsonEncoded}`} width="100%" height="285px"/>;
+      case 'schema':
+          return this.renderSchema(this.props.aspectConfig);
       case 'doc':
           return 'some documentation'
         }
@@ -94,6 +102,7 @@ export default class AspectBuilder extends Component {
                 <ul className="nav nav-tabs">
                   <li data-toggle="tab" className={getTabClass('json')}><a onClick={this.toggleTab.bind(this, 'json')}>Output</a></li>
                   <li className={getTabClass('ui')}><a onClick={this.toggleTab.bind(this, 'ui')}>UI</a></li>
+                  <li className={getTabClass('schema')}><a onClick={this.toggleTab.bind(this, 'schema')}>Schema</a></li>
                   <li className={getTabClass('doc')}><a onClick={this.toggleTab.bind(this, 'doc')}>Documentation</a></li>
                 </ul>
                 <div  className="tab-content">

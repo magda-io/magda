@@ -7,6 +7,7 @@ import { Link } from 'react-router';
 import SearchBox from '../Search/SearchBox';
 import AccountNavbar from './Account/AccountNavbar';
 import d61logo from './data61-logo.png';
+import defined from '../helpers/defined';
 
 import { ExtraSmall, Small } from '../UI/Responsive';
 import './AppContainer.css';
@@ -45,9 +46,10 @@ export default class AppContainer extends React.Component {
   render() {
     const headerNavs: Array<Array<string>> = config.headerNavigation;
     const footerNavs: Array<Object> = config.footerNavigation;
+    const wrapperClass = defined(this.props.params.datasetpreviewjson) ? 'preview' : 'normal';
     return (
       <ReactDocumentTitle title={config.appName}>
-        <div>
+        <div className={wrapperClass}>
         {this.state.showPrototypeWarning && <div className='prototype-warning'>
           <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <a href="http://preview.data.gov.au/feedback.html" target="_blank" rel="noopener noreferrer">your feedback</a>.</div>
           <button className='prototype-warning-dismiss btn' onClick={()=>this.dismissPrototypeWarning()}><i className="fa fa-times" aria-hidden="true"></i></button>

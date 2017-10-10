@@ -9,7 +9,7 @@ import ReactDocumentTitle from "react-document-title";
 import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
 import AspectBuilder from "../../UI/AspectBuilder";
-import LazyComponent from "../../Components/LazyComponent";
+import LazyJsonTree from "../../Components/LazyJsonTree";
 import Script from 'react-load-script'
 
 class ConnectorConfig extends Component {
@@ -125,7 +125,7 @@ class ConnectorConfig extends Component {
           <div className='col-sm-4'>
             <div>Test Dataset ID: {this.props.params.datasetId}</div>
             <Link to={`/connectors/${this.props.params.connectorId}`}> Select a different dataset for testing </Link>
-            <LazyComponent data={{dataset}} getComponent={this.getJsonTreeComponent}/>
+            <LazyJsonTree data={{dataset}} getComponent={this.getJsonTreeComponent}/>
           </div>
           <div className='col-sm-8'>
           <label>

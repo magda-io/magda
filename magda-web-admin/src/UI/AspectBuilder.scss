@@ -6,10 +6,17 @@
   .nav-tabs{
     margin-top: 20px;
   }
+  a{
+    cursor: pointer;
+  }
   .actions{
     text-align: right;
     .btn{
       margin-left: 10px;
     }
+  }
+  .code{
+    font-family: Courier;
+    color: #e74c3c;
   }
 }

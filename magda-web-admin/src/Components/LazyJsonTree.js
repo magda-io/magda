@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class LazyComponent extends Component {
+class LazyJsonTree extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -20,9 +20,9 @@ class LazyComponent extends Component {
       if(!Component){
         return null
       }
-      return <Component data={this.props.data}/>
+      return <Component data={this.props.data} shouldExpandNode ={(keyName, data, level)=>{if(level <= 1){return true} return false}}/>
     }
 }
 
 
-export default LazyComponent;
+export default LazyJsonTree;
