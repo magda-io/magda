@@ -125,7 +125,7 @@ class ConnectorConfig extends Component {
           <div className='col-sm-4'>
             <div>Test Dataset ID: {this.props.params.datasetId}</div>
             <Link to={`/connectors/${this.props.params.connectorId}`}> Select a different dataset for testing </Link>
-            <LazyJsonTree data={{dataset}} getComponent={this.getJsonTreeComponent}/>
+            <LazyJsonTree data={{data: dataset}} getComponent={this.getJsonTreeComponent}/>
           </div>
           <div className='col-sm-8'>
           <label>

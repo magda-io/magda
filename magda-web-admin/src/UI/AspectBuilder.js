@@ -56,7 +56,7 @@ export default class AspectBuilder extends Component {
   renderResult(dataset){
     switch(this.state.activeTab) {
       case 'json':
-          return <LazyJsonTree data={{dataset}} getComponent={this.props.getComponent}/>
+          return <LazyJsonTree data={{data: dataset}} getComponent={this.props.getComponent}/>
       case 'ui':
           const datasetJsonEncoded = encodeURIComponent(JSON.stringify(dataset));
           return <iframe src={`http://localhost:6108/preivew/dataset/${datasetJsonEncoded}`} width="100%" height="285px"/>;
