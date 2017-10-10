@@ -1,14 +1,19 @@
-require("isomorphic-fetch");
+import "isomorphic-fetch";
 import * as cors from "cors";
 import * as express from "express";
 import * as path from "path";
 import * as yargs from "yargs";
-const ejs = require("ejs").__express;
+import * as ejs from "ejs";
 
 import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
+
+// Tell typescript about the semi-private __express field of ejs.
+declare module "ejs" {
+    var __express: any;
+}
 
 const argv = yargs
     .config()
@@ -115,7 +120,7 @@ app.use(configuredCors);
 // Configure view engine to render EJS templates.
 app.set("views", path.join(__dirname, "..", "views"));
 app.set("view engine", "ejs");
-app.engine(".ejs", ejs); // This stops express trying to do its own require of 'ejs'
+app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
 app.use(require("morgan")("combined"));
 
 app.use(
