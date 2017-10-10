@@ -67,6 +67,13 @@ spec:
               name: oauth-secrets
               key: google-client-secret
 {{- end }}
+{{- if not .Values.global.noDbAuth }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: session-store
+{{- end }}
 {{- end }}
       volumes:
         - name: routes
