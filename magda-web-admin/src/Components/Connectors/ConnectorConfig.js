@@ -21,7 +21,7 @@ class ConnectorConfig extends Component {
     this.state ={
       connectorConfig: null,
       scriptLoaded: false,
-      aspect: ['datasetAspectBuilders','ckan-dataset'],
+      aspect: ['datasetAspectBuilders','dcat-dataset-strings'],
     }
   }
 
