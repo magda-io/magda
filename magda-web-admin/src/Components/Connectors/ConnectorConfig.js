@@ -21,7 +21,7 @@ class ConnectorConfig extends Component {
     this.state ={
       connectorConfig: null,
       scriptLoaded: false,
-      aspect: ['datasetAspectBuilders','dcat-dataset-strings'],
+      aspect: ['datasetAspectBuilders',''],
     }
   }
 
@@ -42,10 +42,11 @@ class ConnectorConfig extends Component {
     }
 
     if(nextProps.connectorConfig){
-      if(!this.props.config){
+      if(!this.props.connectorConfig){
         //only set it the first time when it's fecthed
         this.setState({
-          connectorConfig: nextProps.connectorConfig
+          connectorConfig: nextProps.connectorConfig,
+          aspect: ['datasetAspectBuilders', nextProps.connectorConfig.datasetAspectBuilders[0].aspectDefinition.id]
         })
       }
     }
@@ -88,21 +89,17 @@ class ConnectorConfig extends Component {
   }
 
   renderAspectSelector(){
+    const connectorConfig = this.props.connectorConfig;
     return (<select onChange={this.onSelectAspect}>
                 <optgroup label="Dataset Aspect Builders">
-                  <option value={['datasetAspectBuilders','ckan-dataset']}>Ckan Dataset</option>
-                  <option value={['datasetAspectBuilders','dcat-dataset-strings']}>DCAT Dataset properties as strings</option>
-                  <option value={['datasetAspectBuilders','source']}>Source</option>
+                  {connectorConfig.datasetAspectBuilders.map(aspect=><option key={aspect.aspectDefinition.id} value={['datasetAspectBuilders',aspect.aspectDefinition.id]}>{aspect.aspectDefinition.name}</option>)}
                 </optgroup>
                 <optgroup label="Distribution Aspect Builders">
-                  <option value={["distributionAspectBuilders", "ckan-resource"]}>CKAN Resource</option>
-                  <option value={["distributionAspectBuilders", "dcat-distribution-strings"]}>DCAT Distribution properties as strings</option>
-                  <option value={["distributionAspectBuilders", "source"]}>Source</option>
+                  {connectorConfig.distributionAspectBuilders.map(aspect=><option key={aspect.aspectDefinition.id} value={['distributionAspectBuilders',aspect.aspectDefinition.id]}>{aspect.aspectDefinition.name}</option>)}
                 </optgroup>
 
                 <optgroup label="Organization Aspect Builders">
-                  <option value={["organizationAspectBuilders", "source"]}>Source</option>
-                  <option value={["organizationAspectBuilders", "organization-details"]}>Organization</option>
+                  {connectorConfig.organizationAspectBuilders.map(aspect=><option key={aspect.aspectDefinition.id} value={['organizationAspectBuilders',aspect.aspectDefinition.id]}>{aspect.aspectDefinition.name}</option>)}
                 </optgroup>
 
               </select>);
