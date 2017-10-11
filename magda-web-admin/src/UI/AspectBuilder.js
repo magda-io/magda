@@ -53,13 +53,14 @@ export default class AspectBuilder extends Component {
     return <div><table className='table table-striped'><caption>{schema.description}</caption><tbody><tr><th>Title</th><th>Description</th><th>Type</th></tr>{Object.keys(schema.properties).map(key => <tr key={key}><td>{key}</td><td>{schema.properties[key].title}</td><td className='code'>{schema.properties[key].type}</td></tr>)}</tbody></table></div>
   }
 
-  renderResult(dataset){
+  renderResult(dataset, datasetJson){
+    debugger
     switch(this.state.activeTab) {
       case 'json':
           return <LazyJsonTree data={{data: dataset}} getComponent={this.props.getComponent}/>
       case 'ui':
-          const datasetJsonEncoded = encodeURIComponent(JSON.stringify(dataset));
-          return <iframe src={`http://localhost:6108/preivew/dataset/${datasetJsonEncoded}`} width="100%" height="285px"/>;
+          const datasetJsonEncoded = encodeURIComponent(datasetJson);
+          return <iframe src={`http://localhost:6108/preivew/dataset/${datasetJsonEncoded}`} width="100%" height="500px"/>;
       case 'schema':
           return this.renderSchema(this.props.aspectConfig);
       case 'doc':
@@ -106,7 +107,7 @@ export default class AspectBuilder extends Component {
                   <li className={getTabClass('doc')}><a onClick={this.toggleTab.bind(this, 'doc')}>Documentation</a></li>
                 </ul>
                 <div  className="tab-content">
-                  <div id="output" className="tab-pane fade in active">{this.renderResult(this.props.result)}</div>
+                  <div id="output" className="tab-pane fade in active">{this.renderResult(this.props.result, this.props.datasetJson)}</div>
                 </div>
           </div>
       </div>

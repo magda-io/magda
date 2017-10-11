@@ -27,6 +27,7 @@
     "magda-typescript-common/",
     "magda-web-client/",
     "magda-web-admin/",
+    "magda-web-common/",
     "magda-web-server/",
     "scripts/"
   ],

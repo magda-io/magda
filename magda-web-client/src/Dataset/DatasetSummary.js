@@ -57,7 +57,7 @@ export default class DatasetSummary extends Component {
     let dataset = this.props.dataset;
     let onClickDataset = this.props.onClickDataset;
     let isExpanded = this.props.isExpanded;
-    if(this.props.params.datasetpreviewjson){
+    if(this.props.params && this.props.params.datasetpreviewjson){
       dataset = JSON.parse(this.props.params.datasetpreviewjson);
       onClickDataset= ()=>{};
       isExpanded = true;

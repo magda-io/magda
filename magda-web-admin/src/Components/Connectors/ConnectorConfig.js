@@ -114,10 +114,11 @@ class ConnectorConfig extends Component {
       const dataset = this.props.dataset;
 
       const record = {};
+
       record['datasetAspectBuilders'] = transformer.datasetJsonToRecord(dataset);
       record['distributionAspectBuilders'] = transformer.distributionJsonToRecord(dataset);
       record['organizationAspectBuilders'] = transformer.organizationJsonToRecord(dataset);
-
+      const datasetJson = JSON.stringify(parseDataset(record));
 
       const aspectConfigIndex = connectorConfig[this.state.aspect[0]].findIndex(aspect =>aspect.aspectDefinition.id === this.state.aspect[1]);
       const aspectConfig = connectorConfig[this.state.aspect[0]][aspectConfigIndex];
@@ -135,13 +136,36 @@ class ConnectorConfig extends Component {
           Select an aspect to config:
           {this.renderAspectSelector()}
           </label>
-          <AspectBuilder key={this.state.aspect[1]} getComponent={this.getJsonTreeComponent} aspectConfig={aspectConfig} createTransformer={this.createTransformer.bind(this,this.state.aspect[0], aspectConfigIndex)} result={record[this.state.aspect[0]]['aspects'][this.state.aspect[1]]}/>
+          <AspectBuilder key={this.state.aspect[1]} getComponent={this.getJsonTreeComponent} datasetJson={datasetJson} aspectConfig={aspectConfig} createTransformer={this.createTransformer.bind(this,this.state.aspect[0], aspectConfigIndex)} result={record[this.state.aspect[0]]['aspects'][this.state.aspect[1]]}/>
           </div>
           </div>
         </div>
       );
     }
     return <ProgressBar />;
+  }
+}
+
+function parseDataset(record){
+  debugger
+  const dcatDatasetString = record.datasetAspectBuilders.aspects['dcat-dataset-strings'];
+  const organizationDetail = record.organizationAspectBuilders.aspects['organization-details'];
+  return {
+    catalog: '',
+    description:dcatDatasetString.description,
+    distributions: [],
+    identifier: [],
+    keywords: dcatDatasetString.keywords,
+    landingPage: dcatDatasetString.landingPage,
+    languages:dcatDatasetString.languages,
+    issued: dcatDatasetString.issued,
+    modified:dcatDatasetString.modified,
+    publisher:{identifier: record.organizationAspectBuilders.id, title: organizationDetail.title, imageUrl: organizationDetail.imageUrl},
+    quality:1,
+    source: "",
+    spatial:dcatDatasetString.spatial,
+    temporal:dcatDatasetString.temporal,
+    title:dcatDatasetString.title
   }
 }
 
