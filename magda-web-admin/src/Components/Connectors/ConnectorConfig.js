@@ -147,7 +147,6 @@ class ConnectorConfig extends Component {
 }
 
 function parseDataset(record){
-  debugger
   const dcatDatasetString = record.datasetAspectBuilders.aspects['dcat-dataset-strings'];
   const organizationDetail = record.organizationAspectBuilders.aspects['organization-details'];
   return {

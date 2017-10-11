@@ -50,11 +50,16 @@ export default class AspectBuilder extends Component {
 
   renderSchema(config){
     const schema = config.aspectDefinition.jsonSchema;
-    return <div><table className='table table-striped'><caption>{schema.description}</caption><tbody><tr><th>Title</th><th>Description</th><th>Type</th></tr>{Object.keys(schema.properties).map(key => <tr key={key}><td>{key}</td><td>{schema.properties[key].title}</td><td className='code'>{schema.properties[key].type}</td></tr>)}</tbody></table></div>
+    return (<div>
+            <table className='table table-striped'><caption>{schema.description}</caption>
+            <tbody><tr><th>Title</th><th>Description</th><th>Type</th></tr>
+            <tr><td></td><td>{schema.title}</td><td className='code'>{schema.type}</td></tr>
+            {schema.properties && Object.keys(schema.properties).map(key => <tr key={key}><td>{key}</td><td>{schema.properties[key].title}</td><td className='code'>{schema.properties[key].type}</td></tr>)}
+            </tbody></table>
+            </div>)
   }
 
   renderResult(dataset, datasetJson){
-    debugger
     switch(this.state.activeTab) {
       case 'json':
           return <LazyJsonTree data={{data: dataset}} getComponent={this.props.getComponent}/>
