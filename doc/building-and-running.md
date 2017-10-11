@@ -72,7 +72,7 @@ helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml i
 
 ### Crawl Data
 ```bash
-cd depoy
+cd deploy
 npm run create-connector-configmap
 npm run generate-connector-jobs-local
 kubectl create -f kubernetes/generated/local/
