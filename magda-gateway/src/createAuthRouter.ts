@@ -11,13 +11,13 @@ export interface AuthRouterOptions {
     googleClientId: string;
     googleClientSecret: string;
     ckanUrl: string;
-    authenticationApi: string;
+    authorizationApi: string;
     externalUrl: string;
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
     const authRouter: Router = Router();
-    const authApi = new ApiClient(options.authenticationApi);
+    const authApi = new ApiClient(options.authorizationApi);
 
     if (options.authenticator) {
         options.authenticator.applyToRoute(authRouter);
@@ -30,7 +30,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
             id: "facebook",
             enabled: options.facebookClientId ? true : false,
             authRouter: require("./oauth2/facebook").default({
-                authenticationApi: authApi,
+                authorizationApi: authApi,
                 passport: passport,
                 clientId: options.facebookClientId,
                 clientSecret: options.facebookClientSecret,
@@ -41,7 +41,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
             id: "google",
             enabled: options.googleClientId ? true : false,
             authRouter: require("./oauth2/google").default({
-                authenticationApi: authApi,
+                authorizationApi: authApi,
                 passport: passport,
                 clientId: options.googleClientId,
                 clientSecret: options.googleClientSecret,
@@ -52,7 +52,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
             id: "ckan",
             enabled: options.ckanUrl ? true : false,
             authRouter: require("./oauth2/ckan").default({
-                authenticationApi: authApi,
+                authorizationApi: authApi,
                 passport: passport,
                 externalAuthHome: `${options.externalUrl}/auth`
             })

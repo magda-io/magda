@@ -77,7 +77,8 @@ const topLevelRoutes = [
     'sign-in-redirect',
     'dataset',
     'projects',
-    'publishers'
+    'publishers',
+    'admin'
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {

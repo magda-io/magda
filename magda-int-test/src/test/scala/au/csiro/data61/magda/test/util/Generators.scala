@@ -370,7 +370,6 @@ object Generators {
   } yield DataSet(
     identifier = identifier.toString,
     catalog = Some("test-catalog"),
-    source = Some("test-catalog"),
     title = title,
     description = description,
     issued = issued,

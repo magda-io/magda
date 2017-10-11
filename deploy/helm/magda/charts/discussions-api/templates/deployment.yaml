@@ -21,14 +21,13 @@ spec:
             "--listenPort", "80",
             "--dbHost", "discussions-db",
             "--dbPort", "5432",
-            "--authenticationApi", "http://authorization-api/v0"
+            "--authorizationApi", "http://authorization-api/v0"
         ]
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
         - name: NODE_ENV
           value: production
-{{- if .Values.auth.enabled }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:

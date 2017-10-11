@@ -2,9 +2,9 @@ package au.csiro.data61.magda.registry
 
 import spray.json._
 import gnieh.diffson.sprayJson._
-import au.csiro.data61.magda.model.Registry.{Protocols => CommonRegistryProtocols}
+import au.csiro.data61.magda.model.Registry.{ RegistryProtocols => CommonRegistryProtocols }
 
-trait Protocols extends DefaultJsonProtocol with DiffsonProtocol with au.csiro.data61.magda.model.Temporal.Protocols with CommonRegistryProtocols {
+trait Protocols extends DiffsonProtocol with CommonRegistryProtocols {
   implicit val badRequestFormat = jsonFormat1(BadRequest.apply)
   implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
   implicit val patchAspectDefinitionEventFormat = jsonFormat2(PatchAspectDefinitionEvent.apply)

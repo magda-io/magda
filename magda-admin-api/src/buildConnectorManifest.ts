@@ -5,6 +5,7 @@ export type Options = {
     dockerRepo: string;
     registryApiUrl: string;
     pullPolicy: string;
+    userId: string;
 };
 
 export default function buildConnectorManifest({
@@ -13,7 +14,8 @@ export default function buildConnectorManifest({
     dockerImageTag,
     dockerRepo,
     registryApiUrl,
-    pullPolicy
+    pullPolicy,
+    userId
 }: Options) {
     const jobName = `connector-${id}`;
 
@@ -46,13 +48,28 @@ export default function buildConnectorManifest({
                             imagePullPolicy: pullPolicy,
                             resources: {
                                 requests: {
-                                    cpu: "0m"
+                                    cpu: "50m"
                                 }
                             },
                             volumeMounts: [
                                 {
                                     mountPath: "/etc/config",
                                     name: "config"
+                                }
+                            ],
+                            env: [
+                                {
+                                    name: "USER_ID",
+                                    value: userId
+                                },
+                                {
+                                    name: "JWT_SECRET",
+                                    valueFrom: {
+                                        secretKeyRef: {
+                                            name: "auth-secrets",
+                                            key: "jwt-secret"
+                                        }
+                                    }
                                 }
                             ]
                         }

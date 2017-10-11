@@ -11,6 +11,8 @@ export interface Options {
     kubernetesApiType: K8SApiType;
     registryApiUrl: string;
     pullPolicy: string;
+    jwtSecret: string;
+    userId: string;
     namespace?: string;
 }
 
@@ -20,7 +22,7 @@ export default function buildApiRouter(options: Options) {
 
     const k8sApi = new K8SApi(options.kubernetesApiType, options.namespace);
 
-    router.use(mustBeAdmin(options.authApiUrl));
+    router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
 
     router.get("/connectors", (req, res) => {
         Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
@@ -108,7 +110,8 @@ export default function buildApiRouter(options: Options) {
                                 dockerImageTag: options.imageTag,
                                 dockerRepo: options.dockerRepo,
                                 registryApiUrl: options.registryApiUrl,
-                                pullPolicy: options.pullPolicy
+                                pullPolicy: options.pullPolicy,
+                                userId: options.userId
                             })
                         )
                         .then((result: any) => {

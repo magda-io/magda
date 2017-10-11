@@ -4,7 +4,7 @@
     },
     "registry": {
         "to": "http://localhost:6101/v0",
-        "methods": ["GET"]
+        "auth": true
     },
     "auth": {
         "to": "http://localhost:6104/v0/public",

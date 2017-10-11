@@ -7,16 +7,14 @@ export { Response };
 export default function mockAuthorization(
     adminApiUrl: string,
     isAdmin: boolean,
+    jwtSecret: string,
     req: Test
-): Promise<Response> {
+): Promise<Response> { 
     const userId = "1";
     const scope = nock(adminApiUrl);
     scope.get(`/private/users/${userId}`).reply(200, { isAdmin });
 
-    const id = jwt.sign(
-        { userId: userId },
-        process.env.JWT_SECRET || process.env.npm_package_config_JWT_SECRET
-    );
+    const id = jwt.sign({ userId: userId }, jwtSecret);
 
     return req.set("X-Magda-Session", id).then(res => {
         scope.done();

@@ -13,20 +13,17 @@ import scala.concurrent.Future
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json._
-import au.csiro.data61.magda.model.Registry.{ Protocols => RegistryProtocols }
+import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.indexer.crawler.Crawler
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi
-import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import com.typesafe.config.Config
-import au.csiro.data61.magda.indexer.external.registry.RegistryConverters
 import akka.stream.scaladsl.Source
 import java.time.ZoneOffset
 
-class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryProtocols {
+class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryConverters {
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 
-  val registryConfig = InterfaceConfig.all.get("registry")
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
   val routes =
@@ -36,9 +33,9 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
           payload.records match {
             // TODO: Handle registry config not found
             case Some(records) =>
-              val dataSets = records.map(record => RegistryConverters.registryDataSetConv(registryConfig.get)(record))
+              val dataSets = records.map(record => convertRegistryDataSet(record))
 
-              onSuccess(indexer.index(registryConfig.get, Source(dataSets))) { result =>
+              onSuccess(indexer.index(Source(dataSets))) { result =>
                 complete(Accepted)
               }
             case None =>

@@ -21,8 +21,7 @@ libraryDependencies ++= {
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
     "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
-    "org.scalaz" %% "scalaz-core" % "7.2.8",
-    "net.virtual-void" %%  "json-lenses" % "0.6.2"
+    "org.scalaz" %% "scalaz-core" % "7.2.8"
   )
 }
 

@@ -21,11 +21,13 @@
     "@types/nock": "^8.2.1",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
+    "@types/yargs": "^8.0.2",
     "chai": "^4.1.0",
     "jsverify": "^0.8.2",
     "mocha": "^3.4.2",
     "mocha-testcheck": "^1.0.0-rc.0",
     "nock": "^9.0.14",
+    "portfinder": "^1.0.13",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
     "testcheck": "^1.0.0-rc.2",
@@ -37,7 +39,8 @@
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "isomorphic-fetch": "^2.2.1",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "yargs": "^9.0.1"
   },
   "config": {
     "docker": {

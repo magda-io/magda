@@ -9,12 +9,13 @@ import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient
 
 export interface ApiRouterOptions {
     database: Database;
-    authenticationApi: ApiClient;
+    authorizationApi: ApiClient;
+    jwtSecret: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
-    const authApi = options.authenticationApi;
+    const authApi = options.authorizationApi;
 
     const router: Router = express.Router();
 
@@ -23,7 +24,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     router.post("/discussions/:discussionId/messages", (req, res) => {
-        getUserIdHandling(req, res, (userId: string) => {
+        getUserIdHandling(req, res, options.jwtSecret, (userId: string) => {
             const message: Object = req.body;
 
             database.addMessageToDiscussion(userId, req.params.discussionId, message)
@@ -62,7 +63,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     router.post("/linked/:linkedType/:linkedId/messages", (req, res) => {
-        getUserIdHandling(req, res, (userId: string) => {
+        getUserIdHandling(req, res, options.jwtSecret, (userId: string) => {
             const message: Object = req.body;
 
             database.addMessageToLinkedDiscussion(

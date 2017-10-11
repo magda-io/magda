@@ -14,6 +14,12 @@ spec:
     spec:
       containers:
       - name: registry-api
+        env:
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [
@@ -21,7 +27,10 @@ spec:
             "-Dhttp.port=80",
             "-Dhttp.externalUrl.v0={{ .Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-datastore/postgres",
-            "-Dakka.loglevel=INFO"
+            "-Dakka.loglevel={{ .Values.global.logLevel }}",
+            "-DauthApi.baseUrl=http://authorization-api",
+            "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}",
+            "-Dauthorization.skip=false"
         ]
         ports:
         - containerPort: 80
