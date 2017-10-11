@@ -36,9 +36,11 @@ spec:
         - containerPort: 80
 {{- if not .Values.global.noDbAuth }}
         env:
+        - name: POSTGRES_USER
+          value: client
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: registry-datastore
+              key: registry-datastore-client
 {{- end }}

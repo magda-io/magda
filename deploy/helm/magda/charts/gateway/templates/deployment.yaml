@@ -58,6 +58,7 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: facebook-client-secret
+              optional: true
 {{- end }}
 {{- if .Values.auth.googleClientId }}
         - name: GOOGLE_CLIENT_SECRET
@@ -65,13 +66,16 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: google-client-secret
+              optional: true
 {{- end }}
 {{- if not .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: session-store
+              key: session-store-client
 {{- end }}
       volumes:
         - name: routes
