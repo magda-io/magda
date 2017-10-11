@@ -115,7 +115,13 @@ class ConnectorConfig extends Component {
       const transformer = window.createTransformer.default(this.state.connectorConfig);
       const connectorConfig = this.state.connectorConfig;
       const dataset = this.props.dataset;
-      const record = transformer.datasetJsonToRecord(dataset);
+
+      const record = {};
+      record['datasetAspectBuilders'] = transformer.datasetJsonToRecord(dataset);
+      record['distributionAspectBuilders'] = transformer.distributionJsonToRecord(dataset);
+      record['organizationAspectBuilders'] = transformer.organizationJsonToRecord(dataset);
+
+
       const aspectConfigIndex = connectorConfig[this.state.aspect[0]].findIndex(aspect =>aspect.aspectDefinition.id === this.state.aspect[1]);
       const aspectConfig = connectorConfig[this.state.aspect[0]][aspectConfigIndex];
       return (
@@ -132,7 +138,7 @@ class ConnectorConfig extends Component {
           Select an aspect to config:
           {this.renderAspectSelector()}
           </label>
-          <AspectBuilder key={this.state.aspect[1]} getComponent={this.getJsonTreeComponent} aspectConfig={aspectConfig} createTransformer={this.createTransformer.bind(this,this.state.aspect[0], aspectConfigIndex)} result={record['aspects'][this.state.aspect[1]]}/>
+          <AspectBuilder key={this.state.aspect[1]} getComponent={this.getJsonTreeComponent} aspectConfig={aspectConfig} createTransformer={this.createTransformer.bind(this,this.state.aspect[0], aspectConfigIndex)} result={record[this.state.aspect[0]]['aspects'][this.state.aspect[1]]}/>
           </div>
           </div>
         </div>
