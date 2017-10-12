@@ -22,15 +22,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
         return promise
             .then(user =>
                 user.caseOf({
-                    just: user => Promise.resolve(res.json(user)),
-                    nothing: () => Promise.resolve(res.status(404))
+                    just: user => res.json(user),
+                    nothing: () => res.status(404)
                 })
             )
             .catch(e => {
                 console.error(e);
                 res.status(500);
             })
-            .then(() => res.send());
+            .then(() => res.end());
     }
 
     router.get("/private/users/lookup", function(req, res) {
@@ -57,7 +57,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 console.error(e);
                 res.status(500);
             })
-            .then(() => res.send());
+            .then(() => res.end());
     });
 
     router.get("/public/users/whoami", function(req, res) {

@@ -24,12 +24,23 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
         - name: MEMORY_LIMIT
           value: {{ .Values.limits.memory }}
         {{- end }}
+        - name: CLIENT_USERNAME
+          value: client
+        {{- if .Values.global.noDbAuth }}
+        - name: CLIENT_PASSWORD
+          value: password
+        {{- end }}
         {{- if not .Values.global.noDbAuth }}
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
               key: {{ .Chart.Name }}
+        - name: CLIENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: {{ .Chart.Name }}-client
         {{- end }}
         {{- if .Values.waleBackup }}
         - name: BACKUP
