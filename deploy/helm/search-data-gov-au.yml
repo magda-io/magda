@@ -58,6 +58,7 @@ web-server:
         requests:
             cpu: 300m
             memory: 200Mi
+    disableAuthenticationFeatures: true
 sleuther-linked-data-rating:
     resources:
         requests:
