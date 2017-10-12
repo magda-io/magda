@@ -17,6 +17,7 @@ import {
 } from "./arbitraries";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
 import { OKFN_LICENSES, ZERO_STAR_LICENSES, FORMAT_EXAMPLES } from "./examples";
+import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 describe("ld rating onRecordFound", function(
     this: Mocha.ISuiteCallbackContext
@@ -24,7 +25,11 @@ describe("ld rating onRecordFound", function(
     this.timeout(10000);
     nock.disableNetConnect();
     const registryUrl = "http://example.com";
-    process.env.REGISTRY_URL = registryUrl;
+    const registry = new AuthorizedRegistryClient({
+        baseUrl: registryUrl,
+        jwtSecret: "secret",
+        userId: "1"
+    });
     let registryScope: nock.Scope;
 
     before(() => {
@@ -59,7 +64,7 @@ describe("ld rating onRecordFound", function(
         registryScope.patch(/.*/).reply(201);
         expectStarCount(record, 0);
 
-        return onRecordFound(record, 0);
+        return onRecordFound(record, registry);
     });
 
     describe("licenses", () => {
@@ -70,7 +75,7 @@ describe("ld rating onRecordFound", function(
                     registryScope.patch(/.*/).reply(201);
                     expectStarCount(record, 1);
 
-                    return onRecordFound(record, 0);
+                    return onRecordFound(record, registry);
                 });
             });
         });
@@ -93,7 +98,7 @@ describe("ld rating onRecordFound", function(
                     registryScope.patch(/.*/).reply(201);
                     expectStarCount(record, 0);
 
-                    return onRecordFound(record, 0);
+                    return onRecordFound(record, registry);
                 });
             });
         });
@@ -111,7 +116,7 @@ describe("ld rating onRecordFound", function(
                         registryScope.patch(/.*/).reply(201);
                         expectStarCount(record, starCount);
 
-                        return onRecordFound(record, 0);
+                        return onRecordFound(record, registry);
                     });
                 });
 
@@ -184,7 +189,7 @@ describe("ld rating onRecordFound", function(
                             registryScope.patch(/.*/).reply(201);
                             expectStarCount(record, highestStarCount);
 
-                            return onRecordFound(record, 0)
+                            return onRecordFound(record, registry)
                                 .then(() => {
                                     afterEachProperty();
                                     return true;
@@ -227,7 +232,7 @@ describe("ld rating onRecordFound", function(
 
                 beforeTest(record);
 
-                return onRecordFound(record, 0)
+                return onRecordFound(record, registry)
                     .then(() => {
                         afterEachProperty();
                         afterTest();

@@ -2,9 +2,7 @@
 package au.csiro.data61.magda.crawler
 
 import au.csiro.data61.magda.test.api.BaseApiSpec
-import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi;
-import au.csiro.data61.magda.test.util.IndexerGenerators
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.Gen
 import scala.concurrent.Future
@@ -26,11 +24,9 @@ import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.indexer.crawler.Crawler
-import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.indexer.external.HttpFetcher
-import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.client.HttpFetcher
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
@@ -39,12 +35,12 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
   it("should correctly store new datasets when reindexed") {
     // When shrinking, shrink the datasets only and put them in a new index.
-    implicit def shrinker2(implicit s: Shrink[List[DataSet]], s3: Shrink[InterfaceConfig]): Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] =
-      Shrink[(List[DataSet], List[DataSet], InterfaceConfig)] {
-        case (beforeDataSets, afterDataSets, interfaceConfig) ⇒
+    implicit def shrinker2(implicit s: Shrink[List[DataSet]]): Shrink[(List[DataSet], List[DataSet])] =
+      Shrink[(List[DataSet], List[DataSet])] {
+        case (beforeDataSets, afterDataSets) ⇒
           logger.warning("Shrinking")
           Shrink.shrink(beforeDataSets).flatMap(shrunkBefore => Shrink.shrink(afterDataSets).map(shrunkAfter => (shrunkBefore, shrunkAfter))).map {
-            case (beforeDataSets, afterDataSets) => (beforeDataSets, afterDataSets, interfaceConfig)
+            case (beforeDataSets, afterDataSets) => (beforeDataSets, afterDataSets)
           }
       }
 
@@ -56,8 +52,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       dataSetsRemaining <- Gen.someOf(dataSetsInitial)
       dataSetsNew <- Generators.listSizeBetween(0, 20, Generators.dataSetGen(cachedListCache))
       dataSetsAfter = dataSetsRemaining.toList ++ dataSetsNew
-      interfaceConf <- IndexerGenerators.interfaceConfGen
-      source = (dataSetsInitial, dataSetsAfter, interfaceConf)
+      source = (dataSetsInitial, dataSetsAfter)
     } yield source
 
     forAll(gen) {
@@ -70,17 +65,15 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
         deleteIndex(indexId)
     }
 
-    def doTest(indexId: String, source: (List[DataSet], List[DataSet], InterfaceConfig), firstIndex: Boolean) = {
+    def doTest(indexId: String, source: (List[DataSet], List[DataSet]), firstIndex: Boolean) = {
       val filteredSource = source match {
-        case (initialDataSets, afterDataSets, interfaceConfig) =>
-          (if (firstIndex) initialDataSets else afterDataSets, interfaceConfig)
+        case (initialDataSets, afterDataSets) =>
+          (if (firstIndex) initialDataSets else afterDataSets)
       }
 
       val externalInterface = filteredSource match {
-        case (dataSets, interfaceConfig) =>
-          val fetcher = new HttpFetcher(interfaceConfig)
-          new RegistryExternalInterface(fetcher, interfaceConfig) {
-            override def getInterfaceConfig(): InterfaceConfig = interfaceConfig
+        case (dataSets) =>
+          new RegistryExternalInterface() {
             override def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
               if (pageToken.toInt < dataSets.length) {
                 Future(Some((pageToken.toInt + number).toString), dataSets.drop(pageToken.toInt).take(Math.min(number, dataSets.length - pageToken.toInt)))
@@ -114,25 +107,23 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       }
 
       // Combine all the datasets but keep what interface they come from
-      val allDataSets = filteredSource match { case (dataSets, interfaceConfig) => dataSets.map((_, interfaceConfig)) }
+      val allDataSets = filteredSource
 
       refresh(indexId)
 
-      withClue("This might not be just a failure!!!" + allDataSets.map(_._1.uniqueId)) {
-        try {
-          blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
-        } catch {
-          case (e: Throwable) =>
-            val sizeQuery = search(indexId / indices.getType(Indices.DataSetsIndexType)).size(10000)
-            val result = client.execute(sizeQuery).await(60 seconds)
-            logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
-            logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${result.totalHits}" +
-              s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
-            logger.error(s"Returned results: ${result.hits}")
-            logger.error(s"First index: ${source._1.map(_.normalToString)}")
-            logger.error(s"Second index: ${source._2.map(_.normalToString)}")
-            throw e
-        }
+      try {
+        blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+      } catch {
+        case (e: Throwable) =>
+          val sizeQuery = search(indexId / indices.getType(Indices.DataSetsIndexType)).size(10000)
+          val result = client.execute(sizeQuery).await(60 seconds)
+          logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
+          logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${result.totalHits}" +
+            s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
+          logger.error(s"Returned results: ${result.hits}")
+          logger.error(s"First index: ${source._1.map(_.normalToString)}")
+          logger.error(s"Second index: ${source._2.map(_.normalToString)}")
+          throw e
       }
 
       Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
@@ -142,34 +133,23 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
         response.dataSets.size should equal(allDataSets.size)
 
         val bothDataSets = response.dataSets
-          .map(resDataSet => (resDataSet, allDataSets.find {
-            case (inputDataSet, interfaceConfig) => resDataSet.identifier == inputDataSet.identifier
+          .map(resDataSet => (resDataSet, allDataSets.find { inputDataSet =>
+            resDataSet.identifier == inputDataSet.identifier
           }))
           .map {
-            case (resDataSet, Some((inputDataSet, interfaceConfig))) => (resDataSet, inputDataSet, interfaceConfig)
-            case (resDataSet, _) => withClue(s"${resDataSet.identifier} indexed at ${resDataSet.indexed} could not be found in ${allDataSets.map(_._1.identifier)}") {
+            case (resDataSet, Some((inputDataSet))) => (resDataSet, inputDataSet)
+            case (resDataSet, _) => withClue(s"${resDataSet.identifier} indexed at ${resDataSet.indexed} could not be found in ${allDataSets.map(_.identifier)}") {
               fail
             }
           }
 
         bothDataSets.foreach {
-          case (resDataSet, inputDataSet, interfaceConfig) =>
+          case (resDataSet, inputDataSet) =>
             // Everything except publisher and catalog should be the same between input/output
-            def removeDynamicFields(dataSet: DataSet) = dataSet.copy(publisher = None, catalog = None, indexed = None, source = None)
+            def removeDynamicFields(dataSet: DataSet) = dataSet.copy(publisher = None, catalog = None, indexed = None)
             removeDynamicFields(resDataSet) should equal(removeDynamicFields(inputDataSet))
 
-            // The indexer should set the source field to the name of the source
-            resDataSet.source.get should equal(interfaceConfig.name)
-
-            // If publisher is not defined by the dataset, it should be set to the default of the interface if one is
-            // present
-            if (inputDataSet.publisher.isDefined) {
-              resDataSet.publisher should equal(inputDataSet.publisher)
-            } else if (interfaceConfig.defaultPublisherName.isDefined) {
-              resDataSet.publisher.get should equal(Agent(name = interfaceConfig.defaultPublisherName))
-            } else {
-              resDataSet.publisher should be(None)
-            }
+            resDataSet.publisher should equal(inputDataSet.publisher)
         }
       }
     }

@@ -1,34 +1,38 @@
-import Csw from './Csw';
-import JsonConnector from '@magda/typescript-common/dist/JsonConnector';
-import Registry from '@magda/typescript-common/dist/Registry';
-import createTransformer from './createTransformer';
-import datasetAspectBuilders from './datasetAspectBuilders';
-import distributionAspectBuilders from './distributionAspectBuilders';
-import organizationAspectBuilders from './organizationAspectBuilders';
-import * as yargs from 'yargs';
+import Csw from "./Csw";
+import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
+import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import createTransformer from "./createTransformer";
+import datasetAspectBuilders from "./datasetAspectBuilders";
+import distributionAspectBuilders from "./distributionAspectBuilders";
+import organizationAspectBuilders from "./organizationAspectBuilders";
+import * as yargs from "yargs";
 
 const argv = yargs
     .config()
     .help()
-    .option('name', {
-        describe: 'The name of this connector, to be displayed to users to indicate the source of datasets.',
-        type: 'string',
+    .option("name", {
+        describe:
+            "The name of this connector, to be displayed to users to indicate the source of datasets.",
+        type: "string",
         demandOption: true
     })
-    .option('sourceUrl', {
-        describe: 'The base URL of the CSW server, including /csw if present, but not including any query parameters.',
-        type: 'string',
+    .option("sourceUrl", {
+        describe:
+            "The base URL of the CSW server, including /csw if present, but not including any query parameters.",
+        type: "string",
         demandOption: true
     })
-    .option('pageSize', {
-        describe: 'The number of datasets per page to request from the CSW server.',
-        type: 'number',
+    .option("pageSize", {
+        describe:
+            "The number of datasets per page to request from the CSW server.",
+        type: "number",
         default: 1000
     })
-    .option('registryUrl', {
-        describe: 'The base URL of the registry to which to write data from CSW.',
-        type: 'string',
-        default: 'http://localhost:6101/v0'
+    .option("registryUrl", {
+        describe:
+            "The base URL of the registry to which to write data from CSW.",
+        type: "string",
+        default: "http://localhost:6101/v0"
     })
     .option('interactive', {
         describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
@@ -45,7 +49,20 @@ const argv = yargs
         type: 'number',
         default: 0
     })
-    .argv;
+    .option("jwtSecret", {
+        describe: "The shared secret for intra-network communication",
+        type: "string",
+        demand: true,
+        default:
+            process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
+    })
+    .option("userId", {
+        describe:
+            "The user id to use when making authenticated requests to the registry",
+        type: "string",
+        demand: true,
+        default: process.env.USER_ID || process.env.npm_package_config_userId
+    }).argv;
 
 const csw = new Csw({
     baseUrl: argv.sourceUrl,
@@ -54,7 +71,9 @@ const csw = new Csw({
 });
 
 const registry = new Registry({
-    baseUrl: argv.registryUrl
+    baseUrl: argv.registryUrl,
+    jwtSecret: argv.jwtSecret,
+    userId: argv.userId
 });
 
 const transformerOptions = {

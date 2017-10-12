@@ -49,6 +49,7 @@
             "name": "data61/magda-admin-api",
             "include": "node_modules dist Dockerfile"
         },
-        "JWT_SECRET": "squirrel"
+        "jwtSecret": "squirrel",
+        "userId": "00000000-0000-4000-8000-000000000000"
     }
 }

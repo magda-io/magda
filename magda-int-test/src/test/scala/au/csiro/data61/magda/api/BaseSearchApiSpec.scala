@@ -17,7 +17,6 @@ import com.sksamuel.elastic4s.ElasticDsl
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
-import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
@@ -56,24 +55,10 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
       }
   }
 
-  //  def indexGen: Gen[(String, List[DataSet], Route)] =
-  //    Gen.delay {
-  //      Gen.size.flatMap { size ⇒
-  //        genIndexForSize(size)
-  //      }
-  //    }
-
   def emptyIndexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
       genIndexForSize(0)
     }
-
-  //  def smallIndexGen: Gen[(String, List[DataSet], Route)] =
-  //    Gen.delay {
-  //      Gen.size.flatMap { size ⇒
-  //        genIndexForSize(Math.round(Math.sqrt(size.toDouble).toFloat))
-  //      }
-  //    }
 
   def indexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
@@ -88,11 +73,6 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
       }
     }
   def mediumIndexGen: Gen[(String, List[DataSet], Route)] = indexGen
-  //    Gen.delay {
-  //      Gen.choose(45, 55).flatMap { size =>
-  //        genIndexForSize(size)
-  //      }
-  //    }
 
   def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
     val size = rawSize % 100
@@ -142,10 +122,8 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
 
     indexer.ready.await(INSERTION_WAIT_TIME)
     blockUntilIndexExists(indexName)
-    indexer.index(new InterfaceConfig("test-catalog", "blah", new URL("http://example.com"), 23), stream).await(INSERTION_WAIT_TIME)
+    indexer.index(stream).await(INSERTION_WAIT_TIME)
     refresh(indexName)
-
-    //    System.gc()
 
     blockUntilExactCount(dataSets.size, indexName, fakeIndices.getType(Indices.DataSetsIndexType))
 

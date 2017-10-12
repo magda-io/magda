@@ -12,7 +12,7 @@ data:
     },
     "registry": {
         "to": "http://registry-api/v0",
-        "methods": ["GET"]
+        "auth": true
     },
     "auth": {
         "to": "http://authorization-api/v0/public",

@@ -41,6 +41,21 @@ const argv = yargs
         describe: "K8S pull policy for created jobs",
         type: "string",
         default: "Always"
+    })
+    .option("userId", {
+        describe:
+            "The user id to use when making authenticated requests to the registry",
+        type: "string",
+        demand: true,
+        default: process.env.USER_ID || process.env.npm_package_config_userId
+    })
+    .option("jwtSecret", {
+        describe:
+            "Secret for decoding JWTs to determine if the caller is an admin",
+        type: "string",
+        demand: true,
+        default:
+            process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
     }).argv;
 
 // Create a new Express application.
@@ -55,7 +70,9 @@ app.use(
         imageTag: argv.imageTag,
         kubernetesApiType: argv.kubernetesApiType,
         registryApiUrl: argv.registryApiUrl,
-        pullPolicy: argv.pullPolicy
+        pullPolicy: argv.pullPolicy,
+        jwtSecret: argv.jwtSecret,
+        userId: argv.userId
     })
 );
 
