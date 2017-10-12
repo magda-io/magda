@@ -4,7 +4,8 @@ type ConnectorsResult = {
   connectors: Array<Object>,
   connectorConfig: ?Object,
   error: ?number,
-  dataset: ?Object
+  dataset: ?Object,
+  datasetSearchResults: Array<Object>
 }
 
 const initialData = {
@@ -12,7 +13,8 @@ const initialData = {
   error: null,
   connectors: [],
   connectorConfig: null,
-  dataset: null
+  dataset: null,
+  datasetSearchResults: []
 }
 
 
@@ -33,7 +35,21 @@ const connectors = (state: ConnectorsResult = initialData, action: ConnectorActi
         isFetching: false,
         error: action.error,
       })
-
+    case 'REQUEST_DATASET_SEARCH_RESULTS':
+      return Object.assign({}, state, {
+        isFetching: true,
+        error: null
+      })
+    case 'RECEIVE_DATASET_SEARCH_RESULTS':
+      return Object.assign({}, state, {
+        isFetching: false,
+        datasetSearchResults: action.json && action.json,
+      })
+    case 'REQUEST_CONNECTORS_ERROR':
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: action.error,
+      })
     case 'REQUEST_DATASET_FROM_CONNECTOR':
       return Object.assign({}, state, {
         isFetching: true,

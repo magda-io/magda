@@ -35,6 +35,26 @@ export function requestConnectorsError(error: number) {
   }
 }
 
+export function requestDatasetSearchResults(){
+  return {
+    type: actionTypes.REQUEST_DATASET_SEARCH_RESULTS
+  }
+}
+
+export function requestDatasetSearchResultsError(error){
+  return {
+    type: actionTypes.REQUEST_DATASET_SEARCH_RESULTS_ERROR,
+    error
+  }
+}
+
+export function receiveDatasetSearchResults(json){
+  return {
+    type: actionTypes.RECEIVE_DATASET_SEARCH_RESULTS,
+    json
+  }
+}
+
 
 export function requestConnectorConfig() {
   return {
@@ -101,14 +121,11 @@ export function resetCreateConnector(){
   }
 }
 
-
 export function requestDatasetFromConnector(){
   return{
     type: actionTypes.REQUEST_DATASET_FROM_CONNECTOR,
   }
 }
-
-
 
 export function requestDatasetFromConnectorError(error){
   return{
@@ -144,7 +161,6 @@ export function updateConnectorStatus(){
 
 }
 
-
 export function fetchDatasetFromConnector(connectorId, datasetId){
   return (dispatch: Dispatch)=>{
     dispatch(requestDatasetFromConnector())
@@ -167,7 +183,6 @@ export function fetchDatasetFromConnector(connectorId, datasetId){
     })
   }
 }
-
 
 export function validateConnectorName(name){
   return (dispatch: Dispatch)=>{
@@ -211,7 +226,6 @@ export function validateConnectorType(type){
   }
 }
 
-
 export function updateConnectorsStatus(connectorId: string, action: string){
   return (dispatch: Dispatch) => {
     dispatch(updateConnectorConfig());
@@ -241,7 +255,6 @@ export function updateConnectorsStatus(connectorId: string, action: string){
       })
   }
 }
-
 
 export function createNewConnector(connectorProps: ConnectorProps){
   return (dispatch: Dispatch) => {
@@ -274,7 +287,6 @@ export function createNewConnector(connectorProps: ConnectorProps){
       })
   }
 }
-
 
 export function deleteConnector(connectorId: string){
   return (dispatch: Dispatch) => {
@@ -330,7 +342,6 @@ export function fetchConnectorsFromRegistry():Object{
   }
 }
 
-
 export function fetchConnectorConfigFromRegistry(connectorId):Object{
   return (dispatch: Dispatch)=>{
     dispatch(requestConnectorConfig())
@@ -354,7 +365,6 @@ export function fetchConnectorConfigFromRegistry(connectorId):Object{
   }
 }
 
-
 export function fetchConnectorsIfNeeded(){
   return (dispatch: Dispatch, getState: GetState)=>{
     if(!getState().connectors.isFetching){
@@ -362,5 +372,42 @@ export function fetchConnectorsIfNeeded(){
       } else{
           return Promise.resolve();
       }
+  }
+}
+
+export function fetchDatasetSearchResults(connectorId: string, query: string): Store {
+  return (dispatch: Dispatch)=>{
+    let url : string = `${config.adminApiUrl}connectors/${connectorId}/interactive/search/datasets?title=${query}`;
+    console.log(url);
+    dispatch(requestDatasetSearchResults(query))
+    return fetch(url)
+    .then((response: Object) => {
+      if (response.status === 200) {
+          return response.json();
+      }
+      return dispatch(requestDatasetSearchResultsError(response.status))
+    })
+    .then((json) =>{
+        if(!json.error){
+            return dispatch(receiveDatasetSearchResults(json));
+        }
+      }
+    )
+  }
+}
+
+export function shouldFetchDatasetSearchResults(state: Object): boolean{
+  const connectors = state.connectors;
+  if(connectors.isFetching){
+    return false
+  }
+  return true
+}
+
+export function fetchDatasetSearchResultsIfNeeded(connectorId: string, query: string): Store {
+  return (dispatch, getState)=>{
+    if(shouldFetchDatasetSearchResults(getState(), query)){
+      return dispatch(fetchDatasetSearchResults(connectorId, query))
+    }
   }
 }
