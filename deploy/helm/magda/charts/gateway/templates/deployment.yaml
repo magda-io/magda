@@ -30,7 +30,7 @@ spec:
 {{- end }}
             "--proxyRoutesPath", "/etc/routes/routes.json",
             "--web", "http://web",
-            "--authenticationApi", "http://authorization-api/v0",
+            "--authorizationApi", "http://authorization-api/v0",
             "--previewMap", "http://preview-map:6110",
             "--ckanUrl", "https://data.gov.au",
         ]
@@ -42,7 +42,6 @@ spec:
         env:
         - name: NODE_ENV
           value: production
-{{- if .Values.auth.enabled }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
@@ -66,7 +65,6 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: google-client-secret
-{{- end }}
 {{- end }}
       volumes:
         - name: routes

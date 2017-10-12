@@ -19,7 +19,7 @@ spec:
         command: [
             "/app/bin/magda-search-api",
             "-Dhttp.port=80",
-            "-Dakka.loglevel=INFO",
+            "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300"
         ]
         ports:

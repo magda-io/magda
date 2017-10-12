@@ -8,11 +8,13 @@ import * as _ from "lodash";
 
 export function getConnectors(
     app: express.Application,
+    jwtSecret: string,
     isAdmin: boolean = true
 ): Promise<request.Response> {
     return mockAuthorization(
         "http://admin.example.com",
         isAdmin,
+        jwtSecret,
         request(app).get("/connectors")
     );
 }
@@ -114,11 +116,13 @@ export function putConnector(
     app: express.Application,
     id: string,
     body: any,
+    jwtSecret: string,
     isAdmin: boolean = true
 ): Promise<request.Response> {
     return mockAuthorization(
         "http://admin.example.com",
         isAdmin,
+        jwtSecret,
         request(app)
             .put(`/connectors/${id}`)
             .send(body)
@@ -128,11 +132,13 @@ export function putConnector(
 export function deleteConnector(
     app: express.Application,
     id: string,
+    jwtSecret: string,
     isAdmin: boolean = true
 ): Promise<request.Response> {
     return mockAuthorization(
         "http://admin.example.com",
         isAdmin,
+        jwtSecret,
         request(app).delete(`/connectors/${id}`)
     );
 }
@@ -176,11 +182,13 @@ export function mockCreateJob(
 export function startConnector(
     app: express.Application,
     id: string,
+    jwtSecret: string,
     isAdmin: boolean = true
 ): Promise<request.Response> {
     return mockAuthorization(
         "http://admin.example.com",
         isAdmin,
+        jwtSecret,
         request(app).post(`/connectors/${id}/start`)
     );
 }
@@ -188,11 +196,13 @@ export function startConnector(
 export function stopConnector(
     app: express.Application,
     id: string,
+    jwtSecret: string,
     isAdmin: boolean = true
 ): Promise<request.Response> {
     return mockAuthorization(
         "http://admin.example.com",
         isAdmin,
+        jwtSecret,
         request(app).post(`/connectors/${id}/stop`)
     );
 }

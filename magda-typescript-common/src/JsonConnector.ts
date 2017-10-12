@@ -3,7 +3,7 @@ import AsyncPage, { forEachAsync, asyncPageToArray } from './AsyncPage';
 import ConnectionResult from './ConnectionResult';
 import CreationFailure from './CreationFailure';
 import JsonTransformer from './JsonTransformer';
-import Registry from './Registry';
+import Registry from './registry/AuthorizedRegistryClient';
 import * as express from 'express';
 import * as fs from 'fs';
 import * as path from 'path';

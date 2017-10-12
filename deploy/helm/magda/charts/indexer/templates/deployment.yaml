@@ -17,6 +17,11 @@ spec:
         env:
         - name: S3_SECRET_KEY
           value: dummy
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}
@@ -25,11 +30,10 @@ spec:
             "/app/bin/magda-indexer",
             "-Dhttp.port=80",
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
-            "-DindexedServices.registry.baseUrl=http://registry-api/",
-            "-DindexedServices.registry.ignore=false",
+            "-Dregistry.baseUrl=http://registry-api",
             "-Dindexer.readSnapshots=true",
             "-Dindexer.makeSnapshots=true",
-            "-Dakka.loglevel=INFO",
+            "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300",
 {{- if .Values.elasticsearch.useGcsSnapshots }}
             "-DelasticSearch.snapshotRepo.type=gcs",
@@ -37,7 +41,8 @@ spec:
             "-DelasticSearch.snapshotRepo.types.gcs.service_account={{ .Values.elasticsearch.gcsSnapshotServiceAccount }}",
 {{- end }}
             "-DelasticSearch.shardCount={{ .Values.elasticsearch.shards }}",
-            "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}"
+            "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}",
+            "-Dauth.userId={{ .Values.global.defaultAdminUserId }}"
         ]
         volumeMounts:
         - mountPath: /usr/regions

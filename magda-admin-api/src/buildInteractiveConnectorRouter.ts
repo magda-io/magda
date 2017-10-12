@@ -21,6 +21,7 @@ export interface Options {
     registryApiUrl: string;
     pullPolicy: string;
     k8sApi: K8SApi;
+    userId: string;
 }
 
 export default function buildInteractiveConnectorRouter(options: Options) {
@@ -64,6 +65,7 @@ async function createInteractiveJob(k8sApi: K8SApi, id: any, options: Options): 
         dockerRepo: options.dockerRepo,
         registryApiUrl: options.registryApiUrl,
         pullPolicy: options.pullPolicy,
+        userId: options.userId,
         interactive: true
     }));
 }

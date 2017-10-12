@@ -13,7 +13,7 @@ import scala.concurrent.Future
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json._
-import au.csiro.data61.magda.model.Registry.{ Protocols => RegistryProtocols }
+import au.csiro.data61.magda.model.Registry.RegistryProtocols
 import scala.concurrent.duration._
 import au.csiro.data61.magda.AppConfig
 import com.typesafe.config.Config

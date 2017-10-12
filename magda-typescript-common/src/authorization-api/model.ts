@@ -1,14 +1,14 @@
 export interface PublicUser {
   id?: string,
   displayName: string,
-  photoURL?: string
+  photoURL?: string,
+  isAdmin: boolean
 }
 
 export interface User extends PublicUser {
   email: string,
   source: string,
-  sourceId: string,
-  isAdmin: boolean
+  sourceId: string
 }
 
 export interface UserToken {

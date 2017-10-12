@@ -10,13 +10,13 @@ import createOrGetUserToken from '../createOrGetUserToken';
 import { redirectOnSuccess, redirectOnError } from './redirect';
 
 export interface CkanOptions {
-    authenticationApi: ApiClient;
+    authorizationApi: ApiClient;
     passport: Passport;
     externalAuthHome: string;
 }
 
 export default function ckan(options: CkanOptions) {
-    const authenticationApi = options.authenticationApi;
+    const authorizationApi = options.authorizationApi;
     const passport = options.passport;
     const externalAuthHome = options.externalAuthHome;
 
@@ -26,7 +26,7 @@ export default function ckan(options: CkanOptions) {
                 result.caseOf({
                     left: error => cb(error),
                     right: profile => {
-                        createOrGetUserToken(authenticationApi, profile, 'ckan')
+                        createOrGetUserToken(authorizationApi, profile, 'ckan')
                             .then(userId => cb(null, userId))
                             .catch(error => cb(error));
                     }

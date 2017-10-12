@@ -3,7 +3,7 @@ import buildConnectorManifest from "./buildConnectorManifest";
 import buildInteractiveConnectorRouter from "./buildInteractiveConnectorRouter";
 import * as _ from "lodash";
 import K8SApi, { K8SApiType } from "./k8sApi";
-//import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 
 export interface Options {
     dockerRepo: string;
@@ -12,6 +12,8 @@ export interface Options {
     kubernetesApiType: K8SApiType;
     registryApiUrl: string;
     pullPolicy: string;
+    jwtSecret: string;
+    userId: string;
     namespace?: string;
 }
 
@@ -21,7 +23,7 @@ export default function buildApiRouter(options: Options) {
 
     const k8sApi = new K8SApi(options.kubernetesApiType, options.namespace);
 
-    //router.use(mustBeAdmin(options.authApiUrl));
+    router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
 
     router.get("/connectors", (req, res) => {
         Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJobs()])
@@ -143,7 +145,8 @@ export default function buildApiRouter(options: Options) {
                                 dockerImageTag: options.imageTag,
                                 dockerRepo: options.dockerRepo,
                                 registryApiUrl: options.registryApiUrl,
-                                pullPolicy: options.pullPolicy
+                                pullPolicy: options.pullPolicy,
+                                userId: options.userId
                             })
                         )
                         .then((result: any) => {
@@ -187,7 +190,8 @@ export default function buildApiRouter(options: Options) {
         imageTag: options.imageTag,
         registryApiUrl: options.registryApiUrl,
         pullPolicy: options.pullPolicy,
-        k8sApi
+        k8sApi,
+        userId: options.userId
     }));
 
     // Get a source (pre-transformation to aspects) dataset, distribution, or organization.
