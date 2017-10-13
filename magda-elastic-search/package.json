@@ -12,7 +12,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-elasticsearch",
-      "include": "Dockerfile elasticsearch.yml setup-snapshot-dir.sh"
+      "include": "Dockerfile elasticsearch.yml setup-snapshot-dir.sh setup-xpack.sh"
     }
   },
   "devDependencies": {

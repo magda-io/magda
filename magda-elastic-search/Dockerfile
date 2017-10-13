@@ -1,4 +1,4 @@
-FROM quay.io/pires/docker-elasticsearch-kubernetes:5.4.0
+FROM quay.io/pires/docker-elasticsearch-kubernetes:5.6.3
 
 VOLUME /snapshots
 	
@@ -6,5 +6,14 @@ ENV REPO /snapshots
 
 ADD component/elasticsearch.yml /elasticsearch/config/elasticsearch.yml
 ADD component/setup-snapshot-dir.sh /setup-snapshot-dir.sh
+ADD component/setup-xpack.sh /setup-xpack.sh
+
+ENV ACCEPT_DEFAULT_PASSWORD false
+ENV ELASTIC_PASSWORD elasticpassword
+ENV KIBANA_PASSWORD kibanapassword
+
+RUN yes | /elasticsearch/bin/elasticsearch-plugin install --batch x-pack
+RUN rm -rf /elasticsearch/plugins/x-pack/platform/linux-x86_64
+RUN apk add --no-cache --update curl procps
 
 CMD ["/setup-snapshot-dir.sh"]

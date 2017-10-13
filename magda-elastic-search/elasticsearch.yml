@@ -30,3 +30,7 @@ discovery:
   zen:
     ping.unicast.hosts: ${DISCOVERY_SERVICE}
     minimum_master_nodes: ${NUMBER_OF_MASTERS}
+
+xpack:
+  security.authc.accept_default_password: ${ACCEPT_DEFAULT_PASSWORD}
+  ml.enabled: false
