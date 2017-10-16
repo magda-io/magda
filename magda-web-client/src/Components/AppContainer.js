@@ -14,14 +14,13 @@ import './AppContainer.css';
 export default class AppContainer extends React.Component {
   state :{
     isOpen: boolean,
-    showPrototypeWarning: boolean
   }
   constructor(props: {
     location: Location,
     children: React$Element<any>
   }) {
     super(props);
-    this.state = { isOpen: false, showPrototypeWarning: true };
+    this.state = { isOpen: false};
   }
   renderLink(link: string) {
     const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
@@ -37,21 +36,13 @@ export default class AppContainer extends React.Component {
     });
   }
 
-  dismissPrototypeWarning(){
-    this.setState({
-      showPrototypeWarning: false
-    })
-  }
+
   render() {
     const headerNavs: Array<Array<string>> = config.headerNavigation;
     const footerNavs: Array<Object> = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
         <div>
-        {this.state.showPrototypeWarning && <div className='prototype-warning'>
-          <div className='prototype-warning-text'>This is a working alpha and has limited functionality, please let us know <a href="http://preview.data.gov.au/feedback.html" target="_blank" rel="noopener noreferrer">your feedback</a>.</div>
-          <button className='prototype-warning-dismiss btn' title="dismiss message" onClick={()=>this.dismissPrototypeWarning()}><i className="fa fa-times" aria-hidden="true"></i><span className='sr-only'>Dismiss message</span></button>
-        </div>}
           <nav className='appContainer__nav'>
             <div className='container'>
               <div className='row'>
