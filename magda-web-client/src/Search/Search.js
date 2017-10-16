@@ -140,12 +140,13 @@ class Search extends Component {
                  />
                 }
             </div>
-            {searchText.length > 0 &&
-             !this.props.isFetching &&
-             !this.props.error && <div className='results-count col-sm-4'>{this.props.hitCount} results found</div>}
+
           </div>
           <div className='row'>
             <div className='col-sm-8'>
+                {searchText.length > 0 &&
+                 !this.props.isFetching &&
+                 !this.props.error && <div className='results-count'>{this.props.hitCount} results found</div>}
                 {searchText.length === 0 && <div>{this.renderSuggestions()}</div>}
                 {searchText.length > 0 &&
                  !this.props.isFetching &&
