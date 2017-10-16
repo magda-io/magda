@@ -18,7 +18,7 @@ class OverviewBox extends Component {
     }
 
     renderToggle(isExpanded){
-      return <button onClick={this.toggleExpand} className='overview-toggle btn btn-reset'><i className={`fa fa-chevron-${isExpanded ? 'up' : 'down'}`} aria-hidden='true'></i></button>;
+      return <button onClick={this.toggleExpand} className='overview-toggle btn btn-reset'><span className='sr-only'>{isExpanded ? 'show less' : 'show more'}</span><i className={`fa fa-chevron-${isExpanded ? 'up' : 'down'}`} aria-hidden='true'></i></button>;
     }
 
     renderContent(_content){

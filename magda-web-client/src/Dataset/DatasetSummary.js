@@ -72,7 +72,7 @@ export default class DatasetSummary extends Component {
                       {publisher && <span className='dataset-summary-publisher'>{publisher}</span>}
                     </div>
                     <span className='hidden-xs dataset-summary__toggle'>
-                        {this.props.onClickDataset && <button className='dataset-summary__toggle-info-btn' onClick={this.props.onClickDataset} type='button'>{this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}</button>}
+                        {this.props.onClickDataset && <button className='dataset-summary__toggle-info-btn' onClick={this.props.onClickDataset} type='button'><span className='sr-only'>Toggle more info</span>{this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}</button>}
                     </span>
                   </div>
                   {this.props.isExpanded && <div className='dataset-summary__middle clearfix'>
@@ -99,6 +99,7 @@ export default class DatasetSummary extends Component {
                     <button className='dataset-summary__toggle-info-btn mobile'
                                                        onClick={this.props.onClickDataset}
                                                        type='button'>
+                        <span className='sr-only'>Toggle more info</span>
                         {this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}
                     </button>
                   </div>

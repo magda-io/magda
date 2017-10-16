@@ -124,7 +124,7 @@ class SearchBox extends Component {
   render() {
     return (
         <form className='search-box'>
-          <label for="search" className='search-box__input'>
+          <label htmlFor="search" className='search-box__input'>
           <span className='sr-only'>{'Search ' + config.appName}</span>
           <input
             type='text'
