@@ -2,6 +2,7 @@ name := "magda-scala-common"
 
 resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
+resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 
 libraryDependencies ++= {
   val akkaV       = "2.4.18"
@@ -18,8 +19,9 @@ libraryDependencies ++= {
        "ch.qos.logback" % "logback-classic" % "1.1.3",
        "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
        "org.scalaz" %% "scalaz-core" % "7.2.8",
-       "com.sksamuel.elastic4s" %% "elastic4s-core" % "5.4.3",
-       "com.sksamuel.elastic4s" %% "elastic4s-tcp" % "5.4.3",
+       "com.sksamuel.elastic4s" %% "elastic4s-core" % "5.6.0",
+       "com.sksamuel.elastic4s" %% "elastic4s-tcp" % "5.6.0",
+       "com.sksamuel.elastic4s" %% "elastic4s-xpack-security" % "5.6.0",
        "com.mchange" %% "leftright" % "0.0.1",
        "com.beachape" %% "enumeratum" % "1.5.10",
        "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.9.1",

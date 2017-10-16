@@ -32,5 +32,7 @@ discovery:
     minimum_master_nodes: ${NUMBER_OF_MASTERS}
 
 xpack:
-  security.authc.accept_default_password: ${ACCEPT_DEFAULT_PASSWORD}
+  security:
+    enabled: ${XPACK_ENABLED}
+    authc.accept_default_password: ${ACCEPT_DEFAULT_PASSWORD}
   ml.enabled: false

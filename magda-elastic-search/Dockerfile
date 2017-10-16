@@ -11,6 +11,7 @@ ADD component/setup-xpack.sh /setup-xpack.sh
 ENV ACCEPT_DEFAULT_PASSWORD false
 ENV ELASTIC_PASSWORD elasticpassword
 ENV KIBANA_PASSWORD kibanapassword
+ENV XPACK_ENABLED true
 
 RUN yes | /elasticsearch/bin/elasticsearch-plugin install --batch x-pack
 RUN rm -rf /elasticsearch/plugins/x-pack/platform/linux-x86_64
