@@ -229,8 +229,6 @@ export default class JsonConnector {
           res.sendFile(transformerForBrowserPath);
         });
 
-        app.use('/v0/example.html', express.static('example.html'));
-
         app.listen(options.listenPort);
         console.log(`Listening on port ${options.listenPort}.`);
     }
