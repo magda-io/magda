@@ -58,7 +58,7 @@ class FacetBasic extends Component {
             title={option.value}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>
-        {option.value}({option.hitCount})
+        {option.value}{' '}({option.hitCount})
         {(option.matched && !isActive) && <span className='btn-facet-option__recomended-badge'>*</span>}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-check`}/></span>
     </button>);
@@ -71,7 +71,7 @@ class FacetBasic extends Component {
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
     // the option that has the max object.value value, use to calculate volumne indicator
     let maxOptionOptionList = maxBy(this.props.options, o=> +o.hitCount);
-    return (<div className='facet-body'>
+    return (<div className={'facet-body ' + this.props.title}>
               <div className='clearfix facet-body__header'>
                 <FacetSearchBox renderOption={this.renderOption}
                                 options={this.props.facetSearchResults}
@@ -93,7 +93,7 @@ class FacetBasic extends Component {
 
   render(){
     return <div className='facet-wrapper'>
-              <FacetHeader 
+              <FacetHeader
                      title={this.props.title}
                      activeOptions={this.props.activeOptions}
                      hasQuery={this.props.hasQuery}
