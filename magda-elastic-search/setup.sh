@@ -6,7 +6,7 @@ chown -R elasticsearch /snapshots
 
 FILE=/data/passwordschanged
 
-if [ ! -f $FILE -a $NODE_DATA == "true" ]; then
+if [[ ! -f $FILE ]] && [[ $NODE_DATA = "true" ]] && [[ $XPACK_ENABLED = "true" ]]; then
     # Reset passwords
     echo "Setting passwords"
     OLD_HTTP_ENABLE="${HTTP_ENABLE}"
@@ -22,19 +22,27 @@ if [ ! -f $FILE -a $NODE_DATA == "true" ]; then
 
     su-exec elasticsearch /elasticsearch/bin/elasticsearch -d
 
-    sleep 30
+    sleep 10
 
-    curl -XPUT -u elastic:changeme 'localhost:9200/_xpack/security/user/elastic/_password?pretty' -H 'Content-Type: application/json' -d"
+    until curl --fail -XPUT -u elastic:changeme 'localhost:9200/_xpack/security/user/elastic/_password?pretty' -H 'Content-Type: application/json' -d"
     {
-    \"password\": \"${ELASTIC_PASSWORD}\"
+        \"password\": \"${ELASTIC_PASSWORD}\"
     }
     "
+    do
+        echo "Failed to change default password, trying again"
+        sleep 10
+    done
 
-    curl -XPUT -u elastic:$ELASTIC_PASSWORD 'localhost:9200/_xpack/security/user/kibana/_password?pretty' -H 'Content-Type: application/json' -d"
+    until curl --fail -XPUT -u elastic:$ELASTIC_PASSWORD 'localhost:9200/_xpack/security/user/kibana/_password?pretty' -H 'Content-Type: application/json' -d"
     {
-    \"password\": \"${KIBANA_PASSWORD}\"
+        \"password\": \"${KIBANA_PASSWORD}\"
     }
     "
+    do
+        echo "Failed to change kibana password, trying again"
+        sleep 10
+    done
 
     # Kill temporary elasticsearch
     kill -SIGTERM $(ps -ef | grep elasticsearch | awk '{print $2}')

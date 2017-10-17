@@ -25,17 +25,21 @@ class DefaultClientProvider extends ClientProvider {
       case None =>
         val future = retry(() => Future {
           val uri = ElasticsearchClientUri(AppConfig.conf().getString("elasticSearch.serverUrl"))
-          val password = System.getenv("ELASTIC_SEARCH_PASSWORD")
+          val passwordOpt = Option(System.getenv("ELASTIC_SEARCH_PASSWORD"))
           var settings = Settings.builder().put("cluster.name", "myesdb")
 
-          if (!password.isEmpty()) {
-            settings = settings.put("xpack.security.user", s"elastic:$password")
+          passwordOpt match {
+            case Some(password) =>
+              logger.info("Password specified, starting with XPack")
+              settings = settings.put("xpack.security.user", s"elastic:$password")
+              XPackElasticClient(settings.build(), uri)
+            case None =>
+              logger.info("No password specified, starting without XPack")
+              TcpClient.transport(settings.build(), uri)
           }
-
-          XPackElasticClient(settings.build(), uri)
         }, 10 seconds, 10, onRetry(logger))
           .map { client =>
-            logger.info("Successfully connected to elasticsearch client")
+            logger.info("Successfully made initial contact with the ES client (this doesn't mean we're fully connected yet!)")
             client
           }
 
@@ -47,5 +51,5 @@ class DefaultClientProvider extends ClientProvider {
     outerFuture
   }
 
-  private def onRetry(logger: LoggingAdapter)(retriesLeft: Int, error: Throwable) = logger.error("Failed to make initial contact with ES server, {} retries left", retriesLeft, error)
+  private def onRetry(logger: LoggingAdapter)(retriesLeft: Int, error: Throwable) = logger.error("Failed to make initial contact with ES server, {} retries left \n {}", retriesLeft, error)
 }
