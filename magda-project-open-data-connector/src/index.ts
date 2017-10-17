@@ -1,22 +1,11 @@
-<<<<<<< HEAD
-import createTransformer from './createTransformer';
-import JsonConnector from '@magda/typescript-common/dist/JsonConnector';
-import ProjectOpenData from './ProjectOpenData';
-import Registry from '@magda/typescript-common/dist/Registry';
-import organizationAspectBuilders from './organizationAspectBuilders';
-import datasetAspectBuilders from './datasetAspectBuilders';
-import distributionAspectBuilders from './distributionAspectBuilders';
-import * as yargs from 'yargs';
-=======
-import ProjectOpenDataConnector from "./ProjectOpenDataConnector";
+import createTransformer from "./createTransformer";
+import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
+import ProjectOpenData from "./ProjectOpenData";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import * as moment from "moment";
-import * as URI from "urijs";
 import organizationAspectBuilders from "./organizationAspectBuilders";
 import datasetAspectBuilders from "./datasetAspectBuilders";
 import distributionAspectBuilders from "./distributionAspectBuilders";
 import * as yargs from "yargs";
->>>>>>> origin/master
 
 const argv = yargs
     .config()
@@ -38,24 +27,21 @@ const argv = yargs
         type: "string",
         default: "http://localhost:6101/v0"
     })
-<<<<<<< HEAD
-    .option('interactive', {
-        describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
-        type: 'boolean',
+    .option("interactive", {
+        describe: "Run the connector in an interactive mode with a REST API, instead of running a batch connection job.",
+        type: "boolean",
         default: false
     })
-    .option('listenPort', {
-        describe: 'The port on which to run the REST API when in interactive model.',
-        type: 'number',
+    .option("listenPort", {
+        describe: "The port on which to run the REST API when in interactive model.",
+        type: "number",
         default: 6113
     })
-    .option('timeout', {
-        describe: 'When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.',
-        type: 'number',
+    .option("timeout", {
+        describe: "When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.",
+        type: "number",
         default: 0
     })
-    .argv;
-=======
     .option("jwtSecret", {
         describe: "The shared secret for intra-network communication",
         type: "string",
@@ -70,7 +56,6 @@ const argv = yargs
         demand: true,
         default: process.env.USER_ID || process.env.npm_package_config_userId
     }).argv;
->>>>>>> origin/master
 
 const source = new ProjectOpenData({
     name: argv.name,
