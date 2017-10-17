@@ -20,13 +20,7 @@
               "--config",
               "/etc/config/connector.json",
               "--registryUrl",
-              "http://registry-api/v0",
-              "--interactive"
-            ],
-            "ports": [
-                {
-                    "containerPort": 6112
-                }
+              "http://registry-api/v0"
             ],
             "imagePullPolicy": "Always",
             "resources": {
