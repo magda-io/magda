@@ -20,6 +20,9 @@
     border: 1px solid #f5f5f5;
     position: absolute;
     z-index: 1;
+    &.publisher{
+      width: 450px;
+    }
 }
 
 .facet-body__header{
