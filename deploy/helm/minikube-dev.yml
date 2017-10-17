@@ -9,7 +9,8 @@ global:
   noDbAuth: true
 gateway:
   auth:
-    googleClientId: "366532128059-5cdjmpm23t0j578v74poajcrlbremfg7.apps.googleusercontent.com"
+    facebookClientId: "173073926555600"
+    googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
 combined-db:
   image:
     tag: "latest"
