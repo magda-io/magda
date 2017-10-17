@@ -29,7 +29,8 @@ const argv = yargs
         demand: true,
         default:
             process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
-    }).argv;
+    })
+    .showHelpOnFail(false).argv;
 
 // Create a new Express application.
 var app = express();

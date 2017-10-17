@@ -35,7 +35,8 @@ const argv = yargs
         demand: true,
         default:
             process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
-    }).argv;
+    })
+    .showHelpOnFail(false).argv;
 
 const app = express();
 app.use(require("body-parser").json());

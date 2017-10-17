@@ -50,7 +50,8 @@ const argv = yargs
         type: "string",
         demand: true,
         default: process.env.USER_ID || process.env.npm_package_config_userId
-    }).argv;
+    })
+    .showHelpOnFail(false).argv;
 
 const csw = new Csw({
     baseUrl: argv.sourceUrl,

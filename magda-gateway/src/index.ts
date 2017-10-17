@@ -98,7 +98,8 @@ const argv = yargs
     .options("ckanUrl", {
         describe: "The URL of a CKAN server to use for authentication.",
         type: "string"
-    }).argv;
+    })
+    .showHelpOnFail(false).argv;
 
 const authenticator = new Authenticator({
     sessionSecret: argv.sessionSecret,

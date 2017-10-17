@@ -40,7 +40,8 @@ const argv = yargs
         type: "string",
         demand: true,
         default: process.env.USER_ID || process.env.npm_package_config_userId
-    }).argv;
+    })
+    .showHelpOnFail(false).argv;
 
 const registry = new Registry({
     baseUrl: argv.registryUrl,

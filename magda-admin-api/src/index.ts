@@ -50,13 +50,14 @@ const argv = yargs
         default: process.env.USER_ID || process.env.npm_package_config_userId
     })
     .option("jwtSecret", {
-        describe:
-            "Secret for decoding JWTs to determine if the caller is an admin",
+        // describe:
+        //     "Secret for decoding JWTs to determine if the caller is an admin",
         type: "string",
         demand: true,
         default:
             process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
-    }).argv;
+    })
+    .showHelpOnFail(false).argv;
 
 // Create a new Express application.
 var app = express();
