@@ -1,43 +1,36 @@
 package au.csiro.data61.magda.registry
 
-import java.net.URL
+
 
 import scala.concurrent.duration._
 
 import org.flywaydb.core.Flyway
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.Matchers
 import org.scalatest.fixture.FunSpec
 import org.slf4j.LoggerFactory
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.testkit.TestProbe
-import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.client.HttpFetcher
-import au.csiro.data61.magda.model.Auth.{ User, AuthProtocols }
-import ch.qos.logback.classic.Level
-import ch.qos.logback.classic.Logger
-import scalikejdbc._
-import org.scalamock.scalatest.MockFactory
-import org.scalamock.proxy.ProxyMockFactory
-import org.scalamock.proxy.Mock
-import scala.concurrent.Future
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.HttpEntity
-import akka.http.scaladsl.model.ResponseEntity
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.marshalling.Marshal
-import scala.concurrent.ExecutionContext
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import com.auth0.jwt.JWT
-import akka.http.scaladsl.model.headers.CustomHeader
-import com.auth0.jwt.algorithms.Algorithm
-import au.csiro.data61.magda.directives.AuthDirectives
+
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.ResponseEntity
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.AuthenticationFailedRejection
 import akka.http.scaladsl.server.AuthorizationFailedRejection
+import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.testkit.TestProbe
 import au.csiro.data61.magda.Authentication
+import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.HttpFetcher
+import au.csiro.data61.magda.model.Auth.AuthProtocols
+import au.csiro.data61.magda.model.Auth.User
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import scalikejdbc._
+import scala.collection.JavaConversions._
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
   case class FixtureParam(api: Api, webHookActorProbe: TestProbe, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher)
@@ -51,6 +44,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   flyway.setDataSource(databaseUrl, "postgres", "")
   flyway.setSchemas("test")
   flyway.setLocations("classpath:/sql")
+  flyway.setPlaceholders(Map("clientUserName" -> "client", "clientPassword" -> "password"))
 
   override def testConfigSource =
     s"""
@@ -120,7 +114,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
         }
       }
     }
-    
+
     def expectCredentialsMissingRejection() = {
       rejection match {
         case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, _) => // success 

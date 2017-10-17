@@ -49,6 +49,7 @@ class ProjectsViewer extends Component {
                   {this.props.isFetching && <ProgressBar/>}
                   <div className='row'>
                   <div className='col-sm-8 projects'>
+                    <h2 className='sr-only'>List of projects available</h2>
                     {!this.props.isFetching && this.renderContent()}
                     </div>
                     <div className='col-sm-4'>

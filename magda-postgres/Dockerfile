@@ -7,7 +7,8 @@ COPY component/flyway-commandline-4.2.0-linux-x64.tar.gz /flyway
 COPY component/migrate-and-start.sh /usr/local/bin/
 
 # Install wall-e
-RUN apt-get install -y python3-pip lzop pv && \
+RUN apt-get update && \
+    apt-get install -y python3-pip lzop pv && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install wal-e[aws,azure,google,swift]
 

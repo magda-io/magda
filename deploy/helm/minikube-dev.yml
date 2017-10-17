@@ -6,6 +6,7 @@ global:
   image:
     repository: "localhost:5000/data61"
     tag: "latest"
+  noDbAuth: true
 gateway:
   auth:
     googleClientId: "366532128059-5cdjmpm23t0j578v74poajcrlbremfg7.apps.googleusercontent.com"

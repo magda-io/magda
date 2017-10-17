@@ -81,9 +81,14 @@
     padding: 15px;
     color: #fff;
     background: $magda-blue;
+    font-weight: 800;
     a{
         color: #fff;
         text-decoration: underline;
+    }
+
+    a:hover, a:focus{
+      color: $magda-grey;
     }
 }
 

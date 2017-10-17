@@ -78,7 +78,7 @@ export default class DatasetSummary extends Component {
                         {dataset.title}
                       </Link>
 
-                      <label className='dataset-summary-publisher'>{publisher}</label>
+                      {publisher && <span className='dataset-summary-publisher'>{publisher}</span>}
                     </div>
                     <span className='hidden-xs dataset-summary__toggle'>
                         { onClickDataset && <button className='dataset-summary__toggle-info-btn' onClick={onClickDataset} type='button'>{isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}</button>}
@@ -98,8 +98,8 @@ export default class DatasetSummary extends Component {
                     <MarkdownViewer markdown={isExpanded ? dataset.description : dataset.description.slice(0, 100) + '...'}/>
                   </div>
 
-                  <label className='dataset-summary-source'>Source: {source}</label>
-                  <label className='dataset-summary-quality'>{defined(dataset.quality) && <QualityIndicator quality={dataset.quality}/>}</label>
+                  {source && <span className='dataset-summary-source'>Source: {source}</span>}
+                  {defined(dataset.quality) && <span className='dataset-summary-quality'> <QualityIndicator quality={dataset.quality}/></span>}
 
                 </div>
               {onClickDataset && <div className='dataset-summary__footer'>
@@ -108,7 +108,8 @@ export default class DatasetSummary extends Component {
                     <button className='dataset-summary__toggle-info-btn mobile'
                                                        onClick={onClickDataset}
                                                        type='button'>
-                        {isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}
+                        <span className='sr-only'>Toggle more info</span>
+                        {this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}
                     </button>
                   </div>
               </div>}

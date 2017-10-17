@@ -22,6 +22,7 @@
     "@types/node": "^8.0.14",
     "@types/request": "^2.0.0",
     "@types/superagent": "^3.5.5",
+    "@types/supertest": "^2.0.3",
     "@types/urijs": "^1.15.34",
     "@types/uuid": "^3.4.0",
     "chai": "^4.0.1",

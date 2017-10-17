@@ -33,3 +33,12 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
+{{- if not .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: auth-db-client
+{{- end }}
