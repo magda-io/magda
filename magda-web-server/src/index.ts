@@ -54,15 +54,20 @@ const argv = yargs
 
 var app = express();
 
-const clientRoot = path.join(
+const magda = path.join(
     __dirname,
     "..",
     "node_modules",
-    "@magda",
-    "web-client"
+    "@magda"
 );
+
+const clientRoot = path.join(magda, "web-client");
 const clientBuild = path.join(clientRoot, "build");
-console.log(clientBuild);
+console.log("Client: " + clientBuild);
+
+const adminRoot = path.join(magda, "web-admin");
+const adminBuild = path.join(adminRoot, "build");
+console.log("Admin: " + adminBuild);
 
 const apiBaseUrl = addTrailingSlash(
     argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
@@ -120,6 +125,7 @@ app.get("/server-config.js", function(req, res) {
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
 });
 
+app.use('/admin', express.static(adminBuild));
 app.use(express.static(clientBuild));
 
 // URLs in this list will load index.html and be handled by React routing.
