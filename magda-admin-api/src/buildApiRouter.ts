@@ -194,16 +194,5 @@ export default function buildApiRouter(options: Options) {
         userId: options.userId
     }));
 
-    // Get a source (pre-transformation to aspects) dataset, distribution, or organization.
-    // Optionally an item with a specific ID can be requested (otherwise a random one is provided).
-    //   /connectors/:id/interactive/dataset
-    //   /connectors/:id/interactive/distribution?id=foo
-    //   /connectors/:id/interactive/organization
-    //   /connectors/:id/interactive/config
-    //
-    //   /connectors/:id/interactive/test-harness.js
-    //      - include that with a script tag
-    //      - createTransformer.default(config).datasetJsonToRecord(json)
-
     return router;
 }
