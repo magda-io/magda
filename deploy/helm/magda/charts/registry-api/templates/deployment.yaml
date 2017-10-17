@@ -20,6 +20,15 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
+{{- if not .Values.global.noDbAuth }}
+        - name: POSTGRES_USER
+          value: client
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: registry-datastore-client
+{{- end }}
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [

@@ -4,7 +4,8 @@
   "description": "A base Docker image for PostgreSQL with Flyway for schema migrations.",
   "scripts": {
     "docker-build-and-push": "create-docker-context-for-node-component --build --push --tag auto",
-    "make-latest": "bash -c \"docker tag data61/magda-postgres:$npm_package_version data61/magda-postgres:latest && docker push data61/magda-postgres:latest\""
+    "make-latest": "bash -c \"docker tag data61/magda-postgres:$npm_package_version data61/magda-postgres:latest && docker push data61/magda-postgres:latest\"",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local"
   },
   "author": "",
   "license": "Apache-2.0",

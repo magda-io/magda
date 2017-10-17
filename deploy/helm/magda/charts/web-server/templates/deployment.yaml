@@ -32,7 +32,7 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: config
+          name: web-app-config
           items:
           - key: web.json
             path: config.json

@@ -6,6 +6,7 @@ global:
   image:
     repository: "localhost:5000/data61"
     tag: "latest"
+  noDbAuth: true
 gateway:
   auth:
     facebookClientId: "173073926555600"
