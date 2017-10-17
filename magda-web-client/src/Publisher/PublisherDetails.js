@@ -36,11 +36,20 @@ class PublisherDetails extends Component<void, Props, void> {
 
     renderContent(){
       const publisher= this.props.publisher;
+      const details = publisher.aspects['organization-details'];
       return <div className='publisher-details container'>
                 {this.props.isFetching && <ProgressBar/>}
                 <div className='row'>
                     <div className='publisher-details__body col-sm-8'>
-                        <h1>{publisher.name}</h1>
+                      <div className='media'>
+                          {details.imageUrl && <div className='media-left'>
+                               <img className='media-object publisher_image' src={details.imageUrl} alt={publisher.name}/>
+                          </div>}
+                          <div className='media-body'>
+                              <h1>{publisher.name}</h1>
+                          </div>
+                        </div>
+
                         <div className='publisher-details-overview'>
                             <h3 className='section-heading'>Overview</h3>
                             <OverviewBox content={publisher.aspects['organization-details'].description}/>
