@@ -125,7 +125,7 @@ app.get("/server-config.js", function(req, res) {
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
 });
 
-app.use('/admin', express.static(adminBuild));
+app.use("/admin", express.static(adminBuild));
 app.use(express.static(clientBuild));
 
 // URLs in this list will load index.html and be handled by React routing.
@@ -137,8 +137,7 @@ const topLevelRoutes = [
     "sign-in-redirect",
     "dataset",
     "projects",
-    "publishers",
-    "admin"
+    "publishers"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
@@ -148,6 +147,13 @@ topLevelRoutes.forEach(topLevelRoute => {
     app.get("/" + topLevelRoute + "/*", function(req, res) {
         res.sendFile(path.join(clientBuild, "index.html"));
     });
+});
+
+app.get("/admin", function(req, res) {
+    res.sendFile(path.join(adminBuild, "index.html"));
+});
+app.get("/admin/*", function(req, res) {
+    res.sendFile(path.join(adminBuild, "index.html"));
 });
 
 app.listen(argv.listenPort);

@@ -62,7 +62,7 @@ function loadDefaultData(store) {
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
-      <Route path="/" component={AppContainer} onEnter={loadDefaultData(store)}>
+      <Route path="/admin/" component={AppContainer} onEnter={loadDefaultData(store)}>
         <IndexRoute component={Account} />
         <Route path="account" component={Account} />
         <Route path="connectors" component={Connectors} />

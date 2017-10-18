@@ -54,7 +54,7 @@ class SelectDataset extends React.Component {
             <div>Dataset URL <input type="text" className="form-control" onChange={this.onChange.bind(this, 'testDatasetUrl')} value={this.state.testDatasetUrl}/></div>
             <div>Search by title <input type="text" className="form-control" onChange={this.onChange.bind(this, 'testDatasetSearchText')} onKeyPress={this.handleSearchFieldEnterKeyPress} value={this.state.testDatasetSearchText}/></div>
             {this.state.testDatasetSearchText.length > 0 && this.renderSearchResults(this.props.datasetSearchResults)}
-            <Link className='btn btn-primary' disabled={!this.state.testDatasetId} to={`/connectors/${this.props.params.connectorId}/${this.state.testDatasetId}`}>Go</Link>
+            <Link className='btn btn-primary' disabled={!this.state.testDatasetId} to={`${this.props.params.connectorId}/${this.state.testDatasetId}`}>Go</Link>
           </div>
         </div>
       </ReactDocumentTitle>

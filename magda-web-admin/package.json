@@ -51,6 +51,7 @@
     "redux-mock-store": "^1.2.1",
     "redux-thunk": "^2.1.0"
   },
+  "homepage": "http://mywebsite.com/admin",
   "proxy": {
     "/server-config.js": {
       "target": "http://localhost:6207/"
