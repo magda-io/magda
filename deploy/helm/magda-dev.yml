@@ -4,6 +4,7 @@ global:
     maxUnavailable: 1
   image:
     tag: "0.0.31-0"
+  noDbAuth: true
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:
