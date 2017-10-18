@@ -14,7 +14,7 @@ NOTE: Work in progress... this probably won't work 100% for you. But it's a star
 5. Create db passwords (change the passwords and make them all different!):
 If `useCombinedDb=true`:
 ```bash
-kubectl create secret generic db-passwords --from-literal=combined-db=p4ssw0rd --from-literal=auth-db-client=p4ssw0rd --from-literal=discussions-db-client=p4ssw0rd --from-literal=session-store-client=p4ssw0rd --from-literal=registry-datastore-client=p4ssw0rd
+kubectl create secret generic db-passwords --from-literal=combined-db-client=p4ssw0rd --from-literal=auth-db-client=p4ssw0rd --from-literal=discussions-db-client=p4ssw0rd --from-literal=session-store-client=p4ssw0rd --from-literal=registry-datastore-client=p4ssw0rd
 ```
 If `useCombinedDb=false`
 ```bash
