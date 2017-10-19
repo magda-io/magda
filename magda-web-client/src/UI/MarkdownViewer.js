@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import MarkdownIt from 'markdown-it';
 import './MarkdownViewer.css';
 
@@ -11,7 +11,9 @@ class MarkdownViewer extends React.Component  {
 
  componentDidMount(){
    const numberOfChildrenFromMarkdownAsHtml = this.markdown.children.length;
-   {this.props.updateContentLength && this.props.updateContentLength(numberOfChildrenFromMarkdownAsHtml);}
+   if (this.props.updateContentLength){
+     this.props.updateContentLength(numberOfChildrenFromMarkdownAsHtml);
+   }
  }
 
  render(){
