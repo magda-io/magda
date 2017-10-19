@@ -1,36 +1,27 @@
-import React from 'react';
-import marked from 'marked';
+import React, { Component } from 'react';
+import MarkdownIt from 'markdown-it';
 import './MarkdownViewer.css';
 
-const LIST = ['blockquote',
-       'br',
-       'code',
-       'codespan',
-       'del',
-       'em',
-       'heading',
-       'hr',
-       'html',
-       'image',
-       'link',
-       'list',
-       'listitem',
-       'paragraph',
-       'strong',
-       'table',
-       'tablecell',
-       'tablerow'];
 
-let renderer = new marked.Renderer();
-LIST.forEach(l=>{
- renderer[l] = function (text) {
-   return text;
- };
-});
+class MarkdownViewer extends React.Component  {
+  constructor(props) {
+   super(props);
+   this.state = {isCollapsed: true};
+ }
 
-function MarkdownViewer(props) {
-    let markdown = {__html: marked(props.markdown)};
-    return <div className='markdown' dangerouslySetInnerHTML={markdown}/>
+ componentDidMount(){
+   const numberOfChildrenFromMarkdownAsHtml = this.markdown.children.length;
+   {this.props.updateContentLength && this.props.updateContentLength(numberOfChildrenFromMarkdownAsHtml);}
+ }
+
+ render(){
+   const md = new MarkdownIt();
+   const htmlcontent = md.render(this.props.markdown);
+   let markdown = {__html: htmlcontent};
+   return(
+      <div className='markdown' dangerouslySetInnerHTML={markdown} ref={markdown => this.markdown = markdown}/>
+   )
+ }
 }
 
 MarkdownViewer.defaultProps = {markdown: ''};

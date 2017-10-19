@@ -1,14 +1,17 @@
 import React, { Component } from 'react';
 import MarkdownViewer from '../UI/MarkdownViewer';
-const MAX = 600;
+import './OverviewBox.css';
+
 
 class OverviewBox extends Component {
     constructor(props){
         super(props);
         this.state = {
-        isExpanded: false
+        isExpanded: false,
+        showToggle: false
         }
         this.toggleExpand = this.toggleExpand.bind(this);
+        this.updateContentLength = this.updateContentLength.bind(this);
     }
 
     toggleExpand(){
@@ -17,21 +20,26 @@ class OverviewBox extends Component {
       })
     }
 
+    updateContentLength(length){
+      if(length > 2){
+        this.setState({
+          showToggle: true
+        })
+      }
+    }
+
     renderToggle(isExpanded){
       return <button onClick={this.toggleExpand} className='overview-toggle btn btn-reset'><span className='sr-only'>{isExpanded ? 'show less' : 'show more'}</span><i className={`fa fa-chevron-${isExpanded ? 'up' : 'down'}`} aria-hidden='true'></i></button>;
     }
 
-    renderContent(_content){
-      let content = _content;
-      if(content.length > MAX){
-          content = this.state.isExpanded ?  _content : _content.slice(0, MAX) + '...';
-      }
-      return <MarkdownViewer markdown={content}/>
+    renderContent(content){
+      return <MarkdownViewer markdown={content} updateContentLength={this.updateContentLength}/>
     }
+
     render(){
-      return <div className='white-box overview-box'>
+      return <div className={`white-box overview-box ${this.state.isExpanded ? '': 'is-collapsed'}`}>
                 {this.props.content && this.renderContent(this.props.content)}
-                {this.props.content && this.props.content.length > MAX && this.renderToggle(this.state.isExpanded)}
+                {this.state.showToggle && this.renderToggle(this.state.isExpanded)}
             </div>
     }
 }

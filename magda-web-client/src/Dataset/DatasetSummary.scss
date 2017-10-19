@@ -161,7 +161,14 @@
   color: #000000 ;
 }
 
-.dataset-summary__dataset-description > .markdown{
+.dataset-summary__dataset-description .markdown{
+  max-height: 100px;
+  overflow: hidden;
+}
+.is-expanded.dataset-summary{
+  .dataset-summary__dataset-description .markdown{
+    max-height: none;
+  }
 }
 
 .dataset-summary__dataset-description:hover{
