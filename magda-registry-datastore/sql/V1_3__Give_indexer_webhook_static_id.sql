@@ -1,0 +1,1 @@
+UPDATE WebHooks SET webhookid = 'indexer' WHERE url = 'http://indexer/v0/registry-hook'

@@ -10,6 +10,7 @@ global:
     pullPolicy: Always
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
   logLevel: INFO
+  noDbAuth: false
 tags:
   all: true
   authorization-api: false

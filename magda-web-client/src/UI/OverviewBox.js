@@ -38,6 +38,7 @@ class OverviewBox extends Component {
 
     render(){
       return <div className={`white-box overview-box ${this.state.isExpanded ? '': 'is-collapsed'}`}>
+                {this.props.content.length || 'This publisher does not have a description.' }
                 {this.props.content && this.renderContent(this.props.content)}
                 {this.state.showToggle && this.renderToggle(this.state.isExpanded)}
             </div>
