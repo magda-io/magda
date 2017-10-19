@@ -52,7 +52,7 @@ class PublisherDetails extends Component<void, Props, void> {
 
                         <div className='publisher-details-overview'>
                             <h3 className='section-heading'>Overview</h3>
-                            <OverviewBox content={publisher.aspects['organization-details'].description}/>
+                            <OverviewBox content={publisher.aspects['organization-details'].description.length > 0 ? publisher.aspects['organization-details'].description : 'No description available for this publisher'}/>
                         </div>
                     </div>
                     <div className='col-sm-4'>
