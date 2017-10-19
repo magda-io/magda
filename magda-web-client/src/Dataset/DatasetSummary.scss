@@ -8,7 +8,7 @@
   }
   .markdown{
     b, strong{
-      font-weight: normal;
+      font-weight: 600;
     }
   }
 }
@@ -137,22 +137,13 @@
 }
 
 
-.dataset-summary h1{
-  font-size: 1.1em;
-  font-weight: 400;;
+.dataset-summary{
+  h1, h2, h3{
+    font-size: 1.0em;
+    font-weight: 800;
+    margin: 10px 0;
+  }
 }
-
-.dataset-summary h2{
-  font-size: 1.0em;
-  font-weight: 400;
-}
-
-.dataset-summary h3{
-  font-size: 1em;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
 
 
 .dataset-summary__dataset-description{
@@ -162,7 +153,7 @@
 }
 
 .dataset-summary__dataset-description .markdown{
-  max-height: 100px;
+  max-height: 6.25rem;
   overflow: hidden;
 }
 .is-expanded.dataset-summary{
