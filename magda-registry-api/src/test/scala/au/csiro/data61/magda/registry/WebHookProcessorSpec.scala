@@ -197,7 +197,7 @@ class WebHookProcessorSpec extends ApiSpec {
         payloads(0).aspectDefinitions.get.length shouldBe 1
         payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
 
-        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, 0l))) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, Some(0l)))) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be < (payloads(0).lastEventId)
         }
@@ -235,7 +235,7 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, payloads(0).lastEventId))) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, Some(payloads(0).lastEventId)))) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be(payloads(0).lastEventId)
         }
