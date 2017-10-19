@@ -8,9 +8,7 @@ import {
   Router,
   Route,
   IndexRoute,
-  IndexRedirect,
   browserHistory,
-  Redirect
 } from "react-router";
 
 import thunkMiddleware from "redux-thunk";
@@ -19,9 +17,9 @@ import ReactDOM from "react-dom";
 import AppContainer from "./Components/AppContainer";
 
 import Account from "./Components/Account/Account";
+import Connectors from "./Components/Connectors/Connectors";
 import ConnectorConfig from "./Components/Connectors/ConnectorConfig";
 import SelectDataset from "./Components/Connectors/SelectDataset";
-import signInRedirect from "./Components/Account/SignInRedirect";
 
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";

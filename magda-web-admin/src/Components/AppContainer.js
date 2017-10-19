@@ -2,7 +2,6 @@
 import ReactDocumentTitle from 'react-document-title';
 import React from 'react';
 import { config } from '../config.js';
-import { Link } from 'react-router';
 
 
 import './AppContainer.css';
