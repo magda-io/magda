@@ -13,7 +13,7 @@ export default function setupWebhookEndpoint(
     registry: Registry
 ) {
     const server = options.express();
-    server.use(require("body-parser").json());
+    server.use(require("body-parser").json({limit: '50mb'}));
 
     server.post(
         "/hook",
