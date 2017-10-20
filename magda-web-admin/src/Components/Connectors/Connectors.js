@@ -5,6 +5,7 @@ import { bindActionCreators } from "redux";
 import {fetchConnectorsIfNeeded, updateConnectorsStatus, deleteConnector, createNewConnector, validateConnectorName, validateConnectorType, resetConnectorForm} from '../../actions/connectorsActions';
 import ProgressBar from '../../UI/ProgressBar';
 import { Link } from "react-router-dom";
+import {Redirect} from "react-router-dom";
 
 import './Connectors.css';
 type State = {
@@ -26,7 +27,10 @@ class Connectors extends React.Component {
 
   renderByUser(user){
     if(!user){
-      return <div> <Link to="/account">Sign in</Link> as admin manage connectors</div>
+      return <Redirect to={{
+        pathname: '/account',
+        state: { from: this.props.location }
+      }}/>
     }
     else if(!user.isAdmin){
       return <div> not authorised </div>

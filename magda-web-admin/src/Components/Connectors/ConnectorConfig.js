@@ -10,7 +10,7 @@ import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
 import AspectBuilder from "../../UI/AspectBuilder";
 import LazyJsonTree from "../../Components/LazyJsonTree";
-import Script from 'react-load-script'
+import Script from 'react-load-script';
 
 class ConnectorConfig extends Component {
   constructor(props) {
