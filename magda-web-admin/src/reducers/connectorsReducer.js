@@ -45,7 +45,7 @@ const connectors = (state: ConnectorsResult = initialData, action: ConnectorActi
         isFetching: false,
         datasetSearchResults: action.json && action.json,
       })
-    case 'REQUEST_CONNECTORS_ERROR':
+    case 'REQUEST_DATASET_SEARCH_RESULTS_ERROR':
       return Object.assign({}, state, {
         isFetching: false,
         error: action.error,

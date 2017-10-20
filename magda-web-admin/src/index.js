@@ -6,10 +6,8 @@ import createLogger from "redux-logger";
 import "./index.css";
 import {
   BrowserRouter,
-  Router,
   Switch, Route
 } from "react-router-dom";
-import createBrowserHistory from 'history/createBrowserHistory';
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -40,19 +38,9 @@ const store: Store = createStore(
   )
 );
 
-const browserHistory = createBrowserHistory();
-const recordNewRoute = location => {
-  window.ga("set", "location", document.location);
-  window.ga("send", "pageview");
-
-};
-
-
 function loadDefaultData(store) {
   store.dispatch(requestWhoAmI());
 }
-
-
 
 const Main = ()=>(
   <main>

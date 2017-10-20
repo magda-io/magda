@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import { render } from 'react-dom';
+// eslint-disable-next-line
 import brace from 'brace';
+// eslint-disable-next-line 
 import AceEditor from 'react-ace';
 import LazyJsonTree from "../Components/LazyJsonTree";
 
@@ -65,11 +66,13 @@ export default class AspectBuilder extends Component {
           return <LazyJsonTree data={{data: dataset}} getComponent={this.props.getComponent}/>
       case 'ui':
           const datasetJsonEncoded = encodeURIComponent(datasetJson);
-          return <iframe src={`http://localhost:6108/preivew/dataset/${datasetJsonEncoded}`} width="100%" height="500px"/>;
+          return <iframe src={`http://localhost:6108/preivew/dataset/${datasetJsonEncoded}`} width="100%" height="500px" title="preview-dataset"/>;
       case 'schema':
           return this.renderSchema(this.props.aspectConfig);
       case 'doc':
-          return 'some documentation'
+          return 'some documentation';
+      default:
+          return null
         }
   }
 
