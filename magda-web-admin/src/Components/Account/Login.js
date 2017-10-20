@@ -10,11 +10,9 @@ const { baseUrl } = config;
 
 
 export default function Login(props) {
-  debugger
-  const prevPath = props.history.pathname;
   const baseRedirectUrl = `${window.location.protocol}//${window.location
     .host}`;
-  const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${prevPath}`;
+  const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=/connectors`;
 
   const makeLoginUrl = type =>
     `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
