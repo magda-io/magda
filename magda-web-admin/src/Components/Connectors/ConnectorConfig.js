@@ -42,7 +42,7 @@ class ConnectorConfig extends Component {
     }
 
     if(nextProps.connectorConfig){
-      if(!this.props.connectorConfig){
+      if(!this.state.connectorConfig){
         //only set it the first time when it's fecthed
         this.setState({
           connectorConfig: nextProps.connectorConfig,
@@ -108,7 +108,7 @@ class ConnectorConfig extends Component {
   renderBody() {
     if (this.props.error) {
       return <ErrorHandler errorCode={this.props.error} />;
-    } else if (!this.props.isFetching && this.state.connectorConfig && this.props.dataset && this.state.scriptLoaded) {
+    } else if (this.state.connectorConfig && this.props.dataset && this.state.scriptLoaded) {
       const transformer = window.createTransformer.default(this.state.connectorConfig);
       const connectorConfig = this.state.connectorConfig;
       const dataset = this.props.dataset;
