@@ -72,8 +72,8 @@ baseSpec(
                     .reply(404, "");
 
                 registryScope
-                    .put(
-                        `/hooks/${encodeURIComponentWithApost(hook.id)}`,
+                    .post(
+                        `/hooks`,
                         hook,
                         {
                             reqheaders: reqHeaders(jwtSecret, userId)

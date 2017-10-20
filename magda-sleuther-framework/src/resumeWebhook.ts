@@ -15,4 +15,8 @@ export default async function resumeWebhook(
     if (resumeResult instanceof Error) {
         throw resumeResult;
     }
+
+    console.info(
+        `Successfully resumed webhook - last event id was ${resumeResult.lastEventIdReceived}`
+    );
 }

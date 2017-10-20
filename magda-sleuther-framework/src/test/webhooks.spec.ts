@@ -96,7 +96,7 @@ baseSpec(
                             const registryScope = nock(registryUrl);
 
                             registryScope.get(/\/hooks\/.*/).reply(200, {});
-                            registryScope.post(/\/hooks\/.*/).reply(201);
+                            registryScope.post(/\/hooks\/.*/).reply(201, {});
 
                             /** All records in all the batches */
                             const flattenedRecords = _.flatMap(

@@ -43,5 +43,5 @@ export default async function registerNewWebhook(
         isWaitingForResponse: false
     };
 
-    return registry.putHook(newWebHook);
+    return registry.postHook(newWebHook);
 }

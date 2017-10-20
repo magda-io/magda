@@ -33,9 +33,12 @@ export default async function sleuther(
     const webhookRegistered = await isWebhookRegistered(options, registry);
 
     if (webhookRegistered) {
+        console.info("Webhook is already registered");
         await resumeWebhook(options, registry);
     } else {
+        console.info("No webhook was registered");
         await registerWebhook(options, registry);
+
         await crawlExistingRecords();
     }
 
@@ -113,6 +116,8 @@ export default async function sleuther(
     }
 
     async function crawlExistingRecords() {
+        console.info("Crawling existing records in registry");
+
         const registryPage = AsyncPage.create<RecordsPage<Record>>(previous => {
             if (previous && previous.records.length === 0) {
                 console.info("No more records left");

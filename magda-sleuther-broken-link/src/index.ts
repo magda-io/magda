@@ -16,10 +16,12 @@ function sleuthBrokenLinks() {
         optionalAspects: [],
         async: true,
         writeAspectDefs: [brokenLinkAspectDef, datasetQualityAspectDef],
-        onRecordFound: (record, registry) => onRecordFound(record, registry, argv.retries)
+        onRecordFound: (record, registry) =>
+            onRecordFound(record, registry, argv.retries)
     });
 }
 
 sleuthBrokenLinks().catch(e => {
     console.error("Error: " + e.message, e);
+    process.exit(1);
 });

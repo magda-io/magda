@@ -55,6 +55,26 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(createServiceError);
     }
 
+    postHook(hook: WebHook): Promise<WebHook | Error> {
+        const operation = () => this.webHooksApi.create(hook, this.jwt);
+
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PUT hook record.`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then(result => result.body)
+            .catch(createServiceError);
+    }
+
     putHook(hook: WebHook): Promise<WebHook | Error> {
         const operation = () =>
             this.webHooksApi.putById(

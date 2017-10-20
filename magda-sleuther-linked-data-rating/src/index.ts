@@ -8,16 +8,17 @@ const ID = "sleuther-linked-data-rating";
 const argv = commonYargs(ID, 6109, "http://localhost:6109").argv;
 
 function sleuthLinkedData() {
-  sleuther({
-    argv,
-    id: ID,
-    aspects: ["dataset-distributions"],
-    optionalAspects: [],
-    writeAspectDefs: [linkedDataAspectDef, datasetQualityAspectDef],
-    onRecordFound
-  }).catch(e => {
-    console.error("Error: " + e.message, e);
-  });
+    sleuther({
+        argv,
+        id: ID,
+        aspects: ["dataset-distributions"],
+        optionalAspects: [],
+        writeAspectDefs: [linkedDataAspectDef, datasetQualityAspectDef],
+        onRecordFound
+    }).catch(e => {
+        console.error("Error: " + e.message, e);
+        process.exit(1);
+    });
 }
 
 sleuthLinkedData();
