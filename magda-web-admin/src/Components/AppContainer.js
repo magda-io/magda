@@ -11,6 +11,7 @@ export default class AppContainer extends React.Component {
     return (
       <ReactDocumentTitle title={config.appName}>
         <div>
+        <h1>Welcome, {config.appName} Admin</h1>
         <div id='content' className='clearfix'>{this.props.children}</div>
         </div>
       </ReactDocumentTitle>

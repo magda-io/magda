@@ -2,7 +2,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { config } from "../../config.js";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { bindActionCreators } from "redux";
 import { fetchConnectorConfigIfNeeded, updateConnectorStatus, fetchDatasetFromConnector } from '../../actions/connectorsActions';
 import ReactDocumentTitle from "react-document-title";
@@ -31,14 +31,14 @@ class ConnectorConfig extends Component {
 
 
   componentWillMount() {
-    this.props.fetchConnectorConfigIfNeeded(this.props.params.connectorId);
-    this.props.fetchDatasetFromConnector(this.props.params.connectorId, this.props.params.datasetId);
+    this.props.fetchConnectorConfigIfNeeded(this.props.match.params.connectorId);
+    this.props.fetchDatasetFromConnector(this.props.match.params.connectorId, this.props.match.params.datasetId);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.params.connectorId !== nextProps.params.connectorId) {
-      this.props.fetchConnectorConfigIfNeeded(nextProps.params.connectorId);
-      this.props.fetchDatasetFromConnector(this.props.params.connectorId, this.props.params.datasetId);
+    if (this.props.match.params.connectorId !== nextProps.match.params.connectorId) {
+      this.props.fetchConnectorConfigIfNeeded(nextProps.match.params.connectorId);
+      this.props.fetchDatasetFromConnector(this.props.match.params.connectorId, this.props.match.params.datasetId);
     }
 
     if(nextProps.connectorConfig){
@@ -68,7 +68,7 @@ class ConnectorConfig extends Component {
   }
 
   render(){
-    const url = `${config.adminApiUrl}connectors/${this.props.params.connectorId}/interactive/test-harness.js`;
+    const url = `${config.adminApiUrl}connectors/${this.props.match.params.connectorId}/interactive/test-harness.js`;
     return (
       <ReactDocumentTitle title={config.appName}>
       <div>
@@ -127,8 +127,8 @@ class ConnectorConfig extends Component {
           <h1>{connectorConfig.name}</h1>
           <div className='row'>
           <div className='col-sm-4'>
-            <div>Test Dataset ID: {this.props.params.datasetId}</div>
-            <Link to={`/connectors/${this.props.params.connectorId}`}> Select a different dataset for testing </Link>
+            <div>Test Dataset ID: {this.props.match.params.datasetId}</div>
+            <Link to={`/connectors/${this.props.match.params.connectorId}`}> Select a different dataset for testing </Link>
             <LazyJsonTree data={{data: dataset}} getComponent={this.getJsonTreeComponent}/>
           </div>
           <div className='col-sm-8'>

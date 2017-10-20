@@ -1,4 +1,3 @@
-//@flow
 import React from 'react';
 import {config} from '../../config.js';
 import { connect } from "react-redux";
@@ -6,14 +5,14 @@ import { bindActionCreators } from "redux";
 import ReactDocumentTitle from 'react-document-title';
 import {fetchDatasetSearchResultsIfNeeded} from '../../actions/connectorsActions';
 import debounce from 'lodash.debounce';
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import './SelectDataset.css';
 
 
 class SelectDataset extends React.Component {
   constructor(props) {
     super(props);
-    this.state ={
+    this.state = {
       testDatasetId: 'a0f2aa22-512d-4c08-9b7d-bb8a51163f4c',
       testDatasetUrl: '',
       testDatasetSearchText: ''
@@ -28,7 +27,7 @@ class SelectDataset extends React.Component {
     this.setState({
       [key]: event.target.value
     });
-    this.debounceUpdateSearchQuery(this.props.params.connectorId, event.target.value)
+    this.debounceUpdateSearchQuery(this.props.match.params.connectorId, event.target.value)
   }
 
   handleSearchFieldEnterKeyPress(event) {
@@ -40,7 +39,7 @@ class SelectDataset extends React.Component {
   }
 
   renderSearchResults(results){
-    return <ul className='list-unstyled'>{results.map(r =><li key={r.id}><Link to={`/connectors/${this.props.params.connectorId}/${r.id}`}>{r.title}</Link></li>)}</ul>
+    return <ul className='list-unstyled'>{results.map(r =><li key={r.id}><Link to={`/connectors/${this.props.match.params.connectorId}/${r.id}`}>{r.title}</Link></li>)}</ul>
   }
 
 
@@ -49,12 +48,12 @@ class SelectDataset extends React.Component {
       <ReactDocumentTitle title={'select dataset' + config.appName}>
         <div className='container selectDataset'>
           <div className='col-sm-8'>
-            <h3>Select a {this.props.params.connectorId} dataset to use to test the connecor:</h3>
+            <h3>Select a {this.props.match.params.connectorId} dataset to use to test the connecor:</h3>
             <div>Dataset ID <input type="text" className="form-control" onChange={this.onChange.bind(this,'testDatasetId')} value={this.state.testDatasetId}/></div>
             <div>Dataset URL <input type="text" className="form-control" onChange={this.onChange.bind(this, 'testDatasetUrl')} value={this.state.testDatasetUrl}/></div>
             <div>Search by title <input type="text" className="form-control" onChange={this.onChange.bind(this, 'testDatasetSearchText')} onKeyPress={this.handleSearchFieldEnterKeyPress} value={this.state.testDatasetSearchText}/></div>
             {this.state.testDatasetSearchText.length > 0 && this.renderSearchResults(this.props.datasetSearchResults)}
-            <Link className='btn btn-primary' disabled={!this.state.testDatasetId} to={`${this.props.params.connectorId}/${this.state.testDatasetId}`}>Go</Link>
+            <Link className='btn btn-primary' disabled={!this.state.testDatasetId} to={`${this.props.match.params.connectorId}/${this.state.testDatasetId}`}>Go</Link>
           </div>
         </div>
       </ReactDocumentTitle>

@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import {fetchConnectorsIfNeeded, updateConnectorsStatus, deleteConnector, createNewConnector, validateConnectorName, validateConnectorType, resetConnectorForm} from '../../actions/connectorsActions';
 import ProgressBar from '../../UI/ProgressBar';
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 
 import './Connectors.css';
 type State = {
@@ -120,7 +120,7 @@ class Connectors extends React.Component {
     <td><button className={`btn ${connector.job && connector.job.status === 'active'? 'btn-warning ': 'btn-success'}`} type='button' onClick={this.toggleConnector.bind(this, connector)}>{connector.job && connector.job.status === 'active' ? 'Stop' : 'Start'}</button></td>
     <td className={connector.job ? connector.job.status :''}>{connector.job && connector.job.status}</td>
     <td><button className='btn btn-danger' onClick={this.deleteConnector.bind(this, connector)}>Delete</button></td>
-    <td><Link to={`connectors/${connector.id}`}>Edit</Link></td>
+    <td><Link to={`/connectors/${connector.id}`}>Edit</Link></td>
     </tr>)
   }
 

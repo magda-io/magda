@@ -5,12 +5,11 @@ import'es6-shim';
 import createLogger from "redux-logger";
 import "./index.css";
 import {
+  BrowserRouter,
   Router,
-  Route,
-  IndexRoute,
-  browserHistory,
-} from "react-router";
-
+  Switch, Route
+} from "react-router-dom";
+import createBrowserHistory from 'history/createBrowserHistory';
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -41,32 +40,45 @@ const store: Store = createStore(
   )
 );
 
+const browserHistory = createBrowserHistory();
 const recordNewRoute = location => {
   window.ga("set", "location", document.location);
   window.ga("send", "pageview");
-  browserHistory.lastLocation = browserHistory.currentLocation;
-  browserHistory.currentLocation = location;
+
 };
-recordNewRoute(browserHistory.getCurrentLocation());
-browserHistory.listen(recordNewRoute);
+
 
 function loadDefaultData(store) {
   store.dispatch(requestWhoAmI());
 }
 
-// If you add a new top-level route below, you must also add it to src/index.ts in magda-web-server!
+
+
+const Main = ()=>(
+  <main>
+    <Switch>
+          <Route exact path='/' component={AppContainer} onEnter={loadDefaultData(store)}/>
+          <Route path="/account" component={Account}/>
+          <Switch>
+
+
+            <Route path="/connectors/:connectorId/:datasetId" component={ConnectorConfig} />
+            <Route path="/connectors/:connectorId" component={SelectDataset}/>
+            <Route exact path="/connectors" component={Connectors}/>
+          </Switch>
+    </Switch>
+  </main>
+)
+
+const App = ()=>(
+  <div><Main/></div>
+)
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={browserHistory}>
-      <Route path="/admin/" component={AppContainer} onEnter={loadDefaultData(store)}>
-        <IndexRoute component={Account} />
-        <Route path="account" component={Account} />
-        <Route path="connectors" component={Connectors} />
-        <Route path="connectors/:connectorId" component={SelectDataset} />
-        <Route path="connectors/:connectorId/:datasetId" component={ConnectorConfig} />
-      </Route>
-    </Router>
+    <BrowserRouter basename='/admin'>
+      <App/>
+    </BrowserRouter>
   </Provider>,
   document.getElementById("root")
 );

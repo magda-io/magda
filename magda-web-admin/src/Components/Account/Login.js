@@ -1,5 +1,5 @@
 import React from "react";
-import { browserHistory } from "react-router";
+// import { browserHistory } from "react-router-dom";
 import fbLogo from "./fb-logo.svg";
 import googleLogo from "./google-logo.svg";
 import "./Login.css";
@@ -10,9 +10,8 @@ const { baseUrl } = config;
 
 
 export default function Login(props) {
-  const { pathname: prevPath } =
-    browserHistory.lastLocation || browserHistory.getCurrentLocation();
-
+  debugger
+  const prevPath = props.history.pathname;
   const baseRedirectUrl = `${window.location.protocol}//${window.location
     .host}`;
   const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${prevPath}`;
