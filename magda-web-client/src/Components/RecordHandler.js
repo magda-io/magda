@@ -13,7 +13,6 @@ import type { ParsedDataset, ParsedDistribution } from '../helpers/record';
 import {
   Route,
   Link,
-  Redirect,
   Switch
 } from 'react-router-dom';
 import DatasetDetails from './Dataset/DatasetDetails';

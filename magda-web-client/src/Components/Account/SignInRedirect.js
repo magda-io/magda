@@ -2,7 +2,6 @@ import qs from "qs";
 import React from "react";
 import {
   Redirect,
-  withRouter
 } from 'react-router-dom'
 
 

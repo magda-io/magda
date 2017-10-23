@@ -35,7 +35,6 @@ import { requestWhoAmI } from './actions/userManagementActions';
 import {
   Route,
   Link,
-  Redirect,
   Switch
 } from 'react-router-dom';
 
