@@ -27,7 +27,7 @@ import DistributionPreview from "./Components/Dataset/DistributionPreview";
 import Home from "./Components/Home";
 import Search from "./Components/Search/Search";
 import RecordHandler from "./Components/RecordHandler";
-
+import { staticPageRegister } from "./content/register";
 
 import Feedback from "./Components/Feedback";
 import Contact from "./Components/Contact";
@@ -169,7 +169,17 @@ class AppContainer extends React.Component {
             </div>
           </nav>
 
-          <div id='content' className='clearfix'>{this.props.children}</div>
+          <div id='content' className='clearfix'>
+          <Switch>
+            <Route exact path='/' component={Home} />
+            <Route exact path="/search" component={Search} />
+            <Route exact path="/feedback" component={Feedback} />
+            <Route exact path="/contact" component={Contact} />
+            <Route exact path="/account" component={Account} />
+            <Route exact path="/sign-in-redirect" onEnter={signInRedirect} />
+            {staticPageRegister.map(item => <Route path={`page/:id`} key={item.path} component={item.component} />)}
+          </Switch>
+          </div>
           <footer className='footer clearfix'>
             <div className='container'>
               <ul className='nav row'>

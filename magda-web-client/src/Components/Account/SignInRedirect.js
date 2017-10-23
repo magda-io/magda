@@ -1,4 +1,4 @@
-import parseQueryString from "../../helpers/parseQueryString";
+import qs from "qs";
 import React from "react";
 import {
   Redirect,
@@ -7,7 +7,7 @@ import {
 
 
 export default function signInRedirect(props) {
-  const params = parseQueryString(window.location.search);
+  const params = qs.parse(window.location.search);
   if (params.result === "success") {
     return (
         <Redirect to={params.redirectTo || "/"}/>

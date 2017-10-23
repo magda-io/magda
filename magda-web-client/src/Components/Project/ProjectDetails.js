@@ -12,12 +12,12 @@ import CrappyChat from "../../Components/CrappyChat/CrappyChat";
 
 class ProjectDetails extends Component {
   componentWillMount() {
-    this.props.fetchProjectIfNeeded(this.props.params.projectId);
+    this.props.fetchProjectIfNeeded(this.props.match.params.projectId);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.params.projectId !== nextProps.params.projectId) {
-      this.props.fetchProjectIfNeeded(nextProps.params.projectId);
+    if (this.props.match.params.projectId !== nextProps.match.params.projectId) {
+      this.props.fetchProjectIfNeeded(nextProps.match.params.projectId);
     }
   }
 

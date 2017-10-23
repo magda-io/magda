@@ -4,7 +4,7 @@ import {config} from '../config' ;
 import ReactDocumentTitle from 'react-document-title';
 
 export default function StaticPage(props) {
-  const id = props.params.id;
+  const id = props.match.params.id;
   const content = contents.get(id);
   return (
     <ReactDocumentTitle title={id + ' | ' + config.appName}>

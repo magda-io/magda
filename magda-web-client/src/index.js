@@ -12,14 +12,10 @@ import {
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
-
-
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
-import { staticPageRegister } from "./content/register";
 import AppContainer from "./AppContainer";
-
 
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();

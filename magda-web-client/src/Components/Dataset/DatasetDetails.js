@@ -27,7 +27,7 @@ class DatasetDetails extends Component<{}, Props, State> {
   }
   render(){
     const dataset = this.props.dataset;
-    const datasetId = this.props.params.datasetId;
+    const datasetId = this.props.match.params.datasetId;
     const source = `This dataset was originally found on ${this.props.dataset.source}: \n\n  ${dataset.landingPage}`
     return <div className='dataset-details container'>
               <div className='row'>

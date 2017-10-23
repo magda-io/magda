@@ -25,12 +25,12 @@ type Props = {
 
 class PublisherDetails extends Component<void, Props, void> {
     componentWillMount(){
-        this.props.fetchPublisherIfNeeded(this.props.params.publisherId);
+        this.props.fetchPublisherIfNeeded(this.props.match.params.publisherId);
     }
 
     componentWillReceiveProps(nextProps){
-        if(nextProps.params.publisherId !== this.props.params.publisherId){
-            nextProps.fetchPublisherIfNeeded(nextProps.params.publisherId);
+        if(nextProps.match.params.publisherId !== this.props.match.params.publisherId){
+            nextProps.fetchPublisherIfNeeded(nextProps.match.params.publisherId);
         }
     }
 

@@ -27,17 +27,17 @@ class RecordHandler extends React.Component {
     }
   }
   componentWillMount(){
-    this.props.fetchDataset(this.props.params.datasetId);
-    if(this.props.params.distributionId){
-      this.props.fetchDistribution(this.props.params.distributionId);
+    this.props.fetchDataset(this.props.match.params.datasetId);
+    if(this.props.match.params.distributionId){
+      this.props.fetchDistribution(this.props.match.params.distributionId);
     }
   }
   componentWillReceiveProps(nextProps){
-      if(nextProps.params.datasetId !== this.props.params.datasetId){
-        nextProps.fetchDataset(nextProps.params.datasetId);
+      if(nextProps.match.params.datasetId !== this.props.match.params.datasetId){
+        nextProps.fetchDataset(nextProps.match.params.datasetId);
       }
-      if(nextProps.params.distributionId && nextProps.params.distributionId !== this.props.params.distributionId){
-        nextProps.fetchDistribution(nextProps.params.distributionId);
+      if(nextProps.match.params.distributionId && nextProps.match.params.distributionId !== this.props.match.params.distributionId){
+        nextProps.fetchDistribution(nextProps.match.params.distributionId);
       }
   }
 
@@ -54,8 +54,8 @@ class RecordHandler extends React.Component {
     const publisherName = this.props.dataset.publisher.name;
     const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
     const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
-    const distributionIdAsUrl = this.props.params.distributionId ? encodeURIComponent(this.props.params.distributionId) : '';
-     if (this.props.params.distributionId && !this.props.distributionIsFetching){
+    const distributionIdAsUrl = this.props.match.params.distributionId ? encodeURIComponent(this.props.match.params.distributionId) : '';
+     if (this.props.match.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
          return <ErrorHandler errorCode={this.props.distributionFetchError}/>;
        }
@@ -78,11 +78,11 @@ class RecordHandler extends React.Component {
                 </div>
               </div>
             </div>
-            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}/distribution/${distributionIdAsUrl}`}/>
+            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.match.params.datasetId)}/distribution/${distributionIdAsUrl}`}/>
             <div className='tab-content'>{this.props.children}</div>
             </div>
       )
-    } else if(this.props.params.datasetId && !this.props.datasetIsFetching){
+    } else if(this.props.match.params.datasetId && !this.props.datasetIsFetching){
       if(this.props.datasetFetchError){
         return <ErrorHandler errorCode={this.props.datasetFetchError}/>;
       }
@@ -105,7 +105,7 @@ class RecordHandler extends React.Component {
                   <div className='updated-date'>Updated {this.props.dataset.updatedDate}</div>
               </div>
             </div>
-            <Tabs list={datasetTabs} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}`}/>
+            <Tabs list={datasetTabs} baseUrl={`/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`}/>
             <div className='tab-content'>{this.props.children}</div>
         </div>
       );
@@ -114,7 +114,7 @@ class RecordHandler extends React.Component {
   }
 
   render() {
-    const title = this.props.params.distributionId ? this.props.distribution.title : this.props.dataset.title;
+    const title = this.props.match.params.distributionId ? this.props.distribution.title : this.props.dataset.title;
     return (
       <ReactDocumentTitle title={title + '|' + config.appName}>
         <div>

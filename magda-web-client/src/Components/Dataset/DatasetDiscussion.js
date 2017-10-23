@@ -10,7 +10,7 @@ export default function DatasetDiscussion(props) {
         <div className='col-sm-8'>
           <CrappyChat
             typeName='dataset'
-            typeId={props.params.datasetId}
+            typeId={props.match.params.datasetId}
           />
         </div>
       </div>
