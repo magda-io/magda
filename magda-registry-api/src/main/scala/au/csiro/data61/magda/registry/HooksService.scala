@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.Directives._
 import scalikejdbc.DB
 import akka.http.scaladsl.model.StatusCodes
 import io.swagger.annotations._
-import au.csiro.data61.magda.model.Registry.WebHook
+import au.csiro.data61.magda.model.Registry.{ WebHook, WebHookAcknowledgement, WebHookAcknowledgementResponse }
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 
 import scala.util.{ Failure, Success }

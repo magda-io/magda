@@ -18,12 +18,25 @@ import java.time.OffsetDateTime
 import au.csiro.data61.magda.util.ErrorHandling
 import au.csiro.data61.magda.client.RegistryExternalInterface
 
-class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) extends Crawler {
+class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndexer)(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) extends Crawler {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
   implicit val scheduler = system.scheduler
 
-  def crawl(indexer: SearchIndexer): Future[Unit] = {
+  var lastCrawl: Option[Future[Unit]] = None
+
+  def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
+
+  def crawl(): Future[Unit] = {
+    lastCrawl match {
+      case Some(crawl) => crawl
+      case None =>
+        lastCrawl = Some(newCrawl())
+        lastCrawl.get
+    }
+  }
+
+  private def newCrawl(): Future[Unit] = {
     val startInstant = OffsetDateTime.now
 
     log.info("Crawling registry at {}", interface.baseApiPath)
@@ -73,7 +86,7 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
       }
   }
 
-  def tokenCrawl(nextFuture: () => Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
+  private def tokenCrawl(nextFuture: () => Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
     val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching from registry, retries left: {}", retryCount + 1)
 
     val safeFuture = ErrorHandling.retry(nextFuture, 30 seconds, 30, onRetry)
@@ -94,7 +107,7 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
     }
   }
 
-  def streamForInterface(): Source[DataSet, NotUsed] = {
+  private def streamForInterface(): Source[DataSet, NotUsed] = {
     val firstPageFuture = () => interface.getDataSetsReturnToken(0, 50)
 
     val crawlSource = tokenCrawl(firstPageFuture, 100)

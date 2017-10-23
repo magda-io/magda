@@ -72,12 +72,12 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     flyway.migrate()
 
     def asNonAdmin(req: HttpRequest): HttpRequest = {
-      expectAdmin(httpFetcher, false)
+      expectAdminCheck(httpFetcher, false)
       asUser(req)
     }
 
     def asAdmin(req: HttpRequest): HttpRequest = {
-      expectAdmin(httpFetcher, true)
+      expectAdminCheck(httpFetcher, true)
       asUser(req)
     }
 
@@ -88,7 +88,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     req.withHeaders(new RawHeader("X-Magda-Session", JWT.create().withClaim("userId", "1").sign(Authentication.algorithm)))
   }
 
-  def expectAdmin(httpFetcher: HttpFetcher, isAdmin: Boolean) {
+  def expectAdminCheck(httpFetcher: HttpFetcher, isAdmin: Boolean) {
     val resFuture = Marshal(User(isAdmin)).to[ResponseEntity].map(user => HttpResponse(status = 200, entity = user))
 
     (httpFetcher.get _).expects("/v0/public/users/1", *).returns(resFuture)

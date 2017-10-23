@@ -10,52 +10,31 @@ import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.model.Registry.RegistryConstants
 
 object RegisterWebhook {
-  def registerWebhook(interface: RegistryExternalInterface)(
+  sealed trait InitResult
+  case object ShouldCrawl extends InitResult
+  case object ShouldNotCrawl extends InitResult
+
+  def initWebhook(interface: RegistryExternalInterface)(
     implicit config: Config,
     system: ActorSystem,
     executor: ExecutionContext,
-    materializer: Materializer): Future[Unit] = registerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+    materializer: Materializer): Future[InitResult] = {
 
-  def registerWebhook(
-    interface: RegistryExternalInterface,
-    aspects: List[String],
-    optionalAspects: List[String])(
-      implicit config: Config,
-      system: ActorSystem,
-      executor: ExecutionContext,
-      materializer: Materializer): Future[Unit] =
-    new WebhookRegisterer(interface, aspects, optionalAspects).registerWebhook
+    interface.getWebhook(config.getString("registry.webhookId")).flatMap {
+      case Some(existingHook) =>
+        interface.resumeWebhook(config.getString("registry.webhookId"))
+        Future(ShouldNotCrawl)
+      case None => registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects).map(_ => ShouldCrawl)
 
-  def registerWebhook(
-    implicit config: Config,
-    system: ActorSystem,
-    executor: ExecutionContext,
-    materializer: Materializer): Future[Unit] = registerWebhook(RegistryConstants.aspects, RegistryConstants.optionalAspects)
-
-  def registerWebhook(
-    aspects: List[String],
-    optionalAspects: List[String])(
-      implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
-    new WebhookRegisterer(aspects, optionalAspects).registerWebhook()
-}
-
-private class WebhookRegisterer(
-    interface: RegistryExternalInterface,
-    aspects: List[String],
-    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) {
-  def this(
-    aspects: List[String],
-    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
-    this(new RegistryExternalInterface(), aspects, optionalAspects)
+    }
   }
 
-  def registerWebhook(): Future[Unit] = {
-    registerIndexerWebhook()
-  }
-
-  private def registerIndexerWebhook(): Future[Unit] = {
+  private def registerIndexerWebhook(
+    interface: RegistryExternalInterface,
+    aspects: List[String],
+    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
     val webhook = WebHook(
-      id = Some("indexer"),
+      id = Some(config.getString("registry.webhookId")),
       name = "Indexer",
       eventTypes = Set(
         EventType.CreateRecord,
