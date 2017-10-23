@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDocumentTitle from 'react-document-title';
-import {config} from '../config.js';
+import {config} from '../config' ;
 
 
 export default function Contact(props) {

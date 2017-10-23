@@ -1,6 +1,6 @@
 import React from 'react';
 import {contents} from '../content/register';
-import {config} from '../config.js';
+import {config} from '../config' ;
 import ReactDocumentTitle from 'react-document-title';
 
 export default function StaticPage(props) {
