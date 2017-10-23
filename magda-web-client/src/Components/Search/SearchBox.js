@@ -46,7 +46,6 @@ class SearchBox extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-    debugger
     this.setState({
       searchText: nextProps.location.search.q
     })

@@ -71,6 +71,24 @@ class AppContainer extends React.Component {
     });
   }
 
+  renderBody(){
+    return (<Switch>
+      <Route exact path='/' component={Home} />
+      <Route exact path='/search' component={Search} />
+      <Route exact path='/feedback' component={Feedback} />
+      <Route exact path='/contact' component={Contact} />
+      <Route exact path='/account' component={Account} />
+      <Route exact path='/sign-in-redirect' onEnter={signInRedirect} />
+      <Route path='/dataset/:datasetId' component={RecordHandler}/>
+      <Route exact path='/projects' component={ProjectsViewer} />
+      <Route path='/projects/:projectId' component={ProjectDetails} />
+      <Route exact path='/project/new' component={CreateProject} />
+      <Route exact path='/publishers' component={PublishersViewer} />
+      <Route path='/publishers/:publisherId' component={PublisherDetails} />
+      {staticPageRegister.map(item => <Route path={`/page/:id`} key={item.path} component={item.component} />)}
+    </Switch>);
+  }
+
 
   render() {
     const headerNavs: Array<Array<string>> = config.headerNavigation;
@@ -166,21 +184,7 @@ class AppContainer extends React.Component {
           </nav>
 
           <div id='content' className='clearfix'>
-          <Switch>
-            <Route exact path='/' component={Home} />
-            <Route exact path='/search' component={Search} />
-            <Route exact path='/feedback' component={Feedback} />
-            <Route exact path='/contact' component={Contact} />
-            <Route exact path='/account' component={Account} />
-            <Route exact path='/sign-in-redirect' onEnter={signInRedirect} />
-            <Route exact path='/dataset/:datasetId' component={RecordHandler}/>
-            <Route exact path='/projects' component={ProjectsViewer} />
-            <Route path='/projects/:projectId' component={ProjectDetails} />
-            <Route exact path='/project/new' component={CreateProject} />
-            <Route exact path='/publishers' component={PublishersViewer} />
-            <Route path='/publishers/:publisherId' component={PublisherDetails} />
-            {staticPageRegister.map(item => <Route path={`/page/:id`} key={item.path} component={item.component} />)}
-          </Switch>
+            {this.renderBody()}
           </div>
           <footer className='footer clearfix'>
             <div className='container'>

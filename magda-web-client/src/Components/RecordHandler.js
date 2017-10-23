@@ -72,7 +72,8 @@ class RecordHandler extends React.Component {
        const tabList = [
          {id: 'details', name: 'Details', isActive: true},
          {id: 'preview', name: 'Preview', isActive: true}
-       ]
+       ];
+       const baseUrl = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}/distribution/${distributionIdAsUrl}`
       return (
         <div>
           <div className='container'>
@@ -88,13 +89,15 @@ class RecordHandler extends React.Component {
                 </div>
               </div>
             </div>
-            <Switch>
-              <Route exact path='/' component={DistributionDetails} />
-              <Route exact path='/details' component={DistributionDetails} />
-              <Route exact path='/preview' component={DistributionPreview} />
-            </Switch>
-            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.match.params.datasetId)}/distribution/${distributionIdAsUrl}`}/>
-            <div className='tab-content'>{this.props.children}</div>
+
+            <Tabs list={tabList} baseUrl={baseUrl}/>
+            <div className='tab-content'>
+              <Switch>
+                <Route exact path={`${baseUrl}/details`} component={DistributionDetails} />
+                <Route exact path={`${baseUrl}/preview`} component={DistributionPreview} />
+                <Route exact path={`${baseUrl}`} component={DistributionDetails} />
+              </Switch>
+            </div>
             </div>
       )
     } else if(this.props.match.params.datasetId && !this.props.datasetIsFetching){
@@ -106,9 +109,10 @@ class RecordHandler extends React.Component {
         {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
         {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
       ];
+
+      const baseUrl = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`;
       return (
         <div>
-
             <div className='container media'>
               {this.renderBreadCrumbs(this.props.dataset)}
               <div className='media-left'>
@@ -120,14 +124,16 @@ class RecordHandler extends React.Component {
                   <div className='updated-date'>Updated {this.props.dataset.updatedDate}</div>
               </div>
             </div>
-            <Switch>
-              <Route exact path='/' component={DatasetDetails} />
-              <Route exact path='/details' component={DatasetDetails} />
-              <Route exact path='/discussion' component={DatasetDiscussion} />
-              <Route exact path='/publisher' component={DatasetPublisher} />
-            </Switch>
-            <Tabs list={datasetTabs} baseUrl={`/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`}/>
-            <div className='tab-content'>{this.props.children}</div>
+
+            <Tabs list={datasetTabs} baseUrl={baseUrl}/>
+            <div className='tab-content'>
+              <Switch>
+                <Route exact path={baseUrl} component={DatasetDetails} />
+                <Route path={`${baseUrl}/details`} component={DatasetDetails} />
+                <Route path={`${baseUrl}/discussion`} component={DatasetDiscussion} />
+                <Route path={`${baseUrl}/publisher`} component={DatasetPublisher} />
+              </Switch>
+            </div>
         </div>
       );
     }
