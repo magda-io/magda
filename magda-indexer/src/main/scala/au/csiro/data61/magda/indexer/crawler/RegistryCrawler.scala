@@ -43,7 +43,7 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
 
     val interfaceSource = streamForInterface()
 
-    val crawlFuture = indexer.index(interfaceSource)
+    indexer.index(interfaceSource)
       .flatMap { result =>
         log.info("Indexed {} datasets with {} failures", result.successes, result.failures.length)
 
@@ -62,12 +62,10 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
           log.error(e, "Failed while indexing {}")
           SearchIndexer.IndexResult(0, Seq())
       }
-
-    crawlFuture.map(result => (result.successes, result.failures.length))
+      .map(result => (result.successes, result.failures.length))
       .map {
         case (successCount, failureCount) =>
           if (successCount > 0) {
-            log.info("Indexed {} datasets with {} failures", successCount, failureCount)
             if (config.getBoolean("indexer.makeSnapshots")) {
               log.info("Snapshotting...")
               indexer.snapshot()

@@ -8,6 +8,9 @@ import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.Registry.{ WebHook, EventType, WebHookConfig }
 import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.model.Registry.RegistryConstants
+import akka.event.LoggingAdapter
+import akka.event.LoggingAdapter
+import akka.event.Logging
 
 object RegisterWebhook {
   sealed trait InitResult
@@ -20,12 +23,26 @@ object RegisterWebhook {
     executor: ExecutionContext,
     materializer: Materializer): Future[InitResult] = {
 
+    val logger = Logging(system, getClass)
+
+    logger.info("Looking up existing webhook with id {}", config.getString("registry.webhookId"))
     interface.getWebhook(config.getString("registry.webhookId")).flatMap {
       case Some(existingHook) =>
+        logger.info("Hook already exists, attempting to resume")
         interface.resumeWebhook(config.getString("registry.webhookId"))
-        Future(ShouldNotCrawl)
-      case None => registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects).map(_ => ShouldCrawl)
+          .map { _ =>
+            logger.info("Successfully resumed webhook")
 
+            ShouldNotCrawl
+          }
+      case None =>
+        logger.info("No hook exists, registering a new one")
+        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+          .map { _ =>
+            logger.info("Successfully registered new webhook")
+            
+            ShouldCrawl
+          }
     }
   }
 
