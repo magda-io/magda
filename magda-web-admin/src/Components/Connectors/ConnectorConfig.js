@@ -29,7 +29,6 @@ class ConnectorConfig extends Component {
       return import('react-json-tree').then(module => module.default)
   }
 
-
   componentWillMount() {
     this.props.fetchConnectorConfigIfNeeded(this.props.match.params.connectorId);
     this.props.fetchDatasetFromConnector(this.props.match.params.connectorId, this.props.match.params.datasetId);
