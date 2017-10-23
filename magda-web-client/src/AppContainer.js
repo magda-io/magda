@@ -10,38 +10,34 @@ import { bindActionCreators } from 'redux';
 import SearchBox from './Components/Search/SearchBox';
 import AccountNavbar from './Components/Account/AccountNavbar';
 import d61logo from './data61-logo.png';
-import DatasetDetails from "./Components/Dataset/DatasetDetails";
-import DatasetDiscussion from "./Components/Dataset/DatasetDiscussion";
-import DatasetPublisher from "./Components/Dataset/DatasetPublisher";
 
-import ProjectsViewer from "./Components/Project/ProjectsViewer";
-import ProjectDetails from "./Components/Project/ProjectDetails";
-import CreateProject from "./Components/Project/CreateProject";
 
-import PublishersViewer from "./Components/Publisher/PublishersViewer";
-import PublisherDetails from "./Components/Publisher/PublisherDetails";
+import ProjectsViewer from './Components/Project/ProjectsViewer';
+import ProjectDetails from './Components/Project/ProjectDetails';
+import CreateProject from './Components/Project/CreateProject';
 
-import DistributionDetails from "./Components/Dataset/DistributionDetails";
-import DistributionPreview from "./Components/Dataset/DistributionPreview";
+import PublishersViewer from './Components/Publisher/PublishersViewer';
+import PublisherDetails from './Components/Publisher/PublisherDetails';
 
-import Home from "./Components/Home";
-import Search from "./Components/Search/Search";
-import RecordHandler from "./Components/RecordHandler";
-import { staticPageRegister } from "./content/register";
 
-import Feedback from "./Components/Feedback";
-import Contact from "./Components/Contact";
-import Account from "./Components/Account/Account";
-import signInRedirect from "./Components/Account/SignInRedirect";
-import { requestWhoAmI } from "./actions/userManagementActions";
+
+import Home from './Components/Home';
+import Search from './Components/Search/Search';
+import RecordHandler from './Components/RecordHandler';
+import { staticPageRegister } from './content/register';
+
+import Feedback from './Components/Feedback';
+import Contact from './Components/Contact';
+import Account from './Components/Account/Account';
+import signInRedirect from './Components/Account/SignInRedirect';
+import { requestWhoAmI } from './actions/userManagementActions';
 
 import {
-  BrowserRouter,
   Route,
   Link,
   Redirect,
   Switch
-} from "react-router-dom";
+} from 'react-router-dom';
 
 import { ExtraSmall, Small } from './UI/Responsive';
 import './AppContainer.css';
@@ -66,7 +62,7 @@ class AppContainer extends React.Component {
     if (!regex.test(link[1])) {
       return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
     }
-    return <a target='_blank' rel="noopener noreferrer" href={link[1]}>{link[0]}</a>;
+    return <a target='_blank' rel='noopener noreferrer' href={link[1]}>{link[0]}</a>;
   }
 
   toggleMenu() {
@@ -172,12 +168,18 @@ class AppContainer extends React.Component {
           <div id='content' className='clearfix'>
           <Switch>
             <Route exact path='/' component={Home} />
-            <Route exact path="/search" component={Search} />
-            <Route exact path="/feedback" component={Feedback} />
-            <Route exact path="/contact" component={Contact} />
-            <Route exact path="/account" component={Account} />
-            <Route exact path="/sign-in-redirect" onEnter={signInRedirect} />
-            {staticPageRegister.map(item => <Route path={`page/:id`} key={item.path} component={item.component} />)}
+            <Route exact path='/search' component={Search} />
+            <Route exact path='/feedback' component={Feedback} />
+            <Route exact path='/contact' component={Contact} />
+            <Route exact path='/account' component={Account} />
+            <Route exact path='/sign-in-redirect' onEnter={signInRedirect} />
+            <Route exact path='/dataset/:datasetId' component={RecordHandler}/>
+            <Route exact path='/projects' component={ProjectsViewer} />
+            <Route path='/projects/:projectId' component={ProjectDetails} />
+            <Route exact path='/project/new' component={CreateProject} />
+            <Route exact path='/publishers' component={PublishersViewer} />
+            <Route path='/publishers/:publisherId' component={PublisherDetails} />
+            {staticPageRegister.map(item => <Route path={`/page/:id`} key={item.path} component={item.component} />)}
           </Switch>
           </div>
           <footer className='footer clearfix'>

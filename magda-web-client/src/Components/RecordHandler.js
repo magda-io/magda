@@ -6,11 +6,21 @@ import { bindActionCreators } from 'redux';
 import { fetchDatasetFromRegistry, fetchDistributionFromRegistry } from '../actions/recordActions';
 import Tabs from '../UI/Tabs';
 import {config} from '../config';
-import { Link } from 'react-router-dom';
-import ErrorHandler from '../Components/ErrorHandler';
+import ErrorHandler from './ErrorHandler';
 import CustomIcons from '../UI/CustomIcons';
 import type {StateRecord } from '../types';
 import type { ParsedDataset, ParsedDistribution } from '../helpers/record';
+import {
+  Route,
+  Link,
+  Redirect,
+  Switch
+} from 'react-router-dom';
+import DatasetDetails from './Dataset/DatasetDetails';
+import DatasetDiscussion from './Dataset/DatasetDiscussion';
+import DatasetPublisher from './Dataset/DatasetPublisher';
+import DistributionDetails from './Dataset/DistributionDetails';
+import DistributionPreview from './Dataset/DistributionPreview';
 
 class RecordHandler extends React.Component {
   props: {
@@ -78,6 +88,11 @@ class RecordHandler extends React.Component {
                 </div>
               </div>
             </div>
+            <Switch>
+              <Route exact path='/' component={DistributionDetails} />
+              <Route exact path='/details' component={DistributionDetails} />
+              <Route exact path='/preview' component={DistributionPreview} />
+            </Switch>
             <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.match.params.datasetId)}/distribution/${distributionIdAsUrl}`}/>
             <div className='tab-content'>{this.props.children}</div>
             </div>
@@ -105,6 +120,12 @@ class RecordHandler extends React.Component {
                   <div className='updated-date'>Updated {this.props.dataset.updatedDate}</div>
               </div>
             </div>
+            <Switch>
+              <Route exact path='/' component={DatasetDetails} />
+              <Route exact path='/details' component={DatasetDetails} />
+              <Route exact path='/discussion' component={DatasetDiscussion} />
+              <Route exact path='/publisher' component={DatasetPublisher} />
+            </Switch>
             <Tabs list={datasetTabs} baseUrl={`/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`}/>
             <div className='tab-content'>{this.props.children}</div>
         </div>
