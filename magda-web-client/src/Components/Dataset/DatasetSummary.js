@@ -86,7 +86,7 @@ export default class DatasetSummary extends Component {
                 <div className='dataset-summary__body'>
 
                   <div className='dataset-summary__dataset-description' onClick={this.props.onClickDataset}>
-                    <MarkdownViewer markdown={this.props.isExpanded ? dataset.description : dataset.description.slice(0, 100) + '...'}/>
+                    <MarkdownViewer markdown={dataset.description}/>
                   </div>
 
                   {source && <span className='dataset-summary-source'>Source: {source}</span>}
