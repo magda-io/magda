@@ -46,7 +46,7 @@ indexer:
       memory: 0
     limits:
       cpu: 200m
-      memory: 500Mi
+      memory: 1000Mi
 preview-map:
   resources:
     requests:
