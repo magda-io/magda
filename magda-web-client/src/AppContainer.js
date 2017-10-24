@@ -10,7 +10,6 @@ import { bindActionCreators } from 'redux';
 import SearchBox from './Components/Search/SearchBox';
 import AccountNavbar from './Components/Account/AccountNavbar';
 import d61logo from './data61-logo.png';
-import defined from '../helpers/defined';
 
 
 import ProjectsViewer from './Components/Project/ProjectsViewer';
@@ -96,10 +95,9 @@ class AppContainer extends React.Component {
   render() {
     const headerNavs: Array<Array<string>> = config.headerNavigation;
     const footerNavs: Array<Object> = config.footerNavigation;
-    const wrapperClass = defined(this.props.params.datasetpreviewjson) ? 'preview' : 'normal';
     return (
       <ReactDocumentTitle title={config.appName}>
-        <div className={wrapperClass}>
+        <div>
           <nav className='appContainer__nav'>
             <div className='container'>
               <div className='row'>

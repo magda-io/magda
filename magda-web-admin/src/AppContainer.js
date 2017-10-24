@@ -34,10 +34,10 @@ class AppContainer extends React.Component {
           <Switch>
               <Route exact path="/account" component={Account}/>
               <Route exact path="/sign-in-redirect" component={SignInRedirect} />
+              <Route exact path="/" component={Account}/>
               <Route path="/connectors/:connectorId/:datasetId" component={ConnectorConfig} />
               <Route path="/connectors/:connectorId" component={SelectDataset}/>
               <Route exact path="/connectors" component={Connectors}/>
-              <Route exact path="/" component={Account}/>
           </Switch>
         </main>
       </div>

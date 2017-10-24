@@ -1,4 +1,5 @@
 @import './variables';
+
 .appContainer__nav{
     background: $magda-grey;
 }
@@ -53,6 +54,8 @@
         padding: 15px 0;
     }
 }
+
+
 .navbar-account.navbar-nav{
         &>li{
             &>a{

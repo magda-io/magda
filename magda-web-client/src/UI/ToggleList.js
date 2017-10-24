@@ -17,7 +17,7 @@ class ToggleList extends Component {
 
     render(){
       let defaultLength = this.props.defaultLength;
-      let list = this.props.list || [];
+      let list = this.props.list;
       let tempSize = defaultLength > list.length ? list.length : defaultLength;
       let size = this.state.isExpanded ? list.length : tempSize;
       return <ul className={`list-unstyled toggle-list ${this.props.className}`}>
