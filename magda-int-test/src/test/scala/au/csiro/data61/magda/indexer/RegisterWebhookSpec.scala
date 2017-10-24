@@ -23,10 +23,12 @@ import java.net.URL
 import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import scala.concurrent.Future
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import spray.json._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.marshalling.ToResponseMarshallable
 
-class RegisterWebhookSpec extends BaseRegistryApiSpec {
+class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
   implicit val config = TestActorSystem.config
 
   describe("on startup") {
@@ -99,7 +101,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
 
           val responseObj = new WebHookAcknowledgementResponse(lastEventIdReceived = 1)
 
-          Future(response)
+          ToResponseMarshallable(responseObj).apply(Post(url, webhookAck)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers)))
         })
 
       // Start the test
@@ -110,7 +112,6 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec {
       initResult should be(RegisterWebhook.ShouldNotCrawl)
     }
 
-    
     def expectWebHookGet(param: FixtureParam) {
       expectAdminCheck(param.fetcher, true)
       (param.fetcher.get(_: String, _: Seq[HttpHeader])).expects(*, *).onCall((url: String, headers: Seq[HttpHeader]) => {
