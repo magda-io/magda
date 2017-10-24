@@ -9,6 +9,7 @@ import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
 import AppContainer from "./AppContainer";
+import {Route} from "react-router-dom";
 
 
 
@@ -30,7 +31,7 @@ const store: Store = createStore(
 ReactDOM.render(
   <Provider store={store}>
     <BrowserRouter basename='/admin'>
-      <AppContainer/>
+      <Route path="/" component={AppContainer}/>
     </BrowserRouter>
   </Provider>,
   document.getElementById("root")
