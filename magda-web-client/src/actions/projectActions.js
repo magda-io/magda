@@ -6,7 +6,7 @@ import {actionTypes} from '../constants/ActionTypes';
 import {validateProjectName, validateProjectDescription} from '../helpers/project';
 import type {ProjectAction, RawProject, RawProjects, ProjectProps} from '../helpers/project';
 import type { Dispatch, GetState } from '../types';
-import {browserHistory} from 'react-router';
+// import {browserHistory} from 'react-router-dom';
 
 export function requestProjects():ProjectAction {
   return {
@@ -168,9 +168,9 @@ export function postNewProject(props: ProjectProps){
         return false;
       }
       // should change into browserHistory?
-      browserHistory.push(`/projects/${encodeURIComponent(props.id)}`);
-      dispatch(createProjectSuccess(result, true))
-      setTimeout(function(){ dispatch(createProjectSuccess(result, false))}, 5000);
+      // browserHistory.push(`/projects/${encodeURIComponent(props.id)}`);
+      // dispatch(createProjectSuccess(result, true))
+      // setTimeout(function(){ dispatch(createProjectSuccess(result, false))}, 5000);
     });
 
   }

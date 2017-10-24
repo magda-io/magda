@@ -5,31 +5,17 @@ import'es6-shim';
 import createLogger from "redux-logger";
 import "./index.css";
 import {
-  Router,
+  BrowserRouter,
   Route,
-  IndexRoute,
-  IndexRedirect,
-  browserHistory,
-  Redirect
-} from "react-router";
+} from "react-router-dom";
 
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
-import Home from "./Components/Home";
-import Search from "./Search/Search";
-import RecordHandler from "./Components/RecordHandler";
-import AppContainer from "./Components/AppContainer";
-
-import Feedback from "./Components/Feedback";
-import Contact from "./Components/Contact";
-import Account from "./Components/Account/Account";
-import Connectors from "./Components/Admin/Connectors";
-import signInRedirect from "./Components/Account/SignInRedirect";
-
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
+<<<<<<< HEAD
 import { staticPageRegister } from "./content/register";
 import DatasetDetails from "./Dataset/DatasetDetails";
 import DatasetSummary from "./Dataset/DatasetSummary";
@@ -50,6 +36,9 @@ import { requestWhoAmI } from "./actions/userManagementActions";
 
 
 
+=======
+import AppContainer from "./AppContainer";
+>>>>>>> react-router-4
 
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
@@ -62,23 +51,19 @@ const store: Store = createStore(
   )
 );
 
-const recordNewRoute = location => {
-  window.ga("set", "location", document.location);
-  window.ga("send", "pageview");
-  browserHistory.lastLocation = browserHistory.currentLocation;
-  browserHistory.currentLocation = location;
-};
-recordNewRoute(browserHistory.getCurrentLocation());
-browserHistory.listen(recordNewRoute);
+// const recordNewRoute = location => {
+//   window.ga("set", "location", document.location);
+//   window.ga("send", "pageview");
+//   browserHistory.lastLocation = browserHistory.currentLocation;
+//   browserHistory.currentLocation = location;
+// };
+// recordNewRoute(browserHistory.getCurrentLocation());
+// browserHistory.listen(recordNewRoute);
 
-function loadDefaultData(store) {
-  store.dispatch(requestWhoAmI());
-}
-
-// If you add a new top-level route below, you must also add it to src/index.ts in magda-web-server!
 
 ReactDOM.render(
   <Provider store={store}>
+<<<<<<< HEAD
     <Router history={browserHistory}>
       <Route path="/" component={AppContainer} onEnter={loadDefaultData(store)}>
         <IndexRoute component={Home} />
@@ -115,6 +100,11 @@ ReactDOM.render(
 
       </Route>
     </Router>
+=======
+    <BrowserRouter>
+        <Route path="/" component={AppContainer}/>
+    </BrowserRouter>
+>>>>>>> react-router-4
   </Provider>,
   document.getElementById("root")
 );
