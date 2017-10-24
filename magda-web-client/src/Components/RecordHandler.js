@@ -53,7 +53,7 @@ class RecordHandler extends React.Component {
   renderBreadCrumbs(dataset: ParsedDataset, distribution? :ParsedDistribution){
     return (
     <ul className='breadcrumb'>
-      <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
+      <li className='breadcrumb-item'><Link to='/'>Home</Link></li>
       <li className='breadcrumb-item'>{distribution ? <Link to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>{dataset.title}</Link>:dataset.title}</li>
       {distribution && <li className='breadcrumb-item'>{distribution.title}</li>}
     </ul>)
