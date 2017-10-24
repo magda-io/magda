@@ -78,6 +78,7 @@ class AppContainer extends React.Component {
       <Route exact path='/contact' component={Contact} />
       <Route exact path='/account' component={Account} />
       <Route exact path='/sign-in-redirect' onEnter={signInRedirect} />
+      <Route path='/dataset/:datasetId/distribution/:distributionId' component={RecordHandler}/>
       <Route path='/dataset/:datasetId' component={RecordHandler}/>
       <Route exact path='/projects' component={ProjectsViewer} />
       <Route path='/projects/:projectId' component={ProjectDetails} />

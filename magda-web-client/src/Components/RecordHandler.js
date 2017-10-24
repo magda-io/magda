@@ -60,6 +60,7 @@ class RecordHandler extends React.Component {
   }
 
   renderByState(){
+    debugger
     const publisherName = this.props.dataset.publisher.name;
     const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
     const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
@@ -92,9 +93,9 @@ class RecordHandler extends React.Component {
             <Tabs list={tabList} baseUrl={baseUrl}/>
             <div className='tab-content'>
               <Switch>
-                <Route path={`${baseUrl}/details`} component={DistributionDetails} />
-                <Route path={`${baseUrl}/preview`} component={DistributionPreview} />
-                <Route path={`${baseUrl}`} component={DistributionDetails} />
+                <Route path='/dataset/:datasetId/distribution/:distributionId/details' component={DistributionDetails} />
+                <Route path='/dataset/:datasetId/distribution/:distributionId/preview' component={DistributionPreview} />
+                <Route path='/dataset/:datasetId/distribution/:distributionId/' component={DistributionDetails} />
               </Switch>
             </div>
             </div>
@@ -110,6 +111,7 @@ class RecordHandler extends React.Component {
       ];
 
       const baseUrl = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`;
+
       return (
         <div>
             <div className='container media'>
@@ -127,10 +129,10 @@ class RecordHandler extends React.Component {
             <Tabs list={datasetTabs} baseUrl={baseUrl}/>
             <div className='tab-content'>
               <Switch>
-                <Route path={baseUrl} component={DatasetDetails} />
-                <Route path={`${baseUrl}/details`} component={DatasetDetails} />
-                <Route path={`${baseUrl}/discussion`} component={DatasetDiscussion} />
-                <Route path={`${baseUrl}/publisher`} component={DatasetPublisher} />
+                <Route path='/dataset/:datasetId/details' component={DatasetDetails} />
+                <Route path='/dataset/:datasetId/discussion' component={DatasetDiscussion} />
+                <Route path='/dataset/:datasetId/publisher' component={DatasetPublisher} />
+                <Route path='/dataset/:datasetId/' component={DatasetDetails} />
               </Switch>
             </div>
         </div>
@@ -141,6 +143,7 @@ class RecordHandler extends React.Component {
 
   render() {
     const title = this.props.match.params.distributionId ? this.props.distribution.title : this.props.dataset.title;
+    console.log(this.props.match);
     return (
       <ReactDocumentTitle title={title + '|' + config.appName}>
         <div>
