@@ -17,6 +17,7 @@ class Account extends React.Component {
     };
   }
 
+
   componentDidMount() {
     this.props.requestAuthProviders();
   }
@@ -68,7 +69,7 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
   return bindActionCreators(
     {
       requestAuthProviders,
-      requestSignOut
+      requestSignOut,
     },
     dispatch
   );

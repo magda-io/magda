@@ -183,14 +183,12 @@ function mapStateToProps(state, ownProps) {
   const isFetching = state.connectors.isFetching;
   const error = state.connectors.error;
   const location = ownProps.location;
-  const user = state.userManagement.user;
   const dataset = state.connectors.dataset;
   return {
     connectorConfig,
     isFetching,
     location,
     error,
-    user,
     dataset
   };
 }

@@ -2,7 +2,6 @@ import parseQueryString from "../../helpers/parseQueryString";
 import React from "react";
 import {
   Redirect,
-  withRouter
 } from 'react-router-dom'
 
 

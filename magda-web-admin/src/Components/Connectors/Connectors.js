@@ -139,7 +139,6 @@ class Connectors extends React.Component {
 function mapStateToProps(state) {
   let { userManagement: { user }} = state;
   let { connectors: { connectors, isFetching, error }} = state;
-
   return {
     user,
     connectors,
