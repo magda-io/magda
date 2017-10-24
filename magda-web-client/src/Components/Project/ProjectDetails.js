@@ -50,7 +50,7 @@ class ProjectDetails extends Component {
                   {this.props.project.description}
                 </div>
                 <h3 className='section-heading'> Discussion </h3>
-                <CrappyChat typeName="project" typeId={this.props.project.id} />
+                <CrappyChat typeName="project" typeId={this.props.project.id} location={this.props.location}/>
                 {this.renderToggleButton()}
               </div>
               <div className="col-sm-4">

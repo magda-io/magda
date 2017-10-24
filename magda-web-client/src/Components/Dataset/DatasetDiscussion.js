@@ -11,6 +11,7 @@ export default function DatasetDiscussion(props) {
           <CrappyChat
             typeName='dataset'
             typeId={props.match.params.datasetId}
+            location={props.location}
           />
         </div>
       </div>

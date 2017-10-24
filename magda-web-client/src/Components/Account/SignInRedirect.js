@@ -6,10 +6,10 @@ import {
 
 
 export default function signInRedirect(props) {
-  const params = qs.parse(window.location.search);
+  const params = qs.parse(window.location.search, { ignoreQueryPrefix: true });
   if (params.result === "success") {
     return (
-        <Redirect to={params.redirectTo || "/"}/>
+        <Redirect to={params.redirectTo || "/account"}/>
       )
   }
   return <Redirect to={{

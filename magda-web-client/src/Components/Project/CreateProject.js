@@ -147,11 +147,7 @@ class CreateProject extends Component {
      if(this.props.user){
        return this.renderCreateProject();
      }
-     return <ReactDocumentTitle title={'New project | ' + config.appName}>
-              <div className='container'>
-                <div className='sign-in-prompt'><Link to="/account">Sign in</Link> to create project!</div>
-              </div>
-            </ReactDocumentTitle>
+    return <div className='container'> <Link to={{pathname: '/account', state: { from: this.props.location }}}>Sign in to create project</Link></div>
    }
 }
 

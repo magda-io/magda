@@ -7,15 +7,16 @@ import { config } from "../../config";
 const { baseUrl } = config;
 
 export default function Login(props) {
-  const previousUrl = props.location.state && props.location.state.from ? props.location.state.from: '/';
+  const previousUrl = props.location.state && props.location.state.from.pathname ? props.location.state.from.pathname: '/account';
   const baseRedirectUrl = `${window.location.protocol}//${window.location
-    .host}/admin`;
+    .host}`;
   const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${previousUrl}`;
 
   const makeLoginUrl = type =>
     `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
       oauthRedirect
     )}`;
+  
   return (
     <div className="row login__row">
       {props.signInError &&

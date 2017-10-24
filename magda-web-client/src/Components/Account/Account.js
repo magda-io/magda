@@ -30,6 +30,7 @@ class Account extends React.Component {
               this.props.location.state && this.props.location.state.signInError
             }
             providers={this.props.providers}
+            location={this.props.location}
           />}
         {this.props.user &&
           <div>

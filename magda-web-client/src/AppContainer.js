@@ -29,7 +29,8 @@ import { staticPageRegister } from './content/register';
 import Feedback from './Components/Feedback';
 import Contact from './Components/Contact';
 import Account from './Components/Account/Account';
-import signInRedirect from './Components/Account/SignInRedirect';
+import Login from './Components/Account/Login';
+import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
 
 import {
@@ -77,7 +78,8 @@ class AppContainer extends React.Component {
       <Route exact path='/feedback' component={Feedback} />
       <Route exact path='/contact' component={Contact} />
       <Route exact path='/account' component={Account} />
-      <Route exact path='/sign-in-redirect' onEnter={signInRedirect} />
+      <Route exact path='/login' component={Login} />
+      <Route exact path='/sign-in-redirect' component={SignInRedirect} />
       <Route path='/dataset/:datasetId/distribution/:distributionId' component={RecordHandler}/>
       <Route path='/dataset/:datasetId' component={RecordHandler}/>
       <Route exact path='/projects' component={ProjectsViewer} />
