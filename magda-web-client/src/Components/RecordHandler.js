@@ -92,9 +92,9 @@ class RecordHandler extends React.Component {
             <Tabs list={tabList} baseUrl={baseUrl}/>
             <div className='tab-content'>
               <Switch>
-                <Route exact path={`${baseUrl}/details`} component={DistributionDetails} />
-                <Route exact path={`${baseUrl}/preview`} component={DistributionPreview} />
-                <Route exact path={`${baseUrl}`} component={DistributionDetails} />
+                <Route path={`${baseUrl}/details`} component={DistributionDetails} />
+                <Route path={`${baseUrl}/preview`} component={DistributionPreview} />
+                <Route path={`${baseUrl}`} component={DistributionDetails} />
               </Switch>
             </div>
             </div>
@@ -127,7 +127,7 @@ class RecordHandler extends React.Component {
             <Tabs list={datasetTabs} baseUrl={baseUrl}/>
             <div className='tab-content'>
               <Switch>
-                <Route exact path={baseUrl} component={DatasetDetails} />
+                <Route path={baseUrl} component={DatasetDetails} />
                 <Route path={`${baseUrl}/details`} component={DatasetDetails} />
                 <Route path={`${baseUrl}/discussion`} component={DatasetDiscussion} />
                 <Route path={`${baseUrl}/publisher`} component={DatasetPublisher} />
