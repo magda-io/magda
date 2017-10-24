@@ -1,4 +1,4 @@
-FROM quay.io/pires/docker-elasticsearch-kubernetes:5.4.0
+FROM quay.io/pires/docker-elasticsearch-kubernetes:5.4.3
 
 VOLUME /snapshots
 	
