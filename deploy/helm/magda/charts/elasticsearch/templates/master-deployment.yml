@@ -68,6 +68,7 @@ spec:
           value: "false"
         - name: "ES_PLUGINS_INSTALL"
           value: {{ .Values.client.pluginsInstall | quote }}
+        {{- template "magda.elasticSearchXpackEnv" . }}
         ports:
         - containerPort: 9300
           name: transport
