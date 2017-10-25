@@ -2,6 +2,7 @@ import * as express from "express";
 import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
+import buildSitemapRouter from "./buildSitemapRouter";
 
 const argv = yargs
     .config()
@@ -143,6 +144,11 @@ topLevelRoutes.forEach(topLevelRoute => {
         res.sendFile(path.join(clientBuild, "index.html"));
     });
 });
+
+app.use(
+    "/sitemap",
+    buildSitemapRouter("http://example.com", argv.registryApiBaseUrl)
+);
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
