@@ -53,7 +53,7 @@ class WebHookProcessorSpec extends ApiSpec {
     }
   }
 
-  it("does not include records for events modifying aspects that were not requested") { param =>
+  it("includes records only for events modifying aspects that were requested") { param =>
     val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
     testWebHook(param, Some(webHook)) { payloads =>
       val a = AspectDefinition("A", "A", Some(JsObject()))

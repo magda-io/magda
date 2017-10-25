@@ -62,20 +62,25 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                                    optionalAspectIds: Iterable[String] = Seq(),
                                    dereference: Option[Boolean] = None): RecordsPage = {
     val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
-    val dereferenceSelectors = linkAspects.map {
-      case (aspectId, propertyWithLink) =>
-        Some(sqls"""exists (select 1
-                            from RecordAspects
-                            where RecordAspects.recordId=Records.recordId
-                            and aspectId=$aspectId
-                            and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])""")
+    if (linkAspects.isEmpty) {
+      // There are no linking aspects, so there cannot be any records linking to these IDs.
+      RecordsPage(0, None, List())
+    } else {
+      val dereferenceSelectors = linkAspects.map {
+        case (aspectId, propertyWithLink) =>
+          Some(sqls"""exists (select 1
+                              from RecordAspects
+                              where RecordAspects.recordId=Records.recordId
+                              and aspectId=$aspectId
+                              and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])""")
+      }
+
+      val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
+
+      val selectors = dereferenceSelectors ++ Seq(excludeSelector)
+
+      this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
     }
-
-    val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
-
-    val selectors = dereferenceSelectors ++ Seq(excludeSelector)
-
-    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
   }
 
   def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
