@@ -9,6 +9,8 @@ import {
   Route,
 } from "react-router-dom";
 
+import createHistory from 'history/createBrowserHistory'
+
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -28,15 +30,12 @@ const store: Store = createStore(
   )
 );
 
-// const recordNewRoute = location => {
-//   window.ga("set", "location", document.location);
-//   window.ga("send", "pageview");
-//   browserHistory.lastLocation = browserHistory.currentLocation;
-//   browserHistory.currentLocation = location;
-// };
-// recordNewRoute(browserHistory.getCurrentLocation());
-// browserHistory.listen(recordNewRoute);
-
+// NEED TO TEST THIS
+const history = createHistory()
+history.listen((location) => {
+    window.ga("set", "location", document.location);
+    window.ga("send", "pageview");
+});
 
 ReactDOM.render(
   <Provider store={store}>
