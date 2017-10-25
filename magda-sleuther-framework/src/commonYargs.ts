@@ -17,7 +17,7 @@ export default function commonYargs(
         .option("listenPort", {
             describe: "The TCP/IP port on which the gateway should listen.",
             type: "number",
-            default: defaultPort
+            default: process.env.NODE_PORT || defaultPort
         })
         .option("internalUrl", {
             describe: "The base external URL of the gateway.",

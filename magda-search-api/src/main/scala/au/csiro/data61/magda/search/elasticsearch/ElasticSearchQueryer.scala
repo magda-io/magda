@@ -56,7 +56,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val clientProvider: ClientProvider) extends SearchQueryer {
   private val logger = system.log
 
-  lazy val clientFuture: Future[TcpClient] = clientProvider.getClient(system.scheduler, logger, ec)
+  val clientFuture: Future[TcpClient] = clientProvider.getClient(system.scheduler, logger, ec).recover {
+    case t: Throwable =>
+      logger.error(t, "Could not connect to elasticsearch - this is a fatal error, so I'm dying now.")
+      System.exit(1)
+      throw t
+  }
 
   val ESCAPE_REGEX = "([\\+\\-=!\\(\\)\\{\\}\\[\\]\\^\"~\\?:/\\\\]|&&|\\|\\|)".r
   val REMOVE_REGEX = "(?i)((^|\\s)(AND|OR)(\\s|$)|[<>])".r
