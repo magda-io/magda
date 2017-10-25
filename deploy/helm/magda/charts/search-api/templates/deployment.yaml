@@ -22,6 +22,14 @@ spec:
             "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300"
         ]
+        {{- if not .Values.global.noDbAuth }}
+        env:
+        - name: ELASTIC_SEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: elasticsearch
+        {{- end }}
         ports:
         - containerPort: 80
         resources:
