@@ -44,7 +44,7 @@ const uuidArb: jsc.Arbitrary<string> = jsc.bless({
 export const recordArb = jsc.record<Record>({
     id: uuidArb, //lcAlphaNumStringArb,
     name: stringArb,
-    aspects: jsc.array(jsc.json)
+    aspects: jsc.suchthat(jsc.array(jsc.json), arr => arr.length <= 10)
 });
 
 export const specificRecordArb = (aspectArbs: {
@@ -216,8 +216,8 @@ export const distUrlArb = (
                     : ":" + urlParts.port;
 
             return `${urlParts.scheme}://${urlParts.host}.com${port}/${(urlParts.path ||
-                [])
-                .join("/")}` as string;
+                []
+            ).join("/")}` as string;
         },
         (url: string) => {
             const splitAfterScheme = url.split("://");
