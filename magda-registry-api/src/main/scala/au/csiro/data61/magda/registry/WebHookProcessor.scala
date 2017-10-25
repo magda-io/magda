@@ -35,17 +35,38 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
     val recordChangeEvents = events.filter(event => event.eventType.isRecordEvent || event.eventType.isRecordAspectEvent)
     val aspectDefinitionChangeEvents = events.filter(event => event.eventType.isAspectDefinitionEvent)
 
-    val recordIds = recordChangeEvents.map(_.data.fields("recordId").asInstanceOf[JsString].value).toSet
     val aspectDefinitionIds = aspectDefinitionChangeEvents.map(_.data.fields("aspectId").asInstanceOf[JsString].value)
 
     // If we're including records, get a complete record with aspects for each record ID
     val records = webHook.config.includeRecords match {
       case Some(false) | None => None
       case Some(true) => DB readOnly { implicit session =>
+        // We're going to include two types of records in the payload:
+        // 1. Records that are directly referenced by one of the events.
+        // 2. Records that _link_ to a record referenced by one of the events.
+        //
+        // For #1, we should ignore record aspect create/change/delete events that the
+        // web hook didn't request.  i.e. only consider aspects in the web hook's
+        // 'aspects' and 'optionalAspects' lists.  These are "direct" events/records
+        // in the code below.
+        //
+        // For #2, aspects/optionalAspects don't control what is returned
+
+        val directRecordChangeEvents = recordChangeEvents.filter { event =>
+          if (!event.eventType.isRecordAspectEvent)
+            true
+          else {
+            val aspectId = event.data.fields("aspectId").asInstanceOf[JsString].value
+            webHook.config.aspects.getOrElse(List()).contains(aspectId) || webHook.config.optionalAspects.getOrElse(List()).contains(aspectId)
+          }
+        }
+
+        val directRecordIds = directRecordChangeEvents.map(_.data.fields("recordId").asInstanceOf[JsString].value).toSet
+
         // Get records directly modified by these events.
-        val directRecords = if (recordIds.isEmpty) RecordsPage(0, None, List()) else RecordPersistence.getByIdsWithAspects(
+        val directRecords = if (directRecordIds.isEmpty) RecordsPage(0, None, List()) else RecordPersistence.getByIdsWithAspects(
           session,
-          recordIds,
+          directRecordIds,
           webHook.config.aspects.getOrElse(List()),
           webHook.config.optionalAspects.getOrElse(List()),
           webHook.config.dereference)
@@ -54,14 +75,28 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         // changed records from aspects that we're including.
         val recordsFromDereference = webHook.config.dereference match {
           case Some(false) | None => List[Record]()
-          case Some(true) => if (recordIds.isEmpty) List() else RecordPersistence.getRecordsLinkingToRecordIds(
-            session,
-            recordIds,
-            directRecords.records.map(_.id),
-            webHook.config.aspects.getOrElse(List()),
-            webHook.config.optionalAspects.getOrElse(List()),
-            webHook.config.dereference).records
+          case Some(true) => {
+            val allRecordIds = recordChangeEvents.map(_.data.fields("recordId").asInstanceOf[JsString].value).toSet
+            if (allRecordIds.isEmpty) {
+              List()
+            }
+            else {
+              RecordPersistence.getRecordsLinkingToRecordIds(
+                session,
+                allRecordIds,
+                directRecords.records.map(_.id),
+                webHook.config.aspects.getOrElse(List()),
+                webHook.config.optionalAspects.getOrElse(List()),
+                webHook.config.dereference).records
+            }
+          }
         }
+
+        // Things to check:
+        // 1. Dereferenced records contain all aspects, not just the ones in aspects and optionalAspects.
+        // 2. No duplicate records
+        // 3. No records that changed only in an aspect that was not requested.
+        // 4. Record included if any dereferenced aspect changed.
 
         Some(directRecords.records ++ recordsFromDereference)
       }
