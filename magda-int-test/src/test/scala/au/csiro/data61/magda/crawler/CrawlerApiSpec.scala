@@ -87,24 +87,17 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
             override def getTotalDataSetCount(): Future[Long] = Future(dataSets.length)
           }
       }
-      val crawler = new RegistryCrawler(externalInterface)
       val indices = new FakeIndices(indexId.toString)
       val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
+      val crawler = new RegistryCrawler(externalInterface, indexer)
       val crawlerApi = new CrawlerApi(crawler, indexer)
       val searchQueryer = new ElasticSearchQueryer(indices)
       val api = new SearchApi(searchQueryer)(config, logger)
 
       val routes = crawlerApi.routes
 
+      crawler.crawl().await(30 seconds)
       indexer.ready.await(30 seconds)
-
-      blockUntil("Reindex is finished") { () =>
-        val reindexCheck = Get("/in-progress") ~> routes ~> runRoute
-
-        val inProgress = reindexCheck.entity.toStrict(30 seconds).await.data.decodeString("UTF-8")
-
-        inProgress == "false"
-      }
 
       // Combine all the datasets but keep what interface they come from
       val allDataSets = filteredSource
