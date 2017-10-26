@@ -92,12 +92,6 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
           }
         }
 
-        // Things to check:
-        // 1. Dereferenced records contain all aspects, not just the ones in aspects and optionalAspects.
-        // 2. No duplicate records
-        // 3. No records that changed only in an aspect that was not requested.
-        // 4. Record included if any dereferenced aspect changed.
-
         Some(directRecords.records ++ recordsFromDereference)
       }
     }

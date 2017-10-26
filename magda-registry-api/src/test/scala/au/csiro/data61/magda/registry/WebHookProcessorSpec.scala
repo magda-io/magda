@@ -372,6 +372,73 @@ class WebHookProcessorSpec extends ApiSpec {
         payloads(0).records.get(0).id shouldBe ("dataset")
       }
     }
+
+    it("includes all aspects of linked records, not just the requested aspects") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
+      testWebHook(param, Some(webHook)) { payloads =>
+        val jsonSchema =
+          """
+            |{
+            |    "$schema": "http://json-schema.org/hyper-schema#",
+            |    "title": "An aspect with a single link",
+            |    "type": "object",
+            |    "properties": {
+            |        "someLink": {
+            |            "title": "A link to another record.",
+            |            "type": "string",
+            |            "links": [
+            |                {
+            |                    "href": "/api/v0/registry/records/{$}",
+            |                    "rel": "item"
+            |                }
+            |            ]
+            |        }
+            |    }
+            |}
+          """.stripMargin
+        val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val distribution = Record("distribution", "distribution", Map("B" -> JsObject("foo" -> JsString("bar"))))
+        param.asAdmin(Post("/v0/records", distribution)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution"))))
+        param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result1.statusCode should be(Some(StatusCodes.OK))
+
+        payloads.clear()
+
+        val modifiedDistribution = distribution.copy(name = "new name")
+        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
+        result2.statusCode should be(Some(StatusCodes.OK))
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 1
+        payloads(0).records.get(0).id shouldBe ("dataset")
+
+        val embeddedDistribution = payloads(0).records.get(0).aspects("A").fields("someLink").asJsObject
+        val bAspect = embeddedDistribution.fields("aspects").asJsObject.fields("B").asJsObject
+        bAspect.fields("foo").asInstanceOf[JsString].value shouldBe ("bar")
+      }
+    }
   }
 
   describe("async web hooks") {
