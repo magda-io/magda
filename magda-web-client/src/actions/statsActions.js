@@ -45,7 +45,7 @@ export function fetchDatasetCount(){
           return response.json()
         }
       }).then(result=>{
-          if(!result.error){
+          if(!result || !result.error){
             dispatch(receiveDatasetCount(result.totalCount));
           }
       });
