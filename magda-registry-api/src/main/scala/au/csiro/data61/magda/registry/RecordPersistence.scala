@@ -68,16 +68,16 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     } else {
       val dereferenceSelectors = linkAspects.map {
         case (aspectId, propertyWithLink) =>
-          Some(sqls"""exists (select 1
-                              from RecordAspects
-                              where RecordAspects.recordId=Records.recordId
-                              and aspectId=$aspectId
-                              and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])""")
+          sqls"""exists (select 1
+                         from RecordAspects
+                         where RecordAspects.recordId=Records.recordId
+                         and aspectId=$aspectId
+                         and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])"""
       }
 
       val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
 
-      val selectors = dereferenceSelectors ++ Seq(excludeSelector)
+      val selectors = Seq(Some(SQLSyntax.join(dereferenceSelectors.toSeq, SQLSyntax.or)), excludeSelector)
 
       this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
     }
