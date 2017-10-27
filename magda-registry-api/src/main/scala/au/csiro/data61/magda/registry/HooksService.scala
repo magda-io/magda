@@ -116,7 +116,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     notes = "Acknowledges a previously-deferred web hook with a given ID.  Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to be acknowledged."),
-    new ApiImplicitParam(name = "acknowledgement", required = true, dataType = "au.csiro.data61.magda.registry.WebHookAcknowledgement", paramType = "body", value = "The details of the acknowledgement."),
+    new ApiImplicitParam(name = "acknowledgement", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHookAcknowledgement", paramType = "body", value = "The details of the acknowledgement."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def ack = post {
     path(Segment / "ack") { (id: String) =>
