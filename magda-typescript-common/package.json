@@ -25,6 +25,7 @@
     "@types/supertest": "^2.0.3",
     "@types/urijs": "^1.15.34",
     "@types/uuid": "^3.4.0",
+    "@types/yargs": "^8.0.2",
     "chai": "^4.0.1",
     "jsverify": "^0.8.2",
     "lazy-seq": "^1.0.0",
