@@ -3,33 +3,34 @@ import * as yargs from "yargs";
 
 import createApiRouter from "./createApiRouter";
 import Database from "./Database";
+import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
-const argv = yargs
-    .config()
-    .help()
-    .option("listenPort", {
-        describe:
-            "The TCP/IP port on which the authorization-api should listen.",
-        type: "number",
-        default: 6104
-    })
-    .option("dbHost", {
-        describe: "The host running the auth database.",
-        type: "string",
-        default: "localhost"
-    })
-    .option("dbPort", {
-        describe: "The port running the auth database.",
-        type: "number",
-        default: 5432
-    })
-    .option("jwtSecret", {
-        describe: "The shared secret for intra-network communication",
-        type: "string",
-        demand: true,
-        default:
-            process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
-    }).argv;
+const argv = addJwtSecretFromEnvVar(
+    yargs
+        .config()
+        .help()
+        .option("listenPort", {
+            describe:
+                "The TCP/IP port on which the authorization-api should listen.",
+            type: "number",
+            default: 6104
+        })
+        .option("dbHost", {
+            describe: "The host running the auth database.",
+            type: "string",
+            default: "localhost"
+        })
+        .option("dbPort", {
+            describe: "The port running the auth database.",
+            type: "number",
+            default: 5432
+        })
+        .option("jwtSecret", {
+            describe: "The shared secret for intra-network communication",
+            type: "string"
+        })
+        .argv
+);
 
 // Create a new Express application.
 var app = express();

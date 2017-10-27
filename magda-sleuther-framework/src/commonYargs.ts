@@ -1,17 +1,24 @@
 import * as yargs from "yargs";
 
+import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+
 export type SleutherArguments = yargs.Arguments;
 
-export interface SleutherArgv extends yargs.Argv {
-    argv: SleutherArguments;
-}
-
+/**
+ * Builds an argv object that will accept command line arguments used by all common argv sleuthers.
+ * 
+ * @param id 
+ * @param defaultPort 
+ * @param defaultInternalUrl 
+ * @param additions 
+ */
 export default function commonYargs(
     id: string,
     defaultPort: number,
-    defaultInternalUrl: string
-) {
-    return yargs
+    defaultInternalUrl: string,
+    additions: (a: yargs.Argv) => yargs.Argv = x => x
+): SleutherArguments {
+    const yarr = yargs
         .config()
         .help()
         .option("listenPort", {
@@ -52,5 +59,7 @@ export default function commonYargs(
             describe: "The number of times to retry calling the registry",
             type: "number",
             default: process.env.RETRIES || 10
-        }) as SleutherArgv;
+        });
+
+    return addJwtSecretFromEnvVar(additions(yarr).argv);
 }
