@@ -8,60 +8,38 @@ export default function buildSitemapRouter(
     baseExternalUrl: string,
     baseRegistryUrl: string
 ): express.Router {
-    console.log(baseRegistryUrl);
     const app = express();
     const registry = new Registry({ baseUrl: baseRegistryUrl });
 
-    type CrawlPage = {
-        afterToken: string;
-    };
-
-    async function doFullCrawl(afterToken?: string): Promise<CrawlPage[]> {
-        const pageResult = await registry.getRecords(
-            ["dcat-dataset-strings"],
-            [],
-            afterToken,
-            false,
-            1000
-        );
-
-        if (pageResult instanceof Error) {
-            throw pageResult;
+    function handleError<T>(result: T | Error) {
+        if (result instanceof Error) {
+            throw result;
+        } else {
+            return result;
         }
-
-        console.log("Crawling after " + pageResult.nextPageToken);
-        const theRest = pageResult.nextPageToken
-            ? await doFullCrawl(pageResult.nextPageToken)
-            : [];
-
-        return [{ afterToken }].concat(theRest);
     }
 
-    app.get("/index.xml", (req, res) => {
-        doFullCrawl()
-            .then(result => {
-                const datasetsPages = result.map(page => {
+    app.get("/", (req, res) => {
+        registry
+            .getRecordsPageTokens(["dcat-dataset-strings"])
+            .then(handleError)
+            .then(async result => {
+                const datasetsPages = result.map(token => {
                     return (
                         baseExternalUrl +
-                        "/datasets/afterToken/" +
-                        page.afterToken
+                        "/sitemap/dataset/afterToken/" +
+                        token
                     );
                 });
 
-                const smi = sm.createSitemapIndex({
-                    urls: [baseExternalUrl + "/standard.xml"].concat(
+                const smi = sm.buildSitemapIndex({
+                    urls: [baseExternalUrl + "/sitemap/main"].concat(
                         datasetsPages
                     )
                 });
 
-                smi.toXML((err: Error, xml: string) => {
-                    if (err) {
-                        res.status(500).end();
-                    }
-
-                    res.header("Content-Type", "application/xml");
-                    res.send(xml);
-                });
+                res.header("Content-Type", "application/xml");
+                res.send(smi);
             })
             .catch(e => {
                 console.error(e);
@@ -69,7 +47,54 @@ export default function buildSitemapRouter(
             });
     });
 
-    app.get("datasets/afterToken/:afterToken");
+    app.get("/main", (req, res) => {
+        // For now we just put the homepage in here, seeing as everything except the datasets should be reachable
+        // from either the home page or the datasets pages.
+        const sitemap = sm.createSitemap({
+            hostname: baseExternalUrl,
+            cacheTime: 600000, // 600 sec - cache purge period
+            urls: [
+                {
+                    url: `/`,
+                    changefreq: "weekly"
+                }
+            ]
+        });
+
+        sitemap.toXML(function(err: Error, xml: string) {
+            if (err) {
+                return res.status(500).end();
+            }
+            res.header("Content-Type", "application/xml");
+            res.send(xml);
+        });
+    });
+
+    app.get("/dataset/afterToken/:afterToken", (req, res) => {
+        const afterToken: string = req.params.afterToken;
+
+        registry
+            .getRecords(["dcat-dataset-strings"], null, afterToken, false)
+            .then(handleError)
+            .then(records => {
+                const sitemap = sm.createSitemap({
+                    hostname: baseExternalUrl,
+                    cacheTime: 600000, // 600 sec - cache purge period
+                    urls: records.records.map(record => ({
+                        url: `/dataset/${encodeURIComponent(record.id)}`,
+                        changefreq: "weekly"
+                    }))
+                });
+
+                sitemap.toXML(function(err: Error, xml: string) {
+                    if (err) {
+                        return res.status(500).end();
+                    }
+                    res.header("Content-Type", "application/xml");
+                    res.send(xml);
+                });
+            });
+    });
 
     return app;
 }

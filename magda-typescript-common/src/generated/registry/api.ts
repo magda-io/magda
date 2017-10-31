@@ -1352,6 +1352,61 @@ export class RecordsApi {
         });
     }
     /**
+     * Get a list tokens for paging through the records
+     * 
+     * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
+     * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+     */
+    public getPageTokens (aspect?: Array<string>, limit?: number) : Promise<{ response: http.IncomingMessage; body: Array<string>;  }> {
+        const localVarPath = this.basePath + '/records/pagetokens';
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        if (aspect !== undefined) {
+            queryParameters['aspect'] = aspect;
+        }
+
+        if (limit !== undefined) {
+            queryParameters['limit'] = limit;
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'GET',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: Array<string>;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
      * Modify a record by applying a JSON Patch
      * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
      * @param id ID of the aspect to be saved.

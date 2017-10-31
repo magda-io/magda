@@ -17,8 +17,20 @@ const argv = yargs
         type: "boolean",
         default: false
     })
+    .option("baseExternalUrl", {
+        describe:
+            "The absolute base URL of the Magda site, when accessed externally. Used for building sitemap URLs which must be absolute.",
+        type: "string",
+        required: true
+    })
+    .option("registryApiBaseUrlInternal", {
+        describe: "The url of the registry api for use within the cluster",
+        type: "string",
+        default: "http://registry-api/"
+    })
     .option("baseUrl", {
-        describe: "The base URL of the MAGDA Gateway.",
+        describe:
+            "The base URL of the MAGDA Gateway, for building the base URLs of the APIs when not manually specified. Can be relative.",
         type: "string",
         default: "/"
     })
@@ -147,7 +159,7 @@ topLevelRoutes.forEach(topLevelRoute => {
 
 app.use(
     "/sitemap",
-    buildSitemapRouter("http://example.com", argv.registryApiBaseUrl)
+    buildSitemapRouter(argv.baseExternalUrl, argv.registryApiBaseUrlInternal)
 );
 
 app.listen(argv.listenPort);
