@@ -65,7 +65,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
           complete {
             DB readOnly { session =>
-              RecordPersistence.getPageTokens(session, aspect, limit)
+              "0" :: RecordPersistence.getPageTokens(session, aspect, limit)
             }
           }
         }
