@@ -4,6 +4,8 @@ const sm = require("sitemap");
 
 // export  express;
 
+const DATASET_REQUIRED_ASPECTS = ["dcat-dataset-strings"];
+
 export default function buildSitemapRouter(
     baseExternalUrl: string,
     baseRegistryUrl: string
@@ -21,14 +23,12 @@ export default function buildSitemapRouter(
 
     app.get("/", (req, res) => {
         registry
-            .getRecordsPageTokens(["dcat-dataset-strings"])
+            .getRecordsPageTokens(DATASET_REQUIRED_ASPECTS)
             .then(handleError)
             .then(async result => {
                 const datasetsPages = result.map(token => {
                     return (
-                        baseExternalUrl +
-                        "/sitemap/dataset/afterToken/" +
-                        token
+                        baseExternalUrl + "/sitemap/dataset/afterToken/" + token
                     );
                 });
 
@@ -55,7 +55,7 @@ export default function buildSitemapRouter(
             cacheTime: 600000, // 600 sec - cache purge period
             urls: [
                 {
-                    url: `/`,
+                    url: ``,
                     changefreq: "weekly"
                 }
             ]
@@ -74,7 +74,7 @@ export default function buildSitemapRouter(
         const afterToken: string = req.params.afterToken;
 
         registry
-            .getRecords(["dcat-dataset-strings"], null, afterToken, false)
+            .getRecords(DATASET_REQUIRED_ASPECTS, null, afterToken, false)
             .then(handleError)
             .then(records => {
                 const sitemap = sm.createSitemap({
