@@ -30,10 +30,8 @@ class OverviewBox extends Component {
     }
     render(){
       return <div className='white-box overview-box'>
-                {this.props.content || 'This publisher does not have a description.' }
                 {this.props.content && this.renderContent(this.props.content)}
                 {this.props.content && this.props.content.length > MAX && this.renderToggle(this.state.isExpanded)}
-
             </div>
     }
 }
