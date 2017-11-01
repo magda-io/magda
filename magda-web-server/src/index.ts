@@ -2,6 +2,9 @@ import * as express from "express";
 import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
+
+import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
+
 import buildSitemapRouter from "./buildSitemapRouter";
 
 const argv = yargs
@@ -159,7 +162,10 @@ topLevelRoutes.forEach(topLevelRoute => {
 
 app.use(
     "/sitemap",
-    buildSitemapRouter(argv.baseExternalUrl, argv.registryApiBaseUrlInternal)
+    buildSitemapRouter({
+        baseExternalUrl: argv.baseExternalUrl,
+        registry: new Registry({ baseUrl: argv.registryApiBaseUrlInternal })
+    })
 );
 
 app.listen(argv.listenPort);
