@@ -24,12 +24,14 @@ const argv = yargs
         describe:
             "The absolute base URL of the Magda site, when accessed externally. Used for building sitemap URLs which must be absolute.",
         type: "string",
+        default: "http://localhost:6100/",
         required: true
     })
     .option("registryApiBaseUrlInternal", {
         describe: "The url of the registry api for use within the cluster",
         type: "string",
-        default: "http://registry-api/"
+        default: "http://localhost:6101/",
+        required: true
     })
     .option("baseUrl", {
         describe:
