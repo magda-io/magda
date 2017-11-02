@@ -30,7 +30,7 @@ const argv = yargs
     .option("registryApiBaseUrlInternal", {
         describe: "The url of the registry api for use within the cluster",
         type: "string",
-        default: "http://localhost:6101/",
+        default: "http://localhost:6101/v0",
         required: true
     })
     .option("baseUrl", {
