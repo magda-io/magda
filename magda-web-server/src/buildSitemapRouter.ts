@@ -1,5 +1,6 @@
 import * as express from "express";
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
+import * as URI from "urijs";
 const sm = require("sitemap");
 
 const DATASET_REQUIRED_ASPECTS = ["dcat-dataset-strings"];
@@ -14,6 +15,7 @@ export default function buildSitemapRouter({
     registry
 }: SitemapRouterOptions): express.Router {
     const app = express();
+    const baseExternalUri = new URI(baseExternalUrl);
 
     // Make sure every request is setting XML as the content type.
     app.use((req, res, next) => {
@@ -29,19 +31,32 @@ export default function buildSitemapRouter({
                 .then(handleError)
                 .then(async result => {
                     const datasetsPages = result.map(token => {
-                        return (
-                            baseExternalUrl +
-                            "/sitemap/dataset/afterToken/" +
-                            token
-                        );
+                        return baseExternalUri
+                            .clone()
+                            .path(
+                                URI.joinPaths(
+                                    baseExternalUrl,
+                                    "sitemap/dataset/afterToken",
+                                    token.toString()
+                                ).href()
+                            )
+                            .href();
                     });
 
                     const smi = sm.buildSitemapIndex({
-                        urls: [baseExternalUrl + "/sitemap/main"].concat(
-                            datasetsPages
-                        )
+                        urls: [
+                            baseExternalUri
+                                .clone()
+                                .path(
+                                    URI.joinPaths(
+                                        baseExternalUrl,
+                                        "sitemap/main"
+                                    ).href()
+                                )
+                                .href()
+                        ].concat(datasetsPages)
                     });
-
+                    
                     res.send(smi);
                 })
         );
