@@ -92,6 +92,27 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       .single.apply()
   }
 
+  def getPageTokens(implicit session: DBSession,
+                    aspectIds: Iterable[String],
+                    limit: Option[Int] = None,
+                    recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): List[String] = {
+    val whereClauseParts = aspectIdsToWhereClause(aspectIds) ++ recordSelector
+
+    //    val whereClause = aspectIds.map(aspectId => s"recordaspects.aspectid = '$aspectId'").mkString(" AND ")
+
+    sql"""SELECT sequence
+        FROM
+        (
+            SELECT sequence, ROW_NUMBER() OVER (ORDER BY sequence) AS rownum
+            FROM records
+            ${makeWhereClause(whereClauseParts)}
+        ) AS t
+        WHERE t.rownum % ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)} = 0
+        ORDER BY t.sequence;""".map(rs => {
+      rs.string("sequence")
+    }).list.apply()
+  }
+
   def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -534,7 +555,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     }
   }
 
-  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink]) = {
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
     aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
         // Use a simple numbered column name rather than trying to make the aspect name safe.
