@@ -13,7 +13,7 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.30-0",
+    "@magda/scripts": "^0.0.30",
     "@types/node": "^8.0.14",
     "@types/request": "^2.0.0",
     "@types/urijs": "^1.15.34",
@@ -21,7 +21,7 @@
     "typescript": "~2.5.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.30-0",
+    "@magda/registry-aspects": "^0.0.30",
     "@magda/typescript-common": "^0.0.30",
     "moment": "^2.17.1",
     "request": "^2.79.0",
