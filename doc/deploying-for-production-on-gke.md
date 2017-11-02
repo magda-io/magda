@@ -25,5 +25,12 @@ kubectl create secret generic db-passwords --from-literal=auth-db=p4ssw0rd --fro
 ```bash
 helm install --name magda deploy/helm/magda --f <path to your config file>
 ```
+7. Create crawling jobs (until we get the admin interface up to scratch)
+```bash
+cd deploy
+npm run create-connector-configmap
+npm run generate-connector-jobs-prod
+kubectl create -f kubernetes/generated/prod/
+```
 
 If this doesn't work for you, [file an issue](https://github.com/TerriaJS/magda/issues).
