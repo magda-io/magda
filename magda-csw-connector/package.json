@@ -1,7 +1,7 @@
 {
   "name": "@magda/csw-connector",
   "description": "MAGDA OGC Catalogue Service for the Web (CSW) Connector",
-  "version": "0.0.30-0",
+  "version": "0.0.30",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@magda/registry-aspects": "^0.0.30-0",
-    "@magda/typescript-common": "^0.0.30-0",
+    "@magda/typescript-common": "^0.0.30",
     "jsonpath": "^0.2.11",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",

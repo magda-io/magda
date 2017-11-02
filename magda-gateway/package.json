@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.30-0",
+  "version": "0.0.30",
   "license": "Apache-2.0",
   "scripts": {
     "build": "npm run compile",
@@ -13,7 +13,7 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.30-0",
+    "@magda/typescript-common": "^0.0.30",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "connect-ensure-login": "^0.1.1",
