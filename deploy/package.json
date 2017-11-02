@@ -12,7 +12,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.30-0",
+    "@magda/scripts": "^0.0.30",
     "fs-extra": "^2.1.2",
     "klaw-sync": "^2.1.0",
     "tmp": "0.0.31",

@@ -1355,7 +1355,7 @@ export class RecordsApi {
      * Get a list tokens for paging through the records
      * 
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
-     * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+     * @param limit The size of each page to get tokens for.
      */
     public getPageTokens (aspect?: Array<string>, limit?: number) : Promise<{ response: http.IncomingMessage; body: Array<string>;  }> {
         const localVarPath = this.basePath + '/records/pagetokens';

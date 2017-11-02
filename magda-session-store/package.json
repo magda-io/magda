@@ -15,6 +15,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.30-0"
+    "@magda/scripts": "^0.0.30"
   }
 }

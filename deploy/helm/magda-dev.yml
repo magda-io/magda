@@ -3,7 +3,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.30-0"
+    tag: "0.0.30"
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:

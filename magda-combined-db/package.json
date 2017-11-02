@@ -19,7 +19,7 @@
     "@magda/authorization-db": "^0.0.30",
     "@magda/discussions-db": "^0.0.30",
     "@magda/registry-datastore": "^0.0.30",
-    "@magda/scripts": "^0.0.30-0",
+    "@magda/scripts": "^0.0.30",
     "@magda/session-store": "^0.0.30"
   }
 }
