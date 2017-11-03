@@ -16,7 +16,7 @@
             "containers": [
               {
                 "name": "connector-city-of-launceston-open-data",
-                "image": "data61/magda-project-open-data-connector:0.0.30",
+                "image": "data61/magda-project-open-data-connector:0.0.30-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
