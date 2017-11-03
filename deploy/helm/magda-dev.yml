@@ -28,6 +28,9 @@ combined-db:
     method: WAL
     gsPrefix: "gs://magda-postgres-backups-asia/dev"
     executionTime: 03:00
+    googleApplicationCreds:
+      secretName: storage-account-credentials
+      fileName: TerriaJS-5e042b649f8a.json 
 elasticsearch:
   data:
     heapSize: 500m

@@ -114,8 +114,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 {{- if not .Values.global.noDbAuth }}
         - name: XPACK_ENABLED
-          value: "true"
-        - name: ELASTIC_SEARCH_PASSWORD
+          value: "false"
+        - name: ELASTIC_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords

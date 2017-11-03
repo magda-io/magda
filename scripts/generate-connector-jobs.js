@@ -138,19 +138,19 @@ files.forEach(function(connectorConfigFile) {
     "utf8"
   );
 
-  // const cron = {
-  //     apiVersion: 'batch/v2alpha1',
-  //     kind: 'CronJob',
-  //     metadata: {
-  //         name: 'connector-' + basename
-  //     },
-  //     spec: {
-  //         schedule: configFile.schedule || '* * */3 * *',
-  //         jobTemplate: {
-  //             spec: jobSpec
-  //         }
-  //     }
-  // };
+  const cron = {
+      apiVersion: 'batch/v1beta1',
+      kind: 'CronJob',
+      metadata: {
+          name: 'connector-' + basename
+      },
+      spec: {
+          schedule: configFile.schedule || '* * */3 * *',
+          jobTemplate: {
+              spec: jobSpec
+          }
+      }
+  };
 
-  // fs.writeFileSync(path.join(argv.out, 'connector-' + basename + '-cron.json'), JSON.stringify(cron, undefined, '  '), 'utf8');
+  fs.writeFileSync(path.join(argv.out, 'connector-' + basename + '-cron.json'), JSON.stringify(cron, undefined, '  '), 'utf8');
 });

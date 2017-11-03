@@ -21,17 +21,19 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         ports:
         - containerPort: 5432
         env:
         - name: PGDATA
           value: /var/pv/data
+        {{- template "magda.postgres-env" . }}
         volumeMounts:
         - mountPath: /var/pv
-          name: registrydata
+          name: session-data
   volumeClaimTemplates:
   - metadata:
-      name: registrydata
+      name: session-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
     {{- if .Values.data.storageClass }}

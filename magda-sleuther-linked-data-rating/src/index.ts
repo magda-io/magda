@@ -5,7 +5,7 @@ import onRecordFound from "./onRecordFound";
 import commonYargs from "@magda/sleuther-framework/dist/commonYargs";
 
 const ID = "sleuther-linked-data-rating";
-const argv = commonYargs(ID, 6109, "http://localhost:6109").argv;
+const argv = commonYargs(ID, 6109, "http://localhost:6109");
 
 function sleuthLinkedData() {
     sleuther({
