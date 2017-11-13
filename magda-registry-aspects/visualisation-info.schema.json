@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "title": "Aspect providing information to make front-end visualisations of distributions better",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string"
+    },
+    "wellFormed": {
+      "type": "boolean"
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+            "time": {
+              "type": "boolean"
+            },
+            "numeric": {
+              "type": "boolean"
+            }
+        },
+        "additionalProperties": false
+      }
+    },
+    "timeseries": {
+      "type": "boolean"
+    }
+  }
+}
