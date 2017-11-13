@@ -1,5 +1,5 @@
 {
-  "name": "@magda/visualisation-sleuther",
+  "name": "@magda/sleuther-visualisation",
   "description": "MAGDA Visualisation Sleuther",
   "version": "0.0.30",
   "main": "dist/index.js",
