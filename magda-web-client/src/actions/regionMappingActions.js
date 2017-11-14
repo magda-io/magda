@@ -23,7 +23,12 @@ export function fetchRegionMapping() {
   return (dispatch: Function)=>{
     dispatch(requestRegionMapping())
     return fetch(config.searchApiUrl + 'region-types')
-    .then(response => response.json())
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('Network response was not ok.');
+    })
     .then((json: FacetSearchJson) =>
       dispatch(receiveRegionMapping(json))
     )
