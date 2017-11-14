@@ -204,7 +204,7 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const linkStatus = aspects['source-link-status'];
   const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
   const linkActive = linkStatus.status === 'active';
-  const isTimeSeries = aspects['visualisation-info']['timeseries']
+  const isTimeSeries = aspects['visualisation-info']['timeseries'];
   let chartFields = null;
 
   if(isTimeSeries){
@@ -212,12 +212,10 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
     const timeFields = Object.keys(fields).filter(f=>fields[f].time === true);
     const numericFields = Object.keys(fields).filter(f=>fields[f].numeric === true);
     chartFields = {
-          time: timeFields,
-          numeric: numericFields
-    }
+      time: timeFields,
+      numeric: numericFields
+    };
   }
-
-
   return { identifier, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive, isTimeSeries, chartFields }
 };
 
@@ -247,6 +245,18 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
       const info = distributionAspects['dcat-distribution-strings'];
       const linkStatus = distributionAspects['source-link-status'];
       const visualisationInfo = distributionAspects['visualisation-info'];
+
+      const isTimeSeries = distributionAspects['visualisation-info']['timeseries'];
+      let chartFields = null;
+      if(isTimeSeries){
+        const fields = distributionAspects['visualisation-info'].fields;
+        const timeFields = Object.keys(fields).filter(f=>fields[f].time === true);
+        const numericFields = Object.keys(fields).filter(f=>fields[f].numeric === true);
+        chartFields = {
+          time: timeFields,
+          numeric: numericFields
+        };
+      }
       return {
           identifier: d['id'],
           title: d['name'],
@@ -258,7 +268,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
           linkStatusAvailable: Boolean(linkStatus.status), // Link status is available if status is non-empty string
           linkActive: linkStatus.status === 'active',
           updatedDate: info.modified ? getDateString(info.modified) : 'unknown date',
-          isTimeSeries: visualisationInfo['timeseries']
+          isTimeSeries: visualisationInfo['timeseries'],
+          chartFields
       }
   });
   return {
