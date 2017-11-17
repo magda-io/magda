@@ -30,7 +30,7 @@ combined-db:
     executionTime: 03:00
     googleApplicationCreds:
       secretName: storage-account-credentials
-      fileName: TerriaJS-5e042b649f8a.json 
+      fileName: TerriaJS-5e042b649f8a.json
 elasticsearch:
   data:
     heapSize: 500m
@@ -91,6 +91,14 @@ sleuther-linked-data-rating:
       cpu: 200m
       memory: 150Mi
 sleuther-broken-link:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
+sleuther-visualisation:
   resources:
     requests:
       cpu: 0

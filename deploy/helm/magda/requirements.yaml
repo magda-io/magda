@@ -77,6 +77,11 @@ dependencies:
     tags:
       - all
       - sleuther-broken-link
+  - name: sleuther-visualisation
+    version: 0.1.0
+    tags:
+      - all
+      - sleuther-visualisation
   - name: sleuther-linked-data-rating
     version: 0.1.0
     tags:
