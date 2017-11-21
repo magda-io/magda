@@ -17,6 +17,11 @@ const regionMapping = (state: RegionMappingState = initialData, action: FacetAct
         isFetching: false,
         data: (action.json && action.json.regionWmsMap) && action.json.regionWmsMap,
       })
+    case 'REQUEST_REGION_MAPPING_ERROR':
+      return Object.assign({}, state, {
+        isFetching: false,
+        error: action.error
+      })
     default:
       return state
   }

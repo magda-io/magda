@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import './OverviewBox.css';
+const MAX = 600;
 
 
 class OverviewBox extends Component {

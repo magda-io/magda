@@ -12,10 +12,16 @@ export function requestRegionMapping(): FacetAction{
 }
 
 export function receiveRegionMapping(json: Object): FacetAction{
-  console.log(actionTypes.RECEIVE_REGION_MAPPING);
   return {
     type: actionTypes.RECEIVE_REGION_MAPPING,
     json: json,
+  }
+}
+
+export function requestRegionMappingError(error: number): Action {
+  return {
+    type: actionTypes.REQUEST_REGION_MAPPING_ERROR,
+    error,
   }
 }
 
@@ -23,9 +29,21 @@ export function fetchRegionMapping() {
   return (dispatch: Function)=>{
     dispatch(requestRegionMapping())
     return fetch(config.searchApiUrl + 'region-types')
-    .then(response => response.json())
-    .then((json: FacetSearchJson) =>
-      dispatch(receiveRegionMapping(json))
+    .then(response=>{
+      if (response.status !== 200) {
+        return dispatch(requestRegionMappingError(response.status));
+      }
+      else {
+        return response.json()
+      }
+    })
+    .then((json: FacetSearchJson) =>{
+      if(!json.error){
+        return dispatch(receiveRegionMapping(json));
+      } else{
+          return dispatch(requestRegionMappingError(json.error))
+      }
+      }
     )
   }
 }

@@ -53,11 +53,7 @@ class PublisherDetails extends Component<void, Props, void> {
 
                         <div className='publisher-details-overview'>
                             <h3 className='section-heading'>Overview</h3>
-<<<<<<< HEAD:magda-web-client/src/Components/Publisher/PublisherDetails.js
-                            <OverviewBox content={publisher.aspects['organization-details'].description.length > 0 ? publisher.aspects['organization-details'].description : 'No description available for this publisher'}/>
-=======
                             <OverviewBox content={description}/>
->>>>>>> master:magda-web-client/src/Publisher/PublisherDetails.js
                         </div>
                     </div>
                     <div className='col-sm-4'>
