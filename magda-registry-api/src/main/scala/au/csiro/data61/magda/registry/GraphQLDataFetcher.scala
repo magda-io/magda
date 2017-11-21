@@ -5,10 +5,10 @@ import spray.json._
 
 class GraphQLDataFetcher {
   def getRecord(id: String, aspects: List[String]) : GraphQLSchema.Record = {
-    DB readOnly { session => {
-      val record = RecordPersistence.getByIdWithAspects(session, id, Nil, aspects)
-    }}
-    GraphQLSchema.Record(id = id, name = "made-up name", Nil, null)
+    val record = (DB readOnly { session => {
+      RecordPersistence.getByIdWithAspects(session, id, Nil, aspects)
+    }}).get
+    GraphQLSchema.Record(id = record.id, name = record.name, record.aspects.keys.toList, record.aspects)
   }
   // , paths: Vector[Vector[String]]
   def getRecordsPage(pageToken: Option[String], aspects: List[String]) : GraphQLSchema.RecordsPageGraphQL = {
