@@ -6,6 +6,7 @@ import createTransformer from "./createTransformer";
 import datasetAspectBuilders from "./datasetAspectBuilders";
 import distributionAspectBuilders from "./distributionAspectBuilders";
 import organizationAspectBuilders from "./organizationAspectBuilders";
+import * as yargs from "yargs";
 
 const argv = addJwtSecretFromEnvVar(
     yargs

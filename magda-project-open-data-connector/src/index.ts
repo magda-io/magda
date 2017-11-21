@@ -6,7 +6,7 @@ import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryC
 import organizationAspectBuilders from "./organizationAspectBuilders";
 import datasetAspectBuilders from "./datasetAspectBuilders";
 import distributionAspectBuilders from "./distributionAspectBuilders";
-import ProjectOpenDataConnector from "./ProjectOpenDataConnector";
+import * as yargs from "yargs";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
