@@ -86,6 +86,21 @@ files.forEach(function(connectorConfigFile) {
                 mountPath: "/etc/config",
                 name: "config"
               }
+            ],
+            env: [
+                {
+                    name: "USER_ID",
+                    value: "00000000-0000-4000-8000-000000000000"
+                },
+                {
+                    name: "JWT_SECRET",
+                    valueFrom: {
+                        secretKeyRef: {
+                            name: "auth-secrets",
+                            key: "jwt-secret"
+                        }
+                    }
+                }
             ]
           }
         ],
@@ -123,19 +138,19 @@ files.forEach(function(connectorConfigFile) {
     "utf8"
   );
 
-  // const cron = {
-  //     apiVersion: 'batch/v2alpha1',
-  //     kind: 'CronJob',
-  //     metadata: {
-  //         name: 'connector-' + basename
-  //     },
-  //     spec: {
-  //         schedule: configFile.schedule || '* * */3 * *',
-  //         jobTemplate: {
-  //             spec: jobSpec
-  //         }
-  //     }
-  // };
+  const cron = {
+      apiVersion: 'batch/v1beta1',
+      kind: 'CronJob',
+      metadata: {
+          name: 'connector-' + basename
+      },
+      spec: {
+          schedule: configFile.schedule || '* * */3 * *',
+          jobTemplate: {
+              spec: jobSpec
+          }
+      }
+  };
 
-  // fs.writeFileSync(path.join(argv.out, 'connector-' + basename + '-cron.json'), JSON.stringify(cron, undefined, '  '), 'utf8');
+  fs.writeFileSync(path.join(argv.out, 'connector-' + basename + '-cron.json'), JSON.stringify(cron, undefined, '  '), 'utf8');
 });

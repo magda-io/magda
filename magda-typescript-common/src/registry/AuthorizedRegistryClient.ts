@@ -2,13 +2,16 @@ import {
     AspectDefinition,
     Record,
     WebHook,
-    Operation
+    Operation,
+    WebHookAcknowledgementResponse
 } from "../generated/registry/api";
 import RegistryClient, { RegistryOptions } from "./RegistryClient";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
 import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
+import { IncomingMessage } from "http";
+import { Maybe } from "tsmonad";
 
 export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwtSecret: string;
@@ -52,6 +55,26 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(createServiceError);
     }
 
+    postHook(hook: WebHook): Promise<WebHook | Error> {
+        const operation = () => this.webHooksApi.create(hook, this.jwt);
+
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PUT hook record.`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then(result => result.body)
+            .catch(createServiceError);
+    }
+
     putHook(hook: WebHook): Promise<WebHook | Error> {
         const operation = () =>
             this.webHooksApi.putById(
@@ -76,6 +99,40 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(createServiceError);
     }
 
+    getHook(hookId: string): Promise<Maybe<WebHook> | Error> {
+        const operation = () =>
+            this.webHooksApi
+                .getById(encodeURIComponent(hookId), this.jwt)
+                .then(result => Maybe.just(result.body))
+                .catch(
+                    (e: { response?: IncomingMessage; message?: string }) => {
+                        if (e.response && e.response.statusCode === 404) {
+                            return Maybe.nothing();
+                        } else {
+                            throw new Error(
+                                "Failed to get hook, status was " +
+                                    (e.response && e.response.statusCode) +
+                                    "\n" +
+                                    e.message
+                            );
+                        }
+                    }
+                );
+        return <any>retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to GET hook ${hookId}`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        ).catch(createServiceError);
+    }
+
     getHooks(): Promise<WebHook[] | Error> {
         const operation = () => () => this.webHooksApi.getAll(this.jwt);
         return <any>retry(
@@ -85,6 +142,33 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError("Failed to GET hooks.", e, retriesLeft)
+                )
+        )
+            .then(result => result.body)
+            .catch(createServiceError);
+    }
+
+    resumeHook(
+        webhookId: string
+    ): Promise<WebHookAcknowledgementResponse | Error> {
+        const operation = () =>
+            this.webHooksApi.ack(
+                encodeURIComponent(webhookId),
+                { succeeded: false, lastEventIdReceived: null },
+                this.jwt
+            );
+
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to resume webhook ${webhookId}`,
+                        e,
+                        retriesLeft
+                    )
                 )
         )
             .then(result => result.body)

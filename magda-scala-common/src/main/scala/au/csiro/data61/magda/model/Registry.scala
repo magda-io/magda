@@ -106,6 +106,16 @@ object Registry {
 
   case class QualityRatingAspect(score: Double, weighting: Double)
 
+  @ApiModel(description = "Asynchronously acknowledges receipt of a web hook notification.")
+  case class WebHookAcknowledgement(
+    @(ApiModelProperty @field)(value = "True if the web hook was received successfully and the listener is ready for further notifications.  False if the web hook was not received and the same notification should be repeated.", required = true) succeeded: Boolean,
+
+    @(ApiModelProperty @field)(value = "The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.", required = true) lastEventIdReceived: Option[Long] = None)
+
+  @ApiModel(description = "The response to an asynchronous web hook acknowledgement.")
+  case class WebHookAcknowledgementResponse(
+    @(ApiModelProperty @field)(value = "The ID of the last event successfully received by the listener.  Further notifications will start after this event.", required = true) lastEventIdReceived: Long)
+
   trait RegistryProtocols extends DefaultJsonProtocol with au.csiro.data61.magda.model.Temporal.Protocols with ModelProtocols {
     implicit object EventTypeFormat extends RootJsonFormat[EventType] {
       def write(e: EventType) = JsString(e.toString)
@@ -120,6 +130,8 @@ object Registry {
     implicit val webHookFormat = jsonFormat9(WebHook.apply)
     implicit val registryRecordsResponseFormat = jsonFormat3(RegistryRecordsResponse.apply)
     implicit def qualityRatingAspectFormat = jsonFormat2(QualityRatingAspect.apply)
+    implicit val webHookAcknowledgementFormat = jsonFormat2(WebHookAcknowledgement.apply)
+    implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
   }
 
   trait RegistryConverters extends RegistryProtocols {

@@ -14,9 +14,10 @@ import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import akka.http.scaladsl.Http
 
-import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
+import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{ initWebhook, ShouldCrawl, ShouldNotCrawl }
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.RegistryExternalInterface
+import scala.concurrent.Future
 
 object IndexerApp extends App {
   implicit val config = AppConfig.conf()
@@ -35,23 +36,33 @@ object IndexerApp extends App {
   logger.debug("Starting Crawler")
 
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
-  val crawler = new RegistryCrawler(new RegistryExternalInterface())
 
-  if (config.getBoolean("registry.registerForWebhooks")) {
-    RegisterWebhook.registerWebhook
-      .recover {
-        case e: Throwable =>
-          logger.error(e, "Error while registering webhook")
-          
-          // This is a super massive problem - might as well just crash to make it super-obvious and to
-          // use K8S' restart logic
-          logger.error("Failure to register webhook is an unrecoverable and drastic error, crashing")
-          System.exit(1)
-      }
-  }
+  val registryInterface = new RegistryExternalInterface()
 
+  val crawler = new RegistryCrawler(registryInterface, indexer)
   val api = new IndexerApi(crawler, indexer)
+
+  logger.info(s"Listening on ${config.getString("http.interface")}:${config.getInt("http.port")}")
   Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
+
+  {
+    if (config.getBoolean("registry.registerForWebhooks")) {
+      initWebhook(registryInterface)
+    } else {
+      Future(ShouldCrawl)
+    }
+  } map {
+    case ShouldCrawl => crawler.crawl()
+    case _           => // this means we were able to resume a webhook, so all good now :)
+  } recover {
+    case e: Throwable =>
+      logger.error(e, "Error while initializing")
+
+      // This is a super massive problem - might as well just crash to make it super-obvious and to
+      // use K8S' restart logic
+      logger.error("Failure to register webhook or perform initial crawl is an unrecoverable and drastic error, crashing")
+      System.exit(1)
+  }
 }
 
 class Listener extends Actor with ActorLogging {
