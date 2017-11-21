@@ -36,7 +36,7 @@ spec:
             "-Dhttp.port=80",
             "-Dhttp.externalUrl.v0={{ .Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-datastore/postgres",
-            "-Dakka.loglevel={{ .Values.global.logLevel }}",
+            "-Dakka.loglevel={{ .Values.logLevel | default .Values.global.logLevel }}",
             "-DauthApi.baseUrl=http://authorization-api",
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}",
             "-Dauthorization.skip=false"

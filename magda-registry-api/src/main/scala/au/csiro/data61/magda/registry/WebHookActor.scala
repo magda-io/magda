@@ -127,9 +127,13 @@ object WebHookActor {
             log.info("WebHook {} Processing: DEFERRED BY RECEIVER", this.id)
             false
           }
-          case Some(WebHookProcessingResult(previousLastEvent, newLastEvent, false, _)) => {
+          case Some(WebHookProcessingResult(previousLastEvent, newLastEvent, false, None)) => {
+            log.info("WebHook {} Processing: NOT DELIVERED (could not connect)", this.id)
+            previousLastEvent != newLastEvent
+          }
+          case Some(WebHookProcessingResult(previousLastEvent, newLastEvent, false, Some(status))) => {
             // POST succeeded, is there more to do?
-            log.info("WebHook {} Processing: SUCCEEDED", this.id)
+            log.info("WebHook {} Processing: DELIVERED, response was {} ({})", this.id, status, if (status.isFailure()) "failure" else "success")
             previousLastEvent != newLastEvent
           }
         }

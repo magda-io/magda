@@ -12,15 +12,11 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.StatusCodes.OK
+import akka.http.scaladsl.model.StatusCodes.{ OK, NotFound }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.HttpFetcher
-import au.csiro.data61.magda.model.Registry.Record
-import au.csiro.data61.magda.model.Registry.RegistryConverters
-import au.csiro.data61.magda.model.Registry.RegistryRecordsResponse
-import au.csiro.data61.magda.model.Registry.WebHook
-import au.csiro.data61.magda.model.Registry.RegistryConstants
+import au.csiro.data61.magda.model.Registry.{ Record, RegistryConverters, RegistryRecordsResponse, WebHook, RegistryConstants, WebHookAcknowledgement, WebHookAcknowledgementResponse }
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.Collections.mapCatching
 import java.net.URL
@@ -92,10 +88,29 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(implicit val config: C
     }
   }
 
+  def getWebhook(id: String): Future[Option[WebHook]] = {
+    fetcher.get(s"${baseApiPath}/hooks/$id", Seq(authHeader)).flatMap { response =>
+      response.status match {
+        case OK       => Unmarshal(response.entity).to[WebHook].map(Some.apply)
+        case NotFound => Future(None)
+        case _        => Unmarshal(response.entity).to[String].flatMap(onError(response))
+      }
+    }
+  }
+
   def addWebhook(webhook: WebHook): Future[WebHook] = {
-    fetcher.put(s"${baseApiPath}/hooks/${webhook.id.get}", webhook, Seq(authHeader)).flatMap { response =>
+    fetcher.post(s"${baseApiPath}/hooks", webhook, Seq(authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[WebHook]
+        case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
+      }
+    }
+  }
+
+  def resumeWebhook(webhookId: String): Future[WebHookAcknowledgementResponse] = {
+    fetcher.post(s"${baseApiPath}/hooks/$webhookId/ack", WebHookAcknowledgement(succeeded = false), Seq(authHeader)).flatMap { response =>
+      response.status match {
+        case OK => Unmarshal(response.entity).to[WebHookAcknowledgementResponse]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
       }
     }

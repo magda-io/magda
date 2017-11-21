@@ -1,7 +1,11 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
+<<<<<<< HEAD
   "version": "0.0.31-0",
+=======
+  "version": "0.0.30",
+>>>>>>> origin/master
   "license": "Apache-2.0",
   "scripts": {
     "build": "npm run compile",
@@ -13,7 +17,11 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@magda/typescript-common": "^0.0.31-0",
+=======
+    "@magda/typescript-common": "^0.0.30",
+>>>>>>> origin/master
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "connect-ensure-login": "^0.1.1",
@@ -44,12 +52,12 @@
     "@magda/scripts": "^0.0.31-0",
     "@types/cors": "^2.8.1",
     "@types/ejs": "^2.3.33",
-    "@types/express": "^4.0.35",
+    "@types/express": "^4.0.37",
     "@types/lodash": "^4.14.74",
     "@types/node": "^8.0.14",
     "@types/passport": "^0.3.4",
-    "@types/passport-facebook": "^2.1.4",
-    "@types/passport-local": "^1.0.30",
+    "@types/passport-facebook": "^2.1.6",
+    "@types/passport-local": "^1.0.31",
     "@types/pg": "^6.1.41",
     "@types/urijs": "^1.15.34",
     "@types/yargs": "^8.0.2",

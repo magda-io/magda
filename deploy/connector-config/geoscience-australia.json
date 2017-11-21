@@ -3,5 +3,5 @@
     "name": "Geoscience Australia",
     "sourceUrl": "http://www.ga.gov.au/geonetwork/srv/en/csw",
     "pageSize": 100,
-    "schedule": "* * */3 * *"
+    "schedule": "0 5 */3 * *"
 }

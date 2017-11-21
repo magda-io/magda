@@ -2,6 +2,7 @@ package au.csiro.data61.magda.indexer.external.registry
 
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.api.BaseMagdaApi
+import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import au.csiro.data61.magda.model.Registry.WebHookPayload
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.server.Directives._
@@ -19,6 +20,7 @@ import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import com.typesafe.config.Config
 import akka.stream.scaladsl.Source
 import java.time.ZoneOffset
+import scala.util.Try
 
 class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryConverters {
   implicit val ec = system.dispatcher
@@ -33,9 +35,15 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
           payload.records match {
             // TODO: Handle registry config not found
             case Some(records) =>
-              val dataSets = records.map(record => convertRegistryDataSet(record))
+              val dataSets = records.map(record => try {
+                Some(convertRegistryDataSet(record))
+              } catch {
+                case CausedBy(e: spray.json.DeserializationException) =>
+                  system.log.error(e, "When converting {}", record.id)
+                  None
+              })
 
-              onSuccess(indexer.index(Source(dataSets))) { result =>
+              onSuccess(indexer.index(Source(dataSets.flatten))) { result =>
                 complete(Accepted)
               }
             case None =>

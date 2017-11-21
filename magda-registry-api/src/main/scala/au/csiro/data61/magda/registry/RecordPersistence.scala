@@ -62,20 +62,25 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                                    optionalAspectIds: Iterable[String] = Seq(),
                                    dereference: Option[Boolean] = None): RecordsPage = {
     val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
-    val dereferenceSelectors = linkAspects.map {
-      case (aspectId, propertyWithLink) =>
-        Some(sqls"""exists (select 1
-                            from RecordAspects
-                            where RecordAspects.recordId=Records.recordId
-                            and aspectId=$aspectId
-                            and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])""")
+    if (linkAspects.isEmpty) {
+      // There are no linking aspects, so there cannot be any records linking to these IDs.
+      RecordsPage(0, None, List())
+    } else {
+      val dereferenceSelectors = linkAspects.map {
+        case (aspectId, propertyWithLink) =>
+          sqls"""exists (select 1
+                         from RecordAspects
+                         where RecordAspects.recordId=Records.recordId
+                         and aspectId=$aspectId
+                         and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])"""
+      }
+
+      val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
+
+      val selectors = Seq(Some(SQLSyntax.join(dereferenceSelectors.toSeq, SQLSyntax.or)), excludeSelector)
+
+      this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
     }
-
-    val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
-
-    val selectors = dereferenceSelectors ++ Seq(excludeSelector)
-
-    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
   }
 
   def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
@@ -85,6 +90,27 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           and RecordAspects.aspectId=$aspectId"""
       .map(rowToAspect)
       .single.apply()
+  }
+
+  def getPageTokens(implicit session: DBSession,
+                    aspectIds: Iterable[String],
+                    limit: Option[Int] = None,
+                    recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): List[String] = {
+    val whereClauseParts = aspectIdsToWhereClause(aspectIds) ++ recordSelector
+
+    //    val whereClause = aspectIds.map(aspectId => s"recordaspects.aspectid = '$aspectId'").mkString(" AND ")
+
+    sql"""SELECT sequence
+        FROM
+        (
+            SELECT sequence, ROW_NUMBER() OVER (ORDER BY sequence) AS rownum
+            FROM records
+            ${makeWhereClause(whereClauseParts)}
+        ) AS t
+        WHERE t.rownum % ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)} = 0
+        ORDER BY t.sequence;""".map(rs => {
+      rs.string("sequence")
+    }).list.apply()
   }
 
   def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record] = {
@@ -529,7 +555,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     }
   }
 
-  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink]) = {
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
     aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
         // Use a simple numbered column name rather than trying to make the aspect name safe.

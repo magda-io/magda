@@ -6,67 +6,73 @@ import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryC
 import * as fs from "fs";
 import * as yargs from "yargs";
 
-const argv = yargs
-    .config()
-    .help()
-    .option("name", {
-        describe:
-            "The name of this connector, to be displayed to users to indicate the source of datasets.",
-        type: "string",
-        demandOption: true
-    })
-    .option("sourceUrl", {
-        describe: "The base URL of the CKAN server, without /api/...",
-        type: "string",
-        demandOption: true
-    })
-    .option("pageSize", {
-        describe:
-            "The number of datasets per page to request from the CKAN server.",
-        type: "number",
-        default: 1000
-    })
-    .option("ignoreHarvestSources", {
-        describe:
-            "An array of harvest sources to ignore.  Datasets from these harvest soures will not be added to the registry.",
-        type: "array",
-        default: []
-    })
-    .option("registryUrl", {
-        describe:
-            "The base URL of the registry to which to write data from CKAN.",
-        type: "string",
-        default: "http://localhost:6101/v0"
-    })
-    .option('interactive', {
-        describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
-        type: 'boolean',
-        default: false
-    })
-    .option('listenPort', {
-        describe: 'The port on which to run the REST API when in interactive model.',
-        type: 'number',
-        default: 6113
-    })
-    .option('timeout', {
-        describe: 'When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.',
-        type: 'number',
-        default: 0
-    })
-    .option("jwtSecret", {
-        describe: "The shared secret for intra-network communication",
-        type: "string",
-        demand: true,
-        default:
-            process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
-    })
-    .option("userId", {
-        describe:
-            "The user id to use when making authenticated requests to the registry",
-        type: "string",
-        demand: true,
-        default: process.env.USER_ID || process.env.npm_package_config_userId
-    }).argv;
+import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
+import Ckan from "./Ckan";
+import CkanConnector from "./CkanConnector";
+import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+
+const argv = addJwtSecretFromEnvVar(
+    yargs
+        .config()
+        .help()
+        .option("name", {
+            describe:
+                "The name of this connector, to be displayed to users to indicate the source of datasets.",
+            type: "string",
+            demandOption: true
+        })
+        .option("sourceUrl", {
+            describe: "The base URL of the CKAN server, without /api/...",
+            type: "string",
+            demandOption: true
+        })
+        .option("pageSize", {
+            describe:
+                "The number of datasets per page to request from the CKAN server.",
+            type: "number",
+            default: 1000
+        })
+        .option("ignoreHarvestSources", {
+            describe:
+                "An array of harvest sources to ignore.  Datasets from these harvest soures will not be added to the registry.",
+            type: "array",
+            default: []
+        })
+        .option("registryUrl", {
+            describe:
+                "The base URL of the registry to which to write data from CKAN.",
+            type: "string",
+            default: "http://localhost:6101/v0"
+        })
+        .option('interactive', {
+            describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
+            type: 'boolean',
+            default: false
+        })
+        .option('listenPort', {
+            describe: 'The port on which to run the REST API when in interactive model.',
+            type: 'number',
+            default: 6113
+        })
+        .option('timeout', {
+            describe: 'When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.',
+            type: 'number',
+            default: 0
+        })
+        .option("jwtSecret", {
+            describe: "The shared secret for intra-network communication",
+            type: "string"
+        })
+        .option("userId", {
+            describe:
+                "The user id to use when making authenticated requests to the registry",
+            type: "string",
+            demand: true,
+            default:
+                process.env.USER_ID || process.env.npm_package_config_userId
+        }).argv
+);
 
 const datasetAspectBuilders: AspectBuilder[] = [
     {

@@ -26,6 +26,6 @@ spec:
         env:
         - name: STARTUP_SCRIPT
           value: |
-            #! /bin/bash
+            #! /bin/sh
             sysctl -w vm.max_map_count=262144
             echo "done"

@@ -1,7 +1,11 @@
 {
   "name": "@magda/sleuther-framework",
   "description": "MAGDA Sleuther Framework",
+<<<<<<< HEAD
   "version": "0.0.31-0",
+=======
+  "version": "0.0.30",
+>>>>>>> origin/master
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc -p tsconfig-build.json",
