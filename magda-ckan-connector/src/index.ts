@@ -1,3 +1,4 @@
+import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
 import Ckan from "./Ckan";
 import createTransformer from "./createTransformer";
@@ -5,12 +6,6 @@ import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import * as fs from "fs";
 import * as yargs from "yargs";
-
-import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
-import Ckan from "./Ckan";
-import CkanConnector from "./CkanConnector";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
