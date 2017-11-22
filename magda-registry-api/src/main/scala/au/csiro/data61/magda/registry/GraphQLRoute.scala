@@ -35,9 +35,11 @@ object GraphQLRoute {
       QueryParser.parse(query) match {
 
       // query parsed successfully, time to execute it!
-      case Success(queryAst) ⇒
+      case Success(queryAst) ⇒ {
+        // Pulled out for initialisation side-effects
+        val fetcher = new GraphQLDataConnection.Fetcher
         complete(Executor.execute(GraphQLSchema.MagdaSchema, queryAst,
-            userContext = new GraphQLDataFetcher,
+            userContext = fetcher,
             variables = vars,
             operationName = operation)
           .map(OK → _)
@@ -45,6 +47,7 @@ object GraphQLRoute {
             case error: QueryAnalysisError ⇒ akka.http.scaladsl.model.StatusCodes.BadRequest → error.resolveError
             case error: ErrorWithResolver ⇒ InternalServerError → error.resolveError
           })
+        }
 
       // can't parse GraphQL query, return error
       case Failure(error) ⇒
