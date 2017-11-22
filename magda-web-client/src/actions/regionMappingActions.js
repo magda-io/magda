@@ -18,7 +18,7 @@ export function receiveRegionMapping(json: Object): FacetAction{
   }
 }
 
-export function requestRegionMappingError(error: number): Action {
+export function requestRegionMappingError(error: number): FacetAction {
   return {
     type: actionTypes.REQUEST_REGION_MAPPING_ERROR,
     error,
