@@ -19,6 +19,20 @@ import { createStore, applyMiddleware } from "redux";
 import AppContainer from "./AppContainer";
 import PropTypes from 'prop-types';
 
+import { ApolloProvider } from 'react-apollo'
+import { ApolloClient } from 'apollo-client'
+import { HttpLink } from 'apollo-link-http'
+import { InMemoryCache } from 'apollo-cache-inmemory'
+
+
+// Apollo client
+const httpLink = new HttpLink({ uri: 'http://localhost:6101/v0/graphql' })
+
+const client = new ApolloClient({
+  link: httpLink,
+  cache: new InMemoryCache()
+})
+
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
 
@@ -50,13 +64,18 @@ class GAListener extends React.Component {
   }
 }
 
+
+
+
 ReactDOM.render(
   <Provider store={store}>
-    <BrowserRouter>
-      <GAListener>
-        <Route path="/" component={AppContainer}/>
-      </GAListener>
-    </BrowserRouter>
+    <ApolloProvider client={client}>
+      <BrowserRouter>
+        <GAListener>
+          <Route path="/" component={AppContainer}/>
+        </GAListener>
+      </BrowserRouter>
+    </ApolloProvider>
   </Provider>,
   document.getElementById("root")
 );
