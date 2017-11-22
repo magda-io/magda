@@ -9,7 +9,7 @@ import {
   Route,
 } from "react-router-dom";
 
-import createHistory from 'history/createBrowserHistory'
+
 
 import thunkMiddleware from "redux-thunk";
 import React from "react";
@@ -18,7 +18,7 @@ import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
 import AppContainer from "./AppContainer";
-
+const createHistory = require('history').createBrowserHistory;
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
 
