@@ -1,14 +1,18 @@
+// one actually being used
 import * as URI from 'urijs';
+import * as moment from 'moment'
 
 export interface CswUrlBuilderOptions {
     name?: string,
     baseUrl: string;
     apiBaseUrl?: string;
+    retrievedAt?: number;
 }
 
 export default class CswUrlBuilder {
     public readonly name: string;
     public readonly baseUrl: uri.URI;
+    public readonly retrievedAt: string;
 
     public readonly GetRecordsParameters = {
         service: 'CSW',
@@ -34,6 +38,8 @@ export default class CswUrlBuilder {
     constructor(options: CswUrlBuilderOptions) {
         this.name = options.name || 'CSW';
         this.baseUrl = new URI(options.baseUrl);
+        this.retrievedAt = moment(options.retrievedAt).toISOString() || moment(Date.now()).toISOString();
+        console.log("built CSW Url with retrievedAt:"+this.retrievedAt);
     }
 
     public getRecordsUrl(constraint?: string): string {

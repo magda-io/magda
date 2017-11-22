@@ -17,6 +17,7 @@ export default class Csw implements ConnectorSource {
     public readonly maxRetries: number;
     public readonly secondsBetweenRetries: number;
     public readonly urlBuilder: CswUrlBuilder;
+    public readonly retrievedAt: number
 
     private readonly xmlParser = new xmldom.DOMParser();
     private readonly xmlSerializer = new xmldom.XMLSerializer();
@@ -27,9 +28,11 @@ export default class Csw implements ConnectorSource {
         this.pageSize = options.pageSize || 10;
         this.maxRetries = options.maxRetries || 10;
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
+        this.retrievedAt = options.retrievedAt;
         this.urlBuilder = new CswUrlBuilder({
             name: options.name,
-            baseUrl: options.baseUrl
+            baseUrl: options.baseUrl,
+            retrievedAt: options.retrievedAt || Date.now()
         });
     }
 
@@ -210,4 +213,5 @@ export interface CswOptions {
     pageSize?: number;
     maxRetries?: number;
     secondsBetweenRetries?: number;
+    retrievedAt?: number;
 }

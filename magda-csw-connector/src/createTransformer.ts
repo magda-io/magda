@@ -11,7 +11,7 @@ export interface CreateTransformerOptions {
     sourceUrl: string,
     datasetAspectBuilders: AspectBuilder[],
     distributionAspectBuilders: AspectBuilder[],
-    organizationAspectBuilders: AspectBuilder[]
+    organizationAspectBuilders: AspectBuilder[],
 }
 
 export default function createTransformer({
@@ -19,7 +19,7 @@ export default function createTransformer({
     sourceUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
-    organizationAspectBuilders
+    organizationAspectBuilders,
 }: CreateTransformerOptions) {
     return new CswTransformer({
         datasetAspectBuilders: datasetAspectBuilders,
@@ -32,7 +32,8 @@ export default function createTransformer({
             jsonpath: jsonpath,
             csw: new CswUrlBuilder({
                 name: name,
-                baseUrl: sourceUrl
+                baseUrl: sourceUrl,
+                retrievedAt: -1 // not sure when createTransformer will be called, so putting this here
             })
         }
     });
