@@ -96,14 +96,6 @@ object GraphQLSchema {
     case object Object extends JsonSchemaType("object")
   }
 
-  // case class SchemaClass(properties: Option[Map[String, PropType]])
-  // case class Aspect(name: String, schema: SchemaClass)
-  // case class Aspects(aspects: List[Aspect])
-
-// Decode aspect schema directly into ObjectType
-// List[JsValue] -> Map[String (aspect name), ObjectType (aspect def)]
-// Aspect =
-
 
   case class RecordProjectorAttributes(attributes: List[String], aspects: List[String], includeAspectsList: Boolean)
 
@@ -138,14 +130,14 @@ object GraphQLSchema {
 
 
   object AspectJsonProtocol extends DefaultJsonProtocol {
-//    def makeResolver(name: String, outputType: OutputType[_]): (Context[GraphQLDataFetcher, JsObject] => Action[GraphQLDataFetcher, _]) = {
+//    def makeResolver(name: String, outputType: OutputType[_]): (Context[GraphQLDataConnection.Fetcher, JsObject] => Action[GraphQLDataConnection.Fetcher, _]) = {
 //      // Fetch correct field of parent JsObject and treat it according to the field type
 //      outputType match {
 //        case StringType => _.value.fields.get(name).map(_.convertTo[String])
 //        case IntType => _.value.fields.get(name).map(_.convertTo[Int])
 ////        case ListType(_) => _.value.fields.get(name).map(_.convertTo[List[JsValue]])
 ////        case ObjectType(_,_,_,_,_,_) => _.value.fields.get(name).map(_.asJsObject)
-//        // case RecordType => Projector((ctx: Context[GraphQLDataFetcher, JsObject], prj) => ctx.value.fields.get(name).map(id => {
+//        // case RecordType => Projector((ctx: Context[GraphQLDataConnection.Fetcher, JsObject], prj) => ctx.value.fields.get(name).map(id => {
 //        //   val projectorAttrs = extractAttributesAndAspects(prj)
 //        //   ctx.ctx.getRecord(id.convertTo[String], projectorAttrs.aspects)
 //        // }))
@@ -153,14 +145,14 @@ object GraphQLSchema {
 //      }
 //    }
 //
-//    def constructField(name: String, outType: OutputType[_]): Field[GraphQLDataFetcher, JsObject] = {
+//    def constructField(name: String, outType: OutputType[_]): Field[GraphQLDataConnection.Fetcher, JsObject] = {
 //      Field(name, OptionType(outType), resolve = makeResolver(name, outType))
 //    }
 //
 //    def constructObjectSchemaDefinition(path: String, schema: JsObject): Option[OutputType[_]] = {
 //      schema.fields.get("properties").map(_.asJsObject.convertTo[Map[String, JsValue]].toList.flatMap({
 //        case (name, childSchema) => constructSchemaDefinition(path + "_" + name, schema.asJsObject).map(outType => constructField(name, outType))
-//      })).map(x => ObjectType(path, fields[GraphQLDataFetcher, JsObject](x:_*)))
+//      })).map(x => ObjectType(path, fields[GraphQLDataConnection.Fetcher, JsObject](x:_*)))
 //    }
 
 //     def constructSchemaDefinition(path: String, schema: JsObject): Option[OutputType[_]] = {
@@ -179,7 +171,7 @@ object GraphQLSchema {
 //       //   case JsonSchemaType.Array => schema.fields.get("items").map(_.asJsObject).flatMap(x => constructSchemaDefinition(path + "_items", x)).map(x => ListType(x))
 //       //   case JsonSchemaType.Object => schema.fields.get("properties").map(_.asJsObject.convertTo[Map[String, JsValue]].toList.flatMap({
 //       //     case (name, schema) => constructSchemaDefinition(path + "_" + name, schema.asJsObject).map(outType => constructField(name, outType))
-//       //   })).map(x => ObjectType(path, fields[GraphQLDataFetcher, JsObject](x:_*)))
+//       //   })).map(x => ObjectType(path, fields[GraphQLDataConnection.Fetcher, JsObject](x:_*)))
 //       //   case _ => None
 
 //       // })
@@ -190,40 +182,44 @@ object GraphQLSchema {
       schema.fields.get("links").flatMap(links => if (links.convertTo[List[JsObject]].exists(isRecordLink)) Some("record") else None).getOrElse(typeStr)
     }
 
-    def constructJsonField(name: String, path: String,  schema: JsObject): Field[GraphQLDataFetcher, Map[String, JsValue]] = {
+    def constructJsonField(name: String, path: String,  schema: JsObject): Field[GraphQLDataConnection.Fetcher, Map[String, JsValue]] = {
       val jsType = determineType(schema)
-      println("Type is '" + jsType + "' with schema: " + schema)
       jsType match {
-        case "string" => Field(name, OptionType(StringType), resolve = (ctx: Context[GraphQLDataFetcher, Map[String, JsValue]]) => ctx.value.get(name).map(_.convertTo[String]))
-        case "integer" => Field(name, OptionType(IntType), resolve = (ctx: Context[GraphQLDataFetcher, Map[String, JsValue]]) => ctx.value.get(name).map(_.convertTo[Int]))
+        case "string" => Field(name, OptionType(StringType), resolve = (ctx: Context[GraphQLDataConnection.Fetcher, Map[String, JsValue]]) => ctx.value.get(name).map(_.convertTo[String]))
+        case "integer" => Field(name, OptionType(IntType), resolve = (ctx: Context[GraphQLDataConnection.Fetcher, Map[String, JsValue]]) => ctx.value.get(name).map(_.convertTo[Int]))
         case "array" => determineType(schema.fields("items").asJsObject) match {
-          case "string" => Field(name, OptionType(ListType(StringType)), resolve = (ctx: Context[GraphQLDataFetcher, Map[String, JsValue]]) => ctx.value.get(name).flatMap(_ match {
+          case "string" => Field(name, OptionType(ListType(StringType)), resolve = (ctx: Context[GraphQLDataConnection.Fetcher, Map[String, JsValue]]) => ctx.value.get(name).flatMap(_ match {
             case JsNull => None
             case arr: JsArray => Some(arr.convertTo[List[String]])
           }))
-          case "integer" => Field(name, OptionType(ListType(IntType)), resolve = (ctx: Context[GraphQLDataFetcher, Map[String, JsValue]]) => ctx.value.get(name).flatMap(_ match {
+          case "integer" => Field(name, OptionType(ListType(IntType)), resolve = (ctx: Context[GraphQLDataConnection.Fetcher, Map[String, JsValue]]) => ctx.value.get(name).flatMap(_ match {
             case JsNull => None
             case arr: JsArray => Some(arr.convertTo[List[Int]])
           }))
           case "object" => {
-            val propFields = schema.fields("items").asJsObject.fields.get("properties").map(_.asJsObject.convertTo[Map[String, JsValue]].toList).getOrElse(Nil).map({
+            val propFields = schema.fields("items").asJsObject.fields("properties").asJsObject.convertTo[Map[String, JsValue]].toList.map({
               case (propName, propSchema) => constructJsonField(propName, path + "_" + propName, propSchema.asJsObject)
             })
-            Field(name, OptionType(ListType(ObjectType(path, fields(propFields:_*)))), resolve = (ctx: Context[GraphQLDataFetcher, Map[String, JsValue]]) => ctx.value.get(name).flatMap(_ match {
+            Field(name, OptionType(ListType(ObjectType(path, fields(propFields:_*)))), resolve = (ctx: Context[GraphQLDataConnection.Fetcher, Map[String, JsValue]]) => ctx.value.get(name).flatMap(_ match {
               case JsNull => None
               case arr: JsArray => Some(arr.convertTo[List[Map[String, JsValue]]])
             }))
           }
-          //case "record"  =>
+          case "record" => Field(name, OptionType(ListType(RecordType)), resolve =  Projector((ctx: Context[GraphQLDataConnection.Fetcher, Map[String, JsValue]], prj) => {
+            ctx.value.get(name).flatMap(_ match {
+              case JsNull => None
+              case JsArray(vec) => Some(vec.map(id => ctx.ctx.getRecord(id.convertTo[String], extractAttributesAndAspects(prj))).toList)
+            })
+          }))
           case t => throw new RuntimeException("type " + t + " in array not recognised")
         }
         case "object" => {
-          val propFields = schema.fields.get("properties").map(_.asJsObject.convertTo[Map[String, JsValue]].toList).getOrElse(Nil).map({
+          val propFields = schema.fields("properties").asJsObject.convertTo[Map[String, JsValue]].toList.map({
             case (propName, propSchema) => constructJsonField(propName, path + "_" + propName, propSchema.asJsObject)
           })
-          Field(name, OptionType(ObjectType(path, fields(propFields:_*))), resolve = (ctx: Context[GraphQLDataFetcher, Map[String, JsValue]]) => ctx.value.get(name).map(_.convertTo[Map[String, JsValue]]))
+          Field(name, OptionType(ObjectType(path, fields(propFields:_*))), resolve = (ctx: Context[GraphQLDataConnection.Fetcher, Map[String, JsValue]]) => ctx.value.get(name).map(_.convertTo[Map[String, JsValue]]))
         }
-        case "record" => Field(name, OptionType(RecordType), resolve =  Projector((ctx: Context[GraphQLDataFetcher, Map[String, JsValue]], prj) => {
+        case "record" => Field(name, OptionType(RecordType), resolve =  Projector((ctx: Context[GraphQLDataConnection.Fetcher, Map[String, JsValue]], prj) => {
           ctx.value.get(name).map(id => ctx.ctx.getRecord(id.convertTo[String], extractAttributesAndAspects(prj)))
         }))
         case t => throw new RuntimeException("type " + t + " not recognised")
@@ -246,13 +242,9 @@ object GraphQLSchema {
 
   val a: List[OutputType[_]] = List(StringType, IntType, ListType(StringType), RecordType)
 
-
-  case class Record(id: String, name: String, aspectsList: List[String], aspects: Map[String, JsValue])
-  // might want to change aspects to a Map[String, JsValue sometime]
-
   lazy val RecordType = ObjectType(
     "Record",
-    () => fields[GraphQLDataFetcher, Record](
+    () => fields[GraphQLDataConnection.Fetcher, GraphQLTypes.Record](
       Field("id", StringType, resolve = _.value.id),
       Field("name", StringType, resolve = _.value.name),
       Field("aspectsList", ListType(StringType), resolve = _.value.aspectsList),
@@ -260,9 +252,30 @@ object GraphQLSchema {
     )
   )
 
-  case class RecordsPageGraphQL(records: List[Record], nextPageToken: String)
+//  val aspectFields = source.parseJson.asJsObject.fields("aspects").convertTo[List[JsValue]].map(_.asJsObject.getFields("name", "schema") match {
+//    case Seq(JsString(name), schema) => {
+//      val cleanedName = name.replaceAll("^([0-9])|[^A-Za-z0-9_]", "_$1") // Replace leading digit with _digit and any other characters with _
+//      constructJsonField(cleanedName, "Aspect_" + cleanedName, schema.asJsObject)
+//    }
+//    case _ => throw new RuntimeException("aspect not well defined")
+//  })
+  val aspectFields = GraphQLDataConnection.aspects.flatMap {
+    case (id, schema) => try {
+      Some(constructJsonField(id, "Aspect_" + id, schema))
+    } catch {
+      case e: Exception => {
+        println("Failed to process aspect '" + id + "': " + schema)
+        println(e.getMessage())
+      }
+      None
+    }
+  }
+  val Aspects = ObjectType(
+    "Aspects",
+    fields[GraphQLDataConnection.Fetcher, Map[String, JsValue]](aspectFields:_*)
+  )
 
-  val RecordsPageGraphQLType = ObjectType("RecordsPage", fields[GraphQLDataFetcher,RecordsPageGraphQL](
+  val RecordsPageGraphQLType = ObjectType("RecordsPage", fields[GraphQLDataConnection.Fetcher, GraphQLTypes.RecordsPageGraphQL](
     Field("records", ListType(RecordType), resolve = _.value.records),
     Field("nextPageToken", StringType, resolve = _.value.nextPageToken)
   ))
@@ -271,33 +284,29 @@ object GraphQLSchema {
 
   val PageTokenArg = Argument("pageToken", OptionInputType(StringType))
   val RequiredAspectsArg = Argument("requiredAspects", ListInputType(StringType))
+  val IdArg = Argument("id", StringType)
   val Query = ObjectType(
-
-    "Query", fields[GraphQLDataFetcher, Unit](
+    "Query", fields[GraphQLDataConnection.Fetcher, Unit](
       Field("allRecords", RecordsPageGraphQLType,
         arguments = List(PageTokenArg, RequiredAspectsArg),
-        resolve = _ => RecordsPageGraphQL(List(Record("test0", "Test dataset", List("Aspect_test_record_link"), Map("test_record_link" -> """{"record_test": "0"}""".parseJson))), "0")
+        resolve = _ => GraphQLTypes.RecordsPageGraphQL(List(GraphQLTypes.Record("test0", "Test dataset", List("Aspect_test_record_link"), Map("test_record_link" -> """{"record_test": "0e2d5d23-d0c9-4c7f-807f-2d5157be6828"}""".parseJson))), "0")
 //          Projector((ctx,prj) => {
 //
 //          prj.foreach { x => println(x.asVector) }
 ////          ctx.ctx.getRecordsPage(ctx.arg(PageTokenArg))
 //          RecordsPageGraphQL(List(Record("test0", "Test dataset", List("Aspect_test_record_link"), Map("test_record_link" -> """{"record_test": "0"}""".parseJson))), "0")
 //        })
+      ),
+      Field("record", RecordType,
+        arguments = List(IdArg),
+        resolve = Projector((ctx: Context[GraphQLDataConnection.Fetcher, Unit], prj) => {
+          ctx.ctx.getRecord(ctx.arg(IdArg), extractAttributesAndAspects(prj))
+        })
       )
     )
   )
 
-  val aspectFields = source.parseJson.asJsObject.fields("aspects").convertTo[List[JsValue]].map(_.asJsObject.getFields("name", "schema") match {
-    case Seq(JsString(name), schema) => {
-      val cleanedName = name.replaceAll("^([0-9])|[^A-Za-z0-9_]", "_$1") // Replace leading digit with _digit and any other characters with _
-      constructJsonField(cleanedName, "Aspect_" + cleanedName, schema.asJsObject)
-    }
-    case _ => throw new RuntimeException("aspect not well defined")
-  })
-  val Aspects = ObjectType(
-    "Aspects",
-    fields[GraphQLDataFetcher, Map[String, JsValue]](aspectFields:_*)
-  )
+
 
   val MagdaSchema = Schema(Query)
 }
