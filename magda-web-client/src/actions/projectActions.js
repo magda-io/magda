@@ -167,10 +167,8 @@ export function postNewProject(props: ProjectProps){
       if(result.error){
         return false;
       }
-      // should change into browserHistory?
-      // browserHistory.push(`/projects/${encodeURIComponent(props.id)}`);
-      // dispatch(createProjectSuccess(result, true))
-      // setTimeout(function(){ dispatch(createProjectSuccess(result, false))}, 5000);
+      dispatch(createProjectSuccess(result, true))
+      setTimeout(function(){ dispatch(createProjectSuccess(result, false))}, 5000);
     });
 
   }

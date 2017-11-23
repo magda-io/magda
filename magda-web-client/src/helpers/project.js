@@ -64,7 +64,7 @@ export function parseProject(rawProject?: RawProject): ParsedProject {
    }
    return {
      name: '',
-     id: '',
+     id: null,
      description: '',
      status: '',
      members: [],
