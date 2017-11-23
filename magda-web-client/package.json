@@ -87,5 +87,8 @@
     "docker": {
       "include": "node_modules build"
     }
+  },
+  "dependencies": {
+    "history": "^4.7.2"
   }
 }
