@@ -148,9 +148,9 @@ class CreateProject extends Component {
     }
    render(){
      if(this.props.showNotification && this.props.project.id){
-       <Redirect to={{
+       return (<Redirect to={{
                pathname: `/projects/${encodeURIComponent(this.props.project.id)}`
-             }}/>
+             }}/>)
      }
      else if(this.props.user){
        return this.renderCreateProject();
@@ -176,7 +176,7 @@ function mapStateToProps(state, ownProps) {
   const dataset =record.dataset;
   const user = state.userManagement.user
   return {
-    isFetching, error, fieldErrors, dataset, user
+    isFetching, error, fieldErrors, dataset, user, showNotification
   };
 }
 
