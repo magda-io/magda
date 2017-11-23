@@ -8,6 +8,7 @@
     "services": [],
     "catalog": [
         {
+            "zoomOnEnable":true,
             "name": "New South Wales Government",
             "type": "group",
             "isPromoted": true,

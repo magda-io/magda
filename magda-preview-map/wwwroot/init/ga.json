@@ -12,6 +12,7 @@
     "services": [],
     "catalog": [
         {
+            "zoomOnEnable":true,
             "name": "GA",
             "type": "group",
             "isOpen": true,

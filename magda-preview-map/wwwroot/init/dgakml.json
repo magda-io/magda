@@ -1,6 +1,7 @@
 {
     "catalog": [
         {
+            "zoomOnEnable":true,
             "name": "Data.gov.au KML",
             "type": "ckan",
             "url": "http://www.data.gov.au",

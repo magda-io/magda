@@ -7,6 +7,7 @@
     },
     "catalog": [
         {
+            "zoomOnEnable":true,
             "name": "Queensland Government",
             "type": "group",
             "isPromoted": true,

@@ -1,6 +1,7 @@
 {
   "catalog": [
     {
+      "zoomOnEnable": true,
       "name": "Chart examples",
       "type": "group",
       "isOpen": true,

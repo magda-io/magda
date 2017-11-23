@@ -22,7 +22,8 @@
             "minimumMaxScaleDenominator": 1e10,
             "wmsParameters": {"tiled" : true},
             "blacklist": {
-            }
+            },
+            "zoomOnEnable": true
         },
         {
             "name": "Data Providers",

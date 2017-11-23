@@ -12,6 +12,7 @@
     },
     "catalog": [
         {
+            "zoomOnEnable":true,
             "name": "Telecommunications in New Developments",
             "type": "ckan",
             "url": "http://www.data.gov.au",

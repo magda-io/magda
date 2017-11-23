@@ -14,6 +14,7 @@
     "services": [],
     "catalog": [
         {
+            "zoomOnEnable":true,
             "name": "Geelong Open Data",
             "type": "ckan",
             "url": "http://www.data.gov.au",
