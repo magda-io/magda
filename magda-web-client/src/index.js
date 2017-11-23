@@ -24,7 +24,6 @@ import AppContainer from "./Components/AppContainer";
 import Feedback from "./Components/Feedback";
 import Contact from "./Components/Contact";
 import Account from "./Components/Account/Account";
-import Connectors from "./Components/Admin/Connectors";
 import signInRedirect from "./Components/Account/SignInRedirect";
 
 import { Provider } from "react-redux";
