@@ -3,5 +3,5 @@
     "name": "Terrestrial Ecosystem Research Network",
     "sourceUrl": "http://data.auscover.org.au/geonetwork/srv/eng/csw",
     "pageSize": 100,
-    "schedule": "* * */3 * *"
+    "schedule": "0 11 */3 * *"
 }

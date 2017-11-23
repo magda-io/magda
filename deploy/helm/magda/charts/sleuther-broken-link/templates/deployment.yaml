@@ -16,6 +16,8 @@ spec:
       - name: sleuther-broken-link
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
         env:
         - name: NODE_PORT
           value: "80"

@@ -15,9 +15,7 @@ spec:
       containers:
       - name: combined-db
         resources:
-          requests:
-            cpu: 0m
-            memory: 0
+{{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         ports:

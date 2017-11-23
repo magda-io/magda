@@ -157,7 +157,7 @@ export class WebHookAcknowledgement {
     /**
     * The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.
     */
-    'lastEventIdReceived': number;
+    'lastEventIdReceived': any;
 }
 
 /**
@@ -1338,6 +1338,61 @@ export class RecordsApi {
             }
         }
         return new Promise<{ response: http.IncomingMessage; body: Record;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Get a list tokens for paging through the records
+     * 
+     * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
+     * @param limit The size of each page to get tokens for.
+     */
+    public getPageTokens (aspect?: Array<string>, limit?: number) : Promise<{ response: http.IncomingMessage; body: Array<string>;  }> {
+        const localVarPath = this.basePath + '/records/pagetokens';
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        if (aspect !== undefined) {
+            queryParameters['aspect'] = aspect;
+        }
+
+        if (limit !== undefined) {
+            queryParameters['limit'] = limit;
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'GET',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: Array<string>;  }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);

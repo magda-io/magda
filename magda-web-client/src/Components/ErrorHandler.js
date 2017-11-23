@@ -1,6 +1,6 @@
 //@flow
 import React from 'react';
-import {config} from '../config.js';
+import {config} from '../config' ;
 import ReactDocumentTitle from 'react-document-title';
 
 export default class ErrorHandler extends React.Component {

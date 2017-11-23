@@ -22,15 +22,11 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 
-  var lastCrawl: Option[Future[Unit]] = Some(crawler.crawl(indexer))
-
-  def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
-
   val routes =
     magdaRoute {
       path("in-progress") {
         get {
-          complete(OK, crawlInProgress.toString)
+          complete(OK, crawler.crawlInProgress().toString)
         }
       } ~
         post {
@@ -43,13 +39,10 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
     }
 
   def crawl(): Boolean = {
-    if (crawlInProgress) {
+    if (crawler.crawlInProgress()) {
       false
     } else {
-      lastCrawl = Some(crawler.crawl(indexer))
-      val future = lastCrawl.get
-
-      future.onComplete {
+      crawler.crawl().onComplete {
         case Success(_) =>
           getLogger.info("Successfully completed crawl")
         case Failure(e) =>

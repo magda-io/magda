@@ -184,7 +184,7 @@ If you want to just start up individual pods (e.g. just the combined database) y
 helm install --name combined-db --set tags.all=false --set tags.combined-db=true deploy/helm/magda -f deploy/helm/minikube-dev.yml
 ```
 
-Once everything starts up, you can access the web front end on http://192.168.99.100:30000.  The IP address may be different on your system.  Get the real IP address by running:
+Once everything starts up, you can access the web front end on http://192.168.99.100:30100.  The IP address may be different on your system.  Get the real IP address by running:
 
 ```bash
 minikube ip
