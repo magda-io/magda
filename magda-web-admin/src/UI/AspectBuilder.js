@@ -103,7 +103,6 @@ export default class AspectBuilder extends Component {
                           mode="javascript"
                           theme="github"
                           onChange={this.onChange}
-                          name="UNIQUE_ID_OF_DIV"
                           value={this.state.code}
                           width={'100%'}
                           editorProps={{$blockScrolling: true}}/>}
