@@ -4,7 +4,7 @@ import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import linkedDataAspectDef from "./linkedDataAspectDef";
-import datasetQualityAspectDef from "./linkedDataAspectDef";
+import datasetQualityAspectDef from "@magda/sleuther-framework/dist/common-aspect-defs/datasetQualityAspectDef";
 import openLicenses from "./openLicenses";
 import formatStars from "./openFormats";
 

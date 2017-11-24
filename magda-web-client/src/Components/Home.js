@@ -2,13 +2,13 @@
 import React from 'react';
 import Statistics from '../Components/Statistics';
 import News from '../UI/News';
-import {config} from '../config'
+import {config} from '../config';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {fetchFeaturedDatasetsFromRegistry} from '../actions/featuredDatasetsActions';
 import {fetchDatasetCount} from '../actions/statsActions';
 import {fetchNewsfromRss} from '../actions/newsActions';
-import DatasetSummary from '../Dataset/DatasetSummary';
+import DatasetSummary from '../Components/Dataset/DatasetSummary';
 import ReactDocumentTitle from 'react-document-title';
 import './Home.css';
 

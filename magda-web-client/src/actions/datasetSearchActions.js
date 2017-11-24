@@ -20,7 +20,7 @@ export function receiveResults(apiQuery: string, json: DataSearchJson): SearchAc
   }
 }
 
-export function transferFailed(error: number): SearchAction{
+export function transferFailed(error: object): SearchAction{
   return {
     type: actionTypes.FETCH_ERROR,
     error
@@ -44,7 +44,7 @@ export function fetchSearchResults(query: string): Store {
       if (response.status === 200) {
           return response.json();
       }
-      return dispatch(transferFailed(response.status))
+      return dispatch(transferFailed({title: response.status, detail: response.statusText}))
     })
     .then((json: DataSearchJson) =>{
         if(!json.error){

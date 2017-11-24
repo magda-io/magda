@@ -6,6 +6,7 @@ export type Options = {
     registryApiUrl: string;
     pullPolicy: string;
     userId: string;
+    interactive?: boolean;
 };
 
 export default function buildConnectorManifest({
@@ -15,9 +16,10 @@ export default function buildConnectorManifest({
     dockerRepo,
     registryApiUrl,
     pullPolicy,
-    userId
+    userId,
+    interactive = false
 }: Options) {
-    const jobName = `connector-${id}`;
+    const jobName = interactive ? `connector-interactive-${id}` : `connector-${id}`;
 
     return {
         apiVersion: "batch/v1",
@@ -43,7 +45,8 @@ export default function buildConnectorManifest({
                                 "--config",
                                 "/etc/config/connector.json",
                                 "--registryUrl",
-                                registryApiUrl
+                                registryApiUrl,
+                                ...interactive ? ['--interactive', '--listenPort', '80', '--timeout', '1800'] : []
                             ],
                             imagePullPolicy: pullPolicy,
                             resources: {

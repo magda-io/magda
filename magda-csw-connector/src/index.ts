@@ -1,17 +1,12 @@
-import * as moment from "moment";
-import * as URI from "urijs";
-import * as lodash from "lodash";
-import * as jsonpath from "jsonpath";
-import * as yargs from "yargs";
-
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-
+import Csw from "./Csw";
+import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
+import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import createTransformer from "./createTransformer";
 import datasetAspectBuilders from "./datasetAspectBuilders";
 import distributionAspectBuilders from "./distributionAspectBuilders";
 import organizationAspectBuilders from "./organizationAspectBuilders";
-import Csw from "./Csw";
-import CswConnector from "./CswConnector";
+import * as yargs from "yargs";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -41,6 +36,21 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6101/v0"
         })
+        .option('interactive', {
+            describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
+            type: 'boolean',
+            default: false
+        })
+        .option('listenPort', {
+            describe: 'The port on which to run the REST API when in interactive model.',
+            type: 'number',
+            default: 6113
+        })
+        .option('timeout', {
+            describe: 'When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.',
+            type: 'number',
+            default: 0
+        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
@@ -67,20 +77,33 @@ const registry = new Registry({
     userId: argv.userId
 });
 
-const connector = new CswConnector({
+const transformerOptions = {
+    name: argv.name,
+    sourceUrl: argv.sourceUrl,
+    pageSize: argv.pageSize,
+    ignoreHarvestSources: argv.ignoreHarvestSources,
+    registryUrl: argv.registryUrl,
+    datasetAspectBuilders,
+    distributionAspectBuilders,
+    organizationAspectBuilders
+};
+
+const transformer = createTransformer(transformerOptions);
+
+const connector = new JsonConnector({
     source: csw,
+    transformer: transformer,
     registry: registry,
-    datasetAspectBuilders: datasetAspectBuilders,
-    distributionAspectBuilders: distributionAspectBuilders,
-    organizationAspectBuilders: organizationAspectBuilders,
-    libraries: {
-        moment: moment,
-        URI: URI,
-        lodash: lodash,
-        jsonpath: jsonpath
-    }
 });
 
-connector.run().then(result => {
-    console.log(result.summarize());
-});
+if (!argv.interactive) {
+    connector.run().then(result => {
+        console.log(result.summarize());
+    });
+} else {
+    connector.runInteractive({
+        timeoutSeconds: argv.timeout,
+        listenPort: argv.listenPort,
+        transformerOptions: transformerOptions
+    });
+}

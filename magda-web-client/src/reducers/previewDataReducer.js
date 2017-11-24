@@ -16,7 +16,7 @@ type previewDataState = {
 type previewDataAction = {
   type: string,
   previewData?: ?Object,
-  error: number,
+  error: object,
   url?: string
 }
 

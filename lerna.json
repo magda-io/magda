@@ -1,5 +1,5 @@
 {
-  "lerna": "2.4.0",
+  "lerna": "2.5.1",
   "packages": [
     "deploy/",
     "magda-admin-api/",
@@ -29,10 +29,11 @@
     "magda-session-store/",
     "magda-typescript-common/",
     "magda-web-client/",
+    "magda-web-admin/",
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.30",
+  "version": "0.0.31-0",
   "hoist": [
     "tsmonad",
     "urijs",

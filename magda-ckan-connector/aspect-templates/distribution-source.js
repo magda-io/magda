@@ -1,4 +1,6 @@
+var ckan = libraries.ckan;
+
 return {
     type: 'ckan-resource',
-    url: source.getResourceShowUrl(distribution.id)
+    url: ckan.getResourceShowUrl(distribution.id)
 };

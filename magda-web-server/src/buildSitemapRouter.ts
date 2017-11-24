@@ -56,7 +56,7 @@ export default function buildSitemapRouter({
                                 .href()
                         ].concat(datasetsPages)
                     });
-                    
+
                     res.send(smi);
                 })
         );

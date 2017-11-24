@@ -139,7 +139,7 @@ export const defaultPublisher: Publisher = {
       name: '',
       title: '',
       imageUrl: '',
-      description: ''
+      description: 'No Description available for this publisher'
     }
   }
 }

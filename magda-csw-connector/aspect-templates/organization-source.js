@@ -1,5 +1,7 @@
+const csw = libraries.csw;
+
 return {
     type: 'csw-organization',
-    url: source.baseUrl.toString(),
-    name: source.name
+    url: csw.baseUrl,
+    name: csw.name
 };
