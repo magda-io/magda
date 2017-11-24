@@ -1,7 +1,7 @@
 {
   "name": "@magda/sleuther-visualisation",
   "description": "MAGDA Visualisation Sleuther",
-  "version": "0.0.30",
+  "version": "0.0.31-0",
   "main": "dist/index.js",
   "scripts": {
     "build": "npm run compile",
@@ -15,7 +15,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.30",
+    "@magda/scripts": "^0.0.31-0",
     "@types/node": "^7.0.5",
     "@types/request": "^2.0.0",
     "@types/urijs": "^1.15.31",
@@ -23,9 +23,9 @@
     "typescript": "~2.5.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.30",
-    "@magda/sleuther-framework": "^0.0.30",
-    "@magda/typescript-common": "^0.0.30",
+    "@magda/registry-aspects": "^0.0.31-0",
+    "@magda/sleuther-framework": "^0.0.31-0",
+    "@magda/typescript-common": "^0.0.31-0",
     "moment": "^2.19.1",
     "papaparse": "^4.3.6",
     "request": "^2.79.0",
