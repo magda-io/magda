@@ -54,7 +54,7 @@ class ProjectDetails extends Component {
                 {this.renderToggleButton()}
               </div>
               <div className="col-sm-4">
-                <Link className="btn btn-primary" to="/project/new">
+                <Link className="btn btn-primary" to="/projects/new">
                   {" "}Create new project
                   {" "}
                 </Link>

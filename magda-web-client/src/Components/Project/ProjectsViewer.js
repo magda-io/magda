@@ -28,7 +28,7 @@ class ProjectsViewer extends Component {
         return <ErrorHandler errorCode={this.props.error}/>
       }
       if(this.props.projects.length === 0){
-        return <div>No projects at the moment, <Link to='/project/new'>create a project</Link> </div>
+        return <div>No projects at the moment, <Link to='/projects/new'>create a project</Link> </div>
       }
       return (<div>
                 {this.props.projects.map(p=>
@@ -53,7 +53,7 @@ class ProjectsViewer extends Component {
                     {!this.props.isFetching && this.renderContent()}
                     </div>
                     <div className='col-sm-4'>
-                      <Link className='btn btn-primary' to='/project/new'> Create new project </Link>
+                      <Link className='btn btn-primary' to='/projects/new'> Create new project </Link>
                     </div>
                   </div>
                </div>
