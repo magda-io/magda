@@ -13,6 +13,7 @@ export default function generatePreviewData(url: string, preloadedData: Object):
           'isOpen':true,
           'items':[
             {
+            'zoomOnEnable': true,
             'type': format === 'arcgis rest api' ?  'esri-mapServer-group' : format,
             'name':'User Data',
             'isUserSupplied':true,
