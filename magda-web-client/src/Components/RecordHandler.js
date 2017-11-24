@@ -6,11 +6,21 @@ import { bindActionCreators } from 'redux';
 import { fetchDatasetFromRegistry, fetchDistributionFromRegistry } from '../actions/recordActions';
 import Tabs from '../UI/Tabs';
 import {config} from '../config';
-import { Link } from 'react-router';
-import ErrorHandler from '../Components/ErrorHandler';
+import ErrorHandler from './ErrorHandler';
 import CustomIcons from '../UI/CustomIcons';
 import type {StateRecord } from '../types';
 import type { ParsedDataset, ParsedDistribution } from '../helpers/record';
+import {
+  Route,
+  Link,
+  Switch,
+  Redirect
+} from 'react-router-dom';
+import DatasetDetails from './Dataset/DatasetDetails';
+import DatasetDiscussion from './Dataset/DatasetDiscussion';
+import DatasetPublisher from './Dataset/DatasetPublisher';
+import DistributionDetails from './Dataset/DistributionDetails';
+import DistributionPreview from './Dataset/DistributionPreview';
 
 class RecordHandler extends React.Component {
   props: {
@@ -27,24 +37,24 @@ class RecordHandler extends React.Component {
     }
   }
   componentWillMount(){
-    this.props.fetchDataset(this.props.params.datasetId);
-    if(this.props.params.distributionId){
-      this.props.fetchDistribution(this.props.params.distributionId);
+    this.props.fetchDataset(this.props.match.params.datasetId);
+    if(this.props.match.params.distributionId){
+      this.props.fetchDistribution(this.props.match.params.distributionId);
     }
   }
   componentWillReceiveProps(nextProps){
-      if(nextProps.params.datasetId !== this.props.params.datasetId){
-        nextProps.fetchDataset(nextProps.params.datasetId);
+      if(nextProps.match.params.datasetId !== this.props.match.params.datasetId){
+        nextProps.fetchDataset(nextProps.match.params.datasetId);
       }
-      if(nextProps.params.distributionId && nextProps.params.distributionId !== this.props.params.distributionId){
-        nextProps.fetchDistribution(nextProps.params.distributionId);
+      if(nextProps.match.params.distributionId && nextProps.match.params.distributionId !== this.props.match.params.distributionId){
+        nextProps.fetchDistribution(nextProps.match.params.distributionId);
       }
   }
 
   renderBreadCrumbs(dataset: ParsedDataset, distribution? :ParsedDistribution){
     return (
     <ul className='breadcrumb'>
-      <li className='breadcrumb-item'><Link to='#'>Home</Link></li>
+      <li className='breadcrumb-item'><Link to='/'>Home</Link></li>
       <li className='breadcrumb-item'>{distribution ? <Link to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>{dataset.title}</Link>:dataset.title}</li>
       {distribution && <li className='breadcrumb-item'>{distribution.title}</li>}
     </ul>)
@@ -54,15 +64,16 @@ class RecordHandler extends React.Component {
     const publisherName = this.props.dataset.publisher.name;
     const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
     const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
-    const distributionIdAsUrl = this.props.params.distributionId ? encodeURIComponent(this.props.params.distributionId) : '';
-     if (this.props.params.distributionId && !this.props.distributionIsFetching){
+    const distributionIdAsUrl = this.props.match.params.distributionId ? encodeURIComponent(this.props.match.params.distributionId) : '';
+     if (this.props.match.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
          return <ErrorHandler errorCode={this.props.distributionFetchError}/>;
        }
        const tabList = [
          {id: 'details', name: 'Details', isActive: true},
          {id: 'preview', name: 'Preview', isActive: true}
-       ]
+       ];
+       const baseUrlDistribution = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}/distribution/${distributionIdAsUrl}`
       return (
         <div>
           <div className='container'>
@@ -78,11 +89,18 @@ class RecordHandler extends React.Component {
                 </div>
               </div>
             </div>
-            <Tabs list={tabList} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}/distribution/${distributionIdAsUrl}`}/>
-            <div className='tab-content'>{this.props.children}</div>
+
+            <Tabs list={tabList} baseUrl={baseUrlDistribution}/>
+            <div className='tab-content'>
+              <Switch>
+                <Route path='/dataset/:datasetId/distribution/:distributionId/details' component={DistributionDetails} />
+                <Route path='/dataset/:datasetId/distribution/:distributionId/preview' component={DistributionPreview} />
+                <Redirect from='/dataset/:datasetId/distribution/:distributionId' to={`${baseUrlDistribution}/details`} />
+              </Switch>
+            </div>
             </div>
       )
-    } else if(this.props.params.datasetId && !this.props.datasetIsFetching){
+    } else if(this.props.match.params.datasetId && !this.props.datasetIsFetching){
       if(this.props.datasetFetchError){
         return <ErrorHandler errorCode={this.props.datasetFetchError}/>;
       }
@@ -91,9 +109,11 @@ class RecordHandler extends React.Component {
         {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
         {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
       ];
+
+      const baseUrlDataset = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`;
+
       return (
         <div>
-
             <div className='container media'>
               {this.renderBreadCrumbs(this.props.dataset)}
               <div className='media-left'>
@@ -105,8 +125,16 @@ class RecordHandler extends React.Component {
                   <div className='updated-date'>Updated {this.props.dataset.updatedDate}</div>
               </div>
             </div>
-            <Tabs list={datasetTabs} baseUrl={`/dataset/${encodeURIComponent(this.props.params.datasetId)}`}/>
-            <div className='tab-content'>{this.props.children}</div>
+
+            <Tabs list={datasetTabs} baseUrl={baseUrlDataset}/>
+            <div className='tab-content'>
+              <Switch>
+                <Route path='/dataset/:datasetId/details' component={DatasetDetails} />
+                <Route path='/dataset/:datasetId/discussion' component={DatasetDiscussion} />
+                <Route path='/dataset/:datasetId/publisher' component={DatasetPublisher} />
+                <Redirect exact from='/dataset/:datasetId' to={`${baseUrlDataset}/details`} />
+              </Switch>
+            </div>
         </div>
       );
     }
@@ -114,7 +142,8 @@ class RecordHandler extends React.Component {
   }
 
   render() {
-    const title = this.props.params.distributionId ? this.props.distribution.title : this.props.dataset.title;
+    const title = this.props.match.params.distributionId ? this.props.distribution.title : this.props.dataset.title;
+    console.log(this.props.match);
     return (
       <ReactDocumentTitle title={title + '|' + config.appName}>
         <div>

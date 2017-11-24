@@ -1,16 +1,19 @@
-import { browserHistory } from "react-router";
+import qs from "qs";
+import React from "react";
+import {
+  Redirect,
+} from 'react-router-dom'
 
-import parseQueryString from "../../helpers/parseQueryString";
 
-export default function signInRedirect() {
-  const params = parseQueryString(window.location.search);
-
+export default function signInRedirect(props) {
+  const params = qs.parse(window.location.search, { ignoreQueryPrefix: true });
   if (params.result === "success") {
-    browserHistory.replace(params.redirectTo || "/");
-  } else {
-    browserHistory.replace({
-      pathname: "/account",
-      state: { signInError: params.errorMessage }
-    });
+    return (
+        <Redirect to={params.redirectTo || "/account"}/>
+      )
   }
+  return <Redirect to={{
+          pathname: '/account',
+          state: { signInError: params.errorMessage }
+        }}/>
 }

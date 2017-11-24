@@ -125,7 +125,6 @@ export function fetchPreviewData(distribution){
             }
           ).then(xmlData=>{
             loadXmlParser().then(xmlToTabular => {
-              debugger
               const data = xmlToTabular.default(xmlData);
               if(data){
                 dispatch(receivePreviewData(data));

@@ -3,7 +3,7 @@ import CustomIcons from '../UI/CustomIcons';
 import DataPreviewer from '../UI/DataPreviewer';
 import type {ParsedDistribution} from '../helpers/record';
 import React from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import './Distribution.css';
 
 export default function renderDistribution(distribution: ParsedDistribution, datasetId: string, preview: boolean){

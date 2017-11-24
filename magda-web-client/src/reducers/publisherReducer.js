@@ -40,7 +40,7 @@ const publisher = (state: PublishersResult = initialData, action: recordAction) 
       return Object.assign({}, state, {
         isFetchingPublishers: false,
         publishers: action.json && action.json.records &&  action.json.records.map(r=>parsePublisher(r)),
-        hitCount: action.json && 515,
+        hitCount: action.json && action.json.totalCount,
       })
     case 'REQUEST_PUBLISHERS_ERROR':
       return Object.assign({}, state, {
