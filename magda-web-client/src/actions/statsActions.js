@@ -17,7 +17,7 @@ export function receiveDatasetCount(count: number): Action {
   }
 }
 
-export function fetchDatasetCountError(error: number): Action {
+export function fetchDatasetCountError(error: object): Action {
   return {
     type: actionTypes.FETCH_DATASET_COUNT_ERROR,
     error,
@@ -39,7 +39,7 @@ export function fetchDatasetCount(){
       .then(response=>{
         if (response.status !== 200) {
           console.log("error")
-          dispatch(fetchDatasetCountError(response.status));
+          dispatch(fetchDatasetCountError({title: response.status, detail: response.statusText}));
         }
         else {
           return response.json()

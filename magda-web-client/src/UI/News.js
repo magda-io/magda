@@ -13,7 +13,7 @@ type rssNews = {
 type props = {
   isFetching: Boolean,
   newsItems: Array<rssNews>,
-  error: number
+  error: object
 }
 
 function renderContent(props: props){

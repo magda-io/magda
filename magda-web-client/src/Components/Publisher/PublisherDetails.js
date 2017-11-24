@@ -19,7 +19,7 @@ type Props = {
     publisherId: string
   },
   publisher: Publisher,
-  error: number
+  error: object
 }
 
 
@@ -81,7 +81,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
 function mapStateToProps(state: Object, ownProps: Object) {
   const publisher: Object= state.publisher.publisher;
   const isFetching: boolean= state.publisher.isFetchingPublisher;
-  const error: number= state.publisher.errorFetchingPublisher;
+  const error: object= state.publisher.errorFetchingPublisher;
   const location: Location= ownProps.location;
   return {
     publisher, isFetching, location, error

@@ -147,7 +147,7 @@ class CreateProject extends Component {
              </ReactDocumentTitle>
     }
    render(){
-     if(this.props.showNotification && this.props.project.id){
+     if(this.props.showNotification && this.props.project && this.props.project.id){
        return (<Redirect to={{
                pathname: `/projects/${encodeURIComponent(this.props.project.id)}`
              }}/>)

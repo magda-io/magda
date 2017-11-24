@@ -24,8 +24,8 @@ import DistributionPreview from './Dataset/DistributionPreview';
 
 class RecordHandler extends React.Component {
   props: {
-    distributionFetchError: number,
-    datasetFetchError: number,
+    distributionFetcherror: object,
+    datasetFetcherror: object,
     children: React$Element<any>,
     fetchDataset: Function,
     fetchDistribution: Function,

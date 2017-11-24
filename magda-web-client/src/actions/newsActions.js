@@ -18,7 +18,7 @@ export function receiveNews(news: Object): Action {
   }
 }
 
-export function requestNewsError(error: number): Action {
+export function requestNewsError(error: object): Action {
   return {
     type: actionTypes.REQUEST_NEWS_ERROR,
     error,
@@ -37,7 +37,7 @@ export function fetchNewsfromRss(){
       fetch(url)
       .then(response=>{
         if (response.status !== 200) {
-          return dispatch(requestNewsError(response.status));
+          return dispatch(requestNewsError({title: response.status, detail: response.statusText}));
         }
         else {
           return response.text()
