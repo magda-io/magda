@@ -10,7 +10,7 @@ import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
 import AspectBuilder from "../../UI/AspectBuilder";
 import LazyJsonTree from "../../Components/LazyJsonTree";
-import Script from 'react-load-script'
+import Script from 'react-load-script';
 
 class ConnectorConfig extends Component {
   constructor(props) {
@@ -29,7 +29,6 @@ class ConnectorConfig extends Component {
       return import('react-json-tree').then(module => module.default)
   }
 
-
   componentWillMount() {
     this.props.fetchConnectorConfigIfNeeded(this.props.match.params.connectorId);
     this.props.fetchDatasetFromConnector(this.props.match.params.connectorId, this.props.match.params.datasetId);
@@ -42,7 +41,7 @@ class ConnectorConfig extends Component {
     }
 
     if(nextProps.connectorConfig){
-      if(!this.props.connectorConfig){
+      if(!this.state.connectorConfig){
         //only set it the first time when it's fecthed
         this.setState({
           connectorConfig: nextProps.connectorConfig,
@@ -108,7 +107,7 @@ class ConnectorConfig extends Component {
   renderBody() {
     if (this.props.error) {
       return <ErrorHandler errorCode={this.props.error} />;
-    } else if (!this.props.isFetching && this.state.connectorConfig && this.props.dataset && this.state.scriptLoaded) {
+    } else if (this.state.connectorConfig && this.props.dataset && this.state.scriptLoaded) {
       const transformer = window.createTransformer.default(this.state.connectorConfig);
       const connectorConfig = this.state.connectorConfig;
       const dataset = this.props.dataset;
@@ -184,14 +183,12 @@ function mapStateToProps(state, ownProps) {
   const isFetching = state.connectors.isFetching;
   const error = state.connectors.error;
   const location = ownProps.location;
-  const user = state.userManagement.user;
   const dataset = state.connectors.dataset;
   return {
     connectorConfig,
     isFetching,
     location,
     error,
-    user,
     dataset
   };
 }

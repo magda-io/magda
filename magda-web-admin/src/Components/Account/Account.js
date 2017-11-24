@@ -3,7 +3,7 @@ import "./Account.css";
 import Login from "./Login";
 import { connect } from "react-redux";
 import parseQueryString from "../../helpers/parseQueryString";
-import { requestAuthProviders } from "../../actions/userManagementActions";
+import { requestAuthProviders, requestSignOut } from "../../actions/userManagementActions";
 import { bindActionCreators } from "redux";
 
 class Account extends React.Component {
@@ -17,8 +17,13 @@ class Account extends React.Component {
     };
   }
 
+
   componentDidMount() {
     this.props.requestAuthProviders();
+  }
+
+  signOut(event) {
+    this.props.requestSignOut();
   }
 
   render() {
@@ -31,7 +36,6 @@ class Account extends React.Component {
             }
             providers={this.props.providers}
             location = {this.props.location}
-            history={this.props.history}
           />}
         {this.props.user &&
           <div>
@@ -42,6 +46,9 @@ class Account extends React.Component {
             <p>
               Email: {this.props.user.email}
             </p>
+            <button type='button' className='btn btn-primary' onClick={this.signOut.bind(this)}>
+                  Sign Out
+            </button>
           </div>}
       </div>
     );
@@ -61,7 +68,8 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch: Dispatch<*>) => {
   return bindActionCreators(
     {
-      requestAuthProviders
+      requestAuthProviders,
+      requestSignOut,
     },
     dispatch
   );
