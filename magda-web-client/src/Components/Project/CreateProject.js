@@ -174,9 +174,10 @@ function mapStateToProps(state, ownProps) {
   const showNotification = state.project.showNotification;
   const record = state.record;
   const dataset =record.dataset;
-  const user = state.userManagement.user
+  const user = state.userManagement.user;
+  const project = state.project.project;
   return {
-    isFetching, error, fieldErrors, dataset, user, showNotification
+    isFetching, error, fieldErrors, dataset, user, showNotification, project
   };
 }
 

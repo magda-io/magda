@@ -34,7 +34,7 @@ class PublishersViewer extends Component {
 
     renderContent(){
       if(this.props.error){
-        return <ErrorHandler errorCode={this.props.error}/>
+        return <ErrorHandler error={this.props.error}/>
       } else{
         return (<div className='col-sm-8'>
               {this.props.publishers.map(p=>

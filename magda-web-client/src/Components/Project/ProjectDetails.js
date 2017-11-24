@@ -30,7 +30,7 @@ class ProjectDetails extends Component {
 
   render() {
     if (this.props.error) {
-      return <ErrorHandler errorCode={this.props.error} />;
+      return <ErrorHandler error={this.props.error} />;
     } else if (!this.props.isFetching && this.props.project) {
       return (
         <ReactDocumentTitle
@@ -49,15 +49,16 @@ class ProjectDetails extends Component {
                 <div className="white-box">
                   {this.props.project.description}
                 </div>
+                {this.renderToggleButton()}
                 <h3 className='section-heading'> Discussion </h3>
                 <CrappyChat typeName="project" typeId={this.props.project.id} location={this.props.location}/>
-                {this.renderToggleButton()}
+
               </div>
               <div className="col-sm-4">
                 <Link className="btn btn-primary" to="/projects/new">
-                  {" "}Create new project
-                  {" "}
+                  Create new project
                 </Link>
+
               </div>
             </div>
           </div>

@@ -25,7 +25,7 @@ class ProjectsViewer extends Component {
 
     renderContent(){
       if(this.props.error){
-        return <ErrorHandler errorCode={this.props.error}/>
+        return <ErrorHandler error={this.props.error}/>
       }
       if(this.props.projects.length === 0){
         return <div>No projects at the moment, <Link to='/projects/new'>create a project</Link> </div>
