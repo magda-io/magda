@@ -97,8 +97,7 @@ class SearchBox extends Component {
    * eg: {'q': 'water'}
    */
   updateQuery(query){
-    let {router} = this.context;
-    router.push({
+    this.context.router.history.push({
       pathname: '/search',
       search: qs.stringify(Object.assign(queryString.parse(this.props.location.search), query))
     });

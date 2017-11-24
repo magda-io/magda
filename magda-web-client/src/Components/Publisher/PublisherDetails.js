@@ -37,6 +37,7 @@ class PublisherDetails extends Component<void, Props, void> {
     renderContent(){
       const publisher= this.props.publisher;
       const details = publisher.aspects['organization-details'];
+      const description = details.description && details.description.length > 0 ? details.description : 'This publisher has no description';
       return <div className='publisher-details container'>
                 {this.props.isFetching && <ProgressBar/>}
                 <div className='row'>
@@ -52,7 +53,7 @@ class PublisherDetails extends Component<void, Props, void> {
 
                         <div className='publisher-details-overview'>
                             <h3 className='section-heading'>Overview</h3>
-                            <OverviewBox content={publisher.aspects['organization-details'].description.length > 0 ? publisher.aspects['organization-details'].description : 'No description available for this publisher'}/>
+                            <OverviewBox content={description}/>
                         </div>
                     </div>
                     <div className='col-sm-4'>

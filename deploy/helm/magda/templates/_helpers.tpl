@@ -105,3 +105,20 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 {{- end }}
 {{- end }}
+
+
+{{- define "magda.elasticSearchXpackEnv" }}
+{{- if .Values.global.noDbAuth }}
+        - name: XPACK_ENABLED
+          value: "false"
+{{- end }}
+{{- if not .Values.global.noDbAuth }}
+        - name: XPACK_ENABLED
+          value: "false"
+        - name: ELASTIC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: elasticsearch
+{{- end }}
+{{- end }}

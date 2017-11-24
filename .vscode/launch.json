@@ -63,6 +63,19 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "magda-admin-api tests",
+            "program": "${workspaceRoot}/magda-admin-api/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-admin-api",
+            "args": [
+                "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
+                "--require", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Launch Gateway",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {

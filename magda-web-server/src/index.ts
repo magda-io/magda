@@ -3,6 +3,10 @@ import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
 
+import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
+
+import buildSitemapRouter from "./buildSitemapRouter";
+
 const argv = yargs
     .config()
     .help()
@@ -16,8 +20,22 @@ const argv = yargs
         type: "boolean",
         default: false
     })
+    .option("baseExternalUrl", {
+        describe:
+            "The absolute base URL of the Magda site, when accessed externally. Used for building sitemap URLs which must be absolute.",
+        type: "string",
+        default: "http://localhost:6100/",
+        required: true
+    })
+    .option("registryApiBaseUrlInternal", {
+        describe: "The url of the registry api for use within the cluster",
+        type: "string",
+        default: "http://localhost:6101/v0",
+        required: true
+    })
     .option("baseUrl", {
-        describe: "The base URL of the MAGDA Gateway.",
+        describe:
+            "The base URL of the MAGDA Gateway, for building the base URLs of the APIs when not manually specified. Can be relative.",
         type: "string",
         default: "/"
     })
@@ -155,6 +173,13 @@ app.get("/admin", function(req, res) {
 app.get("/admin/*", function(req, res) {
     res.sendFile(path.join(adminBuild, "index.html"));
 });
+app.use(
+    "/sitemap",
+    buildSitemapRouter({
+        baseExternalUrl: argv.baseExternalUrl,
+        registry: new Registry({ baseUrl: argv.registryApiBaseUrlInternal })
+    })
+);
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);

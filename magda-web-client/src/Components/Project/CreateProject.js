@@ -11,6 +11,9 @@ import { validateFields, resetProjectFields } from '../../actions/projectActions
 import { fetchDatasetFromRegistry } from '../../actions/recordActions';
 import Notification from '../../UI/Notification';
 import { Link } from 'react-router-dom';
+import {
+  Redirect,
+} from 'react-router-dom';
 
 const uuidV1 = require('uuid/v1');
 
@@ -144,7 +147,12 @@ class CreateProject extends Component {
              </ReactDocumentTitle>
     }
    render(){
-     if(this.props.user){
+     if(this.props.showNotification && this.props.project.id){
+       return (<Redirect to={{
+               pathname: `/projects/${encodeURIComponent(this.props.project.id)}`
+             }}/>)
+     }
+     else if(this.props.user){
        return this.renderCreateProject();
      }
     return <div className='container'> <Link to={{pathname: '/account', state: { from: this.props.location }}}>Sign in to create project</Link></div>
@@ -163,11 +171,12 @@ function mapStateToProps(state, ownProps) {
   const isFetching= state.project.isFetching;
   const error = state.project.error;
   const fieldErrors = state.project.fieldErrors;
+  const showNotification = state.project.showNotification;
   const record = state.record;
   const dataset =record.dataset;
   const user = state.userManagement.user
   return {
-    isFetching, error, fieldErrors, dataset, user
+    isFetching, error, fieldErrors, dataset, user, showNotification
   };
 }
 

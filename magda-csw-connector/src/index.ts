@@ -1,3 +1,4 @@
+import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 import Csw from "./Csw";
 import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
@@ -7,62 +8,62 @@ import distributionAspectBuilders from "./distributionAspectBuilders";
 import organizationAspectBuilders from "./organizationAspectBuilders";
 import * as yargs from "yargs";
 
-const argv = yargs
-    .config()
-    .help()
-    .option("name", {
-        describe:
-            "The name of this connector, to be displayed to users to indicate the source of datasets.",
-        type: "string",
-        demandOption: true
-    })
-    .option("sourceUrl", {
-        describe:
-            "The base URL of the CSW server, including /csw if present, but not including any query parameters.",
-        type: "string",
-        demandOption: true
-    })
-    .option("pageSize", {
-        describe:
-            "The number of datasets per page to request from the CSW server.",
-        type: "number",
-        default: 1000
-    })
-    .option("registryUrl", {
-        describe:
-            "The base URL of the registry to which to write data from CSW.",
-        type: "string",
-        default: "http://localhost:6101/v0"
-    })
-    .option('interactive', {
-        describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
-        type: 'boolean',
-        default: false
-    })
-    .option('listenPort', {
-        describe: 'The port on which to run the REST API when in interactive model.',
-        type: 'number',
-        default: 6113
-    })
-    .option('timeout', {
-        describe: 'When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.',
-        type: 'number',
-        default: 0
-    })
-    .option("jwtSecret", {
-        describe: "The shared secret for intra-network communication",
-        type: "string",
-        demand: true,
-        default:
-            process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
-    })
-    .option("userId", {
-        describe:
-            "The user id to use when making authenticated requests to the registry",
-        type: "string",
-        demand: true,
-        default: process.env.USER_ID || process.env.npm_package_config_userId
-    }).argv;
+const argv = addJwtSecretFromEnvVar(
+    yargs
+        .config()
+        .help()
+        .option("name", {
+            describe:
+                "The name of this connector, to be displayed to users to indicate the source of datasets.",
+            type: "string",
+            demandOption: true
+        })
+        .option("sourceUrl", {
+            describe:
+                "The base URL of the CSW server, including /csw if present, but not including any query parameters.",
+            type: "string",
+            demandOption: true
+        })
+        .option("pageSize", {
+            describe:
+                "The number of datasets per page to request from the CSW server.",
+            type: "number",
+            default: 1000
+        })
+        .option("registryUrl", {
+            describe:
+                "The base URL of the registry to which to write data from CSW.",
+            type: "string",
+            default: "http://localhost:6101/v0"
+        })
+        .option('interactive', {
+            describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
+            type: 'boolean',
+            default: false
+        })
+        .option('listenPort', {
+            describe: 'The port on which to run the REST API when in interactive model.',
+            type: 'number',
+            default: 6113
+        })
+        .option('timeout', {
+            describe: 'When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.',
+            type: 'number',
+            default: 0
+        })
+        .option("jwtSecret", {
+            describe: "The shared secret for intra-network communication",
+            type: "string"
+        })
+        .option("userId", {
+            describe:
+                "The user id to use when making authenticated requests to the registry",
+            type: "string",
+            demand: true,
+            default:
+                process.env.USER_ID || process.env.npm_package_config_userId
+        }).argv
+);
 
 const csw = new Csw({
     baseUrl: argv.sourceUrl,

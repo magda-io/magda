@@ -175,7 +175,12 @@ class ElasticSearchIndexer(
               // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
               client
             }
-        })
+        }).recover {
+      case t: Throwable =>
+        logger.error(t, "Could not connect to elasticsearch - this is a fatal error, so I'm dying now.")
+        System.exit(1)
+        throw t
+    }
   }
 
   private def tryReindexSpatialFail(dataSet: DataSet, result: RichBulkItemResponse, promise: Promise[Unit]) = {

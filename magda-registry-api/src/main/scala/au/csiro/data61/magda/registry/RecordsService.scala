@@ -54,6 +54,25 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  @Path("/pagetokens")
+  @ApiOperation(value = "Get a list tokens for paging through the records", nickname = "getPageTokens", httpMethod = "GET", response = classOf[String], responseContainer = "List")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The size of each page to get tokens for.")))
+  def getPageTokens = get {
+    path("pagetokens") {
+      pathEnd {
+        parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
+          complete {
+            DB readOnly { session =>
+              "0" :: RecordPersistence.getPageTokens(session, aspect, limit)
+            }
+          }
+        }
+      }
+    }
+  }
+
   @Path("/{recordId}")
   @ApiOperation(value = "Delete a record", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
   @ApiImplicitParams(Array(
@@ -144,6 +163,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   val route =
     getAll ~
+      getPageTokens ~
       getById ~
       putById ~
       patchById ~

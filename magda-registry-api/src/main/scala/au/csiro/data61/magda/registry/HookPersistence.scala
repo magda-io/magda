@@ -7,7 +7,7 @@ import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import au.csiro.data61.magda.model.Registry._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object HookPersistence extends Protocols with DiffsonProtocol {
   def getAll(implicit session: DBSession): List[WebHook] = {
@@ -51,7 +51,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
 
   def create(implicit session: DBSession, hook: WebHook): Try[WebHook] = {
     val id = hook.id match {
-      case None => UUID.randomUUID().toString()
+      case None     => UUID.randomUUID().toString()
       case Some(id) => id
     }
 
@@ -60,7 +60,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       .update.apply()
 
     val batchParameters = hook.eventTypes.map(eventType => Seq('webhookId -> id, 'eventTypeId -> eventType.value)).toSeq
-    sql"""insert into WebHookEvents (webhookId, eventTypeId) values ({webhookId}, {eventTypeId})""".batchByName(batchParameters:_*).apply()
+    sql"""insert into WebHookEvents (webhookId, eventTypeId) values ({webhookId}, {eventTypeId})""".batchByName(batchParameters: _*).apply()
 
     Success(WebHook(
       id = Some(id),
@@ -71,8 +71,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       url = hook.url,
       eventTypes = hook.eventTypes,
       isWaitingForResponse = None,
-      config = hook.config
-    ))
+      config = hook.config))
   }
 
   def delete(implicit session: DBSession, hookId: String): Try[Boolean] = {
@@ -105,8 +104,13 @@ object HookPersistence extends Protocols with DiffsonProtocol {
   def acknowledgeRaisedHook(implicit session: DBSession, id: String, acknowledgement: WebHookAcknowledgement): Try[WebHookAcknowledgementResponse] = {
     Try {
       if (acknowledgement.succeeded) {
-        sql"update WebHooks set isWaitingForResponse=false, lastEvent=${acknowledgement.lastEventIdReceived} where webHookId=$id".update.apply()
-        WebHookAcknowledgementResponse(acknowledgement.lastEventIdReceived)
+        acknowledgement.lastEventIdReceived match {
+          case Some(eventId) =>
+            sql"update WebHooks set isWaitingForResponse=false, lastEvent=${acknowledgement.lastEventIdReceived} where webHookId=$id".update.apply()
+            WebHookAcknowledgementResponse(eventId)
+          case None =>
+            throw new Exception("If acknowledgement succeeded is true, lastEventIdReceived must be provided")
+        }
       } else {
         sql"update WebHooks set isWaitingForResponse=false where webHookId=$id".update.apply()
         WebHookAcknowledgementResponse(sql"select lastEvent from WebHooks where webHookId=$id".map(rs => rs.long("lastEvent")).single.apply().get)

@@ -500,6 +500,163 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
     }
+
+    describe("pagetokens") {
+      case class TestValues(pageSize: Int, recordCount: Int)
+
+      val valuesToTest = Seq(TestValues(0, 0), TestValues(1, 1), TestValues(1, 5), TestValues(2, 10), TestValues(5, 5), TestValues(10, 2))
+
+      describe("generates correct page tokens") {
+        describe("without aspect filtering") {
+          valuesToTest.foreach {
+            case TestValues(pageSize, recordCount) =>
+              it(s"for pageSize $pageSize and recordCount $recordCount") { param =>
+                // Add an aspect for our records
+                val aspectDefinition = AspectDefinition("test", "test", None)
+                param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+                  status shouldEqual StatusCodes.OK
+                }
+
+                // Add some records
+                if (recordCount > 0) {
+                  for (i <- 1 to recordCount) {
+                    val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
+                    param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+                      status shouldEqual StatusCodes.OK
+                    }
+                  }
+                }
+
+                // Get the page tokens
+                Get(s"/v0/records/pagetokens?limit=$pageSize") ~> param.api.routes ~> check {
+                  status shouldEqual StatusCodes.OK
+                  val pageTokens = responseAs[List[String]]
+                  pageTokens.length shouldBe recordCount / Math.max(1, pageSize) + 1
+
+                  // For each page token, GET the corresponding /records page and make sure it has the correct records.
+                  for (pageIndex <- 0 to pageTokens.length - 1) {
+                    val token = pageTokens(pageIndex)
+
+                    Get(s"/v0/records?pageToken=$token&limit=$pageSize") ~> param.api.routes ~> check {
+                      status shouldEqual StatusCodes.OK
+                      val page = responseAs[RecordSummariesPage]
+
+                      for (recordNumber <- 0 to page.records.length - 1) {
+                        page.records(recordNumber).name shouldEqual (pageIndex * pageSize + recordNumber + 1).toString
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+
+        describe("while filtering with a single aspect") {
+          valuesToTest.foreach {
+            case TestValues(pageSize, recordCount) =>
+              it(s"for pageSize $pageSize and recordCount $recordCount") { param =>
+                // Insert two aspects
+                for (aspectNumber <- 1 to 2) {
+                  val aspectDefinition = AspectDefinition(aspectNumber.toString, aspectNumber.toString, None)
+                  param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+                    status shouldEqual StatusCodes.OK
+
+                    // Insert $recordCount records for each aspect
+                    if (recordCount > 0) {
+                      for (i <- 1 to recordCount) {
+                        val record = Record(aspectNumber + i.toString, i.toString, Map(aspectNumber.toString -> JsObject("value" -> JsNumber(i))))
+                        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+                          status shouldEqual StatusCodes.OK
+                        }
+                      }
+                    }
+                  }
+                }
+
+                // Filter by each aspect and make sure that the tokens returned match up with their respective GET /records results.
+                for (aspectNumber <- 1 to 2) {
+                  Get(s"/v0/records/pagetokens?limit=$pageSize&aspect=$aspectNumber") ~> param.api.routes ~> check {
+                    status shouldEqual StatusCodes.OK
+                    val pageTokens = responseAs[List[String]]
+                    pageTokens.length shouldEqual recordCount / Math.max(1, pageSize) + 1
+
+                    for (pageIndex <- 0 to pageTokens.length - 1) {
+                      val token = pageTokens(pageIndex)
+
+                      Get(s"/v0/records?pageToken=$token&limit=$pageSize&aspect=$aspectNumber") ~> param.api.routes ~> check {
+                        status shouldEqual StatusCodes.OK
+                        val page = responseAs[RecordsPage]
+
+                        for (recordNumber <- 0 to page.records.length - 1) {
+                          page.records(recordNumber).name shouldEqual (pageIndex * pageSize + recordNumber + 1).toString
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+
+        describe("while filtering with multiple aspects") {
+          valuesToTest.foreach {
+            case TestValues(pageSize, recordCount) =>
+              it(s"for pageSize $pageSize and recordCount $recordCount") { param =>
+                // Insert some aspects
+                val aspectIds = for (aspectNumber <- 1 to 2) yield aspectNumber.toString
+                aspectIds.foreach { aspectNumber =>
+                  val aspectDefinition = AspectDefinition(aspectNumber.toString, aspectNumber.toString, None)
+                  param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+                    status shouldEqual StatusCodes.OK
+                  }
+                }
+
+                // Insert some records that have both aspects
+                if (recordCount > 0) {
+                  for (i <- 1 to recordCount) {
+                    val aspectValues = aspectIds.map(id => id -> JsObject("value" -> JsNumber(i)))
+                    val record = Record(i.toString, i.toString, aspectValues.toMap)
+                    param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+                      status shouldEqual StatusCodes.OK
+                    }
+                  }
+                }
+
+                // Insert some records that have only one aspect
+                aspectIds.foreach { aspectId =>
+                  for (i <- 1 to recordCount) {
+                    val record = Record(aspectId + i.toString, i.toString, Map(aspectId -> JsObject("value" -> JsNumber(i))))
+                    param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+                      status shouldEqual StatusCodes.OK
+                    }
+                  }
+                }
+
+                // Check that pagetokens while filtering for both aspects only returns the records with both, not the
+                // records with one or the other.
+                Get(s"/v0/records/pagetokens?limit=$pageSize&${aspectIds.map(id => "aspect=" + id).mkString("&")}") ~> param.api.routes ~> check {
+                  status shouldEqual StatusCodes.OK
+                  val pageTokens = responseAs[List[String]]
+                  pageTokens.length shouldEqual recordCount / Math.max(1, pageSize) + 1
+
+                  for (pageIndex <- 0 to pageTokens.length - 1) {
+                    val token = pageTokens(pageIndex)
+
+                    Get(s"/v0/records?pageToken=$token&limit=$pageSize&${aspectIds.map(id => "aspect=" + id).mkString("&")}") ~> param.api.routes ~> check {
+                      status shouldEqual StatusCodes.OK
+                      val page = responseAs[RecordsPage]
+
+                      for (recordNumber <- 0 to page.records.length - 1) {
+                        page.records(recordNumber).name shouldEqual (pageIndex * pageSize + recordNumber + 1).toString
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+      }
+    }
   }
 
   describe("POST") {
@@ -1042,7 +1199,7 @@ class RecordsServiceSpec extends ApiSpec {
         responseAs[DeleteResult].deleted shouldBe true
       }
     }
-    
+
     checkMustBeAdmin {
       Delete("/v0/records/without")
     }

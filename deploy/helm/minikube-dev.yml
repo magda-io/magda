@@ -1,5 +1,5 @@
 global:
-  externalUrl: http://minikube.data.gov.au:30016
+  externalUrl: http://minikube.data.gov.au:30100
   rollingUpdate:
     maxUnavailable: 1
   exposeNodePorts: true

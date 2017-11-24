@@ -17,7 +17,7 @@ import MatchingStatus from './MatchingStatus';
 import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../../actions/datasetSearchActions';
 import {fetchFeaturedPublishersFromRegistry} from '../../actions/featuredPublishersActions';
-
+import qs from "qs";
 
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
@@ -97,10 +97,9 @@ class Search extends Component {
    * eg: {'q': 'water'}
    */
   updateQuery(query){
-    let {router} = this.context;
-    router.push({
+    this.context.router.history.push({
       pathname: this.props.location.pathname,
-      query: Object.assign(queryString.parse(this.props.location.search), query)
+      search: qs.stringify(Object.assign(queryString.parse(this.props.location.search), query))
     });
   }
 

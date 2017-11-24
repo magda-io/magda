@@ -13,7 +13,8 @@ import type { ParsedDataset, ParsedDistribution } from '../helpers/record';
 import {
   Route,
   Link,
-  Switch
+  Switch,
+  Redirect
 } from 'react-router-dom';
 import DatasetDetails from './Dataset/DatasetDetails';
 import DatasetDiscussion from './Dataset/DatasetDiscussion';
@@ -72,7 +73,7 @@ class RecordHandler extends React.Component {
          {id: 'details', name: 'Details', isActive: true},
          {id: 'preview', name: 'Preview', isActive: true}
        ];
-       const baseUrl = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}/distribution/${distributionIdAsUrl}`
+       const baseUrlDistribution = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}/distribution/${distributionIdAsUrl}`
       return (
         <div>
           <div className='container'>
@@ -89,12 +90,12 @@ class RecordHandler extends React.Component {
               </div>
             </div>
 
-            <Tabs list={tabList} baseUrl={baseUrl}/>
+            <Tabs list={tabList} baseUrl={baseUrlDistribution}/>
             <div className='tab-content'>
               <Switch>
                 <Route path='/dataset/:datasetId/distribution/:distributionId/details' component={DistributionDetails} />
                 <Route path='/dataset/:datasetId/distribution/:distributionId/preview' component={DistributionPreview} />
-                <Route path='/dataset/:datasetId/distribution/:distributionId/' component={DistributionDetails} />
+                <Redirect from='/dataset/:datasetId/distribution/:distributionId' to={`${baseUrlDistribution}/details`} />
               </Switch>
             </div>
             </div>
@@ -109,7 +110,7 @@ class RecordHandler extends React.Component {
         {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
       ];
 
-      const baseUrl = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`;
+      const baseUrlDataset = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`;
 
       return (
         <div>
@@ -125,13 +126,13 @@ class RecordHandler extends React.Component {
               </div>
             </div>
 
-            <Tabs list={datasetTabs} baseUrl={baseUrl}/>
+            <Tabs list={datasetTabs} baseUrl={baseUrlDataset}/>
             <div className='tab-content'>
               <Switch>
                 <Route path='/dataset/:datasetId/details' component={DatasetDetails} />
                 <Route path='/dataset/:datasetId/discussion' component={DatasetDiscussion} />
                 <Route path='/dataset/:datasetId/publisher' component={DatasetPublisher} />
-                <Route path='/dataset/:datasetId/' component={DatasetDetails} />
+                <Redirect exact from='/dataset/:datasetId' to={`${baseUrlDataset}/details`} />
               </Switch>
             </div>
         </div>

@@ -39,5 +39,5 @@ spec:
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: auth-db-client
+              key: authorization-db-client
 {{- end }}

@@ -48,6 +48,7 @@ spec:
           value: "-Xms{{ .Values.client.heapSize }} -Xmx{{ .Values.client.heapSize }}"
         - name: "ES_PLUGINS_INSTALL"
           value: {{ .Values.client.pluginsInstall | quote }}
+        {{- template "magda.elasticSearchXpackEnv" . }}
         ports:
         - containerPort: 9200
           name: http

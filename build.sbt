@@ -57,4 +57,3 @@ variables in EditSource += ("version", version.value)
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 sbt.Keys.fork in Test := false
-
