@@ -3,7 +3,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.30"
+    tag: "0.0.31-0"
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:
@@ -30,7 +30,7 @@ combined-db:
     executionTime: 03:00
     googleApplicationCreds:
       secretName: storage-account-credentials
-      fileName: TerriaJS-5e042b649f8a.json 
+      fileName: TerriaJS-5e042b649f8a.json
 elasticsearch:
   data:
     heapSize: 500m

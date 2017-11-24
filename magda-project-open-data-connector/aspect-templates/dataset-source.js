@@ -1,5 +1,7 @@
+var projectOpenData = libraries.projectOpenData;
+
 return {
     type: 'project-open-data-dataset',
-    url: source.url,
-    name: source.name
+    url: projectOpenData.url,
+    name: projectOpenData.name
 };

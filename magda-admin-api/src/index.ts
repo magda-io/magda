@@ -35,7 +35,7 @@ const argv = addJwtSecretFromEnvVar(
             default: "latest"
         })
         .option("kubernetesApiType", {
-            describe: "What kubernetes API to connect to",
+            describe: "What Kubernetes API to connect to. Use \"cluster\" when the admin API is running inside a Kubernetes cluster, even if it's a Minikube cluster. Use \"minikube\" in development when the admin API is running completely outside the Kubernetes environment and it should manipulate a Kubernetes environment running in Minikube.",
             type: "string",
             choices: ["minikube", "cluster"],
             default: "minikube"

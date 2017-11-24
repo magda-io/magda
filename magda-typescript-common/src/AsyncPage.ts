@@ -67,6 +67,14 @@ export default class AsyncPage<T> {
             }
         }
     }
+
+    take(n: number): AsyncPage<T> {
+        if (n === 0) {
+            return AsyncPage.none<T>();
+        }
+        const nextN = this.hasData ? n - 1 : n;
+        return new AsyncPage<T>(this.data, this.hasData, this.requestNextPage ? () => this.requestNextPage().then(page => page.take(nextN)) : undefined);
+    }
 }
 
 export function forEachAsync<T>(page: AsyncPage<T[]>, maxConcurrency: number, callbackFn: (data: T) => Promise<void>): Promise<void> {
@@ -118,4 +126,9 @@ export function forEachAsync<T>(page: AsyncPage<T[]>, maxConcurrency: number, ca
     }
 
     return Promise.all(promises).then(results => { return; });
+}
+
+export function asyncPageToArray<T>(page: AsyncPage<T[]>): Promise<T[]> {
+    const result = new Array<T>();
+    return page.forEach(value => { result.push(...value); }).then(() => result);
 }

@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "@types/lodash": "^4.14.74",
-    "lerna": "^2.0.0-rc.5"
+    "lerna": "^2.5.1"
   },
   "scripts": {
     "build": "lerna run build --stream --concurrency=1",

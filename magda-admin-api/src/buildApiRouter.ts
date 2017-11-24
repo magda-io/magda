@@ -1,5 +1,6 @@
 import * as express from "express";
-import connectorConfig from "./buildConnectorManifest";
+import buildConnectorManifest from "./buildConnectorManifest";
+import buildInteractiveConnectorRouter from "./buildInteractiveConnectorRouter";
 import * as _ from "lodash";
 import K8SApi, { K8SApiType } from "./k8sApi";
 import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
@@ -66,6 +67,40 @@ export default function buildApiRouter(options: Options) {
             });
     });
 
+    router.get("/connectors/:id", (req, res) => {
+        Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJob(prefixId(req.params.id))])
+            .then(([connectorConfigMap, job]: [any, any]) => {
+                const connectorStatus = {
+                    name: job.metadata.name,
+                    status: (() => {
+                        if (job.status.active === 1) {
+                            return "active";
+                        } else if (job.status.succeeded === 1) {
+                            return "succeeded";
+                        } else if (job.status.failed === 1) {
+                            return "failed";
+                        } else {
+                            return "inactive";
+                        }
+                    })(),
+                    startTime: job.status.startTime,
+                    completionTime: job.status.completionTime
+                };
+
+                const result = {
+                    ...connectorConfigMap[req.params.id],
+                    id: req.params.id,
+                    job: connectorStatus
+                };
+
+                res.status(200).send(result);
+            })
+            .catch((err: Error) => {
+                console.error(err);
+                res.status(500).send("Error");
+            });
+    });
+
     router.put("/connectors/:id", (req, res) => {
         const id = req.params.id;
 
@@ -104,7 +139,7 @@ export default function buildApiRouter(options: Options) {
                 } else {
                     return k8sApi
                         .createJob(
-                            connectorConfig({
+                            buildConnectorManifest({
                                 id,
                                 dockerImage: configMap[id].type,
                                 dockerImageTag: options.imageTag,
@@ -143,6 +178,21 @@ export default function buildApiRouter(options: Options) {
                 }
             });
     });
+
+    function addConnectorID(req: any, res: any, next: any) {
+        req.connectorID = req.params.id;
+        next();
+    }
+
+    router.use("/connectors/:id/interactive", addConnectorID, buildInteractiveConnectorRouter({
+        dockerRepo: options.dockerRepo,
+        authApiUrl: options.authApiUrl,
+        imageTag: options.imageTag,
+        registryApiUrl: options.registryApiUrl,
+        pullPolicy: options.pullPolicy,
+        k8sApi,
+        userId: options.userId
+    }));
 
     return router;
 }

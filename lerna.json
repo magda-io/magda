@@ -28,10 +28,11 @@
     "magda-session-store/",
     "magda-typescript-common/",
     "magda-web-client/",
+    "magda-web-admin/",
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.30",
+  "version": "0.0.31-0",
   "hoist": [
     "tsmonad",
     "urijs",

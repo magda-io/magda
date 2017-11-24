@@ -1,13 +1,11 @@
-import * as fs from "fs";
-import * as moment from "moment";
-import * as URI from "urijs";
-import * as yargs from "yargs";
-
+import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
 import Ckan from "./Ckan";
-import CkanConnector from "./CkanConnector";
+import createTransformer from "./createTransformer";
+import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import * as fs from "fs";
+import * as yargs from "yargs";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -42,6 +40,21 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6101/v0"
         })
+        .option('interactive', {
+            describe: 'Run the connector in an interactive mode with a REST API, instead of running a batch connection job.',
+            type: 'boolean',
+            default: false
+        })
+        .option('listenPort', {
+            describe: 'The port on which to run the REST API when in interactive model.',
+            type: 'number',
+            default: 6113
+        })
+        .option('timeout', {
+            describe: 'When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.',
+            type: 'number',
+            default: 0
+        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
@@ -55,18 +68,6 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.USER_ID || process.env.npm_package_config_userId
         }).argv
 );
-
-const ckan = new Ckan({
-    baseUrl: argv.sourceUrl,
-    name: argv.name,
-    pageSize: argv.pageSize
-});
-
-const registry = new Registry({
-    baseUrl: argv.registryUrl,
-    jwtSecret: argv.jwtSecret,
-    userId: argv.userId
-});
 
 const datasetAspectBuilders: AspectBuilder[] = [
     {
@@ -180,19 +181,46 @@ const organizationAspectBuilders: AspectBuilder[] = [
     }
 ];
 
-const connector = new CkanConnector({
-    source: ckan,
-    registry: registry,
+const ckan = new Ckan({
+    baseUrl: argv.sourceUrl,
+    name: argv.name,
+    pageSize: argv.pageSize,
     ignoreHarvestSources: argv.ignoreHarvestSources,
-    datasetAspectBuilders: datasetAspectBuilders,
-    distributionAspectBuilders: distributionAspectBuilders,
-    organizationAspectBuilders: organizationAspectBuilders,
-    libraries: {
-        moment: moment,
-        URI: URI
-    }
 });
 
-connector.run().then(result => {
-    console.log(result.summarize());
+const registry = new Registry({
+    baseUrl: argv.registryUrl,
+    jwtSecret: argv.jwtSecret,
+    userId: argv.userId
 });
+
+const transformerOptions = {
+    name: argv.name,
+    sourceUrl: argv.sourceUrl,
+    pageSize: argv.pageSize,
+    ignoreHarvestSources: argv.ignoreHarvestSources,
+    registryUrl: argv.registryUrl,
+    datasetAspectBuilders,
+    distributionAspectBuilders,
+    organizationAspectBuilders
+};
+
+const transformer = createTransformer(transformerOptions);
+
+const connector = new JsonConnector({
+    source: ckan,
+    transformer: transformer,
+    registry: registry,
+});
+
+if (!argv.interactive) {
+    connector.run().then(result => {
+        console.log(result.summarize());
+    });
+} else {
+    connector.runInteractive({
+        timeoutSeconds: argv.timeout,
+        listenPort: argv.listenPort,
+        transformerOptions: transformerOptions
+    });
+}
