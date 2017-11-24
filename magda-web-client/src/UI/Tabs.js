@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { NavLink } from 'react-router-dom';
 import './Tabs.css';
 
 function Tabs(props) {
@@ -9,10 +9,10 @@ function Tabs(props) {
                   {props.list.filter(i=>i.isActive).map(item=>
                   <li role='presentation'
                       key={item.id}>
-                      <Link activeClassName='active'
+                      <NavLink activeClassName='active'
                             to={`${props.baseUrl}/${item.id}`}>
                             {item.name}
-                      </Link>
+                      </NavLink>
                   </li>)}
                 </ul>
               </div>
