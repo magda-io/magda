@@ -52,11 +52,11 @@ export type ProjectAction = {
 
 
 export function parseProject(rawProject?: RawProject): ParsedProject {
-   if(rawProject){
+   if(rawProject && rawProject.aspects){
      return {
          name: rawProject.name,
          id: rawProject.id,
-         description: rawProject.aspects.project.description,
+         description: rawProject.aspects.project && rawProject.aspects.project.description,
          status: rawProject.aspects.project.status,
          members: rawProject.aspects.project.members,
          datasets: rawProject.aspects.project.datasets

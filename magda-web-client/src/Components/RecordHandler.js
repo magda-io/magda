@@ -24,8 +24,8 @@ import DistributionPreview from './Dataset/DistributionPreview';
 
 class RecordHandler extends React.Component {
   props: {
-    distributionFetchError: number,
-    datasetFetchError: number,
+    distributionFetcherror: object,
+    datasetFetcherror: object,
     children: React$Element<any>,
     fetchDataset: Function,
     fetchDistribution: Function,
@@ -67,7 +67,7 @@ class RecordHandler extends React.Component {
     const distributionIdAsUrl = this.props.match.params.distributionId ? encodeURIComponent(this.props.match.params.distributionId) : '';
      if (this.props.match.params.distributionId && !this.props.distributionIsFetching){
        if(this.props.distributionFetchError){
-         return <ErrorHandler errorCode={this.props.distributionFetchError}/>;
+         return <ErrorHandler error={this.props.distributionFetchError}/>;
        }
        const tabList = [
          {id: 'details', name: 'Details', isActive: true},
@@ -102,7 +102,7 @@ class RecordHandler extends React.Component {
       )
     } else if(this.props.match.params.datasetId && !this.props.datasetIsFetching){
       if(this.props.datasetFetchError){
-        return <ErrorHandler errorCode={this.props.datasetFetchError}/>;
+        return <ErrorHandler error={this.props.datasetFetchError}/>;
       }
       const datasetTabs = [
         {id: 'details', name: 'Details', isActive: true},

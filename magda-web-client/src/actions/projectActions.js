@@ -21,7 +21,7 @@ export function receiveProjects(json: RawProjects): ProjectAction {
   }
 }
 
-export function requestProjectsError(error: number): ProjectAction {
+export function requestProjectsError(error: object): ProjectAction {
   return {
     type: actionTypes.REQUEST_PROJECTS_ERROR,
     error,
@@ -42,7 +42,7 @@ export function receiveProject(json: RawProject): ProjectAction {
   }
 }
 
-export function requestProjectError(error: number): ProjectAction {
+export function requestProjectError(error: object): ProjectAction {
   return {
     type: actionTypes.REQUEST_PROJECT_ERROR,
     error,
@@ -82,7 +82,7 @@ export function createProjectSuccess(json: RawProject, showNotification: boolean
   };
 }
 
-export function createProjectFailure(error: number): ProjectAction {
+export function createProjectFailure(error: object): ProjectAction {
   return {
     type: actionTypes.CREATE_PROJECT_FAILURE,
     error
@@ -129,7 +129,7 @@ export function updateProjectStatus(project: ProjectProps){
         if(response.status === 200){
           return response.json()
         }
-        return dispatch(updateProjectFailure(response.status))
+        return dispatch(updateProjectFailure({title: response.status, detail: response.statusText}))
       })
       .then((result:ProjectProps)=>{
         if(result.error){
@@ -161,7 +161,7 @@ export function postNewProject(props: ProjectProps){
       if(response.status === 200){
         return response.json()
       }
-      return dispatch(createProjectFailure(response.status))
+      return dispatch(createProjectFailure({title: response.status, detail: response.statusText}))
     })
     .then((result: RawProject )=> {
       if(result.error){
@@ -203,7 +203,7 @@ export function fetchProjectsFromRegistry(start: number):Object{
     return fetch(url)
     .then(response => {
         if (response.status >= 400) {
-            return dispatch(requestProjectsError(response.status));
+            return dispatch(requestProjectsError({title: response.status, detail: response.statusText}));
         }
         return response.json();
     })
@@ -231,7 +231,7 @@ export function fetchProjectFromRegistry(projectId: string):Object{
     return fetch(url)
     .then(response => {
         if (response.status >= 400) {
-            return dispatch(requestProjectError(response.status));
+            return dispatch(requestProjectError({title: response.status, detail: response.statusText}));
         }
         return response.json();
     })

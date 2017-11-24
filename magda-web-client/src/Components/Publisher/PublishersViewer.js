@@ -34,7 +34,7 @@ class PublishersViewer extends Component {
 
     renderContent(){
       if(this.props.error){
-        return <ErrorHandler errorCode={this.props.error}/>
+        return <ErrorHandler error={this.props.error}/>
       } else{
         return (<div className='col-sm-8'>
               {this.props.publishers.map(p=>
@@ -74,7 +74,7 @@ function mapStateToProps(state: Object, ownProps: Object) {
   const publishers: Array <Object> = state.publisher.publishers;
   const isFetching: boolean = state.publisher.isFetchingPublishers;
   const hitCount: number = state.publisher.hitCount;
-  const error: number = state.publisher.errorFetchingPublishers;
+  const error: object = state.publisher.errorFetchingPublishers;
   const location: Location = ownProps.location;
   return {
     publishers, isFetching, hitCount, location, error

@@ -18,7 +18,7 @@ export function receiveRegionMapping(json: Object): FacetAction{
   }
 }
 
-export function requestRegionMappingError(error: number): FacetAction {
+export function requestRegionMappingError(error: object): FacetAction {
   return {
     type: actionTypes.REQUEST_REGION_MAPPING_ERROR,
     error,
@@ -31,7 +31,7 @@ export function fetchRegionMapping() {
     return fetch(config.searchApiUrl + 'region-types')
     .then(response=>{
       if (response.status !== 200) {
-        return dispatch(requestRegionMappingError(response.status));
+        return dispatch(requestRegionMappingError({title: response.status, detail: response.statusText}));
       }
       else {
         return response.json()
