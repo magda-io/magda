@@ -34,7 +34,7 @@
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-visualisation-sleuther",
+      "name": "data61/magda-sleuther-visualisation",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",
