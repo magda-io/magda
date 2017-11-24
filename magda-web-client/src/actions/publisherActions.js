@@ -18,7 +18,7 @@ export function receivePublishers(json: Object): FacetAction {
   }
 }
 
-export function requestPublishersError(error: number): FacetAction {
+export function requestPublishersError(error: object): FacetAction {
   return {
     type: actionTypes.REQUEST_PUBLISHERS_ERROR,
     error,
@@ -38,7 +38,7 @@ export function receivePublisher(json: Object): FacetAction {
   }
 }
 
-export function requestPublisherError(error: number): FacetAction {
+export function requestPublisherError(error: object): FacetAction {
   return {
     type: actionTypes.REQUEST_PUBLISHER_ERROR,
     error,
@@ -54,7 +54,7 @@ function fetchPublishers(start){
                 if (response.status === 200) {
                     return response.json();
                 }
-                return dispatch(requestPublishersError(response.status))
+                return dispatch(requestPublishersError({title: response.status, detail: response.statusText}))
             })
             .then(json => {
                 if(!json.error){
@@ -94,7 +94,7 @@ function fetchPublisher(id){
                 if (response.status === 200) {
                     return response.json()
                 }
-                return dispatch(requestPublisherError(response.status))
+                return dispatch(requestPublisherError({title: response.status, detail: response.statusText}))
             })
             .then(json => {
                 if(!json.error){

@@ -86,7 +86,7 @@ export const config = {
             category: "Projects",
             links: [
               ["Browse projects", "projects"],
-              ["Start a project", "project/new"]
+              ["Start a project", "projects/new"]
             ]
           }
         ]),

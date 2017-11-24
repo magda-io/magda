@@ -147,7 +147,7 @@ class CreateProject extends Component {
              </ReactDocumentTitle>
     }
    render(){
-     if(this.props.showNotification && this.props.project.id){
+     if(this.props.showNotification && this.props.project && this.props.project.id){
        return (<Redirect to={{
                pathname: `/projects/${encodeURIComponent(this.props.project.id)}`
              }}/>)
@@ -174,9 +174,10 @@ function mapStateToProps(state, ownProps) {
   const showNotification = state.project.showNotification;
   const record = state.record;
   const dataset =record.dataset;
-  const user = state.userManagement.user
+  const user = state.userManagement.user;
+  const project = state.project.project;
   return {
-    isFetching, error, fieldErrors, dataset, user, showNotification
+    isFetching, error, fieldErrors, dataset, user, showNotification, project
   };
 }
 

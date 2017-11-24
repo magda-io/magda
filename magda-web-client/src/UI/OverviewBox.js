@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import './OverviewBox.css';
-const MAX = 600;
-
 
 class OverviewBox extends Component {
     constructor(props){
@@ -38,9 +36,9 @@ class OverviewBox extends Component {
     }
 
     render(){
-      return <div className='white-box overview-box'>
+      return <div className={`white-box overview-box ${this.state.isExpanded ? 'is-expanded': ''}`}>
                 {this.props.content && this.renderContent(this.props.content)}
-                {this.props.content && this.props.content.length > MAX && this.renderToggle(this.state.isExpanded)}
+                {this.state.showToggle && this.renderToggle(this.state.isExpanded)}
             </div>
     }
 }

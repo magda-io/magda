@@ -17,7 +17,7 @@ export function receiveDatasets(json: Array<Object>) {
   }
 }
 
-export function requestDatasetsError(error: number) {
+export function requestDatasetsError(error: object) {
   return {
     type: actionTypes.REQUEST_FEATURED_DATASETS_ERROR,
     error,

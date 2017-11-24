@@ -19,7 +19,7 @@ type Props = {
     publisherId: string
   },
   publisher: Publisher,
-  error: number
+  error: object
 }
 
 
@@ -65,7 +65,7 @@ class PublisherDetails extends Component<void, Props, void> {
 
     render(){
         if(this.props.error){
-            return <ErrorHandler errorCode={this.props.error} />
+            return <ErrorHandler error={this.props.error} />
         }
         return <ReactDocumentTitle title={this.props.publisher.name + ' | ' + config.appName}>{this.renderContent()}</ReactDocumentTitle>;
     }
@@ -81,7 +81,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
 function mapStateToProps(state: Object, ownProps: Object) {
   const publisher: Object= state.publisher.publisher;
   const isFetching: boolean= state.publisher.isFetchingPublisher;
-  const error: number= state.publisher.errorFetchingPublisher;
+  const error: object= state.publisher.errorFetchingPublisher;
   const location: Location= ownProps.location;
   return {
     publisher, isFetching, location, error

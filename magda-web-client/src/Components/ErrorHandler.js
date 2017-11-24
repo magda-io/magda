@@ -5,22 +5,18 @@ import ReactDocumentTitle from 'react-document-title';
 
 export default class ErrorHandler extends React.Component {
   props: {
-    errorCode: ?number
-  }
-  interpretateErrorCode(code: ?number){
-    switch(code){
-      case 404:
-        return 'record not found';
-      default:
-        return 'Error occured'
+    error: {
+      title: string,
+      detail: string
     }
   }
+
   render() {
     return (
       <ReactDocumentTitle title={'Error | ' + config.appName}>
         <div className='container'>
-          <h1>{this.props.errorCode}</h1>
-          {this.interpretateErrorCode(this.props.errorCode)}
+          <h1>{this.props.error.title}</h1>
+          {this.props.error.detail}
         </div>
       </ReactDocumentTitle>
     );
