@@ -2,11 +2,10 @@
   "name": "@magda/sleuther-visualisation",
   "description": "MAGDA Visualisation Sleuther",
   "version": "0.0.31-0",
-  "main": "dist/index.js",
   "scripts": {
     "build": "npm run compile",
-    "compile": "tsc",
-    "watch": "tsc --watch",
+    "compile": "tsc -p tsconfig-build.json",
+    "watch": "tsc -p tsconfig-build.json --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
