@@ -1,11 +1,10 @@
 //@flow
 import React from 'react';
+import ErrorHandler from "./ErrorHandler";
 
 
 export default function RouteNotFound() {
   return (
-    <div className='container'>
-      <h1>404</h1>
-    </div>
+    <ErrorHandler error={{title: 404, detail: "Not Found"}}/>
   );
 }
