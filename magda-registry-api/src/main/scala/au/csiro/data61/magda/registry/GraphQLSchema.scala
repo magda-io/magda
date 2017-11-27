@@ -100,13 +100,13 @@ object GraphQLSchema {
   case class RecordProjectorAttributes(attributes: List[String], aspects: List[String], includeAspectsList: Boolean)
 
   def extractAttributesAndAspects(prj: Vector[ProjectedName]): List[String] = {
-    println("Aspects to be fetched: " + prj.find(_.name == "aspects").map(_.children.toList.map(_.name)).getOrElse(Nil))
+    val aspects = prj.find(_.name == "aspects").map(_.children.toList.map(_.name).filterNot(_.startsWith("__"))).getOrElse(Nil)
     // prj.find(_.name == "records").map(prjName => RecordProjectorAttributes(
     //   Nil,
     //   prjName.children.find(_.name == "aspects").map(_.children.toList.map(_.name)).getOrElse(Nil),
     //   prjName.children.exists(_.name == "aspectsList")
     // ))
-    prj.find(_.name == "aspects").map(_.children.toList.map(_.name)).getOrElse(Nil)
+    aspects
   }
 
 
@@ -245,7 +245,7 @@ object GraphQLSchema {
   lazy val RecordType = ObjectType(
     "Record",
     () => fields[GraphQLDataConnection.Fetcher, GraphQLTypes.Record](
-      Field("id", StringType, resolve = _.value.id),
+      Field("id", IDType, resolve = _.value.id),
       Field("name", StringType, resolve = _.value.name),
       Field("aspectsList", ListType(StringType), resolve = _.value.aspectsList),
       Field("aspects", Aspects, resolve = _.value.aspects) //, tags = ProjectionExclude :: Nil)
@@ -284,7 +284,7 @@ object GraphQLSchema {
 
   val PageTokenArg = Argument("pageToken", OptionInputType(StringType))
   val RequiredAspectsArg = Argument("requiredAspects", ListInputType(StringType))
-  val IdArg = Argument("id", StringType)
+  val IdArg = Argument("id", IDType)
   val Query = ObjectType(
     "Query", fields[GraphQLDataConnection.Fetcher, Unit](
       Field("allRecords", RecordsPageGraphQLType,
