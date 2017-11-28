@@ -29,5 +29,5 @@ tags:
   session-store: false
   sleuther-broken-link: false
   sleuther-linked-data-rating: false
-  sleuther-visualisation: false
+  sleuther-visualization: false
   web-server: false

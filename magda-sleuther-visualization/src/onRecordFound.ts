@@ -30,7 +30,7 @@ export default function onRecordFound(record: Record, registry: Registry): Promi
             }));
             return retryBackoff(operation, 1, 5, (err, retries) => {console.log(`Downloading ${downloadURL} failed: ${err.errorDetails || err.httpStatusCode || err} (${retries} retries remaining)`);})
                 .then(({ response, body }) => {
-                    return registry.putRecordAspect(record.id, 'visualisation-info', processCsv(record, body)).then(() => {});
+                    return registry.putRecordAspect(record.id, 'visualization-info', processCsv(record, body)).then(() => {});
                 }).catch(err => {
                     console.log(`Failed to download ${downloadURL}: ${err.errorDetails || err.httpStatusCode || err}`)
                 });
@@ -48,7 +48,7 @@ function processCsv(record: Record, body: any) : {format: string, wellFormed: bo
         dynamicTyping: true,
         skipEmptyLines: true
     });
-    let visualisationInfoAspect;
+    let visualizationInfoAspect;
     if (parsed.errors.length === 0) {
         const fields: {[key: string]: Field} = {};
         parsed.meta.fields.forEach(field => {
@@ -69,7 +69,7 @@ function processCsv(record: Record, body: any) : {format: string, wellFormed: bo
             }
 
         });
-        visualisationInfoAspect = {
+        visualizationInfoAspect = {
             format: 'CSV',
             wellFormed: true,
             fields,
@@ -83,12 +83,12 @@ function processCsv(record: Record, body: any) : {format: string, wellFormed: bo
         // console.log('Parsed successfully with columns: ' + Object.keys(fields).map(key => `${key} (${fieldType(fields[key])})`).join(', '));
     } else {
         console.log(`${parsed.errors.length} errors in CSV, including: ` + (err => `Row: ${err.row} - ${err.code} (${err.message}), `)(parsed.errors[0]));
-        visualisationInfoAspect = {
+        visualizationInfoAspect = {
             format: 'CSV',
             wellFormed: false
         };
     }
-    return visualisationInfoAspect;
+    return visualizationInfoAspect;
 }
 
 

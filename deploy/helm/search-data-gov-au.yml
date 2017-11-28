@@ -131,7 +131,7 @@ sleuther-linked-data-rating:
         limits:
             cpu: 500m
             memory: 500Mi
-sleuther-visualisation:
+sleuther-visualization:
     resources:
         requests:
             cpu: 100m

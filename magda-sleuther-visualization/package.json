@@ -1,6 +1,6 @@
 {
-  "name": "@magda/sleuther-visualisation",
-  "description": "MAGDA Visualisation Sleuther",
+  "name": "@magda/sleuther-visualization",
+  "description": "MAGDA visualization Sleuther",
   "version": "0.0.31-0",
   "scripts": {
     "build": "npm run compile",
@@ -33,7 +33,7 @@
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-sleuther-visualisation",
+      "name": "data61/magda-sleuther-visualization",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",
