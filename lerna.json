@@ -8,6 +8,7 @@
     "magda-sleuther-framework/",
     "magda-sleuther-linked-data-rating/",
     "magda-sleuther-broken-link/",
+    "magda-sleuther-visualization/",
     "magda-ckan-connector/",
     "magda-combined-db/",
     "magda-csw-connector/",

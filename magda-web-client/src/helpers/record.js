@@ -67,7 +67,7 @@ export type RawDistribution = {
     'source-link-status': {
       status: ?string
     },
-    'visualisation-info': {
+    'visualization-info': {
       fields: Object,
       format: string,
       timeseries: boolean,
@@ -179,7 +179,7 @@ const defaultDistributionAspect = {
   'source-link-status': {
     status: null
   },
-  "visualisation-info": {
+  "visualization-info": {
     "fields": {},
     "format": null,
     "timeseries": false,
@@ -204,20 +204,18 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
   const linkStatus = aspects['source-link-status'];
   const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
   const linkActive = linkStatus.status === 'active';
-  const isTimeSeries = aspects['visualisation-info']['timeseries']
+  const isTimeSeries = aspects['visualization-info']['timeseries'];
   let chartFields = null;
 
   if(isTimeSeries){
-    const fields = aspects['visualisation-info'].fields;
+    const fields = aspects['visualization-info'].fields;
     const timeFields = Object.keys(fields).filter(f=>fields[f].time === true);
     const numericFields = Object.keys(fields).filter(f=>fields[f].numeric === true);
     chartFields = {
-          time: timeFields,
-          numeric: numericFields
-    }
+      time: timeFields,
+      numeric: numericFields
+    };
   }
-
-
   return { identifier, title, description, format, downloadURL, accessURL, updatedDate, license, linkStatusAvailable, linkActive, isTimeSeries, chartFields }
 };
 
@@ -246,7 +244,19 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
       const distributionAspects = Object.assign({}, defaultDistributionAspect, d['aspects']);
       const info = distributionAspects['dcat-distribution-strings'];
       const linkStatus = distributionAspects['source-link-status'];
-      const visualisationInfo = distributionAspects['visualisation-info'];
+      const visualizationInfo = distributionAspects['visualization-info'];
+
+      const isTimeSeries = distributionAspects['visualization-info']['timeseries'];
+      let chartFields = null;
+      if(isTimeSeries){
+        const fields = distributionAspects['visualization-info'].fields;
+        const timeFields = Object.keys(fields).filter(f=>fields[f].time === true);
+        const numericFields = Object.keys(fields).filter(f=>fields[f].numeric === true);
+        chartFields = {
+          time: timeFields,
+          numeric: numericFields
+        };
+      }
       return {
           identifier: d['id'],
           title: d['name'],
@@ -258,7 +268,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
           linkStatusAvailable: Boolean(linkStatus.status), // Link status is available if status is non-empty string
           linkActive: linkStatus.status === 'active',
           updatedDate: info.modified ? getDateString(info.modified) : 'unknown date',
-          isTimeSeries: visualisationInfo['timeseries']
+          isTimeSeries: visualizationInfo['timeseries'],
+          chartFields
       }
   });
   return {

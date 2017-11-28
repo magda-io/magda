@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sleuther-visualization
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  template:
+    metadata:
+      labels:
+        service: sleuther-visualization
+    spec:
+      containers:
+      - name: sleuther-visualization
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NODE_PORT
+          value: "80"
+        - name: REGISTRY_URL
+          value: "http://registry-api/v0"
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
+        - name: INTERNAL_URL
+          value: "http://sleuther-visualization"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret

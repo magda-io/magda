@@ -98,6 +98,14 @@ sleuther-broken-link:
     limits:
       cpu: 200m
       memory: 150Mi
+sleuther-visualization:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
 admin-api:
   resources:
     requests:

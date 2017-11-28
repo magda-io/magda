@@ -105,6 +105,7 @@ export function fetchPreviewData(distribution){
           papa.parse(proxy + "_0d/" + url, {
             download: true,
             header: true,
+            skipEmptyLines: true,
             complete: function(data) {
               data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
               data.meta.chartFields = distribution.chartFields;
