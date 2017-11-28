@@ -22,6 +22,7 @@ import PublisherDetails from './Components/Publisher/PublisherDetails';
 
 
 import Home from './Components/Home';
+import RouteNotFound from './Components/RouteNotFound';
 import Search from './Components/Search/Search';
 import RecordHandler from './Components/RecordHandler';
 import { staticPageRegister } from './content/register';
@@ -88,6 +89,8 @@ class AppContainer extends React.Component {
       <Route exact path='/publishers' component={PublishersViewer} />
       <Route path='/publishers/:publisherId' component={PublisherDetails} />
       {staticPageRegister.map(item => <Route path={`/page/:id`} key={item.path} component={item.component} />)}
+      <Route exact path='/404' component={RouteNotFound} />
+      <Route path='/*' component={RouteNotFound} />
     </Switch>);
   }
 
@@ -177,7 +180,7 @@ class AppContainer extends React.Component {
                         </Link></li>)}
                     </ul>
 
-                      <Link to={'page/search-syntax'}> Learn about the new search</Link>
+                      <Link to={'/page/search-syntax'}> Learn about the new search</Link>
                     </div>
                   </div>
                 </Small>

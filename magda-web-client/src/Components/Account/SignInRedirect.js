@@ -2,7 +2,7 @@ import qs from "qs";
 import React from "react";
 import {
   Redirect,
-} from 'react-router-dom'
+} from 'react-router-dom';
 
 
 export default function signInRedirect(props) {
