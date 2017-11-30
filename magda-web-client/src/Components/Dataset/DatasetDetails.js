@@ -63,12 +63,14 @@ class DatasetDetails extends Component<{}, Props, State> {
       }
 }
 
-function mapStateToProps(state) {
-  const record= state.record;
-  const dataset = record.dataset;
-  return {
-    dataset
-  };
-}
+// function mapStateToProps(state) {
+//   const record= state.record;
+//   const dataset = record.dataset;
+//   return {
+//     dataset
+//   };
+// }
 
-export default connect(mapStateToProps)(DatasetDetails);
+// export default connect(mapStateToProps)(DatasetDetails);
+
+export default DatasetDetails;

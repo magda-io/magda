@@ -12,6 +12,12 @@ import CustomIcons from '../UI/CustomIcons';
 import RouteNotFound from './RouteNotFound';
 import type {StateRecord } from '../types';
 import type { ParsedDataset, ParsedDistribution } from '../helpers/record';
+
+import getDateString from '../helpers/getDateString';
+
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
+
 import {
   Route,
   Link,
@@ -39,10 +45,10 @@ class RecordHandler extends React.Component {
     }
   }
   componentWillMount(){
-    this.props.fetchDataset(this.props.match.params.datasetId);
+    /*this.props.fetchDataset(this.props.match.params.datasetId);
     if(this.props.match.params.distributionId){
       this.props.fetchDistribution(this.props.match.params.distributionId);
-    }
+    }*/
   }
   componentWillReceiveProps(nextProps){
       if(nextProps.match.params.datasetId !== this.props.match.params.datasetId){
@@ -140,7 +146,7 @@ class RecordHandler extends React.Component {
                <Tabs list={datasetTabs} baseUrl={baseUrlDataset}/>
                <div className='tab-content'>
                  <Switch>
-                   <Route path='/dataset/:datasetId/details' component={DatasetDetails} />
+                   <Route path='/dataset/:datasetId/details' render={(props) => <DatasetDetails dataset={this.props.dataset} {...props}/>} />
                    <Route path='/dataset/:datasetId/discussion' component={DatasetDiscussion} />
                    <Route path='/dataset/:datasetId/publisher' component={DatasetPublisher} />
                    <Redirect exact from='/dataset/:datasetId' to={`${baseUrlDataset}/details`} />
@@ -175,7 +181,7 @@ function mapStateToProps(state: {record: StateRecord}) {
   const distributionFetchError= record.distributionFetchError;
 
   return {
-    dataset, distribution, datasetIsFetching, distributionIsFetching, distributionFetchError, datasetFetchError
+    /* dataset,*/ distribution, datasetIsFetching, distributionIsFetching, distributionFetchError, datasetFetchError
   };
 }
 
@@ -185,4 +191,155 @@ const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
     fetchDistribution: fetchDistributionFromRegistry
   }, dispatch);
 }
-export default connect(mapStateToProps, mapDispatchToProps)(RecordHandler);
+
+const defaultPublisher = {
+  id: '',
+  name: '',
+  aspects:{
+    source: {
+      url: '',
+      type: '',
+    },
+    organization_details: {
+      name: '',
+      title: '',
+      imageUrl: '',
+      description: 'No Description available for this publisher'
+    }
+  }
+}
+
+const defaultDatasetAspects = {
+  'dcat_dataset_strings': {
+    description: undefined,
+    keywords: [],
+    landingPage: undefined,
+    title: undefined,
+    issued: undefined,
+    modified: undefined
+  },
+  'dataset_distributions':{
+    distributions: []
+  },
+  'temporal_coverage': null,
+  'dataset_publisher': {publisher: defaultPublisher},
+  'source': {
+    'url': '',
+    'name': '',
+    'type': '',
+  },
+  error: null
+}
+
+
+const defaultDistributionAspect = {
+  'dcat_distribution_strings': {
+    format: null,
+    downloadURL: null,
+    accessURL: null,
+    updatedDate: null,
+    license: null,
+    description: null,
+  },
+  'source_link_status': {
+    status: null
+  },
+  "visualisation_info": {
+    "fields": {},
+    "format": null,
+    "timeseries": false,
+    "wellFormed": false
+    }
+}
+
+function parseDataset(dataset): ParsedDataset {
+    let error = null;
+    if(dataset && !dataset.id){
+      error = dataset.message || 'Error occurred';
+    }
+    const aspects = dataset ? Object.assign({}, defaultDatasetAspects, dataset.aspects) : defaultDatasetAspects;
+    const identifier = dataset ? dataset.id : '';
+    const datasetInfo = aspects.dcat_dataset_strings;
+    const distribution = aspects.dataset_distributions;
+    const temporalCoverage = aspects.temporal_coverage;
+    const description = datasetInfo.description || 'No description provided';
+    const tags = datasetInfo.keywords || [];
+    const landingPage = datasetInfo.landingPage || '';
+    const title = datasetInfo.title || '';
+    const issuedDate= datasetInfo.issued || 'Unknown issued date';
+    const updatedDate = datasetInfo.modified ? getDateString(datasetInfo.modified) : 'unknown date';
+    const publisher =aspects.dataset_publisher ? aspects.dataset_publisher.publisher : defaultPublisher;
+
+    const source: string = aspects.source ? aspects.source.name : defaultDatasetAspects.source.name;
+
+    const distributions = distribution.distributions.map(d=> {
+        const distributionAspects = Object.assign({}, defaultDistributionAspect, d.aspects);
+        const info = distributionAspects.dcat_distribution_strings;
+        const linkStatus = distributionAspects.source_link_status;
+        const visualisationInfo = distributionAspects.visualisation_info;
+        return {
+            identifier: d.id,
+            title: d.name,
+            downloadURL: info.downloadURL || null,
+            accessURL : info.accessURL || null,
+            format: info.format || 'Unknown format',
+            license: (!info.license || info.license === 'notspecified') ? 'License restrictions unknown' : info.license,
+            description: info.description || 'No description provided',
+            linkStatusAvailable: Boolean(linkStatus.status), // Link status is available if status is non_empty string
+            linkActive: linkStatus.status === 'active',
+            updatedDate: info.modified ? getDateString(info.modified) : 'unknown date',
+            isTimeSeries: visualisationInfo['timeseries']
+        }
+    });
+    console.log({
+      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher, error
+    });
+    return {
+        identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher, error
+    }
+  };
+
+const DATASET_QUERY = gql`
+  query DatasetQuery($id: ID!) {
+    dataset: record(id: $id) {
+      id
+      name
+      aspects {
+        dcat_dataset_strings {
+          description
+
+          landingPage
+          title
+          issued
+          modified
+        }
+        dataset_distributions {
+          distributions {
+            id
+            name
+            aspects {
+              dcat_distribution_strings {
+                downloadURL
+                accessURL
+                format
+                license
+                description
+                modified
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+export default graphql(DATASET_QUERY, {
+  options: (props) => ({
+    variables: {
+      id: props.match.params.datasetId
+    }
+  }),
+  props: ({ data }) => ({
+    dataset: parseDataset(data.dataset)
+  })
+})(connect(mapStateToProps, mapDispatchToProps)(RecordHandler));
