@@ -1,5 +1,5 @@
 {
-  "lerna": "2.4.0",
+  "lerna": "2.5.1",
   "packages": [
     "deploy/",
     "magda-admin-api/",
@@ -8,6 +8,7 @@
     "magda-sleuther-framework/",
     "magda-sleuther-linked-data-rating/",
     "magda-sleuther-broken-link/",
+    "magda-sleuther-visualization/",
     "magda-ckan-connector/",
     "magda-combined-db/",
     "magda-csw-connector/",
@@ -32,7 +33,7 @@
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.31-0",
+  "version": "0.0.32-0",
   "hoist": [
     "tsmonad",
     "urijs",

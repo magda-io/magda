@@ -1,6 +1,6 @@
 {
   "name": "@magda/int-test",
-  "version": "0.0.31-0",
+  "version": "0.0.32-0",
   "description": "Integration tests",
   "scripts": {
     "build": "npm run compile",

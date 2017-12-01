@@ -76,7 +76,7 @@ registry-datastore:
         executionTime: 03:00
         googleApplicationCreds:
             secretName: storage-account-credentials
-            fileName: TerriaJS-5e042b649f8a.json 
+            fileName: TerriaJS-5e042b649f8a.json
 authorization-db:
     resources:
         requests:
@@ -90,7 +90,7 @@ authorization-db:
         executionTime: 03:00
         googleApplicationCreds:
             secretName: storage-account-credentials
-            fileName: TerriaJS-5e042b649f8a.json 
+            fileName: TerriaJS-5e042b649f8a.json
 session-store:
     data:
         storageClass: "fast-ssd"
@@ -124,6 +124,14 @@ sleuther-broken-link:
             cpu: 500m
             memory: 500Mi
 sleuther-linked-data-rating:
+    resources:
+        requests:
+            cpu: 100m
+            memory: 200Mi
+        limits:
+            cpu: 500m
+            memory: 500Mi
+sleuther-visualization:
     resources:
         requests:
             cpu: 100m

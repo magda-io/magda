@@ -105,6 +105,7 @@ export function fetchPreviewData(distribution){
           papa.parse(proxy + "_0d/" + url, {
             download: true,
             header: true,
+            skipEmptyLines: true,
             complete: function(data) {
               data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
               data.meta.chartFields = distribution.chartFields;
@@ -120,12 +121,11 @@ export function fetchPreviewData(distribution){
           fetch(proxy + url)
           .then(response=>
             {
-              if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
+              if (response.status !== 200) {return dispatch(requestPreviewDataError({title: response.status, detail: response.statusText}))}
               return response.text();
             }
           ).then(xmlData=>{
             loadXmlParser().then(xmlToTabular => {
-              debugger
               const data = xmlToTabular.default(xmlData);
               if(data){
                 dispatch(receivePreviewData(data));
@@ -139,7 +139,7 @@ export function fetchPreviewData(distribution){
           fetch(proxy + url)
           .then(response=>
             {
-              if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
+              if (response.status !== 200) {return dispatch(requestPreviewDataError({title: response.status, detail: response.statusText}))}
               return response.json();
             }
           ).then(json=>{
@@ -161,7 +161,7 @@ export function fetchPreviewData(distribution){
           fetch(proxy + url)
           .then(response=>
             {
-              if (response.status !== 200) {return dispatch(requestPreviewDataError(response.status))}
+              if (response.status !== 200) {return dispatch(requestPreviewDataError({title: response.status, detail: response.statusText}))}
               return response.text();
             }
           ).then(text=>{
@@ -205,7 +205,7 @@ export function fetchPreviewData(distribution){
             fetch(proxy + url)
             .then(response=>{
               if (response.status !== 200) {
-                return dispatch(requestPreviewDataError(response.status));
+                return dispatch(requestPreviewDataError({title: response.status, detail: response.statusText}));
               }
               else {
                 return response.text()

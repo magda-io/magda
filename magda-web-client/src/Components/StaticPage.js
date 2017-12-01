@@ -1,21 +1,25 @@
 import React from 'react';
 import {contents} from '../content/register';
-import {config} from '../config.js';
+import {config} from '../config' ;
 import ReactDocumentTitle from 'react-document-title';
+import {Redirect} from 'react-router-dom';
 
 export default function StaticPage(props) {
-  const id = props.params.id;
+  const id = props.match.params.id;
   const content = contents.get(id);
-  return (
-    <ReactDocumentTitle title={id + ' | ' + config.appName}>
-    <div className='container'>
-      <div className='row'>
-        <div className='col-sm-8'>
-          <h1> {content.title} </h1>
-          <div className='markdown-body' dangerouslySetInnerHTML={{__html: content.__content}}/>
+  if(content){
+    return (
+      <ReactDocumentTitle title={id + ' | ' + config.appName}>
+      <div className='container'>
+        <div className='row'>
+          <div className='col-sm-8'>
+            <h1> {content.title && content.title} </h1>
+            <div className='markdown-body' dangerouslySetInnerHTML={{__html: content.__content}}/>
+          </div>
         </div>
       </div>
-    </div>
-    </ReactDocumentTitle>
-  );
+      </ReactDocumentTitle>
+    );
+  }
+  return <Redirect to={"/404"}/>
 }

@@ -58,7 +58,7 @@ export default class K8SApi {
             .ns(this.namespace)
             .jobs(id);
         return promisify(jobs.get.bind(jobs))({
-            name: `${id}/status`
+            name: `status`
         });
     }
 
@@ -96,7 +96,7 @@ export default class K8SApi {
     }
 
     deleteJobIfPresent(id: string) {
-        return this.getJob(id)
+        return this.getJobStatus(id)
             .then((result: any) => {
                 return this.deleteJob(id);
             })

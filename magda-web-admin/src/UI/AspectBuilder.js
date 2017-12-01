@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 // eslint-disable-next-line
 import brace from 'brace';
-// eslint-disable-next-line 
+// eslint-disable-next-line
 import AceEditor from 'react-ace';
 import LazyJsonTree from "../Components/LazyJsonTree";
+import { config } from '../config.js';
 
 import 'brace/mode/javascript';
 import 'brace/theme/github';
@@ -66,7 +67,7 @@ export default class AspectBuilder extends Component {
           return <LazyJsonTree data={{data: dataset}} getComponent={this.props.getComponent}/>
       case 'ui':
           const datasetJsonEncoded = encodeURIComponent(datasetJson);
-          return <iframe src={`http://localhost:6108/preivew/dataset/${datasetJsonEncoded}`} width="100%" height="500px" title="preview-dataset"/>;
+          return <iframe src={`${config.baseUrl}preview/dataset/${datasetJsonEncoded}`} width="100%" height="500px" title="preview-dataset"/>;
       case 'schema':
           return this.renderSchema(this.props.aspectConfig);
       case 'doc':
@@ -102,7 +103,6 @@ export default class AspectBuilder extends Component {
                           mode="javascript"
                           theme="github"
                           onChange={this.onChange}
-                          name="UNIQUE_ID_OF_DIV"
                           value={this.state.code}
                           width={'100%'}
                           editorProps={{$blockScrolling: true}}/>}

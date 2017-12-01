@@ -70,15 +70,26 @@ async function createInteractiveJob(k8sApi: K8SApi, id: any, options: Options): 
     }));
 }
 
-function retryUntil<T>(op: () => Promise<T>, expirationTime: number, failureMessage: string) {
+function retryUntil<T>(op: () => Promise<T>, expirationTime: number, failureMessage: string): Promise<T> {
+    // This is carefully written to avoid using a bunch of memory even if op() fails really quickly.
+    // Things that _won't_ work (they'll use a gig of memory after a few seconds of a
+    // fast-failing `op`, at least as of node.js 8.9.0):
+    // * Normal promise chaining, i.e. recurse in a catch and return the promise.
+    // * This code but without the `setImmediate`. There's no stack overflow, but it will use heaps of memory.
     return new Promise<T>((resolve, reject) => {
-        resolve(op().then(result => result, e => {
-            if (Date.now() < expirationTime) {
-                return retryUntil(op, expirationTime, failureMessage);
-            } else {
-                throw new Error(failureMessage);
-            }
-        }));
+        function tryIt() {
+            op().then(result => {
+                resolve(result);
+            }).catch(e => {
+                if (Date.now() < expirationTime) {
+                    setImmediate(tryIt);
+                } else {
+                    reject(new Error(failureMessage));
+                }
+            });
+        }
+
+        tryIt();
     });
 }
 

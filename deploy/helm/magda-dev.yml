@@ -3,7 +3,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.31-0"
+    tag: "0.0.32-0"
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:
@@ -91,6 +91,14 @@ sleuther-linked-data-rating:
       cpu: 200m
       memory: 150Mi
 sleuther-broken-link:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
+sleuther-visualization:
   resources:
     requests:
       cpu: 0

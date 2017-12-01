@@ -1,6 +1,6 @@
 {
   "name": "@magda/session-store",
-  "version": "0.0.31-0",
+  "version": "0.0.32-0",
   "description": "The database storing session information.",
   "scripts": {
     "dev": "echo \"No dev mode available, use `magda-combined-db` instead.\"",
@@ -15,6 +15,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.31-0"
+    "@magda/scripts": "^0.0.32-0"
   }
 }

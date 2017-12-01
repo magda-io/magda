@@ -14,7 +14,7 @@ type newsState = {
 type newsAction = {
   type: string,
   news?: Array<Object>,
-  error: number
+  error: object
 }
 
 const newsReducer = (state: newsState = initialData, action: newsAction) => {
