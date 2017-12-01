@@ -18,7 +18,8 @@
                     "url": "http://www.asris.csiro.au/arcgis/rest/services/TERN",
                     "type": "esri-mapServer-group"
                 }
-            ]
+            ],
+            "zoomOnEnable": true
         }
     ]
 }

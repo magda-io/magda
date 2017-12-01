@@ -8,6 +8,7 @@
     "services": [],
     "catalog": [
         {
+            "zoomOnEnable":true,
             "name": "South Australian Government",
             "type": "wms-getCapabilities",
             "isPromoted": true,

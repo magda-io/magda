@@ -15,6 +15,7 @@
     "services": [],
     "catalog": [
         {
+            "zoomOnEnable":true,
             "name": "Northern Territory",
             "description": "[Licence](http://www.ga.gov.au/copyright)",
             "dataCustodian": "[Geoscience Australia](http://www.ga.gov.au/)",

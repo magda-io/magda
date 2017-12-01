@@ -46,6 +46,7 @@ export interface CkanOptions {
     maxRetries?: number;
     secondsBetweenRetries?: number;
     ignoreHarvestSources?: string[];
+    retrievedAt: number;
 }
 
 export default class Ckan implements ConnectorSource {
@@ -63,7 +64,8 @@ export default class Ckan implements ConnectorSource {
         pageSize = 1000,
         maxRetries = 10,
         secondsBetweenRetries = 10,
-        ignoreHarvestSources = []
+        ignoreHarvestSources = [],
+        retrievedAt
     }: CkanOptions) {
         this.name = name;
         this.pageSize = pageSize;
@@ -73,7 +75,8 @@ export default class Ckan implements ConnectorSource {
         this.urlBuilder = new CkanUrlBuilder({
             name: name,
             baseUrl,
-            apiBaseUrl
+            apiBaseUrl,
+            retrievedAt
         });
     }
 

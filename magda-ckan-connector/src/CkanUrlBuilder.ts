@@ -1,19 +1,23 @@
 import * as URI from 'urijs';
+import * as moment from 'moment'
 
 export interface CkanUrlBuilderOptions {
     name?: string,
     baseUrl: string;
     apiBaseUrl?: string;
+    retrievedAt?: number;
 }
 
 export default class CkanUrlBuilder {
     public readonly name: string;
     public readonly baseUrl: uri.URI;
     public readonly apiBaseUrl: uri.URI;
+    public readonly retrievedAt: string
 
     constructor(options: CkanUrlBuilderOptions) {
         this.name = options.name || 'CKAN';
         this.baseUrl = new URI(options.baseUrl);
+        this.retrievedAt = moment(options.retrievedAt).toISOString();
 
         if (options.apiBaseUrl) {
             this.apiBaseUrl = new URI(options.apiBaseUrl);
