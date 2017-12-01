@@ -9,7 +9,6 @@ import {
   Route,
 } from "react-router-dom";
 
-import createHistory from 'history/createBrowserHistory';
 
 import thunkMiddleware from "redux-thunk";
 import React from "react";
