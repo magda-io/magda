@@ -9,7 +9,6 @@ import {
   Route,
 } from "react-router-dom";
 
-import createHistory from 'history/createBrowserHistory';
 
 import thunkMiddleware from "redux-thunk";
 import React from "react";
@@ -18,6 +17,7 @@ import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
 import AppContainer from "./AppContainer";
+import PropTypes from 'prop-types';
 
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
@@ -30,17 +30,32 @@ const store: Store = createStore(
   )
 );
 
-// NEED TO TEST THIS
-const history = createHistory()
-history.listen((location) => {
-    window.ga("set", "location", document.location);
+class GAListener extends React.Component {
+  static contextTypes = {
+    router: PropTypes.object
+  };
+
+  componentDidMount() {
+    this.sendPageView(this.context.router.history.location);
+    this.context.router.history.listen(this.sendPageView);
+  }
+
+  sendPageView(location) {
+    window.ga("set", "location", location.pathname);
     window.ga("send", "pageview");
-});
+  }
+
+  render() {
+    return this.props.children;
+  }
+}
 
 ReactDOM.render(
   <Provider store={store}>
     <BrowserRouter>
+      <GAListener>
         <Route path="/" component={AppContainer}/>
+      </GAListener>
     </BrowserRouter>
   </Provider>,
   document.getElementById("root")
