@@ -9,7 +9,6 @@ import debounce from 'lodash.debounce';
 import defined from '../../helpers/defined';
 import React, { Component } from 'react';
 import {fetchRegionMapping} from '../../actions/regionMappingActions';
-import qs from "qs";
 
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
@@ -99,7 +98,7 @@ class SearchBox extends Component {
   updateQuery(query){
     this.context.router.history.push({
       pathname: '/search',
-      search: qs.stringify(Object.assign(queryString.parse(this.props.location.search), query))
+      search: queryString.stringify(Object.assign(queryString.parse(this.props.location.search), query))
     });
   }
 
