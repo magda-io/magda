@@ -1,7 +1,9 @@
 import { AspectDefinition, Record } from './generated/registry/api';
+import AspectCreationFailure from './AspectCreationFailure';
 import AsyncPage, { forEachAsync, asyncPageToArray } from './AsyncPage';
+import ConnectorRecordId from './ConnectorRecordId';
 import ConnectionResult from './ConnectionResult';
-import CreationFailure from './CreationFailure';
+import RecordCreationFailure from './RecordCreationFailure';
 import JsonTransformer from './JsonTransformer';
 import Registry from './registry/AuthorizedRegistryClient';
 import * as express from 'express';
@@ -39,7 +41,7 @@ export default class JsonConnector {
         await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectDefinition => {
             const aspectDefinitionOrError = await this.registry.putAspectDefinition(aspectDefinition);
             if (aspectDefinitionOrError instanceof Error) {
-                result.aspectDefinitionFailures.push(new CreationFailure(aspectDefinition.id, undefined, aspectDefinitionOrError));
+                result.aspectDefinitionFailures.push(new AspectCreationFailure(aspectDefinition.id, aspectDefinitionOrError));
             } else {
                 ++result.aspectDefinitionsConnected;
             }
@@ -68,8 +70,8 @@ export default class JsonConnector {
             await forEachAsync(organizations, this.maxConcurrency, async organization => {
                 const recordOrError = await this.createOrganization(organization);
                 if (recordOrError instanceof Error) {
-                    result.organizationFailures.push(new CreationFailure(
-                        this.transformer.getIdFromJsonOrganization(organization),
+                    result.organizationFailures.push(new RecordCreationFailure(
+                        this.transformer.getIdFromJsonOrganization(organization, this.source.id),
                         undefined,
                         recordOrError));
                 } else {
@@ -90,22 +92,22 @@ export default class JsonConnector {
 
             const distributions = this.source.getJsonDistributions(dataset);
             if (distributions) {
-                const distributionIds: string[] = [];
+                const distributionIds: ConnectorRecordId[] = [];
                 await forEachAsync(distributions, 1, async distribution => {
                     const recordOrError = await this.createDistribution(distribution, dataset);
                     if (recordOrError instanceof Error) {
-                        result.distributionFailures.push(new CreationFailure(
-                            this.transformer.getIdFromJsonDistribution(distribution, dataset),
-                            this.transformer.getIdFromJsonDataset(dataset),
+                        result.distributionFailures.push(new RecordCreationFailure(
+                            this.transformer.getIdFromJsonDistribution(distribution, dataset, this.source.id),
+                            this.transformer.getIdFromJsonDataset(dataset, this.source.id),
                             recordOrError));
                     } else {
                         ++result.distributionsConnected;
-                        distributionIds.push(this.transformer.getIdFromJsonDistribution(distribution, dataset));
+                        distributionIds.push(this.transformer.getIdFromJsonDistribution(distribution, dataset, this.source.id));
                     }
                 });
 
                 record.aspects['dataset-distributions'] = {
-                    distributions: distributionIds
+                    distributions: distributionIds.map(id => id.toString())
                 };
             }
 
@@ -113,31 +115,35 @@ export default class JsonConnector {
                 const publisher = this.source.getJsonDatasetPublisherId(dataset);
                 if (publisher) {
                     record.aspects['dataset-publisher'] = {
-                        publisher: publisher
+                        publisher: new ConnectorRecordId(publisher, "Organization", this.source.id).toString()
                     };
                 }
             } else {
                 const publisher = await this.source.getJsonDatasetPublisher(dataset);
-                const publisherId = this.transformer.getIdFromJsonOrganization(publisher);
+                if (publisher) {
+                    const publisherId = this.transformer.getIdFromJsonOrganization(publisher, this.source.id);
 
-                const recordOrError = await this.createOrganization(publisher);
-                if (recordOrError instanceof Error) {
-                    result.organizationFailures.push(new CreationFailure(
-                        publisherId,
-                        undefined,
-                        recordOrError));
-                } else {
-                    record.aspects['dataset-publisher'] = {
-                        publisher: publisherId
-                    };
-                    ++result.organizationsConnected;
+                    if (publisherId) {
+                        const recordOrError = await this.createOrganization(publisher);
+                        if (recordOrError instanceof Error) {
+                            result.organizationFailures.push(new RecordCreationFailure(
+                                publisherId,
+                                undefined,
+                                recordOrError));
+                        } else {
+                            record.aspects['dataset-publisher'] = {
+                                publisher: publisherId.toString()
+                            };
+                            ++result.organizationsConnected;
+                        }
+                    }
                 }
             }
 
             const recordOrError = await this.registry.putRecord(record);
             if (recordOrError instanceof Error) {
-                result.datasetFailures.push(new CreationFailure(
-                    this.transformer.getIdFromJsonDataset(dataset),
+                result.datasetFailures.push(new RecordCreationFailure(
+                    this.transformer.getIdFromJsonDataset(dataset, this.source.id),
                     undefined,
                     recordOrError));
             } else {
@@ -260,6 +266,17 @@ export default class JsonConnector {
 }
 
 export interface ConnectorSource {
+    /**
+     * The ID of the source. This is used to prefix IDs of datasets, distributions, and organizations
+     * found in this source.
+     */
+    readonly id: string;
+
+    /**
+     * The user-friendly name of the source.
+     */
+    readonly name: string;
+
     /**
      * Get all of the datasets as pages of objects.
      *
