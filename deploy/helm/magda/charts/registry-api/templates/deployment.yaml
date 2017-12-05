@@ -43,3 +43,5 @@ spec:
         ]
         ports:
         - containerPort: 80
+        resources:
+{{ toYaml .Values.resources | indent 10 }}

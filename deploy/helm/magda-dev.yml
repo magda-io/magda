@@ -65,7 +65,7 @@ registry-api:
       memory: 0
     limits:
       cpu: 200m
-      memory: 250Mi
+      memory: 1000Mi
 search-api:
   resources:
     requests:
@@ -73,7 +73,7 @@ search-api:
       memory: 0
     limits:
       cpu: 200m
-      memory: 250Mi
+      memory: 1000Mi
 web-server:
   resources:
     requests:
