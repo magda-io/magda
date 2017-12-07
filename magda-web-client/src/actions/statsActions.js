@@ -2,7 +2,7 @@ import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
 import type { Action, Dispatch, GetState } from '../types';
 import {config} from '../config'
-
+import defined from '../helpers/defined';
 
 export function requestDatasetCount():Action {
   return {
@@ -24,9 +24,6 @@ export function fetchDatasetCountError(error: object): Action {
   }
 }
 
-
-
-
 export function fetchDatasetCount(){
   return (dispatch: Dispatch, getState: GetState)=>{
       // check if we need to fetch
@@ -47,6 +44,8 @@ export function fetchDatasetCount(){
       }).then(result=>{
           if(!result || !result.error){
             dispatch(receiveDatasetCount(result.totalCount));
+          } else if(!defined(result.totalCount)){
+            dispatch(fetchDatasetCountError({title: "Error", detail: "Dataset count unavailable at the moment"}));
           }
       });
   }

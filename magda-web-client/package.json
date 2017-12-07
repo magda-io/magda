@@ -1,5 +1,5 @@
 {
-  "name": "@magda/web-client",
+  "name": "@/web-client",
   "description": "The MAGDA in-browser web front end.",
   "version": "0.0.32-0",
   "license": "Apache-2.0",
@@ -15,7 +15,9 @@
     "compile": "npm run build-css && react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "watch": "react-scripts build --watch"
+    "watch": "react-scripts build --watch",
+    "storybook": "start-storybook -p 9009 -s public",
+    "build-storybook": "build-storybook -s public"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.32-0",
@@ -77,7 +79,10 @@
     "typescript": "~2.5.0",
     "uuid": "^3.0.1",
     "vega": "^3.0.0-rc2",
-    "vega-lite": "^2.0.0-beta.8"
+    "vega-lite": "^2.0.0-beta.8",
+    "@storybook/react": "^3.2.17",
+    "@storybook/addon-actions": "^3.2.17",
+    "@storybook/addon-links": "^3.2.17"
   },
   "proxy": {
     "/server-config.js": {
