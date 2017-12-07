@@ -107,13 +107,13 @@ export default abstract class JsonTransformer {
         ]);
     }
 
-    abstract getIdFromJsonOrganization(jsonOrganization: object, sourceId: string): ConnectorRecordId;
-    abstract getIdFromJsonDataset(jsonDataset: object, sourceId: string): ConnectorRecordId;
-    abstract getIdFromJsonDistribution(jsonDistribution: object, jsonDataset: object, sourceId: string): ConnectorRecordId;
+    abstract getIdFromJsonOrganization(jsonOrganization: any, sourceId: string): ConnectorRecordId;
+    abstract getIdFromJsonDataset(jsonDataset: any, sourceId: string): ConnectorRecordId;
+    abstract getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any, sourceId: string): ConnectorRecordId;
 
-    abstract getNameFromJsonOrganization(jsonOrganization: object): string;
-    abstract getNameFromJsonDataset(jsonDataset: object): string;
-    abstract getNameFromJsonDistribution(jsonDistribution: object, jsonDataset: object): string;
+    abstract getNameFromJsonOrganization(jsonOrganization: any): string;
+    abstract getNameFromJsonDataset(jsonDataset: any): string;
+    abstract getNameFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string;
 
     private jsonToRecord(id: ConnectorRecordId, name: string, json: any, aspects: CompiledAspects): Record {
         const problems: ProblemReport[] = [];
