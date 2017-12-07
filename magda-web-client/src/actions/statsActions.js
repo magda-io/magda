@@ -42,11 +42,10 @@ export function fetchDatasetCount(){
           return response.json()
         }
       }).then(result=>{
-          if(!result || !result.error){
-            dispatch(receiveDatasetCount(result.totalCount));
-          } else if(!defined(result.totalCount)){
-            dispatch(fetchDatasetCountError({title: "Error", detail: "Dataset count unavailable at the moment"}));
+          if(result && !result.error){
+            return dispatch(receiveDatasetCount(result.totalCount));
           }
+          return dispatch(fetchDatasetCountError({title: "Error", detail: "Dataset count unavailable at the moment"}));
       });
   }
 }
