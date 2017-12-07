@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import queryString from 'query-string';
-import qs from "qs";
 import './Pagination.css';
 
 class Pagination extends Component {
@@ -14,7 +13,7 @@ class Pagination extends Component {
     onClick(i){
       this.context.router.history.push({
         pathname: this.props.location.pathname,
-        search: qs.stringify(Object.assign(queryString.parse(this.props.location.search), {page: i}))
+        search: queryString.stringify(Object.assign(queryString.parse(this.props.location.search), {page: i}))
       });
     }
 
