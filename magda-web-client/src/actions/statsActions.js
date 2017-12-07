@@ -35,7 +35,6 @@ export function fetchDatasetCount(){
       fetch(url)
       .then(response=>{
         if (response.status !== 200) {
-          console.log("error")
           dispatch(fetchDatasetCountError({title: response.status, detail: response.statusText}));
         }
         else {
