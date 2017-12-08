@@ -11,7 +11,6 @@ import DataPreviewTable from '../UI/DataPreviewTable';
 import DataPreviewTextBox from '../UI/DataPreviewTextBox';
 import DataPreviewVega from '../UI/DataPreviewVega';
 
-
 import "../index.css";
 
 const exampleData = {

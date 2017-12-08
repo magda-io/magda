@@ -5,7 +5,7 @@ import defined from '../../helpers/defined';
 // import Star from '../../UI/Star';
 import ToggleList from '../../UI/ToggleList';
 import QualityIndicator from '../../UI/QualityIndicator';
-import renderDistribution from '../../UI/Distribution';
+import renderDistribution from '../../Components/Distribution';
 import './DatasetSummary.css';
 import { Link } from 'react-router-dom';
 
