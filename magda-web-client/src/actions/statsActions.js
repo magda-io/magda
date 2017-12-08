@@ -3,7 +3,6 @@ import {actionTypes} from '../constants/ActionTypes';
 import type { Action, Dispatch, GetState } from '../types';
 import {config} from '../config'
 
-
 export function requestDatasetCount():Action {
   return {
     type: actionTypes.REQUEST_DATASET_COUNT,
@@ -24,9 +23,6 @@ export function fetchDatasetCountError(error: object): Action {
   }
 }
 
-
-
-
 export function fetchDatasetCount(){
   return (dispatch: Dispatch, getState: GetState)=>{
       // check if we need to fetch
@@ -38,16 +34,16 @@ export function fetchDatasetCount(){
       fetch(url)
       .then(response=>{
         if (response.status !== 200) {
-          console.log("error")
           dispatch(fetchDatasetCountError({title: response.status, detail: response.statusText}));
         }
         else {
           return response.json()
         }
       }).then(result=>{
-          if(!result || !result.error){
-            dispatch(receiveDatasetCount(result.totalCount));
+          if(result && !result.error){
+            return dispatch(receiveDatasetCount(result.totalCount));
           }
+          return dispatch(fetchDatasetCountError({title: "Error", detail: "Dataset count unavailable at the moment"}));
       });
   }
 }

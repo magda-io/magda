@@ -2,7 +2,7 @@ import React from 'react';
 import './Account.css';
 import Login from './Login';
 import { connect } from 'react-redux';
-import qs from 'qs';
+import queryString from 'query-string';
 import { requestAuthProviders } from '../../actions/userManagementActions';
 import { bindActionCreators } from 'redux';
 
@@ -10,7 +10,7 @@ class Account extends React.Component {
   constructor(props) {
     super(props);
 
-    const params = qs.parse(window.location.search);
+    const params = queryString.parse(window.location.search);
 
     this.state = {
       signInError: params.signInError
