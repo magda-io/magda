@@ -113,6 +113,7 @@ class DataPreviewVega extends Component {
   }
 
   render(){
+    console.log(this.props)
     return <div className='data-preview-vega'>
             {this.renderCharts()}
             {this.renderConfigForm()}
