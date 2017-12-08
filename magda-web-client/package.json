@@ -4,7 +4,7 @@
   "version": "0.0.32-0",
   "license": "Apache-2.0",
   "scripts": {
-    "storybook": "start-storybook -p 9001 -c .storybook",
+    "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "build-css": "node-sass src/ -o src/",
     "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
