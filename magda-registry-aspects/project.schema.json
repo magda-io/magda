@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "Aspect for capturing the basic details of a project",
+    "type": "object",
+    "properties": {
+        "description": {
+            "title": "The description of this project.",
+            "type": "string"
+        },
+        "status": {
+            "title": "The current status of the project.",
+            "type": "string",
+            "enum": [
+                "open",
+                "closed"
+            ]
+        },
+        "members": {
+            "title": "The IDs of users who are members of this project.",
+            "type": "array",
+            "items": {
+                "title": "The ID of a user that is a member of this project.",
+                "type": "string",
+                "links": [
+                    {
+                        "href": "/api/v0/auth/users/{$}",
+                        "rel": "item"
+                    }
+                ]
+            }
+        },
+        "datasets": {
+            "title": "The datasets included in this project.",
+            "type": "array",
+            "items": {
+                "title": "A ID of a dataset.",
+                "type": "string",
+                "links": [
+                    {
+                        "href": "/api/v0/registry/records/{$}",
+                        "rel": "item"
+                    }
+                ]
+            }
+        }
+    }
+}
