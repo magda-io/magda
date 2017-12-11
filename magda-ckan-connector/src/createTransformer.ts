@@ -28,8 +28,7 @@ export default function createTransformer({
             URI: URI,
             ckan: new CkanUrlBuilder({
                 name: name,
-                baseUrl: sourceUrl,
-                retrievedAt: -1
+                baseUrl: sourceUrl
             })
         }
     });

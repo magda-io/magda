@@ -1,8 +1,6 @@
 import JsonTransformer, { JsonTransformerOptions } from '@magda/typescript-common/dist/JsonTransformer';
 import * as crypto from 'crypto';
 import * as jsonpath from 'jsonpath';
-import {DatasetContainer} from 'aspect-templates/../../magda-typescript-common/src/JsonConnector'
-import {Moment} from 'moment'
 
 export default class CswTransformer extends JsonTransformer {
     constructor(options: JsonTransformerOptions) {
@@ -17,10 +15,6 @@ export default class CswTransformer extends JsonTransformer {
 
     getIdFromJsonDataset(jsonDataset: any): string {
         return jsonDataset.json.fileIdentifier[0].CharacterString[0]._;
-    }
-
-    getRetrievedAtFromDataset(datasetContainer: DatasetContainer): Moment {
-        return datasetContainer.retrievedAt;
     }
 
     getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
