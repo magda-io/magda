@@ -6,7 +6,6 @@ import { linkTo } from '@storybook/addon-links';
 import CustomIcons, {iconTypes} from '../UI/CustomIcons';
 import DataPreviewGoogleViewer from '../UI/DataPreviewGoogleViewer';
 import DataPreviewJson from '../UI/DataPreviewJson';
-import OverviewBox from '../UI/OverviewBox';
 import DataPreviewTable from '../UI/DataPreviewTable';
 import DataPreviewTextBox from '../UI/DataPreviewTextBox';
 import DataPreviewVega from '../UI/DataPreviewVega';
@@ -14,6 +13,7 @@ import DropDown from '../UI/DropDown';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import News from '../UI/News';
 import Notification from '../UI/Notification';
+import OverviewBox from '../UI/OverviewBox';
 
 
 import "../index.css";
@@ -66,7 +66,10 @@ storiesOf('Notification', module)
 storiesOf('News', module)
     .add('News loading', ()=><News isFetching={true}/>)
     .add('News loading failed', ()=><News error={{title: '404', detail: 'cannot load'}}/>)
-    .add('News loaded', ()=><News newsItems={exampleNews}/>)
+    .add('News loaded', ()=><News newsItems={exampleNews}/>);
+
+storiesOf('OverviewBox', module)
+    .add('Overviee is long', ()=><OverviewBox content={exampleMarkdown}/>);
 
 iconTypes.map(iconname =>
   storiesOf('Icons', module)
