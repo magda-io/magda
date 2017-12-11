@@ -6,8 +6,6 @@
 
 
 .notification__error button{
-  padding: 5px 10px;
-  margin: 10px;
   background: #e74c3c;
 	color: #fff;
 }
@@ -26,7 +24,12 @@
   left: 0;
   top: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 999
+  z-index: 999;
+
+	button{
+		padding: 5px 10px;
+	  margin: 10px;
+	}
 }
 
 

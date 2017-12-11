@@ -18,7 +18,7 @@ type props = {
 
 function renderContent(props: props){
   if(props.error){
-    return <div className='error'> Sorry we cannot get news at the moment</div>
+    return <div className='error'><h3>{props.error.title}</h3>{props.error.detail}</div>
   }
   if(props.isFetching){
     return (<div>
@@ -37,8 +37,6 @@ function renderNews(news: rssNews){
             <div className='news-body list-group-item-text'>{news.contentSnippet}</div>
           </li>)
 }
-
-
 
 export default function News(props: props){
   return (
