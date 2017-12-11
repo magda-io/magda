@@ -1,4 +1,6 @@
-import { ConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
+import { 
+    ConnectorSource,
+} from '@magda/typescript-common/dist/JsonConnector';
 import * as URI from 'urijs';
 import * as request from 'request';
 import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
@@ -9,6 +11,8 @@ import * as xmldom from 'xmldom';
 import * as xml2js from 'xml2js';
 import * as jsonpath from 'jsonpath';
 import { groupBy } from 'lodash';
+import { DatasetContainer } from '../../magda-typescript-common/src/JsonConnector';
+import * as moment from 'moment'
 
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
@@ -63,7 +67,6 @@ export default class Csw implements ConnectorSource {
                 }
 
                 startIndex = nextStartIndex;
-
                 return this.requestRecordsPage(url, startIndex, remaining);
             } else {
                 return this.requestRecordsPage(url, startIndex, options.maxResults);
@@ -71,7 +74,7 @@ export default class Csw implements ConnectorSource {
         });
     }
 
-    public getJsonDatasets(constraint?: string, maxResults?: number): AsyncPage<any[]> {
+    public getJsonDatasets(constraint?: string, maxResults?: number): AsyncPage<DatasetContainer[]> {
         const recordPages = this.getRecords({
             constraint: constraint,
             maxResults: maxResults
@@ -84,14 +87,20 @@ export default class Csw implements ConnectorSource {
 
             for (let i = 0; i < records.length; ++i) {
                 const recordXml = records.item(i);
-                result.push(this.xmlRecordToJsonRecord(recordXml));
+                result.push(new DatasetContainer(this.xmlRecordToJsonRecord(recordXml),
+                                        moment(
+                                            parseInt(
+                                                pageXml.documentElement.getElementsByTagName("retrievedBy")[0].nodeValue)
+                                            )
+                                        )
+                                    );
             }
 
             return result;
         });
     }
 
-    public getJsonDataset(id: string): Promise<any> {
+    public getJsonDataset(id: string): Promise<DatasetContainer> {
         const url = this.urlBuilder.getRecordByIdUrl(id);
 
         const xmlPromise = new Promise<any>((resolve, reject) => {
@@ -100,13 +109,14 @@ export default class Csw implements ConnectorSource {
                     reject(error);
                     return;
                 }
-                resolve(this.xmlParser.parseFromString(body));
+
+                resolve(this.addRetrieveAttoXML(body));
             });
         });
 
         return xmlPromise.then(xml => {
             const recordXml = xml.documentElement.getElementsByTagNameNS('*', 'MD_Metadata')[0];
-            return this.xmlRecordToJsonRecord(recordXml);
+            return new DatasetContainer(this.xmlRecordToJsonRecord(recordXml), moment());
         });
     }
 
@@ -184,9 +194,21 @@ export default class Csw implements ConnectorSource {
         };
     }
 
+    private addRetrieveAttoXML(body: string) {
+        let doc: Document;
+        let dataset = this.xmlParser.parseFromString(body);
+        let retrievedAt = doc.createElement("retrievedAt");
+    
+        retrievedAt.innerText = moment().valueOf().toString()
+        
+        dataset.appendChild(retrievedAt);
+        console.log('added timestamp: ' + dataset.getElementsByTagName("retrievedAt")[0]);
+        return dataset;
+    }
+
     private requestRecordsPage(url: uri.URI, startIndex: number, maxResults: number): Promise<any> {
         const pageSize = maxResults && maxResults < this.pageSize ? maxResults : this.pageSize;
-
+        
         const pageUrl = url.clone();
         pageUrl.addSearch('startPosition', startIndex + 1);
         pageUrl.addSearch('maxRecords', pageSize);
@@ -199,13 +221,27 @@ export default class Csw implements ConnectorSource {
                     return;
                 }
                 console.log('Received@' + startIndex);
-                resolve(this.xmlParser.parseFromString(body));
+
+                let doc: Document;
+                let dataset = this.xmlParser.parseFromString(body);
+                let retrievedAt = doc.createElement("retrievedAt");
+
+                retrievedAt.innerText = moment().valueOf().toString()
+                
+                dataset.appendChild(retrievedAt);
+                console.log('added timestamp: ' + dataset.getElementsByTagName("retrievedAt")[0]);
+                
+                resolve(this.addRetrieveAttoXML(body));
             });
         });
 
         return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
     }
+
+    
 }
+
+
 
 export interface CswOptions {
     baseUrl: string;
