@@ -1,14 +1,10 @@
 import AsyncPage, { forEachAsync } from '@magda/typescript-common/dist/AsyncPage';
 import CkanUrlBuilder from './CkanUrlBuilder';
 import formatServiceError from '@magda/typescript-common/dist/formatServiceError';
-import { 
-    ConnectorSource
-} from '@magda/typescript-common/dist/JsonConnector';
+import { ConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
 import retry from '@magda/typescript-common/dist/retry';
 import * as request from 'request';
 import * as URI from 'urijs';
-import * as moment from 'moment'
-import {DatasetContainer} from 'aspect-templates/../../magda-typescript-common/src/JsonConnector'
 
 export interface CkanThing {
     id: string;
@@ -21,7 +17,6 @@ export interface CkanResource extends CkanThing {
 
 export interface CkanDataset extends CkanThing {
     resources: CkanResource[];
-    retrievedAt: number;
 }
 
 export interface CkanOrganization extends CkanThing {
@@ -51,8 +46,8 @@ export interface CkanOptions {
     maxRetries?: number;
     secondsBetweenRetries?: number;
     ignoreHarvestSources?: string[];
-    retrievedAt: number;
 }
+
 export default class Ckan implements ConnectorSource {
     public readonly name: string;
     public readonly pageSize: number;
@@ -105,7 +100,7 @@ export default class Ckan implements ConnectorSource {
             solrQueries.push(`title:${encoded}`);
         }
 
-        let fqComponent = ''; 
+        let fqComponent = '';
 
         if (solrQueries.length > 0) {
             fqComponent = '&fq=' + solrQueries.join('+');
@@ -114,8 +109,6 @@ export default class Ckan implements ConnectorSource {
         if (options && options.sort) {
             url.addSearch('sort', options.sort);
         }
-        //TODO make this less dodgy
-
 
         const startStart = options.start || 0;
         let startIndex = startStart;
@@ -154,34 +147,29 @@ export default class Ckan implements ConnectorSource {
         });
     }
 
-    public getJsonDatasets(): AsyncPage<DatasetContainer[]> {
-        
+    public getJsonDatasets(): AsyncPage<any[]> {
         const packagePages = this.packageSearch({
             ignoreHarvestSources: this.ignoreHarvestSources,
             sort: 'metadata_created asc'
         });
-    
-        return packagePages.map((packagePage) => packagePage.result.results.map(ckanDataset => new DatasetContainer(ckanDataset, packagePage.retrievedAt)));
+        return packagePages.map((packagePage) => packagePage.result.results);
     }
 
-    public getJsonDataset(id: string): Promise<(DatasetContainer)> {
+    public getJsonDataset(id: string): Promise<any> {
         const url = this.urlBuilder.getPackageShowUrl(id);
 
-        return new Promise<(DatasetContainer)>((resolve, reject) => {
+        return new Promise<any>((resolve, reject) => {
             request(url, { json: true }, (error, response, body) => {
                 if (error) {
                     reject(error);
                     return;
                 }
-                //TODO ask Kevin if this is appropriate
-                body.result.retrievedAt = moment();
-
                 resolve(body.result);
             });
         });
     }
 
-    public searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<CkanDataset[]> {
+    public searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<any[]> {
         const packagePages = this.packageSearch({
             ignoreHarvestSources: this.ignoreHarvestSources,
             title: title,
@@ -265,16 +253,12 @@ export default class Ckan implements ConnectorSource {
         const operation = () => new Promise<CkanPackageSearchResponse>((resolve, reject) => {
             const requestUrl = pageUrl.toString() + fqComponent;
             console.log('Requesting ' + requestUrl);
-            const retrievedAt = moment().valueOf();
-
             request(requestUrl, { json: true }, (error, response, body) => {
                 if (error) {
                     reject(error);
                     return;
                 }
                 console.log('Received@' + startIndex);
-                //TODO integrate this property into where all other properties are defined
-                body.retrievedAt = retrievedAt;
                 resolve(body);
             });
         });

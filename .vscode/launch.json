@@ -44,8 +44,7 @@
             ],
             "args":[
                 "--config", "${workspaceRoot}/deploy/connector-config/australian-bureau-of-meteorology.json",
-                "--userId", "00000000-0000-4000-8000-000000000000",
-                "--jwtSecret", "squirrel"
+                "--interactive"
             ],
             "cwd": "${workspaceRoot}/magda-csw-connector"
         },

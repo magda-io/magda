@@ -22,11 +22,6 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             demandOption: true
         })
-        .option("retrievedAt", {
-            describe: "The date and time at which the website/portal was connected",
-            type:"number",
-            default: Date.now()
-        })
         .option("pageSize", {
             describe:
                 "The number of datasets per page to request from the CKAN server.",
@@ -191,8 +186,6 @@ const ckan = new Ckan({
     name: argv.name,
     pageSize: argv.pageSize,
     ignoreHarvestSources: argv.ignoreHarvestSources,
-    retrievedAt: argv.retrievedAt,
-
 });
 
 const registry = new Registry({
