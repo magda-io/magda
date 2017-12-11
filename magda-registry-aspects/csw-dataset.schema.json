@@ -6,6 +6,10 @@
       "xml": {
           "title": "The XML description of this dataset, according to the CSW server",
           "type": "string"
+      },
+      "retrievedAt": {
+        "title": "The milliseconds from 1970 to when the distribution of this dataset was crawled/retrieved",
+        "type": "number"
       }
   }
 }

@@ -8,6 +8,7 @@ import * as express from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
+import * as moment from 'moment';
 
 /**
  * A base class for connectors for most any JSON-based catalog source.
@@ -17,6 +18,12 @@ export default class JsonConnector {
     public readonly transformer: JsonTransformer;
     public readonly registry: Registry;
     public readonly maxConcurrency: number;
+
+    /**
+     * Contains dataset metadata related to CRUD ops.
+     * @param ID
+     * @param 
+     */
 
     constructor({
         source,
@@ -85,7 +92,9 @@ export default class JsonConnector {
         const result = new ConnectionResult();
 
         const datasets = this.source.getJsonDatasets();
+
         await forEachAsync(datasets, this.maxConcurrency, async dataset => {
+
             const record = this.transformer.datasetJsonToRecord(dataset);
 
             const distributions = this.source.getJsonDistributions(dataset);
@@ -93,6 +102,7 @@ export default class JsonConnector {
                 const distributionIds: string[] = [];
                 await forEachAsync(distributions, 1, async distribution => {
                     const recordOrError = await this.createDistribution(distribution, dataset);
+
                     if (recordOrError instanceof Error) {
                         result.distributionFailures.push(new CreationFailure(
                             this.transformer.getIdFromJsonDistribution(distribution, dataset),
@@ -112,7 +122,8 @@ export default class JsonConnector {
             if (this.source.hasFirstClassOrganizations) {
                 const publisher = this.source.getJsonDatasetPublisherId(dataset);
                 if (publisher) {
-                    record.aspects['dataset-publisher'] = {
+                    record.aspects
+                    ['dataset-publisher'] = {
                         publisher: publisher
                     };
                 }
@@ -144,7 +155,6 @@ export default class JsonConnector {
                 ++result.datasetsConnected;
             }
         });
-
         return result;
     }
 
@@ -265,15 +275,14 @@ export interface ConnectorSource {
      *
      * @returns {AsyncPage<any[]>} A page of datasets.
      */
-    getJsonDatasets(): AsyncPage<any[]>;
+    getJsonDatasets(): AsyncPage<DatasetContainer[]>;
 
     /**
      * Get a particular dataset given its ID.
-     *
      * @param {string} id The ID of the dataset.
-     * @returns {Promise<any>} The dataset object with the given ID.
+     * @returns {Promise<DatasetTags>} The dataset object with the given ID.
      */
-    getJsonDataset(id: string): Promise<any>;
+    getJsonDataset(id: string): Promise<DatasetContainer>;
 
     /**
      * Search datasets for those that have a particular case-insensitive string
@@ -281,9 +290,9 @@ export interface ConnectorSource {
      *
      * @param {string} title The string to search for the in the title.
      * @param {number} maxResults The maximum number of results to return.
-     * @returns {AsyncPage<any[]>} A page of matching datasets.
+     * @returns {AsyncPage<DatasetTags[]>} A page of matching datasets.
      */
-    searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<any[]>;
+    searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<any>;
 
     /**
      * Gets the distributions of a given dataset.
@@ -291,7 +300,7 @@ export interface ConnectorSource {
      * @param {object} dataset The dataset.
      * @returns {AsyncPage<any[]>} A page of distributions of the dataset.
      */
-    getJsonDistributions(dataset: any): AsyncPage<any[]>;
+    getJsonDistributions(dataset: object): AsyncPage<any[]>;
 
     /**
      * True if the source provides organizations as first-class objects that can be enumerated and retrieved
@@ -357,3 +366,15 @@ export interface JsonConnectorRunInteractiveOptions {
     listenPort: number;
     transformerOptions: any;
 }
+
+export interface DatasetContainer {
+    new(dataset: any, retrievedAt: moment.Moment): DatasetContainer;
+    dataset: any;
+    retrievedAt: moment.Moment;
+}
+export var DatasetContainer: DatasetContainer;
+
+/**
+ * checks whether the object has the universal, essential properties that every dataset has(apart from id and name)
+ * @param dataset the dataset to check for essential properties
+ */

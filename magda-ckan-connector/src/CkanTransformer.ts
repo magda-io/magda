@@ -1,4 +1,6 @@
 import JsonTransformer, { JsonTransformerOptions } from '@magda/typescript-common/dist/JsonTransformer';
+import {DatasetContainer} from '../../magda-typescript-common/src/JsonConnector'
+import {Moment} from 'moment'
 
 export default class CkanTransformer extends JsonTransformer {
     constructor(options: JsonTransformerOptions) {
@@ -11,6 +13,10 @@ export default class CkanTransformer extends JsonTransformer {
 
     getIdFromJsonDataset(jsonDataset: any): string {
         return jsonDataset.id;
+    }
+
+    getRetrievedAtFromDataset(dataset: DatasetContainer): Moment {
+        return dataset.retrievedAt;
     }
 
     getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
