@@ -1,3 +1,4 @@
 return {
-    xml: dataset.xmlString
+    xml: dataset.xmlString,
+    retrievedAt: dataset.retrievedAt
 };
