@@ -102,6 +102,7 @@ export default class JsonConnector {
                 const distributionIds: string[] = [];
                 await forEachAsync(distributions, 1, async distribution => {
                     const recordOrError = await this.createDistribution(distribution, dataset);
+
                     if (recordOrError instanceof Error) {
                         result.distributionFailures.push(new CreationFailure(
                             this.transformer.getIdFromJsonDistribution(distribution, dataset),
@@ -154,7 +155,6 @@ export default class JsonConnector {
                 ++result.datasetsConnected;
             }
         });
-
         return result;
     }
 
@@ -378,6 +378,3 @@ export var DatasetContainer: DatasetContainer;
  * checks whether the object has the universal, essential properties that every dataset has(apart from id and name)
  * @param dataset the dataset to check for essential properties
  */
-function isTagged(dataset: any) {
-    return dataset.retrievedAt !== undefined;
-}
