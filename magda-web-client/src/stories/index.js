@@ -67,6 +67,7 @@ storiesOf('Pagination', module)
 
 storiesOf('Notification', module)
     .add('Default notification', ()=><Notification content={{title: '', detail: 'This is a default message'}} type='' onDismiss={action()}/>)
+    .add('Error notification', ()=><Notification content={{title: '', detail: 'This is a error message'}} type='error' onDismiss={action()}/>)
 
 storiesOf('News', module)
     .add('News loading', ()=><News isFetching={true}/>)
