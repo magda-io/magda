@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import MarkdownViewer from '../../UI/MarkdownViewer';
 import defined from '../../helpers/defined';
-// import Star from '../../UI/Star';
 import ToggleList from '../../UI/ToggleList';
 import QualityIndicator from '../../UI/QualityIndicator';
 import renderDistribution from '../../Components/Distribution';
@@ -27,7 +26,6 @@ export default class DatasetSummary extends Component {
     const self: any = this;
 
     self.onClick = this.onClick.bind(this);
-    // self.onClickStar = this.onClickStar.bind(this);
     this.state ={
       tagsExpanded: false,
       isFav: false
@@ -40,6 +38,7 @@ export default class DatasetSummary extends Component {
   }
 
   renderLinks(){
+    debugger
     return <div className='dataset-summary__more-info'>
               <div className='dataset-summary__content clearfix'>
                 <h5 className='dataset-summary__sub-heading'>Contents</h5>
