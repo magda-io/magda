@@ -38,7 +38,6 @@ export default class DatasetSummary extends Component {
   }
 
   renderLinks(){
-    debugger
     return <div className='dataset-summary__more-info'>
               <div className='dataset-summary__content clearfix'>
                 <h5 className='dataset-summary__sub-heading'>Contents</h5>
