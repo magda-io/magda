@@ -36,7 +36,6 @@
     "xml2js": "^0.4.19"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.32-0",
     "@magda/typescript-common": "^0.0.32-0",
     "@magda/web-admin": "^0.0.32-0",
     "@magda/web-client": "^0.0.32-0",
