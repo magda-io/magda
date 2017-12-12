@@ -14,9 +14,9 @@ import MarkdownViewer from '../UI/MarkdownViewer';
 import News from '../UI/News';
 import Notification from '../UI/Notification';
 import OverviewBox from '../UI/OverviewBox';
+import Pagination from '../UI/Pagination';
 
 
-import "../index.css";
 
 const exampleData = {
   meta: {
@@ -58,7 +58,12 @@ storiesOf('Dataset preview', module)
 
 storiesOf('Shared UI', module)
     .add('DropDown', ()=><DropDown options={[{id: 0, value: 'a'},{id: 1, value: 'b'}, {id: 2, value: 'c'} ]} select={action()}/>)
-    .add('Markdown', ()=><MarkdownViewer markdown={exampleMarkdown} updateContentLength={action()}/>)
+    .add('Markdown', ()=><MarkdownViewer markdown={exampleMarkdown} updateContentLength={action()}/>);
+
+storiesOf('Pagination', module)
+    .add('page 1', ()=><Pagination currentPage={1} maxPage={100} onPageChange={action()}/>)
+    .add('page 3', ()=><Pagination currentPage={3} maxPage={100} onPageChange={action()}/>)
+    .add('last page', ()=><Pagination currentPage={100} maxPage={100} onPageChange={action()}/>)
 
 storiesOf('Notification', module)
     .add('Default notification', ()=><Notification content={{title: '', detail: 'This is a default message'}} type='' onDismiss={action()}/>)
@@ -69,7 +74,8 @@ storiesOf('News', module)
     .add('News loaded', ()=><News newsItems={exampleNews}/>);
 
 storiesOf('OverviewBox', module)
-    .add('Overviee is long', ()=><OverviewBox content={exampleMarkdown}/>);
+    .add('Long overview', ()=><OverviewBox content={exampleMarkdown}/>)
+    .add('Short overview', ()=><OverviewBox content={"exampleMarkdown"}/>);
 
 iconTypes.map(iconname =>
   storiesOf('Icons', module)

@@ -10,6 +10,8 @@ import Pagination from '../../UI/Pagination';
 import ErrorHandler from '../../Components/ErrorHandler';
 import getPageNumber from '../../helpers/getPageNumber';
 import ProgressBar from '../../UI/ProgressBar';
+import queryString from 'query-string';
+import PropTypes from 'prop-types';
 
 import './PublishersViewer.css';
 class PublishersViewer extends Component {
@@ -31,6 +33,12 @@ class PublishersViewer extends Component {
       }
     }
 
+    onPageChange(i){
+      this.context.router.history.push({
+        pathname: this.props.location.pathname,
+        search: queryString.stringify(Object.assign(queryString.parse(this.props.location.search), {page: i}))
+      });
+    }
 
     renderContent(){
       if(this.props.error){
@@ -44,12 +52,12 @@ class PublishersViewer extends Component {
                 <Pagination
                   currentPage={+getPageNumber(this.props)|| 1}
                   maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
-                  location={this.props.location}
+                  onPageChange={this.onPageChange}
                 />}
               </div>)
       }
     }
-
+    
     render(){
       return <ReactDocumentTitle title={'Publishers | ' + config.appName}>
               <div className='container publishers-viewer'>
@@ -79,6 +87,10 @@ function mapStateToProps(state: Object, ownProps: Object) {
   return {
     publishers, isFetching, hitCount, location, error
   };
+}
+
+PublishersViewer.contextTypes ={
+  router: PropTypes.object.isRequired,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(PublishersViewer);

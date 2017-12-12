@@ -10,6 +10,8 @@ import Pagination from '../../UI/Pagination';
 import ErrorHandler from '../../Components/ErrorHandler';
 import getPageNumber from '../../helpers/getPageNumber';
 import ProgressBar from '../../UI/ProgressBar';
+import queryString from 'query-string';
+import PropTypes from 'prop-types';
 import './ProjectsViewer.css';
 
 class ProjectsViewer extends Component {
@@ -21,6 +23,13 @@ class ProjectsViewer extends Component {
       if(getPageNumber(this.props) !== getPageNumber(nextProps)){
         nextProps.fetchProjectsIfNeeded(getPageNumber(nextProps) || 1);
       }
+    }
+
+    onPageChange(i){
+      this.context.router.history.push({
+        pathname: this.props.location.pathname,
+        search: queryString.stringify(Object.assign(queryString.parse(this.props.location.search), {page: i}))
+      });
     }
 
     renderContent(){
@@ -37,7 +46,7 @@ class ProjectsViewer extends Component {
                   <Pagination
                     currentPage={+getPageNumber(this.props) || 1}
                     maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
-                    location={this.props.location}
+                    onPageChange={this.onPageChange}
                   />
                 }
               </div>);
@@ -77,6 +86,10 @@ function mapStateToProps(state, ownProps) {
   return {
     projects, isFetching, hitCount, location, error
   };
+}
+
+ProjectsViewer.contextTypes ={
+  router: PropTypes.object.isRequired,
 }
 
 

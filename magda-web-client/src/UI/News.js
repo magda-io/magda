@@ -22,8 +22,8 @@ function renderContent(props: props){
   }
   if(props.isFetching){
     return (<div>
-              <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
-              <span class="sr-only">Loading...</span>
+              <i className="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+              <span className="sr-only">Loading...</span>
             </div>)
   }
   return (
