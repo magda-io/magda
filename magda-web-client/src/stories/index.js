@@ -22,6 +22,7 @@ import QualityIndicator from '../UI/QualityIndicator';
 import TemporalAspectViewer from '../UI/TemporalAspectViewer';
 import ToggleList from '../UI/ToggleList';
 import Tabs from '../UI/Tabs';
+import Contact from '../UI/Contact';
 
 
 const exampleData = {
@@ -93,6 +94,9 @@ storiesOf('OverviewBox', module)
 storiesOf('Aspect Viewer', module)
     .add('Temporal Aspect Viewer', ()=><TemporalAspectViewer data={{intervals: [{start: '2017-12-25', end: '2017-12-25'}]}} />)
 
+storiesOf('Contact Form', module)
+    .add('Generic contact from', ()=><Contact/>)
+
 iconTypes.map(iconname =>
   storiesOf('Icons', module)
       .add(iconname, () => <CustomIcons name={iconname}/>)
@@ -103,4 +107,4 @@ storiesOf('Dataset preview', module)
     .add('DataPreviewJson', ()=><DataPreviewJson data={{data: {object : {test: 1}}}}/>)
     .add('DataPreviewTable', ()=><DataPreviewTable data={exampleData}/>)
     .add('DataPreviewTextBox', ()=><DataPreviewTextBox data={{data: 'some text'}}/>)
-    .add('DataPreviewVega', ()=><DataPreviewVega data={exampleData} logAction={action()}/>)
+    .add('DataPreviewVega', ()=><DataPreviewVega data={exampleData} logAction={action()}/>);

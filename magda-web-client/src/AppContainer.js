@@ -28,7 +28,7 @@ import RecordHandler from './Components/RecordHandler';
 import { staticPageRegister } from './content/register';
 
 import Feedback from './Components/Feedback';
-import Contact from './Components/Contact';
+import Contact from './UI/Contact';
 import Account from './Components/Account/Account';
 import Login from './Components/Account/Login';
 import SignInRedirect from './Components/Account/SignInRedirect';
