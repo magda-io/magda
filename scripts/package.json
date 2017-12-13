@@ -8,6 +8,7 @@
     "klaw-sync": "^2.1.0",
     "nodemon": "^1.11.0",
     "tmp": "0.0.31",
+    "toposort": "^1.0.6",
     "ts-node": "^3.0.4",
     "tsconfig-paths": "^2.2.0",
     "typescript": "~2.5.0",

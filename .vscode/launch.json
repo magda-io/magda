@@ -129,6 +129,16 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "incremental-build",
+            "program": "${workspaceRoot}/scripts/incremental-build.js",
+            "cwd": "${workspaceRoot}/scripts",
+            "args": [
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "create-docker-context-for-node-component",
             "program": "${workspaceRoot}/scripts/create-docker-context-for-node-component.js",
             "cwd": "${workspaceRoot}/magda-gateway",
