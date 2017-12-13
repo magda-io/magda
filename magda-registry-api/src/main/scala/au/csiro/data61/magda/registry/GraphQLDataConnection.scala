@@ -9,21 +9,26 @@ object GraphQLDataConnection {
   class Fetcher {
     def getRecord(id: String, aspects: List[String]) : GraphQLTypes.Record = {
       val dbAspects = aspects.map(gqlToDb)
-      println("Database aspects: " + dbAspects)
       val record = (DB readOnly { session => {
         RecordPersistence.getByIdWithAspects(session, id, Nil, dbAspects)
       }}).get
-      GraphQLTypes.Record(id = record.id, name = record.name, record.aspects.keys.toList.map(dbToGql), record.aspects.map { case (k,v) => (dbToGql(k), v)})
+      GraphQLTypes.Record(id = record.id, name = record.name, record.aspects.keys.toList.map(dbToGql), record.aspects.map { case (k,v) => (dbToGql(k), v) })
     }
-    // , paths: Vector[Vector[String]]
-    def getRecordsPage(pageToken: Option[String], aspects: List[String]) : GraphQLTypes.RecordsPageGraphQL = {
-      DB readOnly { session => {
-        val page = RecordPersistence.getAllWithAspects(session, Nil, aspects, pageToken)
-        GraphQLTypes.RecordsPageGraphQL(
-          records = page.records.map(r => GraphQLTypes.Record(id=r.id, name=r.name, aspectsList=Nil, aspects = r.aspects)),
-          nextPageToken = page.nextPageToken.get
-        )
+
+    def getRecordsPage(pageToken: Option[String], filter: Option[GraphQLTypes.RecordFilter], aspects: List[String]) : GraphQLTypes.RecordsPageGraphQL = {
+      // Convert the list of aspects to DB aspect names
+      val dbAspects = aspects.map(gqlToDb)
+      // Convert aspect names at the first level of filter to DB aspect names
+      val filter2 = filter.map(x => x.copy(aspects = x.aspects.map(_.map { case (k,v) => gqlToDb(k) -> v } )))
+
+      val page = DB readOnly { session => {
+        RecordPersistence.getAllWithAspectsFiltered(session, dbAspects, filter2, pageToken)
       }}
+      GraphQLTypes.RecordsPageGraphQL(
+        records = page.records.map(r => GraphQLTypes.Record(id=r.id, name=r.name, aspectsList=Nil, aspects = r.aspects.map { case (k,v) => (dbToGql(k), v) })),
+        totalCount = page.totalCount,
+        nextPageToken = page.nextPageToken
+      )
     }
   }
 
