@@ -8,6 +8,7 @@ import * as express from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
+import { Moment } from 'moment';
 
 /**
  * A base class for connectors for most any JSON-based catalog source.
@@ -88,7 +89,7 @@ export default class JsonConnector {
         await forEachAsync(datasets, this.maxConcurrency, async dataset => {
             const record = this.transformer.datasetJsonToRecord(dataset);
 
-            const distributions = this.source.getJsonDistributions(dataset);
+            const distributions = this.source.getJsonDistributions(dataset.dataset);
             if (distributions) {
                 const distributionIds: string[] = [];
                 await forEachAsync(distributions, 1, async distribution => {
@@ -265,7 +266,7 @@ export interface ConnectorSource {
      *
      * @returns {AsyncPage<any[]>} A page of datasets.
      */
-    getJsonDatasets(): AsyncPage<any[]>;
+    getJsonDatasets(): AsyncPage<DatasetContainer[]>;
 
     /**
      * Get a particular dataset given its ID.
@@ -357,3 +358,12 @@ export interface JsonConnectorRunInteractiveOptions {
     listenPort: number;
     transformerOptions: any;
 }
+
+//retrievedAt is a number because dataset-schema uses json schema that doesn't have a moment as a types as the default. 
+export interface DatasetContainer {
+    new(dataset: any, retrievedAt: Moment): DatasetContainer
+    dataset: any;
+    retrievedAt: Moment;
+}
+
+export var DatasetContainer: DatasetContainer

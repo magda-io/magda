@@ -1,10 +1,11 @@
 import AsyncPage, { forEachAsync } from '@magda/typescript-common/dist/AsyncPage';
 import CkanUrlBuilder from './CkanUrlBuilder';
 import formatServiceError from '@magda/typescript-common/dist/formatServiceError';
-import { ConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
+import { ConnectorSource, DatasetContainer } from '@magda/typescript-common/dist/JsonConnector';
 import retry from '@magda/typescript-common/dist/retry';
 import * as request from 'request';
 import * as URI from 'urijs';
+import * as moment from 'moment'
 
 export interface CkanThing {
     id: string;
@@ -147,12 +148,14 @@ export default class Ckan implements ConnectorSource {
         });
     }
 
-    public getJsonDatasets(): AsyncPage<any[]> {
+    public getJsonDatasets(): AsyncPage<DatasetContainer[]> {
         const packagePages = this.packageSearch({
             ignoreHarvestSources: this.ignoreHarvestSources,
             sort: 'metadata_created asc'
         });
-        return packagePages.map((packagePage) => packagePage.result.results);
+        return packagePages.map((packagePage) => (packagePage.result.results).map(eachOne => {
+            return new DatasetContainer(eachOne, packagePage.retrievedAt)
+        }));
     }
 
     public getJsonDataset(id: string): Promise<any> {
@@ -253,12 +256,16 @@ export default class Ckan implements ConnectorSource {
         const operation = () => new Promise<CkanPackageSearchResponse>((resolve, reject) => {
             const requestUrl = pageUrl.toString() + fqComponent;
             console.log('Requesting ' + requestUrl);
+            let retrievedAt = moment();
             request(requestUrl, { json: true }, (error, response, body) => {
                 if (error) {
                     reject(error);
                     return;
                 }
                 console.log('Received@' + startIndex);
+                //TODO make this less dodgy. Kevin, add this property to the interface PackageSearchResponse?
+                body.retrievedAt = retrievedAt;
+                console.log(requestUrl + " has been timestamped at " + body.retrievedAt);
                 resolve(body);
             });
         });

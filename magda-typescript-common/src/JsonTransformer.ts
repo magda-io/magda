@@ -1,6 +1,8 @@
 import { AspectDefinition, Record } from './generated/registry/api';
 import AspectBuilder from './AspectBuilder';
 import createServiceError from './createServiceError';
+import { DatasetContainer } from './JsonConnector';
+import { Moment } from 'moment';
 
 /**
  * A base class for transformers for most any JSON-based catalog source.
@@ -66,12 +68,13 @@ export default abstract class JsonTransformer {
         return this.jsonToRecord(id, name, jsonOrganization, this.organizationAspects);
     }
 
-    datasetJsonToRecord(jsonDataset: object): Record {
-        this.datasetAspects.parameters.dataset = jsonDataset;
+    datasetJsonToRecord(datasetContainer: DatasetContainer): Record {
+        this.datasetAspects.parameters.dataset = datasetContainer.dataset;
+        this.datasetAspects.parameters.retrievedAt = this.getRetrievedAtFromDatasetContainer(datasetContainer).valueOf();
 
-        const id = this.getIdFromJsonDataset(jsonDataset);
-        const name = this.getNameFromJsonDataset(jsonDataset);
-        return this.jsonToRecord(id, name, jsonDataset, this.datasetAspects);
+        const id = this.getIdFromJsonDataset(datasetContainer.dataset);
+        const name = this.getNameFromJsonDataset(datasetContainer.dataset);
+        return this.jsonToRecord(id, name, datasetContainer.dataset, this.datasetAspects);
     }
 
     distributionJsonToRecord(jsonDistribution: object, jsonDataset: object): Record {
@@ -100,7 +103,7 @@ export default abstract class JsonTransformer {
             {
                 id: 'dataset-publisher',
                 name: 'Dataset Publisher',
-                jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')
+                jsonSchema: require(';@magda/registry-aspects/dataset-publisher.schema.json')
             }
         ]);
     }
@@ -112,6 +115,8 @@ export default abstract class JsonTransformer {
     abstract getNameFromJsonOrganization(jsonOrganization: object): string;
     abstract getNameFromJsonDataset(jsonDataset: object): string;
     abstract getNameFromJsonDistribution(jsonDistribution: object, jsonDataset: object): string;
+
+    abstract getRetrievedAtFromDatasetContainer(datasetContainer: DatasetContainer): Moment;
 
     private jsonToRecord(id: string, name: string, json: any, aspects: CompiledAspects): Record {
         const problems: ProblemReport[] = [];

@@ -1,4 +1,4 @@
-import { ConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
+import { ConnectorSource, DatasetContainer } from '@magda/typescript-common/dist/JsonConnector';
 import * as URI from 'urijs';
 import * as request from 'request';
 import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
@@ -9,6 +9,7 @@ import * as xmldom from 'xmldom';
 import * as xml2js from 'xml2js';
 import * as jsonpath from 'jsonpath';
 import { groupBy } from 'lodash';
+import * as moment from 'moment'
 
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
@@ -68,7 +69,7 @@ export default class Csw implements ConnectorSource {
         });
     }
 
-    public getJsonDatasets(constraint?: string, maxResults?: number): AsyncPage<any[]> {
+    public getJsonDatasets(constraint?: string, maxResults?: number): AsyncPage<DatasetContainer[]> {
         const recordPages = this.getRecords({
             constraint: constraint,
             maxResults: maxResults
@@ -76,6 +77,7 @@ export default class Csw implements ConnectorSource {
         return recordPages.map(pageXml => {
             const searchResults = pageXml.documentElement.getElementsByTagNameNS('*', 'SearchResults')[0];
             const records = searchResults.getElementsByTagNameNS('*', 'MD_Metadata');
+            const retrievedAt = moment(parseInt(pageXml.documentElement.getElementsByTagName("retrievedAt")[0].innerHTML));
 
             const result = [];
 
@@ -84,7 +86,9 @@ export default class Csw implements ConnectorSource {
                 result.push(this.xmlRecordToJsonRecord(recordXml));
             }
 
-            return result;
+            return result.map(eachOne => {
+                return new DatasetContainer(eachOne, retrievedAt);
+            })
         });
     }
 
@@ -188,6 +192,16 @@ export default class Csw implements ConnectorSource {
         pageUrl.addSearch('startPosition', startIndex + 1);
         pageUrl.addSearch('maxRecords', pageSize);
 
+        //TODO ask Kevin (philosophical q): but if we put retrievedAt at the start of the request
+        //then we are assuming that reject wont be called, because giving a timestamp to a failed request is silly.
+        // plus we are using valueOf() instead of a pure moment() because this function(or parent function) returns a Docment type.
+        //this document type cannot store a class(moment) This problem isn't in ckan hence we can just use moment
+        //Changing return type of this function from any to DatasetContainer(for getRecords: Promise<Document>) and changing getRecords to Promise<DatasetContainer>
+        //doesn't feel like a good idea to me because I don't know how many other functions use getRecords(and consequently how many other functions I need to modify)
+        // so it can handle the new DatasetContainer interface. Anyway dataset-distributions.schema.json doesn't allow a Moment type too without uneccesary workarounds
+
+        let milliseconds = moment().valueOf();
+        
         const operation = () => new Promise<any>((resolve, reject) => {
             console.log('Requesting ' + pageUrl.toString());
             request(pageUrl.toString(), {}, (error, response, body) => {
@@ -196,11 +210,25 @@ export default class Csw implements ConnectorSource {
                     return;
                 }
                 console.log('Received@' + startIndex);
-                resolve(this.xmlParser.parseFromString(body));
+                resolve(this.populateBodyWithRetrievedAt(milliseconds, body));;
             });
         });
 
         return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
+    }
+
+    //good to make this a separate function because same functionality may be used in other functions (like getJsonDataset (with getJsonDatasets))
+    private populateBodyWithRetrievedAt(milliseconds: number, body: string): Document {
+        let doc: Document;
+        let bodyXML = this.xmlParser.parseFromString(body);
+
+        let retrievedAt = doc.createElement("retrievedAt");
+        retrievedAt.innerText = milliseconds.toString();
+
+        bodyXML.documentElement.appendChild(retrievedAt);
+
+        return bodyXML;
+
     }
 }
 

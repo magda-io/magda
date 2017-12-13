@@ -17,6 +17,10 @@
                     }
                 ]
             }
+        },
+        "retrievedAt": {
+            "title": "The time at which these distributions were harvested",
+            "type": "number"
         }
     }
 }

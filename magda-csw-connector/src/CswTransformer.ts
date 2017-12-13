@@ -1,6 +1,8 @@
 import JsonTransformer, { JsonTransformerOptions } from '@magda/typescript-common/dist/JsonTransformer';
 import * as crypto from 'crypto';
 import * as jsonpath from 'jsonpath';
+import { DatasetContainer } from '@magda/typescript-common/src/JsonConnector';
+import { Moment } from '../../magda-typescript-common/node_modules/moment';
 
 export default class CswTransformer extends JsonTransformer {
     constructor(options: JsonTransformerOptions) {
@@ -41,5 +43,9 @@ export default class CswTransformer extends JsonTransformer {
 
     private getJsonDistributionsArray(dataset: any): any[] {
         return jsonpath.query(dataset.json, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
+    }
+
+    getRetrievedAtFromDatasetContainer(dataset: DatasetContainer): Moment {
+        return dataset.retrievedAt;
     }
 }
