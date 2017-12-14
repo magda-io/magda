@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDocumentTitle from 'react-document-title';
 import {config} from '../config' ;
+import FacetSearchBox from '../Components/SearchFacets/FacetSearchBox';
 
 
 export default function Contact(props) {
@@ -21,6 +22,9 @@ export default function Contact(props) {
         {renderField('comment', 'textarea')}
         <button type="submit" className="btn btn-default">Send</button>
       </form>
+      <h2>After a specific datastet?</h2>
+      Try Searching for an organization
+      <FacetSearchBox />
     </div>
     </ReactDocumentTitle>
   );
