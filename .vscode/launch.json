@@ -129,8 +129,8 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "incremental-docker",
-            "program": "${workspaceRoot}/scripts/incremental-docker.js",
+            "name": "build-changed",
+            "program": "${workspaceRoot}/scripts/build-changed.js",
             "cwd": "${workspaceRoot}/scripts",
             "args": [
             ]
