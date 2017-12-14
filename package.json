@@ -10,7 +10,7 @@
     "create-all-tsconfigs": "node ./scripts/create-all-tsconfigs.js",
     "node-ci": "node ./scripts/node-js-ci.js",
     "lerna": "lerna",
-    "incremental-build": "bash -c \"sbt compile\" && node ./scripts/incremental-build.js",
+    "incremental-build": "node ./scripts/incremental-build.js",
     "incremental-docker": "node ./scripts/incremental-docker.js"
   },
   "dependencies": {

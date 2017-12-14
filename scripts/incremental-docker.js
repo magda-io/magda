@@ -5,15 +5,37 @@ const lastModifiedFile = require('./lastModifiedFile');
 const moment = require('moment');
 const path = require('path');
 
-const packagePaths = getAllPackages().filter(packagePath => fse.existsSync(path.join(packagePath, 'Dockerfile')));
+const packagePaths = getAllPackages();
 
 const failed = [];
 const succeeded = [];
 
 packagePaths.forEach(packagePath => {
     const packageJson = require(path.resolve(packagePath, 'package.json'));
+    if (!packageJson || !packageJson.scripts || !packageJson.scripts['docker-build-local']) {
+        return;
+    }
+
+    // If this is an SBT project, supplement the package.json with some info from build.sbt.
+    const buildSbtPath = path.resolve(packagePath, 'build.sbt');
+    if (fse.existsSync(buildSbtPath)) {
+        const buildSbt = fse.readFileSync(buildSbtPath, 'utf8');
+        const sbtImageName = /name := "(.*)"/.exec(buildSbt)[1];
+        if (!sbtImageName || sbtImageName.length === 0) {
+            return;
+        }
+
+        packageJson.config = packageJson.config || {};
+        packageJson.config.docker = {
+            name: 'data61/' + sbtImageName,
+            // TODO: we hard-code a dependency on magda-scala-common because determining the
+            //       actual dependencies from the root build.sbt is... as hassle.
+            include: 'src generated ../magda-scala-common/src'
+        };
+    }
+
     const name = packageJson.name;
-    if (!packageJson || !packageJson.config || !packageJson.config.docker || !packageJson.config.docker.name) {
+    if (!packageJson.config || !packageJson.config.docker || !packageJson.config.docker.name) {
         return;
     }
 
@@ -27,10 +49,10 @@ packagePaths.forEach(packagePath => {
         encoding: 'utf8'
     });
 
-    if (imageUpdateDateProcess.status !== 0) {
-        console.log('Docker returned an error. Do you need to run "eval $(minikube docker-env)"?');
-        return;
-    }
+    // if (imageUpdateDateProcess.status !== 0) {
+    //     console.log('Docker returned an error. Do you need to run "eval $(minikube docker-env)"?');
+    //     process.exit(1);
+    // }
 
     const dateString = imageUpdateDateProcess.stdout.trim();
 
@@ -41,7 +63,7 @@ packagePaths.forEach(packagePath => {
         const imageDate = moment.utc(dateString, 'YYYY-MM-DD HH:mm:ss ZZ');
 
         const includedPaths = packageJson.config.docker.include.split(' ').filter(p => p !== 'node_modules');
-        const lastModifiedDates = includedPaths.map(p => moment.utc(lastModifiedFile(path.resolve(packagePath, p)).stats.mtime));
+        const lastModifiedDates = includedPaths.map(p => lastModifiedFile(path.resolve(packagePath, p))).filter(f => f && f.stats && f.stats.mtime).map(f => moment.utc(f.stats.mtime));
         const lastLastModifiedDate = lastModifiedDates.reduce((previous, current) => current > previous ? current : previous, moment.utc(0));
 
         if (lastLastModifiedDate > imageDate) {

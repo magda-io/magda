@@ -2,6 +2,10 @@ const fse = require('fs-extra');
 const klawSync = require('klaw-sync');
 
 function lastModifiedFile(path) {
+    if (!fse.existsSync(path)) {
+        return undefined;
+    }
+
     const stat = fse.statSync(path);
     if (!stat || (!stat.isFile() && !stat.isDirectory())) {
         return undefined;
