@@ -4,6 +4,16 @@ const isTypeScriptPackage = require('./isTypeScriptPackage');
 const lastModifiedFile = require('./lastModifiedFile');
 const path = require('path');
 const toposort = require('toposort');
+const yargs = require('yargs');
+
+const argv = yargs
+    .config()
+    .help()
+    .option('skipDocker', {
+        describe: 'Skip the build/push of the docker image.',
+        type: 'boolean',
+        default: false
+    });
 
 const failed = [];
 const succeeded = [];
@@ -68,7 +78,7 @@ sortedPackages.forEach(package => {
         package.built = true;
 
         const result = childProcess.spawnSync(
-            "npm", [ "run", "compile" ],
+            "npm", [ "run", "build" ],
             {
                 stdio: ["inherit", "inherit", "inherit"],
                 shell: true,
@@ -80,6 +90,16 @@ sortedPackages.forEach(package => {
             failed.push(packagePath);
             console.log(`${packagePath}: BUILD FAILED`);
         } else {
+            if (!argv.skipDocker) {
+                const result = childProcess.spawnSync(
+                    "npm", [ "run", "docker-build-local" ],
+                    {
+                        stdio: ["inherit", "inherit", "inherit"],
+                        shell: true,
+                        cwd: packagePath
+                    }
+                );
+            }
             succeeded.push(packagePath);
         }
     }

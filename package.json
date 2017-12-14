@@ -10,8 +10,9 @@
     "create-all-tsconfigs": "node ./scripts/create-all-tsconfigs.js",
     "node-ci": "node ./scripts/node-js-ci.js",
     "lerna": "lerna",
-    "incremental-build": "node ./scripts/incremental-build.js",
-    "incremental-docker": "node ./scripts/incremental-docker.js"
+    "build-changed-ts": "node ./scripts/build-changed.js",
+    "build-changed-scala": "bash -c \"sbt deployLocalOnChange\"",
+    "build-changed": "npm run build-changed-ts && npm run build-changed-scala"
   },
   "dependencies": {
     "lodash": "^4.17.4"
