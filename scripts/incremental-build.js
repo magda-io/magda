@@ -1,8 +1,7 @@
 const childProcess = require("child_process");
-const fse = require('fs-extra');
 const getAllPackages = require('./getAllPackages');
 const isTypeScriptPackage = require('./isTypeScriptPackage');
-const klawSync = require('klaw-sync');
+const lastModifiedFile = require('./lastModifiedFile');
 const path = require('path');
 const toposort = require('toposort');
 
@@ -40,27 +39,28 @@ const sortedPackages = toposort.array(packageList, edges).reverse();
 
 sortedPackages.forEach(package => {
     const packagePath = package.packagePath;
+    const name = package.packageJson.name;
 
     let needsBuild = edges.findIndex(edge => edge[0] === package && edge[1].built === true) >= 0;
     if (needsBuild) {
-        console.log(`${packagePath}: building because a dependency changed`);
+        console.log(`${name}: building because a dependency changed`);
     } else {
         const srcLastModified = lastModifiedFile(path.resolve(packagePath, 'src'));
         const distLastModified = lastModifiedFile(path.resolve(packagePath, 'dist'));
 
         if (!srcLastModified) {
-            console.log(`${packagePath}: no files in src directory`);
+            console.log(`${name}: no files in src directory`);
             return;
         }
 
         if (!distLastModified) {
-            console.log(`${packagePath}: no previous build`);
+            console.log(`${name}: no previous build`);
             needsBuild = true;
         } else if (distLastModified && srcLastModified.stats.mtime > distLastModified.stats.mtime) {
-            console.log(`${packagePath}: changed since last build`);
+            console.log(`${name}: changed since last build`);
             needsBuild = true;
         } else {
-            console.log(`${packagePath}: build is up to date`);
+            console.log(`${name}: build is up to date`);
         }
     }
 
@@ -96,19 +96,4 @@ if (failed.length > 0) {
     console.log();
     console.log('The following package builds FAILED:');
     failed.map(s => '  ' + s).forEach(s => console.log(s));
-}
-
-
-function lastModifiedFile(path) {
-    if (!fse.existsSync(path)) {
-        return undefined;
-    }
-
-    const files = klawSync(path, {
-        nodir: true
-    });
-
-    return files.reduce((previous, current) => {
-        return !previous || current.stats.mtime > previous.stats.mtime ? current : previous;
-    }, undefined);
 }
