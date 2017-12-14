@@ -1,12 +1,14 @@
 import * as URI from 'urijs';
 
 export interface CswUrlBuilderOptions {
+    id: string,
     name?: string,
     baseUrl: string;
     apiBaseUrl?: string;
 }
 
 export default class CswUrlBuilder {
+    public readonly id: string;
     public readonly name: string;
     public readonly baseUrl: uri.URI;
 
@@ -32,7 +34,8 @@ export default class CswUrlBuilder {
     };
 
     constructor(options: CswUrlBuilderOptions) {
-        this.name = options.name || 'CSW';
+        this.id = options.id;
+        this.name = options.name || options.id;
         this.baseUrl = new URI(options.baseUrl);
     }
 

@@ -6,6 +6,7 @@ import * as URI from 'urijs';
 
 export interface CreateTransformerOptions {
     name: string,
+    id: string,
     sourceUrl: string,
     datasetAspectBuilders: AspectBuilder[],
     distributionAspectBuilders: AspectBuilder[],
@@ -14,12 +15,14 @@ export interface CreateTransformerOptions {
 
 export default function createTransformer({
     name,
+    id,
     sourceUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
     organizationAspectBuilders
 }: CreateTransformerOptions) {
     return new CkanTransformer({
+        sourceId: id,
         datasetAspectBuilders: datasetAspectBuilders,
         distributionAspectBuilders: distributionAspectBuilders,
         organizationAspectBuilders: organizationAspectBuilders,
@@ -27,6 +30,7 @@ export default function createTransformer({
             moment: moment,
             URI: URI,
             ckan: new CkanUrlBuilder({
+                id: id,
                 name: name,
                 baseUrl: sourceUrl
             })

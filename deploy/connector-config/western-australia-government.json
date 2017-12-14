@@ -1,5 +1,6 @@
 {
     "type": "magda-ckan-connector",
+    "id": "wa",
     "name": "Western Australia Government",
     "sourceUrl": "http://catalogue.beta.data.wa.gov.au/",
     "pageSize": 100,

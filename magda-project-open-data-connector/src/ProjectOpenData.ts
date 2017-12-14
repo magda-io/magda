@@ -5,12 +5,17 @@ import retry from '@magda/typescript-common/dist/retry';
 import * as request from 'request';
 
 export default class ProjectOpenData implements ConnectorSource {
+    public readonly id: string;
+    public readonly name: string;
+
     private url: string;
     private secondsBetweenRetries: number;
     private maxRetries: number;
     private dataPromise: Promise<object>;
 
     constructor(options: ProjectOpenDataOptions) {
+        this.id = options.id;
+        this.name = options.name;
         this.url = options.url;
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
         this.maxRetries = options.maxRetries || 10;
@@ -105,6 +110,7 @@ export default class ProjectOpenData implements ConnectorSource {
 }
 
 export interface ProjectOpenDataOptions {
+    id: string,
     name: string,
     url: string,
     secondsBetweenRetries?: number;

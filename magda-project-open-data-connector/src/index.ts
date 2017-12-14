@@ -12,6 +12,12 @@ const argv = addJwtSecretFromEnvVar(
     yargs
         .config()
         .help()
+        .option("id", {
+            describe:
+                "The ID of this connector. Datasets created by this connector will have an ID prefixed with this ID.",
+            type: "string",
+            demandOption: true
+        })
         .option("name", {
             describe:
                 "The name of this connector, to be displayed to users to indicate the source of datasets.",
@@ -59,6 +65,7 @@ const argv = addJwtSecretFromEnvVar(
 );
 
 const source = new ProjectOpenData({
+    id: argv.id,
     name: argv.name,
     url: argv.sourceUrl,
 });
@@ -70,6 +77,7 @@ const registry = new Registry({
 });
 
 const transformerOptions = {
+    id: argv.id,
     name: argv.name,
     sourceUrl: argv.sourceUrl,
     registryUrl: argv.registryUrl,
