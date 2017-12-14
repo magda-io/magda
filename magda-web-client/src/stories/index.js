@@ -22,7 +22,7 @@ import QualityIndicator from '../UI/QualityIndicator';
 import TemporalAspectViewer from '../UI/TemporalAspectViewer';
 import ToggleList from '../UI/ToggleList';
 import Tabs from '../UI/Tabs';
-import Contact from '../UI/Contact';
+import ContactForm from '../UI/ContactForm';
 
 
 const exampleData = {
