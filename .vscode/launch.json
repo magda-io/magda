@@ -52,6 +52,25 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "Sleuther Summarizer",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs": [
+                //"${workspaceRoot}/magda-sleuther-framework/src/index.ts",
+                "src/index.ts"
+            ],
+            "args": [
+                "--jwtSecret", "squirrel",
+                "--userId", "00000000-0000-4000-8000-000000000000"
+            ],
+            "cwd": "${workspaceRoot}/magda-sleuther-summarizer"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "magda-typescript-common tests",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-typescript-common",
@@ -72,6 +91,20 @@
                 "src/test/**/*.spec.ts"
             ]
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "summarize sleuther api tests",
+            "program": "${workspaceRoot}/magda-sleuther-summarizer/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-sleuther-summarizer",
+            "args": [
+                "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
+                "--require", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
+        },
+
         {
             "type": "node",
             "request": "launch",
