@@ -1,6 +1,6 @@
 const childProcess = require("child_process");
 const getAllPackages = require('./getAllPackages');
-const isTypeScriptPackage = require('./isTypeScriptPackage');
+const isScalaPackage = require('./isScalaPackage');
 const findLastModifiedFile = require('./findLastModifiedFile');
 const path = require('path');
 const toposort = require('toposort');
@@ -18,7 +18,7 @@ const argv = yargs
 const failed = [];
 const succeeded = [];
 
-const packagePaths = getAllPackages().filter(isTypeScriptPackage);
+const packagePaths = getAllPackages().filter(p => !isScalaPackage(p));
 const packageList = packagePaths.map(packagePath => {
     const packageJson = require(path.resolve(packagePath, 'package.json'));
     const allDependencies = Object.assign({}, packageJson.devDependencies || {}, packageJson.dependencies || {});
@@ -54,7 +54,7 @@ sortedPackages.forEach(package => {
     const lastModifiedFiles = dependencies.map(dependency => findLastModifiedFile(path.resolve(dependency.packagePath, 'dist')));
 
     const srcLastModified = findLastModifiedFile(path.resolve(packagePath, 'src'));
-    const distLastModified = findLastModifiedFile(path.resolve(packagePath, 'dist'));
+    const distLastModified = findLastModifiedFile(path.resolve(packagePath, 'dist')) || findLastModifiedFile(path.resolve(packagePath, 'build'));
 
     if (!srcLastModified) {
         console.log(`${name}: no files in src directory`);
