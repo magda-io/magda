@@ -33,6 +33,8 @@ import Account from './Components/Account/Account';
 import Login from './Components/Account/Login';
 import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
+import Container from 'muicss/lib/react/container';
+import Appbar from 'muicss/lib/react/appbar';
 
 import {
   Route,
@@ -102,8 +104,7 @@ class AppContainer extends React.Component {
       <ReactDocumentTitle title={config.appName}>
         <div>
           <nav className='appContainer__nav'>
-            <div className='container'>
-              <div className='row'>
+              <Appbar>
                 <Small>
                   <div className='col-sm-2'>
                     <div className='navbar-header'>
@@ -162,37 +163,21 @@ class AppContainer extends React.Component {
                   </div>
                 </ExtraSmall>
 
-              </div>
+              </Appbar>
               <div className='row nav_second'>
                 <div className='col-sm-8'>
                   <h1 className='search-heading'> {config.appTitle}</h1>
                   <SearchBox location={this.props.location} />
                   {' '}
                 </div>
-                <Small>
-                  <div className='col-sm-4'>
-                    <div className='appContainer__suggestion'>
-                      Try Search for
-                      <ul className='list-unstyled'>
-                      {config.suggestion.map(s=>
-                        <li key={s}><Link to={'/search?q=' + encodeURI(s)}>
-                        {s}
-                        </Link></li>)}
-                    </ul>
-
-                      <Link to={'/page/search-syntax'}> Learn about the new search</Link>
-                    </div>
-                  </div>
-                </Small>
               </div>
-            </div>
           </nav>
 
           <div id='content' className='clearfix'>
             {this.renderBody()}
           </div>
           <footer className='footer clearfix'>
-            <div className='container'>
+            <Container>
               <ul className='nav row'>
                 {footerNavs.map(item =>
                   <li key={item.category} className='col-md-2 col-sm-4'>
@@ -206,7 +191,7 @@ class AppContainer extends React.Component {
                 )}
               </ul>
               <div className='copyright'> Developed by <img src={d61logo} alt='data61-logo'/></div>
-            </div>
+              </Container>
 
           </footer>
         </div>

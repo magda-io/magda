@@ -95,5 +95,8 @@
     "docker": {
       "include": "node_modules build"
     }
+  },
+  "dependencies": {
+    "muicss": "^0.9.33"
   }
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from 'muicss/lib/react/button';
 
 export default function Contact(props) {
   function renderField(id, type){
@@ -13,7 +14,7 @@ export default function Contact(props) {
         {renderField('name', 'text')}
         {renderField('email', 'email')}
         {renderField('comment', 'textarea')}
-        <button type="submit" className="btn btn-default">Send</button>
+        <Button color="accent">button</Button>
       </form>
   );
 }
