@@ -82,7 +82,7 @@ sortedPackages.forEach(package => {
             console.log(`${packagePath}: BUILD FAILED`);
         } else {
             if (!argv.skipDocker && package.packageJson.scripts && package.packageJson.scripts['docker-build-local']) {
-                const result = childProcess.spawnSync(
+                const dockerResult = childProcess.spawnSync(
                     "npm", [ "run", "docker-build-local" ],
                     {
                         stdio: ["inherit", "inherit", "inherit"],
@@ -90,8 +90,15 @@ sortedPackages.forEach(package => {
                         cwd: packagePath
                     }
                 );
+                if (dockerResult.status > 0) {
+                    failed.push(packagePath);
+                    console.log(`${packagePath}: DOCKER BUILD FAILED`);
+                } else {
+                    succeeded.push(packagePath);
+                }
+            } else {
+                succeeded.push(packagePath);
             }
-            succeeded.push(packagePath);
         }
     }
 });
