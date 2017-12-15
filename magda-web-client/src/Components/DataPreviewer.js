@@ -13,7 +13,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 
-import News from './News';
+import News from '../UI/News';
 
 
 class DataPreviewer extends Component {

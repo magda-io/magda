@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {fetchPreviewData} from '../../actions/previewDataActions'
 import { bindActionCreators } from 'redux';
-import DataPreviewer from '../../UI/DataPreviewer';
+import DataPreviewer from '../../Components/DataPreviewer';
 import ProgressBar from "../UI/ProgressBar";
 
 import './DatasetPreview.css'

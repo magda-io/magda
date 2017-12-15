@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import DataPreviewer from '../../UI/DataPreviewer';
+import DataPreviewer from '../../Components/DataPreviewer';
 
 class DistributionPreview extends Component {
   render(){
