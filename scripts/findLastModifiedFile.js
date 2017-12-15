@@ -1,7 +1,7 @@
 const fse = require('fs-extra');
 const klawSync = require('klaw-sync');
 
-function lastModifiedFile(path) {
+function findLastModifiedFile(path) {
     if (!fse.existsSync(path)) {
         return undefined;
     }
@@ -27,4 +27,4 @@ function lastModifiedFile(path) {
     }, undefined);
 }
 
-module.exports = lastModifiedFile;
+module.exports = findLastModifiedFile;

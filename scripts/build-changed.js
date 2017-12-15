@@ -1,7 +1,7 @@
 const childProcess = require("child_process");
 const getAllPackages = require('./getAllPackages');
 const isTypeScriptPackage = require('./isTypeScriptPackage');
-const lastModifiedFile = require('./lastModifiedFile');
+const findLastModifiedFile = require('./findLastModifiedFile');
 const path = require('path');
 const toposort = require('toposort');
 const yargs = require('yargs');
@@ -25,8 +25,7 @@ const packageList = packagePaths.map(packagePath => {
     return {
         packagePath,
         packageJson,
-        allDependencies,
-        built: false
+        allDependencies
     };
 });
 
@@ -51,32 +50,24 @@ sortedPackages.forEach(package => {
     const packagePath = package.packagePath;
     const name = package.packageJson.name;
 
-    let needsBuild = edges.findIndex(edge => edge[0] === package && edge[1].built === true) >= 0;
-    if (needsBuild) {
-        console.log(`${name}: building because a dependency changed`);
-    } else {
-        const srcLastModified = lastModifiedFile(path.resolve(packagePath, 'src'));
-        const distLastModified = lastModifiedFile(path.resolve(packagePath, 'dist'));
+    const dependencies = edges.filter(edge => edge[0] === package).map(edge => edge[1]);
+    const lastModifiedFiles = dependencies.map(dependency => findLastModifiedFile(path.resolve(dependency.packagePath, 'dist')));
 
-        if (!srcLastModified) {
-            console.log(`${name}: no files in src directory`);
-            return;
-        }
+    const srcLastModified = findLastModifiedFile(path.resolve(packagePath, 'src'));
+    const distLastModified = findLastModifiedFile(path.resolve(packagePath, 'dist'));
 
-        if (!distLastModified) {
-            console.log(`${name}: no previous build`);
-            needsBuild = true;
-        } else if (distLastModified && srcLastModified.stats.mtime > distLastModified.stats.mtime) {
-            console.log(`${name}: changed since last build`);
-            needsBuild = true;
-        } else {
-            console.log(`${name}: build is up to date`);
-        }
+    if (!srcLastModified) {
+        console.log(`${name}: no files in src directory`);
+        return;
     }
 
-    if (needsBuild) {
-        package.built = true;
+    lastModifiedFiles.push(srcLastModified);
+    const lastModifiedSourceFile = lastModifiedFiles.reduce((previous, current) => !previous || current && current.stats && current.stats.mtime > previous.stats.mtime ? current : previous, undefined);
 
+    if (lastModifiedSourceFile && distLastModified.stats.mtime >= lastModifiedSourceFile.stats.mtime) {
+        console.log(`${name}: build is up to date`);
+    } else {
+        console.log(`${name}: changed since last build`);
         const result = childProcess.spawnSync(
             "npm", [ "run", "build" ],
             {
@@ -90,7 +81,7 @@ sortedPackages.forEach(package => {
             failed.push(packagePath);
             console.log(`${packagePath}: BUILD FAILED`);
         } else {
-            if (!argv.skipDocker) {
+            if (!argv.skipDocker && package.packageJson.scripts && package.packageJson.scripts['docker-build-local']) {
                 const result = childProcess.spawnSync(
                     "npm", [ "run", "docker-build-local" ],
                     {
