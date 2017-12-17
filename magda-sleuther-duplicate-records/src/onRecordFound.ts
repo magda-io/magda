@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+//import * as _ from "lodash";
 //import * as request from "request";
 //import * as http from "http";
 //import * as URI from "urijs";
@@ -6,11 +6,11 @@ import * as _ from "lodash";
 //import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
-/*import brokenLinkAspectDef, {
-    BrokenLinkAspect,
+//import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+/*import duplicateRecordsAspectDef, {
+    duplicateRecordsAspect,
     RetrieveResult
-} from "./brokenLinkAspectDef";*/
+} from "./duplicateRecordsAspectDef";*/
 //import datasetQualityAspectDef from "@magda/sleuther-framework/dist/common-aspect-defs/datasetQualityAspectDef";
 import FTPHandler from "./FtpHandler";
 
@@ -29,7 +29,7 @@ export default async function onRecordFound(
     if (!distributions || distributions.length === 0) {
         return Promise.resolve();
     }
-    
+
     
 }
 

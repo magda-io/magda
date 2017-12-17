@@ -1,5 +1,5 @@
 {
-  "name": "@magda/sleuther-broken-link",
+  "name": "@magda/sleuther-duplicate-records",
   "description": "MAGDA Broken Link Sleuther",
   "version": "0.0.32-0",
   "scripts": {
@@ -47,7 +47,7 @@
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-sleuther-broken-link",
+      "name": "data61/magda-sleuther-duplicate-records",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

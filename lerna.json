@@ -9,6 +9,7 @@
     "magda-sleuther-linked-data-rating/",
     "magda-sleuther-broken-link/",
     "magda-sleuther-visualization/",
+    "magda-sleuther-duplicate-records",
     "magda-ckan-connector/",
     "magda-combined-db/",
     "magda-csw-connector/",

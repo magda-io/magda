@@ -18,7 +18,7 @@ import {
 } from "@magda/typescript-common/dist/test/arbitraries";
 
 import onRecordFound from "../onRecordFound";
-import { BrokenLinkAspect } from "../brokenLinkAspectDef";
+import { duplicateRecordsAspect } from "../duplicateRecordsAspectDef";
 import urlsFromDataSet from "./urlsFromDataSet";
 import {
     CheckResult,
@@ -217,7 +217,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                             `/records/${encodeURIComponentWithApost(
                                 dist.id
                             )}/aspects/source-link-status`,
-                            (body: BrokenLinkAspect) => {
+                            (body: duplicateRecordsAspect) => {
                                 const doesStatusMatch = body.status === result;
 
                                 const isDownloadUrlHttp =

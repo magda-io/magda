@@ -4,7 +4,7 @@ export default {
   jsonSchema: require("@magda/registry-aspects/source-link-status.schema.json")
 };
 
-export interface BrokenLinkAspect {
+export interface duplicateRecordsAspect {
   status: RetrieveResult;
   httpStatusCode?: number;
   errorDetails?: any;
