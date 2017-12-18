@@ -5,7 +5,7 @@ import commonYargs from "@magda/sleuther-framework/dist/commonYargs";
 
 const ID = "sleuther-summarizer";
 
-const argv = commonYargs(ID, 6111, "http://localhost:6111");
+const argv = commonYargs(ID, 6113, "http://localhost:6113");
 
 function sleuthBrokenLinks() {
     return sleuther({
