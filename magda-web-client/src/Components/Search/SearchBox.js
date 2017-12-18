@@ -127,19 +127,29 @@ class SearchBox extends Component {
   render() {
     return (
         <Form>
-          <label htmlFor="search">
-          <span className='sr-only'>{'Search ' + config.appName}</span>
-          <Input
-            type='text'
-            name='search'
-            id="search"
-            placeholder={'Search ' + config.appName}
-            value={this.getSearchBoxValue()}
-            onChange={this.onSearchTextChange}
-            onKeyPress={this.handleSearchFieldEnterKeyPress}
-          />
-          </label>
-          <Button onClick={this.onClickSearch} type='button' ><i className='fa fa-search' aria-hidden='true'></i><span className='sr-only'>submit search</span></Button>
+          <table width='100%'>
+            <tbody>
+            <tr>
+              <td>
+                <label htmlFor="search">
+                  <span className='sr-only'>{'Search ' + config.appName}</span>
+                  <Input
+                    type='text'
+                    name='search'
+                    id="search"
+                    placeholder={'Search ' + config.appName}
+                    value={this.getSearchBoxValue()}
+                    onChange={this.onSearchTextChange}
+                    onKeyPress={this.handleSearchFieldEnterKeyPress}
+                  />
+                </label>
+              </td>
+              <td width='30px'>
+                <Button onClick={this.onClickSearch} type='button' variant="flat" ><i className='fa fa-search' aria-hidden='true'></i><span className='sr-only'>submit search</span></Button>
+              </td>
+              </tr>
+              </tbody>
+          </table>
         </Form>
     );
   }

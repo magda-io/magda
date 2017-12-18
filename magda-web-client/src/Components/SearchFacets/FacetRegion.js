@@ -98,7 +98,7 @@ class FacetRegion extends Component {
 
     getActiveRegionType(){
       let region = this.state._activeRegion;
-      let regionType = '';
+      let regionType = 'Select a region type';
       if(this.props.regionMapping){
         if(defined(region.regionType) && this.props.regionMapping[region.regionType] && this.props.regionMapping[region.regionType].description){
           regionType = this.props.regionMapping[region.regionType].description

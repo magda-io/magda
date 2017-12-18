@@ -5,12 +5,6 @@ import Input from 'muicss/lib/react/input';
 import Textarea from 'muicss/lib/react/textarea';
 
 export default function Contact(props) {
-  function renderField(id, type){
-    return (
-      <Input type={type} id={id} label={id} required={true} />
-    );
-  }
-
   return (
     <Form>
       <Input label='Name' required={true} floatingLabel={true}/>

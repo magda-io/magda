@@ -2,7 +2,6 @@ import React from "react";
 import fbLogo from "./fb-logo.svg";
 import googleLogo from "./google-logo.svg";
 import "./Login.css";
-
 import { config } from "../../config";
 const { baseUrl } = config;
 
@@ -16,7 +15,7 @@ export default function Login(props) {
     `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
       oauthRedirect
     )}`;
-  
+
   return (
     <div className="row login__row">
       {props.signInError &&
@@ -81,7 +80,7 @@ export default function Login(props) {
               />
             </div>
             <div className="pull-right">
-              <input type="submit" className="btn btn-primary" />
+              <input type="submit" className="mui-btn mui-btn--primary" />
             </div>
           </form>
         </div>}

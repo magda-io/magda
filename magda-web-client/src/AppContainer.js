@@ -34,7 +34,6 @@ import Login from './Components/Account/Login';
 import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
 import Container from 'muicss/lib/react/container';
-import Appbar from 'muicss/lib/react/appbar';
 
 import {
   Route,
