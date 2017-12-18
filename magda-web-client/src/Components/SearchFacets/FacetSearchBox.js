@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import './FacetSearchBox.css';
 import debounce from 'lodash.debounce';
+import Form from 'muicss/lib/react/form';
+import Input from 'muicss/lib/react/input';
 
 /**
   * Searchbox for facet facet
@@ -116,14 +118,14 @@ class FacetSearchBox extends Component {
   render(){
     return (
       <div className='facet-search-box'>
-        <form onKeyDown={this.handleKeyDown}>
+        <Form onKeyDown={this.handleKeyDown}>
             <i className='fa fa-search search-icon' aria-hidden='true'></i>
-            <input className='form-control'
-                   type='text'
+            <Input type='text'
                    value={this.state.searchText}
                    onInput={this.onSearchTextChange}
                    />
-          </form>
+
+          </Form>
 
           {this.state.searchText.length > 0 &&
             <ul className='facet-search-box__options list-unstyled' onKeyDown={this.handleKeyDown}>

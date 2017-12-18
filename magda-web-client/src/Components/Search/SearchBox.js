@@ -9,6 +9,9 @@ import debounce from 'lodash.debounce';
 import defined from '../../helpers/defined';
 import React, { Component } from 'react';
 import {fetchRegionMapping} from '../../actions/regionMappingActions';
+import Form from 'muicss/lib/react/form';
+import Input from 'muicss/lib/react/input';
+import Button from 'muicss/lib/react/button';
 
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
@@ -30,6 +33,7 @@ class SearchBox extends Component {
     self.onClickSearch = this.onClickSearch.bind(this);
     self.onSearchTextChange = this.onSearchTextChange.bind(this);
     self.getSearchBoxValue = this.getSearchBoxValue.bind(this);
+
 
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
@@ -122,22 +126,21 @@ class SearchBox extends Component {
 
   render() {
     return (
-        <form className='search-box'>
-          <label htmlFor="search" className='search-box__input'>
+        <Form>
+          <label htmlFor="search">
           <span className='sr-only'>{'Search ' + config.appName}</span>
-          <input
+          <Input
             type='text'
             name='search'
             id="search"
-            className='form-control search-box__form-control'
             placeholder={'Search ' + config.appName}
             value={this.getSearchBoxValue()}
             onChange={this.onSearchTextChange}
             onKeyPress={this.handleSearchFieldEnterKeyPress}
           />
           </label>
-          <button onClick={this.onClickSearch} type='button' className='btn search-box__icon'><i className='fa fa-search' aria-hidden='true'></i><span className='sr-only'>submit search</span></button>
-        </form>
+          <Button onClick={this.onClickSearch} type='button' ><i className='fa fa-search' aria-hidden='true'></i><span className='sr-only'>submit search</span></Button>
+        </Form>
     );
   }
 }

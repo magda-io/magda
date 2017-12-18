@@ -63,54 +63,6 @@ export const config = {
     { id: "temporal", component: Temporal },
     { id: "format", component: Format }
   ],
-  headerNavigation: [
-    ["Search", "search"],
-    ...(serverConfig.disableAuthenticationFeatures
-      ? []
-      : [["Projects", "projects"]]),
-    ["Publishers", "publishers"],
-    ["About", "page/about"]
-  ],
-  footerNavigation: [
-    {
-      category: "Search",
-      links: [
-        ["Data sources", "page/data-sources"],
-        ["Search syntax", "page/search-syntax"]
-      ]
-    },
-    ...(serverConfig.disableAuthenticationFeatures
-      ? []
-      : [
-          {
-            category: "Projects",
-            links: [
-              ["Browse projects", "projects"],
-              ["Start a project", "projects/new"]
-            ]
-          }
-        ]),
-    {
-      category: "Publishers",
-      links: [
-        ["Publisher index", "publishers"],
-        ["Open data toolkit", "https://toolkit.data.gov.au/"]
-      ]
-    },
-    {
-      category: "Developers",
-      links: [
-        ["Architecture", "page/architecture"],
-        ["API Docs", registryApiUrl + "swagger/index.html"]
-      ]
-    },
-    {
-      category: "About",
-      links: [
-        ["About data.gov.au", "page/about"],
-        ["Blog", "https://blog.data.gov.au/"]
-      ]
-    },
-    { category: "Feedback", links: [["Feedback", "http://preview.data.gov.au/feedback.html"]] }
-  ]
+  headerNavigation: [],
+  footerNavigation: []
 };

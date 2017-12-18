@@ -95,7 +95,7 @@ storiesOf('Aspect Viewer', module)
     .add('Temporal Aspect Viewer', ()=><TemporalAspectViewer data={{intervals: [{start: '2017-12-25', end: '2017-12-25'}]}} />)
 
 storiesOf('Contact Form', module)
-    .add('Generic contact from', ()=><Contact/>)
+    .add('Generic contact from', ()=><ContactForm/>)
 
 iconTypes.map(iconname =>
   storiesOf('Icons', module)

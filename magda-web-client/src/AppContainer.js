@@ -104,7 +104,6 @@ class AppContainer extends React.Component {
       <ReactDocumentTitle title={config.appName}>
         <div>
           <nav className='appContainer__nav'>
-              <Appbar>
                 <Small>
                   <div className='col-sm-2'>
                     <div className='navbar-header'>
@@ -163,19 +162,16 @@ class AppContainer extends React.Component {
                   </div>
                 </ExtraSmall>
 
-              </Appbar>
-              <div className='row nav_second'>
+              <Container>
                 <div className='col-sm-8'>
                   <h1 className='search-heading'> {config.appTitle}</h1>
                   <SearchBox location={this.props.location} />
-                  {' '}
                 </div>
-              </div>
+              </Container>
           </nav>
-
-          <div id='content' className='clearfix'>
+          <Container>
             {this.renderBody()}
-          </div>
+          </Container>
           <footer className='footer clearfix'>
             <Container>
               <ul className='nav row'>
@@ -192,7 +188,6 @@ class AppContainer extends React.Component {
               </ul>
               <div className='copyright'> Developed by <img src={d61logo} alt='data61-logo'/></div>
               </Container>
-
           </footer>
         </div>
       </ReactDocumentTitle>
