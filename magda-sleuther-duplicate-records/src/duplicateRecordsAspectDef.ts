@@ -5,9 +5,20 @@ export default {
 };
 
 export interface duplicateRecordsAspect {
-  status: RetrieveResult;
-  httpStatusCode?: number;
+  url: urlWrapper;
+  ids: string[];
   errorDetails?: any;
 }
 
-export type RetrieveResult = "active" | "unknown" | "broken";
+export interface distURL {
+  url?: string;
+  type: "accessURL" | "downloadURL" | "none";
+}
+
+export interface urlWrapper {
+  new(urls: distURL[]): urlWrapper;
+  urls: distURL[];
+}
+
+export var urlWrapper: urlWrapper;
+
