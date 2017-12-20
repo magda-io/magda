@@ -4,21 +4,13 @@ export default {
   jsonSchema: require("@magda/registry-aspects/source-link-status.schema.json")
 };
 
-export interface duplicateRecordsAspect {
-  url: urlWrapper;
+export interface DuplicateRecordsAspect {
+  url: string;
   ids: string[];
   errorDetails?: any;
 }
 
-export interface distURL {
+export interface DistURL {
   url?: string;
   type: "accessURL" | "downloadURL" | "none";
 }
-
-export interface urlWrapper {
-  new(urls: distURL[]): urlWrapper;
-  urls: distURL[];
-}
-
-export var urlWrapper: urlWrapper;
-

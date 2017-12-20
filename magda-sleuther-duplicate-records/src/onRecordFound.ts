@@ -8,11 +8,14 @@ import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryC
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 //import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import {
-    duplicateRecordsAspect,
-    distURL,
+    DuplicateRecordsAspect,
+    DistURL,
 } from "./duplicateRecordsAspectDef";
 //import datasetQualityAspectDef from "@magda/sleuther-framework/dist/common-aspect-defs/datasetQualityAspectDef";
 import FTPHandler from "./FtpHandler";
+
+//@test
+export var groups: DuplicateRecordsAspect[];
 
 export default async function onRecordFound(
     record: Record,
@@ -30,10 +33,10 @@ export default async function onRecordFound(
         return Promise.resolve();
     }
 
-    // convert all distributions into a distContainer
-    const distributionContainers = _.flatten(distributions.map(function(distribution) {
+    // DistContainer contains only the properties we need, putting all distributions into this will help manipulate the data.
+    const distributionContainers: DistContainer[] = _.flatten(distributions.map(function(distribution) {
 
-        let distContainer: distContainer[];
+        let distContainer: DistContainer[];
 
         distContainer[0].url = {
                 url: distribution.aspects["dcat-distribution-strings"].accessURL as string,
@@ -48,25 +51,50 @@ export default async function onRecordFound(
         distContainer[0].id = distContainer[1].id = distribution.id;
 
         return distContainer;
-    }))
+    }));
 
-    // distContainers ordered by url type
-    //TODO check with Kev or Alex: can it be assumed that there will be no downloadURL and accessURLs that are the same?
-    const orderedDistContainers = _(
-        distributionContainers 
+    // Put DistContainers into a dictionary grouped by url so that we can easily distinguish duplicates.
+    const groupedDistContainers: _.Dictionary<DistContainer[]> = _(
+        distributionContainers
     )
     .groupBy(distContainer => {
-        distContainer.url.url;
+        return distContainer.url.url;
     })
-    .values();
+    .value();
 
-    // construct the appropriate aspect def using the ordered distContainers
-    const duplicateGroups: duplicateRecordsAspect[] = 
+    // Construct a datatype that represents the format of either an aspect or record (its an aspect representation atm) so that we can easily put it 
+    //into the database.
+    let keys = getKeys(groupedDistContainers);
+    //@production
+    //var groups: duplicateRecordsAspect[];
+
+    keys.forEach(function(key) {
+        var duplicateRecordsAspect: DuplicateRecordsAspect;
+        duplicateRecordsAspect.url = key;
+
+        groupedDistContainers[key].forEach(function(groupedDistContainers) {
+            duplicateRecordsAspect.ids.push(groupedDistContainers.id);
+        });
+
+        groups.push(duplicateRecordsAspect);
+    });
 
 }
 
-interface distContainer {
-    url: distURL;    
+//@private
+export function getKeys(dictionary: any): Array<string> {
+    let keys = [];
+
+    for(var key in dictionary) {
+        if(dictionary.hasOwnProperty(key)) keys.push(key);
+    }
+
+    return keys;
+}
+
+//@private
+export interface DistContainer {
+    url: DistURL;    
     id: string;
 }
 
