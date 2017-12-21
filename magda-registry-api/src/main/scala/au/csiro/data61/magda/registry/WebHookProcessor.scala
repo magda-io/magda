@@ -52,7 +52,8 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             true
           else {
             val aspectId = event.data.fields("aspectId").asInstanceOf[JsString].value
-            webHook.config.aspects.getOrElse(List()).contains(aspectId) || webHook.config.optionalAspects.getOrElse(List()).contains(aspectId)
+            val aspects = webHook.config.aspects.getOrElse(List()) ++ webHook.config.optionalAspects.getOrElse(List())
+            aspects.isEmpty || aspects.contains(aspectId)
           }
         }
 
@@ -85,7 +86,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             }
           }
         }
-        
+
         Some(directRecords.records ++ recordsFromDereference)
       }
     }

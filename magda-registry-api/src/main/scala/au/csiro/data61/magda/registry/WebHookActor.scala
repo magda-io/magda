@@ -14,6 +14,8 @@ import akka.stream.scaladsl.SourceQueue
 import akka.stream.scaladsl.Sink
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.SourceQueueWithComplete
+import akka.stream.DelayOverflowStrategy
+import akka.stream.Attributes
 
 object WebHookActor {
   case class Process(invalidateHookCache: Boolean = false, aspectIds: Option[List[String]] = None, webHookId: Option[String] = None)
@@ -41,7 +43,7 @@ object WebHookActor {
     def receive = {
       case InvalidateWebhookCache => cachedWebhooks = None
       case Process(startup, aspectIds, webHookId) => {
-        ErrorHandling.retry(() => Future { queryForAllWebHooks() }, 30 seconds, 10, (retryCount, e) => log.error(e, "Failed to get webhooks, {} retries left until I crash", retryCount))
+        Await.result(ErrorHandling.retry(() => Future { queryForAllWebHooks() }, 30 seconds, 10, (retryCount, e) => log.error(e, "Failed to get webhooks, {} retries left until I crash", retryCount))
           .recover {
             case (e: Throwable) =>
               log.error(e, "Failed to get webhooks for processing")
@@ -79,11 +81,11 @@ object WebHookActor {
               val flattenedAspectIds = aspectIds.getOrElse(List()).toSet
               val hookAspectIds = (hook.config.aspects.getOrElse(Nil) ++ hook.config.optionalAspects.getOrElse(Nil)).toSet
 
-              if (flattenedAspectIds.isEmpty || !hookAspectIds.intersect(flattenedAspectIds).isEmpty) {
+              if (flattenedAspectIds.isEmpty || hookAspectIds.isEmpty || !hookAspectIds.intersect(flattenedAspectIds).isEmpty) {
                 actorRef ! Process(startup, aspectIds)
               }
             }
-          }
+          }, 10 minutes)
       }
       case GetStatus(webHookId) =>
         webHookActors.get(webHookId) match {
@@ -112,36 +114,27 @@ object WebHookActor {
 
     private val processor = new WebHookProcessor(context.system, registryApiBaseUrl, context.dispatcher)
     implicit val materializer = ActorMaterializer()
-    var cachedWebhook: Option[WebHook] = None
 
     def getWebhook() =
-      cachedWebhook match {
-        case Some(webHook) =>
-          webHook
-        case None =>
-          cachedWebhook = Some(DB readOnly { implicit session =>
-            HookPersistence.getById(session, id) match {
-              case None          => throw new RuntimeException(s"No WebHook with ID ${id} was found.")
-              case Some(webHook) => webHook
-            }
-          })
-          cachedWebhook.get
+      DB readOnly { implicit session =>
+        HookPersistence.getById(session, id) match {
+          case None          => throw new RuntimeException(s"No WebHook with ID ${id} was found.")
+          case Some(webHook) => webHook
+        }
       }
 
     private var count = 0
 
     private val indexQueue: SourceQueueWithComplete[Boolean] =
-      Source.queue[Boolean](1, OverflowStrategy.dropNew)
+      Source.queue[Boolean](0, OverflowStrategy.dropNew)
+        //        .reduce((a, b) => a && b)
         .map { x =>
           count += 1
           x
         }
+        .delay(1 seconds, OverflowStrategy.backpressure).withAttributes(Attributes.inputBuffer(1, 1)) // Make sure we only execute once per second to prevent sending an individual post for every event.
         .mapAsync(1) {
           refetchWebHook =>
-            if (refetchWebHook) {
-              cachedWebhook = None
-            }
-
             val webHook = getWebhook()
 
             if (!refetchWebHook && webHook.isWaitingForResponse.getOrElse(false)) {
@@ -168,13 +161,11 @@ object WebHookActor {
                     if (result) {
                       // response deferred
                       log.info("WebHook {} Processing {}-{}: DEFERRED BY RECEIVER", this.id, previousLastEvent, lastEvent)
-                      cachedWebhook = None
                     } else {
                       // POST succeeded, is there more to do?
                       log.info("WebHook {} Processing {}-{}: DELIVERED", this.id, previousLastEvent, lastEvent)
 
                       if (previousLastEvent != lastEvent) {
-                        cachedWebhook = None
                         self ! Process(false)
                       }
                     }

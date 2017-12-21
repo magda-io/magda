@@ -57,21 +57,6 @@ class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val co
     }
   }
 
-  GlobalSettings.loggingSQLAndTime = new LoggingSQLAndTimeSettings(
-    enabled = false,
-    singleLineMode = true,
-    logLevel = 'debug)
-
-  case class DBsWithEnvSpecificConfig(configToUse: Config) extends DBs
-      with TypesafeConfigReader
-      with TypesafeConfig
-      with EnvPrefix {
-
-    override val config = configToUse
-  }
-
-  DBsWithEnvSpecificConfig(config).setupAll()
-
   webHookActor ! WebHookActor.Process(true, None)
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
