@@ -160,7 +160,7 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Sleuther Duplicate records api tests",
-            "program": "${workspaceRoot}/magda-sleuther-summarizer/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceRoot}/magda-sleuther-duplicate-records/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-sleuther-duplicate-records",
             "args": [
                 "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
