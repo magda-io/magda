@@ -1,21 +1,13 @@
 import * as _ from "lodash";
-//import * as request from "request";
-//import * as http from "http";
-//import * as URI from "urijs";
-
-//import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 //import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
-import {
-    DuplicateRecordsAspect,
-    DistURL,
-} from "./duplicateRecordsAspectDef";
-//import datasetQualityAspectDef from "@magda/sleuther-framework/dist/common-aspect-defs/datasetQualityAspectDef";
+import { DuplicateRecordsAspect, DistURL } from "./duplicateRecordsAspectDef";
 import FTPHandler from "./FtpHandler";
 
-//@test
-export var groups: DuplicateRecordsAspect[];
+export var mochaObject: any = { isRunning: false };
+
+export var testGroups: DuplicateRecordsAspect[];
 
 export default async function onRecordFound(
     record: Record,
@@ -26,81 +18,130 @@ export default async function onRecordFound(
     ftpHandler: FTPHandler = new FTPHandler()
 ) {
     const distributions: Record[] =
-    record.aspects["dataset-distributions"] &&
-    record.aspects["dataset-distributions"].distributions;
+        record.aspects["dataset-distributions"] &&
+        record.aspects["dataset-distributions"].distributions;
 
     if (!distributions || distributions.length === 0) {
         return Promise.resolve();
     }
 
     // DistContainer contains only the properties we need, putting all distributions into this will help manipulate the data.
-    const distributionContainers: DistContainer[] = _.flatten(distributions.map(function(distribution) {
+    const distributionContainers: DistContainer[] = _.flatten(
+        distributions.map(function(distribution) {
+            if (
+                distribution.aspects &&
+                distribution.aspects["dcat-distribution-strings"]
+            ) {
+                let distContainer: DistContainer[] = [];
+                distContainer.push({
+                    url: {
+                        url: null,
+                        type: null
+                    },
+                    id: null
+                });
+                distContainer.push({
+                    url: {
+                        url: null,
+                        type: null
+                    },
+                    id: null
+                });
 
-        let distContainer: DistContainer[];
+                
+                distContainer[0].url = {
+                    url: distribution.aspects["dcat-distribution-strings"]
+                        .accessURL as string,
+                    type: "accessURL" as "accessURL"
+                } || { type: "none" };
 
-        distContainer[0].url = {
-                url: distribution.aspects["dcat-distribution-strings"].accessURL as string,
-                type: "accessURL" as "accessURL"
-            } || {type: "none" };
+                distContainer[1].url = {
+                    url: distribution.aspects["dcat-distribution-strings"]
+                        .downloadURL as string,
+                    type: "downloadURL" as "downloadURL"
+                } || { type: "none" };
 
-        distContainer[1].url = {
-                url: distribution.aspects["dcat-distribution-strings"].downloadURL as string,
-                type: "downloadURL" as "downloadURL"
-            } || { type: "none" };
+                distContainer[0].id = distContainer[1].id = distribution.id;
 
-        distContainer[0].id = distContainer[1].id = distribution.id;
+                // adding 2 instances of distcontainer with the same url and same id just adds garbage to the db, so delete it if its the case.
+                if (
+                    (distribution.aspects["dcat-distribution-strings"]
+                        .accessURL as string) ===
+                    (distribution.aspects["dcat-distribution-strings"]
+                        .downloadURL as string)
+                ) {
+                    distContainer.pop();
+                }
 
-        return distContainer;
-    }));
+                return distContainer;
+            }
+
+            throw new Error(
+                "The distribution aspect has the following falsey properties: -aspects \nor \n-aspects[dcat-distribution-strings]\n"
+            );
+        })
+    );
 
     // Put DistContainers into a dictionary grouped by url so that we can easily distinguish duplicates.
     const groupedDistContainers: _.Dictionary<DistContainer[]> = _(
         distributionContainers
     )
-    .groupBy(distContainer => {
-        return distContainer.url.url;
-    })
-    .value();
+        .groupBy(distContainer => {
+            return distContainer.url.url;
+        })
+        .value();
 
-    // Construct a datatype that represents the format of either an aspect or record (its an aspect representation atm) so that we can easily put it 
+    // Construct a datatype that represents the format of either an aspect or record (its an aspect representation atm) so that we can easily put it
     //into the database.
     let keys = getKeys(groupedDistContainers);
-    //@production
-    //var groups: duplicateRecordsAspect[];
+    var groups: DuplicateRecordsAspect[] = [];
 
     keys.forEach(function(key) {
-        var duplicateRecordsAspect: DuplicateRecordsAspect;
-        duplicateRecordsAspect.url = key;
 
-        groupedDistContainers[key].forEach(function(groupedDistContainers) {
-            duplicateRecordsAspect.ids.push(groupedDistContainers.id);
-        });
+        // its not classed as a duplicate if there is a bijection between an unique id and an unique url
+        if (groupedDistContainers[key].length > 1) {
+            var duplicateRecordsAspect: DuplicateRecordsAspect = {
+                url: null,
+                ids: []
+            };
 
-        groups.push(duplicateRecordsAspect);
+            duplicateRecordsAspect.url = key;
+
+            groupedDistContainers[key].forEach(function(groupedDistContainers) {
+                duplicateRecordsAspect.ids.push(groupedDistContainers.id);
+            });
+
+            groups.push(duplicateRecordsAspect);
+        }
     });
 
+    if (mochaObject.isRunning) testGroups = groups;
+    return Promise.resolve([]);
 }
 
-//@private
-export function getKeys(dictionary: any): Array<string> {
+export function testGetKeys(dictionary: any): Array<string> {
+    if (mochaObject.isRunning) return getKeys(dictionary);
+    throw new Error("This function is called only when testing with mocha");
+}
+
+function getKeys(dictionary: any): Array<string> {
     let keys = [];
 
-    for(var key in dictionary) {
-        if(dictionary.hasOwnProperty(key)) keys.push(key);
+    for (var key in dictionary) {
+        if (dictionary.hasOwnProperty(key)) keys.push(key);
     }
 
     return keys;
 }
 
-//@private
+/*
+*private method
+*/
 export interface DistContainer {
-    url: DistURL;    
+    url: DistURL;
     id: string;
 }
 
 /*interface duplicateRecordsSleuthingResult {
     group: duplicateRecordsAspect;
 }*/
-
-
-
