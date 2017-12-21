@@ -281,6 +281,47 @@ describe("test cases", function(this: Mocha.ISuiteCallbackContext) {
                 expect(testGroups).to.be.length(1);
             });
         });
+
+        it("should return 2 duplicates if 2 records have overlapping accessURLs and downloadURLs", function() {
+            var record: Record = {
+                aspects: {
+                    "dataset-distributions": {
+                        distributions: [
+                            {
+                                aspects: {
+                                    "dcat-distribution-strings": {
+                                        downloadURL: "www.google.com",
+                                        accessURL: "www.amazon.com"
+                                    }
+                                },
+                                "id": "0"
+                            },
+                            {
+                                aspects: {
+                                    "dcat-distribution-strings": {
+                                        accessURL: "www.google.com",
+                                        downloadURL: "www.amazon.com"
+                                    }
+                                },
+                                "id": "1"
+                            }
+                        ]
+                    }
+                },
+                id: "10",
+                name: "coolstuff"
+            };
+
+            return onRecordFound(
+                record,
+                null
+            ).then(function(result) {
+                expect(testGroups).to.be.length(2) && 
+                expect(testGroups[0]["url"]).to.not.equal(testGroups[1]["url"]) &&
+                expect(testGroups[0]["ids"]).to.be.length(2) &&
+                expect(testGroups[1]["ids"]).to.be.length(2);
+            })
+        });
     });
 
     describe("#getKeys", function(this: Mocha.ISuiteCallbackContext) {
