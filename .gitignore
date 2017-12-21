@@ -31,3 +31,4 @@ snapshots
 node_modules/
 dist/
 package-lock.json
+/magda-registry-datastore/

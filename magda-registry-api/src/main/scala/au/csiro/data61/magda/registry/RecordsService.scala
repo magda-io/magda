@@ -47,7 +47,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
-          webHookActor ! WebHookActor.Process
+          webHookActor ! WebHookActor.Process(false, Some(record.aspects.map(_._1).toList))
           result
         }
       }
@@ -90,7 +90,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
-          webHookActor ! WebHookActor.Process
+          webHookActor ! WebHookActor.Process()
           result
         }
       }
@@ -123,11 +123,12 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
           entity(as[Record]) { record =>
             val result = DB localTx { session =>
               RecordPersistence.putRecordById(session, id, record) match {
-                case Success(aspect)    => complete(record)
+                case Success(aspect) =>
+                  webHookActor ! WebHookActor.Process(false, Some(record.aspects.map(_._1).toList))
+                  complete(record)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
-            webHookActor ! WebHookActor.Process
             result
           }
         }
@@ -149,11 +150,12 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
           entity(as[JsonPatch]) { recordPatch =>
             val result = DB localTx { session =>
               RecordPersistence.patchRecordById(session, id, recordPatch) match {
-                case Success(result)    => complete(result)
+                case Success(result) =>
+                  webHookActor ! WebHookActor.Process(false, Some(List(id)))
+                  complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
-            webHookActor ! WebHookActor.Process
             result
           }
         }

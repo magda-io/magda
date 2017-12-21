@@ -17,10 +17,11 @@ import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 import scala.util.{ Failure, Success }
 import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
+import akka.actor.ActorRef
 
 @Path("/aspects")
 @io.swagger.annotations.Api(value = "aspect definitions", produces = "application/json")
-class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: ActorRef, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all aspects", nickname = "getAll", httpMethod = "GET", response = classOf[AspectDefinition], responseContainer = "List")
   def getAll = get {
     pathEnd {
@@ -42,7 +43,9 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
         entity(as[AspectDefinition]) { aspect =>
           DB localTx { session =>
             AspectPersistence.create(session, aspect) match {
-              case Success(result)    => complete(result)
+              case Success(result) =>
+                webHookActor ! WebHookActor.Process()
+                complete(result)
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
@@ -82,7 +85,9 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
           entity(as[AspectDefinition]) { aspect =>
             DB localTx { session =>
               AspectPersistence.putById(session, id, aspect) match {
-                case Success(result)    => complete(result)
+                case Success(result) =>
+                  webHookActor ! WebHookActor.Process()
+                  complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
@@ -106,7 +111,9 @@ class AspectsService(config: Config, authClient: AuthApiClient, system: ActorSys
           entity(as[JsonPatch]) { aspectPatch =>
             DB localTx { session =>
               AspectPersistence.patchById(session, id, aspectPatch) match {
-                case Success(result)    => complete(result)
+                case Success(result)    => 
+                  webHookActor ! WebHookActor.Process()
+                  complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }

@@ -16,7 +16,7 @@ class WebHookActorSpec extends ApiSpec {
   implicit val timeout = Timeout(5 seconds)
 
   private def processAndWaitUntilDone(actor: ActorRef) = {
-    actor ! WebHookActor.Process
+    actor ! WebHookActor.Process(false)
 
     var keepWaiting = true
     while (keepWaiting) {

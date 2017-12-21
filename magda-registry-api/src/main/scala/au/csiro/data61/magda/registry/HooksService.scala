@@ -41,7 +41,9 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
       entity(as[WebHook]) { hook =>
         DB localTx { session =>
           HookPersistence.create(session, hook) match {
-            case Success(result)    => complete(result)
+            case Success(result) =>
+              webHookActor ! WebHookActor.InvalidateWebhookCache
+              complete(result)
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
         }
@@ -80,7 +82,9 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
         entity(as[WebHook]) { hook =>
           DB localTx { session =>
             HookPersistence.putById(session, id, hook) match {
-              case Success(result)    => complete(result)
+              case Success(result) =>
+                webHookActor ! WebHookActor.InvalidateWebhookCache
+                complete(result)
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
@@ -101,11 +105,12 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
       {
         val result = DB localTx { session =>
           HookPersistence.delete(session, hookId) match {
-            case Success(result)    => complete(DeleteResult(result))
+            case Success(result) =>
+              webHookActor ! WebHookActor.InvalidateWebhookCache
+              complete(DeleteResult(result))
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
         }
-        webHookActor ! WebHookActor.Process
         result
       }
     }
@@ -127,7 +132,8 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
         }
-        webHookActor ! WebHookActor.Process
+        webHookActor ! WebHookActor.InvalidateWebhookCache
+        webHookActor ! WebHookActor.Process(invalidateHookCache = true, webHookId = Some(id))
         result
       }
     }

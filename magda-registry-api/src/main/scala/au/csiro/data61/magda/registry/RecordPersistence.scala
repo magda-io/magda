@@ -124,11 +124,11 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         // But someone else could have created it in the meantime. So if our create fails, try one
         // more time to get an existing one. We use a nested transaction so that, if the create fails,
         // we don't end up with an extraneous record creation event in the database.
-        case None         => DB.localTx { nested => createRecord(nested, newRecord).map(_.copy(aspects = Map())) } match {
+        case None => DB.localTx { nested => createRecord(nested, newRecord).map(_.copy(aspects = Map())) } match {
           case Success(record) => Success(record)
           case Failure(e) => this.getByIdWithAspects(session, id) match {
             case Some(record) => Success(record)
-            case None => Failure(e)
+            case None         => Failure(e)
           }
         }
       }
@@ -196,7 +196,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           // We create if there's exactly one ADD operation and it's adding an entire aspect.
           case (Some(aspectId), List(Add("aspects" / (name / rest), value))) => {
             if (rest == Pointer.Empty)
-              (aspectId, createRecordAspect(session, id, aspectId, value.asJsObject))
+              (aspectId, putRecordAspectById(session, id, aspectId, value.asJsObject))
             else
               (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(Add(rest, value))))
           }
@@ -288,11 +288,11 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         // But someone else could have created it in the meantime. So if our create fails, try one
         // more time to get an existing one. We use a nested transaction so that, if the create fails,
         // we don't end up with an extraneous record creation event in the database.
-        case None         => DB.localTx { nested => createRecordAspect(nested, recordId, aspectId, newAspect) } match {
+        case None => DB.localTx { nested => createRecordAspect(nested, recordId, aspectId, newAspect) } match {
           case Success(aspect) => Success(aspect)
           case Failure(e) => this.getRecordAspectById(session, recordId, aspectId) match {
             case Some(aspect) => Success(aspect)
-            case None => Failure(e)
+            case None         => Failure(e)
           }
         }
       }
@@ -359,7 +359,9 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         aspect
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
-          Failure(new RuntimeException(s"Cannot create aspect '${aspectId}' for record '${recordId}' because the record or aspect does not exist, or because data already exists for that combination of record and aspect."))
+          val x = new RuntimeException(s"Cannot create aspect '${aspectId}' for record '${recordId}' because the record or aspect does not exist, or because data already exists for that combination of record and aspect.")
+          //          x.printStackTrace()
+          Failure(x)
         case anythingElse => anythingElse
       }
     } yield insertResult
@@ -522,7 +524,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     JsonParser(rs.string("data")).asJsObject
   }
 
-  private def buildDereferenceMap(implicit session: DBSession, aspectIds: Iterable[String]): Map[String, PropertyWithLink] = {
+  def buildDereferenceMap(implicit session: DBSession, aspectIds: Iterable[String]): Map[String, PropertyWithLink] = {
     if (aspectIds.isEmpty) {
       Map()
     } else {

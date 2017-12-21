@@ -62,7 +62,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     val authClient = new AuthApiClient(httpFetcher)(testConfig, system, executor, materializer)
     val api = new Api(webHookActorProbe.ref, authClient, testConfig, system, executor, materializer)
 
-    webHookActorProbe.expectMsg(1 millis, WebHookActor.Process)
+    webHookActorProbe.expectMsg(1 millis, WebHookActor.Process(true))
 
     DB localTx { implicit session =>
       sql"DROP SCHEMA IF EXISTS test CASCADE".update.apply()

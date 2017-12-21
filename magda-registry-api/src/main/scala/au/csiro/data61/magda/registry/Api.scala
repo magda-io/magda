@@ -58,9 +58,9 @@ class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val co
   }
 
   GlobalSettings.loggingSQLAndTime = new LoggingSQLAndTimeSettings(
-    enabled = true,
+    enabled = false,
     singleLineMode = true,
-    logLevel = 'DEBUG)
+    logLevel = 'debug)
 
   case class DBsWithEnvSpecificConfig(configToUse: Config) extends DBs
       with TypesafeConfigReader
@@ -72,14 +72,14 @@ class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val co
 
   DBsWithEnvSpecificConfig(config).setupAll()
 
-  webHookActor ! WebHookActor.Process
+  webHookActor ! WebHookActor.Process(true, None)
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
       pathPrefix("v0") {
         path("ping") { complete("OK") } ~
-          pathPrefix("aspects") { new AspectsService(config, authClient, system, materializer).route } ~
+          pathPrefix("aspects") { new AspectsService(config, authClient, webHookActor, system, materializer).route } ~
           pathPrefix("records") { new RecordsService(config, webHookActor, authClient, system, materializer).route } ~
           pathPrefix("hooks") { new HooksService(config, webHookActor, authClient, system, materializer).route } ~
           new SwaggerDocService("localhost", 9001, config.getString("http.externalUrl.v0"), system).allRoutes ~

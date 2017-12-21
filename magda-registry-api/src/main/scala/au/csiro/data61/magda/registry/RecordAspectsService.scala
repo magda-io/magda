@@ -75,7 +75,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
-            webHookActor ! WebHookActor.Process
+            webHookActor ! WebHookActor.Process(false, Some(List(aspectId)))
             result
           }
         }

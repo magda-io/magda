@@ -13,19 +13,33 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Random
 import au.csiro.data61.magda.model.Registry._
+import akka.actor.ActorRef
+import akka.pattern.ask
+import akka.util.Timeout
 
 class WebHookProcessorSpec extends ApiSpec {
-  private val processor = new WebHookProcessor(system, Uri("http://localhost:6101/v0/"), executor)
+  implicit val timeout = Timeout(5 seconds)
+
+  private def waitUntilDone(actor: ActorRef) = {
+    actor ! WebHookActor.Process()
+
+    while (Await.result(actor ? WebHookActor.GetStatus("test"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing == Some(false)) {
+
+    }
+
+    blockUntil("2") { () =>
+      Await.result(actor ? WebHookActor.GetStatus("test"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing == Some(false)
+    }
+  }
 
   it("includes aspectDefinitions if events modified them") { param =>
-    testWebHook(param, None) { payloads =>
+    testWebHook(param, None) { (payloads, actor) =>
       val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
       param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
-      val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-      result.statusCode should be(Some(StatusCodes.OK))
+      waitUntilDone(actor)
 
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 1
@@ -36,14 +50,13 @@ class WebHookProcessorSpec extends ApiSpec {
   }
 
   it("includes records if events modified them") { param =>
-    testWebHook(param, None) { payloads =>
+    testWebHook(param, None) { (payloads, actor) =>
       val record = Record("testId", "testName", Map())
       param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
-      val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-      result.statusCode should be(Some(StatusCodes.OK))
+      waitUntilDone(actor)
 
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 1
@@ -54,8 +67,8 @@ class WebHookProcessorSpec extends ApiSpec {
   }
 
   it("includes records only for events modifying aspects that were requested") { param =>
-    val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
-    testWebHook(param, Some(webHook)) { payloads =>
+    val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
+    testWebHook(param, Some(webHook)) { (payloads, actor) =>
       val a = AspectDefinition("A", "A", Some(JsObject()))
       param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
@@ -71,9 +84,11 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-      result1.statusCode should be(Some(StatusCodes.OK))
+      //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+      //        result1.statusCode should be(Some(StatusCodes.OK))
+      waitUntilDone(actor)
 
+      payloads.length shouldBe 1
       payloads.clear()
 
       val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
@@ -81,18 +96,19 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-      result2.statusCode should be(Some(StatusCodes.OK))
+      //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+      //        result2.statusCode should be(Some(StatusCodes.OK))
+      waitUntilDone(actor)
 
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 1
-      payloads(0).records.get.length shouldBe 0
+      payloads(0).records.get.length shouldBe 1
       payloads(0).aspectDefinitions.get.length shouldBe 0
     }
   }
 
   it("does not duplicate records or aspect definitions") { param =>
-    testWebHook(param, None) { payloads =>
+    testWebHook(param, None) { (payloads, actor) =>
       val a = AspectDefinition("A", "A", Some(JsObject()))
       param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
@@ -118,8 +134,9 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-      result.statusCode should be(Some(StatusCodes.OK))
+      //        val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+      //        result.statusCode should be(Some(StatusCodes.OK))
+      waitUntilDone(actor)
 
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 5
@@ -133,27 +150,27 @@ class WebHookProcessorSpec extends ApiSpec {
   describe("dereference") {
     it("includes a record when a distribution is added to it") { param =>
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
-      testWebHook(param, Some(webHook)) { payloads =>
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val jsonSchema =
           """
-            |{
-            |    "$schema": "http://json-schema.org/hyper-schema#",
-            |    "title": "An aspect with a single link",
-            |    "type": "object",
-            |    "properties": {
-            |        "someLink": {
-            |            "title": "A link to another record.",
-            |            "type": "string",
-            |            "links": [
-            |                {
-            |                    "href": "/api/v0/registry/records/{$}",
-            |                    "rel": "item"
-            |                }
-            |            ]
-            |        }
-            |    }
-            |}
-          """.stripMargin
+              |{
+              |    "$schema": "http://json-schema.org/hyper-schema#",
+              |    "title": "An aspect with a single link",
+              |    "type": "object",
+              |    "properties": {
+              |        "someLink": {
+              |            "title": "A link to another record.",
+              |            "type": "string",
+              |            "links": [
+              |                {
+              |                    "href": "/api/v0/registry/records/{$}",
+              |                    "rel": "item"
+              |                }
+              |            ]
+              |        }
+              |    }
+              |}
+            """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -169,8 +186,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result1.statusCode should be(Some(StatusCodes.OK))
+        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result1.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.clear()
 
@@ -179,8 +197,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result2.statusCode should be(Some(StatusCodes.OK))
+        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result2.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -191,27 +210,27 @@ class WebHookProcessorSpec extends ApiSpec {
 
     it("includes a record when one of its distributions is modified") { param =>
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
-      testWebHook(param, Some(webHook)) { payloads =>
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val jsonSchema =
           """
-            |{
-            |    "$schema": "http://json-schema.org/hyper-schema#",
-            |    "title": "An aspect with a single link",
-            |    "type": "object",
-            |    "properties": {
-            |        "someLink": {
-            |            "title": "A link to another record.",
-            |            "type": "string",
-            |            "links": [
-            |                {
-            |                    "href": "/api/v0/registry/records/{$}",
-            |                    "rel": "item"
-            |                }
-            |            ]
-            |        }
-            |    }
-            |}
-          """.stripMargin
+              |{
+              |    "$schema": "http://json-schema.org/hyper-schema#",
+              |    "title": "An aspect with a single link",
+              |    "type": "object",
+              |    "properties": {
+              |        "someLink": {
+              |            "title": "A link to another record.",
+              |            "type": "string",
+              |            "links": [
+              |                {
+              |                    "href": "/api/v0/registry/records/{$}",
+              |                    "rel": "item"
+              |                }
+              |            ]
+              |        }
+              |    }
+              |}
+            """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -227,8 +246,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result1.statusCode should be(Some(StatusCodes.OK))
+        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result1.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.clear()
 
@@ -237,8 +257,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result2.statusCode should be(Some(StatusCodes.OK))
+        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result2.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -249,27 +270,27 @@ class WebHookProcessorSpec extends ApiSpec {
 
     it("includes a record when one of its distribution's aspects is modified") { param =>
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
-      testWebHook(param, Some(webHook)) { payloads =>
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val jsonSchema =
           """
-            |{
-            |    "$schema": "http://json-schema.org/hyper-schema#",
-            |    "title": "An aspect with a single link",
-            |    "type": "object",
-            |    "properties": {
-            |        "someLink": {
-            |            "title": "A link to another record.",
-            |            "type": "string",
-            |            "links": [
-            |                {
-            |                    "href": "/api/v0/registry/records/{$}",
-            |                    "rel": "item"
-            |                }
-            |            ]
-            |        }
-            |    }
-            |}
-          """.stripMargin
+              |{
+              |    "$schema": "http://json-schema.org/hyper-schema#",
+              |    "title": "An aspect with a single link",
+              |    "type": "object",
+              |    "properties": {
+              |        "someLink": {
+              |            "title": "A link to another record.",
+              |            "type": "string",
+              |            "links": [
+              |                {
+              |                    "href": "/api/v0/registry/records/{$}",
+              |                    "rel": "item"
+              |                }
+              |            ]
+              |        }
+              |    }
+              |}
+            """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -290,8 +311,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result1.statusCode should be(Some(StatusCodes.OK))
+        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result1.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.clear()
 
@@ -300,8 +322,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result2.statusCode should be(Some(StatusCodes.OK))
+        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result2.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -312,27 +335,27 @@ class WebHookProcessorSpec extends ApiSpec {
 
     it("with multiple linking aspects, only one has to link to a modified record") { param =>
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
-      testWebHook(param, Some(webHook)) { payloads =>
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val jsonSchema =
           """
-            |{
-            |    "$schema": "http://json-schema.org/hyper-schema#",
-            |    "title": "An aspect with a single link",
-            |    "type": "object",
-            |    "properties": {
-            |        "someLink": {
-            |            "title": "A link to another record.",
-            |            "type": "string",
-            |            "links": [
-            |                {
-            |                    "href": "/api/v0/registry/records/{$}",
-            |                    "rel": "item"
-            |                }
-            |            ]
-            |        }
-            |    }
-            |}
-          """.stripMargin
+              |{
+              |    "$schema": "http://json-schema.org/hyper-schema#",
+              |    "title": "An aspect with a single link",
+              |    "type": "object",
+              |    "properties": {
+              |        "someLink": {
+              |            "title": "A link to another record.",
+              |            "type": "string",
+              |            "links": [
+              |                {
+              |                    "href": "/api/v0/registry/records/{$}",
+              |                    "rel": "item"
+              |                }
+              |            ]
+              |        }
+              |    }
+              |}
+            """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -353,8 +376,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result1.statusCode should be(Some(StatusCodes.OK))
+        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result1.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.clear()
 
@@ -363,8 +387,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result2.statusCode should be(Some(StatusCodes.OK))
+        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result2.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -375,27 +400,27 @@ class WebHookProcessorSpec extends ApiSpec {
 
     it("includes all aspects of linked records, not just the requested aspects") { param =>
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
-      testWebHook(param, Some(webHook)) { payloads =>
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val jsonSchema =
           """
-            |{
-            |    "$schema": "http://json-schema.org/hyper-schema#",
-            |    "title": "An aspect with a single link",
-            |    "type": "object",
-            |    "properties": {
-            |        "someLink": {
-            |            "title": "A link to another record.",
-            |            "type": "string",
-            |            "links": [
-            |                {
-            |                    "href": "/api/v0/registry/records/{$}",
-            |                    "rel": "item"
-            |                }
-            |            ]
-            |        }
-            |    }
-            |}
-          """.stripMargin
+              |{
+              |    "$schema": "http://json-schema.org/hyper-schema#",
+              |    "title": "An aspect with a single link",
+              |    "type": "object",
+              |    "properties": {
+              |        "someLink": {
+              |            "title": "A link to another record.",
+              |            "type": "string",
+              |            "links": [
+              |                {
+              |                    "href": "/api/v0/registry/records/{$}",
+              |                    "rel": "item"
+              |                }
+              |            ]
+              |        }
+              |    }
+              |}
+            """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -416,8 +441,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result1.statusCode should be(Some(StatusCodes.OK))
+        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result1.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.clear()
 
@@ -426,8 +452,9 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result2.statusCode should be(Some(StatusCodes.OK))
+        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result2.statusCode should be(Some(StatusCodes.OK))
+        waitUntilDone(actor)
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -443,14 +470,15 @@ class WebHookProcessorSpec extends ApiSpec {
 
   describe("async web hooks") {
     it("delays further notifications until previous one is acknowledged") { param =>
-      testAsyncWebHook(param, None) { payloads =>
+      testAsyncWebHook(param, None) { (payloads, actor) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result1.deferredResponse should be(true)
+        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result1.deferredResponse should be(true)
+        waitUntilDone(actor)
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -464,21 +492,24 @@ class WebHookProcessorSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result2.statusCode should be(None)
+        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result2.statusCode should be(None)
+        waitUntilDone(actor)
+
         payloads.length shouldBe 1
       }
     }
 
     it("retries an unsuccessful notification") { param =>
-      testAsyncWebHook(param, None) { payloads =>
+      testAsyncWebHook(param, None) { (payloads, actor) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result1.deferredResponse should be(true)
+        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result1.deferredResponse should be(true)
+        waitUntilDone(actor)
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -491,8 +522,9 @@ class WebHookProcessorSpec extends ApiSpec {
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be < (payloads(0).lastEventId)
         }
 
-        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result2.deferredResponse should be(true)
+        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result2.deferredResponse should be(true)
+        waitUntilDone(actor)
 
         payloads.length shouldBe 2
         payloads(1).events.get.length shouldBe 1
@@ -504,14 +536,15 @@ class WebHookProcessorSpec extends ApiSpec {
     }
 
     it("sends the next events after a successful notification") { param =>
-      testAsyncWebHook(param, None) { payloads =>
+      testAsyncWebHook(param, None) { (payloads, actor) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result1.deferredResponse should be(true)
+        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result1.deferredResponse should be(true)
+        waitUntilDone(actor)
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -529,8 +562,9 @@ class WebHookProcessorSpec extends ApiSpec {
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be(payloads(0).lastEventId)
         }
 
-        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test"), 5 seconds)
-        result2.deferredResponse should be(true)
+        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
+        //        result2.deferredResponse should be(true)
+        waitUntilDone(actor)
 
         payloads.length shouldBe 2
         payloads(1).events.get.length shouldBe 1
@@ -557,7 +591,7 @@ class WebHookProcessorSpec extends ApiSpec {
       includeAspectDefinitions = Some(true),
       dereference = Some(true)))
 
-  private def testWebHookWithResponse(param: FixtureParam, webHook: Option[WebHook], response: ⇒ ToResponseMarshallable)(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
+  private def testWebHookWithResponse(param: FixtureParam, webHook: Option[WebHook], response: ⇒ ToResponseMarshallable)(testCallback: (ArrayBuffer[WebHookPayload], ActorRef) => Unit): Unit = {
     val payloads = ArrayBuffer[WebHookPayload]()
     val route = post {
       entity(as[WebHookPayload]) { payload =>
@@ -572,18 +606,21 @@ class WebHookProcessorSpec extends ApiSpec {
       status shouldEqual StatusCodes.OK
     }
 
+    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/"))
+
     try {
-      testCallback(payloads)
+      testCallback(payloads, actor)
     } finally {
+      system.stop(actor)
       server.unbind()
     }
   }
 
-  private def testWebHook(param: FixtureParam, webHook: Option[WebHook])(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
+  private def testWebHook(param: FixtureParam, webHook: Option[WebHook])(testCallback: (ArrayBuffer[WebHookPayload], ActorRef) => Unit): Unit = {
     testWebHookWithResponse(param, webHook, "got it")(testCallback)
   }
 
-  private def testAsyncWebHook(param: FixtureParam, webHook: Option[WebHook])(testCallback: ArrayBuffer[WebHookPayload] => Unit): Unit = {
+  private def testAsyncWebHook(param: FixtureParam, webHook: Option[WebHook])(testCallback: (ArrayBuffer[WebHookPayload], ActorRef) => Unit): Unit = {
     testWebHookWithResponse(param, webHook, WebHookResponse(true))(testCallback)
   }
 
@@ -608,5 +645,25 @@ class WebHookProcessorSpec extends ApiSpec {
     }
 
     serverBinding.get
+  }
+
+  def blockUntil(explain: String)(predicate: () => Boolean): Unit = {
+
+    var backoff = 0
+    var done = false
+
+    while (backoff <= 16 && !done) {
+      if (backoff > 0) Thread.sleep(200 * backoff)
+      backoff = backoff + 1
+      try {
+        done = predicate()
+      } catch {
+        case e: Throwable =>
+          println("problem while testing predicate")
+          e.printStackTrace()
+      }
+    }
+
+    require(done, s"Failed waiting on: $explain")
   }
 }

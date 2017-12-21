@@ -147,11 +147,11 @@ type DistributionLinkCheck = {
 };
 
 /**
-   * Checks a distribution's URL. Returns a tuple of the distribution's host and a no-arg function that when executed will fetch the url, returning a promise.
-   * 
-   * @param distribution The distribution Record
-   * @param distStringsAspect The dcat-distributions-strings aspect for this distribution
-   */
+ * Checks a distribution's URL. Returns a tuple of the distribution's host and a no-arg function that when executed will fetch the url, returning a promise.
+ *
+ * @param distribution The distribution Record
+ * @param distStringsAspect The dcat-distributions-strings aspect for this distribution
+ */
 function checkDistributionLink(
     distribution: Record,
     distStringsAspect: any,
@@ -197,8 +197,14 @@ function checkDistributionLink(
         const parsedURL = new URI(url.url);
         return {
             host: (parsedURL && parsedURL.host()) as string,
-            op: () =>
-                retrieve(parsedURL, baseRetryDelay, retries, ftpHandler)
+            op: () => {
+                console.log("Retrieving " + parsedURL);
+
+                return retrieve(parsedURL, baseRetryDelay, retries, ftpHandler)
+                    .then(aspect => {
+                        console.log("Finished retrieving  " + parsedURL);
+                        return aspect;
+                    })
                     .then(aspect => ({
                         distribution,
                         urlType: url.type,
@@ -211,7 +217,8 @@ function checkDistributionLink(
                             status: "broken" as RetrieveResult,
                             errorDetails: err
                         }
-                    })) as Promise<BrokenLinkSleuthingResult>
+                    })) as Promise<BrokenLinkSleuthingResult>;
+            }
         };
     });
 }
@@ -262,10 +269,10 @@ function retrieveFtp(
 }
 
 /**
-   * Retrieves an HTTP/HTTPS url
-   * 
-   * @param url The url to retrieve
-   */
+ * Retrieves an HTTP/HTTPS url
+ *
+ * @param url The url to retrieve
+ */
 function retrieveHttp(
     url: string,
     baseRetryDelay: number,

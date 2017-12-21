@@ -4,31 +4,26 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MessageEntity, Uri}
+import akka.http.scaladsl.model.{ HttpMethods, HttpRequest, MessageEntity, Uri }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{ Sink, Source }
 import scalikejdbc._
 import spray.json.JsString
 import au.csiro.data61.magda.model.Registry._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
-import scala.util.Success
+import scala.util.{ Success, Failure }
 
 class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit val executionContext: ExecutionContext) extends Protocols {
   private val http = Http(actorSystem)
   private implicit val materializer: ActorMaterializer = ActorMaterializer()(actorSystem)
 
-  def sendSomeNotificationsForOneWebHook(id: String, maxEvents: Int = 100): Future[WebHookProcessingResult] = {
-    val (webHook, eventPage) = DB readOnly { implicit session =>
-      HookPersistence.getById(session, id) match {
-        case None => throw new RuntimeException(s"No WebHook with ID ${id} was found.")
-        case Some(webHook) => (webHook, EventPersistence.getEvents(session, webHook.lastEvent, None, Some(maxEvents), None, None, None))
-      }
-    }
+  def sendSomeNotificationsForOneWebHook(id: String, webHook: WebHook, eventPage: EventsPage): Future[Boolean] = {
 
-    val events = if (webHook.isWaitingForResponse.getOrElse(false)) List() else eventPage.events
+    //    val events = if (!startup && webHook.isWaitingForResponse.getOrElse(false)) List() else eventPage.events
+    val events = eventPage.events
     val relevantEventTypes = webHook.eventTypes
 
     val changeEvents = events.filter(event => relevantEventTypes.contains(event.eventType))
@@ -79,8 +74,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             val allRecordIds = recordChangeEvents.map(_.data.fields("recordId").asInstanceOf[JsString].value).toSet
             if (allRecordIds.isEmpty) {
               List()
-            }
-            else {
+            } else {
               RecordPersistence.getRecordsLinkingToRecordIds(
                 session,
                 allRecordIds,
@@ -91,38 +85,36 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             }
           }
         }
-
+        
         Some(directRecords.records ++ recordsFromDereference)
       }
     }
 
     val aspectDefinitions = webHook.config.includeAspectDefinitions match {
       case Some(false) | None => None
-      case Some(true) => DB readOnly { implicit session => Some(AspectPersistence.getByIds(session, aspectDefinitionIds)) }
+      case Some(true)         => DB readOnly { implicit session => Some(AspectPersistence.getByIds(session, aspectDefinitionIds)) }
     }
 
     val payload = WebHookPayload(
       action = "records.changed",
-      lastEventId = if (events.isEmpty) webHook.lastEvent.get else events.last.id.get,
+      lastEventId = eventPage.events.lastOption.flatMap(_.id).orElse(webHook.lastEvent).get, //if (events.isEmpty) webHook.lastEvent.get else events.last.id.get,
       events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents) else None,
       records = records,
       aspectDefinitions = aspectDefinitions,
-      deferredResponseUrl = Some(Uri(s"hooks/${java.net.URLEncoder.encode(webHook.id.get, "UTF-8")}/ack").resolvedAgainst(publicUrl).toString())
-    )
+      deferredResponseUrl = Some(Uri(s"hooks/${java.net.URLEncoder.encode(webHook.id.get, "UTF-8")}/ack").resolvedAgainst(publicUrl).toString()))
 
-    if (payload.events.getOrElse(List()).nonEmpty || payload.records.getOrElse(List()).nonEmpty || aspectDefinitions.getOrElse(List()).nonEmpty) {
-      Marshal(payload).to[MessageEntity].flatMap(entity => {
-        val singleRequestStream = Source.single(HttpRequest(
-          uri = Uri(webHook.url),
-          method = HttpMethods.POST,
-          entity = entity
-        ))
-        val responseStream = singleRequestStream.map((_, 1)).via(http.superPool())
-        val resultStream = responseStream.mapAsync(1) { response => response match {
+    Marshal(payload).to[MessageEntity].flatMap(entity => {
+      val singleRequestStream = Source.single(HttpRequest(
+        uri = Uri(webHook.url),
+        method = HttpMethods.POST,
+        entity = entity))
+      val responseStream = singleRequestStream.map((_, 1)).via(http.superPool())
+      val resultStream = responseStream.mapAsync(1) { response =>
+        response match {
           case (Success(response), _) => {
             if (response.status.isFailure()) {
               response.discardEntityBytes()
-              Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, false, Some(response.status)))
+              Future.failed(new Exception(s"Response from $webHook.url was ${response.status.reason()}"))
             } else {
               // Try to deserialize the success response as a WebHook response.  It's ok if this fails.
               Unmarshal(response.entity).to[WebHookResponse].map { webHookResponse =>
@@ -130,12 +122,12 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
                   DB localTx { session =>
                     HookPersistence.setIsWaitingForResponse(session, webHook.id.get, true)
                   }
-                  WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, true, Some(response.status))
+                  true
                 } else {
                   DB localTx { session =>
                     HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
                   }
-                  WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, false, Some(response.status))
+                  false
                 }
               }.recover {
                 case _: Throwable => {
@@ -144,24 +136,16 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
                   DB localTx { session =>
                     HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
                   }
-                  WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, false, Some(response.status))
+                  false
                 }
               }
             }
           }
-          case _ => Future.successful(WebHookProcessingResult(webHook.lastEvent.get, webHook.lastEvent.get, false, None))
-        } }
-        resultStream.completionTimeout(10 seconds).runWith(Sink.head)
-      })
-    } else {
-      // Update this WebHook to indicate these events (if any) have been processed.
-      if (payload.lastEventId != webHook.lastEvent.get) {
-        DB localTx { session =>
-          HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
+          case (Failure(error), _) =>
+            Future.failed(error)
         }
       }
-
-      Future.successful(WebHookProcessingResult(webHook.lastEvent.get, payload.lastEventId, false, None))
-    }
+      resultStream.completionTimeout(60 seconds).runWith(Sink.head)
+    })
   }
 }

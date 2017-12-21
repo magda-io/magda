@@ -17,7 +17,7 @@ function sleuthBrokenLinks() {
         async: true,
         writeAspectDefs: [brokenLinkAspectDef, datasetQualityAspectDef],
         onRecordFound: (record, registry) =>
-            onRecordFound(record, registry, argv.retries)
+            onRecordFound(record, registry, /*argv.retries*/ 0)
     });
 }
 

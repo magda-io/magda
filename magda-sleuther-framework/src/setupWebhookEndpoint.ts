@@ -1,32 +1,31 @@
-import * as fetch from "isomorphic-fetch";
 import * as _ from "lodash";
 import * as express from "express";
 
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 
 import SleutherOptions from "./SleutherOptions";
 import getWebhookUrl from "./getWebhookUrl";
+import { forEachAsync } from "@magda/typescript-common/dist/AsyncPage";
 
 export default function setupWebhookEndpoint(
     options: SleutherOptions,
     registry: Registry
 ) {
     const server = options.express();
-    server.use(require("body-parser").json({limit: '50mb'}));
+    server.use(require("body-parser").json({ limit: "50mb" }));
 
     server.post(
         "/hook",
         (request: express.Request, response: express.Response) => {
             const payload = request.body;
 
-            const promises: Promise<
-                void
-            >[] = payload.records.map((record: Record) =>
-                options.onRecordFound(record, registry)
+            const megaPromise = forEachAsync(
+                payload.records,
+                1,
+                (record: Record) => options.onRecordFound(record, registry)
             );
-
-            const megaPromise = Promise.all(promises);
 
             const lastEventIdExists = !_.isUndefined(payload.lastEventId);
             const deferredResponseUrlExists = !_.isUndefined(
@@ -57,13 +56,19 @@ export default function setupWebhookEndpoint(
                 });
 
                 const sendResult = (success: boolean) =>
-                    fetch(payload.deferredResponseUrl, {
-                        method: "POST",
-                        body: JSON.stringify({
-                            succeeded: success,
-                            lastEventIdReceived: payload.lastEventId
+                    registry
+                        .resumeHook(options.id, success, payload.lastEventId)
+                        .then(unionToThrowable)
+                        .then(result => {
+                            console.info(
+                                "Successfully posted back to registry for event " +
+                                    payload.lastEventId
+                            );
+                            return result;
                         })
-                    });
+                        .catch((error: Error) => {
+                            console.error(error);
+                        });
 
                 megaPromise
                     .then(results => sendResult(true))

@@ -13,16 +13,17 @@ import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.client.AuthApiClient
 
 object RegistryApp extends App {
-  class Listener extends Actor with ActorLogging {
-    def receive = {
-      case d: DeadLetter => //log.info(d.message)
-    }
-  }
 
   implicit val config = AppConfig.conf()
   implicit val system = ActorSystem("registry-api", config)
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
+  
+  class Listener extends Actor with ActorLogging {
+    def receive = {
+      case d: DeadLetter => log.info(d.message.toString())
+    }
+  }
 
   val logger = Logging(system, getClass)
 
