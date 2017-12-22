@@ -5,10 +5,11 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 
 import scala.util.Try
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 import java.sql.SQLException
 
 import akka.NotUsed
+import akka.stream.Graph
 import akka.stream.scaladsl.Source
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
@@ -30,6 +31,16 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None): RecordsPage = {
     this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference)
+  }
+
+  def getAllWithAspectsFiltered(implicit session: DBSession,
+                        aspectIds: Iterable[String],
+                        filter: Option[GraphQLTypes.RecordFilter],
+                        pageToken: Option[String] = None,
+                        start: Option[Int] = None,
+                        limit: Option[Int] = None): RecordsPage = {
+    println("\nAspects requested: " + aspectIds)
+    this.getRecordsFiltered(session, aspectIds, filter, pageToken, start, limit)
   }
 
   def getById(implicit session: DBSession, id: String): Option[RecordSummary] = {
@@ -495,6 +506,50 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       pageResults)
   }
 
+  private def getRecordsFiltered(implicit session: DBSession,
+                         aspectIds: Iterable[String],
+                         filter: Option[GraphQLTypes.RecordFilter],
+                         pageToken: Option[String] = None,
+                         start: Option[Int] = None,
+                         limit: Option[Int] = None,
+                         recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): RecordsPage = {
+    // NEED TO CHANGE aspectIdsToWhereClause
+    val countWhereClauseParts = filter.map(filterToWhereClause).getOrElse(Nil) ++ recordSelector
+    val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
+
+    val dereferenceDetails = if (/*dereferenceLinks*/ false) {
+      buildDereferenceMap(session, aspectIds)
+    } else {
+      Map[String, PropertyWithLink]()
+    }
+
+    var lastSequence: Option[Long] = None
+    val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
+    val aspectSelectors = aspectIdsToSelectClauses(aspectIds, dereferenceDetails)
+
+    val pageResults =
+      sql"""select Records.sequence as sequence,
+                   Records.recordId as recordId,
+                   Records.name as recordName
+                   ${if (aspectSelectors.nonEmpty) sqls", ${aspectSelectors}" else SQLSyntax.empty}
+            from Records
+            ${makeWhereClause(whereClauseParts)}
+            order by Records.sequence
+            offset ${start.getOrElse(0)}
+            limit ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)}"""
+        .map(rs => {
+          // Side-effectily track the sequence number of the very last result.
+          lastSequence = Some(rs.long("sequence"))
+          rowToRecord(aspectIds)(rs)
+        })
+        .list.apply()
+
+    RecordsPage(
+      totalCount,
+      lastSequence.map(_.toString),
+      pageResults)
+  }
+
   private def makeWhereClause(andParts: Seq[Option[SQLSyntax]]) = {
     andParts.filter(!_.isEmpty) match {
       case Seq()    => SQLSyntax.empty
@@ -603,5 +658,18 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
 
   private def aspectIdToWhereClause(aspectId: String) = {
     Some(sqls"exists (select 1 from RecordAspects where RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=${aspectId})")
+  }
+
+  private def notAspectIdToWhereClause(aspectId: String) = {
+    Some(sqls"not exists (select 1 from RecordAspects where RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=${aspectId})")
+  }
+
+  private def filterToWhereClause(filter: GraphQLTypes.RecordFilter): Seq[Option[SQLSyntax]] = {
+    // Filter by either aspect present or not present
+    println(filter.aspects)
+    filter.aspects.map(_.toSeq.map {
+      case (id, JsNull) => notAspectIdToWhereClause(id)
+      case (id, _) => aspectIdToWhereClause(id)
+    }).getOrElse(Nil)
   }
 }

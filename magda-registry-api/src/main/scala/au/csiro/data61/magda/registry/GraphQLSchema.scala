@@ -196,6 +196,26 @@ object GraphQLSchema {
       }
 
     }
+
+    // Similar to above, but construct aspect filter instead
+    def constructFilterType(name: String, path: String, schema: JsObject): InputType[_] = {
+      determineType(schema) match {
+        case "string" => StringType
+        case "integer" => IntType
+        case "array" => ListInputType(OptionInputType(constructFilterType(name, path, schema.fields("items").asJsObject)))
+        case "object" => InputObjectType[JsValue](
+          path,
+          schema.fields("properties").asJsObject.convertTo[Map[String, JsValue]].toList.map({
+            case (propName, propSchema) => constructFilterInputField(propName, path + "_" + propName, propSchema.asJsObject)
+          })
+        )
+        case "record" => RecordFilterType
+      }
+    }
+
+    def constructFilterInputField(name: String, path: String, schema: JsObject): InputField[_] = {
+      InputField(name, OptionInputType(constructFilterType(name, path, schema)))
+    }
     // implicit val aspectFormat = jsonFormat(Aspect, "name", "schema")
     // implicit val aspectsFormat = jsonFormat(Aspects, "aspects")
   }
@@ -255,7 +275,39 @@ object GraphQLSchema {
     Field("totalCount", IntType, resolve = _.value.totalCount)
   ))
 
+  // Input types (for filtering, and page token)
+  def createAspectFilter(id: String, schema: JsObject): Option[InputField[_]] = {
+    try {
+      Some(constructFilterInputField(id, "AspectFilter_" + id, schema))
+    } catch {
+      case e: Exception => {
+        println("Failed to process aspect '" + id + "': " + schema + " (" + e.getMessage() + ") for input")
+      }
+      None
+    }
+  }
+  val aspectInputFields = GraphQLDataConnection.aspects.flatMap {
+    case (id, schema) => createAspectFilter(id, schema)
+  }
 
+  val AspectsFilterType = InputObjectType[Map[String, JsValue]]("AspectsFilter", aspectInputFields)
+  // Make an input type for record filter and deliver it to resolver functions as a JsValue. Requries sangria sprayJson marshalling
+  lazy val RecordFilterType = InputObjectType[GraphQLTypes.RecordFilter]("RecordFilter", () => List(
+//    InputField("AND", OptionInputType(ListInputType(RecordFilterType))),
+//    InputField("OR", OptionInputType(ListInputType(RecordFilterType))),
+    InputField("id", OptionInputType(StringType)),
+    InputField("aspects", OptionInputType(AspectsFilterType))
+  ))
+
+  object RecordFilterTypeJsonProtocol extends DefaultJsonProtocol {
+    implicit val recordFilterFormat = jsonFormat2(GraphQLTypes.RecordFilter.apply)
+  }
+
+  val RecordFilterArg = {
+    import RecordFilterTypeJsonProtocol._
+    import sangria.marshalling.sprayJson.sprayJsonReaderFromInput
+    Argument("filter", OptionInputType(RecordFilterType))
+  }
 
   val PageTokenArg = Argument("pageToken", OptionInputType(StringType))
 //  val RequiredAspectsArg = Argument("requiredAspects", ListInputType(StringType))
@@ -267,7 +319,7 @@ object GraphQLSchema {
         arguments = List(PageTokenArg, RecordFilterArg),
         resolve = Projector((ctx: Context[GraphQLDataConnection.Fetcher, Unit], prj) => {
           println("\nProjector: " + prj)
-          ctx.ctx.getRecordsPage(ctx.arg(PageTokenArg), prj.find(_.name == "records").map(recordPrj => extractAttributesAndAspects(recordPrj.children)).getOrElse(Nil))
+          ctx.ctx.getRecordsPage(ctx.arg(PageTokenArg), ctx.arg(RecordFilterArg), prj.find(_.name == "records").map(recordPrj => extractAttributesAndAspects(recordPrj.children)).getOrElse(Nil))
         })
 
         //GraphQLTypes.RecordsPageGraphQL(List(GraphQLTypes.Record("test0", "Test dataset", List("Aspect_test_record_link"), Map("test_record_link" -> """{"record_test": "0e2d5d23-d0c9-4c7f-807f-2d5157be6828"}""".parseJson))), "0")
