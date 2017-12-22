@@ -108,7 +108,7 @@ export default async function onRecordFound(
     });
 
     if (mochaObject.isRunning) testGroups = groups;
-    return Promise.resolve([]);
+    return Promise.resolve();
 }
 
 /*
