@@ -111,23 +111,8 @@ export default async function onRecordFound(
     return Promise.resolve([]);
 }
 
-export function testGetKeys(dictionary: any): Array<string> {
-    if (mochaObject.isRunning) return getKeys(dictionary);
-    throw new Error("This function is called only when testing with mocha");
-}
-
-function getKeys(dictionary: any): Array<string> {
-    let keys = [];
-
-    for (var key in dictionary) {
-        if (dictionary.hasOwnProperty(key)) keys.push(key);
-    }
-
-    return keys;
-}
-
 /*
-*private method
+*private interface
 */
 export interface DistContainer {
     url: DistURL;

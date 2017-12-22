@@ -24,7 +24,6 @@ import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 } from "@magda/typescript-common/dist/test/arbitraries";*/
 
 import onRecordFound, {
-    testGetKeys,
     testGroups,
     mochaObject
 } from "../onRecordFound";
@@ -321,20 +320,6 @@ describe("test cases", function(this: Mocha.ISuiteCallbackContext) {
                 expect(testGroups[0]["ids"]).to.be.length(2) &&
                 expect(testGroups[1]["ids"]).to.be.length(2);
             })
-        });
-    });
-
-    describe("#getKeys", function(this: Mocha.ISuiteCallbackContext) {
-        it("should return []", function() {
-            var stubObject;
-            expect(testGetKeys(stubObject)).to.eql([]);
-        });
-        it("should not dig recursively", function() {
-            var stubObject: any = {};
-            stubObject.key1 = {};
-            stubObject.key1.recursiveKey = {};
-
-            expect(testGetKeys(stubObject)).to.be.length(1);
         });
     });
 });
