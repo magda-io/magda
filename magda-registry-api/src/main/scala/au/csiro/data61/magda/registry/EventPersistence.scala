@@ -110,22 +110,17 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           x
         }).list.apply()
 
+    println(events)
+
     EventsPage(totalCount, lastEventIdInPage.map(_.toString), events)
   }
 
   private def rowToEvent(rs: WrappedResultSet): RegistryEvent = {
-
-    //    println(rs.toMap())
-
-    val y = RegistryEvent(
+    RegistryEvent(
       id = rs.longOpt("eventId"),
       eventTime = rs.offsetDateTimeOpt("eventTime"),
       eventType = EventType.withValue(rs.int("eventTypeId")),
       userId = rs.int("userId"),
       data = JsonParser(rs.string("data")).asJsObject)
-
-    //    println("done 2")
-
-    y
   }
 }

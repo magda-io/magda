@@ -78,12 +78,18 @@ object WebHookActor {
                 }
               }
 
-              val flattenedAspectIds = aspectIds.getOrElse(List()).toSet
-              val hookAspectIds = (hook.config.aspects.getOrElse(Nil) ++ hook.config.optionalAspects.getOrElse(Nil)).toSet
+//              val flattenedAspectIds = aspectIds.getOrElse(List()).toSet
+//              val immediateHookAspectIds = (hook.config.aspects.getOrElse(Nil) ++ hook.config.optionalAspects.getOrElse(Nil)).toSet
+//              val linkedHookAspectIds = (DB readOnly { implicit session =>
+//                RecordPersistence.buildDereferenceMap(session, immediateHookAspectIds)
+//              }).mapValues(_.).values
+//              
+//              val hookAspectIds = immediateHookAspectIds ++ linkedHookAspectIds
+//              println("Batman " + linkedHookAspectIds)
 
-              if (flattenedAspectIds.isEmpty || hookAspectIds.isEmpty || !hookAspectIds.intersect(flattenedAspectIds).isEmpty) {
+//              if (flattenedAspectIds.isEmpty || hookAspectIds.isEmpty || !hookAspectIds.intersect(flattenedAspectIds).isEmpty) {
                 actorRef ! Process(startup, aspectIds)
-              }
+//              }
             }
           }, 10 minutes)
       }
@@ -137,7 +143,7 @@ object WebHookActor {
           refetchWebHook =>
             val webHook = getWebhook()
 
-            if (!refetchWebHook && webHook.isWaitingForResponse.getOrElse(false)) {
+            if (webHook.isWaitingForResponse.getOrElse(false)) {
               log.info("Skipping WebHook {} as it's marked as waiting for response", webHook.id)
               Future.successful(false)
             } else {

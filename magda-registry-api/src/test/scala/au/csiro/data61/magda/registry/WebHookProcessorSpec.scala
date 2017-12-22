@@ -163,7 +163,6 @@ class WebHookProcessorSpec extends ApiSpec {
 
       //      payloads.length shouldBe 1
       val events = payloads.foldLeft(List[RegistryEvent]())((a, payload) => payload.events.getOrElse(Nil) ++ a)
-      println(events.map(_.id))
       events.length shouldBe 52
       val records = payloads.foldLeft(List[Record]())((a, payload) => payload.records.getOrElse(Nil) ++ a)
       records.length shouldBe payloads.length
@@ -621,26 +620,33 @@ class WebHookProcessorSpec extends ApiSpec {
         payloads(0).aspectDefinitions.get.length shouldBe 1
         payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
 
+        val lastEventId = payloads(0).lastEventId
+        payloads.clear()
+        
+        println("CLEAR")
+        
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
         param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, Some(payloads(0).lastEventId)))) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, Some(lastEventId)))) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be(payloads(0).lastEventId)
+          responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be(lastEventId)
         }
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.deferredResponse should be(true)
         waitUntilDone(actor)
+        
+        println(payloads.map(_.events.get).flatten)
 
-        payloads.length shouldBe 2
-        payloads(1).events.get.length shouldBe 1
-        payloads(1).records.get.length shouldBe 0
-        payloads(1).lastEventId shouldBe >(payloads(0).lastEventId)
-        payloads(1).aspectDefinitions.get.length shouldBe 1
-        payloads(1).aspectDefinitions.get(0).id shouldBe ("testId2")
+        payloads.length should be > (0)
+        payloads.map(_.events.get).flatten.length shouldBe 1
+        payloads.map(_.records.get).flatten.length shouldBe 0
+        payloads.last.lastEventId shouldBe >(lastEventId)
+        payloads.map(_.aspectDefinitions.get).flatten.length shouldBe 1
+        payloads.map(_.aspectDefinitions.get).flatten.head.id shouldBe ("testId2")
       }
     }
   }
@@ -676,7 +682,6 @@ class WebHookProcessorSpec extends ApiSpec {
     val server = createHookRoute(route)
 
     val hook = webHook.getOrElse(defaultWebHook).copy(url = "http://localhost:" + server.localAddress.getPort.toString + "/" + uuid.toString)
-    println(hook)
     param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
       status shouldEqual StatusCodes.OK
     }
