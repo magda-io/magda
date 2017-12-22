@@ -1,5 +1,5 @@
 export default {
-  id: "source-link-status",
+  id: "source-duplicate-collection",
   name: "Details about the downloadURL link status of a distribution",
   jsonSchema: require("@magda/registry-aspects/source-link-status.schema.json")
 };

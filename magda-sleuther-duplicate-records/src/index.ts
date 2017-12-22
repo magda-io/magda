@@ -6,7 +6,7 @@ import commonYargs from "@magda/sleuther-framework/dist/commonYargs";
 
 const ID = "sleuther-duplicate-records";
 
-const argv = commonYargs(ID, 6112, "http://localhost:6112");
+const argv = commonYargs(ID, 6115, "http://localhost:6115");
 
 function sleuthduplicateRecordss() {
     return sleuther({

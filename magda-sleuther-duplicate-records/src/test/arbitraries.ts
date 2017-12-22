@@ -6,7 +6,7 @@ import {
     arbFlatMap,
     recordArbWithDistArbs
 } from "@magda/typescript-common/dist/test/arbitraries";
-import urlsFromDataSet from "./urlsFromDataSet";
+import urlsFromDataSet from "@magda/typescript-common/src/test/urlsFromDataSet";
 import * as _ from "lodash";
 import * as URI from "urijs";
 

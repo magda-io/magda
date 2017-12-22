@@ -3,7 +3,6 @@ import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryC
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 //import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import { DuplicateRecordsAspect, DistURL } from "./duplicateRecordsAspectDef";
-import FTPHandler from "./FtpHandler";
 
 export var mochaObject: any = { isRunning: false };
 
@@ -14,8 +13,7 @@ export default async function onRecordFound(
     registry: Registry,
     retries: number = 5,
     baseRetryDelaySeconds: number = 1,
-    base429RetryDelaySeconds = 60,
-    ftpHandler: FTPHandler = new FTPHandler()
+    base429RetryDelaySeconds = 60
 ) {
     const distributions: Record[] =
         record.aspects["dataset-distributions"] &&
@@ -32,36 +30,35 @@ export default async function onRecordFound(
                 distribution.aspects &&
                 distribution.aspects["dcat-distribution-strings"]
             ) {
-                let distContainer: DistContainer[] = [];
-                distContainer.push({
-                    url: {
-                        url: null,
-                        type: null
+                const distContainer: DistContainer[] = [
+                    {
+                        url: distribution.aspects["dcat-distribution-strings"]
+                            .accessURL
+                            ? {
+                                  url: distribution.aspects[
+                                      "dcat-distribution-strings"
+                                  ].accessURL as string,
+                                  type: "accessURL" as "accessURL"
+                              }
+                            : { 
+                                url: null,
+                                type: "none" },
+                        id: distribution.id
                     },
-                    id: null
-                });
-                distContainer.push({
-                    url: {
-                        url: null,
-                        type: null
-                    },
-                    id: null
-                });
-
-                
-                distContainer[0].url = {
-                    url: distribution.aspects["dcat-distribution-strings"]
-                        .accessURL as string,
-                    type: "accessURL" as "accessURL"
-                } || { type: "none" };
-
-                distContainer[1].url = {
-                    url: distribution.aspects["dcat-distribution-strings"]
-                        .downloadURL as string,
-                    type: "downloadURL" as "downloadURL"
-                } || { type: "none" };
-
-                distContainer[0].id = distContainer[1].id = distribution.id;
+                    {
+                        url: distribution.aspects["dcat-distribution-strings"]
+                            .downloadURL
+                            ? {
+                                  url: distribution.aspects[
+                                      "dcat-distribution-strings"
+                                  ].downloadURL as string,
+                                  type: "downloadURL" as "downloadURL"
+                              }
+                            : { url: null,
+                                type: "none" },
+                        id: distribution.id
+                    }
+                ];
 
                 // adding 2 instances of distcontainer with the same url and same id just adds garbage to the db, so delete it if its the case.
                 if (
@@ -74,11 +71,11 @@ export default async function onRecordFound(
                 }
 
                 return distContainer;
+            } else {
+                throw new Error(
+                    "The distribution aspect has the following falsey properties: \n-aspects \nor \n-aspects[dcat-distribution-strings]\n"
+                );
             }
-
-            throw new Error(
-                "The distribution aspect has the following falsey properties: -aspects \nor \n-aspects[dcat-distribution-strings]\n"
-            );
         })
     );
 
@@ -93,25 +90,20 @@ export default async function onRecordFound(
 
     // Construct a datatype that represents the format of either an aspect or record (its an aspect representation atm) so that we can easily put it
     //into the database.
-    let keys = getKeys(groupedDistContainers);
-    var groups: DuplicateRecordsAspect[] = [];
+    const keys = Object.keys(groupedDistContainers);
+    const groups: DuplicateRecordsAspect[] = [];
 
     keys.forEach(function(key) {
-
         // its not classed as a duplicate if there is a bijection between an unique id and an unique url
         if (groupedDistContainers[key].length > 1) {
-            var duplicateRecordsAspect: DuplicateRecordsAspect = {
-                url: null,
-                ids: []
-            };
+            const dduplicateRecordsAspect: DuplicateRecordsAspect = {
+                url: key,
+                ids: groupedDistContainers[key].map(distContainer => {
+                    return distContainer.id;
+                })
+            }
 
-            duplicateRecordsAspect.url = key;
-
-            groupedDistContainers[key].forEach(function(groupedDistContainers) {
-                duplicateRecordsAspect.ids.push(groupedDistContainers.id);
-            });
-
-            groups.push(duplicateRecordsAspect);
+            groups.push(dduplicateRecordsAspect);
         }
     });
 
@@ -141,7 +133,3 @@ export interface DistContainer {
     url: DistURL;
     id: string;
 }
-
-/*interface duplicateRecordsSleuthingResult {
-    group: duplicateRecordsAspect;
-}*/
