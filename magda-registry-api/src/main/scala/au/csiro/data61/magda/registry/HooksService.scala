@@ -133,7 +133,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
           }
         }
         webHookActor ! WebHookActor.InvalidateWebhookCache
-        webHookActor ! WebHookActor.Process(invalidateHookCache = true, webHookId = Some(id))
+        webHookActor ! WebHookActor.Process(webHookId = Some(id))
         result
       }
     }

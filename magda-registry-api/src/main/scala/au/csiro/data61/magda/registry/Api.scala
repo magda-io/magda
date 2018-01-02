@@ -57,7 +57,7 @@ class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val co
     }
   }
 
-  webHookActor ! WebHookActor.Process(true, None)
+  webHookActor ! WebHookActor.Process(true)
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
   val routes = cors() {

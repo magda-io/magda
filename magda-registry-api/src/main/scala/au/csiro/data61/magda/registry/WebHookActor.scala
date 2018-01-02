@@ -18,7 +18,7 @@ import akka.stream.DelayOverflowStrategy
 import akka.stream.Attributes
 
 object WebHookActor {
-  case class Process(invalidateHookCache: Boolean = false, aspectIds: Option[List[String]] = None, webHookId: Option[String] = None)
+  case class Process(ignoreWaitingForResponse: Boolean = false, aspectIds: Option[List[String]] = None, webHookId: Option[String] = None)
   case class GetStatus(webHookId: String)
   case object InvalidateWebhookCache
 
@@ -80,45 +80,22 @@ object WebHookActor {
 
     def receive = {
       case InvalidateWebhookCache => setup
-      case Process(startup, aspectIds, webHookId) => {
-
-        //              val flattenedAspectIds = aspectIds.getOrElse(List()).toSet
-        //              val immediateHookAspectIds = (hook.config.aspects.getOrElse(Nil) ++ hook.config.optionalAspects.getOrElse(Nil)).toSet
-        //              val linkedHookAspectIds = (DB readOnly { implicit session =>
-        //                RecordPersistence.buildDereferenceMap(session, immediateHookAspectIds)
-        //              }).mapValues(_.).values
-        //              
-        //              val hookAspectIds = immediateHookAspectIds ++ linkedHookAspectIds
-        //              println("Batman " + linkedHookAspectIds)
-
-        //              if (flattenedAspectIds.isEmpty || hookAspectIds.isEmpty || !hookAspectIds.intersect(flattenedAspectIds).isEmpty) {
+      case Process(ignoreWaitingForResponse, aspectIds, webHookId) => {
         val actors = webHookId match {
           case None                 => webHookActors.values
           case Some(webHookIdInner) => webHookActors.get(webHookIdInner).toList
         }
 
         actors.foreach(actorRef =>
-          actorRef ! Process(startup, aspectIds))
+          actorRef ! Process(ignoreWaitingForResponse, aspectIds))
       }
       case GetStatus(webHookId) =>
-        println(webHookActors)
         webHookActors.get(webHookId) match {
           case None               => sender() ! WebHookActor.Status(None)
           case Some(webHookActor) => webHookActor forward WebHookActor.GetStatus
         }
     }
 
-    //    private def queryForAllWebHooks(): List[WebHook] = {
-    //      cachedWebhooks match {
-    //        case None =>
-    //          cachedWebhooks = Some(DB readOnly { implicit session =>
-    //            HookPersistence.getAll(session)
-    //          })
-    //          cachedWebhooks.get
-    //        case Some(inner) => inner
-    //
-    //      }
-    //    }
     private def queryForAllWebHooks(): List[WebHook] = {
       DB readOnly { implicit session =>
         HookPersistence.getAll(session)
@@ -146,17 +123,16 @@ object WebHookActor {
 
     private val indexQueue: SourceQueueWithComplete[Boolean] =
       Source.queue[Boolean](0, OverflowStrategy.dropNew)
-        //        .reduce((a, b) => a && b)
         .map { x =>
           count += 1
           x
         }
         .delay(1 seconds, OverflowStrategy.backpressure).withAttributes(Attributes.inputBuffer(1, 1)) // Make sure we only execute once per second to prevent sending an individual post for every event.
         .mapAsync(1) {
-          refetchWebHook =>
+          ignoreWaitingForResponse =>
             val webHook = getWebhook()
 
-            if (webHook.isWaitingForResponse.getOrElse(false)) {
+            if (!ignoreWaitingForResponse && webHook.isWaitingForResponse.getOrElse(false)) {
               log.info("Skipping WebHook {} as it's marked as waiting for response", webHook.id)
               Future.successful(false)
             } else {
@@ -185,7 +161,7 @@ object WebHookActor {
                       log.info("WebHook {} Processing {}-{}: DELIVERED", this.id, previousLastEvent, lastEvent)
 
                       if (previousLastEvent != lastEvent) {
-                        self ! Process(false)
+                        self ! Process()
                       }
                     }
                 }.recover {
@@ -204,8 +180,8 @@ object WebHookActor {
         .run()
 
     def receive = {
-      case Process(startup, _, _) => {
-        indexQueue.offer(startup)
+      case Process(ignoreWaitingForResponse, _, _) => {
+        indexQueue.offer(ignoreWaitingForResponse)
       }
       case GetStatus =>
         sender() ! Status(Some(count != 0))
