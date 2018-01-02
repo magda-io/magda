@@ -39,7 +39,7 @@ class SearchResults extends Component {
     return (
       <div className='search-results'>
         {this.getSummaryText()}
-        <ul className='list-unstyled'>
+        <ul className='mui-list--unstyled'>
         {
           this.props.searchResults.map((result, i)=>
             <li key={result.identifier} className='search-results__result'>

@@ -14,7 +14,7 @@ class Pagination extends Component {
     render(){
       let currentPage = this.props.currentPage;
       return (
-        <ul className='pagination__group list-unstyled'>
+        <ul className='pagination__group mui-list--unstyled'>
           {this.props.currentPage !== 1 &&
             <li className='pagination__start pagination__item'>
               <button className='pagination__btn btn' onClick={this.onClick.bind(this, 1)}>

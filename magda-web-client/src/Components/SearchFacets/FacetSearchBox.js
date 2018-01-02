@@ -128,7 +128,7 @@ class FacetSearchBox extends Component {
           </Form>
 
           {this.state.searchText.length > 0 &&
-            <ul className='facet-search-box__options list-unstyled' onKeyDown={this.handleKeyDown}>
+            <ul className='facet-search-box__options mui-list--unstyled' onKeyDown={this.handleKeyDown}>
               {this.props.options.map((option, i)=>
                   <li key={`${option.value}-${i}`}>
                       {this.props.renderOption(option, this.onClick,  null, (this.state.indexOfOptionOnFocus === i))}

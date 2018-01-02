@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './FacetHeader.css';
+import Button from 'muicss/lib/react/button';
 /**
   * Facet header component, contains a title of the facet and a reset button when there is a active facet
   */
@@ -44,7 +45,7 @@ class FacetHeader extends Component {
   render(){
     return (
       <div className='facet-header'>
-        <button className={`facet-header__title btn ${this.hasFilter() ? 'not-empty': ''}`} onClick={this.props.onClick}>{this.calculateTitle()}<span className='caret'></span></button>
+        <Button className={`${this.hasFilter() ? 'not-empty': ''}`} onClick={this.props.onClick}>{this.calculateTitle()}</Button>
       </div>
       );
   }

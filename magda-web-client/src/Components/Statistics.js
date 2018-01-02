@@ -24,7 +24,7 @@ export default function Statistics(props: {stats: Stats}){
     <div className='white-box statistics'>
       <div className='inner'>
 
-          <ul className='list-unstyled'>
+          <ul className='mui-list--unstyled'>
               <li>
                   <strong><span>{renderStats(stats.fetchDatasetCountError, stats.isFetchingDatasetCount, stats.datasetCount)}</span></strong>
                   discoverable datasets

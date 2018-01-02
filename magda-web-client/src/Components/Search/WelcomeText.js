@@ -14,7 +14,7 @@ class WelcomeText extends Component {
   }
   render(){
     return (<div className='welcome-text'> <div className='welcome-text__intro'>Try searching for</div>
-                <ul className='list-unstyled'>{config.exampleSearch.map(e=>
+                <ul className='mui-list--unstyled'>{config.exampleSearch.map(e=>
                       <li key={e}> <a href='#' onClick={this.onClick.bind(this, e)}>{e}</a></li>
                     )}
                 </ul>

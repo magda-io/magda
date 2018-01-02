@@ -5,6 +5,7 @@ import maxBy from 'lodash.maxby';
 import max from 'lodash.max';
 import min from 'lodash.min';
 import defined from '../../helpers/defined';
+import Button from 'muicss/lib/react/button';
 
 // the date range facet facet, extends facet component
 class FacetTemporal extends Component {
@@ -77,15 +78,15 @@ class FacetTemporal extends Component {
     }
 
     return (
-    <button type='button'
-            className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option btn-facet-date-option btn`}
+    <Button type='button'
+            className={`${this.checkActiveOption(option) ? 'is-active' : ''} btn-facet-option`}
             onClick={onClick.bind(this, option)}
             >
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>{option.value}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-check`}/></span>
       <span className='btn-facet-option__count'>{option.hitCount}</span>
-    </button>)
+    </Button>)
   }
 
 
@@ -124,10 +125,10 @@ class FacetTemporal extends Component {
                      hasQuery={this.props.hasQuery}
                      onClick={this.props.toggleFacet}/>
              {this.props.isOpen && <div className='clearfix facet-temporal facet-body'>
-               <ul className='list-unstyled list'>
-                <li><button className='btn btn-facet-option btn-facet-date-option' onClick={this.onResetDateTo}>Any end date </button></li>
+               <ul className='mui-list--unstyled list'>
+                <li><Button onClick={this.onResetDateTo}>Any end date </Button></li>
                  {that.props.options.map(o=><li key={o.value}>{that.renderOption(o, this.onToggleOption)}</li>)}
-                 <li><button className='btn btn-facet-option btn-facet-date-option' onClick={this.onResetDateFrom}>Any start date </button></li>
+                 <li><Button onClick={this.onResetDateFrom}>Any start date </Button></li>
                </ul>
              </div>
            }

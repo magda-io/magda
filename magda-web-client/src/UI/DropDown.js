@@ -29,10 +29,8 @@ class DropDown extends Component {
   render(){
     return (
       <Dropdown label={this.props.activeOption} >
-        <ul className='list-unstyled dropdown__options'>
           {this.props.options.map(o=>
-          <li key={o.id}><button className='btn dropdown__option-btn'  onClick={this.select.bind(this, o)}>{o.value}</button></li>)}
-        </ul>
+          <li key={o.id}><a onClick={this.select.bind(this, o)}>{o.value}</a></li>)}
       </Dropdown>
       );
   }

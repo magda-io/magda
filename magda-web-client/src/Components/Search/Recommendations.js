@@ -97,7 +97,7 @@ class Recommendations extends Component {
 
               </button>
               {this.state.isOpen &&
-                <ul className='list-unstyled search-recomendation__more-options-options'>
+                <ul className='mui-list--unstyled search-recomendation__more-options-options'>
                   {restOfOptions.map(o=>
                     <li key={o.value}>{this.renderOption(o)}</li>
                   )}

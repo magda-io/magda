@@ -6,6 +6,7 @@ import defined from '../../helpers/defined';
 import FacetSearchBox from './FacetSearchBox';
 import {config} from '../../config' ;
 import ToggleList from '../../UI/ToggleList';
+import Button from 'muicss/lib/react/button';
 
 // extends Facet class
 class FacetBasic extends Component {
@@ -51,9 +52,9 @@ class FacetBasic extends Component {
     let isActive = this.checkActiveOption(option);
 
     return(
-    <button type='button'
+    <Button type='button'
             ref={b=>{if(b != null && onFocus === true){b.focus()}}}
-            className={`${isActive ? 'is-active' : ''} btn-facet-option btn`}
+            className={`${isActive ? 'is-active' : ''} btn-facet-option`}
             onClick={onClick.bind(this, option)}
             title={option.value}>
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
@@ -61,7 +62,7 @@ class FacetBasic extends Component {
         {option.value}{' '}({option.hitCount})
         {(option.matched && !isActive) && <span className='btn-facet-option__recomended-badge'>*</span>}</span>
       <span className='btn-facet-option__action'><i className={`fa fa-check`}/></span>
-    </button>);
+    </Button>);
   }
 
   renderBox(){
@@ -78,9 +79,9 @@ class FacetBasic extends Component {
                                 onToggleOption={this.props.onToggleOption}
                                 searchFacet={this.props.searchFacet}
                                 />
-                <button className='btn btn-reset' onClick={this.props.onResetFacet}> Clear </button>
+                <Button onClick={this.props.onResetFacet}> Clear </Button>
               </div>
-               <ul className='list-unstyled'>
+               <ul className='mui-list--unstyled'>
                  {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
                  {this.props.options.length === 0 && <li className='no-data'>No {this.props.id}</li>}
                </ul>

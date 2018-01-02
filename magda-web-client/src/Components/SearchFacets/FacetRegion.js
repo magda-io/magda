@@ -7,7 +7,7 @@ import RegionMap from './RegionMap';
 import FacetSearchBox from './FacetSearchBox';
 import defined from '../../helpers/defined';
 import RegionSummray from './RegionSummary';
-
+import Button from 'muicss/lib/react/button';
 /*
 * the region (location) facet facet, extends Facet class
 */
@@ -114,7 +114,7 @@ class FacetRegion extends Component {
                                     onToggleOption={this.onToggleOption}
                                     options={this.props.facetSearchResults}
                                     searchFacet={this.props.searchFacet}/>
-                    <button className='btn btn-reset' onClick={this.props.onResetFacet}> Clear </button>
+                    <Button onClick={this.props.onResetFacet}> Clear </Button>
                     {defined(this.props.regionMapping) &&
                                 <DropDown activeOption={this.getActiveRegionType()}
                                           options={this.getDropDownOptions()}
