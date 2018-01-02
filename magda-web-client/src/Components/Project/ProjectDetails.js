@@ -9,6 +9,7 @@ import ReactDocumentTitle from "react-document-title";
 import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
 import CrappyChat from "../../Components/CrappyChat/CrappyChat";
+import Button from 'muicss/lib/react/button';
 
 class ProjectDetails extends Component {
   componentWillMount() {
@@ -23,7 +24,7 @@ class ProjectDetails extends Component {
 
   renderToggleButton(){
     if(this.props.user && this.props.user.isAdmin){
-      return <button className='project-status-toggle btn btn-primary' onClick={()=>this.props.updateProjectStatus(this.props.project)}>{this.props.project.status === 'open' ? 'Close project' : 'Open project'}</button>
+      return <Button onClick={()=>this.props.updateProjectStatus(this.props.project)}>{this.props.project.status === 'open' ? 'Close project' : 'Open project'}</Button>
     }
       return null
   }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import './OverviewBox.css';
+import Button from 'muicss/lib/react/button';
 
 class OverviewBox extends Component {
     constructor(props){
@@ -28,7 +29,7 @@ class OverviewBox extends Component {
     }
 
     renderToggle(isExpanded){
-      return <button onClick={this.toggleExpand} className='overview-toggle btn btn-reset'><span className='sr-only'>{isExpanded ? 'show less' : 'show more'}</span><i className={`fa fa-chevron-${isExpanded ? 'up' : 'down'}`} aria-hidden='true'></i></button>;
+      return <Button onClick={this.toggleExpand}><span className='sr-only'>{isExpanded ? 'show less' : 'show more'}</span><i className={`fa fa-chevron-${isExpanded ? 'up' : 'down'}`} aria-hidden='true'></i></Button>;
     }
 
     renderContent(content){

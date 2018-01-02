@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import renderDistribution from '../../Components/Distribution';
 import './RecordDetails.css';
 import type {ParsedDataset} from '../../helpers/record';
+import Button from 'muicss/lib/react/button';
 
 type Props = {
   dataset: ParsedDataset,
@@ -42,7 +43,7 @@ class DatasetDetails extends Component<{}, Props, State> {
                     <OverviewBox content={source}/>
                   </div>
                   <div className='dataset-details-source'>
-                      <h3 className='clearfix'><span className='section-heading'>Data and APIs</span><button className='preview-toggle btn btn-default' onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</button></h3>
+                      <h3 className='clearfix'><span className='section-heading'>Data and APIs</span><Button onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</Button></h3>
                       <div className='clearfix'>{dataset.distributions.map(s=> renderDistribution(s, datasetId, this.state.showPreview))}</div>
                   </div>
                   <div className='dataset-details-temporal-coverage'>

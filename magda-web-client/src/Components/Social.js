@@ -8,7 +8,7 @@ export default function Social() {
   return (
     <div className='social'>
       <div>
-        <a className='twitter-share-button btn btn-default' href={`https://twitter.com/intent/tweet?url=${url}`}
+        <a className='twitter-share-button mui-btn mui-btn--primary' href={`https://twitter.com/intent/tweet?url=${url}`}
         data-size='large'><i className='fa fa-twitter' aria-hidden='true'></i>Tweet</a>
       </div>
     </div>

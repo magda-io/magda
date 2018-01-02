@@ -11,6 +11,8 @@ import { validateFields, resetProjectFields } from '../../actions/projectActions
 import { fetchDatasetFromRegistry } from '../../actions/recordActions';
 import Notification from '../../UI/Notification';
 import { Link } from 'react-router-dom';
+import Button from 'muicss/lib/react/button';
+
 import {
   Redirect,
 } from 'react-router-dom';
@@ -108,7 +110,7 @@ class CreateProject extends Component {
           <h2>Datasets</h2>
             <div>
               <h3><Link className={`${this.datasetActive() ? 'dataset-active' : 'dataset-non-active'}`} to={`/dataset/${encodeURIComponent(this.props.dataset.identifier)}`}>{this.props.dataset.title}</Link></h3>
-              <button onClick={()=>this.toggleDataset()} className='btn btn-primary'>{this.datasetActive() ? 'Remove' : 'Add'}</button>
+              <Button onClick={()=>this.toggleDataset()}>{this.datasetActive() ? 'Remove' : 'Add'}</Button>
             </div>
       </div>
     }

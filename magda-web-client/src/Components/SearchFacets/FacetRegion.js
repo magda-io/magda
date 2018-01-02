@@ -75,8 +75,7 @@ class FacetRegion extends Component {
     renderOption(option, onClick, optionMax, onFocus){
      let regionType = option.regionType;
       return (
-            <button type='button'
-                    ref={b=>{if(b != null && onFocus === true){b.focus()}}}
+            <Button ref={b=>{if(b != null && onFocus === true){b.focus()}}}
                     className='btn-facet-option btn btn-facet-option__location'
                     onClick={onClick.bind(this, option)}
                     title={option.regionName}>
@@ -85,7 +84,7 @@ class FacetRegion extends Component {
                 {(defined(regionType) && defined(this.props.regionMapping[regionType])) ?
                   this.props.regionMapping[regionType].description : ''}
               </span>
-            </button>);
+            </Button>);
     }
 
     getDropDownOptions(){

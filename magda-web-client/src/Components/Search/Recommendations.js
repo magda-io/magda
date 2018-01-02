@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import find from 'lodash.find';
 import './Recommendations.css';
+import Button from 'muicss/lib/react/button';
 
 type Option = {
   value: string,
@@ -69,10 +70,10 @@ class Recommendations extends Component {
   }
 
   renderOption(option: Option){
-    return <button className='btn-facet-option btn' onClick={this.onClick.bind(this, option)}>
-            <span className='btn-facet-option__name'>{option.value}</span>
-            <span className='btn-facet-option__count'>{option.hitCount}</span>
-          </button>
+    return <Button onClick={this.onClick.bind(this, option)}>
+            <span>{option.value}</span>
+            <span>{option.hitCount}</span>
+          </Button>
   }
   render() {
     let suggestedOptions =
@@ -85,17 +86,15 @@ class Recommendations extends Component {
         <div className={`search-recomendation clearfix ${this.state.isVisible ? '' : 'hidden'}`} >
             <div className='search-recomendation__main'>
               {this.props.description}
-              <button className='search-recomendation__option-btn btn'
-                      onClick={this.onClick.bind(this, topSugguestion)}>
+              <Button onClick={this.onClick.bind(this, topSugguestion)}>
                       {topSugguestion.value}
-              </button> ?
+              </Button> ?
             </div>
           {restOfOptions.length > 0 &&
             <div className='search-recomendation__more-options'>
-              <button onClick={this.onToggle} className='search-recomendation__more-option-btn btn'>
+              <Button onClick={this.onToggle}>
                 More
-
-              </button>
+              </Button>
               {this.state.isOpen &&
                 <ul className='mui-list--unstyled search-recomendation__more-options-options'>
                   {restOfOptions.map(o=>

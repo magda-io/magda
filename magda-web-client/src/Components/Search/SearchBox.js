@@ -145,7 +145,7 @@ class SearchBox extends Component {
                 </label>
               </td>
               <td width='30px'>
-                <Button onClick={this.onClickSearch} type='button' variant="flat" ><i className='fa fa-search' aria-hidden='true'></i><span className='sr-only'>submit search</span></Button>
+                <Button onClick={this.onClickSearch} variant="flat" ><i className='fa fa-search' aria-hidden='true'></i><span className='sr-only'>submit search</span></Button>
               </td>
               </tr>
               </tbody>

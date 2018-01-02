@@ -5,7 +5,7 @@ import logo from './assets/logo.svg';
 import { config } from './config.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
+import Button from 'muicss/lib/react/button';
 
 import SearchBox from './Components/Search/SearchBox';
 import AccountNavbar from './Components/Account/AccountNavbar';
@@ -129,14 +129,13 @@ class AppContainer extends React.Component {
                 </Small>
                 <ExtraSmall>
                   <div className='mobile-nav'>
-                    <button
-                      className='btn navbar-toggle'
+                    <Button
                       onClick={() => this.toggleMenu()}
                     >
                       {' '}<span className='sr-only'>Toggle navigation</span>
                       {' '}MENU
                       {' '}
-                    </button>
+                    </Button>
                     <a className='navbar-brand' href='/'>
                       <img
                         className='logo'
