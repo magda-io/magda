@@ -95,7 +95,7 @@ class RecordHandler extends React.Component {
                </div>
              </div>
 
-             <Tabs list={tabList} baseUrl={baseUrlDistribution}/>
+             <Tabs list={tabList} baseUrl={baseUrlDistribution} onTabChange={(tab)=>{console.log(tab)}}/>
              <div className='tab-content'>
                <Switch>
                  <Route path='/dataset/:datasetId/distribution/:distributionId/details' component={DistributionDetails} />
@@ -137,7 +137,7 @@ class RecordHandler extends React.Component {
                  </div>
                </div>
 
-               <Tabs list={datasetTabs} baseUrl={baseUrlDataset}/>
+               <Tabs list={datasetTabs} baseUrl={baseUrlDataset} onTabChange={(tab)=>{console.log(tab)}}/>
                <div className='tab-content'>
                  <Switch>
                    <Route path='/dataset/:datasetId/details' component={DatasetDetails} />
