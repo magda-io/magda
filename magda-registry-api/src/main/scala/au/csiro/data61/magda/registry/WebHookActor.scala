@@ -37,78 +37,91 @@ object WebHookActor {
     import context.dispatcher
 
     private var webHookActors = Map[String, ActorRef]()
-    private var cachedWebhooks: Option[List[WebHook]] = None
+    //    private var cachedWebhooks: Option[List[WebHook]] = None
     private implicit val scheduler = this.context.system.scheduler
 
-    def receive = {
-      case InvalidateWebhookCache => cachedWebhooks = None
-      case Process(startup, aspectIds, webHookId) => {
-        Await.result(ErrorHandling.retry(() => Future { queryForAllWebHooks() }, 30 seconds, 10, (retryCount, e) => log.error(e, "Failed to get webhooks, {} retries left until I crash", retryCount))
-          .recover {
-            case (e: Throwable) =>
-              log.error(e, "Failed to get webhooks for processing")
-              // This is a massive deal. Let it crash and let kubernetes deal with it.
-              System.exit(1)
-              throw e
-          }
-          .map { webHooks =>
-            // Create a child actor for each WebHook that doesn't already have one.
-            // Send a `Process` message to all existing and new WebHook actors.
-            val currentHooks = webHooks.filter(_.active).map(_.id.get).toSet
-            val existingHooks = webHookActors.keySet
+    def setup =
+      Await.result(ErrorHandling.retry(() => Future { queryForAllWebHooks() }, 30 seconds, 10, (retryCount, e) => log.error(e, "Failed to get webhooks, {} retries left until I crash", retryCount))
+        .recover {
+          case (e: Throwable) =>
+            log.error(e, "Failed to get webhooks for processing")
+            // This is a massive deal. Let it crash and let kubernetes deal with it.
+            System.exit(1)
+            throw e
+        }
+        .map { webHooks =>
+          // Create a child actor for each WebHook that doesn't already have one.
+          // Send a `Process` message to all existing and new WebHook actors.
+          val currentHooks = webHooks.filter(_.active).map(_.id.get).toSet
+          val existingHooks = webHookActors.keySet
 
-            // Shut down actors for WebHooks that no longer exist
-            val obsoleteHooks = existingHooks.diff(currentHooks)
-            obsoleteHooks.foreach { id =>
-              log.info("Removing old web hook actor for {}.", id)
-              this.webHookActors.get(id).get ! "kill"
-              this.webHookActors -= id
-            }
-
-            // Create actors for new WebHooks and post to all actors (new and old).
-            webHooks.filter(_.active).filter(hook => webHookId.isEmpty || hook.id == webHookId).foreach { hook =>
-              val id = hook.id.get
-              val actorRef = this.webHookActors.get(id) match {
-                case Some(actorRef) => actorRef
-                case None => {
-                  log.info("Creating new web hook actor for {}.", id)
-                  val actorRef = WebHookActor.createWebHookActor(context.system, registryApiBaseUrl, hook)
-                  this.webHookActors += (id -> actorRef)
-                  actorRef
-                }
+          // Shut down actors for WebHooks that no longer exist
+          val obsoleteHooks = existingHooks.diff(currentHooks)
+          obsoleteHooks.foreach { id =>
+            log.info("Removing old web hook actor for {}.", id)
+            this.webHookActors.get(id).get ! "kill"
+            this.webHookActors -= id
+          } // Create actors for new WebHooks and post to all actors (new and old).
+          webHooks.filter(_.active).foreach { hook =>
+            val id = hook.id.get
+            val actorRef = this.webHookActors.get(id) match {
+              case Some(actorRef) => actorRef
+              case None => {
+                log.info("Creating new web hook actor for {}.", id)
+                val actorRef = WebHookActor.createWebHookActor(context.system, registryApiBaseUrl, hook)
+                this.webHookActors += (id -> actorRef)
+                actorRef
               }
-
-//              val flattenedAspectIds = aspectIds.getOrElse(List()).toSet
-//              val immediateHookAspectIds = (hook.config.aspects.getOrElse(Nil) ++ hook.config.optionalAspects.getOrElse(Nil)).toSet
-//              val linkedHookAspectIds = (DB readOnly { implicit session =>
-//                RecordPersistence.buildDereferenceMap(session, immediateHookAspectIds)
-//              }).mapValues(_.).values
-//              
-//              val hookAspectIds = immediateHookAspectIds ++ linkedHookAspectIds
-//              println("Batman " + linkedHookAspectIds)
-
-//              if (flattenedAspectIds.isEmpty || hookAspectIds.isEmpty || !hookAspectIds.intersect(flattenedAspectIds).isEmpty) {
-                actorRef ! Process(startup, aspectIds)
-//              }
             }
-          }, 10 minutes)
+          }
+        }, 10 minutes)
+
+    setup
+
+    def receive = {
+      case InvalidateWebhookCache => setup
+      case Process(startup, aspectIds, webHookId) => {
+
+        //              val flattenedAspectIds = aspectIds.getOrElse(List()).toSet
+        //              val immediateHookAspectIds = (hook.config.aspects.getOrElse(Nil) ++ hook.config.optionalAspects.getOrElse(Nil)).toSet
+        //              val linkedHookAspectIds = (DB readOnly { implicit session =>
+        //                RecordPersistence.buildDereferenceMap(session, immediateHookAspectIds)
+        //              }).mapValues(_.).values
+        //              
+        //              val hookAspectIds = immediateHookAspectIds ++ linkedHookAspectIds
+        //              println("Batman " + linkedHookAspectIds)
+
+        //              if (flattenedAspectIds.isEmpty || hookAspectIds.isEmpty || !hookAspectIds.intersect(flattenedAspectIds).isEmpty) {
+        val actors = webHookId match {
+          case None                 => webHookActors.values
+          case Some(webHookIdInner) => webHookActors.get(webHookIdInner).toList
+        }
+
+        actors.foreach(actorRef =>
+          actorRef ! Process(startup, aspectIds))
       }
       case GetStatus(webHookId) =>
+        println(webHookActors)
         webHookActors.get(webHookId) match {
           case None               => sender() ! WebHookActor.Status(None)
           case Some(webHookActor) => webHookActor forward WebHookActor.GetStatus
         }
     }
 
+    //    private def queryForAllWebHooks(): List[WebHook] = {
+    //      cachedWebhooks match {
+    //        case None =>
+    //          cachedWebhooks = Some(DB readOnly { implicit session =>
+    //            HookPersistence.getAll(session)
+    //          })
+    //          cachedWebhooks.get
+    //        case Some(inner) => inner
+    //
+    //      }
+    //    }
     private def queryForAllWebHooks(): List[WebHook] = {
-      cachedWebhooks match {
-        case None =>
-          cachedWebhooks = Some(DB readOnly { implicit session =>
-            HookPersistence.getAll(session)
-          })
-          cachedWebhooks.get
-        case Some(inner) => inner
-
+      DB readOnly { implicit session =>
+        HookPersistence.getAll(session)
       }
     }
   }

@@ -25,20 +25,6 @@ import spray.json.JsonParser
 import java.util.UUID
 
 class WebHookProcessorSpec extends ApiSpec {
-  implicit val timeout = Timeout(5 seconds)
-
-  private def waitUntilDone(actor: ActorRef) = {
-    //    actor ! WebHookActor.Process()
-
-    val start = System.currentTimeMillis()
-    while (System.currentTimeMillis < start + 2000 && Await.result(actor ? WebHookActor.GetStatus("test"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing == Some(false)) {
-
-    }
-
-    blockUntil("2") { () =>
-      Await.result(actor ? WebHookActor.GetStatus("test"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing == Some(false)
-    }
-  }
 
   it("includes aspectDefinitions if events modified them") { param =>
     testWebHook(param, None) { (payloads, actor) =>
@@ -47,7 +33,7 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      waitUntilDone(actor)
+      Util.waitUntilDone(actor, "test")
 
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 1
@@ -64,7 +50,7 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      waitUntilDone(actor)
+      Util.waitUntilDone(actor, "test")
 
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 1
@@ -94,7 +80,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
       //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
       //        result1.statusCode should be(Some(StatusCodes.OK))
-      waitUntilDone(actor)
+      Util.waitUntilDone(actor, "test")
 
       payloads.clear()
 
@@ -105,7 +91,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
       //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
       //        result2.statusCode should be(Some(StatusCodes.OK))
-      waitUntilDone(actor)
+      Util.waitUntilDone(actor, "test")
 
       payloads.length shouldBe 1
       payloads(0).events.get.length shouldBe 1
@@ -135,7 +121,7 @@ class WebHookProcessorSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
       }
 
-      waitUntilDone(actor)
+      Util.waitUntilDone(actor, "test")
       payloads.length shouldBe 1
       payloads.clear()
 
@@ -159,7 +145,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
       //        val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
       //        result.statusCode should be(Some(StatusCodes.OK))
-      waitUntilDone(actor)
+      Util.waitUntilDone(actor, "test")
 
       //      payloads.length shouldBe 1
       val events = payloads.foldLeft(List[RegistryEvent]())((a, payload) => payload.events.getOrElse(Nil) ++ a)
@@ -201,7 +187,7 @@ class WebHookProcessorSpec extends ApiSpec {
   //
   //      //        val result = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
   //      //        result.statusCode should be(Some(StatusCodes.OK))
-  //      waitUntilDone(actor)
+  //      Util.waitUntilDone(actor, "test")
   //
   //      //      payloads.length shouldBe 1
   //      val events = payloads.foldLeft(List[RegistryEvent]())((a, payload) => payload.events.getOrElse(Nil) ++ a)
@@ -256,7 +242,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result1.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.clear()
 
@@ -267,7 +253,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -316,7 +302,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result1.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.clear()
 
@@ -327,7 +313,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -381,7 +367,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result1.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.clear()
 
@@ -392,7 +378,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -446,7 +432,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result1.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.clear()
 
@@ -457,7 +443,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -511,7 +497,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result1.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.clear()
 
@@ -522,7 +508,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.statusCode should be(Some(StatusCodes.OK))
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -546,7 +532,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result1.deferredResponse should be(true)
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -562,7 +548,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.statusCode should be(None)
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
       }
@@ -577,7 +563,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result1.deferredResponse should be(true)
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -592,7 +578,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.deferredResponse should be(true)
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 2
         payloads(1).events.get.length shouldBe 1
@@ -612,7 +598,7 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result1.deferredResponse should be(true)
-        waitUntilDone(actor)
+        Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
         payloads(0).events.get.length shouldBe 1
@@ -622,9 +608,9 @@ class WebHookProcessorSpec extends ApiSpec {
 
         val lastEventId = payloads(0).lastEventId
         payloads.clear()
-        
+
         println("CLEAR")
-        
+
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
         param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -637,8 +623,8 @@ class WebHookProcessorSpec extends ApiSpec {
 
         //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
         //        result2.deferredResponse should be(true)
-        waitUntilDone(actor)
-        
+        Util.waitUntilDone(actor, "test")
+
         println(payloads.map(_.events.get).flatten)
 
         payloads.length should be > (0)
@@ -686,7 +672,7 @@ class WebHookProcessorSpec extends ApiSpec {
       status shouldEqual StatusCodes.OK
     }
 
-    val actor = param.webHookActorProbe
+    val actor = param.webHookActor
 
     try {
       testCallback(payloads, actor)
@@ -725,25 +711,5 @@ class WebHookProcessorSpec extends ApiSpec {
     }
 
     serverBinding.get
-  }
-
-  def blockUntil(explain: String)(predicate: () => Boolean): Unit = {
-
-    var backoff = 0
-    var done = false
-
-    while (backoff <= 16 && !done) {
-      if (backoff > 0) Thread.sleep(200 * backoff)
-      backoff = backoff + 1
-      try {
-        done = predicate()
-      } catch {
-        case e: Throwable =>
-          println("problem while testing predicate")
-          e.printStackTrace()
-      }
-    }
-
-    require(done, s"Failed waiting on: $explain")
   }
 }

@@ -38,7 +38,7 @@ import scala.concurrent.duration._
 import akka.pattern.gracefulStop
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
-  case class FixtureParam(api: Api, webHookActorProbe: ActorRef, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher)
+  case class FixtureParam(api: Api, webHookActor: ActorRef, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher)
 
   val databaseUrl = Option(System.getenv("npm_package_config_databaseUrl")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
