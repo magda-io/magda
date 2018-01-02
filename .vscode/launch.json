@@ -58,7 +58,6 @@
                 "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
             },
             "runtimeArgs": [
-                //"${workspaceRoot}/magda-sleuther-framework/src/index.ts",
                 "src/index.ts"
             ],
             "args": [

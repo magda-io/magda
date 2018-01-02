@@ -1,6 +1,6 @@
 {
   "name": "@magda/sleuther-summarizer",
-  "description": "MAGDA Broken Link Sleuther",
+  "description": "MAGDA Summarizer Sleuther",
   "version": "0.0.32-0",
   "scripts": {
     "build": "npm run compile",
@@ -49,7 +49,7 @@
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-sleuther-broken-link",
+      "name": "data61/magda-sleuther-summarizer",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

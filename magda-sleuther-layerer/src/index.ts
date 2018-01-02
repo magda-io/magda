@@ -7,7 +7,7 @@ const ID = "sleuther-summarizer";
 
 const argv = commonYargs(ID, 6114, "http://localhost:6114");
 
-function sleuthBrokenLinks() {
+function sleuthLayerer() {
     return sleuther({
         argv,
         id: ID,
@@ -20,7 +20,7 @@ function sleuthBrokenLinks() {
     });
 }
 
-sleuthBrokenLinks().catch(e => {
+sleuthLayerer().catch(e => {
     console.error("Error:" + e.message, e);
     process.exit(1);
 });
