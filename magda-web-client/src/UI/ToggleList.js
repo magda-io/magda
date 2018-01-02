@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import './ToggleList.css';
+import Button from 'muicss/lib/react/button';
+
 class ToggleList extends Component {
     constructor(props) {
       super(props);
@@ -24,10 +26,9 @@ class ToggleList extends Component {
                 {list.slice(0, size).map(o=><li key={this.props.getKey(o)}>{this.props.renderFunction(o)}</li>)}
                 {list.length - tempSize > 0 &&
                   <li>
-                    <button onClick={this.onClick}
-                          className='btn toggle-list__toggle-expand-btn'>
+                    <Button onClick={this.onClick}>
                            {this.state.isExpanded ? `Show less` : `+ Show ${list.length - tempSize} more`}
-                    </button>
+                    </Button>
                   </li>
                 }
               </ul>

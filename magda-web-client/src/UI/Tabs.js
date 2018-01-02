@@ -4,12 +4,12 @@ import './Tabs.css';
 
 function Tabs(props) {
   return (
-      <div className='tabs'>
-            <ul className='nav nav-tabs container'>
+      <div className='mui-tabs__bar'>
+            <ul className='mui-tabs__bar'>
                   {props.list.filter(i=>i.isActive).map(item=>
                   <li role='presentation'
                       key={item.id}>
-                      <NavLink activeClassName='active'
+                      <NavLink activeClassName='mui--is-active'
                             to={`${props.baseUrl}/${item.id}`}>
                             {item.name}
                       </NavLink>
