@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
+export const iconTypes = ['Default', 'CSV', 'DOC', 'DOCX', 'HTML', 'JSON', 'KML', 'PDF', 'TXT', 'XLS','XLSX', 'ZIP'];
 class CustomIcons extends Component {
     getIcon(name, imageUrl){
         if(imageUrl){
           return imageUrl
         }
-        const iconTypes = ['Default', 'CSV', 'DOC', 'DOCX', 'HTML', 'JSON', 'KML', 'PDF', 'TXT', 'XLS','XLSX', 'ZIP'];
         let type = 0;
         if(iconTypes.indexOf(name) > 0){
         type = iconTypes.indexOf(name)

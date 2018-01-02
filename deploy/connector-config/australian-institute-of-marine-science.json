@@ -1,5 +1,6 @@
 {
     "type": "magda-csw-connector",
+    "id": "aims",
     "name": "Australian Institute of Marine Science",
     "sourceUrl": "http://data.aims.gov.au/geonetwork/srv/eng/csw",
     "pageSize": 100,

@@ -6,5 +6,6 @@ const identifier = jsonpath.value(dataset.json, '$.fileIdentifier[*].CharacterSt
 return {
     type: 'csw-distribution',
     url: csw.getRecordByIdUrl(identifier),
+    id: csw.id,
     name: csw.name
 };

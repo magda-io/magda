@@ -1,5 +1,6 @@
 {
     "type": "magda-csw-connector",
+    "id": "metoc",
     "name": "Navy Meteorology and Oceanography (METOC) ",
     "sourceUrl": "http://www.metoc.gov.au/geonetwork/srv/en/csw",
     "pageSize": 100,

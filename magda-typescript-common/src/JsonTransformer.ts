@@ -1,5 +1,6 @@
 import { AspectDefinition, Record } from './generated/registry/api';
 import AspectBuilder from './AspectBuilder';
+import ConnectorRecordId from './ConnectorRecordId';
 import createServiceError from './createServiceError';
 
 /**
@@ -7,7 +8,7 @@ import createServiceError from './createServiceError';
  * A transformer takes source data and transforms it to registry records and aspects.
  */
 export default abstract class JsonTransformer {
-    private libraries: object;
+    private sourceId: string;
     private datasetAspectBuilders: AspectBuilder[];
     private distributionAspectBuilders: AspectBuilder[];
     private organizationAspectBuilders: AspectBuilder[];
@@ -16,12 +17,13 @@ export default abstract class JsonTransformer {
     private distributionAspects: CompiledAspects;
 
     constructor({
+        sourceId,
         libraries = {},
         datasetAspectBuilders = [],
         distributionAspectBuilders = [],
         organizationAspectBuilders = []
     }: JsonTransformerOptions) {
-        this.libraries = libraries;
+        this.sourceId = sourceId;
         this.datasetAspectBuilders = datasetAspectBuilders.slice();
         this.distributionAspectBuilders = distributionAspectBuilders.slice();
         this.organizationAspectBuilders = organizationAspectBuilders.slice();
@@ -61,7 +63,7 @@ export default abstract class JsonTransformer {
     organizationJsonToRecord(jsonOrganization: object): Record {
         this.organizationAspects.parameters.organization = jsonOrganization;
 
-        const id = this.getIdFromJsonOrganization(jsonOrganization);
+        const id = this.getIdFromJsonOrganization(jsonOrganization, this.sourceId);
         const name = this.getNameFromJsonOrganization(jsonOrganization);
         return this.jsonToRecord(id, name, jsonOrganization, this.organizationAspects);
     }
@@ -69,7 +71,7 @@ export default abstract class JsonTransformer {
     datasetJsonToRecord(jsonDataset: object): Record {
         this.datasetAspects.parameters.dataset = jsonDataset;
 
-        const id = this.getIdFromJsonDataset(jsonDataset);
+        const id = this.getIdFromJsonDataset(jsonDataset, this.sourceId);
         const name = this.getNameFromJsonDataset(jsonDataset);
         return this.jsonToRecord(id, name, jsonDataset, this.datasetAspects);
     }
@@ -78,7 +80,7 @@ export default abstract class JsonTransformer {
         this.distributionAspects.parameters.dataset = jsonDataset;
         this.distributionAspects.parameters.distribution = jsonDistribution;
 
-        const id = this.getIdFromJsonDistribution(jsonDistribution, jsonDataset);
+        const id = this.getIdFromJsonDistribution(jsonDistribution, jsonDataset, this.sourceId);
         const name = this.getNameFromJsonDistribution(jsonDistribution, jsonDataset);
         return this.jsonToRecord(id, name, jsonDistribution, this.distributionAspects);
     }
@@ -105,15 +107,15 @@ export default abstract class JsonTransformer {
         ]);
     }
 
-    abstract getIdFromJsonOrganization(jsonOrganization: object): string;
-    abstract getIdFromJsonDataset(jsonDataset: object): string;
-    abstract getIdFromJsonDistribution(jsonDistribution: object, jsonDataset: object): string;
+    abstract getIdFromJsonOrganization(jsonOrganization: any, sourceId: string): ConnectorRecordId;
+    abstract getIdFromJsonDataset(jsonDataset: any, sourceId: string): ConnectorRecordId;
+    abstract getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any, sourceId: string): ConnectorRecordId;
 
-    abstract getNameFromJsonOrganization(jsonOrganization: object): string;
-    abstract getNameFromJsonDataset(jsonDataset: object): string;
-    abstract getNameFromJsonDistribution(jsonDistribution: object, jsonDataset: object): string;
+    abstract getNameFromJsonOrganization(jsonOrganization: any): string;
+    abstract getNameFromJsonDataset(jsonDataset: any): string;
+    abstract getNameFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string;
 
-    private jsonToRecord(id: string, name: string, json: any, aspects: CompiledAspects): Record {
+    private jsonToRecord(id: ConnectorRecordId, name: string, json: any, aspects: CompiledAspects): Record {
         const problems: ProblemReport[] = [];
 
         function reportProblem(title: string, message?: string, additionalInfo?: any) {
@@ -147,7 +149,7 @@ export default abstract class JsonTransformer {
         }
 
         return {
-            id: id,
+            id: id.toString(),
             name: name,
             aspects: generatedAspects
         };
@@ -181,7 +183,8 @@ function buildersToCompiledAspects(builders: AspectBuilder[], setupParameters: B
 }
 
 export interface JsonTransformerOptions {
-    libraries: object,
+    sourceId: string,
+    libraries?: object,
     datasetAspectBuilders?: AspectBuilder[],
     distributionAspectBuilders?: AspectBuilder[],
     organizationAspectBuilders?: AspectBuilder[],

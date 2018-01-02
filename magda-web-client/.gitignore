@@ -13,3 +13,4 @@ npm-debug.log
 
 # compiled css files
 *.css
+.out

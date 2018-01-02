@@ -2,8 +2,6 @@ import React from 'react';
 import ReactTable from 'react-table';
 import './ReactTable.css';
 
-
-
 function DataPreviewTable(
   props: {
       data: {

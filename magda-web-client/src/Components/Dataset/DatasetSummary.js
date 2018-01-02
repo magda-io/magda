@@ -2,10 +2,9 @@
 import React, { Component } from 'react';
 import MarkdownViewer from '../../UI/MarkdownViewer';
 import defined from '../../helpers/defined';
-// import Star from '../../UI/Star';
 import ToggleList from '../../UI/ToggleList';
 import QualityIndicator from '../../UI/QualityIndicator';
-import renderDistribution from '../../UI/Distribution';
+import renderDistribution from '../../Components/Distribution';
 import './DatasetSummary.css';
 import { Link } from 'react-router-dom';
 
@@ -27,7 +26,6 @@ export default class DatasetSummary extends Component {
     const self: any = this;
 
     self.onClick = this.onClick.bind(this);
-    // self.onClickStar = this.onClickStar.bind(this);
     this.state ={
       tagsExpanded: false,
       isFav: false

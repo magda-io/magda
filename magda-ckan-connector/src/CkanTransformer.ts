@@ -1,3 +1,4 @@
+import ConnectorRecordId from "@magda/typescript-common/dist/ConnectorRecordId";
 import JsonTransformer, { JsonTransformerOptions } from '@magda/typescript-common/dist/JsonTransformer';
 
 export default class CkanTransformer extends JsonTransformer {
@@ -5,16 +6,16 @@ export default class CkanTransformer extends JsonTransformer {
         super(options);
     }
 
-    getIdFromJsonOrganization(jsonOrganization: any): string {
-        return jsonOrganization.id;
+    getIdFromJsonOrganization(jsonOrganization: any, sourceId: string): ConnectorRecordId {
+        return new ConnectorRecordId(jsonOrganization.id, "Organization", sourceId);
     }
 
-    getIdFromJsonDataset(jsonDataset: any): string {
-        return jsonDataset.id;
+    getIdFromJsonDataset(jsonDataset: any, sourceId: string): ConnectorRecordId {
+        return new ConnectorRecordId(jsonDataset.id, "Dataset", sourceId);
     }
 
-    getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string {
-        return jsonDistribution.id;
+    getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any, sourceId: string): ConnectorRecordId {
+        return new ConnectorRecordId(jsonDistribution.id, "Distribution", sourceId);
     }
 
     getNameFromJsonOrganization(jsonOrganization: any): string {

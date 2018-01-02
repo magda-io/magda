@@ -6,7 +6,7 @@ import OverviewBox from '../../UI/OverviewBox';
 import Social from '../../Components/Social';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import renderDistribution from '../../UI/Distribution';
+import renderDistribution from '../../Components/Distribution';
 import './RecordDetails.css';
 import type {ParsedDataset} from '../../helpers/record';
 

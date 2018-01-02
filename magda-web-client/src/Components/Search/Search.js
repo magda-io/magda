@@ -39,7 +39,7 @@ class Search extends Component {
     self.onDismissError = this.onDismissError.bind(this);
     self.updateSearchText = this.updateSearchText.bind(this);
     self.onToggleDataset = this.onToggleDataset.bind(this);
-
+    self.onPageChange = this.onPageChange.bind(this);
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
     this.state={
@@ -122,6 +122,13 @@ class Search extends Component {
     return <div><h3> Try search for </h3><ul>{config.exampleSearch.map(item=><li key={item}><Link to={`search?q=${item}`} key={item}> {item}</Link></li>)}</ul></div>
   }
 
+  onPageChange(i){
+    this.context.router.history.push({
+      pathname: this.props.location.pathname,
+      search: queryString.stringify(Object.assign(queryString.parse(this.props.location.search), {page: i}))
+    });
+  }
+
   render() {
     const searchText = queryString.parse(this.props.location.search).q || '';
     return (
@@ -170,7 +177,7 @@ class Search extends Component {
                       <Pagination
                         currentPage={+queryString.parse(this.props.location.search).page || 1}
                         maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
-                        location={this.props.location}
+                        onPageChange={this.onPageChange}
                       />
                    }
                  </div>

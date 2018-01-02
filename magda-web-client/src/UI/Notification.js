@@ -16,6 +16,6 @@ function Notification(props) {
   );
 }
 
-Notification.defaultProps = {content: {title: '', detail: 'unknown error occurred'}, type: ''};
+Notification.defaultProps = {content: {title: '', detail: ''}, type: ''};
 
 export default Notification;
