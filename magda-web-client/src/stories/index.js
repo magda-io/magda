@@ -3,7 +3,7 @@ import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import { linkTo } from '@storybook/addon-links';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter } from 'react-router-dom';
 
 import CustomIcons, {iconTypes} from '../UI/CustomIcons';
 import DataPreviewGoogleViewer from '../UI/DataPreviewGoogleViewer';
