@@ -264,7 +264,7 @@ object GraphQLSchema {
   val Query = ObjectType(
     "Query", fields[GraphQLDataConnection.Fetcher, Unit](
       Field("allRecords", RecordsPageGraphQLType,
-        arguments = List(PageTokenArg, RecordFilterArg),
+        arguments = List(PageTokenArg),
         resolve = Projector((ctx: Context[GraphQLDataConnection.Fetcher, Unit], prj) => {
           println("\nProjector: " + prj)
           ctx.ctx.getRecordsPage(ctx.arg(PageTokenArg), prj.find(_.name == "records").map(recordPrj => extractAttributesAndAspects(recordPrj.children)).getOrElse(Nil))
