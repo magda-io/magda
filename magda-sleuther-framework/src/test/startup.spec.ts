@@ -92,7 +92,6 @@ baseSpec(
                         });
                 });
 
-                const resolves: (() => void)[] = [];
                 const options: SleutherOptions = {
                     argv: fakeArgv({
                         internalUrl: `http://example.com`,
@@ -107,19 +106,9 @@ baseSpec(
                     writeAspectDefs: [],
                     express: expressApp,
                     maxRetries: 0,
-                    onRecordFound: sinon.stub().callsFake(
-                        () =>
-                            new Promise((resolve, reject) => {
-                                resolves.push(resolve);
-
-                                if (resolves.length === records.length) {
-                                    expect(sleutherPromise.isFulfilled()).to.be
-                                        .false;
-
-                                    resolves.forEach(resolve => resolve());
-                                }
-                            })
-                    )
+                    onRecordFound: sinon
+                        .stub()
+                        .callsFake(() => Promise.resolve())
                 };
 
                 const sleutherPromise = makePromiseQueryable(sleuther(options));

@@ -7,7 +7,6 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 
 import SleutherOptions from "./SleutherOptions";
 import getWebhookUrl from "./getWebhookUrl";
-import { forEachAsync } from "@magda/typescript-common/dist/AsyncPage";
 
 export default function setupWebhookEndpoint(
     options: SleutherOptions,
@@ -21,10 +20,13 @@ export default function setupWebhookEndpoint(
         (request: express.Request, response: express.Response) => {
             const payload = request.body;
 
-            const megaPromise = forEachAsync(
-                payload.records,
-                1,
-                (record: Record) => options.onRecordFound(record, registry)
+            const promises: (() => Promise<void>)[] = payload.records.map(
+                (record: Record) => () =>
+                    options.onRecordFound(record, registry)
+            );
+            const megaPromise = promises.reduce(
+                (soFar, thisOp) => soFar.then(thisOp),
+                Promise.resolve()
             );
 
             const lastEventIdExists = !_.isUndefined(payload.lastEventId);
@@ -68,17 +70,16 @@ export default function setupWebhookEndpoint(
                         })
                         .catch((error: Error) => {
                             console.error(error);
+                            throw error;
                         });
 
-                megaPromise
-                    .then(results => sendResult(true))
-                    .catch((err: Error) => {
-                        console.error(err);
-                        return sendResult(false);
-                    });
+                megaPromise.then(() => sendResult(true)).catch((err: Error) => {
+                    console.error(err);
+                    return sendResult(false);
+                });
             } else {
                 megaPromise
-                    .then(results => {
+                    .then(() => {
                         response.status(201).send({
                             status: "Received",
                             deferResponse: false
