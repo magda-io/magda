@@ -1,16 +1,12 @@
+import {
+    Record,
+    RecordSummary
+} from "../generated/registry/api";
 export class RecordLayer {
-    /**
-    * The unique identifier of the record
+    /*
+    * The record data for this record layer
     */
-    'id': string;
-    /**
-    * The name of the record
-    */
-    'name': string;
-    /**
-    * The aspects included in this record
-    */
-    'aspects': any;
+    'record': Record;
     /*
     * The layer corresponding to this Object
     */
@@ -18,18 +14,10 @@ export class RecordLayer {
 }
 
 export class RecordLayerSummary {
-    /**
-    * The unique identifier of the record
+    /*
+    * The record summary data for this record layer
     */
-    'id': string;
-    /**
-    * The name of the record
-    */
-    'name': string;
-    /**
-    * The list of aspect IDs for which this record has data
-    */
-    'aspects': Array<string>;
+    'recordSummary': RecordSummary; 
     /*
     * The layer corresponding to this summary
     */

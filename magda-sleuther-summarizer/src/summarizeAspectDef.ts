@@ -1,6 +1,6 @@
 export default {
   id: "dataset-summarizer",
-  name: "Details about the downloadURL link status of a distribution",
+  name: "A written summary of any text base document",
   jsonSchema: require("@magda/registry-aspects/dataset-summarizer.schema.json")
 };
 
