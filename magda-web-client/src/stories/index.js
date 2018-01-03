@@ -23,6 +23,8 @@ import TemporalAspectViewer from '../UI/TemporalAspectViewer';
 import ToggleList from '../UI/ToggleList';
 import Tabs from '../UI/Tabs';
 import ContactForm from '../UI/ContactForm';
+// doc
+import ApiViewer from './ApiViewer';
 
 
 const exampleData = {
@@ -108,3 +110,7 @@ storiesOf('Dataset preview', module)
     .add('DataPreviewTable', ()=><DataPreviewTable data={exampleData}/>)
     .add('DataPreviewTextBox', ()=><DataPreviewTextBox data={{data: 'some text'}}/>)
     .add('DataPreviewVega', ()=><DataPreviewVega data={exampleData} logAction={action()}/>);
+
+
+storiesOf('API viewer', module)
+    .add('formats viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/format/options?generalQuery=*&facetQuery=*&limit=268&orderedBy=hitCount"/> )
