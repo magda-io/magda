@@ -359,9 +359,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         aspect
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
-          val x = new RuntimeException(s"Cannot create aspect '${aspectId}' for record '${recordId}' because the record or aspect does not exist, or because data already exists for that combination of record and aspect.")
-          //          x.printStackTrace()
-          Failure(x)
+          Failure(new RuntimeException(s"Cannot create aspect '${aspectId}' for record '${recordId}' because the record or aspect does not exist, or because data already exists for that combination of record and aspect."))
         case anythingElse => anythingElse
       }
     } yield insertResult

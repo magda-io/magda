@@ -152,17 +152,15 @@ object WebHookActor {
                 log.info("WebHook {} Processing {}-{}: STARTING", this.id, previousLastEvent, lastEvent)
 
                 processor.sendSomeNotificationsForOneWebHook(this.id, webHook, eventPage).map {
-                  result =>
-                    if (result) {
-                      // response deferred
-                      log.info("WebHook {} Processing {}-{}: DEFERRED BY RECEIVER", this.id, previousLastEvent, lastEvent)
-                    } else {
-                      // POST succeeded, is there more to do?
-                      log.info("WebHook {} Processing {}-{}: DELIVERED", this.id, previousLastEvent, lastEvent)
+                  case WebHookProcessor.Deferred =>
+                    // response deferred
+                    log.info("WebHook {} Processing {}-{}: DEFERRED BY RECEIVER", this.id, previousLastEvent, lastEvent)
+                  case WebHookProcessor.NotDeferred =>
+                    // POST succeeded, is there more to do?
+                    log.info("WebHook {} Processing {}-{}: DELIVERED", this.id, previousLastEvent, lastEvent)
 
-                      if (previousLastEvent != lastEvent) {
-                        self ! Process()
-                      }
+                    if (previousLastEvent != lastEvent) {
+                      self ! Process()
                     }
                 }.recover {
                   case e =>

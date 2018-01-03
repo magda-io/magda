@@ -703,16 +703,6 @@ class RecordsServiceSpec extends ApiSpec {
       }
     }
 
-    it("triggers WebHook processing") { param =>
-      val record = Record("testId", "testName", Map())
-      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-        responseAs[Record] shouldEqual record
-      }
-//FIXME
-//      param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process(false))
-    }
-
     checkMustBeAdmin {
       val record = Record("testId", "testName", Map())
       Post("/v0/records", record)
@@ -850,17 +840,6 @@ class RecordsServiceSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
         responseAs[Record] shouldEqual record
       }
-    }
-
-    it("triggers WebHook processing") { param =>
-      val record = Record("testId", "testName", Map())
-      param.asAdmin(Put("/v0/records/testId", record)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-        responseAs[Record] shouldEqual record
-      }
-
-//      param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process(false))
-      // FIXME
     }
 
     checkMustBeAdmin {
@@ -1139,23 +1118,6 @@ class RecordsServiceSpec extends ApiSpec {
         status shouldEqual StatusCodes.BadRequest
         responseAs[BadRequest].message should include("two different aspects")
       }
-    }
-
-    it("triggers WebHook process") { param =>
-      val record = Record("testId", "testName", Map())
-      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-      }
-//FIXME
-//      param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process(false))
-
-      val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
-      param.asAdmin(Patch("/v0/records/testId", patch)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-        responseAs[Record] shouldEqual Record("testId", "foo", Map())
-      }
-//FIXME
-//      param.webHookActorProbe.expectMsg(1 millis, WebHookActor.Process(false))
     }
 
     checkMustBeAdmin {

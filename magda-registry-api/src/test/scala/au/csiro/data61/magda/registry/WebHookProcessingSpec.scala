@@ -24,7 +24,7 @@ import spray.json.JsString
 import spray.json.JsonParser
 import java.util.UUID
 
-class WebHookProcessorSpec extends ApiSpec {
+class WebHookProcessingSpec extends ApiSpec {
 
   it("includes aspectDefinitions if events modified them") { param =>
     testWebHook(param, None) { (payloads, actor) =>

@@ -20,7 +20,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
   private val http = Http(actorSystem)
   private implicit val materializer: ActorMaterializer = ActorMaterializer()(actorSystem)
 
-  def sendSomeNotificationsForOneWebHook(id: String, webHook: WebHook, eventPage: EventsPage): Future[Boolean] = {
+  def sendSomeNotificationsForOneWebHook(id: String, webHook: WebHook, eventPage: EventsPage): Future[WebHookProcessor.SendResult] = {
 
     //    val events = if (!startup && webHook.isWaitingForResponse.getOrElse(false)) List() else eventPage.events
     val events = eventPage.events
@@ -123,12 +123,12 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
                   DB localTx { session =>
                     HookPersistence.setIsWaitingForResponse(session, webHook.id.get, true)
                   }
-                  true
+                  WebHookProcessor.Deferred
                 } else {
                   DB localTx { session =>
                     HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
                   }
-                  false
+                  WebHookProcessor.NotDeferred
                 }
               }.recover {
                 case _: Throwable => {
@@ -137,7 +137,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
                   DB localTx { session =>
                     HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
                   }
-                  false
+                  WebHookProcessor.NotDeferred
                 }
               }
             }
@@ -149,4 +149,10 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
       resultStream.completionTimeout(60 seconds).runWith(Sink.head)
     })
   }
+}
+
+object WebHookProcessor {
+  sealed trait SendResult
+  case object Deferred extends SendResult
+  case object NotDeferred extends SendResult
 }

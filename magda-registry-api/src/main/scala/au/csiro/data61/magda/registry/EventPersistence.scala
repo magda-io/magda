@@ -64,27 +64,17 @@ object EventPersistence extends Protocols with DiffsonProtocol {
     val eventTypesFilter =
       SQLSyntax.joinWithOr(eventTypes.map(v => v.value).map(v => sqls"eventtypeid = $v").toArray: _*)
 
-    //// HORROR STARTS HERE
     val linkAspects = RecordPersistence.buildDereferenceMap(session, aspectIds)
     val dereferenceSelectors: Set[SQLSyntax] = linkAspects.toSet[(String, PropertyWithLink)].map {
       case (aspectId, propertyWithLink) =>
-        //        val x = sqls"""1=2"""
-        val x = sqls"""EXISTS (select 1
+        sqls"""EXISTS (select 1
                          from RecordAspects
                          where aspectId=$aspectId
                          and RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
-        x
     }
-
-    /// HORROR (mostly) ENDS HERE
 
     val aspectsSql = if (aspectIds.isEmpty) sqls"1=1" else SQLSyntax.joinWithOr((aspectIds.map(v => sqls"data->>'aspectId' = $v") + sqls"data->>'aspectId' IS NULL").toArray: _*)
     val dereferenceSelectorsSql = if (dereferenceSelectors.isEmpty) sqls"1=1" else SQLSyntax.joinWithOr(dereferenceSelectors.toArray: _*)
-    //    val allAspectsSql = aspectsSql ++ dereferenceSelectors
-
-    //    val aspectsFilter =
-    //      if (aspectIds.isEmpty) SQLSyntax.empty
-    //      else SQLSyntax.joinWithOr((allAspectsSql + nullAspectSql).toArray: _*)
 
     val whereClause = SQLSyntax.where(SQLSyntax.joinWithAnd((filters.map(_.get)): _*).and(aspectsSql.or(dereferenceSelectorsSql)))
 
@@ -106,8 +96,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
         .map(rs => {
           // Side-effectily track the sequence number of the very last result.
           lastEventIdInPage = Some(rs.long("eventId"))
-          val x = rowToEvent(rs)
-          x
+          rowToEvent(rs)
         }).list.apply()
 
     EventsPage(totalCount, lastEventIdInPage.map(_.toString), events)
