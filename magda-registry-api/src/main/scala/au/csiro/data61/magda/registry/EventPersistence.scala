@@ -110,8 +110,6 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           x
         }).list.apply()
 
-    println(events)
-
     EventsPage(totalCount, lastEventIdInPage.map(_.toString), events)
   }
 
