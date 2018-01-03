@@ -66,7 +66,7 @@ This gives you a local docker registry that you'll upload your built images to s
 
 ```bash
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-helm install --name docker-registry -f deploy/helm/docker-registry.yml incubator/docker-registry 
+helm install --name docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry 
 helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
 ```
 
