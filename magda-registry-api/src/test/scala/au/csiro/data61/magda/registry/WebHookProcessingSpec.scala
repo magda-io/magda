@@ -706,8 +706,6 @@ class WebHookProcessingSpec extends ApiSpec {
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be < (payloads(0).lastEventId)
         }
 
-        //        val result2 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
-        //        result2.deferredResponse should be(true)
         Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 2
