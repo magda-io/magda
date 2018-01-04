@@ -7,19 +7,18 @@ import summarizeAspectDef, {
     SummarizeAspect,
     RetrieveResult
 } from "./summarizeAspectDef";
-import VALID_FORMATS from "./validFormats"
-//created a separate summary API.js file because make a .d.ts will be much easier with 1 file instead of a whole node-summary repo.
-import {getSummaryFromURL} from "./summaryAPI"
 import unionToThrowable from "@magda/typescript-common/src/util/unionToThrowable";
-/*declare function getSummaryFromContent(title: string, content: string): {
-    err: any,
-    summary: string
-}*/
+import {
+    FormatSortedRecords,
+    sortRecordsByFormat
+} from "@magda/typescript-common/src/util/formatUtils/formatClassifier"
 
 export default async function onRecordFound(
     record: Record,
     registry: Registry,
 ) {
+    let recordLayers : RecordLayer[] = [];
+
     const distributions: Record[] =
         record.aspects["dataset-distributions"] &&
         record.aspects["dataset-distributions"].distributions;
@@ -28,6 +27,17 @@ export default async function onRecordFound(
         return Promise.resolve();
     }
 
+    // get all records grouped by their format
+    const formatSortedRecords: void = sortRecordsByFormat(distributions);
 
-    
+    // put them into a record layer for the database
+    /*formatSortedRecords.forEach(formatSortedRecord => {
+        formatSortedRecord.records.forEach( record => {
+            record.aspects["dcat-distribution-strings"].format = formatSortedRecord.format;
+            recordLayers.push({
+                record: record,
+                layer: "format"
+            });
+        });
+    });*/
 }
