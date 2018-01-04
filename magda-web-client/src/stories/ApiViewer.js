@@ -43,6 +43,7 @@ class ApiViewer extends React.Component {
                 desc: true
               }
             ]}
+            className="-striped -highlight"
           />}
       </div>
     }

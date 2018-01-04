@@ -118,10 +118,6 @@ class Search extends Component {
     return !defined(queryString.parse(this.props.location.search).q) || queryString.parse(this.props.location.search).q.length === 0
   }
 
-  renderSuggestions(){
-    return <div><h3> Try search for </h3><ul>{config.exampleSearch.map(item=><li key={item}><Link to={`search?q=${item}`} key={item}> {item}</Link></li>)}</ul></div>
-  }
-
   onPageChange(i){
     this.context.router.history.push({
       pathname: this.props.location.pathname,
@@ -151,14 +147,10 @@ class Search extends Component {
             <div className='col-sm-8'>
                 {searchText.length > 0 && !this.props.isFetching &&
                  !this.props.error && <div className='results-count'>{this.props.hitCount} results found</div>}
-                {searchText.length === 0 && <div>{this.renderSuggestions()}</div>}
                 {searchText.length > 0 &&
                  !this.props.isFetching &&
                  !this.props.error &&
                  <div>
-                 <Publisher updateQuery={this.updateQuery}
-                            component={'recommendations'}
-                 />
 
                  {!this.searchBoxEmpty() &&
                     <MatchingStatus datasets={this.props.datasets}

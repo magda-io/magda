@@ -41,7 +41,6 @@ class SearchFacets extends Component {
             <c.component
                        updateQuery={this.props.updateQuery}
                        location={this.props.location}
-                       component={'facet'}
                        title={c.id}
                        isOpen={this.state.openFacet === c.id}
                        toggleFacet={this.toggleFacet.bind(this, c.id)}/>

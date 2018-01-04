@@ -4,7 +4,6 @@ import {fetchPublisherSearchResults} from '../../actions/facetPublisherSearchAct
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../../helpers/toggleBasicOption'
-import Recommendations from '../Search/Recommendations';
 import queryString from 'query-string';
 class Publisher extends Component {
 
@@ -41,33 +40,19 @@ class Publisher extends Component {
   }
 
   render() {
-    switch (this.props.component) {
-      case 'facet':
-        return (
-          <FacetBasic title='publisher'
-                      id='publisher'
-                      hasQuery={Boolean(this.props.activePublishers.length)}
-                      options={this.props.publisherOptions}
-                      activeOptions={this.props.activePublishers}
-                      facetSearchResults={this.props.publisherSearchResults}
-                      onToggleOption={this.onTogglePublisherOption}
-                      onResetFacet={this.onResetPublisherFacet}
-                      searchFacet={this.onSearchPublisherFacet}
-                      toggleFacet={this.props.toggleFacet}
-                      isOpen={this.props.isOpen}
-          />
-        );
-      case 'recommendations':
-        return (
-          <Recommendations options={this.props.publisherOptions}
-                           onClick={this.onTogglePublisherOption}
-                           activeOptions={this.props.activePublishers}
-                           description={'Are you searching for items published by '}
-          />
-        );
-      default:
-        return null;
-      }
+    return (
+      <FacetBasic title='publisher'
+                  id='publisher'
+                  hasQuery={Boolean(this.props.activePublishers.length)}
+                  options={this.props.publisherOptions}
+                  activeOptions={this.props.activePublishers}
+                  facetSearchResults={this.props.publisherSearchResults}
+                  onToggleOption={this.onTogglePublisherOption}
+                  onResetFacet={this.onResetPublisherFacet}
+                  searchFacet={this.onSearchPublisherFacet}
+                  toggleFacet={this.props.toggleFacet}
+                  isOpen={this.props.isOpen}
+      />)
   }
 }
 

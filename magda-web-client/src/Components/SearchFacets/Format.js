@@ -4,7 +4,6 @@ import {fetchFormatSearchResults} from '../../actions/facetFormatSearchActions';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
 import toggleBasicOption from '../../helpers/toggleBasicOption'
-import Recommendations from '../Search/Recommendations';
 import queryString from 'query-string';
 
 class Format extends Component {
@@ -42,33 +41,20 @@ class Format extends Component {
   }
 
   render() {
-    switch (this.props.component) {
-      case 'facet':
-        return (
-          <FacetBasic title='format'
-                      id='format'
-                      hasQuery={Boolean(this.props.activeFormats.length)}
-                      options={this.props.formatOptions}
-                      activeOptions={this.props.activeFormats}
-                      facetSearchResults={this.props.formatSearchResults}
-                      onToggleOption={this.onToggleFormatOption}
-                      onResetFacet={this.onResetFormatFacet}
-                      searchFacet={this.onSearchFormatFacet}
-                      toggleFacet={this.props.toggleFacet}
-                      isOpen={this.props.isOpen}
-          />
-        );
-      case 'recommendations':
-        return (
-          <Recommendations options={this.props.formatOptions}
-                           onClick={this.onToggleFormatOption}
-                           activeOptions={this.props.activeFormats}
-                           description={'Are you searching for items in the following format '}
-          />
-        );
-      default:
-        return null;
-      }
+    return (
+      <FacetBasic title='format'
+                  id='format'
+                  hasQuery={Boolean(this.props.activeFormats.length)}
+                  options={this.props.formatOptions}
+                  activeOptions={this.props.activeFormats}
+                  facetSearchResults={this.props.formatSearchResults}
+                  onToggleOption={this.onToggleFormatOption}
+                  onResetFacet={this.onResetFormatFacet}
+                  searchFacet={this.onSearchFormatFacet}
+                  toggleFacet={this.props.toggleFacet}
+                  isOpen={this.props.isOpen}
+      />
+    );
   }
 }
 
