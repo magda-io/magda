@@ -1,0 +1,12 @@
+{
+    "svg": ["xml", "zip"],
+    "xml": ["txt", "zip"],
+    "txt": ["zip"],
+    "zip": [],
+    "html": ["zip", "txt"],
+    "xls": ["xlsx", "zip"],
+    "xlsx": ["xls", "zip"],
+    "pdf": ["txt", "zip"],
+    "doc": ["docs", "zip"],
+    "docs": ["doc", "zip"]
+}

@@ -17,7 +17,6 @@ export default async function onRecordFound(
     record: Record,
     registry: Registry,
 ) {
-    let recordLayers : RecordLayer[] = [];
 
     const distributions: Record[] =
         record.aspects["dataset-distributions"] &&
@@ -27,17 +26,5 @@ export default async function onRecordFound(
         return Promise.resolve();
     }
 
-    // get all records grouped by their format
-    const formatSortedRecords: void = sortRecordsByFormat(distributions);
-
-    // put them into a record layer for the database
-    /*formatSortedRecords.forEach(formatSortedRecord => {
-        formatSortedRecord.records.forEach( record => {
-            record.aspects["dcat-distribution-strings"].format = formatSortedRecord.format;
-            recordLayers.push({
-                record: record,
-                layer: "format"
-            });
-        });
-    });*/
+    
 }
