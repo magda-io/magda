@@ -181,7 +181,7 @@ helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml
 If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the `all` tag to `false` and the tag for the pod you want to `true`, e.g.
 
 ```bash
-helm install --name combined-db --set tags.all=false --set tags.combined-db=true deploy/helm/magda -f deploy/helm/minikube-dev.yml
+helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30100.  The IP address may be different on your system.  Get the real IP address by running:
@@ -194,3 +194,42 @@ It's a good idea to add an entry for `minikube.data.gov.au` to your `hosts` file
 
 ```
 192.168.99.100	minikube.data.gov.au
+```
+## Running on both minikube and locally
+It's also possible to run what you're working on your host, and the services your dependent on in minikube. Depending on what you're doing, this might be simple or complicated.
+
+### Using the minikube database
+This is super-easy, just run 
+
+```bash
+ kubectl port-forward combined-db-0 5432:5432
+ ```
+ 
+ Now you can connect to the database in minikube as if it were running locally, while still taking advantage of all the automatic schema setup that the docker image does.
+ 
+### Running a microservice locally but still connecting through the gateway
+You might find yourself developing an API locally that depends on authentication, which is easiest done by just logging in through the web interface and connecting through the gateway. You can actually make this work by telling the gateway to proxy your service to `192.168.99.1` in `deploy/helm/magda/charts/gateway/templates/configmap.yaml`. For instance, if I wanted to run the search api locally, I'd change `configmap.yaml` like so:
+
+```yaml
+data:
+  # When the config map is mounted as a volume, these will be created as files.
+  routes.json: '{
+    "search": {
+        "to": "http://192.168.99.1:6102/v0"
+    },
+    # ...etc
+
+```
+
+Then update helm:
+
+```bash
+helm upgrade magda -f deploy/helm/minikube-dev.yml deploy/helm/magda
+```
+
+Now when I go to `http://${minikube ip}/api/v0/search`, it'll be proxied to my local search rather than the one in minikube.
+
+Be aware that if your local service has to connect to other microservices you'll have to tell it where to find them rather than relying on the defaults - e.g. to connect to the auth api it'll need to connect to `http://${minikube ip}:30104` instead of `http://authorization-api`.
+
+### Running local sleuthers
+You can use the same pattern for sleuthers - register a webhook with a url host of `192.168.99.1` and it'll post webhooks to your local machine instead of within the minikube network. Be aware that your sleuther will have to be able to find the registry though - naturally having it post to `http://registry-api` won't work outside of minikube - you'll have to configure it to post to `http://${minikube ip}:30101` instead.
