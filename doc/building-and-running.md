@@ -231,6 +231,13 @@ Now when I go to `http://${minikube ip}/api/v0/search`, it'll be proxied to my l
 
 Be aware that if your local service has to connect to the database or other microservices in minikube you'll have to use `kube-port-forward` to proxy from `localhost:{port}` to the appropriate service in minikube - you can find a list of ports at https://github.com/TerriaJS/magda/blob/master/doc/local-ports.md.
 
+In the likely even you need to figure out what the jwt shared secret is on your minikube, you can cheat by opening up a shell to a container that has that secret and echoing the environment variable:
+
+```bash
+kubectl exec -it gateway-cf9c575bb-th57x -- /bin/bash
+echo $JWT_SECRET
+```
+
 ### Running local sleuthers
 You can use the same pattern for sleuthers - register a webhook with a url host of `192.168.99.1` and it'll post webhooks to your local machine instead of within the minikube network. Be aware that your sleuther won't be able to find the registry until you use `kubectl port-forward` to make it work... e.g.
 
