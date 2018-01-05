@@ -229,7 +229,11 @@ helm upgrade magda -f deploy/helm/minikube-dev.yml deploy/helm/magda
 
 Now when I go to `http://${minikube ip}/api/v0/search`, it'll be proxied to my local search rather than the one in minikube.
 
-Be aware that if your local service has to connect to other microservices you'll have to tell it where to find them rather than relying on the defaults - e.g. to connect to the auth api it'll need to connect to `http://${minikube ip}:30104` instead of `http://authorization-api`.
+Be aware that if your local service has to connect to the database or other microservices in minikube you'll have to use `kube-port-forward` to proxy from `localhost:{port}` to the appropriate service in minikube - you can find a list of ports at https://github.com/TerriaJS/magda/blob/master/doc/local-ports.md.
 
 ### Running local sleuthers
-You can use the same pattern for sleuthers - register a webhook with a url host of `192.168.99.1` and it'll post webhooks to your local machine instead of within the minikube network. Be aware that your sleuther will have to be able to find the registry though - naturally having it post to `http://registry-api` won't work outside of minikube - you'll have to configure it to post to `http://${minikube ip}:30101` instead.
+You can use the same pattern for sleuthers - register a webhook with a url host of `192.168.99.1` and it'll post webhooks to your local machine instead of within the minikube network. Be aware that your sleuther won't be able to find the registry until you use `kubectl port-forward` to make it work... e.g.
+
+```bash
+kubectl port-forward registry-api-79f7bf7787-5j52x 6101:80
+```
