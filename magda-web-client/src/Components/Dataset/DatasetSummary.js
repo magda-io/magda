@@ -1,4 +1,3 @@
-//  @flow
 import React, { Component } from 'react';
 import MarkdownViewer from '../../UI/MarkdownViewer';
 import defined from '../../helpers/defined';
@@ -10,20 +9,9 @@ import { Link } from 'react-router-dom';
 import Button from 'muicss/lib/react/button';
 import Divider from 'muicss/lib/react/divider';
 
-type Props = {
-  onClickTag: Function,
-  onClickDataset: Function,
-  dataset: Object,
-  isExpanded: boolean
-}
 
 export default class DatasetSummary extends Component {
-  state: {
-    tagsExpanded: boolean,
-    isFav: boolean
-  }
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     const self: any = this;
 

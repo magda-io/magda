@@ -1,6 +1,3 @@
-// @flow
-
-import {Link } from 'react-router-dom';
 import './Search.css';
 import {connect} from 'react-redux';
 import {config} from '../../config' ;
@@ -11,18 +8,17 @@ import PublisherBox from '../../Components/PublisherBox';
 import ReactDocumentTitle from 'react-document-title';
 import React, { Component } from 'react';
 import SearchFacets from '../../Components/SearchFacets/SearchFacets';
-import Publisher from '../../Components/SearchFacets/Publisher';
 import SearchResults from '../SearchResults/SearchResults';
 import MatchingStatus from './MatchingStatus';
 import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../../actions/datasetSearchActions';
 import {fetchFeaturedPublishersFromRegistry} from '../../actions/featuredPublishersActions';
+import queryString from 'query-string';
+import ProgressBar from '../../UI/ProgressBar';
 
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
 
-import queryString from 'query-string';
-import ProgressBar from '../../UI/ProgressBar';
 
 
 class Search extends Component {

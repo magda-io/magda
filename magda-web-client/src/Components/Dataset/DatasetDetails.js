@@ -1,6 +1,4 @@
-// @flow
 import React, { Component } from 'react';
-
 import TemporalAspectViewer from '../../UI/TemporalAspectViewer';
 import OverviewBox from '../../UI/OverviewBox';
 import Social from '../../Components/Social';
@@ -8,21 +6,9 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import renderDistribution from '../../Components/Distribution';
 import './RecordDetails.css';
-import type {ParsedDataset} from '../../helpers/record';
 import Button from 'muicss/lib/react/button';
 
-type Props = {
-  dataset: ParsedDataset,
-  params: Object
-};
-
-
-type State = {
-  showPreview: boolean
-}
-
-
-class DatasetDetails extends Component<{}, Props, State> {
+class DatasetDetails extends Component{
   state={
     showPreview: false
   }

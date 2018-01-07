@@ -1,4 +1,3 @@
-//@flow
 import ReactDocumentTitle from 'react-document-title';
 import React from 'react';
 import logo from './assets/logo.svg';

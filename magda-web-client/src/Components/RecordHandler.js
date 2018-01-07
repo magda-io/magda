@@ -1,4 +1,3 @@
-// @flow
 import React from 'react';
 import { connect } from 'react-redux';
 import ProgressBar from '../UI/ProgressBar';
@@ -11,7 +10,6 @@ import ErrorHandler from './ErrorHandler';
 import CustomIcons from '../UI/CustomIcons';
 import RouteNotFound from './RouteNotFound';
 import type {StateRecord } from '../types';
-import type { ParsedDataset, ParsedDistribution } from '../helpers/record';
 import {
   Route,
   Link,
@@ -25,19 +23,7 @@ import DistributionDetails from './Dataset/DistributionDetails';
 import DistributionPreview from './Dataset/DistributionPreview';
 
 class RecordHandler extends React.Component {
-  props: {
-    distributionFetcherror: object,
-    datasetFetcherror: object,
-    children: React$Element<any>,
-    fetchDataset: Function,
-    fetchDistribution: Function,
-    dataset: ParsedDataset,
-    distribution: ParsedDistribution,
-    params: {
-      datasetId: string,
-      distributionId? : string
-    }
-  }
+
   componentWillMount(){
     this.props.fetchDataset(this.props.match.params.datasetId);
     if(this.props.match.params.distributionId){
@@ -53,7 +39,7 @@ class RecordHandler extends React.Component {
       }
   }
 
-  renderBreadCrumbs(dataset: ParsedDataset, distribution? :ParsedDistribution){
+  renderBreadCrumbs(dataset, distribution){
     return (
     <ul className='breadcrumb'>
       <li className='breadcrumb-item'><Link to='/'>Home</Link></li>
@@ -179,7 +165,7 @@ function mapStateToProps(state: {record: StateRecord}) {
   };
 }
 
-const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const  mapDispatchToProps = (dispatch) => {
   return bindActionCreators({
     fetchDataset: fetchDatasetFromRegistry,
     fetchDistribution: fetchDistributionFromRegistry

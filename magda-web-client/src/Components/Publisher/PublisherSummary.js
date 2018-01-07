@@ -1,11 +1,8 @@
-
-//@flow
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './PublisherSummary.css';
-import type {Publisher} from '../../helpers/record';
 
-function PublisherSummary(props: {publisher: Publisher}) {
+function PublisherSummary(props) {
   const details = props.publisher.aspects['organization-details'];
   return (
       <div className='publisher-summray white-box media'>

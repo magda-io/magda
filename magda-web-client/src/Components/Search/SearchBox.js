@@ -1,5 +1,3 @@
-// @flow
-
 import './SearchBox.css';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -20,10 +18,6 @@ import queryString from 'query-string';
 
 
 class SearchBox extends Component {
-  state : {
-    searchText: ?string
-  }
-
   constructor(props) {
     super(props);
     const self: any = this;

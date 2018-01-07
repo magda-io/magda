@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
 import TemporalAspectViewer from '../../UI/TemporalAspectViewer';
 import OverviewBox from '../../UI/OverviewBox';
 import Social from '../../Components/Social';
@@ -8,7 +7,6 @@ import './RecordDetails.css';
 
 
 class DistributionDetails extends Component {
-
   renderLinkStatus(linkStatusAvailable, linkActive){
     if(linkStatusAvailable && !linkActive){
       return '(This link appears to be broken)'

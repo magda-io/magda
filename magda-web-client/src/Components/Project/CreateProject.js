@@ -1,4 +1,3 @@
-// @flow
 import './CreateProject.css';
 import React, { Component } from 'react';
 import ReactDocumentTitle from 'react-document-title';

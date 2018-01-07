@@ -1,4 +1,3 @@
-// @flow
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {config} from '../../config' ;
@@ -15,14 +14,6 @@ import PropTypes from 'prop-types';
 
 import './PublishersViewer.css';
 class PublishersViewer extends Component {
-    props: {
-        location: Location,
-        error: ?number,
-        publishers: Array<Object>,
-        isFetching: boolean,
-        hitCount: number,
-        fetchPublishersIfNeeded: Function
-    }
     componentWillMount(){
       this.props.fetchPublishersIfNeeded(getPageNumber(this.props)|| 1);
     }
@@ -57,7 +48,7 @@ class PublishersViewer extends Component {
               </div>)
       }
     }
-    
+
     render(){
       return <ReactDocumentTitle title={'Publishers | ' + config.appName}>
               <div className='container publishers-viewer'>
@@ -78,7 +69,7 @@ function mapDispatchToProps(dispatch: Function) {
   }, dispatch);
 }
 
-function mapStateToProps(state: Object, ownProps: Object) {
+function mapStateToProps(state, ownProps) {
   const publishers: Array <Object> = state.publisher.publishers;
   const isFetching: boolean = state.publisher.isFetchingPublishers;
   const hitCount: number = state.publisher.hitCount;

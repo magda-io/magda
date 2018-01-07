@@ -1,4 +1,3 @@
-// @flow
 import 'es6-symbol/implement';
 import React, { Component } from 'react';
 import VegaLite from 'react-vega-lite';

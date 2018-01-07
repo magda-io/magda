@@ -1,4 +1,3 @@
-// @flow
 import CustomIcons from '../UI/CustomIcons';
 import DataPreviewer from '../Components/DataPreviewer';
 import type {ParsedDistribution} from '../helpers/record';

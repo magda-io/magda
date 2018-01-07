@@ -1,4 +1,3 @@
-//@flow
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { config } from "../../config.js";
@@ -70,7 +69,7 @@ class ProjectDetails extends Component {
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>)=>{
+const mapDispatchToProps = (dispatch)=>{
   return bindActionCreators(
     {
       fetchProjectIfNeeded: fetchProjectIfNeeded,
