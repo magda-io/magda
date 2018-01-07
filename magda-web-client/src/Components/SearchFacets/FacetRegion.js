@@ -92,12 +92,12 @@ class FacetRegion extends Component {
       return ids.map(id=> ({
         id,
         value: this.props.regionMapping[id].description
-      }))
+      }));
     }
 
     getActiveRegionType(){
       let region = this.state._activeRegion;
-      let regionType = 'Select a region type';
+      let regionType = 'Filter by';
       if(this.props.regionMapping){
         if(defined(region.regionType) && this.props.regionMapping[region.regionType] && this.props.regionMapping[region.regionType].description){
           regionType = this.props.regionMapping[region.regionType].description
@@ -108,6 +108,7 @@ class FacetRegion extends Component {
 
 
     renderBox(){
+      console.log(this.getDropDownOptions());
         return (<div className='facet-body facet-region'>
                     <FacetSearchBox renderOption={this.renderOption}
                                     onToggleOption={this.onToggleOption}
