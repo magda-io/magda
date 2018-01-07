@@ -3,7 +3,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { FacetAction } from '../types';
+import type { FacetAction, Error } from '../types';
 
 export function requestPublishers():FacetAction {
   return {
@@ -18,7 +18,7 @@ export function receivePublishers(json: Object): FacetAction {
   }
 }
 
-export function requestPublishersError(error: object): FacetAction {
+export function requestPublishersError(error: Error): FacetAction {
   return {
     type: actionTypes.REQUEST_PUBLISHERS_ERROR,
     error,
@@ -38,7 +38,7 @@ export function receivePublisher(json: Object): FacetAction {
   }
 }
 
-export function requestPublisherError(error: object): FacetAction {
+export function requestPublisherError(error: Error): FacetAction {
   return {
     type: actionTypes.REQUEST_PUBLISHER_ERROR,
     error,

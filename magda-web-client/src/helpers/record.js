@@ -1,11 +1,12 @@
 // @flow
 import getDateString from './getDateString';
+import type {Error } from '../types';
 // dataset query:
 //aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
 
 export type RecordAction = {
   json?: Object,
-  error?: number,
+  error?: Error,
   type?: string
 }
 
@@ -124,7 +125,7 @@ export type ParsedDataset = {
   temporalCoverage: ? TemporalCoverage,
   publisher: Publisher,
   source: string,
-  error: ?string
+  error: ?Error
 }
 
 export const defaultPublisher: Publisher = {
@@ -223,7 +224,8 @@ export function parseDistribution(record?: RawDistribution) : ParsedDistribution
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
   let error = null;
   if(dataset && !dataset.id){
-    error = dataset.message || 'Error occurred';
+
+    error = {title: 'Error', detail: dataset.message || 'Error occurred'};
   }
   const aspects = dataset ? Object.assign({}, defaultDatasetAspects, dataset['aspects']) : defaultDatasetAspects;
   const identifier =dataset ? dataset.id : '';

@@ -3,7 +3,7 @@ import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type {DataSearchJson, FacetAction, SearchAction } from '../types';
+import type {DataSearchJson, FacetAction, SearchAction, Error } from '../types';
 
 export function requestResults(apiQuery: string ): SearchAction{
   return {
@@ -20,7 +20,7 @@ export function receiveResults(apiQuery: string, json: DataSearchJson): SearchAc
   }
 }
 
-export function transferFailed(error: object): SearchAction{
+export function transferFailed(error: Error): SearchAction {
   return {
     type: actionTypes.FETCH_ERROR,
     error

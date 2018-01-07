@@ -2,7 +2,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-
+import type {Error } from '../types';
 export function requestDatasets(ids: Array<string>) {
   return {
     type: actionTypes.REQUEST_FEATURED_DATASETS,
@@ -17,7 +17,7 @@ export function receiveDatasets(json: Array<Object>) {
   }
 }
 
-export function requestDatasetsError(error: object) {
+export function requestDatasetsError(error: Error){
   return {
     type: actionTypes.REQUEST_FEATURED_DATASETS_ERROR,
     error,

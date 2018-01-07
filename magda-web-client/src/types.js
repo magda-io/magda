@@ -1,5 +1,10 @@
 // @flow
 
+export type Error = {
+  title: string | number,
+  detail: string
+}
+
 export type DatasetDistribution = {
   format: string,
   mediaType: string,
@@ -12,6 +17,7 @@ export type DatasetDistribution = {
   issued: string,
   title: string,
 }
+
 
 export type DatasetPublisher = {
   name: string,
@@ -70,6 +76,7 @@ export type FacetAction = {
   generalQuery?: string,
   facetQuery?: string,
   json?: FacetSearchJson,
+  error?: Error
 }
 
 
@@ -78,7 +85,7 @@ export type SearchAction = {
   apiQuery? : string,
   item?: FacetOption,
   json?: DataSearchJson,
-  error?: number
+  error?: Error
 }
 
 
@@ -146,7 +153,7 @@ export type SearchState = {
   temporalOptions: Array<Object>,
   formatOptions: Array<Object>,
   apiQuery: string,
-  error: ?number,
+  error: ?Error,
   strategy: string,
 }
 
@@ -154,7 +161,7 @@ export type SearchState = {
 export type FeaturedAction = {
   type: string,
   json: Array<Object>,
-  error: ?number,
+  error: Error,
 }
 
 export type WMSParser = {
@@ -174,7 +181,7 @@ export type StateRecord = {
 
 export type StatsAction = {
   type: string,
-  error: ?number,
+  error: Error,
   payload: number
 }
 

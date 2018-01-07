@@ -1,5 +1,5 @@
 // @flow
-import type {Publisher} from '../record';
+import type {Publisher} from '../helpers/record';
 import {defaultPublisher} from '../helpers/record';
 
 export function parsePublisher(publisherRaw?: Publisher) : Publisher{
