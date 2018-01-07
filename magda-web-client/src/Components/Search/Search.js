@@ -133,18 +133,11 @@ class Search extends Component {
       {this.props.isFetching && <ProgressBar/>}
         <div className='search'>
           <div className='search__search-body container'>
-          <div className='row'>
-            <div className='col-sm-8'>
               {searchText.length > 0 &&
                  <SearchFacets updateQuery={this.updateQuery}
                                location={this.props.location}
                  />
                 }
-            </div>
-
-          </div>
-          <div className='row'>
-            <div className='col-sm-8'>
                 {searchText.length > 0 && !this.props.isFetching &&
                  !this.props.error && <div className='results-count'>{this.props.hitCount} results found</div>}
                 {searchText.length > 0 &&
@@ -179,15 +172,11 @@ class Search extends Component {
                                 type='error'
                                 onDismiss={this.onDismissError}/>
                }
-              </div>
 
-            <div className='col-sm-4'>
             {(!this.searchBoxEmpty() && this.props.datasets.length > 0) && this.props.featuredPublishers.map(p=><PublisherBox key={p.id} publisher={p}/>)}
             </div>
             </div>
-          </div>
         </div>
-      </div>
       </ReactDocumentTitle>
     );
   }

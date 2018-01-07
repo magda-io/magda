@@ -97,8 +97,8 @@ class AppContainer extends React.Component {
 
 
   render() {
-    const headerNavs: Array<Array<string>> = config.headerNavigation;
-    const footerNavs: Array<Object> = config.footerNavigation;
+    const headerNavs = config.headerNavigation;
+    const footerNavs = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
         <div>

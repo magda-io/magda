@@ -8,6 +8,7 @@ import renderDistribution from '../../Components/Distribution';
 import './DatasetSummary.css';
 import { Link } from 'react-router-dom';
 import Button from 'muicss/lib/react/button';
+import Divider from 'muicss/lib/react/divider';
 
 type Props = {
   onClickTag: Function,
@@ -59,27 +60,28 @@ export default class DatasetSummary extends Component {
      if(dataset.error){
        return <div className='error dataset-summary'><div className='dataset-summary__body'>{dataset.error}</div></div>
      }
-    return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
+    return <div className={`dataset-summary mui-panel ${this.props.isExpanded ? 'is-expanded ': ''}`}>
                 <div className='dataset-summary__header'>
                   <div className='dataset-summary__header-top clearfix'>
                     <div className='dataset-summary__title-group'>
-                      <Link className='dataset-summary__title btn'
+                      <h3><Link
                             to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>
                         {dataset.title}
-                      </Link>
-
+                      </Link></h3>
                       {publisher && <span className='dataset-summary-publisher'>{publisher}</span>}
                     </div>
                     <span className='hidden-xs dataset-summary__toggle'>
                         {this.props.onClickDataset && <Button onClick={this.props.onClickDataset}><span className='sr-only'>Toggle more info</span>{this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}</Button>}
                     </span>
                   </div>
-                  {this.props.isExpanded && <div className='dataset-summary__middle clearfix'>
+                  {this.props.isExpanded &&
+                   <div className='dataset-summary__middle clearfix'>
                       <div>
-                        <Link className='btn dataset-summary__btn-view-dataset'
+                        <Link className='mui-btn mui-btn--primary'
                                    to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>View dataset</Link>
-                        {dataset.landingPage && <a className='btn dataset-summary__btn-go-to-source' href={dataset.landingPage}>Go to Source</a>}
+                        {dataset.landingPage && <a className='mui-btn mui-btn--accent ' href={dataset.landingPage}>Go to Source</a>}
                       </div>
+                      <Divider />
                   </div>}
                 </div>
                 <div className='dataset-summary__body'>
@@ -90,17 +92,7 @@ export default class DatasetSummary extends Component {
 
                   {source && <span className='dataset-summary-source'>Source: {source}</span>}
                   {defined(dataset.quality) && <span className='dataset-summary-quality'> <QualityIndicator quality={dataset.quality}/></span>}
-
                 </div>
-              {this.props.onClickDataset && <div className='dataset-summary__footer'>
-                  {this.props.isExpanded && this.renderLinks()}
-                  <div className='dataset-summary__mobile-footer visible-xs clearfix'>
-                    <Button onClick={this.props.onClickDataset}>
-                        <span className='sr-only'>Toggle more info</span>
-                        {this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}
-                    </Button>
-                  </div>
-              </div>}
           </div>
   }
 }

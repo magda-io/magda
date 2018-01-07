@@ -76,7 +76,7 @@ class FacetRegion extends Component {
      let regionType = option.regionType;
       return (
             <Button ref={b=>{if(b != null && onFocus === true){b.focus()}}}
-                    className='btn-facet-option btn btn-facet-option__location'
+                    className='btn-facet-option mui-btn btn-facet-option__location'
                     onClick={onClick.bind(this, option)}
                     title={option.regionName}>
               <span className='btn-facet-option__name'>{option.regionName}</span><br />
