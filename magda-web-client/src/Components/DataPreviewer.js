@@ -85,7 +85,7 @@ function mapStateToProps(state) {
   };
 }
 
-const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const  mapDispatchToProps = (dispatch) => {
   return bindActionCreators({
     fetchPreviewData: fetchPreviewData,
   }, dispatch);

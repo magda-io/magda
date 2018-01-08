@@ -193,7 +193,7 @@ class AppContainer extends React.Component {
 }
 
 
-const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const  mapDispatchToProps = (dispatch) => {
   return bindActionCreators({
     requestWhoAmI: requestWhoAmI,
   }, dispatch);

@@ -162,7 +162,7 @@ const mapStateToProps = (state, ownProps)=> {
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) =>
+const mapDispatchToProps = (dispatch) =>
    bindActionCreators({
     fetchRegionMapping: fetchRegionMapping,
   }, dispatch);

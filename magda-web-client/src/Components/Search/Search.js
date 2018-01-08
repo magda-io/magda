@@ -183,7 +183,7 @@ Search.contextTypes ={
 }
 
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) =>
+const mapDispatchToProps = (dispatch) =>
  bindActionCreators({
     fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
     fetchFeaturedPublishersFromRegistry: fetchFeaturedPublishersFromRegistry,

@@ -64,7 +64,7 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     { fetchPublisherSearchResults : fetchPublisherSearchResults
     },

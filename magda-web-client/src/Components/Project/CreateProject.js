@@ -71,7 +71,7 @@ class CreateProject extends Component {
 
     }
 
-    handleChange(event: MouseEvent, id: string){
+    handleChange(event: MouseEvent, id){
       const value = event.target.value && event.target.value;
 
       if(id === 'name'){
@@ -160,7 +160,7 @@ class CreateProject extends Component {
    }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>)=>{
+const mapDispatchToProps = (dispatch)=>{
   return bindActionCreators({
     validateFields: validateFields,
     resetFields: resetProjectFields,

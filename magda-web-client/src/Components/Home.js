@@ -53,7 +53,7 @@ const mapStateToProps=(state)=> {
   return {datasets, isFetching, error, isNewsFetching, newsItems, newsFetchingError, stats}
 }
 
-const mapDispatchToProps=(dispatch: Dispatch<*>)=> {
+const mapDispatchToProps=(dispatch)=> {
   return bindActionCreators({
     fetchFeaturedDatasets: fetchFeaturedDatasetsFromRegistry,
     fetchNewsfromRss: fetchNewsfromRss,
