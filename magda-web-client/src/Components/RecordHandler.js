@@ -9,7 +9,6 @@ import {config} from '../config';
 import ErrorHandler from './ErrorHandler';
 import CustomIcons from '../UI/CustomIcons';
 import RouteNotFound from './RouteNotFound';
-import type {StateRecord } from '../types';
 import {
   Route,
   Link,
@@ -151,7 +150,7 @@ class RecordHandler extends React.Component {
   }
 }
 
-function mapStateToProps(state: {record: StateRecord}) {
+function mapStateToProps(state) {
   const record = state.record;
   const dataset =record.dataset;
   const distribution =record.distribution;

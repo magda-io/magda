@@ -3,7 +3,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { FacetAction, FacetSearchJson } from '../types';
+import type { FacetAction, FacetSearchJson } from '../helpers/datasetSearch';
 
 export function requestPublishers(generalQuery:string, facetQuery:string):FacetAction{
   return {

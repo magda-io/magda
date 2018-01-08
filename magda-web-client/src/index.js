@@ -1,7 +1,5 @@
-// @flow
 // eslint-disable-next-line
 import'es6-shim';
-
 import createLogger from "redux-logger";
 import "./index.css";
 import {

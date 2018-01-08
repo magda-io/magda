@@ -3,7 +3,8 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { FacetAction, Error } from '../types';
+import type {Error } from '../types';
+import type {FacetAction} from '../helpers/datasetSearch';
 
 export function requestPublishers():FacetAction {
   return {

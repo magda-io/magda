@@ -3,7 +3,9 @@ import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type {DataSearchJson, FacetAction, SearchAction, Error } from '../types';
+import type { Error } from '../types';
+import type {DataSearchJson, FacetAction, SearchAction} from '../helpers/datasetSearch';
+
 
 export function requestResults(apiQuery: string ): SearchAction{
   return {

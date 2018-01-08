@@ -1,5 +1,5 @@
 // @flow
-import type { SearchState, DataSearchJson, Dataset, Query, FacetOption, Region, SearchAction} from '../types';
+import type { SearchState, DataSearchJson, Dataset, Query, FacetOption, Region, SearchAction} from '../helpers/datasetSearch';
 
 import findIndex from 'lodash.findindex';
 import findMatchingObjs from '../helpers/findMatchingObjs';

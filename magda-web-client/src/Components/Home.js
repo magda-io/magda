@@ -1,4 +1,3 @@
-// @flow
 import React from 'react';
 import Statistics from '../Components/Statistics';
 import News from '../UI/News';
