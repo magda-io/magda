@@ -11,6 +11,7 @@ import { fetchDatasetFromRegistry } from '../../actions/recordActions';
 import Notification from '../../UI/Notification';
 import { Link } from 'react-router-dom';
 import Button from 'muicss/lib/react/button';
+import Input from 'muicss/lib/react/input';
 
 import {
   Redirect,
@@ -129,15 +130,15 @@ class CreateProject extends Component {
                     <label className='input-group'>
                       Project title * :
                       {this.props.fieldErrors.name && <div className='field-error'>{this.props.fieldErrors.name}</div>}
-                      <input type='text' name='name' className={`form-control ${this.props.fieldErrors.name ? 'form-error' : ''}`} value={this.state.project.get('name')} onChange={(e: MouseEvent)=>this.handleChange(e, 'name')}/>
+                      <Input type='text' name='name' className={`${this.props.fieldErrors.name ? 'form-error' : ''}`} value={this.state.project.get('name')} onChange={(e: MouseEvent)=>this.handleChange(e, 'name')}/>
                     </label>
                     <label className='input-group'>
                       Project description * :
                       {this.props.fieldErrors.description && <div className='field-error'>{this.props.fieldErrors.description}</div>}
-                      <input type='text' name='description' className={`form-control ${this.props.fieldErrors.description ? 'form-error' : ''}`} value={this.state.project.get('description')} onChange={(e: MouseEvent)=>this.handleChange(e, 'description')}/>
+                      <Input type='text' name='description' className={`${this.props.fieldErrors.description ? 'form-error' : ''}`} value={this.state.project.get('description')} onChange={(e: MouseEvent)=>this.handleChange(e, 'description')}/>
                     </label>
 
-                    <input type='submit' value='Submit' className='btn btn-primary'  onClick={(e: MouseEvent)=>this.handleSubmit(e)}/>
+                    <Button onClick={e=>this.handleSubmit(e)}>Submit</Button>
                   </form>
                </div>
                <div className='col-sm-4'>

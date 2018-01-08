@@ -12,7 +12,7 @@ class AccountNavbar extends React.Component {
 
   render() {
     return (
-      <ul className="nav navbar-nav navbar-account">
+      <ul className="mui-list--unstyled">
         {this.props.user
           ? [
               <li key='user'>

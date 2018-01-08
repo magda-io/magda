@@ -33,6 +33,8 @@ import Login from './Components/Account/Login';
 import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
 import Container from 'muicss/lib/react/container';
+import Row from 'muicss/lib/react/row';
+
 
 import {
   Route,
@@ -101,22 +103,17 @@ class AppContainer extends React.Component {
     return (
       <ReactDocumentTitle title={config.appName}>
         <div>
-          <nav className='appContainer__nav'>
-                <Small>
-                  <div className='col-sm-2'>
+          <nav className='mui-container-fluid'>
+                <Row>
+                  <div className='mui-col-sm-2'>
                     <div className='navbar-header'>
                       <a className='navbar-brand' href='/'>
-                        <img
-                          className='logo'
-                          alt='data.gov.au-alpha'
-                          src={logo}
-                        />
+                        <img className='logo' alt='data.gov.au-alpha' src={logo}/>
                       </a>
                     </div>
                   </div>
-                  <div className='col-sm-10 nav-links'>
+                  <div className='mui-col-sm-10 nav-links'>
                     {config.disableAuthenticationFeatures || <AccountNavbar />}
-
                     <ul className='nav navbar-nav'>
                       {headerNavs.map(nav =>
                         <li key={nav[1]}>
@@ -125,39 +122,7 @@ class AppContainer extends React.Component {
                       )}
                     </ul>
                   </div>
-                </Small>
-                <ExtraSmall>
-                  <div className='mobile-nav'>
-                    <Button
-                      onClick={() => this.toggleMenu()}
-                    >
-                      {' '}<span className='sr-only'>Toggle navigation</span>
-                      {' '}MENU
-                      {' '}
-                    </Button>
-                    <a className='navbar-brand' href='/'>
-                      <img
-                        className='logo'
-                        alt='data.gov.au-alpha'
-                        src={logo}
-                      />
-                    </a>
-                    <div
-                      className={`navbar-collapse collapse ${this.state.isOpen
-                        ? 'in'
-                        : ''}`}
-                      aria-expanded={this.state.isOpen ? true : false}
-                    >
-                      <ul className='nav nav-pills nav-stacked'>
-                        {headerNavs.map(nav =>
-                          <li key={nav[1]}>
-                            <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </ExtraSmall>
+                </Row>
 
               <Container>
                 <div className='col-sm-8'>
