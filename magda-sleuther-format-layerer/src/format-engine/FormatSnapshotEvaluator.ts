@@ -1,8 +1,7 @@
-import { SnapshotEvaluator } from "@magda/typescript-common/src/format/SnapShotEvaluator";
-import { Snapshot } from "../../../magda-typescript-common/src/format/MeasureSnapShot";
-import { Snapshots } from "../../../magda-typescript-common/src/format/datastores/rawResults";
+import { SnapshotJudge } from "@magda/typescript-common/src/format/SnapShotEvaluator";
+import { Snapshot, Snapshots } from "../../../magda-typescript-common/src/format/MeasureSnapShot";
 
-export class FormatSnapshotEvaluator extends SnapshotEvaluator{
+export class FormatSnapshotJudge extends SnapshotJudge {
     constructor(snapshots: Snapshots) {
         super(snapshots)
     }

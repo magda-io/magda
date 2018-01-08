@@ -6,7 +6,7 @@ import { Formats } from "@magda/typescript-common/src/format/formats";
 
 /*
 * Tries to determine the format by downloading the downloadURL, and deciphering the MIME type
-* TODO not finished
+* TODO not unit tested
 */
 class DownloadMeasure extends Measure {
     public relatedDistribution: Record;
@@ -32,68 +32,69 @@ class DownloadMeasure extends Measure {
 
 /*
 * Tries to determine the format by deciphering DCAT-DISTRIBUTION-STRING -> format
-* TODO not finished
+* TODO separate words in cases when they are separated by a & or space or etc.
 */
 class DcatFormatMeasure extends Measure {
     public relatedDistribution: Record;
+
+    private applyTransform(format: string, transformFormat: any) {
+            const newFormat = transformFormat(format);
+        return newFormat;
+    }
+
+    private empty(str: string) {
+        return "";
+    }
+
+    private lowercase(str: string) {
+        return str.toLowerCase();
+    }
+
+    private removePeriod(str: string) {
+        if (str[0] === ".") {
+            return str.slice(1);
+        } else {
+            return str;
+        }
+    }
+
+    private identity(str: string) {
+        return str;
+    }
+
     getSelectedFormats(): SelectedFormats {
-        let {
-            default: Registry
-        } = require("@magda/typescript-common/dist/Registry");
-        let {
-            default: AsyncPage,
-            forEachAsync
-        } = require("@magda/typescript-common/dist/AsyncPage");
-        let fs = require("fs");
 
-        let {
-            Record
-        } = require("@magda/typescript-common/dist/generated/registry/api");
-        const registry = new Registry({
-            baseUrl:
-                process.env.REGISTRY_URL ||
-                process.env.npm_package_config_registryUrl ||
-                "http://localhost:6100/v0"
-        });
+        const { format } = this.relatedDistribution.aspects[
+            "dcat-distribution-strings"
+        ];
 
-        let formats = {};
+        let processedFormat: string;
 
-        let maxPages = Infinity;
+        const transforms = [
+            this.identity, (str: string) => this.removePeriod(this.lowercase(str))
+        ];
 
-        const registryPage = AsyncPage.create(previous => {
-            console.log(`Fetching page ${previous ? previous._pagei + 1 : 0}`);
-            if (previous === undefined) {
-                return registry
-                    .getRecords(["dcat-distribution-strings"])
-                    .then(page => Object.assign({}, page, { _pagei: 0 }));
-            } else if (
-                previous.records.length === 0 ||
-                previous._pagei >= maxPages - 1
-            ) {
-                // Last page was an empty page, no more records left
-                return undefined;
-            } else {
-                return registry
-                    .getRecords(
-                        ["dcat-distribution-strings"],
-                        undefined,
-                        previous.nextPageToken,
-                        undefined
-                    )
-                    .then(page =>
-                        Object.assign({}, page, { _pagei: previous._pagei + 1 })
-                    );
-            }
-        }).map(page => page.records);
+        for (const tf of transforms) {
+            processedFormat = this.applyTransform(format, tf);
+        }
 
-        let p = forEachAsync(registryPage, 20, record => {
-            const { downloadURL, format } = record.aspects[
-                "dcat-distribution-strings"
-            ];
-            formats[format] = (formats[format] || 0) + 1;
-        }).then(() => {
-            fs.writeFileSync("formats.json", JSON.stringify(formats, null, 2));
-        });
+        // hard coded rules for separating out multiple formats when provided
+        let splitFormat: Array<string>;
+        let finalFormat: string;
+
+        splitFormat = processedFormat.split("/");
+        if(splitFormat.length > 2) throw new Error("a MIME type has more than 1 slash: " + processedFormat);
+        if(splitFormat.length > 1) finalFormat = splitFormat[2];
+
+        return {
+            selectedFormats: [
+                {
+                    format: (<any>Formats)[processedFormat],
+                    correctConfidenceLevel: 100,
+                    distribution: this.relatedDistribution
+                }
+            ]
+        }
     }
 }
 
@@ -104,6 +105,27 @@ class DcatFormatMeasure extends Measure {
 class DownloadExtensionMeasure extends Measure {
     public relatedDistribution: Record;
     getSelectedFormats(): SelectedFormats {
-        throw new Error("Method not implemented.");
+        const { downloadURL } = this.relatedDistribution.aspects["dcat-distribution-strings"];
+
+        const urlRegexes: Array<Array<string>> = [
+            [".*\\.geojson$", "GeoJSON"],
+            [".*?.*service=wms.*", "WMS"],
+            [".*?.*service=wfs.*", "WFS"],
+            [".*\\.(shp|shz|dbf)(\\.zip)?$", "SHP"],
+            [".*\\.(pdf)(\\.zip)?$", "PDF"],
+            [".*\\.(xls|xlsx)(\\.zip)?$", "Excel"],
+            [".*\\.(json)(\\.zip)?$", "JSON"],
+            [".*\\.(xml)(\\.zip)?$", "XML"],
+            [".*\\.(tif)(\\.zip)?$", "TIFF"],
+            [".*\\.(zip)$", "ZIP"],
+            [".*\\.(html|xhtml|php|asp|aspx|jsp)(\\?.*)?", "HTML"]
+        ];
+
+        let formatFromURL: Array<string> = [];
+        urlRegexes.forEach(function(regex) {
+            if(downloadURL.matches(regex[0])) formatFromURL.push(regex[1]);
+        });
+
     }
+
 }
