@@ -7,3 +7,7 @@ export interface Snapshot {
     measure: Measure,
     output: SelectedFormats
 }
+
+export interface Snapshots {
+    snapshots: Snapshot[];
+}
