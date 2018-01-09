@@ -9,5 +9,10 @@ export abstract class SnapshotJudge {
         this.snapshots = snapshots;
     }
 
-    public abstract getBestSnapshot(): Snapshot; 
+    public abstract getBestSnapshot(): SnapshotJudgeResult; 
+}
+
+export interface SnapshotJudgeResult {
+    chosenSnapshot: Snapshot;
+    confidenceLevel: number;
 }

@@ -8,7 +8,7 @@ import { Formats } from "@magda/typescript-common/src/format/formats";
 * Tries to determine the format by downloading the downloadURL, and deciphering the MIME type
 * TODO not unit tested
 */
-class DownloadMeasure extends Measure {
+export class DownloadMeasure extends Measure {
     public relatedDistribution: Record;
     getSelectedFormats(): SelectedFormats {
         const { downloadURL } = this.relatedDistribution.aspects[
@@ -18,6 +18,7 @@ class DownloadMeasure extends Measure {
 
         const processedMime: string = rawMime.split(rawMime)[1];
 
+        this.canDeduceFormat = true;
         return {
             selectedFormats: [
                 {
@@ -32,13 +33,13 @@ class DownloadMeasure extends Measure {
 
 /*
 * Tries to determine the format by deciphering DCAT-DISTRIBUTION-STRING -> format
-* TODO separate words in cases when they are separated by a & or space or etc.
+* TODO Unit tests
 */
-class DcatFormatMeasure extends Measure {
+export class DcatFormatMeasure extends Measure {
     public relatedDistribution: Record;
 
     private applyTransform(format: string, transformFormat: any) {
-            const newFormat = transformFormat(format);
+        const newFormat = transformFormat(format);
         return newFormat;
     }
 
@@ -46,16 +47,24 @@ class DcatFormatMeasure extends Measure {
         return "";
     }
 
-    private lowercase(str: string) {
+    private lowerCase(str: string) {
         return str.toLowerCase();
     }
 
     private removePeriod(str: string) {
-        if (str[0] === ".") {
-            return str.slice(1);
-        } else {
-            return str;
-        }
+       return str.split('.').join('');
+    }
+
+    private replaceCommaThenSpace(str: string) {
+        return str.split(', ').join(' ');
+    }
+
+    private replaceSpaceThenComma(str: string) {
+        return str.split(' ,').join(' ');
+    }
+
+    private replaceComma(str: string) {
+        return str.split(',').join(' ');
     }
 
     private identity(str: string) {
@@ -63,15 +72,20 @@ class DcatFormatMeasure extends Measure {
     }
 
     getSelectedFormats(): SelectedFormats {
-
         const { format } = this.relatedDistribution.aspects[
             "dcat-distribution-strings"
         ];
 
+        if(format === null || format === "") {
+            this.canDeduceFormat = false;
+            return null;
+        }
+
         let processedFormat: string;
 
         const transforms = [
-            this.identity, (str: string) => this.removePeriod(this.lowercase(str))
+            this.identity,
+            (str: string) => this.lowerCase(this.removePeriod(this.replaceComma(this.replaceSpaceThenComma(this.replaceCommaThenSpace(str)))))
         ];
 
         for (const tf of transforms) {
@@ -80,21 +94,48 @@ class DcatFormatMeasure extends Measure {
 
         // hard coded rules for separating out multiple formats when provided
         let splitFormat: Array<string>;
-        let finalFormat: string;
+        let finalFormat: Array<string>;
 
+        // e.g: application/exe
         splitFormat = processedFormat.split("/");
-        if(splitFormat.length > 2) throw new Error("a MIME type has more than 1 slash: " + processedFormat);
-        if(splitFormat.length > 1) finalFormat = splitFormat[2];
+        if (splitFormat.length > 2)
+            throw new Error(
+                "a MIME type has more than 1 slash: " + processedFormat
+            );
+        if (splitFormat.length > 1) finalFormat[0] = splitFormat[1];
+        else {
+            // E.g. pdf & xlsx & doc & docx
+            splitFormat = processedFormat.split(" & ");
+            if(splitFormat.length > 1) finalFormat = splitFormat;
+            else {
+                splitFormat = processedFormat.split(" ");
+                if(splitFormat.length > 1) {
+                    // E.g. zip (xlsx)
+                    if(processedFormat.indexOf('(') > -1) {
+                        //TODO make this more efficient or elegant
+                        let length: number = (processedFormat.substr(processedFormat.indexOf(')')).length - processedFormat.substr(processedFormat.indexOf('(')).length);
+                        finalFormat[0] = processedFormat.substr(processedFormat.indexOf('('), length);
+                    } else {
+                        // E.g. ATOM
+                        finalFormat = splitFormat;
+                    }
+                } else {
+                    // can only deduce 1 format in this scenario
+                    finalFormat[0] = processedFormat;
+                }
+            }
+        }
 
+        this.canDeduceFormat = true;
         return {
-            selectedFormats: [
-                {
-                    format: (<any>Formats)[processedFormat],
+            selectedFormats: finalFormat.map(eachFormat => {
+                return {
+                    format: (<any>Formats)[eachFormat],
                     correctConfidenceLevel: 100,
                     distribution: this.relatedDistribution
-                }
-            ]
-        }
+                };
+            })
+        };
     }
 }
 
@@ -102,11 +143,21 @@ class DcatFormatMeasure extends Measure {
 * Tries to determine the format by parsing the downloadURL string and looking at the extension
 * TODO not finished
 */
-class DownloadExtensionMeasure extends Measure {
+export class DownloadExtensionMeasure extends Measure {
     public relatedDistribution: Record;
     getSelectedFormats(): SelectedFormats {
-        const { downloadURL } = this.relatedDistribution.aspects["dcat-distribution-strings"];
+        const { downloadURL } = this.relatedDistribution.aspects[
+            "dcat-distribution-strings"
+        ];
 
+        if(downloadURL === null || downloadURL === "") {
+            this.canDeduceFormat = false;
+            return null;
+        }
+
+        //NOTE regexes do not allow more than 1 regex to match 1 url + break in forEach loop does this too
+        // but this Measure has been programmed to make it easily extensible to allowing multiple formats
+        // to be deduced by 1 url
         const urlRegexes: Array<Array<string>> = [
             [".*\\.geojson$", "GeoJSON"],
             [".*?.*service=wms.*", "WMS"],
@@ -121,11 +172,25 @@ class DownloadExtensionMeasure extends Measure {
             [".*\\.(html|xhtml|php|asp|aspx|jsp)(\\?.*)?", "HTML"]
         ];
 
-        let formatFromURL: Array<string> = [];
-        urlRegexes.forEach(function(regex) {
-            if(downloadURL.matches(regex[0])) formatFromURL.push(regex[1]);
-        });
+        let formatsFromURL: Array<string> = [];
+        urlRegexes.some(function(regex) {
+            if (downloadURL.matches(regex[0])) {
+                formatsFromURL.push(regex[1]);
+                return true; // means 'break'
+            }
 
+            return false; // means 'continue'
+        })
+
+        this.canDeduceFormat = true;
+        return {
+            selectedFormats: formatsFromURL.map(eachFormat => {
+                return {
+                    format: (<any>Formats)[eachFormat],
+                    correctConfidenceLevel: 100,
+                    distribution: this.relatedDistribution
+                };
+            })
+        };
     }
-
 }
