@@ -3,10 +3,9 @@ import * as _ from "lodash";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { RecordLayer } from "@magda/typescript-common/src/registry-manual/api";
-import summarizeAspectDef, {
-    SummarizeAspect,
-    RetrieveResult
-} from "./summarizeAspectDef";
+import formatAspectDef, {
+    FormatAspect
+} from "./formatAspectDef";
 import unionToThrowable from "@magda/typescript-common/src/util/unionToThrowable";
 import {
     FormatSortedRecords,
