@@ -4,6 +4,7 @@ import * as moment from 'moment';
 import * as URI from 'urijs';
 
 export interface CreateTransformerOptions {
+    id: string,
     name: string,
     sourceUrl: string,
     datasetAspectBuilders: AspectBuilder[],
@@ -12,6 +13,7 @@ export interface CreateTransformerOptions {
 }
 
 export default function createTransformer({
+    id,
     name,
     sourceUrl,
     datasetAspectBuilders,
@@ -19,6 +21,7 @@ export default function createTransformer({
     organizationAspectBuilders
 }: CreateTransformerOptions) {
     return new ProjectOpenDataTransformer({
+        sourceId: id,
         datasetAspectBuilders: datasetAspectBuilders,
         distributionAspectBuilders: distributionAspectBuilders,
         organizationAspectBuilders: organizationAspectBuilders,
@@ -26,6 +29,7 @@ export default function createTransformer({
             moment: moment,
             URI: URI,
             projectOpenData: Object.freeze({
+                id: id,
                 name: name,
                 url: sourceUrl
             })

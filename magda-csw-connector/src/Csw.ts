@@ -12,6 +12,7 @@ import { groupBy } from 'lodash';
 
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
+    public readonly id: string;
     public readonly name: string;
     public readonly pageSize: number;
     public readonly maxRetries: number;
@@ -23,11 +24,13 @@ export default class Csw implements ConnectorSource {
 
     constructor(options: CswOptions) {
         this.baseUrl = new URI(options.baseUrl);
+        this.id = options.id;
         this.name = options.name;
         this.pageSize = options.pageSize || 10;
         this.maxRetries = options.maxRetries || 10;
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
         this.urlBuilder = new CswUrlBuilder({
+            id: options.id,
             name: options.name,
             baseUrl: options.baseUrl
         });
@@ -206,6 +209,7 @@ export default class Csw implements ConnectorSource {
 
 export interface CswOptions {
     baseUrl: string;
+    id: string;
     name: string;
     pageSize?: number;
     maxRetries?: number;

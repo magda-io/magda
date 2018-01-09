@@ -8,7 +8,7 @@
             "title": "The distributions of this dataset.",
             "type": "array",
             "items": {
-                "title": "A URI of a distribution of this dataset.",
+                "title": "A ID of a distribution of this dataset.",
                 "type": "string",
                 "links": [
                     {

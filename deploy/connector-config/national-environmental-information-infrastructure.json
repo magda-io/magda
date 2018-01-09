@@ -1,5 +1,6 @@
 {
     "type": "magda-csw-connector",
+    "id": "neii",
     "name": "National Environmental Information Infrastructure",
     "sourceUrl": "http://neii.bom.gov.au/services/catalogue/csw",
     "pageSize": 100,

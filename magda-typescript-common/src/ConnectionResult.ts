@@ -1,4 +1,5 @@
-import CreationFailure from './CreationFailure';
+import AspectCreationFailure from './AspectCreationFailure';
+import RecordCreationFailure from './RecordCreationFailure';
 
 export default class ConnectionResult {
     public aspectDefinitionsConnected = 0;
@@ -6,10 +7,10 @@ export default class ConnectionResult {
     public datasetsConnected = 0;
     public distributionsConnected = 0;
 
-    public aspectDefinitionFailures = Array<CreationFailure>();
-    public organizationFailures = Array<CreationFailure>();
-    public datasetFailures = Array<CreationFailure>();
-    public distributionFailures = Array<CreationFailure>();
+    public aspectDefinitionFailures = Array<AspectCreationFailure>();
+    public organizationFailures = Array<RecordCreationFailure>();
+    public datasetFailures = Array<RecordCreationFailure>();
+    public distributionFailures = Array<RecordCreationFailure>();
 
     public summarize(): string {
         let result = '';

@@ -1,5 +1,6 @@
 {
     "type": "magda-ckan-connector",
+    "id": "qld",
     "name": "Queensland Government",
     "sourceUrl": "https://data.qld.gov.au/",
     "pageSize": 100,

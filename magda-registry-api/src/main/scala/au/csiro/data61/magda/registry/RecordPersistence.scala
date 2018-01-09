@@ -120,7 +120,17 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       _ <- if (id == newRecord.id) Success(newRecord) else Failure(new RuntimeException("The provided ID does not match the record's ID."))
       oldRecordWithoutAspects <- this.getByIdWithAspects(session, id) match {
         case Some(record) => Success(record)
-        case None         => createRecord(session, newRecord).map(_.copy(aspects = Map()))
+        // Possibility of a race condition here. The record doesn't exist, so we try to create it.
+        // But someone else could have created it in the meantime. So if our create fails, try one
+        // more time to get an existing one. We use a nested transaction so that, if the create fails,
+        // we don't end up with an extraneous record creation event in the database.
+        case None         => DB.localTx { nested => createRecord(nested, newRecord).map(_.copy(aspects = Map())) } match {
+          case Success(record) => Success(record)
+          case Failure(e) => this.getByIdWithAspects(session, id) match {
+            case Some(record) => Success(record)
+            case None => Failure(e)
+          }
+        }
       }
       recordPatch <- Try {
         // Diff the old record and the new one, ignoring aspects
@@ -273,8 +283,18 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   def putRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, newAspect: JsObject): Try[JsObject] = {
     for {
       oldAspect <- this.getRecordAspectById(session, recordId, aspectId) match {
-        case Some(record) => Success(record)
-        case None         => createRecordAspect(session, recordId, aspectId, newAspect)
+        case Some(aspect) => Success(aspect)
+        // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
+        // But someone else could have created it in the meantime. So if our create fails, try one
+        // more time to get an existing one. We use a nested transaction so that, if the create fails,
+        // we don't end up with an extraneous record creation event in the database.
+        case None         => DB.localTx { nested => createRecordAspect(nested, recordId, aspectId, newAspect) } match {
+          case Success(aspect) => Success(aspect)
+          case Failure(e) => this.getRecordAspectById(session, recordId, aspectId) match {
+            case Some(aspect) => Success(aspect)
+            case None => Failure(e)
+          }
+        }
       }
       recordAspectPatch <- Try {
         // Diff the old record aspect and the new one

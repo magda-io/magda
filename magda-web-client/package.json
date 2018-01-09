@@ -4,6 +4,8 @@
   "version": "0.0.32-0",
   "license": "Apache-2.0",
   "scripts": {
+    "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
+    "deploy-storybook": "build-storybook -c .storybook -o .out",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "build-css": "node-sass src/ -o src/",
     "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
@@ -19,6 +21,11 @@
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.32-0",
+    "@storybook/react": "^3.2.17",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-es2016": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
     "d3-drag": "^1.0.1",
     "d3-selection": "^1.0.2",
     "deep-freeze": "0.0.1",

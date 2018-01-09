@@ -1,5 +1,6 @@
 {
     "type": "magda-csw-connector",
+    "id": "sdinsw",
     "name": "NSW Land and Property",
     "sourceUrl": "https://sdi.nsw.gov.au/csw",
     "pageSize": 100,

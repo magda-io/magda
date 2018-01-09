@@ -1,3 +1,10 @@
 {
-  "presets": ["flow"]
+  "presets": ["flow"],
+  "presets": ["es2015", "es2016", "stage-0", "react"],
+  "plugins": [
+    "transform-object-rest-spread",
+    "transform-decorators-legacy",
+    "transform-class-properties",
+    "babel-root-slash-import"
+  ]
 }

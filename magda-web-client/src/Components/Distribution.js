@@ -1,6 +1,6 @@
 // @flow
 import CustomIcons from '../UI/CustomIcons';
-import DataPreviewer from '../UI/DataPreviewer';
+import DataPreviewer from '../Components/DataPreviewer';
 import type {ParsedDistribution} from '../helpers/record';
 import React from 'react';
 import { Link } from 'react-router-dom';

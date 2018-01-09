@@ -1,5 +1,6 @@
 {
     "type": "magda-csw-connector",
+    "id": "listtas",
     "name": "Tasmania TheList",
     "sourceUrl": "https://data.thelist.tas.gov.au:443/datagn/srv/eng/csw",
     "pageSize": 100,

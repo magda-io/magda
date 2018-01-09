@@ -40,6 +40,7 @@ export interface CkanOrganizationListResponse {
 
 export interface CkanOptions {
     baseUrl: string;
+    id: string,
     name: string;
     apiBaseUrl?: string;
     pageSize?: number;
@@ -49,6 +50,7 @@ export interface CkanOptions {
 }
 
 export default class Ckan implements ConnectorSource {
+    public readonly id: string;
     public readonly name: string;
     public readonly pageSize: number;
     public readonly maxRetries: number;
@@ -58,6 +60,7 @@ export default class Ckan implements ConnectorSource {
 
     constructor({
         baseUrl,
+        id,
         name,
         apiBaseUrl,
         pageSize = 1000,
@@ -65,12 +68,14 @@ export default class Ckan implements ConnectorSource {
         secondsBetweenRetries = 10,
         ignoreHarvestSources = []
     }: CkanOptions) {
+        this.id = id;
         this.name = name;
         this.pageSize = pageSize;
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
         this.ignoreHarvestSources = ignoreHarvestSources;
         this.urlBuilder = new CkanUrlBuilder({
+            id: id,
             name: name,
             baseUrl,
             apiBaseUrl

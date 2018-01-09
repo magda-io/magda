@@ -4,10 +4,8 @@ import './DropDown.css';
 class DropDown extends Component {
   constructor(props){
     super(props);
-
     this.select = this.select.bind(this);
     this.toggle = this.toggle.bind(this);
-
     this.state = {
       isOpen: false
     };
@@ -28,7 +26,6 @@ class DropDown extends Component {
   }
 
   render(){
-
     return (
       <div className={`dropdown ${this.state.isOpen ? 'is-open': ''}`}>
         <button className='dropdown__toggle-btn btn'
