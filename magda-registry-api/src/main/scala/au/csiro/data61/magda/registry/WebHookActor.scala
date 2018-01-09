@@ -16,6 +16,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.SourceQueueWithComplete
 import akka.stream.DelayOverflowStrategy
 import akka.stream.Attributes
+import com.typesafe.config.Config
 
 object WebHookActor {
   case class Process(ignoreWaitingForResponse: Boolean = false, aspectIds: Option[List[String]] = None, webHookId: Option[String] = None)
@@ -24,16 +25,16 @@ object WebHookActor {
 
   case class Status(isProcessing: Option[Boolean])
 
-  def props(registryApiBaseUrl: String) = Props(new AllWebHooksActor(registryApiBaseUrl))
+  def props(registryApiBaseUrl: String)(implicit config: Config) = Props(new AllWebHooksActor(registryApiBaseUrl))
 
-  private def createWebHookActor(system: ActorSystem, registryApiBaseUrl: String, hook: WebHook): ActorRef = {
+  private def createWebHookActor(system: ActorSystem, registryApiBaseUrl: String, hook: WebHook)(implicit config: Config): ActorRef = {
     system.actorOf(Props(new SingleWebHookActor(hook.id.get, registryApiBaseUrl)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8") + "-" + java.util.UUID.randomUUID.toString)
   }
 
   private case class GotAllWebHooks(webHooks: List[WebHook], startup: Boolean)
   private case class DoneProcessing(result: Option[WebHookProcessingResult], exception: Option[Throwable] = None)
 
-  private class AllWebHooksActor(val registryApiBaseUrl: String) extends Actor with ActorLogging {
+  private class AllWebHooksActor(val registryApiBaseUrl: String)(implicit val config: Config) extends Actor with ActorLogging {
     import context.dispatcher
 
     private var webHookActors = Map[String, ActorRef]()
@@ -103,7 +104,7 @@ object WebHookActor {
     }
   }
 
-  private class SingleWebHookActor(val id: String, val registryApiBaseUrl: String) extends Actor with ActorLogging {
+  private class SingleWebHookActor(val id: String, val registryApiBaseUrl: String)(implicit val config: Config) extends Actor with ActorLogging {
     import context.dispatcher
 
     val MAX_EVENTS = 100
@@ -127,7 +128,7 @@ object WebHookActor {
           count += 1
           x
         }
-        .delay(1 seconds, OverflowStrategy.backpressure).withAttributes(Attributes.inputBuffer(1, 1)) // Make sure we only execute once per second to prevent sending an individual post for every event.
+        .delay(config.getInt("webhookActorTickRate") milliseconds, OverflowStrategy.backpressure).withAttributes(Attributes.inputBuffer(1, 1)) // Make sure we only execute once per webhookActorTickRate to prevent sending an individual post for every event.
         .mapAsync(1) {
           ignoreWaitingForResponse =>
             val webHook = getWebhook()

@@ -61,7 +61,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       lastEventId.map(v => sqls"eventId <= $v"),
       recordId.map(v => sqls"data->>'recordId' = $v")).filter(_.isDefined)
 
-    val eventTypesFilter =
+    val eventTypesFilter = if (eventTypes.isEmpty) sqls"1=1" else
       SQLSyntax.joinWithOr(eventTypes.map(v => v.value).map(v => sqls"eventtypeid = $v").toArray: _*)
 
     val linkAspects = RecordPersistence.buildDereferenceMap(session, aspectIds)
@@ -73,10 +73,15 @@ object EventPersistence extends Protocols with DiffsonProtocol {
                          and RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
     }
 
-    val aspectsSql = if (aspectIds.isEmpty) sqls"1=1" else SQLSyntax.joinWithOr((aspectIds.map(v => sqls"data->>'aspectId' = $v") + sqls"data->>'aspectId' IS NULL").toArray: _*)
-    val dereferenceSelectorsSql = if (dereferenceSelectors.isEmpty) sqls"1=1" else SQLSyntax.joinWithOr(dereferenceSelectors.toArray: _*)
+    val aspectsSql = if (aspectIds.isEmpty) None else Some(SQLSyntax.joinWithOr((aspectIds.map(v => sqls"data->>'aspectId' = $v") + sqls"data->>'aspectId' IS NULL").toArray: _*))
+    val dereferenceSelectorsSql = if (dereferenceSelectors.isEmpty) None else Some(SQLSyntax.joinWithOr(dereferenceSelectors.toArray: _*))
 
-    val whereClause = SQLSyntax.where(SQLSyntax.joinWithAnd((filters.map(_.get)): _*).and(aspectsSql.or(dereferenceSelectorsSql)))
+    val whereClause = SQLSyntax.where((SQLSyntax.joinWithAnd((filters.map(_.get)): _*)).and((aspectsSql, dereferenceSelectorsSql) match {
+      case (Some(aspectSql), Some(dereferenceSql)) => aspectSql.or(dereferenceSql)
+      case (Some(aspectSql), None)                 => aspectSql
+      case (None, Some(dereferenceSql))            => dereferenceSql
+      case (None, None)                            => sqls"1=1"
+    }).and(eventTypesFilter))
 
     val totalCount = sql"select count(*) from Events $whereClause".map(_.int(1)).single.apply().getOrElse(0)
 

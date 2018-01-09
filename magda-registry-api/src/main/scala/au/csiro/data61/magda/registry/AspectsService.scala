@@ -41,14 +41,15 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
         entity(as[AspectDefinition]) { aspect =>
-          DB localTx { session =>
+          val result = DB localTx { session =>
             AspectPersistence.create(session, aspect) match {
               case Success(result) =>
-                webHookActor ! WebHookActor.Process()
                 complete(result)
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
+          webHookActor ! WebHookActor.Process()
+          result
         }
       }
     }
@@ -83,14 +84,15 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
       {
         requireIsAdmin(authClient)(system, config) { _ =>
           entity(as[AspectDefinition]) { aspect =>
-            DB localTx { session =>
+            val result = DB localTx { session =>
               AspectPersistence.putById(session, id, aspect) match {
                 case Success(result) =>
-                  webHookActor ! WebHookActor.Process()
                   complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
+            webHookActor ! WebHookActor.Process()
+            result
           }
         }
       }
@@ -109,14 +111,15 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
       {
         requireIsAdmin(authClient)(system, config) { _ =>
           entity(as[JsonPatch]) { aspectPatch =>
-            DB localTx { session =>
+            val result = DB localTx { session =>
               AspectPersistence.patchById(session, id, aspectPatch) match {
-                case Success(result)    => 
-                  webHookActor ! WebHookActor.Process()
+                case Success(result) =>
                   complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
+            webHookActor ! WebHookActor.Process()
+            result
           }
         }
       }

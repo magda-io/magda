@@ -124,11 +124,11 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
             val result = DB localTx { session =>
               RecordPersistence.putRecordById(session, id, record) match {
                 case Success(aspect) =>
-                  webHookActor ! WebHookActor.Process(false, Some(record.aspects.map(_._1).toList))
                   complete(record)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
+            webHookActor ! WebHookActor.Process(false, Some(record.aspects.map(_._1).toList))
             result
           }
         }

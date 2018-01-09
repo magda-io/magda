@@ -21,8 +21,6 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
   private implicit val materializer: ActorMaterializer = ActorMaterializer()(actorSystem)
 
   def sendSomeNotificationsForOneWebHook(id: String, webHook: WebHook, eventPage: EventsPage): Future[WebHookProcessor.SendResult] = {
-
-    //    val events = if (!startup && webHook.isWaitingForResponse.getOrElse(false)) List() else eventPage.events
     val events = eventPage.events
     val relevantEventTypes = webHook.eventTypes
 

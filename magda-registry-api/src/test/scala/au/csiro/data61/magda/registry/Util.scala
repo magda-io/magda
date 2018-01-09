@@ -35,7 +35,7 @@ object Util {
 
     }
 
-    Util.blockUntil("2") { () =>
+    Util.blockUntil("Hook is finished processing") { () =>
       Await.result(actor ? WebHookActor.GetStatus(hookName), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing == Some(false)
     }
   }

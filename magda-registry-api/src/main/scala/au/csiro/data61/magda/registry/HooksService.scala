@@ -40,12 +40,13 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     pathEnd {
       entity(as[WebHook]) { hook =>
         DB localTx { session =>
-          HookPersistence.create(session, hook) match {
+          val result = HookPersistence.create(session, hook) match {
             case Success(result) =>
-              webHookActor ! WebHookActor.InvalidateWebhookCache
               complete(result)
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
+          webHookActor ! WebHookActor.InvalidateWebhookCache
+          result
         }
       }
     }
@@ -81,12 +82,13 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
       {
         entity(as[WebHook]) { hook =>
           DB localTx { session =>
-            HookPersistence.putById(session, id, hook) match {
+            val result = HookPersistence.putById(session, id, hook) match {
               case Success(result) =>
-                webHookActor ! WebHookActor.InvalidateWebhookCache
                 complete(result)
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
+            webHookActor ! WebHookActor.InvalidateWebhookCache
+            result
           }
         }
       }

@@ -58,6 +58,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
       |akka.loglevel = INFO
       |authApi.baseUrl = "http://localhost:6104"
       |authorization.skip=false
+      |webhookActorTickRate=0
     """.stripMargin
 
   override def withFixture(test: OneArgTest) = {
@@ -68,7 +69,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     val authClient = new AuthApiClient(httpFetcher)(testConfig, system, executor, materializer)
 
     GlobalSettings.loggingSQLAndTime = new LoggingSQLAndTimeSettings(
-      enabled = false,
+      enabled = true,
       singleLineMode = true,
       logLevel = 'debug)
 
@@ -89,7 +90,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
     flyway.migrate()
 
-    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/"))
+    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/")(testConfig))
     val api = new Api(actor, authClient, testConfig, system, executor, materializer)
 
     def asNonAdmin(req: HttpRequest): HttpRequest = {

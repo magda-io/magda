@@ -19,87 +19,493 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
 import au.csiro.data61.magda.model.Registry._
-import spray.json.JsObject
-import spray.json.JsString
-import spray.json.JsonParser
+import spray.json._
 import java.util.UUID
+import gnieh.diffson._
+import gnieh.diffson.sprayJson._
 
 class WebHookProcessingSpec extends ApiSpec {
 
-  it("includes aspectDefinitions if events modified them") { param =>
-    testWebHook(param, None) { (payloads, actor) =>
-      val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+  describe("includes") {
+    it("aspectDefinitions if events modified them") { param =>
+      testWebHook(param, None) { (payloads, actor) =>
+        val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 0
+        payloads(0).aspectDefinitions.get.length shouldBe 1
+        payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
       }
+    }
 
-      Util.waitUntilDone(actor, "test")
+    it("records if events modified them") { param =>
+      testWebHook(param, None) { (payloads, actor) =>
+        val record = Record("testId", "testName", Map())
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
 
-      payloads.length shouldBe 1
-      payloads(0).events.get.length shouldBe 1
-      payloads(0).records.get.length shouldBe 0
-      payloads(0).aspectDefinitions.get.length shouldBe 1
-      payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
+        Util.waitUntilDone(actor, "test")
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 1
+        payloads(0).records.get(0).id shouldBe ("testId")
+        payloads(0).aspectDefinitions.get.length shouldBe 0
+      }
+    }
+
+    it("records for events modifying aspects that were requested") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
+        val a = AspectDefinition("A", "A", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.clear()
+
+        val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 1
+        payloads(0).aspectDefinitions.get.length shouldBe 0
+      }
+    }
+
+    it("requested aspects in records") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
+        val a = AspectDefinition("A", "A", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.clear()
+
+        val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads(0).records.get(0).aspects.equals(Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
+      }
+    }
+
+    it("optional aspects in records") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A")), optionalAspects = Some(List("B"))))
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
+        val a = AspectDefinition("A", "A", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.clear()
+
+        val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads(0).records.get(0).aspects.equals(Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
+      }
     }
   }
 
-  it("includes records if events modified them") { param =>
-    testWebHook(param, None) { (payloads, actor) =>
-      val record = Record("testId", "testName", Map())
-      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+  describe("doesn't include") {
+    it("unrequested aspects in records") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
+        val a = AspectDefinition("A", "A", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.clear()
+
+        val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")), "B" -> JsObject("bvalue" -> JsString("new value"))))
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads(0).records.get(0).aspects.get("A").isDefined shouldBe true
+        payloads(0).records.get(0).aspects.get("B").isDefined shouldBe false
       }
-
-      Util.waitUntilDone(actor, "test")
-
-      payloads.length shouldBe 1
-      payloads(0).events.get.length shouldBe 1
-      payloads(0).records.get.length shouldBe 1
-      payloads(0).records.get(0).id shouldBe ("testId")
-      payloads(0).aspectDefinitions.get.length shouldBe 0
     }
   }
 
-  it("includes records only for events modifying aspects that were requested") { param =>
-    val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
-    testWebHook(param, Some(webHook)) { (payloads, actor) =>
-      val a = AspectDefinition("A", "A", Some(JsObject()))
-      param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+  describe("posts") {
+    it("for hooks listening to a single aspect even if multiple aspects were updated") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
+        val a = AspectDefinition("A", "A", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.clear()
+
+        val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")), "B" -> JsObject("bvalue" -> JsString("new value"))))
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.length shouldBe (1)
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 1
+      }
+    }
+
+    it("for aspects that were only optionally requested even if they're not present on the record") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("B")), optionalAspects = Some(List("C"))))
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
+        val a = AspectDefinition("A", "A", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.clear()
+
+        val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.length shouldBe 1
+        payloads(0).events.get.length shouldBe 1
+        payloads(0).records.get.length shouldBe 1
+        payloads(0).aspectDefinitions.get.length shouldBe 0
+      }
+    }
+
+    describe("for event:") {
+      it("record created") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.CreateRecord))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val record = Record("testId", "testName", Map())
+          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe 1
+          payloads(0).events.get.length shouldBe 1
+          payloads(0).events.get(0).eventType shouldBe (EventType.CreateRecord)
+          payloads(0).records.get.length shouldBe 1
+        }
       }
 
-      val b = AspectDefinition("B", "B", Some(JsObject()))
-      param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+      it("aspect definition created") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.CreateAspectDefinition))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val a = AspectDefinition("A", "A", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe 1
+          payloads(0).events.get.length shouldBe 1
+          payloads(0).events.get(0).eventType shouldBe (EventType.CreateAspectDefinition)
+          payloads(0).aspectDefinitions.get.length shouldBe 1
+        }
       }
 
-      val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+      it("record aspect created by posting a new record") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.CreateRecordAspect))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val a = AspectDefinition("A", "A", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe (1)
+          payloads(0).events.get.length shouldBe (1)
+          payloads(0).events.get(0).eventType shouldBe EventType.CreateRecordAspect
+        }
       }
 
-      Util.waitUntilDone(actor, "test")
+      it("record deleted") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.DeleteRecord))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val record = Record("testId", "testName", Map())
+          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
 
-      payloads.clear()
+          param.asAdmin(Delete("/v0/records/testId")) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
 
-      val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-      param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+          payloads.length shouldBe (1)
+          payloads(0).events.get.length shouldBe (1)
+          payloads(0).events.get(0).eventType shouldBe EventType.DeleteRecord
+          payloads(0).events.get(0).data.convertTo[Map[String, JsValue]].get("recordId").get shouldBe JsString("testId")
+        }
       }
 
-      Util.waitUntilDone(actor, "test")
+      it("patching an aspect definition") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchAspectDefinition))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val a = AspectDefinition("A", "A", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
 
-      payloads.length shouldBe 1
-      payloads(0).events.get.length shouldBe 1
-      payloads(0).records.get.length shouldBe 1
-      payloads(0).aspectDefinitions.get.length shouldBe 0
+          param.asAdmin(Patch("/v0/aspects/A", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe (1)
+          payloads(0).events.get.length shouldBe (1)
+          payloads(0).events.get(0).eventType shouldBe EventType.PatchAspectDefinition
+          payloads(0).events.get(0).data.convertTo[Map[String, JsValue]].get("aspectId").get shouldBe JsString("A")
+        }
+      }
+
+      it("overwriting an aspect definition") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchAspectDefinition))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val a = AspectDefinition("A", "A", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          param.asAdmin(Put("/v0/aspects/A", a.copy(name = "B"))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe (1)
+          payloads(0).events.get.length shouldBe (1)
+          payloads(0).events.get(0).eventType shouldBe EventType.PatchAspectDefinition
+          payloads(0).events.get(0).data.convertTo[Map[String, JsValue]].get("aspectId").get shouldBe JsString("A")
+        }
+      }
+
+      it("patching a record") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecord))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val record = Record("testId", "testName", Map())
+          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          param.asAdmin(Patch("/v0/records/testId", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe (1)
+          payloads(0).events.get.length shouldBe (1)
+          payloads(0).events.get(0).eventType shouldBe EventType.PatchRecord
+          payloads(0).events.get(0).data.convertTo[Map[String, JsValue]].get("recordId").get shouldBe JsString("testId")
+        }
+      }
+
+      it("overwriting a record") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecord))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val record = Record("testId", "testName", Map())
+          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          param.asAdmin(Put("/v0/records/testId", record.copy(name = "blah"))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe (1)
+          payloads(0).events.get.length shouldBe (1)
+          payloads(0).events.get(0).eventType shouldBe EventType.PatchRecord
+          payloads(0).events.get(0).data.convertTo[Map[String, JsValue]].get("recordId").get shouldBe JsString("testId")
+        }
+      }
+    }
+  }
+  describe("does not post") {
+    it("for aspects that were not requested") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
+        val a = AspectDefinition("A", "A", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.clear()
+
+        val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.length shouldBe 0
+      }
+    }
+
+    it("unless all non-optional aspects are present on the record") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "C"))))
+      testWebHook(param, Some(webHook)) { (payloads, actor) =>
+        val a = AspectDefinition("A", "A", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val b = AspectDefinition("B", "B", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.clear()
+
+        val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        payloads.length shouldBe 0
+      }
     }
   }
 
-  it("does not duplicate records") { param =>
-    testWebHook(param, None) { (payloads, actor) =>
-      val jsonSchema =
-        """
+  describe("does not duplicate") {
+
+    it("records") { param =>
+      testWebHook(param, None) { (payloads, actor) =>
+        val jsonSchema =
+          """
                 |{
                 |    "$schema": "http://json-schema.org/hyper-schema#",
                 |    "title": "An aspect",
@@ -112,47 +518,47 @@ class WebHookProcessingSpec extends ApiSpec {
                 |    }
                 |}
               """.stripMargin
-      val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-      param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-      }
-
-      Util.waitUntilDone(actor, "test")
-      payloads.length shouldBe 1
-      payloads.clear()
-
-      val record = Record("testId", "testName", Map())
-      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-      }
-
-      val modified = record.copy(name = "new name")
-      param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-      }
-
-      for (i <- 1 to 50) {
-        val withAspect = modified.copy(aspects = Map("A" -> JsObject(Map("a" -> JsString(i.toString)))))
-        param.asAdmin(Put("/v0/records/testId", withAspect)) ~> param.api.routes ~> check {
+        val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
+
+        Util.waitUntilDone(actor, "test")
+        payloads.length shouldBe 1
+        payloads.clear()
+
+        val record = Record("testId", "testName", Map())
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val modified = record.copy(name = "new name")
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        for (i <- 1 to 50) {
+          val withAspect = modified.copy(aspects = Map("A" -> JsObject(Map("a" -> JsString(i.toString)))))
+          param.asAdmin(Put("/v0/records/testId", withAspect)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        val events = payloads.foldLeft(List[RegistryEvent]())((a, payload) => payload.events.getOrElse(Nil) ++ a)
+        events.length shouldBe 52
+        val records = payloads.foldLeft(List[Record]())((a, payload) => payload.records.getOrElse(Nil) ++ a)
+        records.length shouldBe payloads.length
+        records.map(_.id).distinct.length shouldBe 1
+        records.map(_.id).distinct.head shouldBe "testId"
       }
-      
-      Util.waitUntilDone(actor, "test")
-
-      val events = payloads.foldLeft(List[RegistryEvent]())((a, payload) => payload.events.getOrElse(Nil) ++ a)
-      events.length shouldBe 52
-      val records = payloads.foldLeft(List[Record]())((a, payload) => payload.records.getOrElse(Nil) ++ a)
-      records.length shouldBe payloads.length
-      records.map(_.id).distinct.length shouldBe 1
-      records.map(_.id).distinct.head shouldBe "testId"
     }
-  }
 
-  it("does not duplicate aspect definitions") { param =>
-    testWebHook(param, None) { (payloads, actor) =>
-      val jsonSchema =
-        """
+    it("aspect definitions") { param =>
+      testWebHook(param, None) { (payloads, actor) =>
+        val jsonSchema =
+          """
                 |{
                 |    "$schema": "http://json-schema.org/hyper-schema#",
                 |    "title": "An aspect",
@@ -165,30 +571,31 @@ class WebHookProcessingSpec extends ApiSpec {
                 |    }
                 |}
               """.stripMargin
-      val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-      param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-      }
-
-      Util.waitUntilDone(actor, "test")
-      payloads.length shouldBe 1
-      payloads.clear()
-
-      for (i <- 1 to 50) {
-        val withAspect = a.copy(name = i.toString)
-        param.asAdmin(Put("/v0/aspects/A", withAspect)) ~> param.api.routes ~> check {
+        val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
+
+        Util.waitUntilDone(actor, "test")
+        payloads.length shouldBe 1
+        payloads.clear()
+
+        for (i <- 1 to 50) {
+          val withAspect = a.copy(name = i.toString)
+          param.asAdmin(Put("/v0/aspects/A", withAspect)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+        }
+
+        Util.waitUntilDone(actor, "test")
+
+        val events = payloads.foldLeft(List[RegistryEvent]())((a, payload) => payload.events.getOrElse(Nil) ++ a)
+        events.length shouldBe 50
+        val aspects = payloads.foldLeft(List[AspectDefinition]())((a, payload) => payload.aspectDefinitions.getOrElse(Nil) ++ a)
+        aspects.length shouldBe payloads.length
+        aspects.map(_.id).distinct.length shouldBe 1
+        aspects.map(_.id).distinct.head shouldBe "A"
       }
-
-      Util.waitUntilDone(actor, "test")
-
-      val events = payloads.foldLeft(List[RegistryEvent]())((a, payload) => payload.events.getOrElse(Nil) ++ a)
-      events.length shouldBe 50
-      val aspects = payloads.foldLeft(List[AspectDefinition]())((a, payload) => payload.aspectDefinitions.getOrElse(Nil) ++ a)
-      aspects.length shouldBe payloads.length
-      aspects.map(_.id).distinct.length shouldBe 1
-      aspects.map(_.id).distinct.head shouldBe "A"
     }
   }
 
@@ -478,7 +885,7 @@ class WebHookProcessingSpec extends ApiSpec {
         param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
-        
+
         Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
@@ -691,8 +1098,6 @@ class WebHookProcessingSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        //        val result1 = Await.result(processor.sendSomeNotificationsForOneWebHook("test", false), 5 seconds)
-        //        result1.deferredResponse should be(true)
         Util.waitUntilDone(actor, "test")
 
         payloads.length shouldBe 1
