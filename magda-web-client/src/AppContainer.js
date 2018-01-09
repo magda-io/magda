@@ -4,22 +4,14 @@ import logo from './assets/logo.svg';
 import { config } from './config.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import Button from 'muicss/lib/react/button';
-
 import SearchBox from './Components/Search/SearchBox';
 import AccountNavbar from './Components/Account/AccountNavbar';
 import d61logo from './data61-logo.png';
-
-
 import ProjectsViewer from './Components/Project/ProjectsViewer';
 import ProjectDetails from './Components/Project/ProjectDetails';
 import CreateProject from './Components/Project/CreateProject';
-
 import PublishersViewer from './Components/Publisher/PublishersViewer';
 import PublisherDetails from './Components/Publisher/PublisherDetails';
-
-
-
 import Home from './Components/Home';
 import RouteNotFound from './Components/RouteNotFound';
 import Search from './Components/Search/Search';
@@ -34,15 +26,12 @@ import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
 import Container from 'muicss/lib/react/container';
 import Row from 'muicss/lib/react/row';
-
-
 import {
   Route,
   Link,
   Switch
 } from 'react-router-dom';
 
-import { ExtraSmall, Small } from './UI/Responsive';
 import './AppContainer.css';
 
 class AppContainer extends React.Component {
