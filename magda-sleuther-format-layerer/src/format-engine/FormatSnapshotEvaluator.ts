@@ -15,7 +15,7 @@ import * as _ from "lodash";
 
 //TODO replace hierarchy implementation with a proper Machine Learning Implementation
 //TODO add unit tests
-class FormatSnapshotJudge extends SnapshotJudge {
+export class FormatSnapshotJudge extends SnapshotJudge {
     constructor(snapshots: Snapshots) {
         super(snapshots);
     }
