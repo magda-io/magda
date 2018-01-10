@@ -7,6 +7,8 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 
 import SleutherOptions from "./SleutherOptions";
 import getWebhookUrl from "./getWebhookUrl";
+import AsyncPage from "@magda/typescript-common/src/AsyncPage";
+import { forEachAsync } from "@magda/typescript-common/src/AsyncPage";
 
 export default function setupWebhookEndpoint(
     options: SleutherOptions,
@@ -19,14 +21,12 @@ export default function setupWebhookEndpoint(
         "/hook",
         (request: express.Request, response: express.Response) => {
             const payload = request.body;
-
-            const promises: (() => Promise<void>)[] = payload.records.map(
-                (record: Record) => () =>
-                    options.onRecordFound(record, registry)
-            );
-            const megaPromise = promises.reduce(
-                (soFar, thisOp) => soFar.then(thisOp),
-                Promise.resolve()
+            
+            const recordsPage = AsyncPage.single(payload.records);
+            const megaPromise = forEachAsync(
+                recordsPage,
+                options.concurrency || 1,
+                (record: Record) => options.onRecordFound(record, registry)
             );
 
             const lastEventIdExists = !_.isUndefined(payload.lastEventId);

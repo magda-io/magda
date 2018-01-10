@@ -148,8 +148,10 @@ export default async function sleuther(
             }
         }).map((page: RecordsPage<Record>) => page.records);
 
-        await forEachAsync(registryPage, 1, (record: Record) =>
-            options.onRecordFound(record, registry)
+        await forEachAsync(
+            registryPage,
+            options.concurrency || 1,
+            (record: Record) => options.onRecordFound(record, registry)
         );
     }
 }

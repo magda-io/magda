@@ -72,13 +72,9 @@ baseSpec(
                     .reply(404, "");
 
                 registryScope
-                    .post(
-                        `/hooks`,
-                        hook,
-                        {
-                            reqheaders: reqHeaders(jwtSecret, userId)
-                        }
-                    )
+                    .post(`/hooks`, hook, {
+                        reqheaders: reqHeaders(jwtSecret, userId)
+                    })
                     .reply(201, hook);
 
                 registryScope
@@ -146,6 +142,7 @@ baseSpec(
                 jsc.array(jsc.nestring),
                 lcAlphaNumStringArbNe,
                 lcAlphaNumStringArbNe,
+                jsc.integer(0, 10),
                 (
                     aspectDefs: AspectDefinition[],
                     id: string,
@@ -154,7 +151,8 @@ baseSpec(
                     aspects: string[],
                     optionalAspects: string[],
                     jwtSecret: string,
-                    userId: string
+                    userId: string,
+                    concurrency: number
                 ) => {
                     beforeEachProperty();
                     const registryUrl = `http://${registryHost}.com`;
@@ -190,7 +188,8 @@ baseSpec(
                         writeAspectDefs: aspectDefs,
                         express: expressApp,
                         onRecordFound: record => Promise.resolve(),
-                        maxRetries: 0
+                        maxRetries: 0,
+                        concurrency: concurrency
                     };
 
                     return sleuther(options).then(() => {

@@ -139,6 +139,7 @@ baseSpec(
             registryUrl: string;
             aspects: string[];
             optionalAspects: string[];
+            concurrency: number;
         };
 
         jsc.property(
@@ -152,7 +153,8 @@ baseSpec(
                     optionalAspects: jsc.array(lcAlphaNumStringArb),
                     jwtSecret: lcAlphaNumStringArb,
                     userId: lcAlphaNumStringArb,
-                    registryUrl: lcAlphaNumStringArb
+                    registryUrl: lcAlphaNumStringArb,
+                    concurrency: jsc.integer(0, 10)
                 }),
                 (record: input) =>
                     record.port <= 0 ||
@@ -172,7 +174,8 @@ baseSpec(
                 aspects,
                 optionalAspects,
                 jwtSecret,
-                userId
+                userId,
+                concurrency
             }: input) => {
                 beforeEachProperty();
 
@@ -189,6 +192,7 @@ baseSpec(
                     optionalAspects: optionalAspects,
                     writeAspectDefs: [],
                     express: expressApp,
+                    concurrency,
                     onRecordFound: sinon
                         .stub()
                         .callsFake(record => Promise.resolve())

@@ -88,7 +88,14 @@ baseSpec(
                         lcAlphaNumStringArbNe,
                         lcAlphaNumStringArbNe,
                         lcAlphaNumStringArbNe,
-                        (recordsBatches, domain, jwtSecret, userId) => {
+                        jsc.integer(1, 10),
+                        (
+                            recordsBatches,
+                            domain,
+                            jwtSecret,
+                            userId,
+                            concurrency
+                        ) => {
                             beforeEachProperty();
 
                             const registryDomain = "example";
@@ -125,6 +132,7 @@ baseSpec(
                                 writeAspectDefs: [],
                                 async,
                                 express: expressApp,
+                                concurrency: concurrency,
                                 onRecordFound: sinon
                                     .stub()
                                     .callsFake((foundRecord: Record) => {
