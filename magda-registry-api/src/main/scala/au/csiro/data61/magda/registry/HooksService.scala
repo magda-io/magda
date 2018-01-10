@@ -39,15 +39,15 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
   def create = post {
     pathEnd {
       entity(as[WebHook]) { hook =>
-        DB localTx { session =>
-          val result = HookPersistence.create(session, hook) match {
+        val result = DB localTx { session =>
+          HookPersistence.create(session, hook) match {
             case Success(result) =>
               complete(result)
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
-          webHookActor ! WebHookActor.InvalidateWebhookCache
-          result
         }
+        webHookActor ! WebHookActor.InvalidateWebhookCache
+        result
       }
     }
   }
@@ -81,15 +81,15 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     path(Segment) { (id: String) =>
       {
         entity(as[WebHook]) { hook =>
-          DB localTx { session =>
-            val result = HookPersistence.putById(session, id, hook) match {
+          val result = DB localTx { session =>
+            HookPersistence.putById(session, id, hook) match {
               case Success(result) =>
                 complete(result)
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
-            webHookActor ! WebHookActor.InvalidateWebhookCache
-            result
           }
+          webHookActor ! WebHookActor.InvalidateWebhookCache
+          result
         }
       }
     }
@@ -108,11 +108,11 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
         val result = DB localTx { session =>
           HookPersistence.delete(session, hookId) match {
             case Success(result) =>
-              webHookActor ! WebHookActor.InvalidateWebhookCache
               complete(DeleteResult(result))
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
         }
+        webHookActor ! WebHookActor.InvalidateWebhookCache
         result
       }
     }

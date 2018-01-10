@@ -10,11 +10,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives.as
-import akka.http.scaladsl.server.Directives.complete
-import akka.http.scaladsl.server.Directives.entity
-import akka.http.scaladsl.server.Directives.post
-import akka.http.scaladsl.server.Directives.path
+import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
@@ -23,8 +19,9 @@ import spray.json._
 import java.util.UUID
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
+import org.scalatest.BeforeAndAfterAll
 
-class WebHookProcessingSpec extends ApiSpec {
+class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
   describe("includes") {
     it("aspectDefinitions if events modified them") { param =>
@@ -1177,22 +1174,29 @@ class WebHookProcessingSpec extends ApiSpec {
       includeAspectDefinitions = Some(true),
       dereference = Some(true)))
 
-  private def testWebHookWithResponse(param: FixtureParam, webHook: Option[WebHook], response: ⇒ ToResponseMarshallable)(testCallback: (ArrayBuffer[WebHookPayload], ActorRef) => Unit): Unit = {
-    val payloads = ArrayBuffer[WebHookPayload]()
+  val payloads = ArrayBuffer[WebHookPayload]()
+  val route = post {
+    path("hook") {
+      entity(as[WebHookPayload]) { payload =>
+        payloads.append(payload)
 
-    val uuid = UUID.randomUUID()
-    val route = post {
-      path(uuid.toString) {
-        entity(as[WebHookPayload]) { payload =>
-          payloads.append(payload)
-
-          complete(response)
-        }
-      }
+        complete(currentResponse.get())
+      } ~ complete(StatusCodes.BlockedByParentalControls)
     }
-    val server = createHookRoute(route)
+  }
+  var currentResponse: Option[() => ToResponseMarshallable] = None
+  val server = createHookRoute(route)
 
-    val hook = webHook.getOrElse(defaultWebHook).copy(url = "http://localhost:" + server.localAddress.getPort.toString + "/" + uuid.toString)
+  override def afterAll() {
+    Await.result(server.unbind(), 30 seconds)
+  }
+
+  private def testWebHookWithResponse(param: FixtureParam, webHook: Option[WebHook], response: () ⇒ ToResponseMarshallable)(testCallback: (ArrayBuffer[WebHookPayload], ActorRef) => Unit): Unit = {
+    // Why this super-global approach instead of creating a new http server for each test? For some reason if you do it fast enough, 
+    // the akka http server from the old test can receive hooks for the new server, even after you've waited for it to unbind and bound
+    // the new one on the current port (this is hard to reproduce but happens maybe 1/20th of the time. 
+    this.currentResponse = Some(response)
+    val hook = webHook.getOrElse(defaultWebHook).copy(url = "http://localhost:" + server.localAddress.getPort.toString + "/hook")
     param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
       status shouldEqual StatusCodes.OK
     }
@@ -1202,16 +1206,16 @@ class WebHookProcessingSpec extends ApiSpec {
     try {
       testCallback(payloads, actor)
     } finally {
-      Await.result(server.unbind(), 30 seconds)
+      payloads.clear()
     }
   }
 
   private def testWebHook(param: FixtureParam, webHook: Option[WebHook])(testCallback: (ArrayBuffer[WebHookPayload], ActorRef) => Unit): Unit = {
-    testWebHookWithResponse(param, webHook, "got it")(testCallback)
+    testWebHookWithResponse(param, webHook, () => "got it")(testCallback)
   }
 
   private def testAsyncWebHook(param: FixtureParam, webHook: Option[WebHook])(testCallback: (ArrayBuffer[WebHookPayload], ActorRef) => Unit): Unit = {
-    testWebHookWithResponse(param, webHook, WebHookResponse(true))(testCallback)
+    testWebHookWithResponse(param, webHook, () => WebHookResponse(true))(testCallback)
   }
 
   private def createHookRoute(route: Route): Http.ServerBinding = {
@@ -1225,8 +1229,8 @@ class WebHookProcessingSpec extends ApiSpec {
     while (serverBinding.isEmpty && tries < 10) {
       val port = random.nextInt(1000)
       val bindingFuture = http.bindAndHandle(route, "localhost", 30000 + port)
-      Await.ready(bindingFuture, 5 seconds)
-      serverBinding = bindingFuture.value.get.toOption
+      serverBinding = Await.ready(bindingFuture, 5 seconds).value.get.toOption
+
       tries += 1
     }
 
