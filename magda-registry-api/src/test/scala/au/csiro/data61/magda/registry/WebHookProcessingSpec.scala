@@ -427,6 +427,56 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           payloads(0).events.get(0).data.convertTo[Map[String, JsValue]].get("recordId").get shouldBe JsString("testId")
         }
       }
+
+      it("patching a record aspect") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecordAspect))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val a = AspectDefinition("A", "A", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          param.asAdmin(Patch("/v0/records/testId", JsonPatch(Replace(Pointer.root / "aspects" / "A" / "foo", JsString("bar2"))))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe (1)
+          payloads(0).events.get.length shouldBe (1)
+          payloads(0).events.get(0).eventType shouldBe EventType.PatchRecordAspect
+          payloads(0).events.get(0).data.convertTo[Map[String, JsValue]].get("recordId").get shouldBe JsString("testId")
+        }
+      }
+
+      it("overwriting a record aspect") { param =>
+        val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecordAspect))
+        testWebHook(param, Some(webHook)) { (payloads, actor) =>
+          val a = AspectDefinition("A", "A", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          param.asAdmin(Put("/v0/records/testId", record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")))))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldBe (1)
+          payloads(0).events.get.length shouldBe (1)
+          payloads(0).events.get(0).eventType shouldBe EventType.PatchRecordAspect
+          payloads(0).events.get(0).data.convertTo[Map[String, JsValue]].get("recordId").get shouldBe JsString("testId")
+        }
+      }
     }
   }
   describe("does not post") {
