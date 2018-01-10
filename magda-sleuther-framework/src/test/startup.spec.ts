@@ -92,7 +92,6 @@ baseSpec(
                         });
                 });
 
-                const resolves: (() => void)[] = [];
                 const options: SleutherOptions = {
                     argv: fakeArgv({
                         internalUrl: `http://example.com`,
@@ -107,19 +106,9 @@ baseSpec(
                     writeAspectDefs: [],
                     express: expressApp,
                     maxRetries: 0,
-                    onRecordFound: sinon.stub().callsFake(
-                        () =>
-                            new Promise((resolve, reject) => {
-                                resolves.push(resolve);
-
-                                if (resolves.length === records.length) {
-                                    expect(sleutherPromise.isFulfilled()).to.be
-                                        .false;
-
-                                    resolves.forEach(resolve => resolve());
-                                }
-                            })
-                    )
+                    onRecordFound: sinon
+                        .stub()
+                        .callsFake(() => Promise.resolve())
                 };
 
                 const sleutherPromise = makePromiseQueryable(sleuther(options));
@@ -150,6 +139,7 @@ baseSpec(
             registryUrl: string;
             aspects: string[];
             optionalAspects: string[];
+            concurrency: number;
         };
 
         jsc.property(
@@ -163,7 +153,8 @@ baseSpec(
                     optionalAspects: jsc.array(lcAlphaNumStringArb),
                     jwtSecret: lcAlphaNumStringArb,
                     userId: lcAlphaNumStringArb,
-                    registryUrl: lcAlphaNumStringArb
+                    registryUrl: lcAlphaNumStringArb,
+                    concurrency: jsc.integer(0, 10)
                 }),
                 (record: input) =>
                     record.port <= 0 ||
@@ -183,7 +174,8 @@ baseSpec(
                 aspects,
                 optionalAspects,
                 jwtSecret,
-                userId
+                userId,
+                concurrency
             }: input) => {
                 beforeEachProperty();
 
@@ -200,6 +192,7 @@ baseSpec(
                     optionalAspects: optionalAspects,
                     writeAspectDefs: [],
                     express: expressApp,
+                    concurrency,
                     onRecordFound: sinon
                         .stub()
                         .callsFake(record => Promise.resolve())

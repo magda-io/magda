@@ -24,7 +24,7 @@ export default class JsonConnector {
         source,
         transformer,
         registry,
-        maxConcurrency = 6
+        maxConcurrency = 1
     }: JsonConnectorOptions) {
         this.source = source;
         this.transformer = transformer;
