@@ -145,6 +145,42 @@
             "args": [
                "--output", "foo.tar.gz"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "argh",
+            "program": "${workspaceRoot}/magda-connector-terriajs/src/debug.js",
+            "cwd": "${workspaceRoot}/magda-connector-terriajs",
+            "args":[
+                "--name", "test",
+                "--sourceUrl", "test",
+                "--userId", "00000000-0000-4000-8000-000000000000",
+                "--jwtSecret", "squirrel"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Launch TerriaJS Connector",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs": [
+                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
+                //"-r", "@magda/scripts/node_modules/amd-loader",
+                "src/index.ts"
+            ],
+            "args":[
+                "--name", "test",
+                "--sourceUrl", "test",
+                "--userId", "foo",
+                "--jwtSecret", "squirrel"
+            ],
+            "cwd": "${workspaceRoot}/magda-connector-terriajs"
         }
     ]
 }
