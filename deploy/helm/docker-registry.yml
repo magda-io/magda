@@ -1,5 +1,3 @@
-persistentVolume:
+persistence:
   enabled: true
   storageClass: standard
-service:
-  port: 4000

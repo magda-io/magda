@@ -43,7 +43,7 @@ class PublishersViewer extends Component {
                 <Pagination
                   currentPage={+getPageNumber(this.props)|| 1}
                   maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
-                  onPageChange={this.onPageChange}
+                  onPageChange={this.onPageChange.bind(this)}
                 />}
               </div>)
       }
@@ -73,7 +73,7 @@ function mapStateToProps(state, ownProps) {
   const publishers: Array <Object> = state.publisher.publishers;
   const isFetching: boolean = state.publisher.isFetchingPublishers;
   const hitCount: number = state.publisher.hitCount;
-  const error: object = state.publisher.errorFetchingPublishers;
+  const error: Object = state.publisher.errorFetchingPublishers;
   const location: Location = ownProps.location;
   return {
     publishers, isFetching, hitCount, location, error

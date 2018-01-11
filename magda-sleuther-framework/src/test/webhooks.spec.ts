@@ -56,10 +56,10 @@ baseSpec(
 
                 type Batch = {
                     /** Each record in the batch and whether it should succeed when
-                    *  onRecordFound is called */
+                     *  onRecordFound is called */
                     records: { record: Record; success: boolean }[];
                     /** Whether the overall batch should succeed - to succeed, every record
-                    *  should succeed, to fail then at least one record should fail. */
+                     *  should succeed, to fail then at least one record should fail. */
                     overallSuccess: boolean;
                 };
 
@@ -88,7 +88,14 @@ baseSpec(
                         lcAlphaNumStringArbNe,
                         lcAlphaNumStringArbNe,
                         lcAlphaNumStringArbNe,
-                        (recordsBatches, domain, jwtSecret, userId) => {
+                        jsc.integer(1, 10),
+                        (
+                            recordsBatches,
+                            domain,
+                            jwtSecret,
+                            userId,
+                            concurrency
+                        ) => {
                             beforeEachProperty();
 
                             const registryDomain = "example";
@@ -125,6 +132,7 @@ baseSpec(
                                 writeAspectDefs: [],
                                 async,
                                 express: expressApp,
+                                concurrency: concurrency,
                                 onRecordFound: sinon
                                     .stub()
                                     .callsFake((foundRecord: Record) => {
@@ -153,7 +161,9 @@ baseSpec(
                                                 // telling it to give more events.
                                                 registryScope
                                                     .post(
-                                                        `/hooks/${lastHookId}`,
+                                                        `/hooks/${
+                                                            options.id
+                                                        }/ack`,
                                                         {
                                                             succeeded:
                                                                 batch.overallSuccess,

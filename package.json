@@ -9,7 +9,10 @@
     "docker-build-prod": "lerna run docker-build-prod --stream --concurrency=1",
     "create-all-tsconfigs": "node ./scripts/create-all-tsconfigs.js",
     "node-ci": "node ./scripts/node-js-ci.js",
-    "lerna": "lerna"
+    "lerna": "lerna",
+    "build-changed-ts": "node ./scripts/build-changed.js",
+    "build-changed-scala": "bash -c \"sbt deployLocalOnChange\"",
+    "build-changed": "npm run build-changed-ts && npm run build-changed-scala"
   },
   "dependencies": {
     "lodash": "^4.17.4"
