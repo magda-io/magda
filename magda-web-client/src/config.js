@@ -100,7 +100,7 @@ export const config = {
       category: "Developers",
       links: [
         ["Architecture", "page/architecture"],
-        ["API Docs", registryApiUrl + "swagger/index.html"]
+        ["API Docs", "http://search.data.gov.au/api/v0/registry/swagger/index.html"]
       ]
     },
     {
