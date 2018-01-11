@@ -52,12 +52,12 @@ class PublishersViewer extends Component {
                 <Pagination
                   currentPage={+getPageNumber(this.props)|| 1}
                   maxPage={Math.ceil(this.props.hitCount/config.resultsPerPage)}
-                  onPageChange={this.onPageChange}
+                  onPageChange={this.onPageChange.bind(this)}
                 />}
               </div>)
       }
     }
-    
+
     render(){
       return <ReactDocumentTitle title={'Publishers | ' + config.appName}>
               <div className='container publishers-viewer'>
