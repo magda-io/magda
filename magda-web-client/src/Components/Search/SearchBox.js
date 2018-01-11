@@ -120,7 +120,7 @@ class SearchBox extends Component {
 
   render() {
     return (
-        <Form>
+        <Form className='searchBox'>
           <table width='100%'>
             <tbody>
             <tr>

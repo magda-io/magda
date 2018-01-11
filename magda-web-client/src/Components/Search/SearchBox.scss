@@ -1,37 +1,14 @@
-.search-box__form-control {
-  height: 50px;
-  border-radius: 1px;
-  background-color: #ffffff;
-  font-size: 18px;
-  padding-right: 30px; }
+@import '../../variables';
 
-.search-box__input {
-  width: 100%;
-  position: relative;
-  input.form-control{
-    padding-right: 50px;
-  } }
-
-.search-box {
-  position: relative;
-  margin-bottom: 20px;
-  padding: 0; }
-
-
-.search-box__icon {
-  border-radius: 1px;
-  background-color: transparent;
-  color: #000;
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 53px; }
-
-.search-box .fa {
-  vertical-align: bottom;
-  font-size: 20px; }
-
-@media (max-width: 768px) {
-  .search-box {
-    padding-left: 0; } }
+.searchBox{
+  background: $main;
+  padding: 50px 135px;
+  input, input:focus{
+    color: #fff;
+    border-bottom: 0px;
+    font-family: $font-base;
+    font-size: 48px;
+    font-weight: 300;
+    height: 57px;
+  }
+}

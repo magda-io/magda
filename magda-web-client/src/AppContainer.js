@@ -26,6 +26,7 @@ import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
 import Container from 'muicss/lib/react/container';
 import Row from 'muicss/lib/react/row';
+
 import {
   Route,
   Link,
@@ -91,40 +92,25 @@ class AppContainer extends React.Component {
     const footerNavs = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
-        <div>
-          <nav className='mui-container-fluid'>
-                <Row>
-                  <div className='mui-col-sm-2'>
-                    <div className='navbar-header'>
-                      <a className='navbar-brand' href='/'>
-                        <img className='logo' alt='data.gov.au-alpha' src={logo}/>
-                      </a>
-                    </div>
-                  </div>
-                  <div className='mui-col-sm-10 nav-links'>
-                    {config.disableAuthenticationFeatures || <AccountNavbar />}
-                    <ul className='nav navbar-nav'>
-                      {headerNavs.map(nav =>
-                        <li key={nav[1]}>
-                          <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                </Row>
+        <Container>
+             <table width="100%">
+               <tbody>
+                 <tr style={{verticalAlign: 'middle'}}>
+                   <td className="mui--appbar-height">{config.appName}</td>
+                   <td className="mui--appbar-height" style={{textAlign: 'right'}}>
+                     {headerNavs.map(nav =>
+                         <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
+                     )}
+                     {config.disableAuthenticationFeatures || <AccountNavbar />}
+                   </td>
+                 </tr>
+               </tbody>
+             </table>
 
-              <Container>
-                <div className='col-sm-8'>
-                  <h1 className='search-heading'> {config.appTitle}</h1>
-                  <SearchBox location={this.props.location} />
-                </div>
-              </Container>
-          </nav>
-          <Container>
-            {this.renderBody()}
-          </Container>
+          <SearchBox location={this.props.location} />
+
+          {this.renderBody()}
           <footer className='footer clearfix'>
-            <Container>
               <ul className='nav row'>
                 {footerNavs.map(item =>
                   <li key={item.category} className='col-md-2 col-sm-4'>
@@ -138,9 +124,8 @@ class AppContainer extends React.Component {
                 )}
               </ul>
               <div className='copyright'> Developed by <img src={d61logo} alt='data61-logo'/></div>
-              </Container>
           </footer>
-        </div>
+        </Container>
       </ReactDocumentTitle>
     );
   }
