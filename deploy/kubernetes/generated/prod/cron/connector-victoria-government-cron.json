@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-csiro-marlin"
+    "name": "connector-victoria-government"
   },
   "spec": {
-    "schedule": "30 3 */3 * *",
+    "schedule": "30 11 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-csiro-marlin"
+            "name": "connector-victoria-government"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-csiro-marlin",
-                "image": "data61/magda-csw-connector:0.0.30",
+                "name": "connector-victoria-government",
+                "image": "data61/magda-ckan-connector:0.0.32-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "csiro-marlin.json",
+                      "key": "victoria-government.json",
                       "path": "connector.json"
                     }
                   ]

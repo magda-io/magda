@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-geoscience-australia"
+    "name": "connector-data-gov-au"
   },
   "spec": {
-    "schedule": "0 5 */3 * *",
+    "schedule": "0 4 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-geoscience-australia"
+            "name": "connector-data-gov-au"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-geoscience-australia",
-                "image": "data61/magda-csw-connector:0.0.30",
+                "name": "connector-data-gov-au",
+                "image": "data61/magda-ckan-connector:0.0.32-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "geoscience-australia.json",
+                      "key": "data-gov-au.json",
                       "path": "connector.json"
                     }
                   ]

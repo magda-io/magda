@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-brisbane-city-council"
+    "name": "connector-australian-institute-of-marine-science"
   },
   "spec": {
-    "schedule": "0 2 */3 * *",
+    "schedule": "0 1 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-brisbane-city-council"
+            "name": "connector-australian-institute-of-marine-science"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-brisbane-city-council",
-                "image": "data61/magda-ckan-connector:0.0.30",
+                "name": "connector-australian-institute-of-marine-science",
+                "image": "data61/magda-csw-connector:0.0.32-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "brisbane-city-council.json",
+                      "key": "australian-institute-of-marine-science.json",
                       "path": "connector.json"
                     }
                   ]

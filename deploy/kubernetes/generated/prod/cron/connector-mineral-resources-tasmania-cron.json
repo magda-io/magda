@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-nsw-land-and-property"
+    "name": "connector-mineral-resources-tasmania"
   },
   "spec": {
-    "schedule": "0 9 */3 * *",
+    "schedule": "30 6 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-nsw-land-and-property"
+            "name": "connector-mineral-resources-tasmania"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-nsw-land-and-property",
-                "image": "data61/magda-csw-connector:0.0.30",
+                "name": "connector-mineral-resources-tasmania",
+                "image": "data61/magda-csw-connector:0.0.32-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "nsw-land-and-property.json",
+                      "key": "mineral-resources-tasmania.json",
                       "path": "connector.json"
                     }
                   ]

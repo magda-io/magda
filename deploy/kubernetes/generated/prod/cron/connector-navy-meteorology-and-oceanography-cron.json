@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-city-of-launceston-open-data"
+    "name": "connector-navy-meteorology-and-oceanography"
   },
   "spec": {
-    "schedule": "0 3 */3 * *",
+    "schedule": "0 8 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-city-of-launceston-open-data"
+            "name": "connector-navy-meteorology-and-oceanography"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-city-of-launceston-open-data",
-                "image": "data61/magda-project-open-data-connector:0.0.30",
+                "name": "connector-navy-meteorology-and-oceanography",
+                "image": "data61/magda-csw-connector:0.0.32-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "city-of-launceston-open-data.json",
+                      "key": "navy-meteorology-and-oceanography.json",
                       "path": "connector.json"
                     }
                   ]

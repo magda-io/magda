@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-australian-bureau-of-meteorology"
+    "name": "connector-brisbane-city-council"
   },
   "spec": {
-    "schedule": "30 0 */3 * *",
+    "schedule": "0 2 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-australian-bureau-of-meteorology"
+            "name": "connector-brisbane-city-council"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-australian-bureau-of-meteorology",
-                "image": "data61/magda-csw-connector:0.0.30",
+                "name": "connector-brisbane-city-council",
+                "image": "data61/magda-ckan-connector:0.0.32-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "australian-bureau-of-meteorology.json",
+                      "key": "brisbane-city-council.json",
                       "path": "connector.json"
                     }
                   ]

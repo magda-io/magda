@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-mineral-resources-tasmania"
+    "name": "connector-csiro-marlin"
   },
   "spec": {
-    "schedule": "30 6 */3 * *",
+    "schedule": "30 3 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-mineral-resources-tasmania"
+            "name": "connector-csiro-marlin"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-mineral-resources-tasmania",
-                "image": "data61/magda-csw-connector:0.0.30",
+                "name": "connector-csiro-marlin",
+                "image": "data61/magda-csw-connector:0.0.32-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "mineral-resources-tasmania.json",
+                      "key": "csiro-marlin.json",
                       "path": "connector.json"
                     }
                   ]
