@@ -7,8 +7,7 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 
 import SleutherOptions from "./SleutherOptions";
 import getWebhookUrl from "./getWebhookUrl";
-import AsyncPage from "@magda/typescript-common/src/AsyncPage";
-import { forEachAsync } from "@magda/typescript-common/src/AsyncPage";
+import AsyncPage, { forEachAsync } from "@magda/typescript-common/dist/AsyncPage";
 
 export default function setupWebhookEndpoint(
     options: SleutherOptions,
