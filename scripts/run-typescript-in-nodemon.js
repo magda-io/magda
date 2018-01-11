@@ -50,7 +50,7 @@ nodemon({
     args: process.argv.slice(3),
     watch: watchPaths,
     execMap: {
-        ts: 'node ' + require.resolve('ts-node/dist/bin.js') + " -r " + require.resolve('tsconfig-paths/register')
+        ts: 'node ' + require.resolve('ts-node/dist/bin.js') + " -r " + require.resolve('tsconfig-paths/register') + " -r " + require.resolve('amd-loader')
     }
 });
 

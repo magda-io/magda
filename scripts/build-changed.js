@@ -64,7 +64,7 @@ sortedPackages.forEach(package => {
     lastModifiedFiles.push(srcLastModified);
     const lastModifiedSourceFile = lastModifiedFiles.reduce((previous, current) => !previous || current && current.stats && current.stats.mtime > previous.stats.mtime ? current : previous, undefined);
 
-    if (lastModifiedSourceFile && distLastModified.stats.mtime >= lastModifiedSourceFile.stats.mtime) {
+    if (lastModifiedSourceFile && distLastModified && distLastModified.stats.mtime >= lastModifiedSourceFile.stats.mtime) {
         console.log(`${name}: build is up to date`);
     } else {
         console.log(`${name}: changed since last build`);

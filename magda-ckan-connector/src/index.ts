@@ -1,11 +1,12 @@
+import * as yargs from "yargs";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
 import Ckan from "./Ckan";
 import createTransformer from "./createTransformer";
+import datasetAspectBuilders from "./datasetAspectBuilders";
+import distributionAspectBuilders from "./distributionAspectBuilders";
 import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
+import organizationAspectBuilders from "./organizationAspectBuilders";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import * as fs from "fs";
-import * as yargs from "yargs";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -68,118 +69,6 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.USER_ID || process.env.npm_package_config_userId
         }).argv
 );
-
-const datasetAspectBuilders: AspectBuilder[] = [
-    {
-        aspectDefinition: {
-            id: "ckan-dataset",
-            name: "CKAN Dataset",
-            jsonSchema: require("@magda/registry-aspects/ckan-dataset.schema.json")
-        },
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/ckan-dataset.js",
-            "utf8"
-        )
-    },
-    {
-        aspectDefinition: {
-            id: "dcat-dataset-strings",
-            name: "DCAT Dataset properties as strings",
-            jsonSchema: require("@magda/registry-aspects/dcat-dataset-strings.schema.json")
-        },
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/dcat-dataset-strings.js",
-            "utf8"
-        )
-    },
-    {
-        aspectDefinition: {
-            id: "source",
-            name: "Source",
-            jsonSchema: require("@magda/registry-aspects/source.schema.json")
-        },
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/dataset-source.js",
-            "utf8"
-        )
-    },
-    {
-        aspectDefinition: {
-            id: "temporal-coverage",
-            name: "Temporal Coverage",
-            jsonSchema: require("@magda/registry-aspects/temporal-coverage.schema.json")
-        },
-        setupFunctionString: fs.readFileSync(
-            "aspect-templates/temporal-coverage-setup.js",
-            "utf8"
-        ),
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/temporal-coverage.js",
-            "utf8"
-        )
-    }
-];
-
-const distributionAspectBuilders: AspectBuilder[] = [
-    {
-        aspectDefinition: {
-            id: "ckan-resource",
-            name: "CKAN Resource",
-            jsonSchema: require("@magda/registry-aspects/ckan-resource.schema.json")
-        },
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/ckan-resource.js",
-            "utf8"
-        )
-    },
-    {
-        aspectDefinition: {
-            id: "dcat-distribution-strings",
-            name: "DCAT Distribution properties as strings",
-            jsonSchema: require("@magda/registry-aspects/dcat-distribution-strings.schema.json")
-        },
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/dcat-distribution-strings.js",
-            "utf8"
-        )
-    },
-    {
-        aspectDefinition: {
-            id: "source",
-            name: "Source",
-            jsonSchema: require("@magda/registry-aspects/source.schema.json")
-        },
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/distribution-source.js",
-            "utf8"
-        )
-    }
-];
-
-const organizationAspectBuilders: AspectBuilder[] = [
-    {
-        aspectDefinition: {
-            id: "source",
-            name: "Source",
-            jsonSchema: require("@magda/registry-aspects/source.schema.json")
-        },
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/organization-source.js",
-            "utf8"
-        )
-    },
-    {
-        aspectDefinition: {
-            id: "organization-details",
-            name: "Organization",
-            jsonSchema: require("@magda/registry-aspects/organization-details.schema.json")
-        },
-        builderFunctionString: fs.readFileSync(
-            "aspect-templates/organization-details.js",
-            "utf8"
-        )
-    }
-];
 
 const ckan = new Ckan({
     baseUrl: argv.sourceUrl,

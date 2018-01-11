@@ -5,6 +5,7 @@
     "magda-admin-api/",
     "magda-authorization-api/",
     "magda-authorization-db/",
+    "magda-connector-terriajs/",
     "magda-sleuther-framework/",
     "magda-sleuther-linked-data-rating/",
     "magda-sleuther-broken-link/",
@@ -31,7 +32,8 @@
     "magda-web-client/",
     "magda-web-admin/",
     "magda-web-server/",
-    "scripts/"
+    "scripts/",
+    "terriajs/"
   ],
   "version": "0.0.32-0",
   "hoist": [

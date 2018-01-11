@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "Group",
+    "description": "A group of records, such as datasets, distributions, or other groups.",
+    "type": "object",
+    "properties": {
+        "items": {
+            "title": "The records in this group.",
+            "type": "array",
+            "items": {
+                "title": "The ID of a record that is a member of this group.",
+                "type": "string",
+                "links": [
+                    {
+                        "href": "/api/v0/registry/records/{$}",
+                        "rel": "item"
+                    }
+                ]
+            }
+        }
+    }
+}
