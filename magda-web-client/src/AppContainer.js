@@ -1,6 +1,5 @@
 import ReactDocumentTitle from 'react-document-title';
 import React from 'react';
-import logo from './assets/logo.svg';
 import { config } from './config.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -25,7 +24,6 @@ import Login from './Components/Account/Login';
 import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
 import Container from 'muicss/lib/react/container';
-import Row from 'muicss/lib/react/row';
 
 import {
   Route,
@@ -92,11 +90,11 @@ class AppContainer extends React.Component {
     const footerNavs = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
-        <Container>
+        <Container className='app-container'>
              <table width="100%">
                <tbody>
                  <tr style={{verticalAlign: 'middle'}}>
-                   <td className="mui--appbar-height">{config.appName}</td>
+                   <td className="mui--appbar-height logo">{config.appName}</td>
                    <td className="mui--appbar-height" style={{textAlign: 'right'}}>
                      {headerNavs.map(nav =>
                          <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>

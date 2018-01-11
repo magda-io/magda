@@ -135,7 +135,7 @@ class Search extends Component {
                  />
                 }
                 {searchText.length > 0 && !this.props.isFetching &&
-                 !this.props.error && <div className='results-count'>{this.props.hitCount} results found</div>}
+                 !this.props.error && <div className='results-count'> results ( {this.props.hitCount} )</div>}
                 {searchText.length > 0 &&
                  !this.props.isFetching &&
                  !this.props.error &&
@@ -168,8 +168,6 @@ class Search extends Component {
                                 type='error'
                                 onDismiss={this.onDismissError}/>
                }
-
-            {(!this.searchBoxEmpty() && this.props.datasets.length > 0) && this.props.featuredPublishers.map(p=><PublisherBox key={p.id} publisher={p}/>)}
             </div>
             </div>
         </div>

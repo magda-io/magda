@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {config} from '../../config' ;
+import Button from 'muicss/lib/react/button';
 import './SearchFacets.css';
 
 class SearchFacets extends Component {
@@ -35,9 +36,9 @@ class SearchFacets extends Component {
 
   render() {
     return (
-      <div className='clearfix search-facets'>
+      <div className='search-facets mui-row'>
         {config.facets.map(c=>
-          <div className='col-sm-3 search-facet' key={c.id} onClick={(ev)=>ev.stopPropagation()}>
+          <div className='mui-col-sm-2 search-facet' key={c.id} onClick={(ev)=>ev.stopPropagation()}>
             <c.component
                        updateQuery={this.props.updateQuery}
                        location={this.props.location}
@@ -46,6 +47,7 @@ class SearchFacets extends Component {
                        toggleFacet={this.toggleFacet.bind(this, c.id)}/>
           </div>
         )}
+        <div className='mui-col-sm-3 search-facet'><Button>Last updated</Button></div>
       </div>
     );
   }

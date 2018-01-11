@@ -4,7 +4,7 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "http://magda-dev.terria.io/";
+const fallbackApiHost = "http://search.data.gov.au/";
 
 const serverConfig = window.magda_server_config || {};
 

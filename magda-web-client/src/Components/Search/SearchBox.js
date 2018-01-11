@@ -126,12 +126,12 @@ class SearchBox extends Component {
             <tr>
               <td>
                 <label htmlFor="search">
-                  <span className='sr-only'>{'Search ' + config.appName}</span>
+                  <span className='sr-only'>{'search ' + config.appName}</span>
                   <Input
                     type='text'
                     name='search'
                     id="search"
-                    placeholder={'Search ' + config.appName}
+                    placeholder='search for open data'
                     value={this.getSearchBoxValue()}
                     onChange={this.onSearchTextChange}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}

@@ -5,22 +5,6 @@ import './SearchResults.css';
 class SearchResults extends Component {
   constructor(props) {
     super(props);
-    this.onToggleExpandDataset=this.onToggleExpandDataset.bind(this);
-    this.state = {
-      openDataset: null
-    };
-  }
-
-  onToggleExpandDataset(result, event){
-    event.stopPropagation();
-    let datasetIdentifier = result.identifier;
-    if (this.state.openDataset === datasetIdentifier) {
-      datasetIdentifier = null;
-    }
-    this.setState({
-      openDataset: datasetIdentifier
-    });
-    //this.props.onToggleDataset(datasetIdentifider);
   }
 
   getSummaryText(){
@@ -43,10 +27,7 @@ class SearchResults extends Component {
         {
           this.props.searchResults.map((result, i)=>
             <li key={result.identifier} className='search-results__result'>
-              <DatasetSummary dataset={result}
-                              onClickDataset={this.onToggleExpandDataset.bind(this, result)}
-                              isExpanded={this.state.openDataset === result.identifier}
-                              onClickTag={this.props.onClickTag}/>
+              <DatasetSummary dataset={result}/>
             </li>
           )
         }

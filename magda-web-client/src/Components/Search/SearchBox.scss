@@ -1,14 +1,38 @@
 @import '../../variables';
 
+@mixin text() {
+  color: #fff;
+  font-family: $font-base;
+  font-size: 48px;
+  font-weight: 300;
+  height: 57px;
+}
+
+
 .searchBox{
   background: $main;
   padding: 50px 135px;
   input, input:focus{
-    color: #fff;
+    @include text();
     border-bottom: 0px;
-    font-family: $font-base;
-    font-size: 48px;
-    font-weight: 300;
-    height: 57px;
+    margin-bottom: 2px;
+  }
+
+  input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    @include text();
+  }
+  input::-moz-placeholder { /* Firefox 19+ */
+    @include text();
+  }
+  input:-ms-input-placeholder { /* IE 10+ */
+    @include text();
+  }
+  input:-moz-placeholder { /* Firefox 18- */
+    @include text();
+  }
+
+  .mui-textfield {
+    	border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      padding-bottom: 5px;
   }
 }

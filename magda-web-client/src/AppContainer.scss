@@ -1,9 +1,15 @@
 @import './variables';
 
 
-
-.footer{
-    background-color: $magda-dark-blue;
-    color: #fff;
-    padding: 50px 0;
+.app-container{
+  .logo{
+    color: #494949;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 22px;
+    text-transform: uppercase;
+    .highlight{
+      color: $main;
+    }
+    }
 }
