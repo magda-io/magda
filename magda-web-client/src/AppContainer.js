@@ -108,21 +108,6 @@ class AppContainer extends React.Component {
           <SearchBox location={this.props.location} />
 
           {this.renderBody()}
-          <footer className='footer clearfix'>
-              <ul className='nav row'>
-                {footerNavs.map(item =>
-                  <li key={item.category} className='col-md-2 col-sm-4'>
-                    <span className='nav-title'>{item.category}</span>
-                    <ul className='nav nav-pills nav-stacked'>
-                      {item.links.map(link =>
-                        <li key={link[1]}>{this.renderLink(link)}</li>
-                      )}
-                    </ul>
-                  </li>
-                )}
-              </ul>
-              <div className='copyright'> Developed by <img src={d61logo} alt='data61-logo'/></div>
-          </footer>
         </Container>
       </ReactDocumentTitle>
     );

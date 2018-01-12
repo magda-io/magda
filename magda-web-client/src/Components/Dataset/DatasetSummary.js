@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import MarkdownViewer from '../../UI/MarkdownViewer';
 import defined from '../../helpers/defined';
+import getDateString from '../../helpers/getDateString';
 import ToggleList from '../../UI/ToggleList';
 import QualityIndicator from '../../UI/QualityIndicator';
 import renderDistribution from '../../Components/Distribution';
@@ -13,12 +14,13 @@ import Divider from 'muicss/lib/react/divider';
 export default class DatasetSummary extends Component {
   constructor(props) {
     super(props);
-    const self: any = this;
+    this.renderDownloads = this.renderDownloads.bind(this);
   }
 
-  renderDownloads(){
-    return <div className='dataset-downloads'>
-
+  renderDownloads(dataset){
+    return <div className='dataset-summary-downloads'>
+              {dataset.distributions.map(dis=>
+              <a href={dis.downloadURL} key={dis.downloadURL}>{dis.format}</a>)}
            </div>
   }
 
@@ -26,20 +28,22 @@ export default class DatasetSummary extends Component {
     const dataset = this.props.dataset;
     const publisher = dataset.publisher && dataset.publisher.name;
     return <div className='dataset-summary'>
-                    <div className='dataset-summary__title-group'>
-                      <h3><Link
-                            to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>
-                        {dataset.title}
-                      </Link></h3>
-                      {publisher && <span className='dataset-summary-publisher'>{publisher}</span>}
-                  </div>
+                <h3><Link
+                      className='dataset-summary-title'
+                      to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>
+                  {dataset.title}
+                </Link></h3>
+                {publisher && <div className='dataset-summary-publisher'>{publisher}</div>}
 
-                <div className='dataset-summary__body'>
-                <div className='dataset-summary__dataset-description'>
+                <div className='dataset-summary-description'>
                   <MarkdownViewer markdown={dataset.description}/>
                 </div>
-                {defined(dataset.quality) && <span className='dataset-summary-quality'> <QualityIndicator quality={dataset.quality}/></span>}
+                <div className='dataset-summary-meta'>
+                  {defined(dataset.modified) && <span className='dataset-summary-updated'> Dataset Updated {getDateString(dataset.modified)}</span>}
+                  {defined(dataset.quality) && <span className='dataset-summary-quality'> <QualityIndicator quality={dataset.quality}/></span>}
+                  {defined(dataset.distributions && dataset.distributions.length > 0) && this.renderDownloads(dataset)}
                 </div>
+
           </div>
   }
 }

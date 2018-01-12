@@ -1,16 +1,37 @@
 import React from 'react';
 
-function QualityIndicator(props: {quality: number}) {
-  const rating = parseFloat(props.quality).toFixed(2);
-  const qualities = [  "Poor","Ok","Good","Excellent"];
+function QualityIndicator(props) {
+
+  let rating = Math.ceil(parseFloat(props.quality).toFixed(2)*10/2) - 1;
+
+  if(rating < 0){
+    rating = 0;
+  }
+
+  const qualities = [  ["Poor", '#c0392b'],["OK", "#FE7F7F"], ["Average", '#9b59b6'],["Good", '#3498db'],["Excellent", '#12C9A0']];
+  const colors = [];
   var style = {
     display: 'inline-block',
-    height: '8px',
-    width: rating * 100 + 10 + 'px',
-    background: `rgb(${Math.floor(255*(1-rating))}, ${Math.floor(rating*200)}, 50)`,
+    height: '11px',
+    width: '4px',
+    backgroundColor: qualities[rating][1],
+    marginRight: '1px'
   };
+
+  function getBarColor(index){
+    return {
+      display: 'inline-block',
+      height: '11px',
+      width: '4px',
+      backgroundColor: qualities[rating][1],
+      marginRight: '1px',
+      opacity: rating >= index ? 1 : 0.5
+    };
+  }
+
+
   return (
-        <div> Quality: <span style={style} className='quality'></span> {qualities[Math.floor(rating*10/3)]}</div>
+        <div> Quality:  {qualities[rating][0]} <span>{qualities.map((q, i )=><span key={i} style={getBarColor(i)}></span>)}</span></div>
   );
 }
 

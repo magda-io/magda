@@ -34,8 +34,6 @@ class FacetBasic extends Component {
      })
    }
 
-
-
 /**
  * generate the html for a option of this filter
  * @param {object} option the current option to render
@@ -48,11 +46,12 @@ class FacetBasic extends Component {
       return null;
     }
     let maxWidth = defined(optionMax) ? +option.hitCount/optionMax.hitCount * 200 : 0;
-    let divStyle = {width: maxWidth + 'px'}
+    let divStyle = {width: maxWidth + 'px', height: '3px', background: "#F55860"}
     let isActive = this.checkActiveOption(option);
 
     return(
-    <Button type='button'
+    <Button key={option.value}
+            type='button'
             ref={b=>{if(b != null && onFocus === true){b.focus()}}}
             className={`${isActive ? 'is-active' : ''} btn-facet-option`}
             onClick={onClick.bind(this, option)}
@@ -60,8 +59,7 @@ class FacetBasic extends Component {
       <span style={divStyle} className='btn-facet-option__volume-indicator'/>
       <span className='btn-facet-option__name'>
         {option.value}{' '}({option.hitCount})
-        {(option.matched && !isActive) && <span className='btn-facet-option__recomended-badge'>*</span>}</span>
-      <span className='btn-facet-option__action'><i className={`fa fa-check`}/></span>
+      </span>
     </Button>);
   }
 
@@ -79,22 +77,23 @@ class FacetBasic extends Component {
                                 onToggleOption={this.props.onToggleOption}
                                 searchFacet={this.props.searchFacet}
                                 />
-                <Button onClick={this.props.onResetFacet}> Clear </Button>
               </div>
                <ul className='mui-list--unstyled'>
                  {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
                  {this.props.options.length === 0 && <li className='no-data'>No {this.props.id}</li>}
                </ul>
-               <ToggleList list={inactiveOptions}
-                           defaultLength={defaultSize}
-                           renderFunction={(o)=>this.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}
-                           getKey={(o)=>o.value} className={''}/>
+              {inactiveOptions.map(o => this.renderOption(o, this.props.onToggleOption, maxOptionOptionList))}
+              <div className='facet-footer'>
+                  <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
+                  <Button variant="flat" onClick={this.props.onResetFacet}> Apply </Button>
+              </div>
             </div>)
   }
 
   render(){
     return <div className='facet-wrapper'>
               <FacetHeader
+                     isOpen = {this.props.isOpen}
                      title={this.props.title}
                      activeOptions={this.props.activeOptions}
                      hasQuery={this.props.hasQuery}

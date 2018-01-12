@@ -36,9 +36,9 @@ class SearchFacets extends Component {
 
   render() {
     return (
-      <div className='search-facets mui-row'>
+      <div className='search-facets clearfix'>
         {config.facets.map(c=>
-          <div className='mui-col-sm-2 search-facet' key={c.id} onClick={(ev)=>ev.stopPropagation()}>
+          <div className='search-facet' key={c.id} onClick={(ev)=>ev.stopPropagation()}>
             <c.component
                        updateQuery={this.props.updateQuery}
                        location={this.props.location}
@@ -47,7 +47,7 @@ class SearchFacets extends Component {
                        toggleFacet={this.toggleFacet.bind(this, c.id)}/>
           </div>
         )}
-        <div className='mui-col-sm-3 search-facet'><Button>Last updated</Button></div>
+        <div className='search-facet'><Button>Last updated</Button></div>
       </div>
     );
   }

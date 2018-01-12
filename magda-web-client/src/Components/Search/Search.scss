@@ -1,9 +1,12 @@
+@import '../../variables';
+
 .search{
-	.results-count{
-		color: #494949;
+	.sub-heading{
+		color: $body;
 		font-size: 16px;
 		font-weight: 500;
 		line-height: 19px;
 		text-transform: uppercase;
+		margin-bottom: 24px;
 		}
 }

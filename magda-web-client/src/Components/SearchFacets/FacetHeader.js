@@ -45,7 +45,7 @@ class FacetHeader extends Component {
   render(){
     return (
       <div className='facet-header'>
-        <Button className={`${this.hasFilter() ? 'not-empty': ''}`} onClick={this.props.onClick}>{this.calculateTitle()}</Button>
+        <Button className={`${this.hasFilter() ? 'not-empty': ''} ${this.props.isOpen ? 'is-open' : ''}`} onClick={this.props.onClick}>{this.calculateTitle()}</Button>
       </div>
       );
   }

@@ -1,1 +1,61 @@
 @import '../../variables';
+
+.dataset-summary{
+  .dataset-summary-title{
+    	color: $body;
+      font-size: 20px;
+      line-height: 29px;
+      font-weight: 300;
+      margin-bottom: 8px;
+  }
+
+  .dataset-summary-publisher{
+    opacity: 0.75;
+    font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 17px;
+  }
+
+  .dataset-summary-description{
+    opacity: 0.5;
+    font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 24px;
+    max-height: 80px;
+    overflow: hidden;
+    h1, h2, h3, h4 {
+      margin: 0 0 10px;
+      font-size: inherit;
+      line-height: inherit;
+    }
+  }
+
+  .dataset-summary-meta{
+    display: flex;
+    justify-content: flex-start;
+    font-size: 14px;
+    line-height: 16px;
+    color: rgba($body, 0.5);
+  }
+
+  .dataset-summary-updated,
+  .dataset-summary-quality{
+    margin-right: 24px;
+  }
+
+  .dataset-summary-downloads a{
+    	color: #CC3139;
+      font-size: 14px;
+      line-height: 16px;
+      display: inline-block;
+      padding-right: 5px;
+      &:after{
+        content: '/';
+        display: inline-block;
+        padding-left: 2px;
+      }
+      &:last-child:after{
+        content: '';
+      }
+  }
+}
