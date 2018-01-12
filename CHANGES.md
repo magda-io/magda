@@ -5,3 +5,4 @@
 * Updated hooks so that each hook when running can skip over irrelevant events
 * Made sure hook processing resumes when either the registry or the sleuther wakes back up.
 * SA1 regions are no longer named after the SA2 region that contains them, reducing noise in the region search results. To find an actual SA1, users will need to search for its ID.
+* The broken link sleuther now has its retry count for external links configurable separately to the retry count for contacting the registry, with a default of 3.
