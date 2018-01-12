@@ -8,7 +8,7 @@
     "magda-sleuther-framework/",
     "magda-sleuther-linked-data-rating/",
     "magda-sleuther-summarizer",
-    "magda-sleuther-layerer",
+    "magda-sleuther-format-layerer",
     "magda-sleuther-broken-link/",
     "magda-sleuther-visualization/",
     "magda-ckan-connector/",

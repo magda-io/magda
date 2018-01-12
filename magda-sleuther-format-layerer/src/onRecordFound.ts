@@ -1,18 +1,23 @@
-import * as _ from "lodash";
+//import * as _ from "lodash";
 
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import { RecordLayer } from "@magda/typescript-common/src/registry-manual/api";
-import formatAspectDef, { FormatAspect } from "./formatAspectDef";
+import { FormatAspect } from "./formatAspectDef";
 import unionToThrowable from "@magda/typescript-common/src/util/unionToThrowable";
 
-import {
-    DcatFormatMeasure,
-    DownloadMeasure,
-    DownloadExtensionMeasure
-} from "./format-engine/measures";
-import { FormatSnapshotJudge } from "./format-engine/FormatSnapshotEvaluator";
-import { Snapshot } from "../../magda-typescript-common/src/format/MeasureSnapShot";
+import getDcatMeasureResult from "./format-engine/measures/dcatFormatMeasure";
+import getExtensionMeasureResult from "./format-engine/measures/downloadExtensionMeasure";
+import getDownloadMeasureResult from "./format-engine/measures/downloadMeasure";
+
+import getDcatProcessedData from "./format-engine/measures/processed-functions/dcatProcessedFns";
+import getDownloadProcessedData from "./format-engine/measures/processed-functions/dcatProcessedFns";
+import getExtensionProcessedData from "./format-engine/measures/processed-functions/extensionProcessedFns";
+
+import  getBestMeasureResult  from "./format-engine/MeasureEvaluator"
+import MeasureEvaluationSet from "src/format-engine/measures/MeasureEvaluationSet";
+import MeasureEvalResult from "src/format-engine/MeasureEvalResult";
+
+//import { Snapshot } from "../../magda-typescript-common/src/format/MeasureSnapShot";
 
 export default async function onRecordFound(
     record: Record,
@@ -26,38 +31,38 @@ export default async function onRecordFound(
         return Promise.resolve();
     }
 
-    const measureBundles: MeasureBundle[] = distributions.map(function(
-        distribution
-    ) {
-        return {
-            downloadMeasure: new DownloadMeasure(distribution),
-            extensionMeasure: new DownloadExtensionMeasure(distribution),
-            dcatMeasure: new DcatFormatMeasure(distribution)
-        };
+    // 2D array: 1 row per distribution
+    const retrievedEvalSets: MeasureEvaluationSet[][] = distributions.map(function (distribution) {
+        const dcatSet: MeasureEvaluationSet = {
+            measureResult: getDcatMeasureResult(distribution),
+            getProcessedData: getDcatProcessedData
+        }
+        const extensionSet: MeasureEvaluationSet = {
+            measureResult: getExtensionMeasureResult(distribution),
+            getProcessedData: getExtensionProcessedData
+        }
+        const downloadSet: MeasureEvaluationSet = {
+            measureResult: getDownloadMeasureResult(distribution),
+            getProcessedData: getDownloadProcessedData
+        }
+
+        return [dcatSet, extensionSet, downloadSet];
+
     });
 
-    const judgeResults: FormatSnapshotJudge[] = measureBundles.map(function(
-        measureBundle
-    ) {
-        return new FormatSnapshotJudge({
-            snapshots: [].concat(
-                measureBundle.downloadMeasure.getSelectedFormats()
-                    .selectedFormats,
-                measureBundle.extensionMeasure.getSelectedFormats()
-                    .selectedFormats,
-                measureBundle.dcatMeasure.getSelectedFormats().selectedFormats
-            )
-        });
-    });
+    const bestFormatResults: MeasureEvalResult[] = retrievedEvalSets.map(evalSetsPerDist =>
+        getBestMeasureResult(evalSetsPerDist)
+    );
 
-    judgeResults.forEach(function(judgeResult) {
-        const distribution: Record = judgeResult.getBestSnapshot()
-            .chosenSnapshot.output.distribution;
-        const aspect: FormatAspect = {
-            format: judgeResult.getBestSnapshot().chosenSnapshot.output.format,
-            confidenceLevel: judgeResult.getBestSnapshot().confidenceLevel
-        };
-        recordFormatAspect(registry, distribution, aspect);
+    bestFormatResults.forEach(function(formatResult) {
+        recordFormatAspect(
+            registry,
+            formatResult.distribution,
+            {
+                format: formatResult.format.format,
+                confidenceLevel: formatResult.absConfidenceLevel
+            }
+        )
     });
 }
 
@@ -67,12 +72,8 @@ function recordFormatAspect(
     aspect: FormatAspect
 ): Promise<Record> {
     return registry
-        .putRecordAspect(distribution.id, "source-link-status", aspect)
+        .putRecordAspect(distribution.id, "dataset-format", aspect)
         .then(unionToThrowable);
 }
 
-interface MeasureBundle {
-    downloadMeasure: DownloadMeasure;
-    extensionMeasure: DownloadExtensionMeasure;
-    dcatMeasure: DcatFormatMeasure;
-}
+

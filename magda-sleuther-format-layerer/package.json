@@ -33,7 +33,8 @@
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
     "sinon": "^3.0.0",
-    "typescript": "~2.5.0"
+    "typescript": "~2.5.0",
+    "jquery": "^1.12.4"
   },
   "dependencies": {
     "@magda/registry-aspects": "^0.0.32-0",
@@ -45,7 +46,8 @@
     "lru-cache": "4.0.2",
     "request": "^2.79.0",
     "urijs": "^1.18.12",
-    "mime-types": "^1.0.0"
+    "mime-types": "^1.0.0",
+    "jquery": "^1.12.4"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",

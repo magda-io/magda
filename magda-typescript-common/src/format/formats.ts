@@ -18,7 +18,3 @@ export interface SelectedFormat {
     correctConfidenceLevel: number,
     distribution: Record
 }
-
-export interface SelectedFormats {
-    selectedFormats: SelectedFormat[]
-}
