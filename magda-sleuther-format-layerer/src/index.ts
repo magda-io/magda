@@ -1,6 +1,6 @@
 import sleuther from "@magda/sleuther-framework/dist/index";
 import onRecordFound from "./onRecordFound";
-import summarizeAspectDef from "./summarizeAspectDef";
+import summarizeAspectDef from "./formatAspectDef";
 import commonYargs from "@magda/sleuther-framework/dist/commonYargs";
 
 const ID = "sleuther-summarizer";

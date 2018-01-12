@@ -1,5 +1,4 @@
 import { Record } from "@magda/typescript-common/src/generated/registry/api";
-import { SelectedFormat } from "@magda/typescript-common/src/format/formats";
 import * as mimeTypes from "mime-types";
 import { Formats } from "@magda/typescript-common/src/format/formats";
 import MeasureResult from "./MeasureResult";
@@ -18,11 +17,11 @@ export default function getMeasureResult(relatedDistribution: Record): MeasureRe
         return null;
     }
 
-    const processedMime: string = rawMime.split(rawMime)[1];
+    const processedMime: string = rawMime.split("/")[1];
     return {
         formats: [
             {
-                format: (<any>Formats)[processedMime],
+                format: (<any>Formats)[processedMime] || Formats.OTHER,
                 correctConfidenceLevel: 100
             }
         ],

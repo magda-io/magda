@@ -4,8 +4,6 @@
 */
 
 import { Record } from "@magda/typescript-common/src/generated/registry/api";
-import { SelectedFormat } from "@magda/typescript-common/src/format/formats";
-import * as mimeTypes from "mime-types";
 import { Formats } from "@magda/typescript-common/src/format/formats";
 import MeasureResult from "./MeasureResult";
 
@@ -32,10 +30,6 @@ function replaceSpaceThenComma(str: string) {
 
 function replaceComma(str: string) {
     return str.split(",").join(" ");
-}
-
-function identity(str: string) {
-    return str;
 }
 
 export default function getMeasureResult(
