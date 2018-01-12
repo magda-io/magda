@@ -62,20 +62,25 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                                    optionalAspectIds: Iterable[String] = Seq(),
                                    dereference: Option[Boolean] = None): RecordsPage = {
     val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
-    val dereferenceSelectors = linkAspects.map {
-      case (aspectId, propertyWithLink) =>
-        Some(sqls"""exists (select 1
-                            from RecordAspects
-                            where RecordAspects.recordId=Records.recordId
-                            and aspectId=$aspectId
-                            and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])""")
+    if (linkAspects.isEmpty) {
+      // There are no linking aspects, so there cannot be any records linking to these IDs.
+      RecordsPage(0, None, List())
+    } else {
+      val dereferenceSelectors = linkAspects.map {
+        case (aspectId, propertyWithLink) =>
+          sqls"""exists (select 1
+                         from RecordAspects
+                         where RecordAspects.recordId=Records.recordId
+                         and aspectId=$aspectId
+                         and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])"""
+      }
+
+      val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
+
+      val selectors = Seq(Some(SQLSyntax.join(dereferenceSelectors.toSeq, SQLSyntax.or)), excludeSelector)
+
+      this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
     }
-
-    val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
-
-    val selectors = dereferenceSelectors ++ Seq(excludeSelector)
-
-    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
   }
 
   def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
@@ -87,6 +92,27 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       .single.apply()
   }
 
+  def getPageTokens(implicit session: DBSession,
+                    aspectIds: Iterable[String],
+                    limit: Option[Int] = None,
+                    recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): List[String] = {
+    val whereClauseParts = aspectIdsToWhereClause(aspectIds) ++ recordSelector
+
+    //    val whereClause = aspectIds.map(aspectId => s"recordaspects.aspectid = '$aspectId'").mkString(" AND ")
+
+    sql"""SELECT sequence
+        FROM
+        (
+            SELECT sequence, ROW_NUMBER() OVER (ORDER BY sequence) AS rownum
+            FROM records
+            ${makeWhereClause(whereClauseParts)}
+        ) AS t
+        WHERE t.rownum % ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)} = 0
+        ORDER BY t.sequence;""".map(rs => {
+      rs.string("sequence")
+    }).list.apply()
+  }
+
   def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -94,7 +120,17 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       _ <- if (id == newRecord.id) Success(newRecord) else Failure(new RuntimeException("The provided ID does not match the record's ID."))
       oldRecordWithoutAspects <- this.getByIdWithAspects(session, id) match {
         case Some(record) => Success(record)
-        case None         => createRecord(session, newRecord).map(_.copy(aspects = Map()))
+        // Possibility of a race condition here. The record doesn't exist, so we try to create it.
+        // But someone else could have created it in the meantime. So if our create fails, try one
+        // more time to get an existing one. We use a nested transaction so that, if the create fails,
+        // we don't end up with an extraneous record creation event in the database.
+        case None => DB.localTx { nested => createRecord(nested, newRecord).map(_.copy(aspects = Map())) } match {
+          case Success(record) => Success(record)
+          case Failure(e) => this.getByIdWithAspects(session, id) match {
+            case Some(record) => Success(record)
+            case None         => Failure(e)
+          }
+        }
       }
       recordPatch <- Try {
         // Diff the old record and the new one, ignoring aspects
@@ -160,7 +196,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
           // We create if there's exactly one ADD operation and it's adding an entire aspect.
           case (Some(aspectId), List(Add("aspects" / (name / rest), value))) => {
             if (rest == Pointer.Empty)
-              (aspectId, createRecordAspect(session, id, aspectId, value.asJsObject))
+              (aspectId, putRecordAspectById(session, id, aspectId, value.asJsObject))
             else
               (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(Add(rest, value))))
           }
@@ -247,8 +283,18 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   def putRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, newAspect: JsObject): Try[JsObject] = {
     for {
       oldAspect <- this.getRecordAspectById(session, recordId, aspectId) match {
-        case Some(record) => Success(record)
-        case None         => createRecordAspect(session, recordId, aspectId, newAspect)
+        case Some(aspect) => Success(aspect)
+        // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
+        // But someone else could have created it in the meantime. So if our create fails, try one
+        // more time to get an existing one. We use a nested transaction so that, if the create fails,
+        // we don't end up with an extraneous record creation event in the database.
+        case None => DB.localTx { nested => createRecordAspect(nested, recordId, aspectId, newAspect) } match {
+          case Success(aspect) => Success(aspect)
+          case Failure(e) => this.getRecordAspectById(session, recordId, aspectId) match {
+            case Some(aspect) => Success(aspect)
+            case None         => Failure(e)
+          }
+        }
       }
       recordAspectPatch <- Try {
         // Diff the old record aspect and the new one
@@ -476,7 +522,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     JsonParser(rs.string("data")).asJsObject
   }
 
-  private def buildDereferenceMap(implicit session: DBSession, aspectIds: Iterable[String]): Map[String, PropertyWithLink] = {
+  def buildDereferenceMap(implicit session: DBSession, aspectIds: Iterable[String]): Map[String, PropertyWithLink] = {
     if (aspectIds.isEmpty) {
       Map()
     } else {
@@ -529,7 +575,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     }
   }
 
-  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink]) = {
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
     aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
         // Use a simple numbered column name rather than trying to make the aspect name safe.

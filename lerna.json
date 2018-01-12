@@ -1,5 +1,5 @@
 {
-  "lerna": "2.1.2",
+  "lerna": "2.5.1",
   "packages": [
     "deploy/",
     "magda-admin-api/",
@@ -8,6 +8,7 @@
     "magda-sleuther-framework/",
     "magda-sleuther-linked-data-rating/",
     "magda-sleuther-broken-link/",
+    "magda-sleuther-visualization/",
     "magda-ckan-connector/",
     "magda-combined-db/",
     "magda-csw-connector/",
@@ -28,16 +29,18 @@
     "magda-session-store/",
     "magda-typescript-common/",
     "magda-web-client/",
+    "magda-web-admin/",
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.30-0",
+  "version": "0.0.32-0",
   "hoist": [
     "tsmonad",
     "urijs",
     "@types/urijs",
     "express",
-    "@types/express"
+    "@types/express",
+    "@types/supertest"
   ],
   "concurrency": "1",
   "commands": {

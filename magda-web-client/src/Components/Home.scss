@@ -1,3 +1,11 @@
 .home{
     min-height: 400px;
+    .dataset-summary {
+      .markdown *{
+        display: none;
+        &:first-child, &:nth-child(2){
+          display: block;
+        }
+      }
+    }
 }

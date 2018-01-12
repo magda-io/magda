@@ -6,7 +6,6 @@ import akka.event.Logging
 import akka.stream.{ Materializer, ThrottleMode }
 import akka.stream.scaladsl.{ Merge, Sink, Source }
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.indexer.external.{ InterfaceConfig }
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import com.typesafe.config.Config
@@ -17,29 +16,42 @@ import au.csiro.data61.magda.model.misc.Agent
 import java.time.Instant
 import java.time.OffsetDateTime
 import au.csiro.data61.magda.util.ErrorHandling
-import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.client.RegistryExternalInterface
 
-class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) extends Crawler {
+class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndexer)(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) extends Crawler {
   val log = Logging(system, getClass)
   implicit val ec = system.dispatcher
   implicit val scheduler = system.scheduler
 
-  def crawl(indexer: SearchIndexer): Future[Unit] = {
+  var lastCrawl: Option[Future[Unit]] = None
+
+  def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
+
+  def crawl(): Future[Unit] = {
+    lastCrawl match {
+      case Some(crawl) => crawl
+      case None =>
+        lastCrawl = Some(newCrawl())
+        lastCrawl.get
+    }
+  }
+
+  private def newCrawl(): Future[Unit] = {
     val startInstant = OffsetDateTime.now
 
-    log.info("Crawling registry at {}", interface.baseUrl)
+    log.info("Crawling registry at {}", interface.baseApiPath)
 
     val interfaceSource = streamForInterface()
 
-    val crawlFuture = indexer.index(interface.getInterfaceConfig, interfaceSource)
+    indexer.index(interfaceSource)
       .flatMap { result =>
-        log.info("Indexed {} datasets from {} with {} failures", result.successes, interface.getInterfaceConfig.name, result.failures.length)
+        log.info("Indexed {} datasets with {} failures", result.successes, result.failures.length)
 
         val futureOpt = if (result.failures.length == 0) { // does this need to be tunable?
-          log.info("Trimming datasets from {} indexed before {}", interface.getInterfaceConfig.name, startInstant)
-          Some(indexer.trim(interface.getInterfaceConfig, startInstant))
+          log.info("Trimming datasets indexed before {}", startInstant)
+          Some(indexer.trim(startInstant))
         } else {
-          log.warning("Encountered too many failures to trim old datasets from {}", interface.getInterfaceConfig.name)
+          log.warning("Encountered too many failures to trim old datasets")
           None
         }
 
@@ -50,12 +62,10 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
           log.error(e, "Failed while indexing {}")
           SearchIndexer.IndexResult(0, Seq())
       }
-
-    crawlFuture.map(result => (result.successes, result.failures.length))
+      .map(result => (result.successes, result.failures.length))
       .map {
         case (successCount, failureCount) =>
           if (successCount > 0) {
-            log.info("Indexed {} datasets with {} failures", successCount, failureCount)
             if (config.getBoolean("indexer.makeSnapshots")) {
               log.info("Snapshotting...")
               indexer.snapshot()
@@ -74,7 +84,7 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
       }
   }
 
-  def tokenCrawl(nextFuture: () => Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
+  private def tokenCrawl(nextFuture: () => Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
     val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching from registry, retries left: {}", retryCount + 1)
 
     val safeFuture = ErrorHandling.retry(nextFuture, 30 seconds, 30, onRetry)
@@ -95,16 +105,13 @@ class RegistryCrawler(interface: RegistryExternalInterface)(implicit val system:
     }
   }
 
-  def streamForInterface(): Source[DataSet, NotUsed] = {
-    val interfaceDef = interface.getInterfaceConfig
+  private def streamForInterface(): Source[DataSet, NotUsed] = {
+    val firstPageFuture = () => interface.getDataSetsReturnToken(0, 50)
 
-    val firstPageFuture = () => interface.getDataSetsReturnToken(0, interfaceDef.pageSize.toInt)
-
-    val crawlSource = tokenCrawl(firstPageFuture, interfaceDef.pageSize.toInt)
+    val crawlSource = tokenCrawl(firstPageFuture, 100)
       .filterNot(_.distributions.isEmpty)
       .map(dataSet => dataSet.copy(publisher =
-        dataSet.publisher.orElse(
-          interfaceDef.defaultPublisherName.map(defaultPublisher => Agent(name = Some(defaultPublisher))))))
+        dataSet.publisher))
       .alsoTo(Sink.fold(0) {
         case (count, y) =>
           val newCount = count + 1

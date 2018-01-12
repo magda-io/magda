@@ -1,8 +1,8 @@
 // @flow
-import Publisher from "./SearchFacets/Publisher";
-import Format from "./SearchFacets/Format";
-import Region from "./SearchFacets/Region";
-import Temporal from "./SearchFacets/Temporal";
+import Publisher from "./Components/SearchFacets/Publisher";
+import Format from "./Components/SearchFacets/Format";
+import Region from "./Components/SearchFacets/Region";
+import Temporal from "./Components/SearchFacets/Temporal";
 
 const fallbackApiHost = "http://magda-dev.terria.io/";
 
@@ -19,6 +19,7 @@ export const config = {
   searchApiUrl:
     serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
   registryApiUrl: registryApiUrl,
+  adminApiUrl: serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin/",
   authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",
   discussionsApiUrl:
     serverConfig.discussionsApiBaseUrl ||
@@ -85,7 +86,7 @@ export const config = {
             category: "Projects",
             links: [
               ["Browse projects", "projects"],
-              ["Start a project", "project/new"]
+              ["Start a project", "projects/new"]
             ]
           }
         ]),

@@ -1,23 +1,15 @@
 import React, { Component } from 'react';
-import propTypes from 'prop-types';
-import queryString from 'query-string';
 import './Pagination.css';
 
 class Pagination extends Component {
     constructor(props) {
       super(props);
-
       this.onClick = this.onClick.bind(this);
     }
 
     onClick(i){
-      let {router} = this.context;
-      router.push({
-        pathname: this.props.location.pathname,
-        query: Object.assign(queryString.parse(this.props.location.search), {page: i})
-      });
+      this.props.onPageChange(i);
     }
-
 
     render(){
       let currentPage = this.props.currentPage;
@@ -51,10 +43,6 @@ class Pagination extends Component {
         </ul>
       );
     }
-}
-
-Pagination.contextTypes ={
-  router: propTypes.object.isRequired,
 }
 
 export default Pagination;

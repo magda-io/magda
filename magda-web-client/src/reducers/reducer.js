@@ -38,7 +38,7 @@ const reducer = combineReducers({
   news,
   stats,
   discussions,
-  previewData
+  previewData,
 });
 
 export default reducer;

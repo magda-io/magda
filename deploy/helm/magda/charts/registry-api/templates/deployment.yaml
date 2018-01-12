@@ -14,6 +14,21 @@ spec:
     spec:
       containers:
       - name: registry-api
+        env:
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
+{{- if not .Values.global.noDbAuth }}
+        - name: POSTGRES_USER
+          value: client
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: registry-datastore-client
+{{- end }}
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [
@@ -21,7 +36,12 @@ spec:
             "-Dhttp.port=80",
             "-Dhttp.externalUrl.v0={{ .Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-datastore/postgres",
-            "-Dakka.loglevel=INFO"
+            "-Dakka.loglevel={{ .Values.logLevel | default .Values.global.logLevel }}",
+            "-DauthApi.baseUrl=http://authorization-api",
+            "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}",
+            "-Dauthorization.skip=false"
         ]
         ports:
         - containerPort: 80
+        resources:
+{{ toYaml .Values.resources | indent 10 }}

@@ -1,5 +1,11 @@
+const csw = libraries.csw;
+const jsonpath = libraries.jsonpath;
+
+const identifier = jsonpath.value(dataset.json, '$.fileIdentifier[*].CharacterString[*]._');
+
 return {
     type: 'csw-dataset',
-    url: source.baseUrl.toString(),
-    name: source.name
+    url: csw.getRecordByIdUrl(identifier),
+    id: csw.id,
+    name: csw.name
 };

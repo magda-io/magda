@@ -8,11 +8,17 @@ global:
     repository: "data61"
     tag: "0.0.29"
     pullPolicy: Always
+  defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
+  logLevel: INFO
+  noDbAuth: false
 tags:
   all: true
+  admin-api: false
   authorization-api: false
   authorization-db: false
   combined-db: false
+  discussions-api: false
+  discussions-db: false
   elasticsearch: false
   gateway: false
   indexer: false
@@ -21,6 +27,7 @@ tags:
   registry-datastore: false
   search-api: false
   session-store: false
-  web-server: false
   sleuther-broken-link: false
   sleuther-linked-data-rating: false
+  sleuther-visualization: false
+  web-server: false

@@ -15,7 +15,7 @@ import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.indexer.external.registry.WebhookApi
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.model.Registry.{ Protocols => RegistryProtocols }
+import au.csiro.data61.magda.model.Registry.RegistryProtocols
 import au.csiro.data61.magda.model.Registry.Record
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
@@ -32,7 +32,6 @@ import au.csiro.data61.magda.model.Temporal.ApiDate
 import scala.concurrent.duration._
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
-import au.csiro.data61.magda.indexer.external.InterfaceConfig
 
 class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols with ApiProtocols {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
@@ -61,8 +60,6 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
               // Code derives media type from the format rather than reading it directly.
               mediaType = None)),
 
-            source = None,
-
             // Contact points only look for name at the moment
             contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
 
@@ -88,7 +85,6 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
           val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
             // We don't care about this.
             indexed = None,
-            source = None,
             quality = 0,
 
             distributions = dataSet.distributions.map(distribution => distribution.copy(
@@ -152,8 +148,7 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
           events = None, // Not needed yet - soon?
           records = Some(dataSets.map(dataSetToRecord)),
           aspectDefinitions = None,
-          deferredResponseUrl = None)
-      )
+          deferredResponseUrl = None))
 
       val posts = payloads.map { payload =>
         new RequestBuilder(POST).apply("/", payload)

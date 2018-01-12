@@ -9,7 +9,7 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Launch CKAN Connector",
+            "name": "Launch Admin API",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
@@ -18,9 +18,8 @@
                 "src/index.ts"
             ],
             "args":[
-                "--name", "foo", "--sourceUrl", "bar"
             ],
-            "cwd": "${workspaceRoot}/magda-ckan-connector"
+            "cwd": "${workspaceRoot}/magda-admin-api"
         },
         {
             "type": "node",
@@ -35,9 +34,18 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch CSW Connector",
-            "program": "${workspaceRoot}/magda-csw-connector/bin/index.js",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs": [
+                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/index.ts"
+            ],
             "args":[
-                "--config", "${workspaceRoot}/deploy/connector-config/australian-institute-of-marine-science.json"
+                "--config", "${workspaceRoot}/deploy/connector-config/australian-bureau-of-meteorology.json",
+                "--userId", "00000000-0000-4000-8000-000000000000",
+                "--jwtSecret", "squirrel"
             ],
             "cwd": "${workspaceRoot}/magda-csw-connector"
         },
@@ -50,6 +58,19 @@
             "cwd": "${workspaceRoot}/magda-typescript-common",
             "args": [
                "${workspaceRoot}/magda-typescript-common/dist/test"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "magda-admin-api tests",
+            "program": "${workspaceRoot}/magda-admin-api/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-admin-api",
+            "args": [
+                "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
+                "--require", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
             ]
         },
         {
@@ -103,6 +124,16 @@
                "--configuration", "../deploy/kubernetes/local/base/combined-db.yml",
                "--selector", "service=combined-db",
                "--port", "5432"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "build-changed",
+            "program": "${workspaceRoot}/scripts/build-changed.js",
+            "cwd": "${workspaceRoot}/scripts",
+            "args": [
             ]
         },
         {

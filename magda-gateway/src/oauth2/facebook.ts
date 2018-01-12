@@ -8,7 +8,7 @@ import createOrGetUserToken from "../createOrGetUserToken";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
 
 export interface FacebookOptions {
-    authenticationApi: ApiClient;
+    authorizationApi: ApiClient;
     passport: Passport;
     clientId: string;
     clientSecret: string;
@@ -16,7 +16,7 @@ export interface FacebookOptions {
 }
 
 export default function facebook(options: FacebookOptions) {
-    const authenticationApi = options.authenticationApi;
+    const authorizationApi = options.authorizationApi;
     const passport = options.passport;
     const clientId = options.clientId;
     const clientSecret = options.clientSecret;
@@ -41,7 +41,7 @@ export default function facebook(options: FacebookOptions) {
                 profile: Profile,
                 cb: Function
             ) {
-                createOrGetUserToken(authenticationApi, profile, "facebook")
+                createOrGetUserToken(authorizationApi, profile, "facebook")
                     .then(userId => cb(null, userId))
                     .catch(error => cb(error));
             }

@@ -5,6 +5,8 @@ export type Options = {
     dockerRepo: string;
     registryApiUrl: string;
     pullPolicy: string;
+    userId: string;
+    interactive?: boolean;
 };
 
 export default function buildConnectorManifest({
@@ -13,9 +15,11 @@ export default function buildConnectorManifest({
     dockerImageTag,
     dockerRepo,
     registryApiUrl,
-    pullPolicy
+    pullPolicy,
+    userId,
+    interactive = false
 }: Options) {
-    const jobName = `connector-${id}`;
+    const jobName = interactive ? `connector-interactive-${id}` : `connector-${id}`;
 
     return {
         apiVersion: "batch/v1",
@@ -41,18 +45,34 @@ export default function buildConnectorManifest({
                                 "--config",
                                 "/etc/config/connector.json",
                                 "--registryUrl",
-                                registryApiUrl
+                                registryApiUrl,
+                                ...interactive ? ['--interactive', '--listenPort', '80', '--timeout', '1800'] : []
                             ],
                             imagePullPolicy: pullPolicy,
                             resources: {
                                 requests: {
-                                    cpu: "0m"
+                                    cpu: "50m"
                                 }
                             },
                             volumeMounts: [
                                 {
                                     mountPath: "/etc/config",
                                     name: "config"
+                                }
+                            ],
+                            env: [
+                                {
+                                    name: "USER_ID",
+                                    value: userId
+                                },
+                                {
+                                    name: "JWT_SECRET",
+                                    valueFrom: {
+                                        secretKeyRef: {
+                                            name: "auth-secrets",
+                                            key: "jwt-secret"
+                                        }
+                                    }
                                 }
                             ]
                         }

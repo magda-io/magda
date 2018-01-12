@@ -56,7 +56,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 29,
+    version = 30,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -91,7 +91,6 @@ object IndexDefinition extends DefaultJsonProtocol {
             magdaTextField("themes"),
             doubleField("quality"),
             keywordField("catalog"),
-            keywordField("source"),
             keywordField("years"),
             dateField("indexed"),
             textField("english").analyzer("english")),
@@ -119,7 +118,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 17,
+      version = 20,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
         create.index(indices.getIndex(config, Indices.RegionsIndex))

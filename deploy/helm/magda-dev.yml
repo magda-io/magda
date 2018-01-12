@@ -3,20 +3,130 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.30-0"
+    tag: "0.0.32-0"
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 200m
+      memory: 250Mi
 combined-db:
   resources:
-    cpu: 500m
-    memory: 1000m
-  limits:
-    cpu: 1000m
-    memory: 1500m
+    requests:
+      cpu: 400m
+      memory: 1000Mi
+    limits:
+      cpu: 1000m
+      memory: 1500Mi
   waleBackup:
     method: WAL
     gsPrefix: "gs://magda-postgres-backups-asia/dev"
     executionTime: 03:00
+    googleApplicationCreds:
+      secretName: storage-account-credentials
+      fileName: TerriaJS-5e042b649f8a.json
+elasticsearch:
+  data:
+    heapSize: 500m
+    pluginsInstall: "repository-gcs"
+    resources:
+      requests:
+        cpu: 400m
+        memory: 1000Mi
+      limits:
+        cpu: 1000m
+        memory: 1500Mi
+indexer:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 1000Mi
+preview-map:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
+registry-api:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 1000Mi
+search-api:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 1000Mi
+web-server:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
+sleuther-linked-data-rating:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
+sleuther-broken-link:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
+sleuther-visualization:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 300Mi
+admin-api:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
+authorization-api:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi
+discussions-api:
+  resources:
+    requests:
+      cpu: 0
+      memory: 0
+    limits:
+      cpu: 200m
+      memory: 150Mi

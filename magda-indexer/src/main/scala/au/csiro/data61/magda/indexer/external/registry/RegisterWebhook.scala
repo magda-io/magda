@@ -1,69 +1,57 @@
 package au.csiro.data61.magda.indexer.external.registry
 
 import scala.concurrent.Future
-import au.csiro.data61.magda.indexer.external.InterfaceConfig
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.typesafe.config.Config
 import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.Registry.{ WebHook, EventType, WebHookConfig }
+import au.csiro.data61.magda.client.RegistryExternalInterface
+import au.csiro.data61.magda.model.Registry.RegistryConstants
+import akka.event.LoggingAdapter
+import akka.event.LoggingAdapter
+import akka.event.Logging
 
 object RegisterWebhook {
-  def registerWebhook(interface: RegistryExternalInterface)(
+  sealed trait InitResult
+  case object ShouldCrawl extends InitResult
+  case object ShouldNotCrawl extends InitResult
+
+  def initWebhook(interface: RegistryExternalInterface)(
     implicit config: Config,
     system: ActorSystem,
     executor: ExecutionContext,
-    materializer: Materializer): Future[Unit] = registerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+    materializer: Materializer): Future[InitResult] = {
 
-  def registerWebhook(
-    interface: RegistryExternalInterface,
-    aspects: List[String],
-    optionalAspects: List[String])(
-      implicit config: Config,
-      system: ActorSystem,
-      executor: ExecutionContext,
-      materializer: Materializer): Future[Unit] =
-    new WebhookRegisterer(interface, aspects, optionalAspects).registerWebhook
+    val logger = Logging(system, getClass)
 
-  def registerWebhook(interfaceConfig: InterfaceConfig)(
-    implicit config: Config,
-    system: ActorSystem,
-    executor: ExecutionContext,
-    materializer: Materializer): Future[Unit] = registerWebhook(interfaceConfig, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+    logger.info("Looking up existing webhook with id {}", config.getString("registry.webhookId"))
+    interface.getWebhook(config.getString("registry.webhookId")).flatMap {
+      case Some(existingHook) =>
+        logger.info("Hook already exists, attempting to resume")
+        interface.resumeWebhook(config.getString("registry.webhookId"))
+          .map { _ =>
+            logger.info("Successfully resumed webhook")
 
-  def registerWebhook(
-    interfaceConfig: InterfaceConfig,
-    aspects: List[String],
-    optionalAspects: List[String])(
-      implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] =
-    new WebhookRegisterer(interfaceConfig, aspects, optionalAspects).registerWebhook()
-}
-
-private class WebhookRegisterer(
-    interface: RegistryExternalInterface,
-    aspects: List[String],
-    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) {
-  def this(interfaceConfig: InterfaceConfig,
-           aspects: List[String],
-           optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
-    this(new RegistryExternalInterface(interfaceConfig), aspects, optionalAspects)
-  }
-
-  def registerWebhook(): Future[Unit] = {
-    interface.getWebhooks().map { webHooks =>
-      webHooks.find(hook => hook.url == config.getString("registry.webhookUrl"))
-    } flatMap {
-      case Some(hook) =>
-        system.log.info("Registry webhook is already in place, no need to add one")
-        Future(Unit) //all good
+            ShouldNotCrawl
+          }
       case None =>
-        system.log.info("No registry webhook for the indexer - adding one")
-        registerIndexerWebhook()
+        logger.info("No hook exists, registering a new one")
+        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+          .map { _ =>
+            logger.info("Successfully registered new webhook")
+            
+            ShouldCrawl
+          }
     }
   }
 
-  private def registerIndexerWebhook(): Future[Unit] = {
+  private def registerIndexerWebhook(
+    interface: RegistryExternalInterface,
+    aspects: List[String],
+    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
     val webhook = WebHook(
+      id = Some(config.getString("registry.webhookId")),
       name = "Indexer",
       eventTypes = Set(
         EventType.CreateRecord,

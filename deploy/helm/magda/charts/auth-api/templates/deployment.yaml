@@ -27,10 +27,17 @@ spec:
         env:
         - name: NODE_ENV
           value: production
-{{- if .Values.auth.enabled }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
+{{- if not .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: authorization-db-client
 {{- end }}

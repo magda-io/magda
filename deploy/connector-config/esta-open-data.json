@@ -1,6 +1,7 @@
 {
     "type": "magda-project-open-data-connector",
+    "id": "esta",
     "name": "ESTA Open Data",
     "sourceUrl": "http://data-esta000.opendata.arcgis.com/data.json",
-    "schedule": "* * */3 * *"
+    "schedule": "30 4 */3 * *"
 }

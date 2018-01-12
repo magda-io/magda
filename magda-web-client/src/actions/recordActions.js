@@ -19,7 +19,7 @@ export function receiveDataset(json: RawDataset): RecordAction {
   }
 }
 
-export function requestDatasetError(error: number): RecordAction {
+export function requestDatasetError(error: object): RecordAction {
   return {
     type: actionTypes.REQUEST_DATASET_ERROR,
     error,
@@ -41,7 +41,7 @@ export function receiveDistribution(json: Object): RecordAction {
   }
 }
 
-export function requestDistributionError(error: number): RecordAction {
+export function requestDistributionError(error: object): RecordAction {
   return {
     type: actionTypes.REQUEST_DISTRIBUTION_ERROR,
     error,
@@ -59,7 +59,7 @@ export function fetchDatasetFromRegistry(id: string):Function{
         if (response.status === 200) {
             return response.json()
         }
-        return dispatch(requestDatasetError(response.status));
+        return dispatch(requestDatasetError({title: response.status, detail: response.statusText}));
     })
     .then((json: Object) => {
       if(!json.error){
@@ -74,14 +74,14 @@ export function fetchDatasetFromRegistry(id: string):Function{
 export function fetchDistributionFromRegistry(id: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestDistribution(id))
-    let url : string = config.registryApiUrl + `records/${encodeURIComponent(id)}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualisation-info`;
+    let url : string = config.registryApiUrl + `records/${encodeURIComponent(id)}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info`;
     console.log(url);
     return fetch(url)
     .then(response => {
         if (response.status === 200) {
             return response.json()
         }
-        return dispatch(requestDistributionError(response.status));
+        return dispatch(requestDistributionError({title: response.status, detail: response.statusText}));
     })
     .then((json: Object) => {
       if(!json.error){

@@ -157,7 +157,7 @@ export class WebHookAcknowledgement {
     /**
     * The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.
     */
-    'lastEventIdReceived': number;
+    'lastEventIdReceived': any;
 }
 
 /**
@@ -266,8 +266,9 @@ export class AspectDefinitionsApi {
      * Create a new aspect
      * 
      * @param aspect The definition of the new aspect.
+     * @param xMagdaSession Magda internal session id
      */
-    public create (aspect: AspectDefinition) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
+    public create (aspect: AspectDefinition, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
         const localVarPath = this.basePath + '/aspects';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -278,6 +279,13 @@ export class AspectDefinitionsApi {
         if (aspect === null || aspect === undefined) {
             throw new Error('Required parameter aspect was null or undefined when calling create.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling create.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -416,8 +424,9 @@ export class AspectDefinitionsApi {
      * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
      * @param id ID of the aspect to be saved.
      * @param aspectPatch The RFC 6902 patch to apply to the aspect.
+     * @param xMagdaSession Magda internal session id
      */
-    public patchById (id: string, aspectPatch: Array<Operation>) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
+    public patchById (id: string, aspectPatch: Array<Operation>, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
         const localVarPath = this.basePath + '/aspects/{id}'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};
@@ -434,6 +443,13 @@ export class AspectDefinitionsApi {
         if (aspectPatch === null || aspectPatch === undefined) {
             throw new Error('Required parameter aspectPatch was null or undefined when calling patchById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling patchById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -475,8 +491,9 @@ export class AspectDefinitionsApi {
      * Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.
      * @param id ID of the aspect to be saved.
      * @param aspect The aspect to save.
+     * @param xMagdaSession Magda internal session id
      */
-    public putById (id: string, aspect: AspectDefinition) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
+    public putById (id: string, aspect: AspectDefinition, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
         const localVarPath = this.basePath + '/aspects/{id}'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};
@@ -493,6 +510,13 @@ export class AspectDefinitionsApi {
         if (aspect === null || aspect === undefined) {
             throw new Error('Required parameter aspect was null or undefined when calling putById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling putById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -567,8 +591,9 @@ export class RecordAspectsApi {
      * Deletes a record aspect.
      * @param recordId ID of the record for which to delete an aspect.
      * @param aspectId ID of the aspect to delete.
+     * @param xMagdaSession Magda internal session id
      */
-    public deleteById (recordId: string, aspectId: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
+    public deleteById (recordId: string, aspectId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
         const localVarPath = this.basePath + '/records/{recordId}/aspects/{aspectId}'
             .replace('{' + 'recordId' + '}', String(recordId))
             .replace('{' + 'aspectId' + '}', String(aspectId));
@@ -586,6 +611,13 @@ export class RecordAspectsApi {
         if (aspectId === null || aspectId === undefined) {
             throw new Error('Required parameter aspectId was null or undefined when calling deleteById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling deleteById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -738,8 +770,9 @@ export class RecordAspectsApi {
      * @param recordId ID of the record for which to fetch an aspect.
      * @param aspectId ID of the aspect to fetch.
      * @param aspectPatch The RFC 6902 patch to apply to the aspect.
+     * @param xMagdaSession Magda internal session id
      */
-    public patchById (recordId: string, aspectId: string, aspectPatch: Array<Operation>) : Promise<{ response: http.IncomingMessage; body: any;  }> {
+    public patchById (recordId: string, aspectId: string, aspectPatch: Array<Operation>, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: any;  }> {
         const localVarPath = this.basePath + '/records/{recordId}/aspects/{aspectId}'
             .replace('{' + 'recordId' + '}', String(recordId))
             .replace('{' + 'aspectId' + '}', String(aspectId));
@@ -762,6 +795,13 @@ export class RecordAspectsApi {
         if (aspectPatch === null || aspectPatch === undefined) {
             throw new Error('Required parameter aspectPatch was null or undefined when calling patchById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling patchById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -804,8 +844,9 @@ export class RecordAspectsApi {
      * @param recordId ID of the record for which to update an aspect.
      * @param aspectId ID of the aspect to update.
      * @param aspect The record aspect to save.
+     * @param xMagdaSession Magda internal session id
      */
-    public putById (recordId: string, aspectId: string, aspect: any) : Promise<{ response: http.IncomingMessage; body: any;  }> {
+    public putById (recordId: string, aspectId: string, aspect: any, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: any;  }> {
         const localVarPath = this.basePath + '/records/{recordId}/aspects/{aspectId}'
             .replace('{' + 'recordId' + '}', String(recordId))
             .replace('{' + 'aspectId' + '}', String(aspectId));
@@ -828,6 +869,13 @@ export class RecordAspectsApi {
         if (aspect === null || aspect === undefined) {
             throw new Error('Required parameter aspect was null or undefined when calling putById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling putById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1045,8 +1093,9 @@ export class RecordsApi {
      * Create a new record
      * 
      * @param record The definition of the new record.
+     * @param xMagdaSession Magda internal session id
      */
-    public create (record: Record) : Promise<{ response: http.IncomingMessage; body: Record;  }> {
+    public create (record: Record, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: Record;  }> {
         const localVarPath = this.basePath + '/records';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1057,6 +1106,13 @@ export class RecordsApi {
         if (record === null || record === undefined) {
             throw new Error('Required parameter record was null or undefined when calling create.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling create.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1097,8 +1153,9 @@ export class RecordsApi {
      * Delete a record
      * 
      * @param recordId ID of the record to delete.
+     * @param xMagdaSession Magda internal session id
      */
-    public deleteById (recordId: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
+    public deleteById (recordId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
         const localVarPath = this.basePath + '/records/{recordId}'
             .replace('{' + 'recordId' + '}', String(recordId));
         let queryParameters: any = {};
@@ -1110,6 +1167,13 @@ export class RecordsApi {
         if (recordId === null || recordId === undefined) {
             throw new Error('Required parameter recordId was null or undefined when calling deleteById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling deleteById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1288,12 +1352,68 @@ export class RecordsApi {
         });
     }
     /**
+     * Get a list tokens for paging through the records
+     * 
+     * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
+     * @param limit The size of each page to get tokens for.
+     */
+    public getPageTokens (aspect?: Array<string>, limit?: number) : Promise<{ response: http.IncomingMessage; body: Array<string>;  }> {
+        const localVarPath = this.basePath + '/records/pagetokens';
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        if (aspect !== undefined) {
+            queryParameters['aspect'] = aspect;
+        }
+
+        if (limit !== undefined) {
+            queryParameters['limit'] = limit;
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'GET',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: Array<string>;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
      * Modify a record by applying a JSON Patch
      * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
      * @param id ID of the aspect to be saved.
      * @param recordPatch The RFC 6902 patch to apply to the aspect.
+     * @param xMagdaSession Magda internal session id
      */
-    public patchById (id: string, recordPatch: Array<Operation>) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
+    public patchById (id: string, recordPatch: Array<Operation>, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: AspectDefinition;  }> {
         const localVarPath = this.basePath + '/records/{id}'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};
@@ -1310,6 +1430,13 @@ export class RecordsApi {
         if (recordPatch === null || recordPatch === undefined) {
             throw new Error('Required parameter recordPatch was null or undefined when calling patchById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling patchById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1351,8 +1478,9 @@ export class RecordsApi {
      * Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.
      * @param id ID of the record to be fetched.
      * @param record The record to save.
+     * @param xMagdaSession Magda internal session id
      */
-    public putById (id: string, record: Record) : Promise<{ response: http.IncomingMessage; body: Record;  }> {
+    public putById (id: string, record: Record, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: Record;  }> {
         const localVarPath = this.basePath + '/records/{id}'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};
@@ -1369,6 +1497,13 @@ export class RecordsApi {
         if (record === null || record === undefined) {
             throw new Error('Required parameter record was null or undefined when calling putById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling putById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1443,8 +1578,9 @@ export class WebHooksApi {
      * Acknowledges a previously-deferred web hook with a given ID.  Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.
      * @param id ID of the web hook to be acknowledged.
      * @param acknowledgement The details of the acknowledgement.
+     * @param xMagdaSession Magda internal session id
      */
-    public ack (id: string, acknowledgement: WebHookAcknowledgement) : Promise<{ response: http.IncomingMessage; body: WebHookAcknowledgementResponse;  }> {
+    public ack (id: string, acknowledgement: WebHookAcknowledgement, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: WebHookAcknowledgementResponse;  }> {
         const localVarPath = this.basePath + '/hooks/{id}/ack'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};
@@ -1461,6 +1597,13 @@ export class WebHooksApi {
         if (acknowledgement === null || acknowledgement === undefined) {
             throw new Error('Required parameter acknowledgement was null or undefined when calling ack.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling ack.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1501,8 +1644,9 @@ export class WebHooksApi {
      * Create a new web hook
      * 
      * @param hook The definition of the new web hook.
+     * @param xMagdaSession Magda internal session id
      */
-    public create (hook: WebHook) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
+    public create (hook: WebHook, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
         const localVarPath = this.basePath + '/hooks';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1513,6 +1657,13 @@ export class WebHooksApi {
         if (hook === null || hook === undefined) {
             throw new Error('Required parameter hook was null or undefined when calling create.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling create.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1553,8 +1704,9 @@ export class WebHooksApi {
      * Delete a web hook
      * 
      * @param hookId ID of the web hook to delete.
+     * @param xMagdaSession Magda internal session id
      */
-    public deleteById (hookId: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
+    public deleteById (hookId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
         const localVarPath = this.basePath + '/hooks/{hookId}'
             .replace('{' + 'hookId' + '}', String(hookId));
         let queryParameters: any = {};
@@ -1566,6 +1718,13 @@ export class WebHooksApi {
         if (hookId === null || hookId === undefined) {
             throw new Error('Required parameter hookId was null or undefined when calling deleteById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling deleteById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1604,13 +1763,21 @@ export class WebHooksApi {
     /**
      * Get a list of all web hooks
      * 
+     * @param xMagdaSession Magda internal session id
      */
-    public getAll () : Promise<{ response: http.IncomingMessage; body: Array<WebHook>;  }> {
+    public getAll (xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: Array<WebHook>;  }> {
         const localVarPath = this.basePath + '/hooks';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
 
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling getAll.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1650,8 +1817,9 @@ export class WebHooksApi {
      * Get a web hook by ID
      * 
      * @param id ID of the web hook to be fetched.
+     * @param xMagdaSession Magda internal session id
      */
-    public getById (id: string) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
+    public getById (id: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
         const localVarPath = this.basePath + '/hooks/{id}'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};
@@ -1663,6 +1831,13 @@ export class WebHooksApi {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling getById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling getById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1703,8 +1878,9 @@ export class WebHooksApi {
      * Modifies the web hook with a given ID.  If a web hook with the ID does not yet exist, it is created.
      * @param id ID of the aspect to be saved.
      * @param hook The web hook to save.
+     * @param xMagdaSession Magda internal session id
      */
-    public putById (id: string, hook: WebHook) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
+    public putById (id: string, hook: WebHook, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: WebHook;  }> {
         const localVarPath = this.basePath + '/hooks/{id}'
             .replace('{' + 'id' + '}', String(id));
         let queryParameters: any = {};
@@ -1721,6 +1897,13 @@ export class WebHooksApi {
         if (hook === null || hook === undefined) {
             throw new Error('Required parameter hook was null or undefined when calling putById.');
         }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling putById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
 
         let useFormData = false;
 

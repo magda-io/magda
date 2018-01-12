@@ -1,15 +1,11 @@
 @import '../variables';
 
 .statistics{
-  
-  h3{
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-top: 0;
+  li{
+    color: $magda-blue;
   }
   strong{
     display: block;
-    font-size: 2rem;
-    color: $magda-blue;
+    font-size: 4rem;
   }
 }

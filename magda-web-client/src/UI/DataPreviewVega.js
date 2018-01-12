@@ -59,7 +59,10 @@ class DataPreviewVega extends Component {
   handleConfigChange(spec){
     this.setState({
       spec
-    })
+    });
+    if(this.props.logAction){
+      this.props.logAction(spec)
+    }
   }
 
   renderConfigForm(){

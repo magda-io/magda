@@ -7,6 +7,7 @@ import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUser
 
 export interface ApiRouterOptions {
     database: Database;
+    jwtSecret: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -21,15 +22,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
         return promise
             .then(user =>
                 user.caseOf({
-                    just: user => Promise.resolve(res.json(user)),
-                    nothing: () => Promise.resolve(res.status(404))
+                    just: user => res.json(user),
+                    nothing: () => res.status(404)
                 })
             )
             .catch(e => {
                 console.error(e);
                 res.status(500);
             })
-            .then(() => res.send());
+            .then(() => res.end());
     }
 
     router.get("/private/users/lookup", function(req, res) {
@@ -56,11 +57,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 console.error(e);
                 res.status(500);
             })
-            .then(() => res.send());
+            .then(() => res.end());
     });
 
     router.get("/public/users/whoami", function(req, res) {
-        getUserIdHandling(req, res, (userId: string) =>
+        getUserIdHandling(req, res, options.jwtSecret, (userId: string) =>
             handlePromise(res, database.getUser(userId))
         );
     });
@@ -73,7 +74,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const publicUser: PublicUser = {
                     id: user.id,
                     photoURL: user.photoURL,
-                    displayName: user.displayName
+                    displayName: user.displayName,
+                    isAdmin: user.isAdmin
                 };
 
                 return publicUser;

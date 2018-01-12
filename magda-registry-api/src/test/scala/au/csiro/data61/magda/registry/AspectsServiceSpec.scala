@@ -5,6 +5,7 @@ import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import spray.json._
 import au.csiro.data61.magda.model.Registry._
+import akka.http.scaladsl.server.AuthenticationFailedRejection
 
 class AspectsServiceSpec extends ApiSpec {
   describe("GET") {
@@ -18,7 +19,7 @@ class AspectsServiceSpec extends ApiSpec {
     it("returns 404 if the given ID does not exist") { param =>
       Get("/v0/aspects/foo") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.NotFound
-        responseAs[BadRequest].message should include ("exist")
+        responseAs[BadRequest].message should include("exist")
       }
     }
   }
@@ -26,7 +27,7 @@ class AspectsServiceSpec extends ApiSpec {
   describe("POST") {
     it("can add a new aspect definition") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[AspectDefinition] shouldEqual aspectDefinition
 
@@ -42,7 +43,7 @@ class AspectsServiceSpec extends ApiSpec {
 
     it("supports invalid URL characters in ID") { param =>
       val aspectDefinition = AspectDefinition("in valid", "testName", None)
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[AspectDefinition] shouldEqual aspectDefinition
 
@@ -55,23 +56,28 @@ class AspectsServiceSpec extends ApiSpec {
 
     it("returns 400 if an aspect definition with the given ID already exists") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", None)
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[AspectDefinition] shouldEqual aspectDefinition
 
         val updated = aspectDefinition.copy(name = "foo")
-        Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include ("already exists")
+          responseAs[BadRequest].message should include("already exists")
         }
       }
+    }
+
+    checkMustBeAdmin {
+      val aspectDefinition = AspectDefinition("testId", "testName", None)
+      Post("/v0/aspects", aspectDefinition)
     }
   }
 
   describe("PUT") {
     it("can add a new aspect definition") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", None)
-      Put("/v0/aspects/testId", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Put("/v0/aspects/testId", aspectDefinition)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[AspectDefinition] shouldEqual aspectDefinition
 
@@ -87,9 +93,9 @@ class AspectsServiceSpec extends ApiSpec {
 
     it("can update an existing aspect definition") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", None)
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         val newDefinition = aspectDefinition.copy(name = "newName")
-        Put("/v0/aspects/testId", newDefinition) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/aspects/testId", newDefinition)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual newDefinition
         }
@@ -98,21 +104,21 @@ class AspectsServiceSpec extends ApiSpec {
 
     it("cannot change the ID of an existing aspect definition") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", None)
-      Put("/v0/aspects/testId", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Put("/v0/aspects/testId", aspectDefinition)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", None)
 
         val updated = aspectDefinition.copy(id = "foo")
-        Put("/v0/aspects/testId", updated) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/aspects/testId", updated)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include ("ID")
+          responseAs[BadRequest].message should include("ID")
         }
       }
     }
 
     it("supports invalid URL characters in ID") { param =>
       val aspectDefinition = AspectDefinition("in valid", "testName", None)
-      Put("/v0/aspects/in%20valid", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Put("/v0/aspects/in%20valid", aspectDefinition)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[AspectDefinition] shouldEqual aspectDefinition
 
@@ -125,9 +131,9 @@ class AspectsServiceSpec extends ApiSpec {
 
     it("can add a schema") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", None)
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         val updated = aspectDefinition.copy(jsonSchema = Some(JsObject()))
-        Put("/v0/aspects/testId", updated) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/aspects/testId", updated)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual updated
         }
@@ -136,31 +142,36 @@ class AspectsServiceSpec extends ApiSpec {
 
     it("can modify a schema") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("bar"))))
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         val updated = aspectDefinition.copy(jsonSchema = Some(JsObject("foo" -> JsString("baz"))))
-        Put("/v0/aspects/testId", updated) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/aspects/testId", updated)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual updated
         }
       }
+    }
+
+    checkMustBeAdmin {
+      val aspectDefinition = AspectDefinition("testId", "testName", None)
+      Put("/v0/aspects/testId", aspectDefinition)
     }
   }
 
   describe("PATCH") {
     it("returns an error when the aspect definition does not exist") { param =>
       val patch = JsonPatch()
-      Patch("/v0/aspects/doesnotexist", patch) ~> param.api.routes ~> check {
+      param.asAdmin(Patch("/v0/aspects/doesnotexist", patch)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.BadRequest
-        responseAs[BadRequest].message should include ("exists")
-        responseAs[BadRequest].message should include ("ID")
+        responseAs[BadRequest].message should include("exists")
+        responseAs[BadRequest].message should include("ID")
       }
     }
 
     it("can modify an aspect's name") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", None)
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
-        Patch("/v0/aspects/testId", patch) ~> param.api.routes ~> check {
+        param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "foo", None)
         }
@@ -169,20 +180,20 @@ class AspectsServiceSpec extends ApiSpec {
 
     it("cannot modify an aspect's ID") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", None)
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         val patch = JsonPatch(Replace(Pointer.root / "id", JsString("foo")))
-        Patch("/v0/aspects/testId", patch) ~> param.api.routes ~> check {
+        param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include ("ID")
+          responseAs[BadRequest].message should include("ID")
         }
       }
     }
 
     it("can add a schema") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", None)
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         val patch = JsonPatch(Add(Pointer.root / "jsonSchema", JsObject()))
-        Patch("/v0/aspects/testId", patch) ~> param.api.routes ~> check {
+        param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject()))
         }
@@ -191,13 +202,18 @@ class AspectsServiceSpec extends ApiSpec {
 
     it("can modify a schema") { param =>
       val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("bar"))))
-      Post("/v0/aspects", aspectDefinition) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
         val patch = JsonPatch(Replace(Pointer.root / "jsonSchema" / "foo", JsString("baz")))
-        Patch("/v0/aspects/testId", patch) ~> param.api.routes ~> check {
+        param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("baz"))))
         }
       }
+    }
+
+    checkMustBeAdmin {
+      val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
+      Patch("/v0/aspects/testId", patch)
     }
   }
 }

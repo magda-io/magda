@@ -13,17 +13,17 @@ type rssNews = {
 type props = {
   isFetching: Boolean,
   newsItems: Array<rssNews>,
-  error: number
+  error: object
 }
 
 function renderContent(props: props){
   if(props.error){
-    return <div className='error'> Sorry we cannot get news at the moment</div>
+    return <div className='error'><h3>{props.error.title}</h3>{props.error.detail}</div>
   }
   if(props.isFetching){
     return (<div>
-              <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
-              <span class="sr-only">Loading...</span>
+              <i className="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+              <span className="sr-only">Loading...</span>
             </div>)
   }
   return (
@@ -33,12 +33,10 @@ function renderContent(props: props){
 
 function renderNews(news: rssNews){
   return (<li className='list-group-item' key={news.link + news.title}>
-            <h4 className='list-group-item-heading'><a href={news.link} target="_blank" rel="noopener noreferrer">{news.title}</a></h4>
+            <h3 className='list-group-item-heading'><a href={news.link} target="_blank" rel="noopener noreferrer">{news.title}</a></h3>
             <div className='news-body list-group-item-text'>{news.contentSnippet}</div>
           </li>)
 }
-
-
 
 export default function News(props: props){
   return (

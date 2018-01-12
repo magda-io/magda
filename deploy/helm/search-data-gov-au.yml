@@ -2,8 +2,26 @@ global:
     useCombinedDb: false
     externalUrl: https://search.data.gov.au
     image:
-        pullPolicy: IfNotPresent
-        tag: "0.0.29"
+        pullPolicy: Always
+        tag: "0.0.30"
+tags:
+    all: false
+
+    admin-api: true
+    authorization-api: true
+    authorization-db: true
+    elasticsearch: true
+    gateway: true
+    indexer: true
+    preview-map: true
+    registry-api: true
+    registry-datastore: true
+    search-api: true
+    session-store: true
+    sleuther-broken-link: true
+    sleuther-linked-data-rating: true
+    web-server: true
+
 elasticsearch:
     production: true
     client:
@@ -14,12 +32,13 @@ elasticsearch:
                 cpu: 200m
                 memory: 1500Mi
     data:
-        heapSize: 4000m
+        heapSize: 3000m
         pluginsInstall: "repository-gcs"
+        storageClass: "fast-ssd"
         resources:
             requests:
                 cpu: 800m
-                memory: 8000Mi
+                memory: 6000Mi
 gateway:
     loadBalancerIP: "35.189.8.102"
     auth:
@@ -33,32 +52,86 @@ indexer:
     resources:
         requests:
             cpu: 200m
-            memory: 500Mi
+            memory: 200Mi
 preview-map:
     resources:
         requests:
             cpu: 250m
             memory: 200Mi
 registry-api:
-    resources: {} # TODO
+    logLevel: DEBUG
+    requests:
+        cpu: 500m
+        memory: 1000Mi
 registry-datastore:
     resources:
         requests:
             cpu: 900m
             memory: 2000Mi
-search-api:
-    resources: {} # TODO
-session-store:
+    data:
+        storageClass: "fast-ssd"
+    waleBackup:
+        method: WAL
+        gsPrefix: "gs://magda-postgres-backups/prod/registry"
+        executionTime: 03:00
+        googleApplicationCreds:
+            secretName: storage-account-credentials
+            fileName: TerriaJS-5e042b649f8a.json
+authorization-db:
     resources:
         requests:
-            cpu: 200m
-            memory: 2000Mi
+            cpu: 250m
+            memory: 500Mi
+    data:
+        storageClass: "fast-ssd"
+    waleBackup:
+        method: WAL
+        gsPrefix: "gs://magda-postgres-backups/prod/authorization"
+        executionTime: 03:00
+        googleApplicationCreds:
+            secretName: storage-account-credentials
+            fileName: TerriaJS-5e042b649f8a.json
+session-store:
+    data:
+        storageClass: "fast-ssd"
+    resources:
+        requests:
+            cpu: 250m
+            memory: 500Mi
+auth-api:
+    requests:
+        cpu: 100m
+        memory: 200Mi
+search-api:
+    requests:
+        cpu: 250m
+        memory: 200Mi
+    limits:
+        cpu: 1000m
+        memory: 1000m
 web-server:
     resources:
         requests:
-            cpu: 300m
+            cpu: 250m
             memory: 200Mi
+    disableAuthenticationFeatures: true
+sleuther-broken-link:
+    resources:
+        requests:
+            cpu: 100m
+            memory: 200Mi
+        limits:
+            cpu: 500m
+            memory: 500Mi
 sleuther-linked-data-rating:
+    resources:
+        requests:
+            cpu: 100m
+            memory: 200Mi
+        limits:
+            cpu: 500m
+            memory: 500Mi
+sleuther-visualization:
     resources:
         requests:
             cpu: 100m
@@ -70,6 +143,6 @@ indexer:
   elasticsearch:
     shards: 2
     replicas: 4
-    useGcsSnapshots: true
-    gcsSnapshotBucket: "magda-es-snapshots"
-    gcsSnapshotServiceAccount: "_default"
+#    useGcsSnapshots: true
+#    gcsSnapshotBucket: "magda-es-snapshots"
+#    gcsSnapshotServiceAccount: "_default"

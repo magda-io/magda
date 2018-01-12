@@ -16,8 +16,10 @@ spec:
       - name: web
         command: [
             "node", "/usr/src/app/component/dist/index.js",
-            "--config", "/etc/config.json",
-            "--listenPort", "80"
+            "--config", "/etc/config/config.json",
+            "--listenPort", "80",
+            "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
+            "--registryApiBaseUrlInternal", "http://registry-api/v0"
         ]
         resources:
 {{ toYaml .Values.resources | indent 10 }}
@@ -27,12 +29,12 @@ spec:
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         volumeMounts:
-        - mountPath: "/etc"
+        - mountPath: "/etc/config"
           name: config
       volumes:
       - name: config
         configMap:
-          name: config
+          name: web-app-config
           items:
           - key: web.json
             path: config.json
