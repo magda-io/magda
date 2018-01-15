@@ -5,7 +5,7 @@ import MeasureResult from "./MeasureResult";
 
 /*
 * Tries to determine the format by downloading the downloadURL, and deciphering the MIME type
-* TODO not unit tested
+* TODO not thouroughly unit tested
 */
 export default function getMeasureResult(relatedDistribution: Record): MeasureResult {
     const { downloadURL } = relatedDistribution.aspects[
@@ -21,7 +21,7 @@ export default function getMeasureResult(relatedDistribution: Record): MeasureRe
     return {
         formats: [
             {
-                format: (<any>Formats)[processedMime] || Formats.OTHER,
+                format: (<any>Formats)[processedMime.toUpperCase()] || Formats.OTHER,
                 correctConfidenceLevel: 100
             }
         ],

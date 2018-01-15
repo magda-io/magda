@@ -46,6 +46,7 @@ export default async function onRecordFound(
             getProcessedData: getDownloadProcessedData
         }
 
+
         return [dcatSet, extensionSet, downloadSet];
 
     });
@@ -64,6 +65,8 @@ export default async function onRecordFound(
             }
         )
     });
+
+    Promise.resolve();
 }
 
 function recordFormatAspect(

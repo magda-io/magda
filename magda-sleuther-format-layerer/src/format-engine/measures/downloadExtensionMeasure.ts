@@ -17,26 +17,31 @@ export default function getMeasureResuls(
         return null;
     }
 
+    let downloadURLStringify: string = downloadURL;
+
     //NOTE regexes do not allow more than 1 regex to match 1 url + break in forEach loop does this too
     // but this Measure has been programmed to make it easily extensible to allowing multiple formats
     // to be deduced by 1 url
     const urlRegexes: Array<Array<string>> = [
-        [".*\\.geojson$", "GeoJSON"],
+        [".*\\.geojson$", "GEOJSON"],
         [".*?.*service=wms.*", "WMS"],
         [".*?.*service=wfs.*", "WFS"],
         [".*\\.(shp|shz|dbf)(\\.zip)?$", "SHP"],
         [".*\\.(pdf)(\\.zip)?$", "PDF"],
-        [".*\\.(xls|xlsx)(\\.zip)?$", "Excel"],
         [".*\\.(json)(\\.zip)?$", "JSON"],
         [".*\\.(xml)(\\.zip)?$", "XML"],
+        [".*\\.(doc)(\\.zip)?$", "DOC"],
+        [".*\\.(docs)(\\.zip)?$", "DOCS"],
+        [".*\\.(xlsx)(\\.zip)?$", "XLSX"],
+        [".*\\.(xls)(\\.zip)?$", "XLS"],
         [".*\\.(tif)(\\.zip)?$", "TIFF"],
         [".*\\.(zip)$", "ZIP"],
-        [".*\\.(html|xhtml|php|asp|aspx|jsp)(\\?.*)?", "HTML"]
+        [".*\\.(html|xhtml|php|asp|aspx|jsp|htm)(\\?.*)?", "HTML"]
     ];
 
     let formatsFromURL: Array<string> = [];
     urlRegexes.some(function(regex) {
-        if (downloadURL.matches(regex[0])) {
+        if (downloadURLStringify.match(regex[0])) {
             formatsFromURL.push(regex[1]);
             return true; // means 'break'
         }
@@ -47,7 +52,7 @@ export default function getMeasureResuls(
     return {
         formats: formatsFromURL.map(eachFormat => {
             return {
-                format: (<any>Formats)[eachFormat],
+                format: (<any>Formats)[eachFormat] || Formats.OTHER,
                 correctConfidenceLevel: 100,
             };
         }),

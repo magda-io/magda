@@ -70,7 +70,7 @@ export default function getMeasureResult(
         );
     if (splitFormat.length > 1) finalFormat[0] = splitFormat[1];
     else {
-        // E.g. pdf & xlsx & doc & docx
+        // E.g. pdf & xlsx & doc & docx & ogg
         splitFormat = processedFormat.split(" & ");
         if (splitFormat.length > 1) finalFormat = splitFormat;
         else {
