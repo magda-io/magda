@@ -29,11 +29,6 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The shared secret for intra-network communication",
             type: "string"
         })
-        .option("authApiUrl", {
-            describe: "The base URL of the auth API",
-            type: "string",
-            default: "http://localhost:6104/v0"
-        })
         .argv
 );
 
@@ -48,8 +43,7 @@ app.use(
         database: new Database({
             dbHost: argv.dbHost,
             dbPort: argv.dbPort
-        }),
-        authApiUrl: argv.authApiUrl
+        })
     })
 );
 

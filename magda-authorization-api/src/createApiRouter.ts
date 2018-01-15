@@ -15,8 +15,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
-    router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
-
     function handlePromise<T>(
         res: express.Response,
         promise: Promise<Maybe<T>>
@@ -34,6 +32,27 @@ export default function createApiRouter(options: ApiRouterOptions) {
             })
             .then(() => res.end());
     }
+
+    router.all("/private/*", function(req, res, next) { //--- private API requires admin level access
+        getUserIdHandling(req, res, options.jwtSecret, (userId: string) =>
+            database.getUser(userId).then(userMaybe => 
+                userMaybe.map(user => user.isAdmin ? true : Maybe.nothing<boolean>())
+            )
+        )
+        .then(isAdmin => isAdmin.caseOf({
+            just: next,
+            nothing: () => {
+                console.warn(
+                    "Only admin users are authorised to access"
+                );
+                res.status(401).send("Not authorized.");
+            }
+        }))
+        .catch(e => {
+            console.error(e);
+            res.status(500);
+        })
+    });
 
     router.get("/private/users/lookup", function(req, res) {
         const source = req.query.source;
