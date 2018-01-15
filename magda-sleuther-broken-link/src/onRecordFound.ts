@@ -194,7 +194,23 @@ function checkDistributionLink(
     }
 
     return urls.map(url => {
-        const parsedURL = new URI(url.url);
+        let parsedURL: uri.URI;
+        try {
+            parsedURL = new URI(url.url);
+        } catch (err) {
+            return {
+                host: "unknown",
+                op: () =>
+                    Promise.resolve({
+                        distribution,
+                        urlType: url.type,
+                        aspect: {
+                            status: "broken" as RetrieveResult,
+                            errorDetails: err
+                        }
+                    })
+            };
+        }
         return {
             host: (parsedURL && parsedURL.host()) as string,
             op: () => {

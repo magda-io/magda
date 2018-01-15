@@ -96,7 +96,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
 
     val payload = WebHookPayload(
       action = "records.changed",
-      lastEventId = eventPage.events.lastOption.flatMap(_.id).orElse(webHook.lastEvent).get, //if (events.isEmpty) webHook.lastEvent.get else events.last.id.get,
+      lastEventId = eventPage.events.lastOption.flatMap(_.id).get, //if (events.isEmpty) webHook.lastEvent.get else events.last.id.get,
       events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents) else None,
       records = records,
       aspectDefinitions = aspectDefinitions,

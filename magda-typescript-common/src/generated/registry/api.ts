@@ -67,10 +67,6 @@ export type EventType =
 */
 export class EventsPage {
     /**
-    * The total number of events available.
-    */
-    'totalCount': number;
-    /**
     * A token to be used to get the next page of events.
     */
     'nextPageToken': string;

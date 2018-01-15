@@ -7,7 +7,9 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 
 import SleutherOptions from "./SleutherOptions";
 import getWebhookUrl from "./getWebhookUrl";
-import AsyncPage, { forEachAsync } from "@magda/typescript-common/dist/AsyncPage";
+import AsyncPage, {
+    forEachAsync
+} from "@magda/typescript-common/dist/AsyncPage";
 
 export default function setupWebhookEndpoint(
     options: SleutherOptions,
@@ -20,7 +22,7 @@ export default function setupWebhookEndpoint(
         "/hook",
         (request: express.Request, response: express.Response) => {
             const payload = request.body;
-            
+
             const recordsPage = AsyncPage.single(payload.records);
             const megaPromise = forEachAsync(
                 recordsPage,
@@ -72,10 +74,17 @@ export default function setupWebhookEndpoint(
                             throw error;
                         });
 
-                megaPromise.then(() => sendResult(true)).catch((err: Error) => {
-                    console.error(err);
-                    return sendResult(false);
-                });
+                megaPromise
+                    .catch((err: Error) => {
+                        // Not much we can really do about this except log it and keep going.
+                        // TODO: Figure out some way to notify of failures.
+                        console.error(err);
+                    })
+                    .then(() => sendResult(true))
+                    .catch((err: Error) => {
+                        console.error(err);
+                        return sendResult(false);
+                    });
             } else {
                 megaPromise
                     .then(() => {
