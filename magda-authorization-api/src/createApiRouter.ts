@@ -15,6 +15,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
+    router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
+
     function handlePromise<T>(
         res: express.Response,
         promise: Promise<Maybe<T>>
