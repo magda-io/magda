@@ -9,22 +9,14 @@ function QualityIndicator(props) {
   }
 
   const qualities = [  ["Poor", '#c0392b'],["OK", "#FE7F7F"], ["Average", '#9b59b6'],["Good", '#3498db'],["Excellent", '#12C9A0']];
-  const colors = [];
-  var style = {
-    display: 'inline-block',
-    height: '11px',
-    width: '4px',
-    backgroundColor: qualities[rating][1],
-    marginRight: '1px'
-  };
 
   function getBarColor(index){
     return {
       display: 'inline-block',
       height: '11px',
       width: '4px',
+      marginRight: '2px',
       backgroundColor: qualities[rating][1],
-      marginRight: '1px',
       opacity: rating >= index ? 1 : 0.5
     };
   }

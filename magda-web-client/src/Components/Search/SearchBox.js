@@ -10,6 +10,7 @@ import {fetchRegionMapping} from '../../actions/regionMappingActions';
 import Form from 'muicss/lib/react/form';
 import Input from 'muicss/lib/react/input';
 import Button from 'muicss/lib/react/button';
+import search from "../../assets/search.svg";
 
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
@@ -139,7 +140,7 @@ class SearchBox extends Component {
                 </label>
               </td>
               <td width='30px'>
-                <Button onClick={this.onClickSearch} variant="flat" ><i className='fa fa-search' aria-hidden='true'></i><span className='sr-only'>submit search</span></Button>
+                <button onClick={this.onClickSearch} className='icon-button'><img src={search} alt="search button"/><span className='sr-only'>submit search</span></button>
               </td>
               </tr>
               </tbody>

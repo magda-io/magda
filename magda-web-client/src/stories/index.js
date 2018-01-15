@@ -23,6 +23,7 @@ import TemporalAspectViewer from '../UI/TemporalAspectViewer';
 import ToggleList from '../UI/ToggleList';
 import Tabs from '../UI/Tabs';
 import ContactForm from '../UI/ContactForm';
+import MonthPicker from '../UI/MonthPicker';
 // doc
 import ApiViewer from './ApiViewer';
 
@@ -115,3 +116,6 @@ storiesOf('Dataset preview', module)
 storiesOf('API viewer', module)
     .add('formats viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/format/options?generalQuery=*&facetQuery=*&limit=268&orderedBy=hitCount"/> )
     .add('publishers viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/publisher/options?generalQuery=*&facetQuery=*&limit=562&orderedBy=hitCount%22"/> )
+
+storiesOf('MonthPicker', module)
+    .add('pick a month', () => <MonthPicker date={new Date()} selectYear={action()} selectMonth={action()}/>)

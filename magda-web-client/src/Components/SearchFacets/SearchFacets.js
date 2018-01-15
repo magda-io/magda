@@ -47,7 +47,6 @@ class SearchFacets extends Component {
                        toggleFacet={this.toggleFacet.bind(this, c.id)}/>
           </div>
         )}
-        <div className='search-facet'><Button>Last updated</Button></div>
       </div>
     );
   }
