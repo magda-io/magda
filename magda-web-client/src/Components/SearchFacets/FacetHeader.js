@@ -5,16 +5,19 @@ import Button from 'muicss/lib/react/button';
   * Facet header component, contains a title of the facet and a reset button when there is a active facet
   */
 class FacetHeader extends Component {
+  displayMonth(date){
+    return new Date(date).getUTCFullYear() + '/' + new Date(date).getUTCMonth()
+  }
   calculateTitle(){
     if(this.props.title === 'date range'){
         if(!this.hasFilter()){
           return <span> Any date </span>
         } else if(this.props.activeOptions[0] && !this.props.activeOptions[1]){
-          return <span> since {this.props.activeOptions[0]}</span>
+          return <span> since {this.displayMonth(this.props.activeOptions[0])}</span>
         } else if(this.props.activeOptions[1] && !this.props.activeOptions[0]){
-          return <span> before {this.props.activeOptions[1]}</span>
+          return <span> before {this.displayMonth(this.props.activeOptions[1])}</span>
         }
-        return <span> from {this.props.activeOptions[0]} to {this.props.activeOptions[1]} </span>
+        return <span> from {this.displayMonth(this.props.activeOptions[0])} to {this.displayMonth(this.props.activeOptions[1])} </span>
     }
 
     else{

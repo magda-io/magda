@@ -20,15 +20,15 @@ class MonthPicker extends Component {
   }
 
   render(){
-    const year = this.props.date.getFullYear();
-    const month = this.props.date.getMonth();
+    const year = this.props.date.getUTCFullYear();
+    const month = this.props.date.getUTCMonth();
     return (
       <table className='month-picker mui-table'>
-        <th colSpan="3"><Input placeholder="select a year" defaultValue={year} /></th>
-          <tbody>
-            {MONTH_NAMES.map((m, i) => <tr>
-              {m.map((n, j) => <td><Button variant='flat' className={month === i * MONTH_NAMES.length + j? 'is-active' : ''}>{n}</Button></td>)}
-          </tr>)}
+        <tbody>
+          <tr><th colSpan="3"><Input placeholder="select a year"  defaultValue={year} /></th></tr>
+          {MONTH_NAMES.map((m, i) => <tr key={m}>
+            {m.map((n, j) => <td key={n}><Button variant='flat'  className={month === i * MONTH_NAMES[0].length + j? 'is-active' : ''}>{n}</Button></td>)}
+            </tr>)}
         </tbody>
       </table>)
   }
