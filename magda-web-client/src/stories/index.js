@@ -118,4 +118,4 @@ storiesOf('API viewer', module)
     .add('publishers viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/publisher/options?generalQuery=*&facetQuery=*&limit=562&orderedBy=hitCount%22"/> )
 
 storiesOf('MonthPicker', module)
-    .add('pick a month', () => <MonthPicker date={new Date()} selectYear={action()} selectMonth={action()}/>)
+    .add('pick a month', () => <MonthPicker year={2018} month={12} selectYear={action()} selectMonth={action()}/>)
