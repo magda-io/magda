@@ -38,20 +38,20 @@ export default function createApiRouter(options: ApiRouterOptions) {
             database.getUser(userId).then(userMaybe => 
                 userMaybe.map(user => user.isAdmin ? true : Maybe.nothing<boolean>())
             )
-        )
-        .then(isAdmin => isAdmin.caseOf({
-            just: next,
-            nothing: () => {
-                console.warn(
-                    "Only admin users are authorised to access"
-                );
-                res.status(401).send("Not authorized.");
-            }
-        }))
-        .catch(e => {
-            console.error(e);
-            res.status(500);
-        })
+            .then(isAdmin => isAdmin.caseOf({
+                just: next,
+                nothing: () => {
+                    console.warn(
+                        "Only admin users are authorised to access"
+                    );
+                    res.status(401).send("Not authorized.");
+                }
+            }))
+            .catch(e => {
+                    console.error(e);
+                    res.status(500);
+            })
+        );
     });
 
     router.get("/private/users/lookup", function(req, res) {
