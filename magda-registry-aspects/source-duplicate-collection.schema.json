@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Aspect describing the collection of duplicates of a distribution (all ids of distributions with same url)",
+    "type": "object",
+    "properties": {
+      "url": {
+        "title": "The url as a string which has multiple distributions pointing to it",
+        "type": "string"
+      },
+      "ids": {
+        "title": "All of the ids that have either a downloadURL or accessURL in common",
+        "type": "array"
+      },
+      "errorDetails": {
+        "type": "string"
+      }
+    }
+  }

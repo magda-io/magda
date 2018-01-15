@@ -19,7 +19,7 @@ import {
 
 import onRecordFound from "../onRecordFound";
 import { BrokenLinkAspect } from "../brokenLinkAspectDef";
-import urlsFromDataSet from "./urlsFromDataSet";
+import urlsFromDataSet from "@magda/typescript-common/src/test/urlsFromDataSet";
 import {
     CheckResult,
     recordArbWithSuccesses,

@@ -146,6 +146,38 @@
             "args": [
                "--output", "foo.tar.gz"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Sleuther Duplicate records",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs": [
+                "src/index.ts"
+            ],
+            "args": [
+                "--jwtSecret", "squirrel",
+                "--userId", "00000000-0000-4000-8000-000000000000"
+            ],
+            "cwd": "${workspaceRoot}/magda-sleuther-duplicate-records"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Sleuther Duplicate records api tests",
+            "program": "${workspaceRoot}/magda-sleuther-duplicate-records/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-sleuther-duplicate-records",
+            "args": [
+                "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
+                "--require", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
         }
+
     ]
 }
