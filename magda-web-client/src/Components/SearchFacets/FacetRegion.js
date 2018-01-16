@@ -18,7 +18,7 @@ class FacetRegion extends Component {
         this.onToggleOption = this.onToggleOption.bind(this);
         this.onFeatureClick = this.onFeatureClick.bind(this);
         this.selectRegionType = this.selectRegionType.bind(this);
-
+        this.onApplyFilter = this.onApplyFilter.bind(this);
         /**
          * @type {object}
          * @property {boolean} popUpIsOpen whether the popup window that shows the bigger map is open or not
@@ -40,7 +40,9 @@ class FacetRegion extends Component {
     }
 
     onToggleOption(option){
-        this.props.onToggleOption(option);
+        this.setState({
+          _activeRegion: option
+        })
     }
 
     onFeatureClick(feature){
@@ -58,8 +60,6 @@ class FacetRegion extends Component {
       this.setState({
         _activeRegion: region
       });
-      this.props.onToggleOption(region);
-
     }
 
     selectRegionType(regionType){
@@ -68,14 +68,15 @@ class FacetRegion extends Component {
         })
     }
 
-
-
+    onApplyFilter(){
+      this.props.onToggleOption(this.state._activeRegion);
+    }
     // see Facet.renderOption(option, optionMax, onFocus)
     // Here is only for mark up change
     renderOption(option, onClick, optionMax, onFocus){
      let regionType = option.regionType;
       return (
-            <Button ref={b=>{if(b != null && onFocus === true){b.focus()}}}
+            <Button
                     className='btn-facet-option mui-btn btn-facet-option__location'
                     onClick={onClick.bind(this, option)}
                     title={option.regionName}>
@@ -114,12 +115,7 @@ class FacetRegion extends Component {
                                     onToggleOption={this.onToggleOption}
                                     options={this.props.facetSearchResults}
                                     searchFacet={this.props.searchFacet}/>
-                    <Button onClick={this.props.onResetFacet}> Clear </Button>
-                    {defined(this.props.regionMapping) &&
-                                <DropDown activeOption={this.getActiveRegionType()}
-                                          options={this.getDropDownOptions()}
-                                          select={this.selectRegionType}/>
-                      }
+
                     <RegionSummray regionMapping={this.props.regionMapping}
                                  region={this.state._activeRegion}/>
                     <div className='facet-region__preview'>
@@ -130,6 +126,10 @@ class FacetRegion extends Component {
                                regionMapping={this.props.regionMapping}
                                onClick={this.onFeatureClick}
                         />
+                    </div>
+                    <div className='facet-footer'>
+                        <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
+                        <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>
                     </div>
                 </div>)
     }

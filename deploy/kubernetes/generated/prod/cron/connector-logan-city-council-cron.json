@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-national-environmental-information-infrastructure"
+    "name": "connector-logan-city-council"
   },
   "spec": {
-    "schedule": "30 7 */3 * *",
+    "schedule": "30 5 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-national-environmental-information-infrastructure"
+            "name": "connector-logan-city-council"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-national-environmental-information-infrastructure",
-                "image": "data61/magda-csw-connector:0.0.30",
+                "name": "connector-logan-city-council",
+                "image": "data61/magda-project-open-data-connector:0.0.32-0",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "national-environmental-information-infrastructure.json",
+                      "key": "logan-city-council.json",
                       "path": "connector.json"
                     }
                   ]

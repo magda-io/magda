@@ -63,6 +63,10 @@ class FacetBasic extends Component {
     </Button>);
   }
 
+  onApplyFilter(){
+    this.props.onToggleOption();
+  }
+
   renderBox(){
     let that = this;
     let defaultSize = config.facetListSize;
@@ -85,7 +89,7 @@ class FacetBasic extends Component {
               {inactiveOptions.map(o => this.renderOption(o, this.props.onToggleOption, maxOptionOptionList))}
               <div className='facet-footer'>
                   <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
-                  <Button variant="flat" onClick={this.props.onResetFacet}> Apply </Button>
+                  <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>
               </div>
             </div>)
   }

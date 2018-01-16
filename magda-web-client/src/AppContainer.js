@@ -97,7 +97,7 @@ class AppContainer extends React.Component {
                    <td className="mui--appbar-height logo">{config.appName}</td>
                    <td className="mui--appbar-height" style={{textAlign: 'right'}}>
                      {headerNavs.map(nav =>
-                         <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
+                         <Link key={nav[1]} to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
                      )}
                      {config.disableAuthenticationFeatures || <AccountNavbar />}
                    </td>

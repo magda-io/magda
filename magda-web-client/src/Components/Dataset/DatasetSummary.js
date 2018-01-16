@@ -9,6 +9,7 @@ import './DatasetSummary.css';
 import { Link } from 'react-router-dom';
 import Button from 'muicss/lib/react/button';
 import Divider from 'muicss/lib/react/divider';
+import uniq from 'lodash.uniq';
 
 
 export default class DatasetSummary extends Component {
@@ -18,9 +19,10 @@ export default class DatasetSummary extends Component {
   }
 
   renderDownloads(dataset){
+    const formats = uniq(dataset.distributions.map((dis)=> dis.format));
     return <div className='dataset-summary-downloads'>
-              {dataset.distributions.map(dis=>
-              <a href={dis.downloadURL} key={dis.downloadURL}>{dis.format}</a>)}
+              {formats.map((f)=>
+              <a key={f}>{f}</a>)}
            </div>
   }
 

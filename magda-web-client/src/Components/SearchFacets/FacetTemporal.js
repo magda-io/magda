@@ -10,7 +10,7 @@ class FacetTemporal extends Component {
   constructor(props) {
     super(props);
     this.onClearDates = this.onClearDates.bind(this);
-    this.onApplyFacet = this.onApplyFacet.bind(this);
+    this.onApplyFilter = this.onApplyFilter.bind(this);
     this.selectStartYear = this.selectStartYear.bind(this);
     this.selectEndYear = this.selectEndYear.bind(this);
     this.selectStartMonth = this.selectStartMonth.bind(this);
@@ -40,9 +40,8 @@ class FacetTemporal extends Component {
     this.props.onToggleOption(datesArray);
   }
 
-  onApplyFacet(){
-    const dates = [this.state.startYear + '-' + this.state.startMonth + '-' +'01', this.state.endYear + '-' + this.state.endMonth + '-' +'01'];
-    debugger
+  onApplyFilter(){
+    const dates = [this.state.startYear + '-' + (this.state.startMonth + 1) + '-' +'01', this.state.endYear + '-' + (this.state.endMonth + 1) + '-' +'01'];
     this.props.onToggleOption(dates);
   }
 
@@ -90,7 +89,7 @@ class FacetTemporal extends Component {
               {this.renderDatePicker()}
               <div className='facet-footer'>
                   <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
-                  <Button variant="flat" onClick={this.onApplyFacet}> Apply </Button>
+                  <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>
               </div>
              </div>
            }

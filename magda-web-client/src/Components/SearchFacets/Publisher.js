@@ -39,6 +39,7 @@ class Publisher extends Component {
     this.props.dispatch(fetchPublisherSearchResults(queryString.parse(this.props.location.search).q, facetKeyword))
   }
 
+
   render() {
     return (
       <FacetBasic title='publisher'

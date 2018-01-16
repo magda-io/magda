@@ -43,19 +43,22 @@
     margin-right: 24px;
   }
 
-  .dataset-summary-downloads a{
-    	color: #CC3139;
-      font-size: 14px;
-      line-height: 16px;
-      display: inline-block;
-      padding-right: 5px;
-      &:after{
-        content: '/';
+  .dataset-summary-downloads{
+    max-width: 60%;
+    a{
+      	color: #CC3139;
+        font-size: 14px;
+        line-height: 16px;
         display: inline-block;
-        padding-left: 2px;
-      }
-      &:last-child:after{
-        content: '';
-      }
+        padding-right: 5px;
+        &:after{
+          content: '/';
+          display: inline-block;
+          padding-left: 2px;
+        }
+        &:last-child:after{
+          content: '';
+        }
+    }
   }
 }
