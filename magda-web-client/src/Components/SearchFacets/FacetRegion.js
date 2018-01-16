@@ -17,7 +17,6 @@ class FacetRegion extends Component {
         this.renderOption = this.renderOption.bind(this);
         this.onToggleOption = this.onToggleOption.bind(this);
         this.onFeatureClick = this.onFeatureClick.bind(this);
-        this.selectRegionType = this.selectRegionType.bind(this);
         this.onApplyFilter = this.onApplyFilter.bind(this);
         /**
          * @type {object}
@@ -56,17 +55,11 @@ class FacetRegion extends Component {
           regionId: feature.properties[regionProp],
           regionName: feature.properties[nameProp]
         };
-
       this.setState({
         _activeRegion: region
       });
     }
 
-    selectRegionType(regionType){
-        this.setState({
-            _activeRegion: Object.assign({}, this.state._activeRegion, {regionType: regionType.id})
-        })
-    }
 
     onApplyFilter(){
       this.props.onToggleOption(this.state._activeRegion);
@@ -76,8 +69,7 @@ class FacetRegion extends Component {
     renderOption(option, onClick, optionMax, onFocus){
      let regionType = option.regionType;
       return (
-            <Button
-                    className='btn-facet-option mui-btn btn-facet-option__location'
+            <Button className='btn-facet-option mui-btn btn-facet-option__location'
                     onClick={onClick.bind(this, option)}
                     title={option.regionName}>
               <span className='btn-facet-option__name'>{option.regionName}</span><br />
@@ -88,28 +80,7 @@ class FacetRegion extends Component {
             </Button>);
     }
 
-    getDropDownOptions(){
-      let ids = Object.keys(this.props.regionMapping);
-      return ids.map(id=> ({
-        id,
-        value: this.props.regionMapping[id].description
-      }));
-    }
-
-    getActiveRegionType(){
-      let region = this.state._activeRegion;
-      let regionType = 'Filter by';
-      if(this.props.regionMapping){
-        if(defined(region.regionType) && this.props.regionMapping[region.regionType] && this.props.regionMapping[region.regionType].description){
-          regionType = this.props.regionMapping[region.regionType].description
-        }
-      }
-      return regionType;
-    }
-
-
     renderBox(){
-      console.log(this.getDropDownOptions());
         return (<div className='facet-body facet-region'>
                     <FacetSearchBox renderOption={this.renderOption}
                                     onToggleOption={this.onToggleOption}

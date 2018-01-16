@@ -21,7 +21,6 @@ class Region extends Component {
       regionType,
       page: undefined
     });
-
     this.props.dispatch(addRegion(region));
   }
 

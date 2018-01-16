@@ -13,10 +13,6 @@ class FacetBasic extends Component {
   constructor(props) {
     super(props);
     this.renderOption=this.renderOption.bind(this);
-    this.toggleExpand= this.toggleExpand.bind(this);
-    this.state = {
-      isExpanded: false,
-    }
   }
 /**
  * check is this option can be found in the list of activeOptions
@@ -25,14 +21,6 @@ class FacetBasic extends Component {
   checkActiveOption(option){
     return find(this.props.activeOptions, o=> o.value.toLowerCase() === option.value.toLowerCase());
   }
-  /**
-    * expand the list (reacting to show more less button )
-    */
-   toggleExpand(){
-     this.setState({
-       isExpanded: !this.state.isExpanded
-     })
-   }
 
 /**
  * generate the html for a option of this filter
