@@ -6,3 +6,6 @@
 * Made sure hook processing resumes when either the registry or the sleuther wakes back up.
 * SA1 regions are no longer named after the SA2 region that contains them, reducing noise in the region search results. To find an actual SA1, users will need to search for its ID.
 * The broken link sleuther now has its retry count for external links configurable separately to the retry count for contacting the registry, with a default of 3.
+* Optimised the query that finds new events for each webhook
+* Stopped async webhooks posting `success: false` on an uncaught failure, as this just causes them to process the same data and fail over and over.
+* Stopped the broken link sleuther from failing completely when it gets a string that isn't a valid URL - now records as "broken".
