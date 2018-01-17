@@ -27,15 +27,15 @@
 
 .facet-search-box__options{
   position: absolute;
-  background: #dcdfe1;
+  background: #fff;
   z-index: 99999;
-  right: -56px;
-  left: 0;
+  right: -16px;
+  left: -16px;
   border-radius: 1px;
-  min-height: 220px;
-  max-height: 300px;
   overflow-y: auto;
-  /*border: 1px solid rgba(189, 195, 199, 0.15);*/
-  padding: 3px;
-  box-shadow: 0px 2px 1px 0px rgba(189, 195, 199, 0.3);
+  padding: 0 16px;
+  max-height: 360px;
+  .mui-btn{
+    	box-shadow: inset 0 -1px 0 0 rgba(73,73,73,0.1);
+  }
 }

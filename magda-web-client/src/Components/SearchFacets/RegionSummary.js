@@ -9,8 +9,10 @@ function RegionSummary(props){
                    props.regionMapping[props.region.regionType].description : '';
   if(name.length > 0 || typeName.length > 0){
     return <div className='region-summary'>
-              {name}
-              <div className='region-summary__region-type'>
+							<div className='facet-option__region-name'>
+              	{name}
+              </div>
+              <div className='facet-option__region-type'>
               	{typeName}
               </div>
             </div>

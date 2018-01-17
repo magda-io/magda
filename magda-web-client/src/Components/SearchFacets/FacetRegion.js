@@ -72,11 +72,11 @@ class FacetRegion extends Component {
             <Button className='btn-facet-option mui-btn btn-facet-option__location'
                     onClick={onClick.bind(this, option)}
                     title={option.regionName}>
-              <span className='btn-facet-option__name'>{option.regionName}</span><br />
-              <span className='btn-facet-option__detail'>
+              <div className='facet-option__region-name'>{option.regionName}</div>
+              <div className='facet-option__region-type'>
                 {(defined(regionType) && defined(this.props.regionMapping[regionType])) ?
                   this.props.regionMapping[regionType].description : ''}
-              </span>
+              </div>
             </Button>);
     }
 
@@ -86,9 +86,6 @@ class FacetRegion extends Component {
                                     onToggleOption={this.onToggleOption}
                                     options={this.props.facetSearchResults}
                                     searchFacet={this.props.searchFacet}/>
-
-                    <RegionSummray regionMapping={this.props.regionMapping}
-                                 region={this.state._activeRegion}/>
                     <div className='facet-region__preview'>
                         <RegionMap title='region'
                                id='region'
@@ -98,6 +95,8 @@ class FacetRegion extends Component {
                                onClick={this.onFeatureClick}
                         />
                     </div>
+                    <RegionSummray regionMapping={this.props.regionMapping}
+                                 region={this.state._activeRegion}/>
                     <div className='facet-footer'>
                         <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
                         <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>

@@ -40,7 +40,6 @@ class FacetBasic extends Component {
     return(
     <Button key={option.value}
             type='button'
-            ref={b=>{if(b != null && onFocus === true){b.focus()}}}
             className={`${isActive ? 'is-active' : ''} btn-facet-option`}
             onClick={onClick.bind(this, option)}
             title={option.value}>

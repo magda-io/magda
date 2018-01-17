@@ -1,21 +1,6 @@
 @import '../../variables';
 .region-summary {
-  background: $magda-blue;
-  color: #fff;
-  padding: 5px; 
-  position: absolute;
   text-align: left;
   z-index: 999;
-  left: 0;
-  right: 0;
-}
-
-.region-summary__region-type {
-  background: $magda-blue;
-  color: #fff; }
-
-
-.popup .region-summary{
-  right: 20px;
-  left: 20px;
+  background: #fff;
 }
