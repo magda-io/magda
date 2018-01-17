@@ -146,7 +146,6 @@ export type SearchState = {
   activeDateTo: ?string,
   freeText: string,
   publisherOptions: Array<Object>,
-  temporalOptions: Array<Object>,
   formatOptions: Array<Object>,
   apiQuery: string,
   error: ?Error,

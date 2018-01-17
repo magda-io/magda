@@ -11,7 +11,6 @@ class OverviewBox extends Component {
         showToggle: false
         }
         this.toggleExpand = this.toggleExpand.bind(this);
-        this.updateContentLength = this.updateContentLength.bind(this);
     }
 
     toggleExpand(){
@@ -20,20 +19,13 @@ class OverviewBox extends Component {
       })
     }
 
-    updateContentLength(length){
-      if(length > 2){
-        this.setState({
-          showToggle: true
-        })
-      }
-    }
 
     renderToggle(isExpanded){
       return <Button onClick={this.toggleExpand}><span className='sr-only'>{isExpanded ? 'show less' : 'show more'}</span><i className={`fa fa-chevron-${isExpanded ? 'up' : 'down'}`} aria-hidden='true'></i></Button>;
     }
 
     renderContent(content){
-      return <MarkdownViewer markdown={content} updateContentLength={this.updateContentLength}/>
+      return <MarkdownViewer markdown={content} truncate={true}/>
     }
 
     render(){

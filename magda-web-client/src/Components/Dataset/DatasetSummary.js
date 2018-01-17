@@ -38,7 +38,7 @@ export default class DatasetSummary extends Component {
                 {publisher && <div className='dataset-summary-publisher'>{publisher}</div>}
 
                 <div className='dataset-summary-description'>
-                  <MarkdownViewer markdown={dataset.description}/>
+                  <MarkdownViewer markdown={dataset.description} truncate={true}/>
                 </div>
                 <div className='dataset-summary-meta'>
                   {defined(dataset.modified) && <span className='dataset-summary-updated'> Dataset Updated {getDateString(dataset.modified)}</span>}

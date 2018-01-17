@@ -67,7 +67,7 @@ storiesOf('Shared UI', module)
     ))
     .add('DropDown', ()=><DropDown options={[{id: 0, value: 'a'},{id: 1, value: 'b'}, {id: 2, value: 'c'} ]} select={action()} activeOption={'default option'}/>)
     .add('ToggleList', ()=><ToggleList list={[{id: 0, title: 'item a'},{id: 1, title: 'item b'}, {id: 2, title: 'item c'} ]} select={action()} renderFunction={(item)=><div>{item.title}</div>} getKey={item => item.id} defaultLength={2}/>)
-    .add('Markdown', ()=><MarkdownViewer markdown={exampleMarkdown} updateContentLength={action()}/>)
+    .add('Markdown', ()=><MarkdownViewer markdown={exampleMarkdown}}/>)
     .add('ProgressBar', ()=><ProgressBar />)
     .add('Tabs', ()=><Tabs onTabChange={action()} baseUrl={""} list={[{id: 'a', name: 'A', isActive: true}, {id: 'b', name: 'B', isActive: true}, {id: 'c', name: 'C', isActive: true}]}/>)
 
