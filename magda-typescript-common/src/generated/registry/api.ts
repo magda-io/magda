@@ -154,6 +154,10 @@ export class WebHookAcknowledgement {
     * The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.
     */
     'lastEventIdReceived': any;
+    /**
+    * Should the webhook be active or inactive?
+    */
+    'active': any;
 }
 
 /**

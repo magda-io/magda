@@ -165,11 +165,13 @@ baseSpec(
                                                             options.id
                                                         }/ack`,
                                                         {
-                                                            // We post succeeded: true even if we failed because in the event of
-                                                            // an uncaught error from the sleuther we want to move on, not get
-                                                            // stuck in a loop. "succeeded" would be better called "repeatWebhook"
-                                                            succeeded: true,
-                                                            lastEventIdReceived: lastHookId
+                                                            succeeded:
+                                                                batch.overallSuccess,
+                                                            lastEventIdReceived: lastHookId,
+                                                            // Deactivate if not successful.
+                                                            active: !batch.overallSuccess
+                                                                ? false
+                                                                : undefined
                                                         }
                                                     )
                                                     .reply(201);

@@ -153,12 +153,13 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     resumeHook(
         webhookId: string,
         succeeded: boolean = false,
-        lastEventIdReceived: string = null
+        lastEventIdReceived: string = null,
+        active?: boolean
     ): Promise<WebHookAcknowledgementResponse | Error> {
         const operation = () =>
             this.webHooksApi.ack(
                 encodeURIComponent(webhookId),
-                { succeeded, lastEventIdReceived },
+                { succeeded, lastEventIdReceived, active },
                 this.jwt
             );
 

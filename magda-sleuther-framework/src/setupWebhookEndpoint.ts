@@ -88,11 +88,13 @@ export default function setupWebhookEndpoint(
                         // TODO: Figure out some way to notify of failures.
                         console.error(err);
 
-                        console.log("Setting hook to inactive");
-                        registry.putHook({
-                            id: options.id,
-                            active: false
-                        })
+                        console.info("Setting hook to inactive");
+                        return registry.resumeHook(
+                            options.id,
+                            false,
+                            payload.lastEventId,
+                            false
+                        );
                     });
             } else {
                 megaPromise
