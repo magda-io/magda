@@ -25,7 +25,6 @@ const initialData = {
   activeDateTo:undefined,
   freeText: '',
   publisherOptions: [],
-  temporalOptions: [],
   formatOptions: [],
   apiQuery: '',
   strategy: 'match-all',
@@ -73,8 +72,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       let hitCount : number = data && data.hitCount && data.hitCount;
 
       let publisherOptions :Array<FacetOption> = (data && data.facets) ? data.facets[0].options.slice(0, 6): []
-      let temporalOptions :Array<FacetOption> = data.facets[1].options.sort((a, b)=>( + b.lowerBound - (+ a.lowerBound)));
-      let formatOptions :Array<FacetOption> = data.facets[2].options;
+      let formatOptions :Array<FacetOption> = (data && data.facets) ? data.facets[2].options.slice(0, 6): []
 
       let freeText: string = data.query.freeText;
 
@@ -93,7 +91,6 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
         datasets,
         hitCount,
         publisherOptions,
-        temporalOptions,
         formatOptions,
         freeText,
         activePublishers,

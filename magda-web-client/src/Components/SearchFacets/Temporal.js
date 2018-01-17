@@ -42,7 +42,6 @@ class Temporal extends Component {
       <FacetTemporal title='date range'
                     id='temporal'
                     hasQuery={(defined(this.props.activeDateFrom) || defined(this.props.activeDateTo))}
-                    options={this.props.temporalOptions}
                     activeDates={[this.props.activeDateFrom, this.props.activeDateTo]}
                     onToggleOption={this.onToggleTemporalOption}
                     onResetFacet={this.onResetTemporalFacet}
@@ -56,7 +55,6 @@ class Temporal extends Component {
 function mapStateToProps(state) {
   let { datasetSearch} = state;
   return {
-    temporalOptions: datasetSearch.temporalOptions,
     activeDateFrom: datasetSearch.activeDateFrom,
     activeDateTo: datasetSearch.activeDateTo,
   }

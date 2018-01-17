@@ -114,8 +114,10 @@ storiesOf('Dataset preview', module)
 
 
 storiesOf('API viewer', module)
-    .add('formats viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/format/options?generalQuery=*&facetQuery=*&limit=268&orderedBy=hitCount"/> )
-    .add('publishers viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/publisher/options?generalQuery=*&facetQuery=*&limit=562&orderedBy=hitCount%22"/> )
+    .add('formats viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/format/options?generalQuery=*&facetQuery=*&limit=268&orderedBy=hitCount" type='table'/> )
+    .add('publishers viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/publisher/options?generalQuery=*&facetQuery=*&limit=562&orderedBy=hitCount%22" type='table'/> )
+    .add('dataset search result viewer', ()=><ApiViewer url="http://search.data.gov.au/api/v0/search/datasets?query=water&start=0&limit=1" type='json'/>)
+    .add('dataset detail viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/registry/records/19432f89-dc3a-4ef3-b943-5326ef1dbecc?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=link-status" type='json'/> )
 
 storiesOf('MonthPicker', module)
     .add('pick a month', () => <MonthPicker year={2018} month={12} selectYear={action()} selectMonth={action()}/>)
