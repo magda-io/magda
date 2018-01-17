@@ -75,15 +75,24 @@ export default function setupWebhookEndpoint(
                         });
 
                 megaPromise
+                    .then(() =>
+                        // On success, send the result as true, if we fail to send the result (even though the hook worked) then just log
+                        // the error - this is presumably because the registry has gone down, when it comes back up it'll resume the hook.
+                        sendResult(true).catch((err: Error) => {
+                            console.error(err);
+                        })
+                    )
                     .catch((err: Error) => {
-                        // Not much we can really do about this except log it and keep going.
+                        // Something has actually gone wrong with the sleuther behaviour itself that hasn't been handled by the sleuther.
+                        // We class this as pretty catastrophic, so we log it and shut down the hook (set to inactive)
                         // TODO: Figure out some way to notify of failures.
                         console.error(err);
-                    })
-                    .then(() => sendResult(true))
-                    .catch((err: Error) => {
-                        console.error(err);
-                        return sendResult(false);
+
+                        console.log("Setting hook to inactive");
+                        registry.putHook({
+                            id: options.id,
+                            active: false
+                        })
                     });
             } else {
                 megaPromise

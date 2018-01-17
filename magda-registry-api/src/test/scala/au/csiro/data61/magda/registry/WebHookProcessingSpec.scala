@@ -20,6 +20,7 @@ import java.util.UUID
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import org.scalatest.BeforeAndAfterAll
+import akka.pattern.ask
 
 class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
@@ -758,7 +759,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads(0).records.get(0).id shouldBe ("dataset")
       }
     }
-    
+
     it("includes a record when an array-linked record is modified") { param =>
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
@@ -907,7 +908,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |    }
                 |}
               """.stripMargin
-      val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
+        val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
         }
@@ -944,7 +945,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads(0).records.get(0).id shouldBe ("dataset")
       }
     }
-    
+
     it("with multiple linking aspects, only one has to link to a modified record") { param =>
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
@@ -1072,37 +1073,32 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     }
   }
 
-  describe("resumes hooks that have previously failed") {
+  describe("resumes hooks that have previously failed with network errors") {
     describe("sync") {
       val dataset = Record("dataset", "dataset", Map())
 
       def doTestSync(param: FixtureParam)(resumeHook: ArrayBuffer[WebHookPayload] => Any) {
-        var responseCount = 0
-        def response(): ToResponseMarshallable = {
-          responseCount += 1
-
-          if (responseCount == 1) {
-            StatusCodes.NotFound
-          } else {
-            "got it"
+        testWebHook(param, None) { (payloads, actor) =>
+          val url = param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[WebHook].url
           }
-        }
 
-        testWebHookWithResponse(param, Some(defaultWebHook), response) { (payloads, actor) =>
+          param.asAdmin(Put("/v0/hooks/test", defaultWebHook.copy(url = "aerga://bargoiaergoi.aerg"))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
           param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           Util.waitUntilDone(actor, "test")
 
-          payloads.length shouldBe (1)
-
-          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/hooks/test", defaultWebHook.copy(url = url))) ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
-            val hook = responseAs[WebHook]
-            hook.lastEvent.get shouldBe (1)
-            payloads.last.lastEventId shouldBe (2)
           }
+
+          payloads.length shouldEqual (0)
 
           resumeHook(payloads)
         }
@@ -1115,7 +1111,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           }
 
           Util.waitUntilDone(param.webHookActor, "test")
-          payloads.length shouldBe (2)
+          payloads.length shouldBe (1)
           payloads.last.lastEventId shouldBe (2)
 
           param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api.routes ~> check {
@@ -1132,7 +1128,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
           Util.waitUntilDone(param.webHookActor, "test")
 
-          payloads.length shouldBe (2)
+          payloads.length shouldBe (1)
           payloads.last.lastEventId shouldBe (2)
         }
       }
@@ -1144,7 +1140,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           }
 
           Util.waitUntilDone(param.webHookActor, "test")
-          payloads.length shouldBe (2)
+          payloads.length shouldBe (1)
 
           param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1330,6 +1326,118 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.last.lastEventId shouldBe >(lastEventId)
         payloads.map(_.aspectDefinitions.get).flatten.length shouldBe 1
         payloads.map(_.aspectDefinitions.get).flatten.head.id shouldBe ("testId2")
+      }
+    }
+
+  }
+
+  describe("deactivation/reactivation") {
+    describe("deactivates on webhook recipient failure") {
+      it("sync - when recipient returns failure code") { param =>
+        def response(): ToResponseMarshallable = {
+          StatusCodes.InternalServerError
+        }
+
+        testWebHookWithResponse(param, Some(defaultWebHook), response) { (payloads, actor) =>
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val hook = responseAs[WebHook]
+            hook.active shouldEqual (true)
+          }
+
+          val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length should be(1)
+
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val hook = responseAs[WebHook]
+            hook.active shouldEqual (false)
+          }
+
+          val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          implicit val timeout = Timeout(5 seconds)
+          Await.result(actor ? WebHookActor.GetStatus("test"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing.getOrElse(false) shouldEqual (false)
+
+          payloads.length should be(1)
+        }
+      }
+
+      it("async - deactivates when /ack called with active=false") { param =>
+        testAsyncWebHook(param, None) { (payloads, actor) =>
+          val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilDone(actor, "test")
+
+          val lastEventId = payloads(0).lastEventId
+          payloads.clear()
+
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, None, Some(false)))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should not be (lastEventId)
+          }
+
+          payloads.length shouldEqual (0)
+
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          implicit val timeout = Timeout(5 seconds)
+          Await.result(actor ? WebHookActor.GetStatus("test"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing.getOrElse(false) shouldEqual (false)
+
+          payloads.length shouldEqual (0)
+
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val hook = responseAs[WebHook]
+            hook.active shouldEqual (false)
+          }
+        }
+      }
+
+      it("reactivates when /ack called with active=true") { param =>
+        testAsyncWebHook(param, Some(defaultWebHook.copy(active = false))) { (payloads, actor) =>
+          val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          payloads.length shouldEqual (0)
+
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, None, Some(true)))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldEqual (1)
+
+          val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, Some(payloads.last.lastEventId)))) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length shouldEqual (2)
+        }
       }
     }
   }
