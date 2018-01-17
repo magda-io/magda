@@ -4,7 +4,7 @@
 */
 
 import { Record } from "@magda/typescript-common/src/generated/registry/api";
-import { Formats } from "@magda/typescript-common/src/format/formats";
+import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
 
 function applyTransform(format: string, transformFormat: any) {
@@ -102,9 +102,8 @@ export default function getMeasureResult(
     return {
         formats: finalFormat.map(eachFormat => {
             return {
-                format: (<any>Formats)[eachFormat],
-                correctConfidenceLevel: 100,
-                
+                format: getCommonFormat(eachFormat),
+                correctConfidenceLevel: 100
             };
         }),
         distribution: relatedDistribution

@@ -8,7 +8,7 @@ import {
 
 import { Record } from "@magda/typescript-common/src/generated/registry/api";
 
-import { Formats } from "@magda/typescript-common/src/format/formats";
+import { Formats } from "../../format-engine/formats";
 import * as fs from "fs";
 
 //import getDcatMeasureResult from "../../format-engine/measures/dcatFormatMeasure";
@@ -99,7 +99,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
 
             const ret: MeasureResult = getExtensionMeasureResult(record);
 
-            expect(ret.formats[0].format).to.eql(Formats.DOC);
+            expect(ret.formats[0].format).to.eql(Formats.DOCS);
         });
 
         it("returns a html page when supplied with a htm", function() {

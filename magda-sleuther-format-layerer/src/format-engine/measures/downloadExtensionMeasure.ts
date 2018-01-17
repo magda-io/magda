@@ -1,5 +1,5 @@
 import { Record } from "@magda/typescript-common/src/generated/registry/api";
-import { Formats } from "@magda/typescript-common/src/format/formats";
+import { getCommonFormat } from "../formats";
 import MeasureResult from "src/format-engine/measures/MeasureResult";
 
 /*
@@ -52,7 +52,7 @@ export default function getMeasureResuls(
     return {
         formats: formatsFromURL.map(eachFormat => {
             return {
-                format: (<any>Formats)[eachFormat] || Formats.OTHER,
+                format: getCommonFormat(eachFormat),
                 correctConfidenceLevel: 100,
             };
         }),

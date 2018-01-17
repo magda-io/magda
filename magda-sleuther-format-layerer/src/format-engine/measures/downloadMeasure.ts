@@ -1,6 +1,6 @@
 import { Record } from "@magda/typescript-common/src/generated/registry/api";
 import * as mimeTypes from "mime-types";
-import { Formats } from "@magda/typescript-common/src/format/formats";
+import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
 
 /*
@@ -21,7 +21,7 @@ export default function getMeasureResult(relatedDistribution: Record): MeasureRe
     return {
         formats: [
             {
-                format: (<any>Formats)[processedMime.toUpperCase()] || Formats.OTHER,
+                format: getCommonFormat(processedMime),
                 correctConfidenceLevel: 100
             }
         ],

@@ -3,5 +3,4 @@
     "wms": ["OGC:WMS-1.3.0-http-get-capabilities", "OGC:WMS-1.3.0-http-get-map"],
     "docx": ["doc", "msword"],
     "xlsx": ["xls"]
-
 }
