@@ -99,7 +99,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
 
             const ret: MeasureResult = getExtensionMeasureResult(record);
 
-            expect(ret.formats[0].format).to.eql(Formats.DOCS);
+            expect(ret.formats[0].format).to.eql(Formats.DOCX);
         });
 
         it("returns a html page when supplied with a htm", function() {

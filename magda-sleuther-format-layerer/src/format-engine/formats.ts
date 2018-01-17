@@ -15,7 +15,7 @@ export enum Formats {
     XLSX = "XLSX",
     PDF = "PDF",
     TXT = "TXT",
-    DOCS = "DOCS",
+    DOCX = "DOCX",
     MSWORD = "MSWORD",
     OTHER = "OTHER"
 }

@@ -11,19 +11,19 @@ describe("getCommonFormat", function(this: Mocha.ISuiteCallbackContext) {
     })
 
     it("should classify different versions of formats under the same name", function() {
-        //let result1: Formats = getCommonFormat("Doc");
-        //let result2: Formats = getCommonFormat("Docx");
+        let result1: Formats = getCommonFormat("Doc");
+        let result2: Formats = getCommonFormat("Docx");
 
         let result3: Formats = getCommonFormat("xLs");
         let result4: Formats = Formats.XLSX;
 
-        //expect(result1).to.eql(result2) && 
+        expect(result1).to.eql(result2) && 
         expect(result3).to.eql(result4);
     });
 
     it("should classify all of ckan's html standards under the same name", function() {
-        //expect(getCommonFormat("WWW:LINK-1.0-http--related")).to.eql(Formats.HTML) &&
-        //expect(getCommonFormat("WWW:DOWNLOAD-1.0-http--download")).to.eql(Formats.HTML) &&
+        expect(getCommonFormat("WWW:LINK-1.0-http--related")).to.eql(Formats.HTML) &&
+        expect(getCommonFormat("WWW:DOWNLOAD-1.0-http--download")).to.eql(Formats.HTML) &&
         expect(getCommonFormat("WWW:LINK-1.0-http--metadata-URL")).to.eql(Formats.HTML);
     });
 });
