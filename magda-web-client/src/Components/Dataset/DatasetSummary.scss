@@ -43,7 +43,7 @@
   }
 
   .dataset-summary-downloads{
-    max-width: 60%;
+    max-width: calc(100% - 500px);
     a{
       	color: #CC3139;
         font-size: 14px;
