@@ -169,9 +169,11 @@ baseSpec(
                                                                 batch.overallSuccess,
                                                             lastEventIdReceived: lastHookId,
                                                             // Deactivate if not successful.
-                                                            active: !batch.overallSuccess
-                                                                ? false
-                                                                : undefined
+                                                            ...(batch.overallSuccess
+                                                                ? {}
+                                                                : {
+                                                                      active: false
+                                                                  })
                                                         }
                                                     )
                                                     .reply(201);
