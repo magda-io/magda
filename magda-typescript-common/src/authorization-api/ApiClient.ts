@@ -2,56 +2,81 @@ require("isomorphic-fetch");
 
 import { User } from "./model";
 import { Maybe } from "tsmonad";
+import buildJwt from "../session/buildJwt";
 
 export default class ApiClient {
-    constructor(readonly baseUrl: string) {}
+    
+    private jwt: string = null;
+    private requestInitOption: RequestInit = null;
 
-    getUser(userId: string): Promise<Maybe<User>> {
-        return this.handleGetResult(
-            fetch(`${this.baseUrl}/private/users/${userId}`)
+    constructor(readonly baseUrl: string, jwtSecret: string = null, userId: string = null) {
+        if(jwtSecret && userId) {
+            this.jwt = buildJwt(jwtSecret,userId);
+        }else throw new Error("Error: cannot find jwtSecret or userId");
+        this.requestInitOption={
+            headers: {
+                "X-Magda-Session" : this.jwt
+            }
+        }
+    }
+
+    getMergeRequestInitOption(extraOptions: RequestInit = null): RequestInit{
+        let options: RequestInit = this.requestInitOption ? {...this.requestInitOption} : {};
+        if(!extraOptions) return options;
+        let headers = {...options.headers, ...extraOptions.headers};
+        options = {
+            ...options,
+            ...extraOptions
+        };
+        options.headers = headers;
+        return options;
+    }
+
+    async getUser(userId: string): Promise<Maybe<User>> {
+        return await this.handleGetResult(
+            fetch(`${this.baseUrl}/private/users/${userId}`, this.getMergeRequestInitOption())
         );
     }
 
-    getUserPublic(userId: string): Promise<Maybe<User>> {
-        return this.handleGetResult(
-            fetch(`${this.baseUrl}/public/users/${userId}`)
+    async getUserPublic(userId: string): Promise<Maybe<User>> {
+        return await this.handleGetResult(
+            fetch(`${this.baseUrl}/public/users/${userId}`, this.getMergeRequestInitOption())
         );
     }
 
-    lookupUser(source: string, sourceId: string): Promise<Maybe<User>> {
+    async lookupUser(source: string, sourceId: string): Promise<Maybe<User>> {
         return this.handleGetResult(
             fetch(
-                `${this
-                    .baseUrl}/private/users/lookup?source=${source}&sourceId=${sourceId}`
+                `${this.baseUrl}/private/users/lookup?source=${source}&sourceId=${sourceId}`,
+                this.getMergeRequestInitOption()
             )
         );
     }
 
-    createUser(user: User): Promise<User> {
-        return fetch(`${this.baseUrl}/private/users`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(user)
-        })
-            .then(res => res.json())
-            .then(res => {
-                if (res.status >= 400) {
-                    throw new Error(
-                        `Encountered error ${res.status} when POSTing new user to ${this
-                            .baseUrl}/private/users`
-                    );
-                }
-                return Object.assign({}, user, res);
-            })
-            .catch(e => {
-                console.error(e);
-                throw e;
-            });
+    async createUser(user: User): Promise<User> {
+        try{
+            const res = await fetch(`${this.baseUrl}/private/users`, this.getMergeRequestInitOption({
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(user)
+            }));
+            if(res.status >= 400) {
+                throw new Error(
+                    `Encountered error ${res.status} when POSTing new user to ${this.baseUrl}/private/users`
+                );
+            }
+            const resText = await res.text();
+            const resData = JSON.parse(resText);
+            return {...user,...resData};
+        }catch(e){
+            console.error(e);
+            throw e;
+        }
     }
 
-    private handleGetResult(promise: Promise<Response>): Promise<Maybe<User>> {
+    private async handleGetResult(promise: Promise<Response>): Promise<Maybe<User>> {
         return promise
             .then(res => {
                 if (res.status === 404) {

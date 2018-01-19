@@ -34,24 +34,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
     }
 
     router.all("/private/*", function(req, res, next) { //--- private API requires admin level access
-        getUserIdHandling(req, res, options.jwtSecret, (userId: string) =>
-            database.getUser(userId).then(userMaybe => 
-                userMaybe.map(user => user.isAdmin ? true : Maybe.nothing<boolean>())
-            )
-            .then(isAdmin => isAdmin.caseOf({
-                just: next,
-                nothing: () => {
-                    console.warn(
-                        "Only admin users are authorised to access"
-                    );
-                    res.status(401).send("Not authorized.");
-                }
-            }))
-            .catch(e => {
-                    console.error(e);
-                    res.status(500);
-            })
-        );
+        
+        getUserIdHandling(req, res, options.jwtSecret, async (userId: string) => {
+            try{
+                const user = (await database.getUser(userId)).valueOrThrow(new Error(`Cannot locate user record by id: ${userId}`));
+                if(!user.isAdmin) throw new Error("Only admin users are authorised to access this API");
+                next();
+            }catch(e){
+                console.warn(e);
+                res.status(401).send("Not authorized");
+            }
+        });
     });
 
     router.get("/private/users/lookup", function(req, res) {
@@ -67,18 +60,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
         handlePromise(res, database.getUser(userId));
     });
 
-    router.post("/private/users", function(req, res) {
-        database
-            .createUser(req.body)
-            .then(user => {
-                res.json(user);
-                res.status(201);
-            })
-            .catch(e => {
-                console.error(e);
-                res.status(500);
-            })
-            .then(() => res.end());
+    router.post("/private/users", async function(req, res) {
+        try{
+            const user = await database.createUser(req.body);
+            res.json(user);
+            res.status(201);
+        }catch(e){
+            console.error(e);
+            res.status(500);
+        }
+        res.end();
     });
 
     router.get("/public/users/whoami", function(req, res) {
