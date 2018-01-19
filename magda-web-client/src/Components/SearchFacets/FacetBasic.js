@@ -12,23 +12,41 @@ import Button from 'muicss/lib/react/button';
 class FacetBasic extends Component {
   constructor(props) {
     super(props);
-    this.renderOption=this.renderOption.bind(this);
-  }
-/**
- * check is this option can be found in the list of activeOptions
- * @param {object} option the current option to render
- */
-  checkActiveOption(option){
-    return find(this.props.activeOptions, o=> o.value.toLowerCase() === option.value.toLowerCase());
+    this.renderOption = this.renderOption.bind(this);
+    this.onApplyFilter = this.onApplyFilter.bind(this);
+    this.onToggleOption = this.onToggleOption.bind(this);
+    this.state = {
+      _activeOptions: []
+    }
   }
 
-/**
- * generate the html for a option of this filter
- * @param {object} option the current option to render
- * @param {object} optionMax the option with the max value of object.value, this is uased to calculate the width of the volumne indicator
- * @param {function} onClick when clicked
- * @param {boolean} onFocus whether this option should be in focus or not
- */
+  componentWillReceiveProps(nextProps){
+    if(nextProps.activeOptions.length > 0){
+      this.setState({
+        _activeOptions: nextProps.activeOptions
+      })
+    }
+  }
+
+  checkActiveOption(option){
+    return find(this.state._activeOptions, o=> o.value.toLowerCase() === option.value.toLowerCase());
+  }
+
+  onToggleOption(option){
+    const existingOptions = this.state._activeOptions.map(o=>o.value);
+    const index = existingOptions.indexOf(option.value);
+    if(index > -1){
+      this.setState({
+        _activeOptions: [...this.state._activeOptions.slice(0, index), ...this.state._activeOptions.slice(index+1)]
+      })
+    } else{
+      this.setState({
+        _activeOptions: [...this.state._activeOptions, option]
+      })
+    }
+  }
+
+
   renderOption(option, onClick, optionMax, onFocus){
     if(!option){
       return null;
@@ -51,7 +69,7 @@ class FacetBasic extends Component {
   }
 
   onApplyFilter(){
-    this.props.onToggleOption();
+    this.props.onToggleOption(this.state._activeOptions);
   }
 
   renderBox(){
@@ -65,15 +83,15 @@ class FacetBasic extends Component {
               <div className='clearfix facet-body__header'>
                 <FacetSearchBox renderOption={this.renderOption}
                                 options={this.props.facetSearchResults}
-                                onToggleOption={this.props.onToggleOption}
+                                onToggleOption={this.onToggleOption}
                                 searchFacet={this.props.searchFacet}
                                 />
               </div>
                <ul className='mui-list--unstyled'>
-                 {that.props.activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.props.onToggleOption, maxOptionOptionList)}</li>)}
+                 {that.state._activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.onToggleOption, maxOptionOptionList)}</li>)}
                  {this.props.options.length === 0 && <li className='no-data'>No {this.props.id}</li>}
                </ul>
-              {inactiveOptions.map(o => this.renderOption(o, this.props.onToggleOption, maxOptionOptionList))}
+              {inactiveOptions.map(o => this.renderOption(o, this.onToggleOption, maxOptionOptionList))}
               <div className='facet-footer'>
                   <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
                   <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>

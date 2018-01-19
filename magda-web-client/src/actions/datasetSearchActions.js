@@ -79,10 +79,10 @@ export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
   }
 }
 
-export function addPublisher(publisher: string): FacetAction{
+export function updatePublishers(publishers: Array<string>): FacetAction{
   return {
-    type: actionTypes.ADD_PUBLISHER,
-    item: publisher
+    type: actionTypes.UPDATE_PUBLISHERS,
+    items: publishers
   }
 }
 

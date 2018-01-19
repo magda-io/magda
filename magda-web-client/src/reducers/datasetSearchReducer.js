@@ -102,10 +102,9 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       })
 
 
-    case 'ADD_PUBLISHER':
-      let updatedOptions = [...state.activePublishers, action.item];
+    case 'UPDATE_PUBLISHERS':
       return Object.assign({}, state, {
-        activePublishers: updatedOptions
+        activePublishers: action.items
       })
 
     case 'REMOVE_PUBLISHER':

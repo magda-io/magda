@@ -1,4 +1,4 @@
-import {addPublisher, removePublisher, resetPublisher} from '../../actions/datasetSearchActions';
+import {updatePublishers, resetPublisher} from '../../actions/datasetSearchActions';
 import {connect} from 'react-redux';
 import {fetchPublisherSearchResults} from '../../actions/facetPublisherSearchActions';
 import React, { Component } from 'react';
@@ -14,14 +14,12 @@ class Publisher extends Component {
     this.onTogglePublisherOption = this.onTogglePublisherOption.bind(this);
   }
 
-  onTogglePublisherOption(publisher){
-    toggleBasicOption(publisher,
-                      this.props.activePublishers,
-                      'publisher',
-                      removePublisher,
-                      addPublisher,
-                      this.props.updateQuery,
-                      this.props.dispatch);
+  onTogglePublisherOption(publishers){
+    const queryOptions = publishers.map(p => p.value);
+    this.props.updateQuery({
+      publisher: queryOptions
+    });
+    this.props.dispatch(updatePublishers(publishers))
   }
 
   onResetPublisherFacet(){
