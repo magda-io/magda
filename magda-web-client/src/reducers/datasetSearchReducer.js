@@ -71,8 +71,8 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       let datasets : Array<Dataset> = data && data.dataSets && data.dataSets;
       let hitCount : number = data && data.hitCount && data.hitCount;
 
-      let publisherOptions :Array<FacetOption> = (data && data.facets) ? data.facets[0].options.slice(0, 6): []
-      let formatOptions :Array<FacetOption> = (data && data.facets) ? data.facets[2].options.slice(0, 6): []
+      let publisherOptions :Array<FacetOption> = (data && data.facets) ? data.facets[0].options: []
+      let formatOptions :Array<FacetOption> = (data && data.facets) ? data.facets[2].options: []
 
       let freeText: string = data.query.freeText;
 
