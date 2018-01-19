@@ -1127,44 +1127,128 @@ class RecordsServiceSpec extends ApiSpec {
   }
 
   describe("DELETE") {
-    it("can delete a record without any aspects") { param =>
-      val record = Record("without", "without", Map())
-      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+    describe("by id") {
+      it("can delete a record without any aspects") { param =>
+        val record = Record("without", "without", Map())
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        param.asAdmin(Delete("/v0/records/without")) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[DeleteResult].deleted shouldBe true
+        }
       }
 
-      param.asAdmin(Delete("/v0/records/without")) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-        responseAs[DeleteResult].deleted shouldBe true
+      it("returns 200 and deleted=false when asked to delete a record that doesn't exist") { param =>
+        param.asAdmin(Delete("/v0/records/doesnotexist")) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[DeleteResult].deleted shouldBe false
+        }
+      }
+
+      it("can delete a record with an aspect") { param =>
+        val aspectDefinition = AspectDefinition("test", "test", None)
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record("with", "with", Map("test" -> JsObject()))
+        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        param.asAdmin(Delete("/v0/records/with")) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[DeleteResult].deleted shouldBe true
+        }
+      }
+
+      checkMustBeAdmin {
+        Delete("/v0/records/without")
       }
     }
 
-    it("returns 200 and deleted=false when asked to delete a record that doesn't exist") { param =>
-      param.asAdmin(Delete("/v0/records/doesnotexist")) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-        responseAs[DeleteResult].deleted shouldBe false
-      }
-    }
+    describe("based on a source tag") {
 
-    it("can delete a record with an aspect") { param =>
-      val aspectDefinition = AspectDefinition("test", "test", None)
-      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+      def buildAspects(id: String) = {
+        Map("source" -> JsObject(Map[String, JsValue]("id" -> JsString(id), "name" -> JsString("name"), "url" -> JsString("http://example.com"), "type" -> JsString("fake"))))
       }
 
-      val record = Record("with", "with", Map("test" -> JsObject()))
-      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
+      it("deletes only records with the correct tag") { param =>
+        val source = scala.io.Source.fromFile(new java.io.File("../magda-registry-aspects/source.schema.json").getCanonicalPath)
+        val lines = try source.mkString finally source.close()
+
+        val aspectDefinition = AspectDefinition("source", "source", Some(lines.parseJson.asJsObject))
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val noTagNoSource = Record("notag-nosource", "name", Map())
+        val noTagWrongSource = Record("notag-wrongsource", "name", buildAspects("wrong"))
+        val noTagRightSource = Record("notag-rightsource", "name", buildAspects("right"))
+
+        val wrongTagNoSource = Record("wrongtag-nosource", "name", Map(), Some("wrongtag"))
+        val wrongTagWrongSource = Record("wrongtag-wrongsource", "name", buildAspects("wrong"), Some("wrongtag"))
+        val wrongTagRightSource = Record("wrongtag-rightsource", "name", buildAspects("right"), Some("wrongtag"))
+
+        val rightTagNoSource = Record("righttag-nosource", "name", Map(), Some("righttag"))
+        val rightTagWrongSource = Record("righttag-wrongsource", "name", buildAspects("wrong"), Some("righttag"))
+
+        val rightTagRightSource1 = Record("righttag-rightsource1", "name", buildAspects("right"), Some("righttag"))
+        val rightTagRightSource2 = Record("righttag-rightsource2", "name", buildAspects("right"), Some("righttag"))
+
+        val all = List(noTagNoSource, noTagWrongSource, noTagRightSource, wrongTagNoSource, wrongTagWrongSource,
+          wrongTagRightSource, rightTagNoSource, rightTagWrongSource, rightTagRightSource1, rightTagRightSource2)
+
+        all.foreach(record => param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        })
+
+        Get("/v0/records") ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val res = responseAs[RecordSummariesPage]
+          res.records.length shouldEqual all.length
+        }
+
+        param.asAdmin(Delete("/v0/records?sourceTag=righttag&sourceId=right")) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[MultipleDeleteResult].count shouldEqual 2
+        }
+
+        Get("/v0/records") ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val res = responseAs[RecordSummariesPage]
+          res.records.length shouldEqual (all.length - 2)
+          res.records.filter(record => record.id.contains("righttag-rightsource")).length shouldEqual 0
+        }
+
+        Get("/v0/records/righttag-rightsource1/aspects") ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.NotFound
+        }
+
+        List("righttag-rightsource1", "righttag-rightsource2").foreach { recordId =>
+          Get(s"/v0/records/$recordId/history") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val res = responseAs[EventsPage]
+
+            val deleteRecordEvents = res.events.filter(event => event.eventType == EventType.DeleteRecord)
+            deleteRecordEvents.length shouldEqual 1
+            deleteRecordEvents(0).data.convertTo[Map[String, JsValue]].get("recordId").get shouldEqual JsString(recordId)
+
+            val deleteRecordAspectEvents = res.events.filter(event => event.eventType == EventType.DeleteRecordAspect)
+            deleteRecordAspectEvents.length shouldEqual 1
+            deleteRecordAspectEvents(0).data.convertTo[Map[String, JsValue]].get("recordId").get shouldEqual JsString(recordId)
+            deleteRecordAspectEvents(0).data.convertTo[Map[String, JsValue]].get("aspectId").get shouldEqual JsString("source")
+
+          }
+        }
       }
 
-      param.asAdmin(Delete("/v0/records/with")) ~> param.api.routes ~> check {
-        status shouldEqual StatusCodes.OK
-        responseAs[DeleteResult].deleted shouldBe true
+      checkMustBeAdmin {
+        Delete("/v0/records?sourceTag=blah")
       }
-    }
-
-    checkMustBeAdmin {
-      Delete("/v0/records/without")
     }
   }
+
 }

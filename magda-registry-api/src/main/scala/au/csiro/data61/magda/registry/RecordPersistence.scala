@@ -314,7 +314,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
-        sql"""insert into Records (recordId, name, lastUpdate) values (${record.id}, ${record.name}, $eventId)""".update.apply()
+        sql"""insert into Records (recordId, name, lastUpdate, sourcetag) values (${record.id}, ${record.name}, $eventId, ${record.sourceTag.getOrElse("NULL")})""".update.apply()
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
           Failure(new RuntimeException(s"Cannot create record '${record.id}' because a record with that ID already exists."))
@@ -345,6 +345,26 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         sql"""delete from Records where recordId=$recordId""".update.apply()
       }
     } yield rowsDeleted > 0
+  }
+
+  def deleteRecordsBySource(sourceTag: String, sourceId: String)(implicit session: DBSession): Try[Long] = {
+    val recordIds = Try {
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where sourcetag = $sourceTag and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
+        .map(rs => rs.string("recordId")).list.apply()
+    }
+
+    recordIds match {
+      case Success(Nil) => Success(0)
+      case Success(ids) =>
+        ids
+          .map(recordId => deleteRecord(session, recordId))
+          .foldLeft[Try[Long]](Success(0l))((trySoFar: Try[Long], thisTry: Try[Boolean]) => (trySoFar, thisTry) match {
+            case (Success(countSoFar), Success(bool)) => Success(countSoFar + (if (bool) 1 else 0))
+            case (Failure(err), _)                    => Failure(err)
+            case (_, Failure(err))                    => Failure(err)
+          })
+      case Failure(err) => Failure(err)
+    }
   }
 
   def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject] = {

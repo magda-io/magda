@@ -17,6 +17,7 @@ import scala.util.Failure
 import scala.util.Success
 import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
+import akka.event.Logging
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -81,13 +82,38 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])))
   def deleteById = delete {
-    requireIsAdmin(authClient)(system, config) { _ =>
-      path(Segment) { (recordId: String) =>
+    path(Segment) { (recordId: String) =>
+      requireIsAdmin(authClient)(system, config) { _ =>
         {
           val result = DB localTx { session =>
             RecordPersistence.deleteRecord(session, recordId) match {
               case Success(result)    => complete(DeleteResult(result))
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+            }
+          }
+          webHookActor ! WebHookActor.Process()
+          result
+        }
+      }
+    }
+  }
+
+  @Path("/")
+  @ApiOperation(value = "Delete by source tag", nickname = "deleteBySourceTag", httpMethod = "DELETE", response = classOf[DeleteResult])
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "sourceTag", required = true, dataType = "string", paramType = "query", value = "Source tag of the records to delete."),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
+  @ApiResponses(Array(
+    new ApiResponse(code = 400, message = "The records could not be deleted, possibly because they are used by other records.", response = classOf[BadRequest])))
+  def deleteBySourceTag = delete {
+    pathEnd {
+      requireIsAdmin(authClient)(system, config) { _ =>
+        parameters('sourceTag, 'sourceId) { (sourceTag, sourceId) =>
+          val result = DB localTx { implicit session =>
+            RecordPersistence.deleteRecordsBySource(sourceTag, sourceId) match {
+              case Success(result) => complete(MultipleDeleteResult(result))
+              case Failure(exception) =>
+                complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
           webHookActor ! WebHookActor.Process()
@@ -169,6 +195,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       getById ~
       putById ~
       patchById ~
+      deleteBySourceTag ~
       deleteById ~
       create ~
       new RecordAspectsService(webHookActor, authClient, system, materializer, config).route ~

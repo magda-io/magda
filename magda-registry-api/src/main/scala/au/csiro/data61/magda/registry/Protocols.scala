@@ -18,6 +18,7 @@ trait Protocols extends DiffsonProtocol with CommonRegistryProtocols {
   implicit val recordsPageFormat = jsonFormat3(RecordsPage.apply)
   implicit val recordSummariesPageFormat = jsonFormat3(RecordSummariesPage.apply)
   implicit val deleteResultFormat = jsonFormat1(DeleteResult.apply)
+  implicit val multipleDeleteResultFormat = jsonFormat1(MultipleDeleteResult.apply)
   implicit val eventsPageFormat = jsonFormat3(EventsPage.apply)
   implicit val webHookResponseFormat = jsonFormat1(WebHookResponse.apply)
 }

@@ -50,7 +50,10 @@ object Registry {
 
     @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
 
-    @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject])
+    @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject],
+
+    @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
+      "(e.g. an id for a individual crawl of a data portal). Usually not included.", required = false) sourceTag: Option[String] = None)
 
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
@@ -122,7 +125,7 @@ object Registry {
       def read(value: JsValue) = EventType.values.find(e => e.toString == value.asInstanceOf[JsString].value).get
     }
 
-    implicit val recordFormat = jsonFormat3(Record.apply)
+    implicit val recordFormat = jsonFormat4(Record.apply)
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
     implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
     implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
