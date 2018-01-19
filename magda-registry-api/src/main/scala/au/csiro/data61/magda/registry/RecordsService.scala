@@ -99,9 +99,10 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   }
 
   @Path("/")
-  @ApiOperation(value = "Delete by source tag", nickname = "deleteBySourceTag", httpMethod = "DELETE", response = classOf[DeleteResult])
+  @ApiOperation(value = "Delete by source tag", nickname = "deleteBySourceTag", httpMethod = "DELETE", response = classOf[MultipleDeleteResult])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "sourceTag", required = true, dataType = "string", paramType = "query", value = "Source tag of the records to delete."),
+    new ApiImplicitParam(name = "sourceId", required = true, dataType = "string", paramType = "query", value = "Source id of the records to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The records could not be deleted, possibly because they are used by other records.", response = classOf[BadRequest])))

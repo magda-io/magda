@@ -3,7 +3,8 @@ import {
     Record,
     WebHook,
     Operation,
-    WebHookAcknowledgementResponse
+    WebHookAcknowledgementResponse,
+    MultipleDeleteResult
 } from "../generated/registry/api";
 import RegistryClient, { RegistryOptions } from "./RegistryClient";
 import retry from "../retry";
@@ -254,6 +255,30 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 console.log(
                     formatServiceError(
                         `Failed to PUT data registry aspect ${aspectId} for record with ID "${recordId}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then(result => result.body)
+            .catch(createServiceError);
+    }
+
+    deleteBySource(
+        sourceTag: string,
+        sourceId: string
+    ): Promise<MultipleDeleteResult | Error> {
+        const operation = () =>
+            this.recordsApi.deleteBySourceTag(sourceTag, sourceId, this.jwt);
+
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to DELETE with sourcetag ${sourceTag} and sourceId ${sourceId}`,
                         e,
                         retriesLeft
                     )

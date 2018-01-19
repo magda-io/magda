@@ -6,6 +6,7 @@ import ConnectionResult from "./ConnectionResult";
 import RecordCreationFailure from "./RecordCreationFailure";
 import JsonTransformer from "./JsonTransformer";
 import Registry from "./registry/AuthorizedRegistryClient";
+import unionToThrowable from "./util/unionToThrowable";
 
 import * as express from "express";
 import * as fs from "fs";
@@ -239,6 +240,17 @@ export default class JsonConnector {
         return result;
     }
 
+    async trimRecords(): Promise<ConnectionResult> {
+        return this.registry
+            .deleteBySource(this.sourceTag, this.source.id)
+            .then(unionToThrowable)
+            .then(deletionResult => {
+                const result = new ConnectionResult();
+                result.recordsTrimmed = deletionResult.count;
+                return result;
+            });
+    }
+
     /**
      * Runs the connector, creating aspect definitions, organizations, datasets, and distributions in the
      * registry as necessary.
@@ -250,10 +262,13 @@ export default class JsonConnector {
         const aspectResult = await this.createAspectDefinitions();
         const organizationResult = await this.createOrganizations();
         const datasetAndDistributionResult = await this.createDatasetsAndDistributions();
+        const recordsTrimmedResult = await this.trimRecords();
+
         return ConnectionResult.combine(
             aspectResult,
             organizationResult,
-            datasetAndDistributionResult
+            datasetAndDistributionResult,
+            recordsTrimmedResult
         );
     }
 

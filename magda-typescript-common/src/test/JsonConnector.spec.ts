@@ -67,6 +67,8 @@ describe("JsonConnector", () => {
                 .times(4)
                 .reply(200);
 
+            scope.delete(/.*/).reply(201, { count: 0 });
+
             return connector.run().then(() => {
                 scope.done();
             });
@@ -114,8 +116,9 @@ class FakeJsonTransformer extends JsonTransformer {
 }
 
 class FakeConnectorSource implements ConnectorSource {
-    id: "id";
-    name: "name";
+    readonly id: string = "id";
+    readonly name: string = "name";
+    readonly hasFirstClassOrganizations: boolean = false;
 
     getJsonDataset(id: string): Promise<any> {
         return Promise.resolve();
@@ -124,8 +127,6 @@ class FakeConnectorSource implements ConnectorSource {
     searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<any[]> {
         return AsyncPage.single([]);
     }
-
-    readonly hasFirstClassOrganizations: boolean = false;
 
     getJsonFirstClassOrganization(id: string): Promise<any> {
         return Promise.resolve();

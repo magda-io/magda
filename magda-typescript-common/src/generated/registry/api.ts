@@ -87,6 +87,10 @@ export class JsObject {
 export class JsValue {
 }
 
+export class MultipleDeleteResult {
+    'count': number;
+}
+
 export class Operation {
 }
 
@@ -1217,9 +1221,10 @@ export class RecordsApi {
      * Delete by source tag
      * 
      * @param sourceTag Source tag of the records to delete.
+     * @param sourceId Source id of the records to delete.
      * @param xMagdaSession Magda internal session id
      */
-    public deleteBySourceTag (sourceTag: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
+    public deleteBySourceTag (sourceTag: string, sourceId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }> {
         const localVarPath = this.basePath + '/records';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1231,6 +1236,11 @@ export class RecordsApi {
             throw new Error('Required parameter sourceTag was null or undefined when calling deleteBySourceTag.');
         }
 
+        // verify required parameter 'sourceId' is not null or undefined
+        if (sourceId === null || sourceId === undefined) {
+            throw new Error('Required parameter sourceId was null or undefined when calling deleteBySourceTag.');
+        }
+
         // verify required parameter 'xMagdaSession' is not null or undefined
         if (xMagdaSession === null || xMagdaSession === undefined) {
             throw new Error('Required parameter xMagdaSession was null or undefined when calling deleteBySourceTag.');
@@ -1238,6 +1248,10 @@ export class RecordsApi {
 
         if (sourceTag !== undefined) {
             queryParameters['sourceTag'] = sourceTag;
+        }
+
+        if (sourceId !== undefined) {
+            queryParameters['sourceId'] = sourceId;
         }
 
         headerParams['X-Magda-Session'] = xMagdaSession;
@@ -1262,7 +1276,7 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: DeleteResult;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
