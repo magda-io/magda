@@ -21,11 +21,9 @@ class FacetBasic extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-    if(nextProps.activeOptions.length > 0){
-      this.setState({
-        _activeOptions: nextProps.activeOptions
-      })
-    }
+    this.setState({
+      _activeOptions: nextProps.activeOptions
+    })
   }
 
   checkActiveOption(option){

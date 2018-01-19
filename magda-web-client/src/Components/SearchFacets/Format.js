@@ -1,4 +1,4 @@
-import {addFormat, removeFormat, resetFormat} from '../../actions/datasetSearchActions';
+import {updateFormats, resetFormat} from '../../actions/datasetSearchActions';
 import {connect} from 'react-redux';
 import {fetchFormatSearchResults} from '../../actions/facetFormatSearchActions';
 import React, { Component } from 'react';
@@ -15,14 +15,12 @@ class Format extends Component {
     this.onToggleFormatOption = this.onToggleFormatOption.bind(this);
   }
 
-  onToggleFormatOption(format){
-    toggleBasicOption(format,
-                      this.props.activeFormats,
-                      'format',
-                      removeFormat,
-                      addFormat,
-                      this.props.updateQuery,
-                      this.props.dispatch);
+  onToggleFormatOption(formats){
+    const queryOptions = formats.map(p => p.value);
+    this.props.updateQuery({
+      format: queryOptions
+    });
+    this.props.dispatch(updateFormats(formats))
   }
 
   onResetFormatFacet(){

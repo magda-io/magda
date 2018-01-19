@@ -107,11 +107,6 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
         activePublishers: action.items
       })
 
-    case 'REMOVE_PUBLISHER':
-     let publisherIndex = findIndex(state.activePublishers, item => item.value === (action.item && action.item.value));
-      return Object.assign({}, state, {
-        activePublishers: [...state.activePublishers.slice(0, publisherIndex), ...state.activePublishers.slice(publisherIndex+1)]
-      })
 
     case 'RESET_PUBLISHER':
       return Object.assign({}, state,
@@ -144,9 +139,9 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       return Object.assign({}, state,
         {activeDateTo: initialData.activeDateTo})
 
-    case 'ADD_FORMAT':
+    case 'UPDATE_FORMATS':
       return Object.assign({}, state, {
-        activeFormats: [...state.activeFormats, action.item]
+        activeFormats: action.items
       })
 
     case 'REMOVE_FORMAT':

@@ -79,19 +79,13 @@ export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
   }
 }
 
-export function updatePublishers(publishers: Array<string>): FacetAction{
+export function updatePublishers(publishers: Array<Object>): FacetAction{
   return {
     type: actionTypes.UPDATE_PUBLISHERS,
     items: publishers
   }
 }
 
-export function removePublisher(publisher: string): FacetAction{
-  return {
-    type: actionTypes.REMOVE_PUBLISHER,
-    item: publisher
-  }
-}
 
 export function resetPublisher(): FacetAction{
   return {
@@ -99,19 +93,13 @@ export function resetPublisher(): FacetAction{
   }
 }
 
-export function addFormat(format: string): FacetAction {
+export function updateFormats(formats: Array<Object>): FacetAction {
   return {
-    type: actionTypes.ADD_FORMAT,
-    item: format
+    type: actionTypes.UPDATE_FORMATS,
+    items: formats
   }
 }
 
-export function removeFormat(format: string): FacetAction{
-  return {
-    type: actionTypes.REMOVE_FORMAT,
-    item: format
-  }
-}
 
 export function resetFormat(): FacetAction{
   return {
