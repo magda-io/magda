@@ -106,6 +106,10 @@ export class Record {
     * The aspects included in this record
     */
     'aspects': any;
+    /**
+    * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal). Usually not included.
+    */
+    'sourceTag': string;
 }
 
 /**
@@ -1171,6 +1175,69 @@ export class RecordsApi {
         // verify required parameter 'xMagdaSession' is not null or undefined
         if (xMagdaSession === null || xMagdaSession === undefined) {
             throw new Error('Required parameter xMagdaSession was null or undefined when calling deleteById.');
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'DELETE',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: DeleteResult;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Delete by source tag
+     * 
+     * @param sourceTag Source tag of the records to delete.
+     * @param xMagdaSession Magda internal session id
+     */
+    public deleteBySourceTag (sourceTag: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: DeleteResult;  }> {
+        const localVarPath = this.basePath + '/records';
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        // verify required parameter 'sourceTag' is not null or undefined
+        if (sourceTag === null || sourceTag === undefined) {
+            throw new Error('Required parameter sourceTag was null or undefined when calling deleteBySourceTag.');
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling deleteBySourceTag.');
+        }
+
+        if (sourceTag !== undefined) {
+            queryParameters['sourceTag'] = sourceTag;
         }
 
         headerParams['X-Magda-Session'] = xMagdaSession;
