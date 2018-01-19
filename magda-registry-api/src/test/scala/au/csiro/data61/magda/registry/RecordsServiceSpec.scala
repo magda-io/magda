@@ -1176,7 +1176,11 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       it("deletes only records with the correct tag") { param =>
-        val source = scala.io.Source.fromFile(new java.io.File("../magda-registry-aspects/source.schema.json").getCanonicalPath)
+        val junitFile = new java.io.File("../magda-registry-aspects/source.schema.json").getCanonicalFile
+        val commandLineFile = new java.io.File("./magda-registry-aspects/source.schema.json").getCanonicalFile
+
+        val file = if (junitFile.exists) junitFile else commandLineFile
+        val source = scala.io.Source.fromFile(file)
         val lines = try source.mkString finally source.close()
 
         val aspectDefinition = AspectDefinition("source", "source", Some(lines.parseJson.asJsObject))
