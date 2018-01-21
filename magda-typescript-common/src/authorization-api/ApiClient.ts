@@ -12,7 +12,7 @@ export default class ApiClient {
     constructor(readonly baseUrl: string, jwtSecret: string = null, userId: string = null) {
         if(jwtSecret && userId) {
             this.jwt = buildJwt(jwtSecret,userId);
-        }else throw new Error("Error: cannot find jwtSecret or userId");
+        }
         this.requestInitOption={
             headers: {
                 "X-Magda-Session" : this.jwt
