@@ -16,24 +16,18 @@ export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => (
     next: () => void
 ) => {
     const rejectNoAuth = () => res.status(401).send("Not authorized.");
-    const apiClient = new ApiClient(baseAuthUrl);
 
     getUserIdHandling(req, res, jwtSecret, (userId: string) => {
+        
+        const apiClient = new ApiClient(baseAuthUrl, jwtSecret, userId);
+
         apiClient.getUser(userId).then(maybeUser => {
             maybeUser.caseOf({
                 just: user => {
-                    (req as any).user = user;
-                    if (user.isAdmin) {
-                        next();
-                    } else {
-                        console.warn(
-                            `Rejecting because user ${user} is not admin`
-                        );
-                        rejectNoAuth();
-                    }
+                    next();
                 },
                 nothing: () => {
-                    console.warn("Rejecting because no user");
+                    console.warn("Rejecting because no user or user is not an admin");
                     rejectNoAuth();
                 }
             });
