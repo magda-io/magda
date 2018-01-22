@@ -20,6 +20,10 @@ class FacetBasic extends Component {
     }
   }
 
+  componentWillMount(){
+    this.props.searchFacet();
+  }
+
   componentWillReceiveProps(nextProps){
     this.setState({
       _activeOptions: nextProps.activeOptions
@@ -45,7 +49,7 @@ class FacetBasic extends Component {
   }
 
 
-  renderOption(option, onClick, optionMax, onFocus){
+  renderOption(option, optionMax){
     if(!option){
       return null;
     }
@@ -57,14 +61,15 @@ class FacetBasic extends Component {
     <Button key={option.value}
             type='button'
             className={`${isActive ? 'is-active' : ''} btn-facet-option`}
-            onClick={onClick.bind(this, option)}
+            onClick={this.onToggleOption.bind(this, option)}
             title={option.value}>
-      <span style={divStyle} className='btn-facet-option__volume-indicator'/>
+      {optionMax && <span style={divStyle} className='btn-facet-option__volume-indicator'/>}
       <span className='btn-facet-option__name'>
         {option.value}{' '}({option.hitCount})
       </span>
     </Button>);
   }
+
 
   onApplyFilter(){
     this.props.onToggleOption(this.state._activeOptions);
@@ -82,14 +87,13 @@ class FacetBasic extends Component {
                 <FacetSearchBox renderOption={this.renderOption}
                                 options={this.props.facetSearchResults}
                                 onToggleOption={this.onToggleOption}
-                                searchFacet={this.props.searchFacet}
                                 />
               </div>
                <ul className='mui-list--unstyled'>
-                 {that.state._activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, this.onToggleOption, maxOptionOptionList)}</li>)}
+                 {that.state._activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
                  {this.props.options.length === 0 && <li className='no-data'>No {this.props.id}</li>}
                </ul>
-              {inactiveOptions.map(o => this.renderOption(o, this.onToggleOption, maxOptionOptionList))}
+              {inactiveOptions.map(o => this.renderOption(o, maxOptionOptionList))}
               <div className='facet-footer'>
                   <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
                   <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>

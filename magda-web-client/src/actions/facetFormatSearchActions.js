@@ -25,7 +25,7 @@ export function receiveFormats(generalQuery: string, facetQuery: string, json: O
 export function fetchFormatSearchResults(generalQuery: string, facetQuery: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestFormats(generalQuery, facetQuery))
-    let url : string = config.searchApiUrl + `facets/format/options?generalQuery=${encodeURIComponent(generalQuery)}&facetQuery=${encodeURIComponent(facetQuery)}`
+    let url : string = config.searchApiUrl + `facets/format/options?generalQuery=${encodeURIComponent(generalQuery)}}`
     console.log(url);
     return fetch(url)
     .then(response => response.json())

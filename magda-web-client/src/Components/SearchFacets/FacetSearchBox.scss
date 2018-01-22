@@ -1,41 +1,15 @@
-.facet-search-box{
-  position: relative;
-}
-
-.facet-search-box input.form-control{
-  padding-left: 30px;
+.react-autosuggest__input{
+  box-sizing: border-box;
+  display: block;
+  background-color: transparent;
+  border: none;
+  outline: 0;
+  width: 100%;
+  padding: 16px 0;
+  box-shadow: inset 0 -1px 0 0 rgba(73,73,73,0.25);
   border-radius: 0;
-  box-shadow: none !important;
-}
-
-.facet-search-box form{
-    position: relative;
-    margin-bottom: 8px;
-}
-
-
-.facet-search-box .search-icon{
-    position: absolute;
-    right: 10px;
-    top: 10px;
-}
-
-.facet-search-box .form-control{
-    padding-left: 25px;
-}
-
-
-.facet-search-box__options{
-  position: absolute;
-  background: #fff;
-  z-index: 99999;
-  right: -16px;
-  left: -16px;
-  border-radius: 1px;
-  overflow-y: auto;
-  padding: 0 16px;
-  max-height: 360px;
-  .mui-btn{
-    	box-shadow: inset 0 -1px 0 0 rgba(73,73,73,0.1);
-  }
+  font-size: 14px;
+  line-height: 20px;
+  font-family: inherit;
+  background-image: none;
 }

@@ -33,8 +33,8 @@ class Publisher extends Component {
     this.props.dispatch(resetPublisher());
   }
 
-  onSearchPublisherFacet(facetKeyword){
-    this.props.dispatch(fetchPublisherSearchResults(queryString.parse(this.props.location.search).q, facetKeyword))
+  onSearchPublisherFacet(){
+    this.props.dispatch(fetchPublisherSearchResults(queryString.parse(this.props.location.search).q))
   }
 
 
