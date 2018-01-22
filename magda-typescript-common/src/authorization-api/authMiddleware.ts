@@ -15,6 +15,7 @@ export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => (
     res: Response,
     next: () => void
 ) => {
+
     const rejectNoAuth = () => res.status(401).send("Not authorized.");
 
     getUserIdHandling(req, res, jwtSecret, (userId: string) => {
@@ -31,6 +32,10 @@ export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => (
                     rejectNoAuth();
                 }
             });
+        })
+        .catch(function(error){
+            console.warn("Rejecting because no user or user is not an admin");
+            rejectNoAuth();
         });
     });
 };
