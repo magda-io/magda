@@ -66,6 +66,9 @@ class FacetSearchBox extends Component {
     this.onChange(null, {newValue: ''});
   }
 
+  shouldRenderSuggestions(value){
+    return Boolean(value.length)
+  }
 
   render(){
     const { value, suggestions } = this.state;
@@ -87,7 +90,8 @@ class FacetSearchBox extends Component {
         renderSuggestion={this.renderSuggestion}
         inputProps={inputProps}
         onSuggestionSelected={this.onSuggestionSelected}
-        alwaysRenderSuggestions={true}
+        focusInputOnSuggestionClick={false}
+        shouldRenderSuggestions={this.shouldRenderSuggestions}
       />
     );
   }
