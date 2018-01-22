@@ -43,9 +43,8 @@ export function fetchRegionMapping() {
         } else{
             return dispatch(requestRegionMappingError(json.error))
         }
-      },(error)=>{
-        return dispatch(requestRegionMappingError(error));
       }
     )
+    .catch(error => dispatch(requestRegionMappingError(error)));
   }
 }
