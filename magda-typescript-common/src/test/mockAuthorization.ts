@@ -12,7 +12,9 @@ export default function mockAuthorization(
 ): Promise<Response> { 
     const userId = "1";
     const scope = nock(adminApiUrl);
-    scope.get(`/private/users/${userId}`).reply(200, { isAdmin });
+
+    if(!isAdmin) scope.get(`/private/users/${userId}`).reply(401, "Only admin users are authorised to access this API");
+    else scope.get(`/private/users/${userId}`).reply(200, { isAdmin });
 
     const id = jwt.sign({ userId: userId }, jwtSecret);
 
