@@ -13,7 +13,7 @@ class SearchFacets extends Component {
 
   componentWillMount(){
     const that = this;
-    // window.addEventListener('click', that.closeFacet);
+    window.addEventListener('click', that.closeFacet);
   }
 
   closeFacet(event){
