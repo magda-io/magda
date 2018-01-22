@@ -23,10 +23,15 @@ class FacetBasicBody extends Component {
   }
 
   componentWillMount(){
+    const that = this;
     this.props.searchFacet();
     this.setState({
       _activeOptions: this.props.activeOptions
-    })
+    });
+  }
+
+  componentWillUnmount(){
+    this.props.onToggleOption(this.state._activeOptions);
   }
 
 
