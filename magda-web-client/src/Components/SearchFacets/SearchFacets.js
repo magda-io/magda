@@ -14,7 +14,6 @@ class SearchFacets extends Component {
   componentWillMount(){
     const that = this;
     window.addEventListener('click', that.closeFacet);
-    window.addEventListener('keyup', that.closeFacet);
   }
 
   closeFacet(event){
@@ -37,7 +36,6 @@ class SearchFacets extends Component {
   componentWillUnmount(){
     const that = this;
     window.removeEventListener('click', that.closeFacet);
-    window.removeEventListener('keyup', that.closeFacet);
   }
 
 

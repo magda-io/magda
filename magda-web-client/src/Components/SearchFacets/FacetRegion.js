@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import DropDown from '../../UI/DropDown';
 import FacetHeader from './FacetHeader';
 import RegionMap from './RegionMap';
-import FacetSearchBox from './FacetSearchBox';
+import RegionSearchBox from './RegionSearchBox';
 import defined from '../../helpers/defined';
 import RegionSummray from './RegionSummary';
 import Button from 'muicss/lib/react/button';
@@ -82,7 +82,7 @@ class FacetRegion extends Component {
 
     renderBox(){
         return (<div className='facet-body facet-region'>
-                    <FacetSearchBox renderOption={this.renderOption}
+                    <RegionSearchBox renderOption={this.renderOption}
                                     onToggleOption={this.onToggleOption}
                                     options={this.props.facetSearchResults}
                                     searchFacet={this.props.searchFacet}/>
