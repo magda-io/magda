@@ -39,6 +39,42 @@ describe("JsonConnector", () => {
         });
 
         it("applies the tag to datasets", () => {
+            const { scope, connector } = setupCrawlTest();
+
+            scope
+                .put(new RegExp("/records"), (body: any) => {
+                    return body.sourceTag === connector.sourceTag;
+                })
+                .times(4)
+                .reply(200);
+
+            scope.delete(/.*/).reply(201, { count: 0 });
+
+            return connector.run().then(() => {
+                scope.done();
+            });
+        });
+
+        it("trims with its id and crawltag at the end of a run", () => {
+            const { scope, connector } = setupCrawlTest();
+
+            scope.put(new RegExp("/records")).reply(200);
+
+            scope
+                .delete(
+                    `/records?sourceTag=${connector.sourceTag}&sourceId=${
+                        connector.source.id
+                    }`
+                )
+                .reply(201, { count: 1 });
+
+            return connector.run().then(result => {
+                scope.done();
+                expect(result.recordsTrimmed).to.equal(1);
+            });
+        });
+
+        function setupCrawlTest() {
             const scope = nock("http://example.com");
 
             const registry = new AuthRegistryClient({
@@ -60,23 +96,8 @@ describe("JsonConnector", () => {
                 registry
             });
 
-            scope
-                .put(new RegExp("/records"), (body: any) => {
-                    return body.sourceTag === connector.sourceTag;
-                })
-                .times(4)
-                .reply(200);
-
-            scope.delete(/.*/).reply(201, { count: 0 });
-
-            return connector.run().then(() => {
-                scope.done();
-            });
-        });
-    });
-
-    describe("trim", () => {
-        it("trims with its id and crawltag at the end of a run", () => {});
+            return { scope, registry, source, transformer, connector };
+        }
     });
 });
 
