@@ -13,18 +13,31 @@ class SearchFacets extends Component {
 
   componentWillMount(){
     const that = this;
-    window.addEventListener('click', that.closeFacet)
+    window.addEventListener('click', that.closeFacet);
+    window.addEventListener('keyup', that.closeFacet);
   }
 
-  closeFacet(){
-    this.setState({
-      openFacet: null
-    })
+  closeFacet(event){
+    if(event.keyCode){
+      if(event.keyCode === 27){
+        this.setState({
+          openFacet: null
+        })
+      } else {
+        return false
+      }
+    } else{
+      this.setState({
+        openFacet: null
+      })
+    }
+
   }
 
   componentWillUnmount(){
     const that = this;
-    window.removeEventListener('click', that.closeFacet)
+    window.removeEventListener('click', that.closeFacet);
+    window.removeEventListener('keyup', that.closeFacet);
   }
 
 
