@@ -26,6 +26,7 @@ const getSuggestionValue = suggestion => suggestion.value;
 class FacetSearchBox extends Component {
   constructor(props) {
     super(props);
+    this.onSuggestionSelected = this.onSuggestionSelected.bind(this);
     this.state = {
       value: '',
       suggestions: []
@@ -37,6 +38,7 @@ class FacetSearchBox extends Component {
      this.setState({
        value: newValue
      });
+     this.props.searchBoxValueChange(newValue);
    };
 
 
@@ -52,6 +54,18 @@ class FacetSearchBox extends Component {
       suggestions: []
     });
   };
+
+  renderSuggestion(suggestion){
+    return <div className='btn-facet-option__name'>
+        {suggestion.value}{' '}({suggestion.hitCount})
+      </div>
+  }
+
+  onSuggestionSelected(event, {suggestion}){
+    this.props.onToggleOption(suggestion);
+    this.onChange(null, {newValue: ''});
+  }
+
 
   render(){
     const { value, suggestions } = this.state;
@@ -70,8 +84,9 @@ class FacetSearchBox extends Component {
         onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
         onSuggestionsClearRequested={this.onSuggestionsClearRequested}
         getSuggestionValue={getSuggestionValue}
-        renderSuggestion={this.props.renderOption}
+        renderSuggestion={this.renderSuggestion}
         inputProps={inputProps}
+        onSuggestionSelected={this.onSuggestionSelected}
       />
     );
   }
