@@ -82,7 +82,15 @@ export default class ApiClient {
                 if (res.status === 404) {
                     return Promise.resolve(Maybe.nothing<User>());
                 } else {
-                    return res.json().then(user => Maybe.just(user));
+                    return res.text()
+                    .then(resText=>{
+                        try{
+                            return JSON.parse(resText);
+                        }catch(e){
+                            throw new Error(resText);
+                        }
+                    })
+                    .then(user => Maybe.just(user));
                 }
             })
             .catch(e => {
