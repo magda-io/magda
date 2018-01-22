@@ -10,6 +10,17 @@ export interface ApiRouterOptions {
     jwtSecret: string;
 }
 
+class AuthError extends Error{
+
+    public statusCode:number;
+
+    constructor(message:string="Not authorized",statusCode:number=401)
+    {
+        super(message);
+        this.statusCode=statusCode;
+    }
+}
+
 export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
 
@@ -37,12 +48,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
         
         getUserIdHandling(req, res, options.jwtSecret, async (userId: string) => {
             try{
-                const user = (await database.getUser(userId)).valueOrThrow(new Error(`Cannot locate user record by id: ${userId}`));
-                if(!user.isAdmin) throw new Error("Only admin users are authorised to access this API");
+                const user = (await database.getUser(userId)).valueOrThrow(new AuthError(`Cannot locate user record by id: ${userId}`,401));
+                if(!user.isAdmin) throw new AuthError("Only admin users are authorised to access this API",403);
                 next();
             }catch(e){
                 console.warn(e);
-                res.status(401).send("Not authorized");
+                if(e instanceof AuthError) res.status(e.statusCode).send(e.message);
+                else res.status(401).send("Not authorized");
             }
         });
     });
