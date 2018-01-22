@@ -2,6 +2,7 @@ require("isomorphic-fetch");
 
 import { User } from "./model";
 import { Maybe } from "tsmonad";
+import * as lodash from "lodash";
 import buildJwt from "../session/buildJwt";
 
 export default class ApiClient {
@@ -21,15 +22,7 @@ export default class ApiClient {
     }
 
     getMergeRequestInitOption(extraOptions: RequestInit = null): RequestInit{
-        let options: RequestInit = this.requestInitOption ? {...this.requestInitOption} : {};
-        if(!extraOptions) return options;
-        let headers = {...options.headers, ...extraOptions.headers};
-        options = {
-            ...options,
-            ...extraOptions
-        };
-        options.headers = headers;
-        return options;
+        return lodash.merge({},this.requestInitOption,extraOptions);
     }
 
     async getUser(userId: string): Promise<Maybe<User>> {
