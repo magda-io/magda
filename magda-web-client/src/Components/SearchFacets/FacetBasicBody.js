@@ -79,6 +79,7 @@ class FacetBasicBody extends Component {
 
   onApplyFilter(){
     this.props.onToggleOption(this.state._activeOptions);
+    this.props.toggleFacet();
   }
 
 
