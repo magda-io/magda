@@ -10,14 +10,12 @@ export interface ApiRouterOptions {
     jwtSecret: string;
 }
 
-class AuthError extends Error{
+class AuthError extends Error {
+    public statusCode: number;
 
-    public statusCode:number;
-
-    constructor(message:string="Not authorized",statusCode:number=401)
-    {
+    constructor(message: string = "Not authorized", statusCode: number = 401) {
         super(message);
-        this.statusCode=statusCode;
+        this.statusCode = statusCode;
     }
 }
 
@@ -44,19 +42,35 @@ export default function createApiRouter(options: ApiRouterOptions) {
             .then(() => res.end());
     }
 
-    router.all("/private/*", function(req, res, next) { //--- private API requires admin level access
-        
-        getUserIdHandling(req, res, options.jwtSecret, async (userId: string) => {
-            try{
-                const user = (await database.getUser(userId)).valueOrThrow(new AuthError(`Cannot locate user record by id: ${userId}`,401));
-                if(!user.isAdmin) throw new AuthError("Only admin users are authorised to access this API",403);
-                next();
-            }catch(e){
-                console.warn(e);
-                if(e instanceof AuthError) res.status(e.statusCode).send(e.message);
-                else res.status(401).send("Not authorized");
+    router.all("/private/*", function(req, res, next) {
+        //--- private API requires admin level access
+
+        getUserIdHandling(
+            req,
+            res,
+            options.jwtSecret,
+            async (userId: string) => {
+                try {
+                    const user = (await database.getUser(userId)).valueOrThrow(
+                        new AuthError(
+                            `Cannot locate user record by id: ${userId}`,
+                            401
+                        )
+                    );
+                    if (!user.isAdmin)
+                        throw new AuthError(
+                            "Only admin users are authorised to access this API",
+                            403
+                        );
+                    next();
+                } catch (e) {
+                    console.warn(e);
+                    if (e instanceof AuthError)
+                        res.status(e.statusCode).send(e.message);
+                    else res.status(401).send("Not authorized");
+                }
             }
-        });
+        );
     });
 
     router.get("/private/users/lookup", function(req, res) {
@@ -73,11 +87,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     router.post("/private/users", async function(req, res) {
-        try{
+        try {
             const user = await database.createUser(req.body);
             res.json(user);
             res.status(201);
-        }catch(e){
+        } catch (e) {
             console.error(e);
             res.status(500);
         }
