@@ -60,8 +60,7 @@ export default class ApiClient {
                     `Encountered error ${res.status} when POSTing new user to ${this.baseUrl}/private/users`
                 );
             }
-            const resText = await res.text();
-            const resData = JSON.parse(resText);
+            const resData = await res.json();
             return {...user,...resData};
         }catch(e){
             console.error(e);
