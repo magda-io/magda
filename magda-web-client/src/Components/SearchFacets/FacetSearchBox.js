@@ -56,9 +56,9 @@ class FacetSearchBox extends Component {
   };
 
   renderSuggestion(suggestion){
-    return <div className='btn-facet-option__name'>
+    return (<div className='btn-facet-option__name'>
         {suggestion.value}{' '}({suggestion.hitCount})
-      </div>
+      </div>)
   }
 
   onSuggestionSelected(event, {suggestion}){
@@ -91,7 +91,6 @@ class FacetSearchBox extends Component {
         inputProps={inputProps}
         onSuggestionSelected={this.onSuggestionSelected}
         focusInputOnSuggestionClick={false}
-        shouldRenderSuggestions={this.shouldRenderSuggestions}
       />
     );
   }

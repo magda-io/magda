@@ -6,7 +6,7 @@
   outline: 0;
   width: 100%;
   padding: 16px 0;
-  box-shadow: inset 0 -1px 0 0 rgba(73,73,73,0.25);
+  box-shadow: inset 0 -2px 0 0 rgba(73,73,73,0.25);
   border-radius: 0;
   font-size: 14px;
   line-height: 20px;
@@ -18,14 +18,10 @@
   margin: 0;
   padding: 0;
   list-style-type: none;
-  max-height: 400px;
-  overflow-y: auto;
-  margin-right: -10px;
 }
 
 .react-autosuggest__container {
   position: relative;
-
 }
 
 
@@ -38,12 +34,20 @@
   border-bottom-right-radius: 0;
 }
 
-.react-autosuggest__suggestions-container {
-  display: none;
-}
-
 .react-autosuggest__suggestions-container--open {
   display: block;
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  padding: 0 16px;
+  top: 51px;
+  background-color: #fff;
+  z-index: 2;
+  overflow-y: auto;
+  height: 320px;
+  border-radius: 2px;
+  background-color: #FFFFFF;
+  box-shadow: 0 3px 6px 0 rgba(0,0,0,0.23), 0 3px 6px 0 rgba(0,0,0,0.16);
 }
 .react-autosuggest__suggestion--highlighted {
   background-color: rgba(245, 88, 96, 0.1);

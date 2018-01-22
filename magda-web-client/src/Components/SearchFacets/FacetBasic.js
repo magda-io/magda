@@ -32,6 +32,7 @@ class FacetBasic extends Component {
                     onResetFacet={this.props.onResetFacet}
                     searchFacet={this.props.searchFacet}
                     toggleFacet = {this.props.toggleFacet}
+                    title={this.props.title}
                   />}
            </div>
   }
