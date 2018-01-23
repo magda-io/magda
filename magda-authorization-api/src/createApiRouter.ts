@@ -4,7 +4,7 @@ import { Maybe } from "tsmonad";
 import Database from "./Database";
 import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
 import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
-import AuthError from "./AuthError";
+import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
 
 export interface ApiRouterOptions {
     database: Database;
