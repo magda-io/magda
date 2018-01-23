@@ -15,6 +15,7 @@ import au.csiro.data61.magda.model.Registry._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.{ Success, Failure }
+import akka.http.scaladsl.model.StatusCode
 
 class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit val executionContext: ExecutionContext) extends Protocols {
   private val http = Http(actorSystem)
@@ -96,7 +97,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
 
     val payload = WebHookPayload(
       action = "records.changed",
-      lastEventId = eventPage.events.lastOption.flatMap(_.id).orElse(webHook.lastEvent).get, //if (events.isEmpty) webHook.lastEvent.get else events.last.id.get,
+      lastEventId = eventPage.events.lastOption.flatMap(_.id).get, //if (events.isEmpty) webHook.lastEvent.get else events.last.id.get,
       events = if (webHook.config.includeEvents.getOrElse(true)) Some(changeEvents) else None,
       records = records,
       aspectDefinitions = aspectDefinitions,
@@ -113,7 +114,12 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
           case (Success(response), _) => {
             if (response.status.isFailure()) {
               response.discardEntityBytes()
-              Future.failed(new Exception(s"Response from $webHook.url was ${response.status.reason()}"))
+
+              DB localTx { session =>
+                HookPersistence.setActive(session, webHook.id.get, false)
+              }
+
+              Future(WebHookProcessor.HttpError(response.status))
             } else {
               // Try to deserialize the success response as a WebHook response.  It's ok if this fails.
               Unmarshal(response.entity).to[WebHookResponse].map { webHookResponse =>
@@ -153,4 +159,5 @@ object WebHookProcessor {
   sealed trait SendResult
   case object Deferred extends SendResult
   case object NotDeferred extends SendResult
+  case class HttpError(statusCode: StatusCode) extends SendResult
 }
