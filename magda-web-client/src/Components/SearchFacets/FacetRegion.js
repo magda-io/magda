@@ -69,15 +69,17 @@ class FacetRegion extends Component {
     renderOption(option, onClick, optionMax, onFocus){
      let regionType = option.regionType;
       return (
-            <Button className='btn-facet-option mui-btn btn-facet-option__location'
+            <button className='btn-facet-option mui-btn btn-facet-option__location'
                     onClick={onClick.bind(this, option)}
-                    title={option.regionName}>
+                    title={option.regionName}
+                    ref={b=>{if(b != null && onFocus === true){b.focus()}}}
+                    type='button'>
               <div className='facet-option__region-name'>{option.regionName}</div>
               <div className='facet-option__region-type'>
                 {(defined(regionType) && defined(this.props.regionMapping[regionType])) ?
                   this.props.regionMapping[regionType].description : ''}
               </div>
-            </Button>);
+            </button>);
     }
 
     renderBox(){

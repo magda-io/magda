@@ -66,10 +66,6 @@ class FacetSearchBox extends Component {
     this.onChange(null, {newValue: ''});
   }
 
-  shouldRenderSuggestions(value){
-    return Boolean(value.length)
-  }
-
   render(){
     const { value, suggestions } = this.state;
 

@@ -29,7 +29,7 @@ class MonthPicker extends Component {
         <tbody>
           <tr><th colSpan="3"><Input placeholder="select a year"  defaultValue={year}  onChange={this.changeYear}/></th></tr>
           {MONTH_NAMES.map((m, i) => <tr key={m}>
-            {m.map((n, j) => <td key={n}><Button variant='flat'  onClick={this.selectMonth.bind(this, i * MONTH_NAMES[0].length + j)} className={`btn-month ${month === i * MONTH_NAMES[0].length + j? 'is-active' : ''}`}>{n}</Button></td>)}
+            {m.map((n, j) => <td key={n}><Button onClick={this.selectMonth.bind(this, i * MONTH_NAMES[0].length + j)} className={`btn-facet-option btn-month  ${month === i * MONTH_NAMES[0].length + j? 'is-active' : ''}`}>{n}</Button></td>)}
             </tr>)}
         </tbody>
       </table>)

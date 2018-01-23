@@ -16,8 +16,8 @@
 
 .region-search-box .search-icon{
     position: absolute;
-    right: 10px;
-    top: 10px;
+    right: 16px;
+    top: 25px;
 }
 
 .region-search-box__options{
@@ -25,9 +25,7 @@
   min-height: 220px;
   max-height: 300px;
   overflow-y: auto;
-  /*border: 1px solid rgba(189, 195, 199, 0.15);*/
   background: #fff;
-
   button{
     line-height: 1;
     padding: 10px 0;
