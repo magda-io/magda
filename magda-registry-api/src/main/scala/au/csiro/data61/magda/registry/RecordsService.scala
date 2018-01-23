@@ -22,6 +22,9 @@ import akka.event.Logging
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
 class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+
+  val logger = Logging(system, getClass)
+
   @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[Record], responseContainer = "List")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
@@ -128,19 +131,20 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   }
 
   @Path("/")
-  @ApiOperation(value = "Delete by source tag", nickname = "deleteBySourceTag", httpMethod = "DELETE", response = classOf[MultipleDeleteResult])
+  @ApiOperation(value = "Trim by source tag", notes = "Trims records with the provided source that DON'T have the supplied source tag",
+    nickname = "trimBySourceTag", httpMethod = "DELETE", response = classOf[MultipleDeleteResult])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "sourceTag", required = true, dataType = "string", paramType = "query", value = "Source tag of the records to delete."),
+    new ApiImplicitParam(name = "sourceTag", required = true, dataType = "string", paramType = "query", value = "Source tag of the records to PRESERVE."),
     new ApiImplicitParam(name = "sourceId", required = true, dataType = "string", paramType = "query", value = "Source id of the records to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The records could not be deleted, possibly because they are used by other records.", response = classOf[BadRequest])))
-  def deleteBySourceTag = delete {
+  def trimBySourceTag = delete {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
         parameters('sourceTag, 'sourceId) { (sourceTag, sourceId) =>
           val result = DB localTx { implicit session =>
-            RecordPersistence.deleteRecordsBySource(sourceTag, sourceId) match {
+            RecordPersistence.trimRecordsBySource(sourceTag, sourceId) match {
               case Success(result) => complete(MultipleDeleteResult(result))
               case Failure(exception) =>
                 complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
@@ -239,7 +243,9 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
               RecordPersistence.patchRecordById(session, id, recordPatch) match {
                 case Success(result) =>
                   complete(result)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+                case Failure(exception) =>
+                  logger.error(exception, "Exception encountered while PATCHing record {} with {}", id, recordPatch.toJson.prettyPrint)
+                  complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
             webHookActor ! WebHookActor.Process(false, Some(List(id)))
@@ -258,7 +264,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       getByIdSummary ~
       putById ~
       patchById ~
-      deleteBySourceTag ~
+      trimBySourceTag ~
       deleteById ~
       create ~
       new RecordAspectsService(webHookActor, authClient, system, materializer, config).route ~

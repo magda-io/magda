@@ -166,23 +166,23 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         case "aspects" / _ => false
         case _             => true
       }))
-      eventId <- Try {
-        if (recordOnlyPatch.ops.length > 0) {
-          val event = PatchRecordEvent(id, recordOnlyPatch).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
-        } else {
-          0
-        }
-      }
       patchedRecord <- Try {
-        val recordJson = record.toJson
-        val patchedJson = recordOnlyPatch(recordJson)
-        patchedJson.convertTo[Record]
+        recordOnlyPatch(record)
       }
       _ <- if (id == patchedRecord.id) Success(patchedRecord) else Failure(new RuntimeException("The patch must not change the record's ID."))
       _ <- Try {
-        if (recordOnlyPatch.ops.length > 0) {
+        // Sourcetag should not generate an event so updating it is done separately
+        if (record.sourceTag != patchedRecord.sourceTag) {
+          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where recordId = $id""".update.apply()
+        }
+      }
+      eventId <- Try {
+        // Name is currently the only member of Record that should generate an event when changed.
+        if (record.name != patchedRecord.name) {
+          val event = PatchRecordEvent(id, recordOnlyPatch).toJson.compactPrint
+          val eventId = sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
           sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where recordId = $id""".update.apply()
+          eventId
         } else {
           0
         }
@@ -314,7 +314,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
-        sql"""insert into Records (recordId, name, lastUpdate, sourcetag) values (${record.id}, ${record.name}, $eventId, ${record.sourceTag.getOrElse("NULL")})""".update.apply()
+        sql"""insert into Records (recordId, name, lastUpdate, sourcetag) values (${record.id}, ${record.name}, $eventId, ${record.sourceTag})""".update.apply()
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
           Failure(new RuntimeException(s"Cannot create record '${record.id}' because a record with that ID already exists."))
@@ -347,9 +347,9 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     } yield rowsDeleted > 0
   }
 
-  def deleteRecordsBySource(sourceTag: String, sourceId: String)(implicit session: DBSession): Try[Long] = {
+  def trimRecordsBySource(sourceTag: String, sourceId: String)(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where sourcetag = $sourceTag and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where (sourcetag != $sourceTag OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
         .map(rs => rs.string("recordId")).list.apply()
     }
 
@@ -496,7 +496,8 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName
-                   ${if (aspectSelectors.nonEmpty) sqls", ${aspectSelectors}" else SQLSyntax.empty}
+                   ${if (aspectSelectors.nonEmpty) sqls", ${aspectSelectors}" else SQLSyntax.empty},
+                   Records.sourcetag as sourceTag
             from Records
             ${makeWhereClause(whereClauseParts)}
             order by Records.sequence
@@ -535,7 +536,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         .map {
           case (aspectId, index) => (aspectId, JsonParser(rs.string(s"aspect${index}")).asJsObject)
         }
-        .toMap)
+        .toMap, rs.stringOpt("sourceTag"))
   }
 
   private def rowToAspect(rs: WrappedResultSet): JsObject = {

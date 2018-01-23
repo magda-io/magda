@@ -714,8 +714,8 @@ class RecordsServiceSpec extends ApiSpec {
       Get("/v0/records/testId") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
 
-        val record = responseAs[Record]
-        record shouldEqual record
+        val recordRes = responseAs[Record]
+        recordRes shouldEqual record
       }
     }
 
@@ -799,6 +799,34 @@ class RecordsServiceSpec extends ApiSpec {
       Get("/v0/records/testId") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Record] shouldEqual Record("testId", "newName", Map())
+      }
+    }
+
+    it("updates the sourcetag of an otherwise identical record without generating events") { param =>
+      val record = Record("testId", "testName", Map(), Some("tag1"))
+      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      Get(s"/v0/records/${record.id}/history") ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[EventsPage].totalCount shouldEqual 1
+      }
+
+      val newRecord = record.copy(sourceTag = Some("tag2"))
+      param.asAdmin(Put("/v0/records/testId", newRecord)) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record] shouldEqual newRecord
+      }
+
+      Get("/v0/records/testId") ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record].sourceTag shouldEqual Some("tag2")
+      }
+
+      Get(s"/v0/records/${record.id}/history") ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[EventsPage].totalCount shouldEqual 1
       }
     }
 
@@ -1233,7 +1261,7 @@ class RecordsServiceSpec extends ApiSpec {
         Map("source" -> JsObject(Map[String, JsValue]("id" -> JsString(id), "name" -> JsString("name"), "url" -> JsString("http://example.com"), "type" -> JsString("fake"))))
       }
 
-      it("deletes only records with the correct tag") { param =>
+      it("deletes only records with the correct source and without the specified tag") { param =>
         val junitFile = new java.io.File("../magda-registry-aspects/source.schema.json").getCanonicalFile
         val commandLineFile = new java.io.File("./magda-registry-aspects/source.schema.json").getCanonicalFile
 
@@ -1257,11 +1285,10 @@ class RecordsServiceSpec extends ApiSpec {
         val rightTagNoSource = Record("righttag-nosource", "name", Map(), Some("righttag"))
         val rightTagWrongSource = Record("righttag-wrongsource", "name", buildAspects("wrong"), Some("righttag"))
 
-        val rightTagRightSource1 = Record("righttag-rightsource1", "name", buildAspects("right"), Some("righttag"))
-        val rightTagRightSource2 = Record("righttag-rightsource2", "name", buildAspects("right"), Some("righttag"))
+        val rightTagRightSource1 = Record("righttag-rightsource", "name", buildAspects("right"), Some("righttag"))
 
         val all = List(noTagNoSource, noTagWrongSource, noTagRightSource, wrongTagNoSource, wrongTagWrongSource,
-          wrongTagRightSource, rightTagNoSource, rightTagWrongSource, rightTagRightSource1, rightTagRightSource2)
+          wrongTagRightSource, rightTagNoSource, rightTagWrongSource, rightTagRightSource1)
 
         all.foreach(record => param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -1282,14 +1309,15 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
           val res = responseAs[RecordsPage[Record]]
           res.records.length shouldEqual (all.length - 2)
-          res.records.filter(record => record.id.contains("righttag-rightsource")).length shouldEqual 0
+          res.records.filter(record => record.id == ("wrongtag-rightsource")).length shouldEqual 0
+          res.records.filter(record => record.id == ("notag-rightsource")).length shouldEqual 0
         }
 
-        Get("/v0/records/righttag-rightsource1/aspects") ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.NotFound
-        }
+        List("wrongtag-rightsource", "notag-rightsource").foreach { recordId =>
+          Get(s"/v0/records/${recordId}/aspects") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.NotFound
+          }
 
-        List("righttag-rightsource1", "righttag-rightsource2").foreach { recordId =>
           Get(s"/v0/records/$recordId/history") ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
             val res = responseAs[EventsPage]
