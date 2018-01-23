@@ -35,7 +35,6 @@ class MonthPicker extends Component {
   changeYear(value){
       this.setState({
         prompt: '',
-        yearValue: value
       });
       if(isNaN(value) || value < this.props.yearLower || value > this.props.yearUpper){
         this.setState({
@@ -47,11 +46,15 @@ class MonthPicker extends Component {
   }
 
   onChange(event){
-    this.setState({
-      yearValue: event.target.value
-    });
-    const value = +event.target.value;
-    this.debounceValidateYearField(value);
+    if(event.target.value.length >= 5){
+      return false;
+    } else{
+      this.setState({
+        yearValue: event.target.value
+      });
+      const value = +event.target.value;
+      this.debounceValidateYearField(value);
+    }
   }
 
   selectMonth(month){
