@@ -4,19 +4,11 @@ import { Maybe } from "tsmonad";
 import Database from "./Database";
 import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
 import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
+import AuthError from "./AuthError";
 
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
-}
-
-class AuthError extends Error {
-    public statusCode: number;
-
-    constructor(message: string = "Not authorized", statusCode: number = 401) {
-        super(message);
-        this.statusCode = statusCode;
-    }
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
