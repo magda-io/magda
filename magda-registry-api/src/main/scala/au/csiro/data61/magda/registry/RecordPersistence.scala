@@ -18,7 +18,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   val maxResultCount = 1000
   val defaultResultCount = 100
 
-  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordSummariesPage = {
+  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary] = {
     this.getSummaries(session, pageToken, start, limit)
   }
 
@@ -28,7 +28,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                         pageToken: Option[String] = None,
                         start: Option[Int] = None,
                         limit: Option[Int] = None,
-                        dereference: Option[Boolean] = None): RecordsPage = {
+                        dereference: Option[Boolean] = None): RecordsPage[Record] = {
     this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference)
   }
 
@@ -48,7 +48,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                           ids: Iterable[String],
                           aspectIds: Iterable[String] = Seq(),
                           optionalAspectIds: Iterable[String] = Seq(),
-                          dereference: Option[Boolean] = None): RecordsPage = {
+                          dereference: Option[Boolean] = None): RecordsPage[Record] = {
     if (ids.isEmpty)
       RecordsPage(0, Some("0"), List())
     else
@@ -60,7 +60,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                                    idsToExclude: Iterable[String] = Seq(),
                                    aspectIds: Iterable[String] = Seq(),
                                    optionalAspectIds: Iterable[String] = Seq(),
-                                   dereference: Option[Boolean] = None): RecordsPage = {
+                                   dereference: Option[Boolean] = None): RecordsPage[Record] = {
     val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
     if (linkAspects.isEmpty) {
       // There are no linking aspects, so there cannot be any records linking to these IDs.
@@ -438,7 +438,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     }
   }
 
-  private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int], recordId: Option[String] = None): RecordSummariesPage = {
+  private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int], recordId: Option[String] = None): RecordsPage[RecordSummary] = {
     val countWhereClauseParts = Seq(recordId.map(id => sqls"recordId=${id}"))
     val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
 
@@ -462,7 +462,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         })
         .list.apply()
 
-    RecordSummariesPage(
+    RecordsPage[RecordSummary](
       totalCount,
       lastSequence.map(_.toString),
       pageResults)
@@ -475,7 +475,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                          start: Option[Int] = None,
                          limit: Option[Int] = None,
                          dereference: Option[Boolean] = None,
-                         recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): RecordsPage = {
+                         recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): RecordsPage[Record] = {
     val countWhereClauseParts = aspectIdsToWhereClause(aspectIds) ++ recordSelector
     val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
 

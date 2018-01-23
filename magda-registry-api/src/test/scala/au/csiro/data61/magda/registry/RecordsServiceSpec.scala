@@ -1,19 +1,17 @@
 package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.model.StatusCodes
+import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import spray.json._
-import au.csiro.data61.magda.model.Registry.Record
-import scala.concurrent.duration._
-import au.csiro.data61.magda.model.Registry._
 
 class RecordsServiceSpec extends ApiSpec {
   describe("GET") {
     it("starts with no records defined") { param =>
       Get("/v0/records") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[RecordSummariesPage].records shouldBe empty
+        responseAs[RecordsPage[Record]].records shouldBe empty
       }
     }
 
@@ -41,6 +39,77 @@ class RecordsServiceSpec extends ApiSpec {
       }
     }
 
+    describe("summary") {
+      it("/records/summary/{id} returns a summary with id, name, and aspect ids for which the record has data in the aspect") { param =>
+        insertAspectDefs(param)
+
+        val recordWithAspects = Record("id", "name", Map("test1" -> JsObject(), "test2" -> JsObject()))
+        param.asAdmin(Post("/v0/records", recordWithAspects)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Get("/v0/records/summary/id") ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val recordSummary = responseAs[RecordSummary]
+          recordSummary.id shouldEqual ("id")
+          recordSummary.name shouldEqual ("name")
+          recordSummary.aspects shouldEqual List("test2", "test1")
+        }
+      }
+
+      it("/records/summary returns a list of summaries with id, name, and aspect ids for which the record has data in the aspect") { param =>
+        insertAspectDefs(param)
+
+        val recordWithAspects1 = Record("id1", "name1", Map("test1" -> JsObject(), "test2" -> JsObject()))
+        param.asAdmin(Post("/v0/records", recordWithAspects1)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val recordWithAspects2 = Record("id2", "name2", Map("test2" -> JsObject(), "test3" -> JsObject()))
+        param.asAdmin(Post("/v0/records", recordWithAspects2)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val recordWithoutAspects = Record("id3", "name3", Map())
+        param.asAdmin(Post("/v0/records", recordWithoutAspects)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Get("/v0/records/summary") ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val recordsSummary = responseAs[RecordsPage[RecordSummary]]
+          recordsSummary.records.length shouldEqual 3
+
+          recordsSummary.records(0).id shouldEqual ("id1")
+          recordsSummary.records(0).name shouldEqual ("name1")
+          recordsSummary.records(0).aspects shouldEqual List("test2", "test1")
+
+          recordsSummary.records(1).id shouldEqual ("id2")
+          recordsSummary.records(1).name shouldEqual ("name2")
+          recordsSummary.records(1).aspects shouldEqual List("test3", "test2")
+
+          recordsSummary.records(2).id shouldEqual ("id3")
+          recordsSummary.records(2).name shouldEqual ("name3")
+          recordsSummary.records(2).aspects shouldEqual List()
+        }
+      }
+
+      def insertAspectDefs(param: FixtureParam) {
+        val aspectDefinition1 = AspectDefinition("test1", "test1", None)
+        param.asAdmin(Post("/v0/aspects", aspectDefinition1)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        val aspectDefinition2 = AspectDefinition("test2", "test2", None)
+        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        val aspectDefinition3 = AspectDefinition("test3", "test3", None)
+        param.asAdmin(Post("/v0/aspects", aspectDefinition3)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+      }
+    }
+
     describe("aspects") {
       it("includes optionalAspect if it exists") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
@@ -60,7 +129,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         Get("/v0/records?optionalAspect=test") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
+          val page = responseAs[RecordsPage[Record]]
           page.records.length shouldBe 2
           page.records(0) shouldBe recordWithAspect
           page.records(1) shouldBe recordWithoutAspect
@@ -85,7 +154,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         Get("/v0/records?aspect=test") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
+          val page = responseAs[RecordsPage[Record]]
           page.records.length shouldBe 1
           page.records(0) shouldBe recordWithAspect
         }
@@ -119,7 +188,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         Get("/v0/records?aspect=foo&aspect=bar") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
+          val page = responseAs[RecordsPage[Record]]
           page.records.length shouldBe 1
           page.records(0) shouldBe withFooAndBar
         }
@@ -158,7 +227,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         Get("/v0/records?optionalAspect=foo&optionalAspect=bar") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
+          val page = responseAs[RecordsPage[Record]]
           page.records.length shouldBe 4
           page.records(0) shouldBe withFoo
           page.records(1) shouldBe withBar
@@ -205,7 +274,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         Get("/v0/records?aspect=foo&optionalAspect=bar") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
+          val page = responseAs[RecordsPage[Record]]
           page.records.length shouldBe 2
           page.records(0) shouldBe withFoo
 
@@ -227,14 +296,14 @@ class RecordsServiceSpec extends ApiSpec {
 
         Get("/v0/records?optionalAspect=with%20space") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
+          val page = responseAs[RecordsPage[Record]]
           page.records.length shouldBe 1
           page.records(0) shouldBe record
         }
 
         Get("/v0/records?aspect=with%20space") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
+          val page = responseAs[RecordsPage[Record]]
           page.records.length shouldBe 1
           page.records(0) shouldBe record
         }
@@ -380,122 +449,97 @@ class RecordsServiceSpec extends ApiSpec {
     }
 
     describe("paging") {
-      it("honors the limit parameter") { param =>
-        val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-        }
-
-        for (i <- 1 to 5) {
-          val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-            status shouldEqual StatusCodes.OK
-          }
-        }
-
-        Get("/v0/records?limit=2") ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordSummariesPage]
-          page.records.length shouldBe 2
-          page.records(0).name shouldBe "1"
-          page.records(1).name shouldBe "2"
-        }
-
-        Get("/v0/records?aspect=test&limit=2") ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
-          page.records.length shouldBe 2
-          page.records(0).name shouldBe "1"
-          page.records(1).name shouldBe "2"
-        }
+      describe("full records") {
+        pagingTests("?aspect=test&")
       }
 
-      it("honors the start parameter") { param =>
-        val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-        }
-
-        for (i <- 1 to 5) {
-          val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
-            status shouldEqual StatusCodes.OK
-          }
-        }
-
-        Get("/v0/records?start=3&limit=2") ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordSummariesPage]
-          page.records.length shouldBe 2
-          page.records(0).name shouldBe "4"
-          page.records(1).name shouldBe "5"
-        }
-
-        Get("/v0/records?start=3&aspect=test&limit=2") ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
-          page.records.length shouldBe 2
-          page.records(0).name shouldBe "4"
-          page.records(1).name shouldBe "5"
-        }
+      describe("summaries") {
+        pagingTests("/summary?")
       }
 
-      it("pageTokens can be used to page through results") { param =>
-        val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-        }
-
-        for (i <- 1 to 5) {
-          val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+      def pagingTests(path: String) {
+        it("honors the limit parameter") { param =>
+          val aspectDefinition = AspectDefinition("test", "test", None)
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
+          }
+
+          for (i <- 1 to 5) {
+            val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
+            param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+          }
+
+          Get(s"/v0/records${path}limit=2") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.records.length shouldBe 2
+            page.records(0).name shouldBe "1"
+            page.records(1).name shouldBe "2"
           }
         }
 
-        Get("/v0/records?limit=2") ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordSummariesPage]
-          page.records.length shouldBe 2
-          page.records(0).name shouldBe "1"
-          page.records(1).name shouldBe "2"
-
-          Get(s"/v0/records?pageToken=${page.nextPageToken.get}&limit=2") ~> param.api.routes ~> check {
+        it("honors the start parameter") { param =>
+          val aspectDefinition = AspectDefinition("test", "test", None)
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
-            val page = responseAs[RecordSummariesPage]
-            page.records.length shouldBe 2
-            page.records(0).name shouldBe "3"
-            page.records(1).name shouldBe "4"
+          }
 
-            Get(s"/v0/records?pageToken=${page.nextPageToken.get}&limit=2") ~> param.api.routes ~> check {
+          for (i <- 1 to 5) {
+            val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
+            param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
               status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordSummariesPage]
-              page.records.length shouldBe 1
-              page.records(0).name shouldBe "5"
             }
+          }
+
+          Get(s"/v0/records${path}start=3&limit=2") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.records.length shouldBe 2
+            page.records(0).name shouldBe "4"
+            page.records(1).name shouldBe "5"
           }
         }
 
-        Get("/v0/records?aspect=test&limit=2") ~> param.api.routes ~> check {
-          status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
-          page.records.length shouldBe 2
-          page.records(0).name shouldBe "1"
-          page.records(1).name shouldBe "2"
-
-          Get(s"/v0/records?aspect=test&pageToken=${page.nextPageToken.get}&limit=2") ~> param.api.routes ~> check {
+        it("pageTokens can be used to page through results") { param =>
+          val aspectDefinition = AspectDefinition("test", "test", None)
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
-            val page = responseAs[RecordsPage]
-            page.records.length shouldBe 2
-            page.records(0).name shouldBe "3"
-            page.records(1).name shouldBe "4"
+          }
 
-            Get(s"/v0/records?aspect=test&pageToken=${page.nextPageToken.get}&limit=2") ~> param.api.routes ~> check {
+          for (i <- 1 to 5) {
+            val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
+            param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
               status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage]
-              page.records.length shouldBe 1
-              page.records(0).name shouldBe "5"
             }
+          }
+
+          var currentPage = Get(s"/v0/records${path}limit=2") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.records.length shouldBe 2
+            page.records(0).name shouldBe "1"
+            page.records(1).name shouldBe "2"
+            page
+          }
+
+          currentPage =
+            Get(s"/v0/records${path}pageToken=${currentPage.nextPageToken.get}&limit=2") ~> param.api.routes ~> check {
+              status shouldEqual StatusCodes.OK
+              val page = responseAs[RecordsPage[RecordType]]
+              page.records.length shouldBe 2
+              page.records(0).name shouldBe "3"
+              page.records(1).name shouldBe "4"
+              page
+            }
+
+          currentPage = Get(s"/v0/records${path}pageToken=${currentPage.nextPageToken.get}&limit=2") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.records.length shouldBe 1
+            page.records(0).name shouldBe "5"
+            page
           }
         }
       }
@@ -539,7 +583,7 @@ class RecordsServiceSpec extends ApiSpec {
 
                     Get(s"/v0/records?pageToken=$token&limit=$pageSize") ~> param.api.routes ~> check {
                       status shouldEqual StatusCodes.OK
-                      val page = responseAs[RecordSummariesPage]
+                      val page = responseAs[RecordsPage[Record]]
 
                       for (recordNumber <- 0 to page.records.length - 1) {
                         page.records(recordNumber).name shouldEqual (pageIndex * pageSize + recordNumber + 1).toString
@@ -585,7 +629,7 @@ class RecordsServiceSpec extends ApiSpec {
 
                       Get(s"/v0/records?pageToken=$token&limit=$pageSize&aspect=$aspectNumber") ~> param.api.routes ~> check {
                         status shouldEqual StatusCodes.OK
-                        val page = responseAs[RecordsPage]
+                        val page = responseAs[RecordsPage[Record]]
 
                         for (recordNumber <- 0 to page.records.length - 1) {
                           page.records(recordNumber).name shouldEqual (pageIndex * pageSize + recordNumber + 1).toString
@@ -644,7 +688,7 @@ class RecordsServiceSpec extends ApiSpec {
 
                     Get(s"/v0/records?pageToken=$token&limit=$pageSize&${aspectIds.map(id => "aspect=" + id).mkString("&")}") ~> param.api.routes ~> check {
                       status shouldEqual StatusCodes.OK
-                      val page = responseAs[RecordsPage]
+                      val page = responseAs[RecordsPage[Record]]
 
                       for (recordNumber <- 0 to page.records.length - 1) {
                         page.records(recordNumber).name shouldEqual (pageIndex * pageSize + recordNumber + 1).toString
@@ -661,18 +705,32 @@ class RecordsServiceSpec extends ApiSpec {
 
   describe("POST") {
     it("can add a new record") { param =>
-      val record = Record("testId", "testName", Map())
+      val record = Record("testId", "testName", Map(), Some("tag"))
       param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Record] shouldEqual record
       }
 
-      Get("/v0/records") ~> param.api.routes ~> check {
+      Get("/v0/records/testId") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
 
-        val recordPage = responseAs[RecordSummariesPage]
-        recordPage.records.length shouldEqual 1
-        recordPage.records(0) shouldEqual RecordSummary("testId", "testName", List())
+        val record = responseAs[Record]
+        record shouldEqual record
+      }
+    }
+
+    it("sets sourcetag to NULL by default") { param =>
+      val record = Record("testId", "testName", Map(), None)
+      param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Record] shouldEqual record
+      }
+
+      Get("/v0/records/testId") ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+
+        val recordRes = responseAs[Record]
+        recordRes shouldEqual record
       }
     }
 
@@ -685,7 +743,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       Get("/v0/records/in%20valid") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[RecordSummary] shouldEqual RecordSummary("in valid", "testName", List())
+        responseAs[Record] shouldEqual Record("in valid", "testName", Map())
       }
     }
 
@@ -720,9 +778,9 @@ class RecordsServiceSpec extends ApiSpec {
       Get("/v0/records") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
 
-        val recordsPage = responseAs[RecordSummariesPage]
+        val recordsPage = responseAs[RecordsPage[Record]]
         recordsPage.records.length shouldEqual 1
-        recordsPage.records(0) shouldEqual RecordSummary("testId", "testName", List())
+        recordsPage.records(0) shouldEqual Record("testId", "testName", Map())
       }
     }
 
@@ -740,7 +798,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       Get("/v0/records/testId") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[RecordSummary] shouldEqual RecordSummary("testId", "newName", List())
+        responseAs[Record] shouldEqual Record("testId", "newName", Map())
       }
     }
 
@@ -767,7 +825,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       Get("/v0/records/in%20valid") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[RecordSummary] shouldEqual RecordSummary("in valid", "testName", List())
+        responseAs[Record] shouldEqual Record("in valid", "testName", Map())
       }
     }
 
@@ -872,7 +930,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       Get("/v0/records/testId") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[RecordSummary] shouldEqual RecordSummary("testId", "foo", List())
+        responseAs[Record] shouldEqual Record("testId", "foo", Map())
       }
     }
 
@@ -1211,7 +1269,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         Get("/v0/records") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val res = responseAs[RecordSummariesPage]
+          val res = responseAs[RecordsPage[Record]]
           res.records.length shouldEqual all.length
         }
 
@@ -1222,7 +1280,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         Get("/v0/records") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val res = responseAs[RecordSummariesPage]
+          val res = responseAs[RecordsPage[Record]]
           res.records.length shouldEqual (all.length - 2)
           res.records.filter(record => record.id.contains("righttag-rightsource")).length shouldEqual 0
         }

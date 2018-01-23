@@ -22,7 +22,7 @@ import akka.event.Logging
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
 class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
-  @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[RecordSummary], responseContainer = "List")
+  @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[Record], responseContainer = "List")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
     new ApiImplicitParam(name = "optionalAspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
@@ -30,7 +30,36 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "start", required = false, dataType = "number", paramType = "query", value = "The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve."),
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."),
     new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.")))
-  def getAll = get { pathEnd { parameters('aspect.*, 'optionalAspect.*, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?) { getAllWithAspects } } }
+  def getAll = get {
+    pathEnd {
+      parameters('aspect.*, 'optionalAspect.*, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?) {
+        (aspects, optionalAspects, pageToken, start, limit, dereference) =>
+          complete {
+            DB readOnly { session =>
+              RecordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference)
+            }
+          }
+      }
+    }
+  }
+
+  @Path("/summary")
+  @ApiOperation(value = "Get a list of all records as summaries", nickname = "getAllSummary", httpMethod = "GET", response = classOf[RecordSummary], responseContainer = "List")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "pageToken", required = false, dataType = "string", paramType = "query", value = "A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."),
+    new ApiImplicitParam(name = "start", required = false, dataType = "number", paramType = "query", value = "The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve."),
+    new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.")))
+  def getAllSummary = get {
+    path("summary") {
+      parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
+        complete {
+          DB readOnly { session =>
+            RecordPersistence.getAll(session, pageToken, start, limit)
+          }
+        }
+      }
+    }
+  }
 
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
@@ -134,7 +163,38 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.")))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))
-  def getById = get { path(Segment) { id => { parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { getByIdWithAspects(id) } } } }
+  def getById = get {
+    path(Segment) { id =>
+      parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { (aspects, optionalAspects, dereference) =>
+        DB readOnly { session =>
+          RecordPersistence.getByIdWithAspects(session, id, aspects, optionalAspects, dereference) match {
+            case Some(record) => complete(record)
+            case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
+          }
+        }
+      }
+    }
+  }
+
+  @Path("/summary/{id}")
+  @ApiOperation(value = "Get a summary record by ID", nickname = "getByIdSummary", httpMethod = "GET", response = classOf[RecordSummary],
+    notes = "Gets a summary record, including all the aspect ids for which this record has data.")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched.")))
+  @ApiResponses(Array(
+    new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))
+  def getByIdSummary = get {
+    path("summary" / Segment) { id =>
+      {
+        DB readOnly { session =>
+          RecordPersistence.getById(session, id) match {
+            case Some(record) => complete(record)
+            case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
+          }
+        }
+      }
+    }
+  }
 
   @Path("/{id}")
   @ApiOperation(value = "Modify a record by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Record],
@@ -192,8 +252,10 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   val route =
     getAll ~
+      getAllSummary ~
       getPageTokens ~
       getById ~
+      getByIdSummary ~
       putById ~
       patchById ~
       deleteBySourceTag ~
@@ -202,37 +264,4 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       new RecordAspectsService(webHookActor, authClient, system, materializer, config).route ~
       new RecordHistoryService(system, materializer).route
 
-  private def getAllWithAspects(aspects: Iterable[String],
-                                optionalAspects: Iterable[String],
-                                pageToken: Option[String],
-                                start: Option[Int],
-                                limit: Option[Int],
-                                dereference: Option[Boolean]) = {
-    complete {
-      DB readOnly { session =>
-        if (aspects.isEmpty && optionalAspects.isEmpty)
-          RecordPersistence.getAll(session, pageToken, start, limit)
-        else
-          RecordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference)
-      }
-    }
-  }
-
-  private def getByIdWithAspects(id: String)(
-    aspects: Iterable[String],
-    optionalAspects: Iterable[String],
-    dereference: Option[Boolean]) = {
-    DB readOnly { session =>
-      if (aspects.isEmpty && optionalAspects.isEmpty)
-        RecordPersistence.getById(session, id) match {
-          case Some(record) => complete(record)
-          case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
-        }
-      else
-        RecordPersistence.getByIdWithAspects(session, id, aspects, optionalAspects, dereference) match {
-          case Some(record) => complete(record)
-          case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
-        }
-    }
-  }
 }
