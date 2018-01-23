@@ -102,6 +102,7 @@ class RegionSearchBox extends Component {
       indexOfOptionOnFocus: -1
     });
     this.debounceSearchFacet(e.target.value);
+    this.props.searchBoxValueChange(e.target.value);
   }
 
   searchFacet(text) {
@@ -111,7 +112,8 @@ class RegionSearchBox extends Component {
   clearSearch(){
     this.setState({
       searchText: ''
-    })
+    });
+    this.props.searchBoxValueChange('');
   }
 
 
