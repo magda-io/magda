@@ -269,7 +269,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         sourceId: string
     ): Promise<MultipleDeleteResult | Error> {
         const operation = () =>
-            this.recordsApi.deleteBySourceTag(sourceTag, sourceId, this.jwt);
+            this.recordsApi.trimBySourceTag(sourceTag, sourceId, this.jwt);
 
         return retry(
             operation,

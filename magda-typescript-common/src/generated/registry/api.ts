@@ -1218,79 +1218,6 @@ export class RecordsApi {
         });
     }
     /**
-     * Delete by source tag
-     * 
-     * @param sourceTag Source tag of the records to delete.
-     * @param sourceId Source id of the records to delete.
-     * @param xMagdaSession Magda internal session id
-     */
-    public deleteBySourceTag (sourceTag: string, sourceId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }> {
-        const localVarPath = this.basePath + '/records';
-        let queryParameters: any = {};
-        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
-        let formParams: any = {};
-
-
-        // verify required parameter 'sourceTag' is not null or undefined
-        if (sourceTag === null || sourceTag === undefined) {
-            throw new Error('Required parameter sourceTag was null or undefined when calling deleteBySourceTag.');
-        }
-
-        // verify required parameter 'sourceId' is not null or undefined
-        if (sourceId === null || sourceId === undefined) {
-            throw new Error('Required parameter sourceId was null or undefined when calling deleteBySourceTag.');
-        }
-
-        // verify required parameter 'xMagdaSession' is not null or undefined
-        if (xMagdaSession === null || xMagdaSession === undefined) {
-            throw new Error('Required parameter xMagdaSession was null or undefined when calling deleteBySourceTag.');
-        }
-
-        if (sourceTag !== undefined) {
-            queryParameters['sourceTag'] = sourceTag;
-        }
-
-        if (sourceId !== undefined) {
-            queryParameters['sourceId'] = sourceId;
-        }
-
-        headerParams['X-Magda-Session'] = xMagdaSession;
-
-        let useFormData = false;
-
-        let requestOptions: request.Options = {
-            method: 'DELETE',
-            qs: queryParameters,
-            headers: headerParams,
-            uri: localVarPath,
-            useQuerystring: this._useQuerystring,
-            json: true,
-        };
-
-        this.authentications.default.applyToRequest(requestOptions);
-
-        if (Object.keys(formParams).length) {
-            if (useFormData) {
-                (<any>requestOptions).formData = formParams;
-            } else {
-                requestOptions.form = formParams;
-            }
-        }
-        return new Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (response.statusCode >= 200 && response.statusCode <= 299) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
-    }
-    /**
      * Get a list of all records
      * 
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
@@ -1720,6 +1647,79 @@ export class RecordsApi {
             }
         }
         return new Promise<{ response: http.IncomingMessage; body: Record;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Trim by source tag
+     * Trims records with the provided source that DON&#39;T have the supplied source tag
+     * @param sourceTag Source tag of the records to PRESERVE.
+     * @param sourceId Source id of the records to delete.
+     * @param xMagdaSession Magda internal session id
+     */
+    public trimBySourceTag (sourceTag: string, sourceId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }> {
+        const localVarPath = this.basePath + '/records';
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        // verify required parameter 'sourceTag' is not null or undefined
+        if (sourceTag === null || sourceTag === undefined) {
+            throw new Error('Required parameter sourceTag was null or undefined when calling trimBySourceTag.');
+        }
+
+        // verify required parameter 'sourceId' is not null or undefined
+        if (sourceId === null || sourceId === undefined) {
+            throw new Error('Required parameter sourceId was null or undefined when calling trimBySourceTag.');
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling trimBySourceTag.');
+        }
+
+        if (sourceTag !== undefined) {
+            queryParameters['sourceTag'] = sourceTag;
+        }
+
+        if (sourceId !== undefined) {
+            queryParameters['sourceId'] = sourceId;
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'DELETE',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
