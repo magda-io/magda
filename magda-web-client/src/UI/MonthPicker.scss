@@ -3,7 +3,7 @@
 .month-picker{
   width: 200px;
   font-family: $font-base;
-
+  position: relative;
   .mui-textfield{
     margin: 0;
     &>input, &>input:focus{
@@ -38,7 +38,7 @@
     font-weight: 400;
     display: block;
     position: absolute;
-    padding: 13px 16px;
+    padding: 13px 8px;
     z-index: 2;
   }
 

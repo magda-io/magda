@@ -38,7 +38,7 @@ class MonthPicker extends Component {
       });
       if(isNaN(value) || value < this.props.yearLower || value > this.props.yearUpper){
         this.setState({
-          prompt: `Please enter a year between ${this.props.yearLower}-${this.props.yearUpper}`
+          prompt: `Enter a year between ${this.props.yearLower}-${this.props.yearUpper}`
         })
       } else{
         this.props.selectYear(value);
