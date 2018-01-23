@@ -24,8 +24,8 @@ class FacetTemporal extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-    const dateFrom = defined(this.props.activeDates[0]) ? new Date(this.props.activeDates[0]) : new Date();
-    const dateTo = defined(this.props.activeDates[1]) ? new Date(this.props.activeDates[1]) : new Date();
+    const dateFrom = defined(this.props.activeDates[0]) ? new Date(this.props.activeDates[0]) : new Date('1994-05-17');
+    const dateTo = defined(this.props.activeDates[1]) ? new Date(this.props.activeDates[1]) : new Date('2018-03-17');
 
     this.setState({
       startYear: dateFrom.getUTCFullYear(),
@@ -71,9 +71,9 @@ class FacetTemporal extends Component {
 
   renderDatePicker(){
     return (<div className='facet-temporal-month-picker'>
-              <MonthPicker year={this.state.startYear} month={this.state.startMonth} selectYear={this.selectStartYear} selectMonth={this.selectStartMonth}/>
+              <MonthPicker year={this.state.startYear} month={this.state.startMonth} yearLower={1994} yearUpper={this.state.endYear} monthLower = {5} monthUpper = {this.state.endMonth} selectYear={this.selectStartYear} selectMonth={this.selectStartMonth}/>
               <div><img src = '' alt='seperater'/></div>
-              <MonthPicker year={this.state.endYear} month={this.state.endMonth} selectYear={this.selectEndYear} selectMonth={this.selectEndMonth}/>
+              <MonthPicker year={this.state.endYear} month={this.state.endMonth} yearLower={this.state.startYear} yearUpper={2018} monthLower = {this.state.startMonth} monthUpper = {3} selectYear={this.selectEndYear} selectMonth={this.selectEndMonth}/>
             </div>)
   }
   render(){
