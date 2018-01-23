@@ -6,3 +6,4 @@
 * Made sure hook processing resumes when either the registry or the sleuther wakes back up.
 * SA1 regions are no longer named after the SA2 region that contains them, reducing noise in the region search results. To find an actual SA1, users will need to search for its ID.
 * The broken link sleuther now has its retry count for external links configurable separately to the retry count for contacting the registry, with a default of 3.
+* Connectors now tag datasets that they've created with a `sourcetag` attribute - at the end of a crawl, they delete all records that were created by them without the latest `sourceTag`.
