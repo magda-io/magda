@@ -308,6 +308,36 @@ class RecordsServiceSpec extends ApiSpec {
           page.records(0) shouldBe record
         }
       }
+
+      it("allows querying on aspect value") { param =>
+        val aspect = AspectDefinition("exampleAspect", "exampleAspect", None)
+        param.asAdmin(Post("/v0/aspects", aspect)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val recordWithValue1 = Record("withValue1", "withValue1", Map("exampleAspect" -> JsObject("object" -> JsObject("value" -> JsString("correct")))))
+        param.asAdmin(Post("/v0/records", recordWithValue1)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val recordWithValue2 = Record("withValue2", "withValue2", Map("exampleAspect" -> JsObject("object" -> JsObject("value" -> JsString("correct")))))
+        param.asAdmin(Post("/v0/records", recordWithValue2)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val recordWithoutValue = Record("withoutValue", "withoutValue", Map("exampleAspect" -> JsObject("object" -> JsObject("value" -> JsString("incorrect")))))
+        param.asAdmin(Post("/v0/records", recordWithoutValue)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Get("/v0/records?aspectQuery=object.value:correct&aspect=exampleAspect") ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val page = responseAs[RecordsPage]
+          page.records.length shouldBe 2
+          page.records(0) shouldBe recordWithValue1
+          page.records(1) shouldBe recordWithValue2
+        }
+      }
     }
 
     describe("dereference") {
