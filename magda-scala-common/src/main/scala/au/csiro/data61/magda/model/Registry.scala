@@ -125,8 +125,10 @@ object Registry {
   @ApiModel(description = "Asynchronously acknowledges receipt of a web hook notification.")
   case class WebHookAcknowledgement(
     @(ApiModelProperty @field)(value = "True if the web hook was received successfully and the listener is ready for further notifications.  False if the web hook was not received and the same notification should be repeated.", required = true) succeeded: Boolean,
-
-    @(ApiModelProperty @field)(value = "The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.", required = true) lastEventIdReceived: Option[Long] = None)
+    
+    @(ApiModelProperty @field)(value = "The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.", required = true) lastEventIdReceived: Option[Long] = None,
+    
+    @(ApiModelProperty @field)(value = "Should the webhook be active or inactive?", required = false) active: Option[Boolean] = None)
 
   @ApiModel(description = "The response to an asynchronous web hook acknowledgement.")
   case class WebHookAcknowledgementResponse(
@@ -146,7 +148,7 @@ object Registry {
     implicit val webHookFormat = jsonFormat9(WebHook.apply)
     implicit val registryRecordsResponseFormat = jsonFormat3(RegistryRecordsResponse.apply)
     implicit def qualityRatingAspectFormat = jsonFormat2(QualityRatingAspect.apply)
-    implicit val webHookAcknowledgementFormat = jsonFormat2(WebHookAcknowledgement.apply)
+    implicit val webHookAcknowledgementFormat = jsonFormat3(WebHookAcknowledgement.apply)
     implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
     implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
 

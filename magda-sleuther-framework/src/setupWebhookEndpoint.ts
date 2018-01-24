@@ -7,7 +7,9 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 
 import SleutherOptions from "./SleutherOptions";
 import getWebhookUrl from "./getWebhookUrl";
-import AsyncPage, { forEachAsync } from "@magda/typescript-common/dist/AsyncPage";
+import AsyncPage, {
+    forEachAsync
+} from "@magda/typescript-common/dist/AsyncPage";
 
 export default function setupWebhookEndpoint(
     options: SleutherOptions,
@@ -20,7 +22,7 @@ export default function setupWebhookEndpoint(
         "/hook",
         (request: express.Request, response: express.Response) => {
             const payload = request.body;
-            
+
             const recordsPage = AsyncPage.single(payload.records);
             const megaPromise = forEachAsync(
                 recordsPage,
@@ -72,10 +74,28 @@ export default function setupWebhookEndpoint(
                             throw error;
                         });
 
-                megaPromise.then(() => sendResult(true)).catch((err: Error) => {
-                    console.error(err);
-                    return sendResult(false);
-                });
+                megaPromise
+                    .then(() =>
+                        // On success, send the result as true, if we fail to send the result (even though the hook worked) then just log
+                        // the error - this is presumably because the registry has gone down, when it comes back up it'll resume the hook.
+                        sendResult(true).catch((err: Error) => {
+                            console.error(err);
+                        })
+                    )
+                    .catch((err: Error) => {
+                        // Something has actually gone wrong with the sleuther behaviour itself that hasn't been handled by the sleuther.
+                        // We class this as pretty catastrophic, so we log it and shut down the hook (set to inactive)
+                        // TODO: Figure out some way to notify of failures.
+                        console.error(err);
+
+                        console.info("Setting hook to inactive");
+                        return registry.resumeHook(
+                            options.id,
+                            false,
+                            payload.lastEventId,
+                            false
+                        );
+                    });
             } else {
                 megaPromise
                     .then(() => {
