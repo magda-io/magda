@@ -266,11 +266,11 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     }
 
     deleteBySource(
-        sourceTag: string,
+        sourceTagToPreserve: string,
         sourceId: string
     ): Promise<MultipleDeleteResult | Error> {
         const operation = () =>
-            this.recordsApi.trimBySourceTag(sourceTag, sourceId, this.jwt);
+            this.recordsApi.trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt);
 
         return retry(
             operation,
@@ -279,7 +279,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to DELETE with sourcetag ${sourceTag} and sourceId ${sourceId}`,
+                        `Failed to DELETE with sourceTagToPreserve ${sourceTagToPreserve} and sourceId ${sourceId}`,
                         e,
                         retriesLeft
                     )

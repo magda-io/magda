@@ -62,7 +62,7 @@ describe("JsonConnector", () => {
 
             scope
                 .delete(
-                    `/records?sourceTag=${connector.sourceTag}&sourceId=${
+                    `/records?sourceTagToPreserve=${connector.sourceTag}&sourceId=${
                         connector.source.id
                     }`
                 )
