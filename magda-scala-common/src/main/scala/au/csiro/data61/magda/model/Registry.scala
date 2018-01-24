@@ -58,7 +58,7 @@ object Registry {
     @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject],
 
     @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
-      "(e.g. an id for a individual crawl of a data portal). Usually not included.", required = false, allowEmptyValue = true) sourceTag: Option[String] = None) extends RecordType
+      "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None) extends RecordType
 
   @ApiModel(description = "A summary of a record in the registry.  Summaries specify which aspects are available, but do not include data for any aspects.")
   case class RecordSummary(

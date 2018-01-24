@@ -134,7 +134,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiOperation(value = "Trim by source tag", notes = "Trims records with the provided source that DON'T have the supplied source tag",
     nickname = "trimBySourceTag", httpMethod = "DELETE", response = classOf[MultipleDeleteResult])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "sourceTag", required = true, dataType = "string", paramType = "query", value = "Source tag of the records to PRESERVE."),
+    new ApiImplicitParam(name = "sourceTagToPreserve", required = true, dataType = "string", paramType = "query", value = "Source tag of the records to PRESERVE."),
     new ApiImplicitParam(name = "sourceId", required = true, dataType = "string", paramType = "query", value = "Source id of the records to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
@@ -142,9 +142,9 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def trimBySourceTag = delete {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        parameters('sourceTag, 'sourceId) { (sourceTag, sourceId) =>
+        parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
           val result = DB localTx { implicit session =>
-            RecordPersistence.trimRecordsBySource(sourceTag, sourceId) match {
+            RecordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId) match {
               case Success(result) => complete(MultipleDeleteResult(result))
               case Failure(exception) =>
                 complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))

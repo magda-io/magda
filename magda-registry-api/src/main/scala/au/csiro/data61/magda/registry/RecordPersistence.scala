@@ -347,9 +347,9 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     } yield rowsDeleted > 0
   }
 
-  def trimRecordsBySource(sourceTag: String, sourceId: String)(implicit session: DBSession): Try[Long] = {
+  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String)(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where (sourcetag != $sourceTag OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
         .map(rs => rs.string("recordId")).list.apply()
     }
 

@@ -1300,7 +1300,7 @@ class RecordsServiceSpec extends ApiSpec {
           res.records.length shouldEqual all.length
         }
 
-        param.asAdmin(Delete("/v0/records?sourceTag=righttag&sourceId=right")) ~> param.api.routes ~> check {
+        param.asAdmin(Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right")) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[MultipleDeleteResult].count shouldEqual 2
         }
@@ -1336,7 +1336,7 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       checkMustBeAdmin {
-        Delete("/v0/records?sourceTag=blah")
+        Delete("/v0/records?sourceTagToPreserve=blah&sourceId=blah2")
       }
     }
   }

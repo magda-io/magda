@@ -107,7 +107,7 @@ export class Record {
     */
     'aspects': any;
     /**
-    * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal). Usually not included.
+    * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal).
     */
     'sourceTag': string;
 }
@@ -1663,20 +1663,20 @@ export class RecordsApi {
     /**
      * Trim by source tag
      * Trims records with the provided source that DON&#39;T have the supplied source tag
-     * @param sourceTag Source tag of the records to PRESERVE.
+     * @param sourceTagToPreserve Source tag of the records to PRESERVE.
      * @param sourceId Source id of the records to delete.
      * @param xMagdaSession Magda internal session id
      */
-    public trimBySourceTag (sourceTag: string, sourceId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }> {
+    public trimBySourceTag (sourceTagToPreserve: string, sourceId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }> {
         const localVarPath = this.basePath + '/records';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
 
 
-        // verify required parameter 'sourceTag' is not null or undefined
-        if (sourceTag === null || sourceTag === undefined) {
-            throw new Error('Required parameter sourceTag was null or undefined when calling trimBySourceTag.');
+        // verify required parameter 'sourceTagToPreserve' is not null or undefined
+        if (sourceTagToPreserve === null || sourceTagToPreserve === undefined) {
+            throw new Error('Required parameter sourceTagToPreserve was null or undefined when calling trimBySourceTag.');
         }
 
         // verify required parameter 'sourceId' is not null or undefined
@@ -1689,8 +1689,8 @@ export class RecordsApi {
             throw new Error('Required parameter xMagdaSession was null or undefined when calling trimBySourceTag.');
         }
 
-        if (sourceTag !== undefined) {
-            queryParameters['sourceTag'] = sourceTag;
+        if (sourceTagToPreserve !== undefined) {
+            queryParameters['sourceTagToPreserve'] = sourceTagToPreserve;
         }
 
         if (sourceId !== undefined) {
