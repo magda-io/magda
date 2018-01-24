@@ -67,10 +67,15 @@ object EventPersistence extends Protocols with DiffsonProtocol {
     val linkAspects = RecordPersistence.buildDereferenceMap(session, aspectIds)
     val dereferenceSelectors: Set[SQLSyntax] = linkAspects.toSet[(String, PropertyWithLink)].map {
       case (aspectId, propertyWithLink) =>
-        sqls"""EXISTS (select 1
+        if (propertyWithLink.isArray) {
+          sqls"""$aspectId IN (select aspectId
                          from RecordAspects
-                         where aspectId=$aspectId
-                         and RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
+                         where RecordAspects.data->${propertyWithLink.propertyName} @> (Events.data->'recordId')::jsonb)"""
+        } else {
+          sqls"""$aspectId IN (select aspectId
+                         from RecordAspects
+                         where RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
+        }
     }
 
     val aspectsSql = if (aspectIds.isEmpty) None else Some(SQLSyntax.joinWithOr((aspectIds.map(v => sqls"data->>'aspectId' = $v") + sqls"data->>'aspectId' IS NULL").toArray: _*))
@@ -82,8 +87,6 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       case (None, Some(dereferenceSql))            => dereferenceSql
       case (None, None)                            => sqls"1=1"
     }).and(eventTypesFilter))
-
-    val totalCount = sql"select count(*) from Events $whereClause".map(_.int(1)).single.apply().getOrElse(0)
 
     var lastEventIdInPage: Option[Long] = None
     val events =
@@ -104,7 +107,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           rowToEvent(rs)
         }).list.apply()
 
-    EventsPage(totalCount, lastEventIdInPage.map(_.toString), events)
+    EventsPage(lastEventIdInPage.map(_.toString), events)
   }
 
   private def rowToEvent(rs: WrappedResultSet): RegistryEvent = {

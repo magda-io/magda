@@ -18,7 +18,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
   val maxResultCount = 1000
   val defaultResultCount = 100
 
-  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordSummariesPage = {
+  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary] = {
     this.getSummaries(session, pageToken, start, limit)
   }
 
@@ -28,7 +28,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                         pageToken: Option[String] = None,
                         start: Option[Int] = None,
                         limit: Option[Int] = None,
-                        dereference: Option[Boolean] = None): RecordsPage = {
+                        dereference: Option[Boolean] = None): RecordsPage[Record] = {
     this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference)
   }
 
@@ -48,7 +48,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                           ids: Iterable[String],
                           aspectIds: Iterable[String] = Seq(),
                           optionalAspectIds: Iterable[String] = Seq(),
-                          dereference: Option[Boolean] = None): RecordsPage = {
+                          dereference: Option[Boolean] = None): RecordsPage[Record] = {
     if (ids.isEmpty)
       RecordsPage(0, Some("0"), List())
     else
@@ -60,7 +60,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                                    idsToExclude: Iterable[String] = Seq(),
                                    aspectIds: Iterable[String] = Seq(),
                                    optionalAspectIds: Iterable[String] = Seq(),
-                                   dereference: Option[Boolean] = None): RecordsPage = {
+                                   dereference: Option[Boolean] = None): RecordsPage[Record] = {
     val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
     if (linkAspects.isEmpty) {
       // There are no linking aspects, so there cannot be any records linking to these IDs.
@@ -166,23 +166,23 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         case "aspects" / _ => false
         case _             => true
       }))
-      eventId <- Try {
-        if (recordOnlyPatch.ops.length > 0) {
-          val event = PatchRecordEvent(id, recordOnlyPatch).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
-        } else {
-          0
-        }
-      }
       patchedRecord <- Try {
-        val recordJson = record.toJson
-        val patchedJson = recordOnlyPatch(recordJson)
-        patchedJson.convertTo[Record]
+        recordOnlyPatch(record)
       }
       _ <- if (id == patchedRecord.id) Success(patchedRecord) else Failure(new RuntimeException("The patch must not change the record's ID."))
       _ <- Try {
-        if (recordOnlyPatch.ops.length > 0) {
+        // Sourcetag should not generate an event so updating it is done separately
+        if (record.sourceTag != patchedRecord.sourceTag) {
+          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where recordId = $id""".update.apply()
+        }
+      }
+      eventId <- Try {
+        // Name is currently the only member of Record that should generate an event when changed.
+        if (record.name != patchedRecord.name) {
+          val event = PatchRecordEvent(id, recordOnlyPatch).toJson.compactPrint
+          val eventId = sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
           sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where recordId = $id""".update.apply()
+          eventId
         } else {
           0
         }
@@ -314,7 +314,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
-        sql"""insert into Records (recordId, name, lastUpdate) values (${record.id}, ${record.name}, $eventId)""".update.apply()
+        sql"""insert into Records (recordId, name, lastUpdate, sourcetag) values (${record.id}, ${record.name}, $eventId, ${record.sourceTag})""".update.apply()
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
           Failure(new RuntimeException(s"Cannot create record '${record.id}' because a record with that ID already exists."))
@@ -345,6 +345,26 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         sql"""delete from Records where recordId=$recordId""".update.apply()
       }
     } yield rowsDeleted > 0
+  }
+
+  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String)(implicit session: DBSession): Try[Long] = {
+    val recordIds = Try {
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
+        .map(rs => rs.string("recordId")).list.apply()
+    }
+
+    recordIds match {
+      case Success(Nil) => Success(0)
+      case Success(ids) =>
+        ids
+          .map(recordId => deleteRecord(session, recordId))
+          .foldLeft[Try[Long]](Success(0l))((trySoFar: Try[Long], thisTry: Try[Boolean]) => (trySoFar, thisTry) match {
+            case (Success(countSoFar), Success(bool)) => Success(countSoFar + (if (bool) 1 else 0))
+            case (Failure(err), _)                    => Failure(err)
+            case (_, Failure(err))                    => Failure(err)
+          })
+      case Failure(err) => Failure(err)
+    }
   }
 
   def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject] = {
@@ -418,7 +438,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
     }
   }
 
-  private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int], recordId: Option[String] = None): RecordSummariesPage = {
+  private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int], recordId: Option[String] = None): RecordsPage[RecordSummary] = {
     val countWhereClauseParts = Seq(recordId.map(id => sqls"recordId=${id}"))
     val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
 
@@ -442,7 +462,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         })
         .list.apply()
 
-    RecordSummariesPage(
+    RecordsPage[RecordSummary](
       totalCount,
       lastSequence.map(_.toString),
       pageResults)
@@ -455,7 +475,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                          start: Option[Int] = None,
                          limit: Option[Int] = None,
                          dereference: Option[Boolean] = None,
-                         recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): RecordsPage = {
+                         recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): RecordsPage[Record] = {
     val countWhereClauseParts = aspectIdsToWhereClause(aspectIds) ++ recordSelector
     val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
 
@@ -476,7 +496,8 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName
-                   ${if (aspectSelectors.nonEmpty) sqls", ${aspectSelectors}" else SQLSyntax.empty}
+                   ${if (aspectSelectors.nonEmpty) sqls", ${aspectSelectors}" else SQLSyntax.empty},
+                   Records.sourcetag as sourceTag
             from Records
             ${makeWhereClause(whereClauseParts)}
             order by Records.sequence
@@ -515,7 +536,7 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
         .map {
           case (aspectId, index) => (aspectId, JsonParser(rs.string(s"aspect${index}")).asJsObject)
         }
-        .toMap)
+        .toMap, rs.stringOpt("sourceTag"))
   }
 
   private def rowToAspect(rs: WrappedResultSet): JsObject = {

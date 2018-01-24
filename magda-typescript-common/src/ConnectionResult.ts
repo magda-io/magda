@@ -6,6 +6,7 @@ export default class ConnectionResult {
     public organizationsConnected = 0;
     public datasetsConnected = 0;
     public distributionsConnected = 0;
+    public recordsTrimmed = 0;
 
     public aspectDefinitionFailures = Array<AspectCreationFailure>();
     public organizationFailures = Array<RecordCreationFailure>();
@@ -19,6 +20,7 @@ export default class ConnectionResult {
         result += 'Datasets Connected: ' + this.datasetsConnected + '\n';
         result += 'Distributions Connected: ' + this.distributionsConnected + '\n';
         result += 'Organizations Connected: ' + this.organizationsConnected + '\n';
+        result += 'Records Trimmed: ' + this.recordsTrimmed + '\n';
 
         if (this.aspectDefinitionFailures.length > 0) {
             result += 'Aspect Definition Failures:\n' + JSON.stringify(this.aspectDefinitionFailures, undefined, '  ') + '\n';
@@ -44,6 +46,7 @@ export default class ConnectionResult {
             total.organizationsConnected += result.organizationsConnected;
             total.datasetsConnected += result.datasetsConnected;
             total.distributionsConnected += result.distributionsConnected;
+            total.recordsTrimmed += result.recordsTrimmed;
 
             total.aspectDefinitionFailures.push(...result.aspectDefinitionFailures);
             total.organizationFailures.push(...result.organizationFailures);
