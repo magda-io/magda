@@ -1,6 +1,6 @@
-import { Record } from "@magda/typescript-common/src/generated/registry/api";
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { getCommonFormat } from "../formats";
-import MeasureResult from "src/format-engine/measures/MeasureResult";
+import MeasureResult from "./MeasureResult";
 
 /*
 * Tries to determine the format by parsing the downloadURL string and looking at the extension
@@ -36,7 +36,8 @@ export default function getMeasureResuls(
         [".*\\.(xls)(\\.zip)?$", "XLS"],
         [".*\\.(tif)(\\.zip)?$", "TIFF"],
         [".*\\.(zip)$", "ZIP"],
-        [".*\\.(html|xhtml|php|asp|aspx|jsp|htm)(\\?.*)?", "HTML"]
+        [".*\\.(html|xhtml|php|asp|aspx|jsp|htm)(\\?.*)?", "HTML"],
+        [".*\\/$", "HTML"]
     ];
 
     let formatsFromURL: Array<string> = [];
@@ -49,13 +50,17 @@ export default function getMeasureResuls(
         return false; // means 'continue'
     });
 
-    return {
-        formats: formatsFromURL.map(eachFormat => {
-            return {
-                format: getCommonFormat(eachFormat),
-                correctConfidenceLevel: 100,
-            };
-        }),
-        distribution: relatedDistribution
-    };
+    if (formatsFromURL.length < 1) {
+        return null;
+    } else {
+        return {
+            formats: formatsFromURL.map(eachFormat => {
+                return {
+                    format: getCommonFormat(eachFormat),
+                    correctConfidenceLevel: 100
+                };
+            }),
+            distribution: relatedDistribution
+        };
+    }
 }

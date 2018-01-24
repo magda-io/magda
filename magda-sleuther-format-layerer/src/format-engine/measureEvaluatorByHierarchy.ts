@@ -1,5 +1,5 @@
 import MeasureEvaluationSet from "./measures/MeasureEvaluationSet";
-import MeasureResult from "./measures/MeasureResult";
+//import MeasureResult from "./measures/MeasureResult";
 import MeasureEvalResult from "./MeasureEvalResult";
 
 /**
@@ -8,10 +8,13 @@ import MeasureEvalResult from "./MeasureEvalResult";
 export default function getBestMeasureResult(
     candidates: MeasureEvaluationSet[]
 ): MeasureEvalResult {
+    if(!candidates || candidates.length < 1) {
+        return null;
+    }
+
     let sortedCandidates = candidates.sort(candidateSortFn);
 
-    //todo fix up this if statement so you dont get the .length error when sortedCandidates is null
-    if(!sortedCandidates && sortedCandidates.length < 1) {
+    if(!sortedCandidates[0].measureResult) {
         return null;
     } else {
         return {
@@ -22,13 +25,18 @@ export default function getBestMeasureResult(
     }
 }
 
+//TODO simplify this function
 function candidateSortFn(
     candidate1: MeasureEvaluationSet,
     candidate2: MeasureEvaluationSet
 ) {
-    if (candidate1.getProcessedData() === candidate2.getProcessedData()) {
+    if(candidate1.measureResult && !candidate2.measureResult) {
+        return -1;
+    } else if(candidate2.measureResult && !candidate1.measureResult) {
+        return 1;
+    } else if (candidate1.getProcessedData().absoluteConfidenceLevel === candidate2.getProcessedData().absoluteConfidenceLevel) {
         return 0;
-    } else if (candidate1.getProcessedData() < candidate2.getProcessedData()) {
+    } else if (candidate1.getProcessedData().absoluteConfidenceLevel < candidate2.getProcessedData().absoluteConfidenceLevel) {
         return 1;
     } else {
         return -1;

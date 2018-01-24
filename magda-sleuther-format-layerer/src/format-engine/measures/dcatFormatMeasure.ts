@@ -3,7 +3,7 @@
 * TODO Unit tests
 */
 
-import { Record } from "@magda/typescript-common/src/generated/registry/api";
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
 
@@ -59,8 +59,8 @@ export default function getMeasureResult(
     }
 
     // hard coded rules for separating out multiple formats when provided
-    let splitFormat: Array<string>;
-    let finalFormat: Array<string>;
+    let splitFormat: Array<string> = [];
+    let finalFormat: Array<string> = [];
 
     // e.g: application/exe
     splitFormat = processedFormat.split("/");
@@ -68,7 +68,7 @@ export default function getMeasureResult(
         throw new Error(
             "a MIME type has more than 1 slash: " + processedFormat
         );
-    if (splitFormat.length > 1) finalFormat[0] = splitFormat[1];
+    if (splitFormat.length > 1) finalFormat.push(splitFormat[1]);
     else {
         // E.g. pdf & xlsx & doc & docx & ogg
         splitFormat = processedFormat.split(" & ");
@@ -84,28 +84,33 @@ export default function getMeasureResult(
                             .length -
                         processedFormat.substr(processedFormat.indexOf("("))
                             .length;
-                    finalFormat[0] = processedFormat.substr(
+                    finalFormat.push(processedFormat.substr(
                         processedFormat.indexOf("("),
                         length
-                    );
+                    ));
                 } else {
                     // E.g. ATOM
-                    finalFormat = splitFormat;
+                    finalFormat.push(splitFormat[0]);
                 }
             } else {
+                console.log("f:" + finalFormat);
                 // can only deduce 1 format in this scenario
-                finalFormat[0] = processedFormat;
+                finalFormat.push(processedFormat);
             }
         }
     }
 
-    return {
-        formats: finalFormat.map(eachFormat => {
-            return {
-                format: getCommonFormat(eachFormat),
-                correctConfidenceLevel: 100
-            };
-        }),
-        distribution: relatedDistribution
-    };
+    if (finalFormat.length < 1) {
+        return null;
+    } else {
+        return {
+            formats: finalFormat.map(eachFormat => {
+                return {
+                    format: getCommonFormat(eachFormat),
+                    correctConfidenceLevel: 100
+                };
+            }),
+            distribution: relatedDistribution
+        };
+    }
 }

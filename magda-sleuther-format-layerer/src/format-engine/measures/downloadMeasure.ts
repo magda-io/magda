@@ -1,4 +1,4 @@
-import { Record } from "@magda/typescript-common/src/generated/registry/api";
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import * as mimeTypes from "mime-types";
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";

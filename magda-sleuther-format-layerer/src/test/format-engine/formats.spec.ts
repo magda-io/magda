@@ -29,7 +29,7 @@ describe("getCommonFormat", function(this: Mocha.ISuiteCallbackContext) {
 });
 
 // helper functions
-function getCommonSynonymStub(): Object {
+export function getCommonSynonymStub(): Object {
     return {
         "html":["WWW:DOWNLOAD-1.0-ftp--download", "WWW:LINK-1.0-http--related", "WWW:DOWNLOAD-1.0-http--download", "WWW:LINK-1.0-http-link", "WWW:LINK-1.0-http--metadata-URL", "webpage", "website", "htm"],
         "wms": ["OGC:WMS-1.3.0-http-get-capabilities", "OGC:WMS-1.3.0-http-get-map"],

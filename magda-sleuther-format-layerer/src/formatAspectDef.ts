@@ -1,4 +1,4 @@
-import { Formats } from "@magda/typescript-common/src/format/formats"
+import { Formats } from "./format-engine/formats"
 export default {
   id: "dataset-format",
   name: "Details about the format of the distribution",

@@ -3,7 +3,7 @@
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { FormatAspect } from "./formatAspectDef";
-import unionToThrowable from "@magda/typescript-common/src/util/unionToThrowable";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 
 import getDcatMeasureResult from "./format-engine/measures/dcatFormatMeasure";
 import getExtensionMeasureResult from "./format-engine/measures/downloadExtensionMeasure";
@@ -13,12 +13,14 @@ import getDcatProcessedData from "./format-engine/measures/processed-functions/d
 import getDownloadProcessedData from "./format-engine/measures/processed-functions/dcatProcessedFns";
 import getExtensionProcessedData from "./format-engine/measures/processed-functions/extensionProcessedFns";
 
-import  getBestMeasureResult  from "./format-engine/MeasureEvaluator"
-import MeasureEvaluationSet from "src/format-engine/measures/MeasureEvaluationSet";
-import MeasureEvalResult from "src/format-engine/MeasureEvalResult";
+import  getBestMeasureResult  from "./format-engine/measureEvaluatorByHierarchy"
+import MeasureEvaluationSet from "./format-engine/measures/MeasureEvaluationSet";
+import MeasureEvalResult from "./format-engine/MeasureEvalResult";
 
 //import { Snapshot } from "../../magda-typescript-common/src/format/MeasureSnapShot";
-
+let mochaObject = {
+    isRunning: true // set to false if not testing this function onRecordFound
+}
 export default async function onRecordFound(
     record: Record,
     registry: Registry
@@ -30,6 +32,9 @@ export default async function onRecordFound(
     if (!distributions || distributions.length === 0) {
         return Promise.resolve();
     }
+
+    //TODO delete this piece of code
+    console.log("got after distribution nul check");
 
     // 2D array: 1 row per distribution
     const retrievedEvalSets: MeasureEvaluationSet[][] = distributions.map(function (distribution) {
@@ -46,6 +51,9 @@ export default async function onRecordFound(
             getProcessedData: getDownloadProcessedData
         }
 
+        //TODO delete this
+        console.log("the list recieved is: " + [dcatSet, extensionSet, downloadSet].toString() + "for the distribution: " + distribution.id)
+
 
         return [dcatSet, extensionSet, downloadSet];
 
@@ -55,8 +63,19 @@ export default async function onRecordFound(
         getBestMeasureResult(evalSetsPerDist)
     );
 
+    //TODO delete
+    console.log("best results obtained" + bestFormatResults.toString());
+
     bestFormatResults.forEach(function(formatResult) {
+        !mochaObject.isRunning ?
         recordFormatAspect(
+            registry,
+            formatResult.distribution,
+            {
+                format: formatResult.format.format,
+                confidenceLevel: formatResult.absConfidenceLevel
+            }
+        ) : recordFormatAspectTest(
             registry,
             formatResult.distribution,
             {
@@ -65,6 +84,9 @@ export default async function onRecordFound(
             }
         )
     });
+
+    //TODO delete this piece of code
+    console.log("the best results gathered were: " + bestFormatResults.toString());
 
     Promise.resolve();
 }
@@ -77,6 +99,15 @@ function recordFormatAspect(
     return registry
         .putRecordAspect(distribution.id, "dataset-format", aspect)
         .then(unionToThrowable);
+}
+
+function recordFormatAspectTest(
+    registry: Registry,
+    distribution: Record,
+    aspect: FormatAspect
+): Promise<Record> {
+    console.log(distribution.id + ": aspect is " + aspect.confidenceLevel.toString() + aspect.format.toString());
+    return null;
 }
 
 

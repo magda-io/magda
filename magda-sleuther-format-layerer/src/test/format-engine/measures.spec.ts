@@ -6,9 +6,10 @@ import {
     //should
 } from "chai";
 
-import { Record } from "@magda/typescript-common/src/generated/registry/api";
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 
-import { Formats } from "../../format-engine/formats";
+import { Formats, mochaObject as mochaObjectFormats} from "../../format-engine/formats";
+import { getCommonSynonymStub } from "./formats.spec";
 import * as fs from "fs";
 
 //import getDcatMeasureResult from "../../format-engine/measures/dcatFormatMeasure";
@@ -24,9 +25,13 @@ import getDownloadMeasureResult from "../../format-engine/measures/downloadMeasu
 //import MeasureEvalResult from "src/format-engine/MeasureEvalResult";
 import MeasureResult from "src/format-engine/measures/MeasureResult";
 //TODO change test cases to handle synonyms
+import {  } from "../../format-engine/formats";
 
 describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
     before(() => {
+        mochaObjectFormats.isRunning = true;
+        mochaObjectFormats.testVariables.synonymTable = getCommonSynonymStub();
+
         nock("www.google.com")
             .get("/")
             .reply(
