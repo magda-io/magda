@@ -810,7 +810,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       Get(s"/v0/records/${record.id}/history") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[EventsPage].totalCount shouldEqual 1
+        responseAs[EventsPage].events.length shouldEqual 1
       }
 
       val newRecord = record.copy(sourceTag = Some("tag2"))
@@ -826,7 +826,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       Get(s"/v0/records/${record.id}/history") ~> param.api.routes ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[EventsPage].totalCount shouldEqual 1
+        responseAs[EventsPage].events.length shouldEqual 1
       }
     }
 
