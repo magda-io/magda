@@ -151,7 +151,8 @@ export default abstract class JsonTransformer {
         return {
             id: id.toString(),
             name: name,
-            aspects: generatedAspects
+            aspects: generatedAspects,
+            sourceTag: undefined
         };
     }
 }

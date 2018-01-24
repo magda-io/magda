@@ -44,13 +44,29 @@ object Registry {
     userId: Int,
     data: JsObject)
 
+  sealed trait RecordType {
+    val id: String
+    val name: String
+  }
+
   @ApiModel(description = "A record in the registry, usually including data for one or more aspects.")
   case class Record(
     @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
 
     @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
 
-    @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject])
+    @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject],
+
+    @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
+      "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None) extends RecordType
+
+  @ApiModel(description = "A summary of a record in the registry.  Summaries specify which aspects are available, but do not include data for any aspects.")
+  case class RecordSummary(
+    @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
+
+    @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
+
+    @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String]) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
@@ -124,7 +140,7 @@ object Registry {
       def read(value: JsValue) = EventType.values.find(e => e.toString == value.asInstanceOf[JsString].value).get
     }
 
-    implicit val recordFormat = jsonFormat3(Record.apply)
+    implicit val recordFormat = jsonFormat4(Record.apply)
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
     implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
     implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
@@ -134,6 +150,23 @@ object Registry {
     implicit def qualityRatingAspectFormat = jsonFormat2(QualityRatingAspect.apply)
     implicit val webHookAcknowledgementFormat = jsonFormat3(WebHookAcknowledgement.apply)
     implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
+    implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
+
+    implicit object RecordTypeFormat extends RootJsonFormat[RecordType] {
+      def write(obj: RecordType) = obj match {
+        case x: Record        ⇒ x.toJson
+        case y: RecordSummary ⇒ y.toJson
+        case unknown @ _      => serializationError(s"Marshalling issue with ${unknown}")
+      }
+
+      def read(value: JsValue): RecordType = {
+        value.asJsObject.getFields("aspects") match {
+          case Seq(aspectMap: JsObject) => value.convertTo[Record]
+          case Seq(aspectList: JsArray) => value.convertTo[RecordSummary]
+          case unknown @ _              => deserializationError(s"Unmarshalling issue with ${unknown} ")
+        }
+      }
+    }
   }
 
   trait RegistryConverters extends RegistryProtocols {
