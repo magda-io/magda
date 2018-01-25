@@ -330,9 +330,9 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        Get("/v0/records?aspectQuery=object.value:correct&aspect=exampleAspect") ~> param.api.routes ~> check {
+        Get("/v0/records?aspectQuery=exampleAspect.object.value:correct") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
-          val page = responseAs[RecordsPage]
+          val page = responseAs[RecordsPage[Record]]
           page.records.length shouldBe 2
           page.records(0) shouldBe recordWithValue1
           page.records(1) shouldBe recordWithValue2
