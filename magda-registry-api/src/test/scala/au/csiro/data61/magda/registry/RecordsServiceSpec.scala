@@ -569,6 +569,30 @@ class RecordsServiceSpec extends ApiSpec {
           page.records(1) shouldBe recordWithValue2
         }
       }
+
+      it("allows url encoded paths and values") { param =>
+        val aspect = AspectDefinition("example Aspect", "example Aspect", None)
+        param.asAdmin(Post("/v0/aspects", aspect)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val recordWithValue = Record("withValue", "withValue", Map("example Aspect" -> JsObject("&value" -> JsString("/correct"))))
+        param.asAdmin(Post("/v0/records", recordWithValue)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val recordWithoutValue = Record("withoutValue", "withoutValue", Map("example Aspect" -> JsObject("value" -> JsString("incorrect"))))
+        param.asAdmin(Post("/v0/records", recordWithoutValue)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Get("/v0/records?aspectQuery=example%20Aspect.%26value:%2Fcorrect&aspect=example%20Aspect") ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val page = responseAs[RecordsPage[Record]]
+          page.records.length shouldBe 1
+          page.records(0) shouldBe recordWithValue
+        }
+      }
     }
 
     describe("paging") {
