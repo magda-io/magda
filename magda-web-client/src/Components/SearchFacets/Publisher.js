@@ -19,7 +19,8 @@ class Publisher extends Component {
     this.props.updateQuery({
       publisher: queryOptions
     });
-    this.props.dispatch(updatePublishers(publishers))
+    this.props.closeFacet();
+    this.props.dispatch(updatePublishers(publishers));
   }
 
   onResetPublisherFacet(){
@@ -28,7 +29,7 @@ class Publisher extends Component {
       publisher: [],
       page: undefined
     })
-    this.props.toggleFacet();
+    this.props.closeFacet();
     // update redux
     this.props.dispatch(resetPublisher());
   }

@@ -6,6 +6,9 @@
   position: relative;
   .mui-textfield{
     margin: 0;
+    &.is-default{
+      opacity: 0.7;
+    }
     &>input, &>input:focus{
       text-align: center;
       border-bottom: none;
@@ -31,14 +34,13 @@
   .month-picker-prompt{
     border: 1px solid rgba(73,73,73,0.05);
     background-color: #494949;
-    height: 14px;
     color: #FFFFFF;
     font-size: 12px;
     line-height: 14px;
     font-weight: 400;
     display: block;
     position: absolute;
-    padding: 13px 8px;
+    padding: 4px 4px;
     z-index: 2;
   }
 

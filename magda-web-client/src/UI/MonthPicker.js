@@ -12,17 +12,25 @@ class MonthPicker extends Component {
   constructor(props){
     super(props);
     this.onChange = this.onChange.bind(this);
-    this.selectMonth = this.selectMonth.bind(this);
     this.debounceValidateYearField = debounce(this.changeYear, 1000);
+    this.debounceResetField = debounce(this.resetField, 1000);
+    this.onFocus = this.onFocus.bind(this);
+    this.onBlur = this.onBlur.bind(this);
+    this.resetField = this.resetField.bind(this);
     this.state = {
       prompt: '',
-      yearValue: ''
+      yearValue: '',
+      isDefault: false
     }
   }
 
   componentWillMount(){
     this.setState({
-      yearValue: this.props.year
+      yearValue: this.props.year,
+      // whether the current year is default or by user selection
+      // if it's by default, we want to show it slightly opaque
+      // to invite user to edit
+      isDefault: this.props.showingDefault
     })
   }
 
@@ -36,7 +44,7 @@ class MonthPicker extends Component {
       this.setState({
         prompt: '',
       });
-      if(isNaN(value) || value < this.props.yearLower || value > this.props.yearUpper){
+      if(!this.checkYearValid(value)){
         this.setState({
           prompt: `Enter a year between ${this.props.yearLower}-${this.props.yearUpper}`
         })
@@ -46,6 +54,9 @@ class MonthPicker extends Component {
   }
 
   onChange(event){
+    this.setState({
+      isDefault: false
+    })
     if(event.target.value.length >= 5){
       return false;
     } else{
@@ -57,8 +68,29 @@ class MonthPicker extends Component {
     }
   }
 
-  selectMonth(month){
-    this.props.selectMonth(month);
+  onFocus(){
+    this.setState({
+      yearValue: ''
+    })
+  }
+
+  onBlur(event){
+    this.debounceResetField(event.target.value)
+  }
+
+  resetField(value){
+    // reset year and month to default value
+    // reset prompt
+    // flush field validation
+    if(!this.checkYearValid(value)){
+      this.setState({
+        yearValue: this.props.year,
+        prompt: ''
+      });
+      this.props.selectYear(this.props.year);
+      this.props.selectMonth(this.props.month);
+      this.debounceValidateYearField.flush();
+    }
   }
 
   renderPrompt(){
@@ -66,6 +98,13 @@ class MonthPicker extends Component {
       return <span className='month-picker-prompt'>{this.state.prompt}</span>
     }
     return null;
+  }
+
+  checkYearValid(year){
+    if(isNaN(year) || year < this.props.yearLower || year > this.props.yearUpper){
+      return false;
+    }
+    return true;
   }
 
   checkMonthValid(year, month){
@@ -90,14 +129,18 @@ class MonthPicker extends Component {
     return true;
   }
 
+
+
   render(){
+    const monthIndex = (i, j) => +i * MONTH_NAMES[0].length + j;
+
     return (
       <table className='month-picker mui-table'>
         <tbody>
           <tr><th colSpan="3">
-          <Input placeholder="select a year" onChange={this.onChange} value={this.state.yearValue}/>{this.renderPrompt()}</th></tr>
+          <Input type='year' placeholder="select a year" onChange={this.onChange} onFocus={this.onFocus} onBlur={this.onBlur} value={this.state.yearValue} className={`${this.state.isDefault ? 'is-default' : ''}`}/>{this.renderPrompt()}</th></tr>
           {MONTH_NAMES.map((m, i) => <tr key={m}>
-            {m.map((n, j) => <td key={n}><Button disabled={!this.checkMonthValid(+this.state.yearValue, +i * MONTH_NAMES[0].length + j)} onClick={this.selectMonth.bind(this, i * MONTH_NAMES[0].length + j)} className={`btn-facet-option btn-month ${this.props.month === i * MONTH_NAMES[0].length + j? 'is-active' : ''}`}>{n}</Button></td>)}
+            {m.map((n, j) => <td key={n}><Button disabled={!this.checkMonthValid(+this.state.yearValue, monthIndex(i, j))} onClick={this.props.selectMonth.bind(this, i * MONTH_NAMES[0].length + j)} className={`btn-facet-option btn-month ${(this.props.month + 1 === monthIndex(i, j) && this.checkMonthValid(+this.state.yearValue, monthIndex(i, j)))? 'is-active' : ''}`}>{n}</Button></td>)}
             </tr>)}
         </tbody>
       </table>)
@@ -113,6 +156,7 @@ MonthPicker.PropTypes = {
   monthLower: PropTypes.number,
   selectMonth: PropTypes.function,
   selectYear: PropTypes.function,
+  showingDefault: PropTypes.boolean
 }
 
 export default MonthPicker;

@@ -8,15 +8,15 @@ class SearchFacets extends Component {
     super(props);
     this.state = {openFacet : null};
     this.toggleFacet = this.toggleFacet.bind(this);
-    this.closeFacet = this.closeFacet.bind(this);
+    this.closeFacetWithKeyBoard = this.closeFacetWithKeyBoard.bind(this);
   }
 
   componentWillMount(){
     const that = this;
-    window.addEventListener('click', that.closeFacet);
+    window.addEventListener('click', that.closeFacetWithKeyBoard);
   }
 
-  closeFacet(event){
+  closeFacetWithKeyBoard(event){
     if(event.keyCode){
       if(event.keyCode === 27){
         this.setState({
@@ -35,7 +35,7 @@ class SearchFacets extends Component {
 
   componentWillUnmount(){
     const that = this;
-    window.removeEventListener('click', that.closeFacet);
+    window.removeEventListener('click', that.closeFacetWithKeyBoard);
   }
 
 
@@ -43,6 +43,15 @@ class SearchFacets extends Component {
     this.setState({
       openFacet: this.state.openFacet === facet ? null : facet
     })
+  }
+
+  closeFacet(facet){
+    if(this.state.openFacet === facet){
+      this.setState({
+        openFacet: null
+      })
+    }
+    return false
   }
 
   render() {
@@ -55,7 +64,8 @@ class SearchFacets extends Component {
                        location={this.props.location}
                        title={c.id}
                        isOpen={this.state.openFacet === c.id}
-                       toggleFacet={this.toggleFacet.bind(this, c.id)}/>
+                       toggleFacet={this.toggleFacet.bind(this, c.id)}
+                       closeFacet={this.closeFacet.bind(this, c.id)}/>
           </div>
         )}
       </div>
