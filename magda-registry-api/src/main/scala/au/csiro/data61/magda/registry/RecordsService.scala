@@ -35,11 +35,13 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.")))
   def getAll = get {
     pathEnd {
-      parameters('aspect.*, 'optionalAspect.*, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?) {
-        (aspects, optionalAspects, pageToken, start, limit, dereference) =>
+      parameters('aspect.*, 'optionalAspect.*, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.?) {
+        (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQuery) =>
+          val parsedAspectQuery = aspectQuery.map(AspectQuery.parse)
+          
           complete {
             DB readOnly { session =>
-              RecordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference)
+              RecordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQuery)
             }
           }
       }
