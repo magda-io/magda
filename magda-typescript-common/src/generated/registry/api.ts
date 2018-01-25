@@ -1226,8 +1226,9 @@ export class RecordsApi {
      * @param start The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
      * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
+     * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
      */
-    public getAll (aspect?: Array<string>, optionalAspect?: Array<string>, pageToken?: string, start?: number, limit?: number, dereference?: boolean) : Promise<{ response: http.IncomingMessage; body: Array<Record>;  }> {
+    public getAll (aspect?: Array<string>, optionalAspect?: Array<string>, pageToken?: string, start?: number, limit?: number, dereference?: boolean, aspectQuery?: Array<string>) : Promise<{ response: http.IncomingMessage; body: Array<Record>;  }> {
         const localVarPath = this.basePath + '/records';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1256,6 +1257,10 @@ export class RecordsApi {
 
         if (dereference !== undefined) {
             queryParameters['dereference'] = dereference;
+        }
+
+        if (aspectQuery !== undefined) {
+            queryParameters['aspectQuery'] = aspectQuery;
         }
 
         let useFormData = false;
