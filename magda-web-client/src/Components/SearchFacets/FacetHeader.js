@@ -6,7 +6,7 @@ import Button from 'muicss/lib/react/button';
   */
 class FacetHeader extends Component {
   displayMonth(date){
-    return new Date(date).getUTCFullYear() + '/' + new Date(date).getUTCMonth()
+    return new Date(date).getUTCFullYear() + '/' + (+new Date(date).getUTCMonth()+1)
   }
   calculateTitle(){
     if(this.props.title === 'date range'){

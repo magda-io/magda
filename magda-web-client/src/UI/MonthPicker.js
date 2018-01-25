@@ -132,15 +132,14 @@ class MonthPicker extends Component {
 
 
   render(){
-    const monthIndex = (i, j) => +i * MONTH_NAMES[0].length + j;
-
+    const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
     return (
       <table className='month-picker mui-table'>
         <tbody>
           <tr><th colSpan="3">
           <Input type='year' placeholder="select a year" onChange={this.onChange} onFocus={this.onFocus} onBlur={this.onBlur} value={this.state.yearValue} className={`${this.state.isDefault ? 'is-default' : ''}`}/>{this.renderPrompt()}</th></tr>
           {MONTH_NAMES.map((m, i) => <tr key={m}>
-            {m.map((n, j) => <td key={n}><Button disabled={!this.checkMonthValid(+this.state.yearValue, monthIndex(i, j))} onClick={this.props.selectMonth.bind(this, i * MONTH_NAMES[0].length + j)} className={`btn-facet-option btn-month ${(this.props.month + 1 === monthIndex(i, j) && this.checkMonthValid(+this.state.yearValue, monthIndex(i, j)))? 'is-active' : ''}`}>{n}</Button></td>)}
+            {m.map((n, j) => <td key={n}><Button disabled={!this.checkMonthValid(+this.state.yearValue, monthIndex(i, j))} onClick={this.props.selectMonth.bind(this, monthIndex(i, j))} className={`btn-facet-option btn-month ${(this.props.month === monthIndex(i, j) && this.checkMonthValid(+this.state.yearValue, monthIndex(i, j)))? 'is-active' : ''}`}>{n}</Button></td>)}
             </tr>)}
         </tbody>
       </table>)
