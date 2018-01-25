@@ -35,6 +35,21 @@ export const lcAlphaNumStringArbNe = jsc
     .nearray(lcAlphaNumCharArb)
     .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
 
+export const lcAlphaStringArb = jsc
+.array(lowerCaseAlphaCharArb)
+.smap(chars => chars.join(""), string => string.split(""));
+
+export const lcAlphaStringArbNe = jsc
+.nearray(lowerCaseAlphaCharArb)
+.smap(chars => chars.join(""), string => string.split(""));
+
+export const peopleNameArb = jsc
+    .array(lcAlphaStringArbNe)
+    .smap(
+        strArr => _.take(strArr,2).join(" "),
+        string => string.split(" ")
+    );
+
 const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     generator: jsc.generator.bless(x => uuid()),
     shrink: jsc.shrink.bless(x => []),
