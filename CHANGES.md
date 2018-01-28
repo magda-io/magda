@@ -10,3 +10,4 @@
 * Optimised the query that finds new events for each webhook
 * Stopped async webhooks posting `success: false` on an uncaught failure, as this just causes them to process the same data and fail over and over.
 * Stopped the broken link sleuther from failing completely when it gets a string that isn't a valid URL - now records as "broken".
+* Added ability to get records from the registry by the value of their aspects.

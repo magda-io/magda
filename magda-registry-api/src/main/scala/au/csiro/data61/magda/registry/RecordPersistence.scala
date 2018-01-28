@@ -28,8 +28,14 @@ object RecordPersistence extends Protocols with DiffsonProtocol {
                         pageToken: Option[String] = None,
                         start: Option[Int] = None,
                         limit: Option[Int] = None,
-                        dereference: Option[Boolean] = None): RecordsPage[Record] = {
-    this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference)
+                        dereference: Option[Boolean] = None,
+                        aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record] = {
+    val selectors = aspectQueries.map { query =>
+      val path = query.path.map(pathElement => sqls"->>$pathElement").reduce((a, b) => a.append(b))
+      sqls"EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = ${query.aspectId} AND data #>> ${"{" + query.path.mkString(",") + "}"}::varchar[] = ${query.value})"
+    } map (Some.apply)
+
+    this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
   }
 
   def getById(implicit session: DBSession, id: String): Option[RecordSummary] = {
