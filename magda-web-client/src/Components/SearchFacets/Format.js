@@ -24,7 +24,8 @@ class Format extends Component {
     this.props.updateQuery({
       format: queryOptions
     });
-    this.props.dispatch(updateFormats(formats))
+    this.props.dispatch(updateFormats(formats));
+    this.props.closeFacet();
   }
 
   onResetFormatFacet(){

@@ -119,8 +119,8 @@ class FacetBasicBody extends Component {
                </ul>
                 {inactiveOptions.map(o => this.renderOption(o, maxOptionOptionList))}
                 <div className='facet-footer'>
-                    <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
-                    <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>
+                    <Button variant="flat" disabled={this.state._activeOptions.length === 0} onClick={this.props.onResetFacet}> Clear </Button>
+                    <Button variant="flat" disabled={this.state._activeOptions.length === 0} onClick={this.onApplyFilter}> Apply </Button>
                 </div>
               </div>)}
             </div>)
