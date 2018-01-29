@@ -104,5 +104,5 @@
     "docker": {
       "include": "node_modules build"
     }
-  },
+  }
 }

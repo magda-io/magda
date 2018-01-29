@@ -13,7 +13,6 @@ class MonthPicker extends Component {
     super(props);
     this.onChange = this.onChange.bind(this);
     this.debounceValidateYearField = debounce(this.changeYear, 1000);
-    this.debounceResetField = debounce(this.resetField, 1000);
     this.onFocus = this.onFocus.bind(this);
     this.onBlur = this.onBlur.bind(this);
     this.resetField = this.resetField.bind(this);
@@ -35,19 +34,19 @@ class MonthPicker extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-    this.setState({
-      yearValue: nextProps.year
-    })
+    if(nextProps.year !== this.props.year){
+      this.setState({
+        yearValue: nextProps.year
+      })
+    }
   }
 
   changeYear(value){
-      this.setState({
-        prompt: '',
-      });
       if(!this.checkYearValid(value)){
         this.setState({
           prompt: `Enter a year between ${this.props.yearLower}-${this.props.yearUpper}`
         })
+        this.props.onInvalidInput(true);
       } else{
         this.props.selectYear(value);
       }
@@ -55,8 +54,10 @@ class MonthPicker extends Component {
 
   onChange(event){
     this.setState({
-      isDefault: false
-    })
+      isDefault: false,
+      prompt: ''
+    });
+
     if(event.target.value.length >= 5){
       return false;
     } else{
@@ -70,26 +71,30 @@ class MonthPicker extends Component {
 
   onFocus(){
     this.setState({
-      yearValue: ''
-    })
+      yearValue: '',
+      prompt: ''
+    });
+    // since input now is empty, we notify the parent
+    this.props.onInvalidInput(true);
   }
 
   onBlur(event){
-    this.debounceResetField(event.target.value)
+    this.debounceValidateYearField.flush(event.target.value);
+    this.resetField(event.target.value)
   }
 
   resetField(value){
     // reset year and month to default value
     // reset prompt
     // flush field validation
+
     if(!this.checkYearValid(value)){
       this.setState({
         yearValue: this.props.year,
         prompt: ''
       });
-      this.props.selectYear(this.props.year);
-      this.props.selectMonth(this.props.month);
-      this.debounceValidateYearField.flush();
+    this.props.selectYear(this.props.year);
+    this.props.selectMonth(this.props.month);
     }
   }
 
@@ -112,21 +117,22 @@ class MonthPicker extends Component {
     const yearUpper = this.props.yearUpper;
     const monthUpper = this.props.monthUpper;
     const monthLower = this.props.monthLower;
-
-    if(year > yearUpper || year < yearLower){
+    if(!this.checkYearValid(year)){
       return false;
-    } else if(year === yearLower){
-      if(month < monthLower){
-        return false;
+    } else {
+      if(year === yearLower){
+        if(month < monthLower){
+          return false;
+        }
+        return true;
+      } else if(year === yearUpper){
+        if(month > monthUpper){
+          return false;
+        }
+        return true;
       }
-      return true;
-    } else if(year === yearUpper){
-      if(month > monthUpper){
-        return false;
-      }
-      return true;
+      return true
     }
-    return true;
   }
 
 

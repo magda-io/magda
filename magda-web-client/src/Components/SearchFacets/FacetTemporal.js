@@ -15,11 +15,13 @@ class FacetTemporal extends Component {
     this.selectEndYear = this.selectEndYear.bind(this);
     this.selectStartMonth = this.selectStartMonth.bind(this);
     this.selectEndMonth = this.selectEndMonth.bind(this);
+    this.toggleDisableApplyButton = this.toggleDisableApplyButton.bind(this);
     this.state = {
       startYear: undefined,
       startMonth: undefined,
       endYear: undefined,
-      endMonth: undefined
+      endMonth: undefined,
+      applyButtonDisabled: true
     }
   }
 
@@ -31,7 +33,8 @@ class FacetTemporal extends Component {
       startYear: dateFrom.getUTCFullYear(),
       startMonth: dateFrom.getUTCMonth(),
       endYear: dateTo.getUTCFullYear(),
-      endMonth: dateTo.getUTCMonth()
+      endMonth: dateTo.getUTCMonth(),
+      applyButtonDisabled: !this.props.hasQuery
     })
   }
 
@@ -50,34 +53,46 @@ class FacetTemporal extends Component {
   selectStartYear(startYear){
     this.setState({
       startYear
-    })
+    });
+    this.toggleDisableApplyButton(false);
   }
 
   selectEndYear(endYear){
     this.setState({
       endYear
-    })
+    });
+    this.toggleDisableApplyButton(false);
   }
 
   selectStartMonth(startMonth){
     this.setState({
       startMonth
-    })
+    });
+    this.toggleDisableApplyButton(false);
   }
 
   selectEndMonth(endMonth){
     this.setState({
       endMonth
+    });
+    this.toggleDisableApplyButton(false);
+  }
+
+  toggleDisableApplyButton(disabled){
+    this.setState({
+      applyButtonDisabled: disabled
     })
   }
 
   renderDatePicker(){
     return (<div className='facet-temporal-month-picker'>
-              <MonthPicker showingDefault = {!this.props.hasQuery} year={this.state.startYear} month={this.state.startMonth} yearLower={1994} yearUpper={this.state.endYear} monthLower = {4} monthUpper = {this.state.endMonth} selectYear={this.selectStartYear} selectMonth={this.selectStartMonth}/>
+              <MonthPicker onInvalidInput = {this.toggleDisableApplyButton} showingDefault = {!this.props.hasQuery} year={this.state.startYear} month={this.state.startMonth} yearLower={1994} yearUpper={this.state.endYear} monthLower = {4} monthUpper = {this.state.endMonth} selectYear={this.selectStartYear} selectMonth={this.selectStartMonth}/>
               <div><img src = '' alt='seperater'/></div>
-              <MonthPicker showingDefault = {!this.props.hasQuery} year={this.state.endYear} month={this.state.endMonth} yearLower={this.state.startYear} yearUpper={2018} monthLower = {this.state.startMonth} monthUpper = {2} selectYear={this.selectEndYear} selectMonth={this.selectEndMonth}/>
+              <MonthPicker onInvalidInput = {this.toggleDisableApplyButton} showingDefault = {!this.props.hasQuery} year={this.state.endYear} month={this.state.endMonth} yearLower={this.state.startYear} yearUpper={2018} monthLower = {this.state.startMonth} monthUpper = {2} selectYear={this.selectEndYear} selectMonth={this.selectEndMonth}/>
             </div>)
   }
+
+
   render(){
     let that = this;
     return <div className='facet-wrapper'>
@@ -91,7 +106,7 @@ class FacetTemporal extends Component {
               {this.renderDatePicker()}
               <div className='facet-footer'>
                   <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
-                  <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>
+                  <Button disabled={this.state.applyButtonDisabled} variant="flat" onClick={this.onApplyFilter}> Apply </Button>
               </div>
              </div>
            }

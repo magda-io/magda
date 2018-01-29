@@ -13,7 +13,7 @@ export function parsePublisher(publisherRaw?: Publisher) : Publisher{
     const publisher = {
         name: publisherRaw.name,
         id: publisherRaw.id,
-        'aspects': publisherRaw.aspects['organization-details'] ? publisherRaw.aspects : defaultPublisher.aspects,
+        'aspects': (publisherRaw.aspects && publisherRaw.aspects['organization-details']) ? publisherRaw.aspects : defaultPublisher.aspects,
         error: error
     }
     return publisher
