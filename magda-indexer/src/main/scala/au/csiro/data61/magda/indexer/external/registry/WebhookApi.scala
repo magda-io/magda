@@ -17,10 +17,12 @@ import spray.json._
 import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.indexer.crawler.Crawler
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi
+import au.csiro.data61.magda.model.Registry.EventType
 import com.typesafe.config.Config
 import akka.stream.scaladsl.Source
 import java.time.ZoneOffset
 import scala.util.Try
+import au.csiro.data61.magda.model.misc.DataSet
 
 class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryConverters {
   implicit val ec = system.dispatcher
@@ -32,10 +34,24 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
     magdaRoute {
       post {
         entity(as[WebHookPayload]) { payload =>
-          payload.records match {
-            // TODO: Handle registry config not found
-            case Some(records) =>
-              val dataSets = records.map(record => try {
+          val x = payload.events match {
+            case None       => List()
+            case Some(list) => list
+          }
+
+          val idsToDelete = x.filter(_.eventType == EventType.DeleteRecord)
+            .map(event => event.data.getFields("recordId").head.convertTo[String])
+            .map(DataSet.registryIdToIdentifier)
+
+          val deleteFuture = idsToDelete match {
+            case Nil  => Future.successful(Unit)
+            case list => indexer.delete(list)
+          }
+
+          val insertFuture = payload.records match {
+            case None | Some(Nil) => Future.successful(Unit)
+            case Some(list) =>
+              val dataSets = list.map(record => try {
                 Some(convertRegistryDataSet(record))
               } catch {
                 case CausedBy(e: spray.json.DeserializationException) =>
@@ -43,12 +59,11 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
                   None
               })
 
-              onSuccess(indexer.index(Source(dataSets.flatten))) { result =>
-                complete(Accepted)
-              }
-            case None =>
-              getLogger.error("Recieved webhook payload with no records")
-              complete(BadRequest, "Needs records")
+              indexer.index(Source(dataSets.flatten))
+          }
+
+          onSuccess(Future.sequence(List(deleteFuture, insertFuture))) { result =>
+            complete(Accepted)
           }
         }
       }

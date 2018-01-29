@@ -18,12 +18,18 @@ import scala.util.Success
 import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
 import akka.event.Logging
+import scala.concurrent.Await
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+import java.util.concurrent.TimeoutException
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
 class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
 
   val logger = Logging(system, getClass)
+  implicit val ec: ExecutionContext = system.dispatcher
 
   @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[Record], responseContainer = "List")
   @ApiImplicitParams(Array(
@@ -147,8 +153,18 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       requireIsAdmin(authClient)(system, config) { _ =>
         parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
           val result = DB localTx { implicit session =>
-            RecordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId) match {
-              case Success(result) => complete(MultipleDeleteResult(result))
+            val deleteFuture = Future {
+              RecordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId)
+            }
+            val deleteResult = try {
+              Await.result(deleteFuture, 10 seconds)
+            } catch {
+              case e: Throwable => Failure(e)
+            }
+
+            deleteResult match {
+              case Success(result)                             => complete(MultipleDeleteResult(result))
+              case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Processing)
               case Failure(exception) =>
                 complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
