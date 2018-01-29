@@ -31,8 +31,7 @@
     "lazy-seq": "^1.0.0",
     "mocha": "^3.4.2",
     "nock": "^9.0.14",
-    "typescript": "~2.5.0",
-    "uuid": "^3.1.0"
+    "typescript": "~2.5.0"
   },
   "dependencies": {
     "body-parser": "^1.18.2",
@@ -42,7 +41,8 @@
     "moment": "^2.17.1",
     "request": "^2.79.0",
     "tsmonad": "^0.7.2",
-    "urijs": "^1.18.12"
+    "urijs": "^1.18.12",
+    "uuid": "^3.1.0"
   },
   "config": {
     "docker": {

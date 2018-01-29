@@ -19,9 +19,7 @@ import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/
 import { OKFN_LICENSES, ZERO_STAR_LICENSES, FORMAT_EXAMPLES } from "./examples";
 import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
-describe("ld rating onRecordFound", function(
-    this: Mocha.ISuiteCallbackContext
-) {
+describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
     nock.disableNetConnect();
     const registryUrl = "http://example.com";
@@ -275,7 +273,8 @@ describe("ld rating onRecordFound", function(
                               }
                           ]
                 }
-            }
+            },
+            sourceTag: undefined
         };
     }
 });
