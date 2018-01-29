@@ -44,9 +44,9 @@ export const lcAlphaStringArbNe = jsc
 .smap(chars => chars.join(""), string => string.split(""));
 
 export const peopleNameArb = jsc
-    .array(lcAlphaStringArbNe)
+    .tuple([lcAlphaStringArbNe, lcAlphaStringArbNe])
     .smap(
-        strArr => _.take(strArr,2).join(" "),
+        strArr => strArr.join(" "),
         string => string.split(" ")
     );
 

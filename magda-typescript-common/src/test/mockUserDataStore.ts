@@ -1,5 +1,5 @@
 import * as uuid from "uuid";
-import { User } from "src/authorization-api/model";
+import { User } from "../authorization-api/model";
 
 const mockUserData = [
 {
@@ -43,6 +43,9 @@ const mockUserDataStore = {
         const newRecord:any={...user, id:uuid.v4()};
         mockUserData.push(newRecord);
         return newRecord;
+    },
+    countRecord:function(){
+        return mockUserData.length;
     }
 };
 export default mockUserDataStore;
