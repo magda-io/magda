@@ -4,6 +4,7 @@ import FacetHeader from './FacetHeader';
 import defined from '../../helpers/defined';
 import Button from 'muicss/lib/react/button';
 import MonthPicker from '../../UI/MonthPicker';
+import range from "../../assets/range.svg";
 
 // the date range facet facet, extends facet component
 class FacetTemporal extends Component {
@@ -87,7 +88,7 @@ class FacetTemporal extends Component {
   renderDatePicker(){
     return (<div className='facet-temporal-month-picker'>
               <MonthPicker onInvalidInput = {this.toggleDisableApplyButton} showingDefault = {!this.props.hasQuery} year={this.state.startYear} month={this.state.startMonth} yearLower={1994} yearUpper={this.state.endYear} monthLower = {4} monthUpper = {this.state.endMonth} selectYear={this.selectStartYear} selectMonth={this.selectStartMonth}/>
-              <div><img src = '' alt='seperater'/></div>
+              <div className='facet-temporal-range-icon'><img src = {range} alt='date range'/></div>
               <MonthPicker onInvalidInput = {this.toggleDisableApplyButton} showingDefault = {!this.props.hasQuery} year={this.state.endYear} month={this.state.endMonth} yearLower={this.state.startYear} yearUpper={2018} monthLower = {this.state.startMonth} monthUpper = {2} selectYear={this.selectEndYear} selectMonth={this.selectEndMonth}/>
             </div>)
   }

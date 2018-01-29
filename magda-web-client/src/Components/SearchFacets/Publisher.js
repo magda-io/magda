@@ -12,6 +12,10 @@ class Publisher extends Component {
     this.onResetPublisherFacet = this.onResetPublisherFacet.bind(this);
     this.onSearchPublisherFacet = this.onSearchPublisherFacet.bind(this);
     this.onTogglePublisherOption = this.onTogglePublisherOption.bind(this);
+    // we use an integer event to notify children of the reset event
+    this.state = {
+      resetFilterEvent: 0
+    }
   }
 
   onTogglePublisherOption(publishers){
@@ -19,8 +23,8 @@ class Publisher extends Component {
     this.props.updateQuery({
       publisher: queryOptions
     });
-    this.props.closeFacet();
     this.props.dispatch(updatePublishers(publishers));
+    this.props.closeFacet();
   }
 
   onResetPublisherFacet(){
@@ -29,9 +33,12 @@ class Publisher extends Component {
       publisher: [],
       page: undefined
     })
-    this.props.closeFacet();
     // update redux
     this.props.dispatch(resetPublisher());
+    // let children know that the filter is being reset
+    this.setState({
+      resetFilterEvent: this.state.resetFilterEvent + 1
+    });
   }
 
   onSearchPublisherFacet(){
@@ -52,6 +59,8 @@ class Publisher extends Component {
                   searchFacet={this.onSearchPublisherFacet}
                   toggleFacet={this.props.toggleFacet}
                   isOpen={this.props.isOpen}
+                  closeFacet = {this.props.closeFacet}
+                  resetFilterEvent = {this.state.resetFilterEvent}
       />)
   }
 }

@@ -30,6 +30,16 @@ class FacetBasicBody extends Component {
     });
   }
 
+  componentWillReceiveProps(nextProps){
+    if(nextProps.resetFilterEvent !== this.props.resetFilterEvent){
+      // filter has been reset!
+      this.setState({
+        _activeOptions : []
+      });
+      this.props.closeFacet();
+    }
+  }
+
   componentWillUnmount(){
     this.props.onToggleOption(this.state._activeOptions);
   }

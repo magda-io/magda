@@ -13,6 +13,13 @@ export function requestPublishers(generalQuery:string, facetQuery:string):FacetA
   }
 }
 
+export function requestPublishersFailed(error):FacetAction{
+  return {
+    type: actionTypes.FACET_REQUEST_PUBLISHERS_FAILED,
+    error
+  }
+}
+
 export function receivePublishers(generalQuery:string, facetQuery:string, json:Object):FacetAction{
   return {
     type: actionTypes.FACET_RECEIVE_PUBLISHERS,
@@ -26,7 +33,9 @@ export function fetchPublisherSearchResults(generalQuery:string, facetQuery:stri
   return (dispatch: Function)=>{
     dispatch(requestPublishers(generalQuery, facetQuery))
     return fetch(config.searchApiUrl + `facets/publisher/options?generalQuery=${encodeURIComponent(generalQuery)}&start=0&limit=10000`)
-    .then(response => response.json())
+    .then(response => {
+      if (response.status === 200) {return response.json();}
+      return dispatch(requestPublishersFailed({title: response.status, detail: response.statusText}))})
     .then((json: FacetSearchJson) =>
       dispatch(receivePublishers(generalQuery, facetQuery, json))
     )

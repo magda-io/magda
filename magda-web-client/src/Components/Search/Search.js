@@ -12,7 +12,6 @@ import SearchResults from '../SearchResults/SearchResults';
 import MatchingStatus from './MatchingStatus';
 import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../../actions/datasetSearchActions';
-import {fetchFeaturedPublishersFromRegistry} from '../../actions/featuredPublishersActions';
 import queryString from 'query-string';
 import ProgressBar from '../../UI/ProgressBar';
 
@@ -52,12 +51,6 @@ class Search extends Component {
 
   componentWillReceiveProps(nextProps){
     nextProps.fetchSearchResultsIfNeeded(queryString.parse(nextProps.location.search));
-    if(nextProps.datasets.length > 0 &&
-       nextProps.publisherOptions.length > 0 &&
-       nextProps.publisherOptions.filter(o=>o.identifier).map(o=>o.identifier).toString() !== this.props.publisherOptions.filter(o=>o.identifier).map(o=>o.identifier).toString()){
-      const featuredPublishersById = nextProps.publisherOptions.filter(o=>o.identifier).map(o=> o.identifier);
-      this.props.fetchFeaturedPublishersFromRegistry(featuredPublishersById);
-    }
   }
 
   componentWillUnmount(){
@@ -185,13 +178,12 @@ Search.contextTypes ={
 const mapDispatchToProps = (dispatch) =>
  bindActionCreators({
     fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
-    fetchFeaturedPublishersFromRegistry: fetchFeaturedPublishersFromRegistry,
     resetDatasetSearch: resetDatasetSearch
   }, dispatch);
 
 
 function mapStateToProps(state, ownProps) {
-  let { datasetSearch, featuredPublishers } = state;
+  let { datasetSearch } = state;
   return {
     datasets: datasetSearch.datasets,
     publisherOptions: datasetSearch.publisherOptions.slice(0, 5),
@@ -200,8 +192,7 @@ function mapStateToProps(state, ownProps) {
     progress: datasetSearch.progress,
     strategy: datasetSearch.strategy,
     error: datasetSearch.error,
-    freeText: datasetSearch.freeText,
-    featuredPublishers: featuredPublishers.publishers
+    freeText: datasetSearch.freeText
   }
 }
 

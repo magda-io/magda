@@ -13,6 +13,10 @@ class Format extends Component {
     this.onResetFormatFacet = this.onResetFormatFacet.bind(this);
     this.onSearchFormatFacet = this.onSearchFormatFacet.bind(this);
     this.onToggleFormatOption = this.onToggleFormatOption.bind(this);
+    // we use an integer event to notify children of the reset event
+    this.state = {
+      resetFilterEvent: 0
+    }
   }
 
   onToggleFormatOption(formats){
@@ -29,9 +33,12 @@ class Format extends Component {
       format: [],
       page: undefined
     })
-    this.props.toggleFacet();
     // update redux
     this.props.dispatch(resetFormat());
+    // let children know that the filter is being reset
+    this.setState({
+      resetFilterEvent: this.state.resetFilterEvent + 1
+    });
   }
 
   onSearchFormatFacet(facetKeyword){
@@ -51,6 +58,8 @@ class Format extends Component {
                   searchFacet={this.onSearchFormatFacet}
                   toggleFacet={this.props.toggleFacet}
                   isOpen={this.props.isOpen}
+                  closeFacet = {this.props.closeFacet}
+                  resetFilterEvent = {this.state.resetFilterEvent}
       />
     );
   }

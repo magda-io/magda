@@ -33,6 +33,8 @@ class FacetBasic extends Component {
                     searchFacet={this.props.searchFacet}
                     toggleFacet = {this.props.toggleFacet}
                     title={this.props.title}
+                    resetFilterEvent = {this.props.resetFilterEvent}
+                    closeFacet = {this.props.closeFacet}
                   />}
            </div>
   }
