@@ -84,7 +84,7 @@
             },
             "args":[
                 "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
-                "src/index.ts"
+                "src/index.ts",
                 "--jwtSecret", "squirrel",
                 "--sessionSecret", "keyboard cat",
                 "--ckanUrl", "https://data.gov.au",
