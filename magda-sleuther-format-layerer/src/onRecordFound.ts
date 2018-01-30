@@ -16,6 +16,7 @@ import getExtensionProcessedData from "./format-engine/measures/processed-functi
 import  getBestMeasureResult  from "./format-engine/measureEvaluatorByHierarchy"
 import MeasureEvaluationSet from "./format-engine/measures/MeasureEvaluationSet";
 import MeasureEvalResult from "./format-engine/MeasureEvalResult";
+let synonymObject = require("./format-engine/synonyms.json");
 
 //import { Snapshot } from "../../magda-typescript-common/src/format/MeasureSnapShot";
 let mochaObject = {
@@ -39,15 +40,15 @@ export default async function onRecordFound(
     // 2D array: 1 row per distribution
     const retrievedEvalSets: MeasureEvaluationSet[][] = distributions.map(function (distribution) {
         const dcatSet: MeasureEvaluationSet = {
-            measureResult: getDcatMeasureResult(distribution),
+            measureResult: getDcatMeasureResult(distribution, synonymObject),
             getProcessedData: getDcatProcessedData
         }
         const extensionSet: MeasureEvaluationSet = {
-            measureResult: getExtensionMeasureResult(distribution),
+            measureResult: getExtensionMeasureResult(distribution, synonymObject),
             getProcessedData: getExtensionProcessedData
         }
         const downloadSet: MeasureEvaluationSet = {
-            measureResult: getDownloadMeasureResult(distribution),
+            measureResult: getDownloadMeasureResult(distribution, synonymObject),
             getProcessedData: getDownloadProcessedData
         }
 
@@ -87,8 +88,6 @@ export default async function onRecordFound(
 
     //TODO delete this piece of code
     console.log("the best results gathered were: " + bestFormatResults.toString());
-
-    Promise.resolve();
 }
 
 function recordFormatAspect(

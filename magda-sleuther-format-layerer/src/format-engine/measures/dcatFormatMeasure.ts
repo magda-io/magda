@@ -7,33 +7,71 @@ import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
 
-function applyTransform(format: string, transformFormat: any) {
-    const newFormat = transformFormat(format);
-    return newFormat;
+// list of functions that clean up the dcat-string so that magda can understand it
+// all functions must be executed in the order they appear in this file
+
+/**
+ * Removes commas, periods, and makes everything lower case
+ * @param format the current format string to clean up
+ */
+function foundationalCleanup(format: string) {
+    return format.toLowerCase().replace(/\s*[.,]\s*/g, " ");
 }
 
-function lowerCase(str: string) {
-    return str.toLowerCase();
+/**
+ * turns 'pdf   & (xlsx)' into 'pdf (xlsx)' or 'pdf, xlsx' into 'pdf, xlsx'
+ */
+function replaceAmpersandFormats(format: string) {
+    return format.replace(/\s*(&)\s*/g, " ");
 }
 
-function removePeriod(str: string) {
-    return str.split(".").join("");
+/**
+ * split white space separated stuff into an array:
+ * zip (xlsx) -> ['zip', '(xlsx)']
+ */
+function splitWhiteSpaceFormats(format: string) {
+    return format.split(/\s+/g);
 }
 
-function replaceCommaThenSpace(str: string) {
-    return str.split(", ").join(" ");
+/**
+ * replace ['application/exe'] with ['exe'] or ['pdf'] with ['pdf']
+ */
+function reduceMimeType(formats: Array<string>) {
+    return formats.map(
+        format =>
+            format.indexOf("/") < 0
+                ? formats
+                : format.substr(format.indexOf("/"))
+    );
 }
 
-function replaceSpaceThenComma(str: string) {
-    return str.split(" ,").join(" ");
+/**
+ * under the philosophy that ckan format strings have the actual format in (), if there's more than 1 format, and
+ * 1 of those formats are inside (), select () only.
+ * Example: ['zip', '(xlsx)', '(pdf)'] -> ['xlsx', 'pdf']
+ * ['zip', 'xlsx', 'pdf'] -> ['zip', 'xlsx', 'pdf']
+ */
+function filterBracketedFormats(formats: Array<string>) {
+    return getFilteredBracketedFormats(formats).length < 1
+        ? formats
+        : getFilteredBracketedFormats(formats).map(str =>
+              // replace all brackets
+              str.replace(/(\(|\)+)/g, "")
+          );
 }
 
-function replaceComma(str: string) {
-    return str.split(",").join(" ");
+function getFilteredBracketedFormats(formats: Array<string>) {
+    return formats.filter(format => {
+        return (
+            format.indexOf("(") > -1 &&
+            format.indexOf("(") === format.indexOf(")")
+        );
+    });
 }
 
 export default function getMeasureResult(
-    relatedDistribution: Record
+    relatedDistribution: Record,
+    synonymObject: any
 ): MeasureResult {
     const { format } = relatedDistribution.aspects["dcat-distribution-strings"];
 
@@ -41,72 +79,31 @@ export default function getMeasureResult(
         return null;
     }
 
-    let processedFormat: string;
-
-    const transforms = [
-        (str: string) =>
-            lowerCase(
-                removePeriod(
-                    replaceComma(
-                        replaceSpaceThenComma(replaceCommaThenSpace(str))
-                    )
-                )
-            )
+    // this is an array that acts like an assembly belt, you input in the string, the middle functions are the assembly robots,
+    // and the last function returns the output.
+    const cleanUpAssemblyChain = [
+        format,
+        foundationalCleanup,
+        replaceAmpersandFormats,
+        splitWhiteSpaceFormats,
+        reduceMimeType,
+        filterBracketedFormats
     ];
 
-    for (const tf of transforms) {
-        processedFormat = applyTransform(format, tf);
-    }
+    const processedFormat: Array<string> = cleanUpAssemblyChain.reduce(function(
+        accumliation,
+        currentObject
+    ) {
+        return currentObject(accumliation);
+    });
 
-    // hard coded rules for separating out multiple formats when provided
-    let splitFormat: Array<string> = [];
-    let finalFormat: Array<string> = [];
-
-    // e.g: application/exe
-    splitFormat = processedFormat.split("/");
-    if (splitFormat.length > 2)
-        throw new Error(
-            "a MIME type has more than 1 slash: " + processedFormat
-        );
-    if (splitFormat.length > 1) finalFormat.push(splitFormat[1]);
-    else {
-        // E.g. pdf & xlsx & doc & docx & ogg
-        splitFormat = processedFormat.split(" & ");
-        if (splitFormat.length > 1) finalFormat = splitFormat;
-        else {
-            splitFormat = processedFormat.split(" ");
-            if (splitFormat.length > 1) {
-                // E.g. zip (xlsx)
-                if (processedFormat.indexOf("(") > -1) {
-                    //TODO make this more efficient or elegant
-                    let length: number =
-                        processedFormat.substr(processedFormat.indexOf(")"))
-                            .length -
-                        processedFormat.substr(processedFormat.indexOf("("))
-                            .length;
-                    finalFormat.push(processedFormat.substr(
-                        processedFormat.indexOf("("),
-                        length
-                    ));
-                } else {
-                    // E.g. ATOM
-                    finalFormat.push(splitFormat[0]);
-                }
-            } else {
-                console.log("f:" + finalFormat);
-                // can only deduce 1 format in this scenario
-                finalFormat.push(processedFormat);
-            }
-        }
-    }
-
-    if (finalFormat.length < 1) {
+    if (processedFormat.length < 1) {
         return null;
     } else {
         return {
-            formats: finalFormat.map(eachFormat => {
+            formats: processedFormat.map(eachFormat => {
                 return {
-                    format: getCommonFormat(eachFormat),
+                    format: getCommonFormat(eachFormat, synonymObject),
                     correctConfidenceLevel: 100
                 };
             }),

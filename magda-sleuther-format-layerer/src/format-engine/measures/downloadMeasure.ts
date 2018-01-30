@@ -7,7 +7,7 @@ import MeasureResult from "./MeasureResult";
 * Tries to determine the format by downloading the downloadURL, and deciphering the MIME type
 * TODO not thouroughly unit tested
 */
-export default function getMeasureResult(relatedDistribution: Record): MeasureResult {
+export default function getMeasureResult(relatedDistribution: Record, synonymObject: any): MeasureResult {
     const { downloadURL } = relatedDistribution.aspects[
         "dcat-distribution-strings"
     ];
@@ -21,7 +21,7 @@ export default function getMeasureResult(relatedDistribution: Record): MeasureRe
     return {
         formats: [
             {
-                format: getCommonFormat(processedMime),
+                format: getCommonFormat(processedMime, synonymObject),
                 correctConfidenceLevel: 100
             }
         ],

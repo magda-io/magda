@@ -7,7 +7,8 @@ import MeasureResult from "./MeasureResult";
 * TODO not finished
 */
 export default function getMeasureResuls(
-    relatedDistribution: Record
+    relatedDistribution: Record,
+    synonymObject: any
 ): MeasureResult {
     const { downloadURL } = relatedDistribution.aspects[
         "dcat-distribution-strings"
@@ -17,11 +18,8 @@ export default function getMeasureResuls(
         return null;
     }
 
-    let downloadURLStringify: string = downloadURL;
+    let downloadURLString: string = downloadURL;
 
-    //NOTE regexes do not allow more than 1 regex to match 1 url + break in forEach loop does this too
-    // but this Measure has been programmed to make it easily extensible to allowing multiple formats
-    // to be deduced by 1 url
     const urlRegexes: Array<Array<string>> = [
         [".*\\.geojson$", "GEOJSON"],
         [".*?.*service=wms.*", "WMS"],
@@ -40,26 +38,20 @@ export default function getMeasureResuls(
         [".*\\/$", "HTML"]
     ];
 
-    let formatsFromURL: Array<string> = [];
-    urlRegexes.some(function(regex) {
-        if (downloadURLStringify.match(regex[0])) {
-            formatsFromURL.push(regex[1]);
-            return true; // means 'break'
-        }
+    let formatFromURL: string = urlRegexes.find(regexCombo => {
+        return downloadURLString.match(regexCombo[0]) ? true : false;
+    })[1];
 
-        return false; // means 'continue'
-    });
-
-    if (formatsFromURL.length < 1) {
+    if (formatFromURL.length < 1) {
         return null;
     } else {
         return {
-            formats: formatsFromURL.map(eachFormat => {
-                return {
-                    format: getCommonFormat(eachFormat),
+            formats: [
+                {
+                    format: getCommonFormat(formatFromURL, synonymObject),
                     correctConfidenceLevel: 100
-                };
-            }),
+                }
+            ],
             distribution: relatedDistribution
         };
     }
