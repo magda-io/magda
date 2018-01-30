@@ -21,8 +21,10 @@ class Home extends React.Component {
     return (
       <ReactDocumentTitle title={'Welcome | ' + config.appName}>
       <div className='container home'>
-        <div className='row'>
+        <div className='mui-row'>
           <div className='mui-col-sm-8'>
+            <h2>About</h2>
+              <div className='about' dangerouslySetInnerHTML={{__html: config.about}}/>
             <h2>Featured datasets</h2>
             <div className='white-box'>
               {this.props.datasets.map((d, i )=><DatasetSummary key={d.identifier || i} dataset={d}/>)}
