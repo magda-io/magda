@@ -30,10 +30,11 @@ class Home extends React.Component {
 
           </div>
           <div className='mui-col-sm-4'>
-            <h2>data.gov.au statistics</h2>
             <Statistics stats={this.props.stats}/>
-            <h2>LATEST NEWS</h2>
-            <News isFetching={this.props.isNewsFetching} error={this.props.newsFetchingError} newsItems={this.props.newsItems}/>
+            <div className='latest-news'>
+              <h2>LATEST NEWS</h2>
+              <News isFetching={this.props.isNewsFetching} error={this.props.newsFetchingError} newsItems={this.props.newsItems}/>
+            </div>
           </div>
         </div>
       </div>

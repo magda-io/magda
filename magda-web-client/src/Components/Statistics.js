@@ -3,6 +3,7 @@ import React from 'react';
 import type { Stats } from '../types';
 import './Statistics.css';
 
+
 // Total number of datasets
 // - Total number of harvested sources
 // - Total number of spatial datasets
@@ -23,15 +24,14 @@ export default function Statistics(props: {stats: Stats}){
   return (
     <div className='white-box statistics'>
       <div className='inner'>
-
           <ul className='mui-list--unstyled'>
               <li>
-                  <strong><span>{renderStats(stats.fetchDatasetCountError, stats.isFetchingDatasetCount, stats.datasetCount)}</span></strong>
-                  discoverable datasets
+                  <span className='stats'>{renderStats(stats.fetchDatasetCountError, stats.isFetchingDatasetCount, stats.datasetCount)}</span>
+                  <span className='lable'>discoverable datasets</span>
               </li>
               <li>
-                  <strong><span>25</span></strong>
-                  harvested sources
+                  <span className='stats'>25</span>
+                  <span className='lable'>harvested sources</span>
               </li>
           </ul>
       </div>

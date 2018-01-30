@@ -1,4 +1,5 @@
 import React from 'react';
+import getDateString from '../helpers/getDateString';
 
 function renderContent(props){
   if(props.error){
@@ -16,7 +17,8 @@ function renderContent(props){
 }
 
 function renderNews(news){
-  return (<li className='list-group-item' key={news.link + news.title}>
+  return (<li key={news.link + news.title}>
+            <div className='pub-date'>{getDateString(news.pubDate)}</div>
             <h3 className='list-group-item-heading'><a href={news.link} target="_blank" rel="noopener noreferrer">{news.title}</a></h3>
             <div className='news-body list-group-item-text'>{news.contentSnippet}</div>
           </li>)
@@ -25,9 +27,7 @@ function renderNews(news){
 export default function News(props){
   return (
     <div className='news'>
-      <div className='inner'>
           {renderContent(props)}
-      </div>
   </div>
   )
 }

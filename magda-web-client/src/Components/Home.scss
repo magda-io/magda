@@ -1,5 +1,13 @@
 .home{
     min-height: 400px;
+    .latest-news{
+      margin: 32px 0;
+      h2{
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 19px;
+      }
+    }
     .dataset-summary {
       .markdown *{
         display: none;
