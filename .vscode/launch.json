@@ -66,25 +66,7 @@
                 "--userId", "00000000-0000-4000-8000-000000000000"
             ],
             "cwd": "${workspaceRoot}/magda-sleuther-summarizer"
-        },{
-            "type": "node",
-            "request": "launch",
-            "protocol": "inspector",
-            "name": "Sleuther Format Layerer",
-            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
-            "windows": {
-                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
-            },
-            "runtimeArgs": [
-                "src/index.ts"
-            ],
-            "args": [
-                "--jwtSecret", "squirrel",
-                "--userId", "00000000-0000-4000-8000-000000000000"
-            ],
-            "cwd": "${workspaceRoot}/magda-sleuther-format-layerer"
-        },
-        {
+        },        {
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
@@ -115,18 +97,6 @@
             "name": "summarize sleuther api tests",
             "program": "${workspaceRoot}/magda-sleuther-summarizer/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-sleuther-summarizer",
-            "args": [
-                "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
-                "--require", "@magda/scripts/node_modules/tsconfig-paths/register",
-                "src/test/**/*.spec.ts"
-            ]
-        },{
-            "type": "node",
-            "request": "launch",
-            "protocol": "inspector",
-            "name": "format sleuther api tests",
-            "program": "${workspaceRoot}/magda-sleuther-format-layerer/node_modules/mocha/bin/_mocha",
-            "cwd": "${workspaceRoot}/magda-sleuther-format-layerer",
             "args": [
                 "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
                 "--require", "@magda/scripts/node_modules/tsconfig-paths/register",
