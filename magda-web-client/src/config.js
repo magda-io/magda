@@ -40,8 +40,8 @@ export const config = {
   },
   appTitle: 'Australian open data search',
   featuredDatasets: [
-    "19432f89-dc3a-4ef3-b943-5326ef1dbecc",
-    "bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
+    "ds-dga-19432f89-dc3a-4ef3-b943-5326ef1dbecc",
+    "ds-dga-bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
   ],
   exampleSearch: [
     "Business names as CSV",
