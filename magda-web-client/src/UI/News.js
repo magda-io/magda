@@ -11,7 +11,7 @@ function renderContent(props){
             </div>)
   }
   return (
-    <ul className='mui-list--unstyled list-group'>{props.newsItems.map(n=>renderNews(n))}</ul>
+    <ul className='mui-list--unstyled list-group'>{props.newsItems.slice(0, 3).map(n=>renderNews(n))}</ul>
   )
 }
 

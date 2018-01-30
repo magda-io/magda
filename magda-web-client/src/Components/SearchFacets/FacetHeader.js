@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
 import './FacetHeader.css';
 import Button from 'muicss/lib/react/button';
+import publisher from "../../assets/publisher.svg";
+import format from "../../assets/format.svg";
+import temporal from "../../assets/temporal.svg";
+import location from "../../assets/location.svg";
+
+const IconList = {
+  publisher, format, temporal, location
+}
 /**
   * Facet header component, contains a title of the facet and a reset button when there is a active facet
   */
@@ -48,7 +56,7 @@ class FacetHeader extends Component {
   render(){
     return (
       <div className='facet-header'>
-        <Button className={`${this.hasFilter() ? 'not-empty': ''} ${this.props.isOpen ? 'is-open' : ''}`} onClick={this.props.onClick}>{this.calculateTitle()}</Button>
+        <Button className={`${this.hasFilter() ? 'not-empty': ''} ${this.props.isOpen ? 'is-open' : ''}`} onClick={this.props.onClick}><img src={IconList[this.props.title]} alt={this.props.title}/>{this.calculateTitle()}</Button>
       </div>
       );
   }

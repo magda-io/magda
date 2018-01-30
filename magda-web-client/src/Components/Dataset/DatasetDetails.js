@@ -18,8 +18,8 @@ class DatasetDetails extends Component{
 
     const source = `This dataset was originally found on ${this.props.dataset.source}: \n\n  ${dataset.landingPage}`
     return <div className='dataset-details container'>
-              <div className='row'>
-                <div className='dataset-details__body col-sm-8'>
+              <div className='mui-row'>
+                <div className='dataset-details__body mui-col-sm-8'>
                   <div className='dataset-details-overview'>
                     <h3 className='section-heading'>Overview</h3>
                     <OverviewBox content={dataset.description}/>
@@ -38,7 +38,7 @@ class DatasetDetails extends Component{
                   </div>
               </div>
 
-            <div className='record-details__sidebar col-sm-4'>
+            <div className='record-details__sidebar mui-col-sm-4'>
                 <Social/>
                 <div className='tags'>
                   <h5>Tags</h5>

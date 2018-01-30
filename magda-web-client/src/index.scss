@@ -45,3 +45,12 @@ body {
 div{
   box-sizing: border-box;
 }
+
+.breadcrumb{
+  margin-left: 0;
+  padding-left: 0;
+  .breadcrumb-item{
+    display: inline-block;
+    padding-right: 16px;
+  }
+}

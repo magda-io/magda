@@ -64,11 +64,11 @@ export const config = {
     { id: "format", component: Format }
   ],
   headerNavigation: [
+    ["About", "page/about"],
+    ["Publishers", "publishers"],
     ...(serverConfig.disableAuthenticationFeatures
       ? []
-      : [["Projects", "projects"]]),
-    ["Publishers", "publishers"],
-    ["About", "page/about"]
+      : [["Projects", "projects"]])
   ],
   footerNavigation: [
     {

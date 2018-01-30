@@ -94,8 +94,8 @@ class AppContainer extends React.Component {
              <table width="100%">
                <tbody>
                  <tr style={{verticalAlign: 'middle'}}>
-                   <td className="mui--appbar-height logo">{config.appName}</td>
-                   <td className="mui--appbar-height" style={{textAlign: 'right'}}>
+                   <td className="mui--appbar-height logo"><Link to='/'>{config.appName}</Link></td>
+                   <td className="mui--appbar-height mui--appbar-right">
                      {headerNavs.map(nav =>
                          <Link key={nav[1]} to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
                      )}

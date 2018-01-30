@@ -2,7 +2,17 @@
 
 
 .app-container{
-  .logo{
+  .mui--appbar-right{
+    display: flex;
+    justify-content: flex-end;
+    a{
+      line-height: 4;
+      padding-right: 16px;
+      font-size: 16px;
+      color: $body;
+    }
+  }
+  .logo a{
     color: $body;
     font-size: 18px;
     font-weight: 500;

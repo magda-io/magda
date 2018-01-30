@@ -6,9 +6,17 @@
     border-radius: 2px;
     background-color: #F7F8FA;
     font-size: 14px;
-    line-height: 17px;
     text-align: center;
-
+    padding: 0 16px;
+    img{
+      padding: 4px 6px 4px 0;
+      height: 24px;
+      width: 24px;
+    }
+    span{
+      font-size: 14px;
+      vertical-align: text-bottom;
+    }
     &:hover, &:active, &.is-open{
       background: #494949;
       color: #fff;

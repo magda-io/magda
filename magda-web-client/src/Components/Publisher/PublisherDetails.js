@@ -32,9 +32,6 @@ class PublisherDetails extends Component{
                 <div className='row'>
                     <div className='publisher-details__body col-sm-8'>
                       <div className='media'>
-                          {details.imageUrl && <div className='media-left'>
-                               <img className='media-object publisher_image' src={details.imageUrl} alt={publisher.name}/>
-                          </div>}
                           <div className='media-body'>
                               <h1>{publisher.name}</h1>
                           </div>

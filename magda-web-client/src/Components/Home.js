@@ -22,17 +22,18 @@ class Home extends React.Component {
       <ReactDocumentTitle title={'Welcome | ' + config.appName}>
       <div className='container home'>
         <div className='row'>
-          <div className='col-sm-8'>
+          <div className='mui-col-sm-8'>
             <h2>Featured datasets</h2>
             <div className='white-box'>
               {this.props.datasets.map((d, i )=><DatasetSummary key={d.identifier || i} dataset={d}/>)}
             </div>
-            <h2>News</h2>
-            <News isFetching={this.props.isNewsFetching} error={this.props.newsFetchingError} newsItems={this.props.newsItems}/>
+
           </div>
-          <div className='col-sm-4'>
+          <div className='mui-col-sm-4'>
             <h2>data.gov.au statistics</h2>
             <Statistics stats={this.props.stats}/>
+            <h2>LATEST NEWS</h2>
+            <News isFetching={this.props.isNewsFetching} error={this.props.newsFetchingError} newsItems={this.props.newsItems}/>
           </div>
         </div>
       </div>

@@ -1,4 +1,11 @@
 @import '../variables';
-.mui-tabs__bar a.mui--is-active {
+.mui-tabs__bar {
+  a.mui--is-active {
   border-bottom: 2px solid #2196F3;
+  }
+  a{
+    &:focus{
+      text-decoration: none;
+    }
+  }
 }

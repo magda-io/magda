@@ -69,9 +69,6 @@ class RecordHandler extends React.Component {
            <div className='container'>
              {this.renderBreadCrumbs(this.props.dataset, this.props.distribution)}
                <div className='media'>
-                 <div className='media-left'>
-                   <CustomIcons imageUrl={publisherLogo} name={publisherName}/>
-                 </div>
                  <div className='media-body'>
                    <h1>{this.props.distribution.title}</h1>
                    <div className='publisher'>{publisherName}</div>
@@ -112,9 +109,6 @@ class RecordHandler extends React.Component {
            <div>
                <div className='container media'>
                  {this.renderBreadCrumbs(this.props.dataset)}
-                 <div className='media-left'>
-                   <CustomIcons imageUrl={publisherLogo} name={publisherName}/>
-                 </div>
                   <div className='media-body'>
                      <h1>{this.props.dataset.title}</h1>
                      <div className='publisher'>{publisherName}</div>
