@@ -38,17 +38,17 @@ export default function getMeasureResuls(
         [".*\\/$", "HTML"]
     ];
 
-    let formatFromURL: string = urlRegexes.find(regexCombo => {
+    let formatFromURL: Array<string> = urlRegexes.find(regexCombo => {
         return downloadURLString.match(regexCombo[0]) ? true : false;
-    })[1];
+    });
 
-    if (formatFromURL.length < 1) {
+    if (formatFromURL && formatFromURL.length > 0) {
         return null;
     } else {
         return {
             formats: [
                 {
-                    format: getCommonFormat(formatFromURL, synonymObject),
+                    format: getCommonFormat(formatFromURL[1], synonymObject),
                     correctConfidenceLevel: 100
                 }
             ],
