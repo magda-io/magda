@@ -3,7 +3,9 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.32-0"
+    tag: "0.0.32"
+tags:
+  sleuther-visualization: false
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:

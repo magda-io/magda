@@ -13,7 +13,7 @@
         "containers": [
           {
             "name": "connector-australian-institute-of-marine-science",
-            "image": "data61/magda-csw-connector:0.0.32-0",
+            "image": "data61/magda-csw-connector:0.0.32",
             "command": [
               "node",
               "/usr/src/app/component/dist/index.js",

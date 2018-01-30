@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-esta-open-data"
+    "name": "connector-tasmania-thelist"
   },
   "spec": {
-    "schedule": "30 4 */3 * *",
+    "schedule": "30 10 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-esta-open-data"
+            "name": "connector-tasmania-thelist"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-esta-open-data",
-                "image": "data61/magda-project-open-data-connector:0.0.32-0",
+                "name": "connector-tasmania-thelist",
+                "image": "data61/magda-csw-connector:0.0.32",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "esta-open-data.json",
+                      "key": "tasmania-thelist.json",
                       "path": "connector.json"
                     }
                   ]

@@ -33,7 +33,7 @@
     "magda-web-server/",
     "scripts/"
   ],
-  "version": "0.0.32-0",
+  "version": "0.0.32",
   "hoist": [
     "tsmonad",
     "urijs",

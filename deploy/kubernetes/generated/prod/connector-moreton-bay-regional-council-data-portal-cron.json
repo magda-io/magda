@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-tasmania-thelist"
+    "name": "connector-moreton-bay-regional-council-data-portal"
   },
   "spec": {
-    "schedule": "30 10 */3 * *",
+    "schedule": "0 7 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-tasmania-thelist"
+            "name": "connector-moreton-bay-regional-council-data-portal"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-tasmania-thelist",
-                "image": "data61/magda-csw-connector:0.0.32-0",
+                "name": "connector-moreton-bay-regional-council-data-portal",
+                "image": "data61/magda-project-open-data-connector:0.0.32",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "tasmania-thelist.json",
+                      "key": "moreton-bay-regional-council-data-portal.json",
                       "path": "connector.json"
                     }
                   ]
