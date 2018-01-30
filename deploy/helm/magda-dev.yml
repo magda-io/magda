@@ -3,7 +3,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.32"
+    tag: "0.0.33-0"
 tags:
   sleuther-visualization: false
 gateway:
