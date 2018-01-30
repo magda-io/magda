@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-logan-city-council"
+    "name": "connector-city-of-launceston-open-data"
   },
   "spec": {
-    "schedule": "30 5 */3 * *",
+    "schedule": "0 3 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-logan-city-council"
+            "name": "connector-city-of-launceston-open-data"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-logan-city-council",
-                "image": "data61/magda-project-open-data-connector:0.0.32-0",
+                "name": "connector-city-of-launceston-open-data",
+                "image": "data61/magda-project-open-data-connector:0.0.32",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "logan-city-council.json",
+                      "key": "city-of-launceston-open-data.json",
                       "path": "connector.json"
                     }
                   ]

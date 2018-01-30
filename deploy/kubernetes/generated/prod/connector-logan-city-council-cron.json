@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-city-of-hobart-open-data-portal"
+    "name": "connector-logan-city-council"
   },
   "spec": {
-    "schedule": "30 2 */3 * *",
+    "schedule": "30 5 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-city-of-hobart-open-data-portal"
+            "name": "connector-logan-city-council"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-city-of-hobart-open-data-portal",
-                "image": "data61/magda-project-open-data-connector:0.0.32-0",
+                "name": "connector-logan-city-council",
+                "image": "data61/magda-project-open-data-connector:0.0.32",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "city-of-hobart-open-data-portal.json",
+                      "key": "logan-city-council.json",
                       "path": "connector.json"
                     }
                   ]

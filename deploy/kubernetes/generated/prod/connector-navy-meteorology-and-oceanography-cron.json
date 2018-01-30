@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-queensland-government"
+    "name": "connector-navy-meteorology-and-oceanography"
   },
   "spec": {
-    "schedule": "30 9 */3 * *",
+    "schedule": "0 8 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-queensland-government"
+            "name": "connector-navy-meteorology-and-oceanography"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-queensland-government",
-                "image": "data61/magda-ckan-connector:0.0.32-0",
+                "name": "connector-navy-meteorology-and-oceanography",
+                "image": "data61/magda-csw-connector:0.0.32",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "queensland-government.json",
+                      "key": "navy-meteorology-and-oceanography.json",
                       "path": "connector.json"
                     }
                   ]

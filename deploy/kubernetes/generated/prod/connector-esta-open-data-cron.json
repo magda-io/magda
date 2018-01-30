@@ -2,21 +2,21 @@
   "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
-    "name": "connector-new-south-wales"
+    "name": "connector-esta-open-data"
   },
   "spec": {
-    "schedule": "30 8 */3 * *",
+    "schedule": "30 4 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
           "metadata": {
-            "name": "connector-new-south-wales"
+            "name": "connector-esta-open-data"
           },
           "spec": {
             "containers": [
               {
-                "name": "connector-new-south-wales",
-                "image": "data61/magda-ckan-connector:0.0.32-0",
+                "name": "connector-esta-open-data",
+                "image": "data61/magda-project-open-data-connector:0.0.32",
                 "command": [
                   "node",
                   "/usr/src/app/component/dist/index.js",
@@ -67,7 +67,7 @@
                   "name": "connector-config",
                   "items": [
                     {
-                      "key": "new-south-wales.json",
+                      "key": "esta-open-data.json",
                       "path": "connector.json"
                     }
                   ]
