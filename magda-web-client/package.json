@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.32-0",
+  "version": "0.0.32",
   "license": "Apache-2.0",
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -20,7 +20,7 @@
     "watch": "react-scripts build --watch"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.32-0",
+    "@magda/scripts": "^0.0.32",
     "@storybook/react": "^3.2.17",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-es2016": "^6.24.1",
