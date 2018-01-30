@@ -6,7 +6,7 @@ import MeasureResult from "./MeasureResult";
 * Tries to determine the format by parsing the downloadURL string and looking at the extension
 * TODO not finished
 */
-export default function getMeasureResuls(
+export default function getMeasureResults(
     relatedDistribution: Record,
     synonymObject: any
 ): MeasureResult {
