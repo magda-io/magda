@@ -1,4 +1,3 @@
-import * as fs from "fs";
 
 export var mochaObject = {
     isRunning: false,
@@ -32,7 +31,6 @@ export function getCommonFormat(
     if (commonFormat) {
         return commonFormat;
     } else {
-        let synonymObject: any;
         for (let label of Object.keys(synonymObject)) {
             for (var i = 0; i < synonymObject[label].length; i++) {
                 if (

@@ -9,7 +9,7 @@ import {
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 
 import { Formats, mochaObject as mochaObjectFormats} from "../../format-engine/formats";
-import { getCommonSynonymStub } from "./formats.spec";
+let synonymObject =  require("../../format-engine/synonyms.json");
 import * as fs from "fs";
 
 //import getDcatMeasureResult from "../../format-engine/measures/dcatFormatMeasure";
@@ -30,7 +30,6 @@ import {  } from "../../format-engine/formats";
 describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
     before(() => {
         mochaObjectFormats.isRunning = true;
-        mochaObjectFormats.testVariables.synonymTable = getCommonSynonymStub();
 
         nock("www.google.com")
             .get("/")
@@ -60,7 +59,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.google.com/"
             );
 
-            const ret: MeasureResult = getDownloadMeasureResult(record);
+            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject);
 
             expect(ret.formats[0].format).to.eql(Formats.HTML);
         });
@@ -70,7 +69,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.snee.com/xml/xslt/sample.doc"
             );
 
-            const ret: MeasureResult = getDownloadMeasureResult(record);
+            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject);
 
             expect(ret.formats[0].format).to.eql(Formats.MSWORD);
         });
@@ -80,7 +79,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.pj.com/whereispj.htm"
             );
 
-            const ret: MeasureResult = getDownloadMeasureResult(record);
+            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject);
 
             expect(ret.formats[0].format).to.eql(Formats.HTML);
         });
@@ -92,7 +91,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.google.com/"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record);
+            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
 
             expect(ret.formats[0].format).to.eql(Formats.HTML);
         });
@@ -102,7 +101,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.snee.com/xml/xslt/sample.doc"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record);
+            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
 
             expect(ret.formats[0].format).to.eql(Formats.DOCX);
         });
@@ -112,7 +111,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.pj.com/whereispj.htm"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record);
+            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
 
             expect(ret.formats[0].format).to.eql(Formats.HTML);
         });

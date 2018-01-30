@@ -43,8 +43,6 @@ export default function getMeasureResuls(
     });
 
     if (formatFromURL && formatFromURL.length > 0) {
-        return null;
-    } else {
         return {
             formats: [
                 {
@@ -54,5 +52,7 @@ export default function getMeasureResuls(
             ],
             distribution: relatedDistribution
         };
+    } else {
+        return null;
     }
 }
