@@ -1487,7 +1487,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("returns processing HTTP code if delete is taking too long") { param =>
+      it("returns Accepted HTTP code if delete is taking too long") { param =>
         val mockedRecordPersistence = mock[RecordPersistence]
         val mockedApi = new RecordsService(param.api.config, param.webHookActor, param.authClient, system, materializer, mockedRecordPersistence)
 
@@ -1497,7 +1497,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         param.asAdmin(Delete("?sourceTagToPreserve=righttag&sourceId=right")) ~> mockedApi.route ~> check {
-          status shouldEqual StatusCodes.Processing
+          status shouldEqual StatusCodes.Accepted
         }
       }
 

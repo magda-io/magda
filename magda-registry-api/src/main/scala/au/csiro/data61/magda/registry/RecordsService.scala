@@ -149,7 +149,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "sourceId", required = true, dataType = "string", paramType = "query", value = "Source id of the records to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
-    new ApiResponse(code = 102, message = "Deletion is taking a long time (normal for sources with many records) but it has worked"),
+    new ApiResponse(code = 202, message = "Deletion is taking a long time (normal for sources with many records) but it has worked"),
     new ApiResponse(code = 400, message = "The records could not be deleted, possibly because they are used by other records.", response = classOf[BadRequest])))
   def trimBySourceTag = delete {
     pathEnd {
@@ -171,7 +171,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
             deleteResult match {
               case Success(result)                             => complete(MultipleDeleteResult(result))
-              case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Processing)
+              case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Accepted)
               case Failure(exception) =>
                 complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }

@@ -75,11 +75,11 @@ describe("JsonConnector", () => {
             });
         });
 
-        it("accepts a 102 Processing status from the registry when deleting", () => {
+        it("accepts a 202 Accepted status from the registry when deleting", () => {
             const { scope, connector } = setupCrawlTest();
 
             scope.put(new RegExp("/records")).reply(200);
-            scope.delete(/.*/).reply(102);
+            scope.delete(/.*/).reply(202);
 
             return connector.run().then(result => {
                 scope.done();
