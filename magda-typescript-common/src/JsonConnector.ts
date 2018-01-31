@@ -246,7 +246,13 @@ export default class JsonConnector {
             .then(unionToThrowable)
             .then(deletionResult => {
                 const result = new ConnectionResult();
-                result.recordsTrimmed = deletionResult.count;
+
+                if (deletionResult !== "Processing") {
+                    result.recordsTrimmed = deletionResult.count;
+                } else {
+                    result.trimStillProcessing = true;
+                }
+
                 return result;
             });
     }

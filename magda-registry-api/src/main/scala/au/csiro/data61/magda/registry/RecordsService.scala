@@ -1,28 +1,30 @@
 package au.csiro.data61.magda.registry
 
-import javax.ws.rs.Path
+import java.util.concurrent.TimeoutException
 
-import au.csiro.data61.magda.model.Registry._
-import akka.actor.{ ActorRef, ActorSystem }
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.stream.Materializer
-import akka.http.scaladsl.server.Directives._
-import scalikejdbc.DB
-import akka.http.scaladsl.model.StatusCodes
-import io.swagger.annotations._
-import gnieh.diffson.sprayJson._
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.Failure
 import scala.util.Success
+
 import com.typesafe.config.Config
-import au.csiro.data61.magda.client.AuthApiClient
+
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
 import akka.event.Logging
-import scala.concurrent.Await
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import java.util.concurrent.TimeoutException
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives._
+import akka.stream.Materializer
+import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
+import au.csiro.data61.magda.model.Registry._
+import gnieh.diffson.sprayJson._
+import io.swagger.annotations._
+import javax.ws.rs.Path
+import scalikejdbc.DB
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -147,6 +149,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "sourceId", required = true, dataType = "string", paramType = "query", value = "Source id of the records to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
+    new ApiResponse(code = 102, message = "Deletion is taking a long time (normal for sources with many records) but it has worked"),
     new ApiResponse(code = 400, message = "The records could not be deleted, possibly because they are used by other records.", response = classOf[BadRequest])))
   def trimBySourceTag = delete {
     pathEnd {

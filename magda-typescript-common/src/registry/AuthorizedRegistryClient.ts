@@ -13,6 +13,7 @@ import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
+import * as _ from "lodash";
 
 export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwtSecret: string;
@@ -268,9 +269,18 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     deleteBySource(
         sourceTagToPreserve: string,
         sourceId: string
-    ): Promise<MultipleDeleteResult | Error> {
+    ): Promise<MultipleDeleteResult | "Processing" | Error> {
         const operation = () =>
-            this.recordsApi.trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt);
+            this.recordsApi
+                .trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt)
+                .then(result => result.body as MultipleDeleteResult)
+                .catch(error => {
+                    if (_.get(error, "response.statusCode") === 102) {
+                        return "Processing" as "Processing";
+                    } else {
+                        throw error;
+                    }
+                });
 
         return retry(
             operation,
@@ -284,8 +294,6 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         retriesLeft
                     )
                 )
-        )
-            .then(result => result.body)
-            .catch(createServiceError);
+        ).catch(createServiceError);
     }
 }
