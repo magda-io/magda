@@ -1,4 +1,4 @@
-## 0.0.32
+## 0.0.33
 
 * Connectors now create organizations, datasets, and distributions with IDs prefixed by the type of record and by the ID of the connector. For example, `org-bom-Australian Bureau of Meteorology` is the organization with the ID `Australian Bureau of Meteorology` from the connector with ID `bom`. Other type prefixes are `ds` for dataset and `dist` for distribution. This change avoids conflicting IDs from different sources.
 * Fixed a race condition in the registry that could lead to an error when multiple requests tried to create/update the same record simultaneously, which is fairly common when creating organizations in the CSW connector.
@@ -12,3 +12,4 @@
 * Stopped the broken link sleuther from failing completely when it gets a string that isn't a valid URL - now records as "broken".
 * Added ability to get records from the registry by the value of their aspects.
 * Set `kubernetes-client` (required by magda-admin-api) version to `3.17.2` to sovle the travis build issue
+* Add route for `/pages/*` requests so that `magda-web-server` won't response `Cannot GET /page/*`
