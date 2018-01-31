@@ -11,4 +11,5 @@
 * Stopped async webhooks posting `success: false` on an uncaught failure, as this just causes them to process the same data and fail over and over.
 * Stopped the broken link sleuther from failing completely when it gets a string that isn't a valid URL - now records as "broken".
 * Added ability to get records from the registry by the value of their aspects.
+* Set `kubernetes-client` (required by magda-admin-api) version to `3.17.2` to sovle the travis build issue
 * Add route for `/pages/*` requests so that `magda-web-server` won't response `Cannot GET /page/*`
