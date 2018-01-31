@@ -18,12 +18,18 @@ import scala.util.Success
 import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
 import akka.event.Logging
+import scala.concurrent.Await
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+import java.util.concurrent.TimeoutException
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
-class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, recordPersistence: RecordPersistence = DefaultRecordPersistence) extends Protocols with SprayJsonSupport {
 
   val logger = Logging(system, getClass)
+  implicit val ec: ExecutionContext = system.dispatcher
 
   @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[Record], responseContainer = "List")
   @ApiImplicitParams(Array(
@@ -42,7 +48,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
           complete {
             DB readOnly { session =>
-              RecordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
+              recordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
             }
           }
       }
@@ -60,7 +66,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
         complete {
           DB readOnly { session =>
-            RecordPersistence.getAll(session, pageToken, start, limit)
+            recordPersistence.getAll(session, pageToken, start, limit)
           }
         }
       }
@@ -78,7 +84,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       pathEnd {
         entity(as[Record]) { record =>
           val result = DB localTx { session =>
-            RecordPersistence.createRecord(session, record) match {
+            recordPersistence.createRecord(session, record) match {
               case Success(result)    => complete(result)
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
@@ -101,7 +107,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
           complete {
             DB readOnly { session =>
-              "0" :: RecordPersistence.getPageTokens(session, aspect, limit)
+              "0" :: recordPersistence.getPageTokens(session, aspect, limit)
             }
           }
         }
@@ -121,7 +127,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       requireIsAdmin(authClient)(system, config) { _ =>
         {
           val result = DB localTx { session =>
-            RecordPersistence.deleteRecord(session, recordId) match {
+            recordPersistence.deleteRecord(session, recordId) match {
               case Success(result)    => complete(DeleteResult(result))
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
@@ -147,13 +153,26 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       requireIsAdmin(authClient)(system, config) { _ =>
         parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
           val result = DB localTx { implicit session =>
-            RecordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId) match {
-              case Success(result) => complete(MultipleDeleteResult(result))
+            val deleteFuture = Future {
+              recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId)
+            } map { result =>
+              webHookActor ! WebHookActor.Process()
+              result
+            }
+
+            val deleteResult = try {
+              Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
+            } catch {
+              case e: Throwable => Failure(e)
+            }
+
+            deleteResult match {
+              case Success(result)                             => complete(MultipleDeleteResult(result))
+              case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Processing)
               case Failure(exception) =>
                 complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
-          webHookActor ! WebHookActor.Process()
           result
         }
       }
@@ -174,7 +193,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     path(Segment) { id =>
       parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { (aspects, optionalAspects, dereference) =>
         DB readOnly { session =>
-          RecordPersistence.getByIdWithAspects(session, id, aspects, optionalAspects, dereference) match {
+          recordPersistence.getByIdWithAspects(session, id, aspects, optionalAspects, dereference) match {
             case Some(record) => complete(record)
             case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
           }
@@ -194,7 +213,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     path("summary" / Segment) { id =>
       {
         DB readOnly { session =>
-          RecordPersistence.getById(session, id) match {
+          recordPersistence.getById(session, id) match {
             case Some(record) => complete(record)
             case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
           }
@@ -216,7 +235,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         {
           entity(as[Record]) { record =>
             val result = DB localTx { session =>
-              RecordPersistence.putRecordById(session, id, record) match {
+              recordPersistence.putRecordById(session, id, record) match {
                 case Success(aspect) =>
                   complete(record)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
@@ -243,7 +262,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         {
           entity(as[JsonPatch]) { recordPatch =>
             val result = DB localTx { session =>
-              RecordPersistence.patchRecordById(session, id, recordPatch) match {
+              recordPersistence.patchRecordById(session, id, recordPatch) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>

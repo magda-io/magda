@@ -5,6 +5,11 @@ import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import spray.json._
+import scalikejdbc.DBSession
+import scala.util.Success
+import akka.actor.ActorSystem
+import akka.http.scaladsl.testkit.RouteTestTimeout
+import scala.concurrent.duration.`package`.DurationInt
 
 class RecordsServiceSpec extends ApiSpec {
   describe("GET") {
@@ -1482,10 +1487,23 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
+      it("returns processing HTTP code if delete is taking too long") { param =>
+        val mockedRecordPersistence = mock[RecordPersistence]
+        val mockedApi = new RecordsService(param.api.config, param.webHookActor, param.authClient, system, materializer, mockedRecordPersistence)
+
+        (mockedRecordPersistence.trimRecordsBySource(_: String, _: String)(_: DBSession)).expects(*, *, *).onCall { (sourceId: String, tag: String, session: DBSession) =>
+          Thread.sleep(600)
+          Success(1)
+        }
+
+        param.asAdmin(Delete("?sourceTagToPreserve=righttag&sourceId=right")) ~> mockedApi.route ~> check {
+          status shouldEqual StatusCodes.Processing
+        }
+      }
+
       checkMustBeAdmin {
         Delete("/v0/records?sourceTagToPreserve=blah&sourceId=blah2")
       }
     }
   }
-
 }
