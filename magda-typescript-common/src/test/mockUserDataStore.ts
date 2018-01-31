@@ -2,7 +2,7 @@ import * as uuid from "uuid";
 import { User } from "../authorization-api/model";
 
 const mockUserData = [
-{
+    {
         id: "00000000-0000-4000-8000-000000000000",
         displayName: "admin",
         email: "admin@admin.com",
@@ -23,28 +23,28 @@ const mockUserData = [
 ];
 
 const mockUserDataStore = {
-    getData:function(){
+    getData: function() {
         return mockUserData;
     },
-    getRecordBySourceAndSourceId(source:string, sourceId:string){
-        return mockUserData.filter(record=>{
+    getRecordBySourceAndSourceId(source: string, sourceId: string) {
+        return mockUserData.filter(record => {
             return record.source == source && record.sourceId == sourceId;
         });
     },
-    getRecordByUserId(userId:string){
-        return mockUserData.filter(record=>{
+    getRecordByUserId(userId: string) {
+        return mockUserData.filter(record => {
             return record.id == userId;
         });
     },
-    getRecordByIndex(idx:number){
+    getRecordByIndex(idx: number) {
         return mockUserData[idx];
     },
-    createRecord(user:User){
-        const newRecord:any={...user, id:uuid.v4()};
+    createRecord(user: User) {
+        const newRecord: any = { ...user, id: uuid.v4() };
         mockUserData.push(newRecord);
         return newRecord;
     },
-    countRecord:function(){
+    countRecord: function() {
         return mockUserData.length;
     }
 };

@@ -12,16 +12,19 @@ export const emailArb: jsc.Arbitrary<string> = jsc
         lcAlphaNumStringArbNe,
         jsc.elements([".com"])
     ])
-    .smap(function(x) {
-        return x.join('');
-    }, function(email) {
-        const items = [];
-        let parts = email.split("@");
-        items.push(parts[0],"@");
-        parts = parts[1].split(".com");
-        items.push(parts[0],".com");
-        return items;
-    });
+    .smap(
+        function(x) {
+            return x.join("");
+        },
+        function(email) {
+            const items = [];
+            let parts = email.split("@");
+            items.push(parts[0], "@");
+            parts = parts[1].split(".com");
+            items.push(parts[0], ".com");
+            return items;
+        }
+    );
 
 export const urlArb: jsc.Arbitrary<string> = jsc
     .tuple([
@@ -29,15 +32,18 @@ export const urlArb: jsc.Arbitrary<string> = jsc
         lcAlphaNumStringArbNe,
         jsc.elements([".com"])
     ])
-    .smap(function(x) {
-        return x.join('');
-    }, function(url) {
-        return [
-            "http://",
-            url.replace(/^http\:\/\//,'').replace(/\.com/,''),
-            ".com"
-        ];
-    });
+    .smap(
+        function(x) {
+            return x.join("");
+        },
+        function(url) {
+            return [
+                "http://",
+                url.replace(/^http\:\/\//, "").replace(/\.com/, ""),
+                ".com"
+            ];
+        }
+    );
 
 export const userDataArb = jsc.record<User>({
     displayName: peopleNameArb,
