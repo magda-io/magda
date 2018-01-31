@@ -12,3 +12,6 @@
 * Stopped the broken link sleuther from failing completely when it gets a string that isn't a valid URL - now records as "broken".
 * Added ability to get records from the registry by the value of their aspects.
 * Set `kubernetes-client` (required by magda-admin-api) version to `3.17.2` to sovle the travis build issue
+
+## 0.0.33
+* Stopped the registry api from timing out and returning an error code when trimming by source tag / id - now returns 202 if it takes too long.
