@@ -25,7 +25,14 @@ export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => (
             .then(maybeUser => {
                 maybeUser.caseOf({
                     just: user => {
-                        next();
+                        if (user.isAdmin) {
+                            next();
+                        } else {
+                            console.warn(
+                                "Rejecting because user is not an admin"
+                            );
+                            rejectNoAuth();
+                        }
                     },
                     nothing: () => {
                         console.warn(
