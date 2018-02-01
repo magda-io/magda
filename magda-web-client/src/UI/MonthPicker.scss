@@ -1,7 +1,7 @@
 @import '../variables';
 
 .month-picker{
-  width: 200px;
+  width: calc(50% - 10px);
   font-family: $font-base;
   position: relative;
   .mui-textfield{

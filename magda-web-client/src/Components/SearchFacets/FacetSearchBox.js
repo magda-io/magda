@@ -4,6 +4,7 @@ import debounce from 'lodash.debounce';
 import Form from 'muicss/lib/react/form';
 import Input from 'muicss/lib/react/input';
 import Autosuggest from 'react-autosuggest';
+import search from "../../assets/search-dark.svg";
 
 // Teach Autosuggest how to calculate suggestions for any given input value.
 const getSuggestions = (source, value) => {
@@ -78,16 +79,19 @@ class FacetSearchBox extends Component {
 
     // Finally, render it!
     return (
-      <Autosuggest
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-        onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-        getSuggestionValue={getSuggestionValue}
-        renderSuggestion={this.renderSuggestion}
-        inputProps={inputProps}
-        onSuggestionSelected={this.onSuggestionSelected}
-        focusInputOnSuggestionClick={false}
-      />
+      <div className='facet-search-box'>
+        <img className='search-icon' src ={search} />
+        <Autosuggest
+          suggestions={suggestions}
+          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+          onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+          getSuggestionValue={getSuggestionValue}
+          renderSuggestion={this.renderSuggestion}
+          inputProps={inputProps}
+          onSuggestionSelected={this.onSuggestionSelected}
+          focusInputOnSuggestionClick={false}
+        />
+      </div>
     );
   }
 }

@@ -3,7 +3,7 @@ import './RegionSearchBox.css';
 import debounce from 'lodash.debounce';
 import Form from 'muicss/lib/react/form';
 import Input from 'muicss/lib/react/input';
-import search from "../../assets/search-light.svg";
+import search from "../../assets/search-dark.svg";
 
 /**
   * Searchbox for facet facet
@@ -120,16 +120,14 @@ class RegionSearchBox extends Component {
 
   render(){
     return (
-      <div className='region-search-box'>
+      <div className='region-search-box  facet-search-box'>
         <Form onKeyDown={this.handleKeyDown}>
-            <img src ={search} />
+            <img className='search-icon' src ={search} />
             <Input type='text'
                    value={this.state.searchText}
                    onInput={this.onSearchTextChange}
                    />
-
           </Form>
-
           {this.state.searchText.length > 0 &&
             <ul className='region-search-box__options mui-list--unstyled' onKeyDown={this.handleKeyDown}>
               {this.props.options.map((option, i)=>

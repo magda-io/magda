@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import TemporalAspectViewer from '../../UI/TemporalAspectViewer';
 import OverviewBox from '../../UI/OverviewBox';
+import MarkdownViewer from '../../UI/MarkdownViewer';
 import Social from '../../Components/Social';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -16,7 +17,7 @@ class DatasetDetails extends Component{
     const dataset = this.props.dataset;
     const datasetId = this.props.match.params.datasetId;
 
-    const source = `This dataset was originally found on ${this.props.dataset.source}: \n\n  ${dataset.landingPage}`
+    const source = `This dataset was originally found on [${this.props.dataset.source}](${dataset.landingPage})`
     return <div className='dataset-details container'>
               <div className='mui-row'>
                 <div className='dataset-details__body mui-col-sm-8'>
@@ -26,7 +27,7 @@ class DatasetDetails extends Component{
                   </div>
                   <div className='dataset-details-source'>
                     <h3 className='section-heading'>Source</h3>
-                    <OverviewBox content={source}/>
+                    <MarkdownViewer markdown={source} truncate={false}/>
                   </div>
                   <div className='dataset-details-source'>
                       <h3 className='clearfix'><span className='section-heading'>Data and APIs</span><Button onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</Button></h3>
