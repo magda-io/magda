@@ -2,9 +2,9 @@ import {} from "mocha";
 import * as sinon from "sinon";
 import * as request from "supertest";
 import * as express from "express";
-import * as yargs from "yargs";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
+import fakeArgv from "@magda/typescript-common/dist/test/fakeArgv";
 import createApiRouter from "../createApiRouter";
 import { expect } from "chai";
 import jsc from "@magda/typescript-common/dist/test/jsverify";
@@ -31,30 +31,12 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
     function retrieveArgv() {
         const argv = addJwtSecretFromEnvVar(
-            yargs
-                .config()
-                .help()
-                .option("listenPort", {
-                    describe:
-                        "The TCP/IP port on which the authorization-api should listen.",
-                    type: "number",
-                    default: 6104
-                })
-                .option("dbHost", {
-                    describe: "The host running the auth database.",
-                    type: "string",
-                    default: "localhost"
-                })
-                .option("dbPort", {
-                    describe: "The port running the auth database.",
-                    type: "number",
-                    default: 5432
-                })
-                .option("jwtSecret", {
-                    describe:
-                        "The shared secret for intra-network communication",
-                    type: "string"
-                }).argv
+            fakeArgv({
+                listenPort: 6014,
+                dbHost: "localhost",
+                dbPort: 5432,
+                jwtSecret: "squirrel"
+            })
         );
         return argv;
     }
