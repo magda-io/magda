@@ -80,7 +80,6 @@ dependencies:
   - name: sleuther-visualization
     version: 0.1.0
     tags:
-      - all
       - sleuther-visualization
   - name: sleuther-linked-data-rating
     version: 0.1.0

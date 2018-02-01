@@ -16,24 +16,18 @@ class WebHookActorSpec extends ApiSpec {
   implicit val timeout = Timeout(5 seconds)
 
   private def processAndWaitUntilDone(actor: ActorRef) = {
-    actor ! WebHookActor.Process
+    actor ! WebHookActor.Process()
 
-    var keepWaiting = true
-    while (keepWaiting) {
-      keepWaiting = Await.result(actor ? WebHookActor.GetStatus, 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing != Some(false)
-    }
+    Util.waitUntilDone(actor, "abc")
   }
 
-  it("initially is not processing") { _ =>
-    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/"))
-    Await.result(actor ? WebHookActor.GetStatus, 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(Some(false))
+  it("initially is not processing") { param =>
+    val actor = param.webHookActor
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
   }
 
   it("creates a processor for newly-created web hooks") { param =>
-    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/"))
-
-    processAndWaitUntilDone(actor)
-
+    val actor = param.webHookActor
     Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
 
     val hook = WebHook(
@@ -62,7 +56,7 @@ class WebHookActorSpec extends ApiSpec {
   }
 
   it("removes the processor for removed web hooks") { param =>
-    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/"))
+    val actor = param.webHookActor
     val hook = WebHook(
       id = Some("abc"),
       userId = None,
@@ -91,7 +85,9 @@ class WebHookActorSpec extends ApiSpec {
       status shouldEqual StatusCodes.OK
     }
 
-    processAndWaitUntilDone(actor)
+    Util.blockUntil("2") { () =>
+      Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing == None
+    }
 
     Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
   }

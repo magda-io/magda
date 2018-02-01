@@ -55,10 +55,12 @@ class PublisherDetails extends Component<void, Props, void> {
                             <h3 className='section-heading'>Overview</h3>
                             <OverviewBox content={description}/>
                         </div>
+                        <div>
+                            <Link to={`/search?publisher=${encodeURIComponent(publisher.name)}&q=${encodeURIComponent('*')}`}>View all datasets from {publisher.name}</Link>
+                        </div>
+
                     </div>
-                    <div className='col-sm-4'>
-                        <Link to={`/search?publisher=${encodeURIComponent(publisher.name)}&q=${encodeURIComponent('*')}`}>View all datasets from {publisher.name}</Link>
-                    </div>
+
                 </div>
              </div>
     }

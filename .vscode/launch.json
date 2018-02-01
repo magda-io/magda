@@ -115,10 +115,10 @@
                 "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
             },
             "runtimeArgs":[
-                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
-                "src/index.ts"
             ],
             "args":[
+                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/index.ts",
                 "--jwtSecret", "squirrel",
                 "--sessionSecret", "keyboard cat",
                 "--ckanUrl", "https://data.gov.au",
@@ -156,6 +156,16 @@
                "--configuration", "../deploy/kubernetes/local/base/combined-db.yml",
                "--selector", "service=combined-db",
                "--port", "5432"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "build-changed",
+            "program": "${workspaceRoot}/scripts/build-changed.js",
+            "cwd": "${workspaceRoot}/scripts",
+            "args": [
             ]
         },
         {
