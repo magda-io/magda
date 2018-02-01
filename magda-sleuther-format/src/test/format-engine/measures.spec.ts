@@ -8,11 +8,11 @@ import {
 
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 
-import { Formats, mochaObject as mochaObjectFormats} from "../../format-engine/formats";
+import { Formats, mochaObject as mochaObjectFormats } from "../../format-engine/formats";
 let synonymObject =  require("../../format-engine/synonyms.json");
 import * as fs from "fs";
 
-//import getDcatMeasureResult from "../../format-engine/measures/dcatFormatMeasure";
+import getDcatMeasureResult from "../../format-engine/measures/dcatFormatMeasure";
 import getExtensionMeasureResult from "../../format-engine/measures/downloadExtensionMeasure";
 import getDownloadMeasureResult from "../../format-engine/measures/downloadMeasure";
 
@@ -24,7 +24,6 @@ import getDownloadMeasureResult from "../../format-engine/measures/downloadMeasu
 //import MeasureEvaluationSet from "src/format-engine/measures/MeasureEvaluationSet";
 //import MeasureEvalResult from "src/format-engine/MeasureEvalResult";
 import MeasureResult from "src/format-engine/measures/MeasureResult";
-//TODO change test cases to handle synonyms
 import {  } from "../../format-engine/formats";
 
 describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
@@ -54,16 +53,6 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
     });
 
     describe("DownloadMeasure -> getSelectedFormats()", function() {
-        it("returns html on normal possibly cloaked pages", function() {
-            var record: Record = getRecordStubForDownloadMeasure(
-                "www.google.com/"
-            );
-
-            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject);
-
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
-        });
-
         it("returns a doc when supplied with a doc", function() {
             var record: Record = getRecordStubForDownloadMeasure(
                 "www.snee.com/xml/xslt/sample.doc"
@@ -116,22 +105,106 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
             expect(ret.formats[0].format).to.eql(Formats.HTML);
         });
     });
+
+    describe("DcatFormatMeasusre -> getSelectedFormats()", function() {
+        //try docx txt msword 
+        // it only tests formats not confidence levels
+        it("returns 1 worded strings", function() {
+            let recordPDF: Record = getRecordStubForDcatFormatMeasure(
+                "pDf"
+            );
+            let recordDOCX: Record = getRecordStubForDcatFormatMeasure(
+                "DoCx"
+            );
+            let recordTXT: Record = getRecordStubForDcatFormatMeasure(
+                "txT"
+            );
+
+            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
+            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
+            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
+
+            expect(testPDF.formats[0].format).to.eql(Formats.PDF) &&
+            expect(testDOCX.formats[0].format).to.eql(Formats.DOCX) &&
+            expect(testTXT.formats[0].format).to.eql(Formats.TXT);
+        });
+
+        it("successfully separates &", function() {
+            let recordPDF: Record = getRecordStubForDcatFormatMeasure(
+                "pDf & Docx"
+            );
+            let recordDOCX: Record = getRecordStubForDcatFormatMeasure(
+                "DoCx   & Pdf"
+            );
+            let recordTXT: Record = getRecordStubForDcatFormatMeasure(
+                "txT    & html"
+            );
+
+            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
+            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
+            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
+
+            expect(testPDF.formats[0].format).to.eql(Formats.PDF) &&
+            expect(testPDF.formats[1].format).to.eql(Formats.DOCX) &&
+
+            expect(testDOCX.formats[0].format).to.eql(Formats.DOCX) &&
+            expect(testDOCX.formats[1].format).to.eql(Formats.PDF) &&
+
+            expect(testTXT.formats[0].format).to.eql(Formats.TXT) &&
+            expect(testTXT.formats[1].format).to.eql(Formats.HTML);
+        });
+
+        it("successfully chooses () formats", function() {
+            let recordPDF: Record = getRecordStubForDcatFormatMeasure(
+                "zIp (Docx)"
+            );
+            let recordDOCX: Record = getRecordStubForDcatFormatMeasure(
+                "some zipper file    (Pdf)"
+            );
+            let recordTXT: Record = getRecordStubForDcatFormatMeasure(
+                "txT    (html)"
+            );
+
+            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
+            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
+            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
+
+            expect(testPDF.formats[0].format).to.eql(Formats.DOCX) &&
+            expect(testPDF.formats.length).to.equal(1) &&
+
+            expect(testDOCX.formats[0].format).to.eql(Formats.PDF) &&
+            expect(testDOCX.formats.length).to.equal(1) &&
+
+            expect(testTXT.formats[0].format).to.eql(Formats.HTML) &&
+            expect(testTXT.formats.length).to.equal(1);
+        });
+    });
 });
 
 // helper functions
+
 function getRecordStubForDownloadMeasure(downloadURL: string): Record {
+    return getGeneralRecordStub(downloadURL, null, null);
+}
+
+function getRecordStubForDownloadExtensionMeasure(downloadURL: string) : Record {
+    return getGeneralRecordStub(downloadURL, null, null);
+}
+
+function getRecordStubForDcatFormatMeasure(format: string): Record {
+    return getGeneralRecordStub(null, format, null);
+}
+
+function getGeneralRecordStub(downloadURL: string, format: string, mediaType: string) {
     return {
         aspects: {
             "dcat-distribution-strings": {
-                downloadURL: downloadURL
+                downloadURL: downloadURL,
+                format: format,
+                mediaType: mediaType
             }
         },
         id: "10",
         name: "coolstuff"
     };
-}
-
-// added this function just to separate out the stub functions
-function getRecordStubForDownloadExtensionMeasure(downloadURL: string) : Record {
-    return getRecordStubForDownloadMeasure(downloadURL);
 }

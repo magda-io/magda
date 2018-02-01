@@ -14,8 +14,13 @@ export default function getBestMeasureResult(
 
     let sortedCandidates = candidates.sort(candidateSortFn);
 
+    //TODO produce a system that mitigates when all measures return null. What should happen then?
     if(!sortedCandidates[0].measureResult) {
-        return null;
+        return {
+            format: null,
+            absConfidenceLevel: 0,
+            distribution: null
+        };
     } else {
         return {
             format: sortedCandidates[0].measureResult.formats[0],

@@ -1,11 +1,12 @@
 /*
 * Tries to determine the format by deciphering DCAT-DISTRIBUTION-STRING -> format
-* TODO Unit tests
+* TODO add more unit tests to test foundational function and more permutations of other functions
 */
 
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
+import * as _ from "lodash";
 
 // list of functions that clean up the dcat-string so that magda can understand it
 // all functions must be executed in the order they appear in this file
@@ -14,33 +15,40 @@ import MeasureResult from "./MeasureResult";
  * Removes commas, periods, and makes everything lower case
  * @param format the current format string to clean up
  */
-function foundationalCleanup(format: string) {
-    return format.toLowerCase().replace(/\s*[.,]\s*/g, " ");
+function foundationalCleanup(formats: Array<string>): Array<string> {
+    return formats.map(format =>
+        format
+            .toString()
+            .toLowerCase()
+            .replace(/\s*[.,]\s*/g, " ")
+    );
 }
 
 /**
- * turns 'pdf   & (xlsx)' into 'pdf (xlsx)' or 'pdf, xlsx' into 'pdf, xlsx'
+ * turns ['pdf   & (xlsx)'] into ['pdf', '(xlsx)'] or ['pdf, xlsx'] into ['pdf, xlsx']
  */
-function replaceAmpersandFormats(format: string) {
-    return format.replace(/\s*(&)\s*/g, " ");
+function replaceAmpersandFormats(formats: Array<string>): Array<string> {
+    return _(formats).flatMap(format => format.split(/\s*\&\s*/g)).value();
 }
 
 /**
  * split white space separated stuff into an array:
- * zip (xlsx) -> ['zip', '(xlsx)']
+ * ['zip (xlsx)'] -> ['zip', '(xlsx)']
  */
-function splitWhiteSpaceFormats(format: string) {
-    return format.split(/\s+/g);
+function splitWhiteSpaceFormats(formats: Array<string>): Array<string> {
+    return _(formats)
+        .flatMap(format => format.split(/\s+/g))
+        .value();
 }
 
 /**
  * replace ['application/exe'] with ['exe'] or ['pdf'] with ['pdf']
  */
-function reduceMimeType(formats: Array<string>) {
+function reduceMimeType(formats: Array<string>): Array<string> {
     return formats.map(
         format =>
             format.indexOf("/") < 0
-                ? formats
+                ? format
                 : format.substr(format.indexOf("/"))
     );
 }
@@ -64,7 +72,7 @@ function getFilteredBracketedFormats(formats: Array<string>) {
     return formats.filter(format => {
         return (
             format.indexOf("(") > -1 &&
-            format.indexOf("(") === format.indexOf(")")
+            format.indexOf(")") > -1
         );
     });
 }
@@ -82,7 +90,6 @@ export default function getMeasureResult(
     // this is an array that acts like an assembly belt, you input in the string, the middle functions are the assembly robots,
     // and the last function returns the output.
     const cleanUpAssemblyChain = [
-        format,
         foundationalCleanup,
         replaceAmpersandFormats,
         splitWhiteSpaceFormats,
@@ -90,18 +97,17 @@ export default function getMeasureResult(
         filterBracketedFormats
     ];
 
-    const processedFormat: Array<string> = cleanUpAssemblyChain.reduce(function(
-        accumliation,
-        currentObject
-    ) {
-        return currentObject(accumliation);
-    });
+    //TODO ask gilleran the compiler doesn't let me compile this
 
-    if (processedFormat.length < 1) {
+    let processedFormats: Array<string> = cleanUpAssemblyChain.reduce(
+        (accumulation, currentTransformer) => currentTransformer(accumulation), [format]
+    );
+
+    if (processedFormats.length < 1) {
         return null;
     } else {
         return {
-            formats: processedFormat.map(eachFormat => {
+            formats: processedFormats.map(eachFormat => {
                 return {
                     format: getCommonFormat(eachFormat, synonymObject),
                     correctConfidenceLevel: 100

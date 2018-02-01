@@ -1,16 +1,16 @@
 //import * as _ from "lodash";
 
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import Registry from "../../magda-typescript-common/dist/registry/AuthorizedRegistryClient";
+import { Record } from "../../magda-typescript-common/dist/generated/registry/api";
 import { FormatAspect } from "./formatAspectDef";
-import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+import unionToThrowable from "../../magda-typescript-common/dist/util/unionToThrowable"
 
 import getDcatMeasureResult from "./format-engine/measures/dcatFormatMeasure";
 import getExtensionMeasureResult from "./format-engine/measures/downloadExtensionMeasure";
 import getDownloadMeasureResult from "./format-engine/measures/downloadMeasure";
 
 import getDcatProcessedData from "./format-engine/measures/processed-functions/dcatProcessedFns";
-import getDownloadProcessedData from "./format-engine/measures/processed-functions/dcatProcessedFns";
+import getDownloadProcessedData from "./format-engine/measures/processed-functions/downloadProcessedFns";
 import getExtensionProcessedData from "./format-engine/measures/processed-functions/extensionProcessedFns";
 
 import  getBestMeasureResult  from "./format-engine/measureEvaluatorByHierarchy"
@@ -19,9 +19,10 @@ import MeasureEvalResult from "./format-engine/MeasureEvalResult";
 let synonymObject = require("./format-engine/synonyms.json");
 
 //import { Snapshot } from "../../magda-typescript-common/src/format/MeasureSnapShot";
-let mochaObject = {
+export let mochaObject = {
     isRunning: true // set to false if not testing this function onRecordFound
 }
+
 export default async function onRecordFound(
     record: Record,
     registry: Registry
@@ -35,7 +36,7 @@ export default async function onRecordFound(
     }
 
     //TODO delete this piece of code
-    console.log("got after distribution nul check");
+    console.log("gott after distribution nul check");
 
     // 2D array: 1 row per distribution
     const retrievedEvalSets: MeasureEvaluationSet[][] = distributions.map(function (distribution) {
@@ -88,6 +89,8 @@ export default async function onRecordFound(
 
     //TODO delete this piece of code
     console.log("the best results gathered were: " + bestFormatResults.toString());
+
+    return Promise.resolve();
 }
 
 function recordFormatAspect(

@@ -27,18 +27,18 @@ export function getCommonFormat(
     rawFormat: string,
     synonymObject: any
 ): Formats {
-    let commonFormat: Formats = (<any>Formats)[rawFormat.toUpperCase()];
+    let commonFormat: Formats = (<any>Formats)[rawFormat.toString().toUpperCase()];
     if (commonFormat) {
         return commonFormat;
     } else {
         for (let label of Object.keys(synonymObject)) {
             for (var i = 0; i < synonymObject[label].length; i++) {
                 if (
-                    synonymObject[label][i].toLowerCase() ===
-                    rawFormat.toLowerCase()
+                    synonymObject[label][i].toString().toLowerCase() ===
+                    rawFormat.toString().toLowerCase()
                 ) {
                     return (
-                        (<any>Formats)[label.toUpperCase()] ||
+                        (<any>Formats)[label.toString().toUpperCase()] ||
                         new Error(
                             "There is no " +
                                 label +
@@ -51,7 +51,7 @@ export function getCommonFormat(
 
         throw new Error(
             "Couldn't find an equivelant synonym for: " +
-                rawFormat.toLowerCase()
+                rawFormat.toString().toLowerCase()
         );
     }
 }
