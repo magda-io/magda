@@ -8,9 +8,9 @@ import { User } from "@magda/typescript-common/dist/authorization-api/model";
 export const emailArb: jsc.Arbitrary<string> = jsc
     .tuple([
         lcAlphaNumStringArbNe,
-        jsc.elements(["@"]),
+        jsc.constant("@"),
         lcAlphaNumStringArbNe,
-        jsc.elements([".com"])
+        jsc.constant(".com")
     ])
     .smap(
         function(x) {
@@ -28,9 +28,9 @@ export const emailArb: jsc.Arbitrary<string> = jsc
 
 export const urlArb: jsc.Arbitrary<string> = jsc
     .tuple([
-        jsc.elements(["http://"]),
+        jsc.constant("http://"),
         lcAlphaNumStringArbNe,
-        jsc.elements([".com"])
+        jsc.constant(".com")
     ])
     .smap(
         function(x) {
