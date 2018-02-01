@@ -11,10 +11,8 @@ import Form from 'muicss/lib/react/form';
 import Input from 'muicss/lib/react/input';
 import Button from 'muicss/lib/react/button';
 import search from "../../assets/search.svg";
-
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
-
 import queryString from 'query-string';
 
 
@@ -28,7 +26,6 @@ class SearchBox extends Component {
     self.onClickSearch = this.onClickSearch.bind(this);
     self.onSearchTextChange = this.onSearchTextChange.bind(this);
     self.getSearchBoxValue = this.getSearchBoxValue.bind(this);
-
 
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input

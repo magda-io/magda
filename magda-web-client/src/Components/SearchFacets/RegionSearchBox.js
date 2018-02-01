@@ -3,6 +3,7 @@ import './RegionSearchBox.css';
 import debounce from 'lodash.debounce';
 import Form from 'muicss/lib/react/form';
 import Input from 'muicss/lib/react/input';
+import search from "../../assets/search-light.svg";
 
 /**
   * Searchbox for facet facet
@@ -121,7 +122,7 @@ class RegionSearchBox extends Component {
     return (
       <div className='region-search-box'>
         <Form onKeyDown={this.handleKeyDown}>
-            <i className='fa fa-search search-icon' aria-hidden='true'></i>
+            <img src ={search} />
             <Input type='text'
                    value={this.state.searchText}
                    onInput={this.onSearchTextChange}

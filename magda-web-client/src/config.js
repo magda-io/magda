@@ -15,6 +15,7 @@ const proxyUrl = previewMapUrl + "proxy/";
 
 export const config = {
   appName: "data.gov.au",
+  about: "<p><span style='color:#F55860;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
   baseUrl: serverConfig.baseUrl || fallbackApiHost,
   searchApiUrl:
     serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
@@ -40,8 +41,8 @@ export const config = {
   },
   appTitle: 'Australian open data search',
   featuredDatasets: [
-    "19432f89-dc3a-4ef3-b943-5326ef1dbecc",
-    "bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
+    "ds-dga-19432f89-dc3a-4ef3-b943-5326ef1dbecc",
+    "ds-dga-bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
   ],
   exampleSearch: [
     "Business names as CSV",
