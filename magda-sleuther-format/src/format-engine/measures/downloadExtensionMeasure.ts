@@ -1,4 +1,3 @@
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
 
@@ -7,7 +6,7 @@ import MeasureResult from "./MeasureResult";
 * TODO not finished
 */
 export default function getMeasureResults(
-    relatedDistribution: Record,
+    relatedDistribution: any,
     synonymObject: any
 ): MeasureResult {
     const { downloadURL } = relatedDistribution.aspects[

@@ -2,8 +2,6 @@
 * Tries to determine the format by deciphering DCAT-DISTRIBUTION-STRING -> format
 * TODO add more unit tests to test foundational function and more permutations of other functions
 */
-
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
 import * as _ from "lodash";
@@ -28,7 +26,7 @@ function foundationalCleanup(formats: Array<string>): Array<string> {
  * turns ['pdf   & (xlsx)'] into ['pdf', '(xlsx)'] or ['pdf, xlsx'] into ['pdf, xlsx']
  */
 function replaceAmpersandFormats(formats: Array<string>): Array<string> {
-    return _(formats).flatMap(format => format.split(/\s*\&\s*/g)).value();
+    return _(formats).flatMap((format: string) => format.split(/\s*\&\s*/g)).value();
 }
 
 /**
@@ -37,7 +35,7 @@ function replaceAmpersandFormats(formats: Array<string>): Array<string> {
  */
 function splitWhiteSpaceFormats(formats: Array<string>): Array<string> {
     return _(formats)
-        .flatMap(format => format.split(/\s+/g))
+        .flatMap((format: string) => format.split(/\s+/g))
         .value();
 }
 
@@ -78,7 +76,7 @@ function getFilteredBracketedFormats(formats: Array<string>) {
 }
 
 export default function getMeasureResult(
-    relatedDistribution: Record,
+    relatedDistribution: any,
     synonymObject: any
 ): MeasureResult {
     const { format } = relatedDistribution.aspects["dcat-distribution-strings"];

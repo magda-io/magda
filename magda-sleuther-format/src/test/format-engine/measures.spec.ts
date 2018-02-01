@@ -5,8 +5,6 @@ import {
     //should
 } from "chai";
 
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-
 import { Formats } from "../../format-engine/formats";
 let synonymObject =  require("../../format-engine/synonyms.json");
 import * as fs from "fs";
@@ -51,7 +49,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
 
     describe("DownloadMeasure -> getSelectedFormats()", function() {
         it("returns a doc when supplied with a doc", function() {
-            var record: Record = getRecordStubForDownloadMeasure(
+            var record = getRecordStubForDownloadMeasure(
                 "www.snee.com/xml/xslt/sample.doc"
             );
 
@@ -61,7 +59,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("returns a html page when supplied with a htm", function() {
-            var record: Record = getRecordStubForDownloadMeasure(
+            var record = getRecordStubForDownloadMeasure(
                 "www.pj.com/whereispj.htm"
             );
 
@@ -73,7 +71,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
 
     describe("DownloadExtensionMeasure -> getSelectedFormats()", function() {
         it("returns html on normal possibly cloaked pages", function() {
-            var record: Record = getRecordStubForDownloadExtensionMeasure(
+            var record = getRecordStubForDownloadExtensionMeasure(
                 "www.google.com/"
             );
 
@@ -83,7 +81,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("returns a doc when supplied with a doc", function() {
-            var record: Record = getRecordStubForDownloadExtensionMeasure(
+            var record = getRecordStubForDownloadExtensionMeasure(
                 "www.snee.com/xml/xslt/sample.doc"
             );
 
@@ -93,7 +91,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("returns a html page when supplied with a htm", function() {
-            var record: Record = getRecordStubForDownloadExtensionMeasure(
+            var record = getRecordStubForDownloadExtensionMeasure(
                 "www.pj.com/whereispj.htm"
             );
 
@@ -107,13 +105,13 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
         //try docx txt msword 
         // it only tests formats not confidence levels
         it("returns 1 worded strings", function() {
-            let recordPDF: Record = getRecordStubForDcatFormatMeasure(
+            let recordPDF = getRecordStubForDcatFormatMeasure(
                 "pDf"
             );
-            let recordDOCX: Record = getRecordStubForDcatFormatMeasure(
+            let recordDOCX = getRecordStubForDcatFormatMeasure(
                 "DoCx"
             );
-            let recordTXT: Record = getRecordStubForDcatFormatMeasure(
+            let recordTXT = getRecordStubForDcatFormatMeasure(
                 "txT"
             );
 
@@ -127,16 +125,16 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("successfully separates &", function() {
-            let recordPDF: Record = getRecordStubForDcatFormatMeasure(
+            let recordPDF = getRecordStubForDcatFormatMeasure(
                 "pDf & Docx"
             );
-            let recordDOCX: Record = getRecordStubForDcatFormatMeasure(
+            let recordDOCX = getRecordStubForDcatFormatMeasure(
                 "DoCx   & Pdf"
             );
-            let recordTXT: Record = getRecordStubForDcatFormatMeasure(
+            let recordTXT = getRecordStubForDcatFormatMeasure(
                 "txT    & html"
             );
-
+            
             let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
             let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
             let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
@@ -152,13 +150,13 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("successfully chooses () formats", function() {
-            let recordPDF: Record = getRecordStubForDcatFormatMeasure(
+            let recordPDF = getRecordStubForDcatFormatMeasure(
                 "zIp (Docx)"
             );
-            let recordDOCX: Record = getRecordStubForDcatFormatMeasure(
+            let recordDOCX = getRecordStubForDcatFormatMeasure(
                 "some zipper file    (Pdf)"
             );
-            let recordTXT: Record = getRecordStubForDcatFormatMeasure(
+            let recordTXT = getRecordStubForDcatFormatMeasure(
                 "txT    (html)"
             );
 
@@ -180,15 +178,15 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
 
 // helper functions
 
-function getRecordStubForDownloadMeasure(downloadURL: string): Record {
+function getRecordStubForDownloadMeasure(downloadURL: string) {
     return getGeneralRecordStub(downloadURL, null, null);
 }
 
-function getRecordStubForDownloadExtensionMeasure(downloadURL: string) : Record {
+function getRecordStubForDownloadExtensionMeasure(downloadURL: string) {
     return getGeneralRecordStub(downloadURL, null, null);
 }
 
-function getRecordStubForDcatFormatMeasure(format: string): Record {
+function getRecordStubForDcatFormatMeasure(format: string) {
     return getGeneralRecordStub(null, format, null);
 }
 
