@@ -73,6 +73,7 @@
     "query-string": "^4.3.4",
     "re-base": "^2.7.0",
     "react": "^15.6.1",
+    "react-autosuggest": "^9.3.2",
     "react-document-title": "^2.0.3",
     "react-dom": "^15.3.1",
     "react-json-tree": "^0.10.9",
@@ -90,10 +91,10 @@
     "redux-thunk": "^2.1.0",
     "rss-parser": "^2.9.0",
     "traverse": "^0.6.6",
+    "truncate-html": "^0.1.4",
     "uuid": "^3.0.1",
     "vega": "^3.0.0-rc2",
-    "vega-lite": "^2.0.0-beta.8",
-    "react-autosuggest": "^9.3.2"
+    "vega-lite": "^2.0.0-beta.8"
   },
   "proxy": {
     "/server-config.js": {
