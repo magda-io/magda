@@ -15,3 +15,4 @@
 ## 0.0.33
 * Added ability to get records from the registry by the value of their aspects.
 * Add route for `/pages/*` requests so that `magda-web-server` won't response `Cannot GET /page/*`
+* Added format sleuther
