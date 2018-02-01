@@ -99,6 +99,7 @@ class FacetTemporal extends Component {
     return <div className='facet-wrapper'>
             <FacetHeader onResetFacet={this.props.onResetFacet}
                      title={this.props.title}
+                     id={this.props.id}
                      activeOptions={this.props.activeDates}
                      hasQuery={this.props.hasQuery}
                      onClick={this.props.toggleFacet}/>

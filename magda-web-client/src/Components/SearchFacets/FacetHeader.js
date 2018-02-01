@@ -1,18 +1,37 @@
 import React, { Component } from 'react';
 import './FacetHeader.css';
 import Button from 'muicss/lib/react/button';
-import publisher from "../../assets/publisher.svg";
-import format from "../../assets/format.svg";
-import temporal from "../../assets/temporal.svg";
-import location from "../../assets/location.svg";
+import publisher_passive from "../../assets/publisher-passive.svg";
+import format_passive from "../../assets/format-passive.svg";
+import temporal_passive from "../../assets/temporal-passive.svg";
+import region_passive from "../../assets/region-passive.svg";
+
+import publisher_active from "../../assets/publisher-active.svg";
+import format_active from "../../assets/format-active.svg";
+import temporal_active from "../../assets/temporal-active.svg";
+import region_active from "../../assets/region-active.svg";
 
 const IconList = {
-  publisher, format, temporal, location
+  publisher_passive, format_passive, temporal_passive, region_passive,
+  publisher_active, format_active, temporal_active, region_active
 }
 /**
   * Facet header component, contains a title of the facet and a reset button when there is a active facet
   */
 class FacetHeader extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { buttonActive: false};
+  }
+
+  componentWillReceiveProps(nextProps){
+    if(nextProps.isOpen !== this.state.buttonActive ){
+      this.setState({
+        buttonActive: nextProps.isOpen
+      })
+    }
+  }
+
   displayMonth(date){
     return new Date(date).getUTCFullYear() + '/' + (+new Date(date).getUTCMonth()+1)
   }
@@ -56,7 +75,10 @@ class FacetHeader extends Component {
   render(){
     return (
       <div className='facet-header'>
-        <Button className={`${this.hasFilter() ? 'not-empty': ''} ${this.props.isOpen ? 'is-open' : ''}`} onClick={this.props.onClick}><img src={IconList[this.props.title]} alt={this.props.title}/>{this.calculateTitle()}</Button>
+        <Button className={`${this.hasFilter() ? 'not-empty': ''} ${this.props.isOpen ? 'is-open' : ''}`}
+                onMouseOver={()=>this.setState({buttonActive: true})}
+                onMouseOut ={()=>{if(!this.props.isOpen){this.setState({buttonActive: false})}}}
+                onClick={this.props.onClick}><img src={this.state.buttonActive ? IconList[`${this.props.id}_active`] : IconList[`${this.props.id}_passive`]} alt={this.props.title}/>{this.calculateTitle()}</Button>
       </div>
       );
   }

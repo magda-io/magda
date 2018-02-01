@@ -39,10 +39,9 @@ export const config = {
     large: 1200
   },
   appTitle: 'Australian open data search',
-  about: '<p><span style="color:#F55860;">Data.gov.au </span> provides an easy way to find, access and reuse public data. Our team works across governments to publish data and continue to improve functionality based on user feedback.</p><p> We encourage you to use government data to analyse, mashup and develop tools and applications to benefit all Australians.</p>',
   featuredDatasets: [
-    "ds-dga-19432f89-dc3a-4ef3-b943-5326ef1dbecc",
-    "ds-dga-bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
+    "19432f89-dc3a-4ef3-b943-5326ef1dbecc",
+    "bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
   ],
   exampleSearch: [
     "Business names as CSV",

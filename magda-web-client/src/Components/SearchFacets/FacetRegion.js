@@ -124,6 +124,7 @@ class FacetRegion extends Component {
             <div className='facet-wrapper'>
                <FacetHeader onResetFacet={this.props.onResetFacet}
                      title={this.props.title}
+                     id={this.props.id}
                      activeOptions={[this.props.activeRegion]}
                      hasQuery={this.props.hasQuery}
                      onClick={this.props.toggleFacet}/>
