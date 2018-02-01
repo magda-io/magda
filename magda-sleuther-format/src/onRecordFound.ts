@@ -18,11 +18,6 @@ import MeasureEvaluationSet from "./format-engine/measures/MeasureEvaluationSet"
 import MeasureEvalResult from "./format-engine/MeasureEvalResult";
 let synonymObject = require("./format-engine/synonyms.json");
 
-//import { Snapshot } from "../../magda-typescript-common/src/format/MeasureSnapShot";
-export let mochaObject = {
-    isRunning: true // set to false if not testing this function onRecordFound
-}
-
 export default async function onRecordFound(
     record: Record,
     registry: Registry
@@ -53,10 +48,6 @@ export default async function onRecordFound(
             getProcessedData: getDownloadProcessedData
         }
 
-        //TODO delete this
-        console.log("the list recieved is: " + [dcatSet, extensionSet, downloadSet].toString() + "for the distribution: " + distribution.id)
-
-
         return [dcatSet, extensionSet, downloadSet];
 
     });
@@ -65,19 +56,8 @@ export default async function onRecordFound(
         getBestMeasureResult(evalSetsPerDist)
     );
 
-    //TODO delete
-    console.log("best results obtained" + bestFormatResults.toString());
-
     bestFormatResults.forEach(function(formatResult) {
-        !mochaObject.isRunning ?
         recordFormatAspect(
-            registry,
-            formatResult.distribution,
-            {
-                format: formatResult.format.format,
-                confidenceLevel: formatResult.absConfidenceLevel
-            }
-        ) : recordFormatAspectTest(
             registry,
             formatResult.distribution,
             {
@@ -86,9 +66,6 @@ export default async function onRecordFound(
             }
         )
     });
-
-    //TODO delete this piece of code
-    console.log("the best results gathered were: " + bestFormatResults.toString());
 
     return Promise.resolve();
 }
@@ -102,14 +79,3 @@ function recordFormatAspect(
         .putRecordAspect(distribution.id, "dataset-format", aspect)
         .then(unionToThrowable);
 }
-
-function recordFormatAspectTest(
-    registry: Registry,
-    distribution: Record,
-    aspect: FormatAspect
-): Promise<Record> {
-    console.log(distribution.id + ": aspect is " + aspect.confidenceLevel.toString() + aspect.format.toString());
-    return null;
-}
-
-

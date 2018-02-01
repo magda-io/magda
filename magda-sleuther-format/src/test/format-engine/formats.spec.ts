@@ -2,13 +2,10 @@ import {} from 'mocha';
 //import * as sinon from 'sinon';
 import { expect } from 'chai';
 
-import { Formats, getCommonFormat, mochaObject } from "../../format-engine/formats";
+import { Formats, getCommonFormat } from "../../format-engine/formats";
 let synonymObject = require("../../format-engine/synonyms.json")
 
 describe("getCommonFormat", function(this: Mocha.ISuiteCallbackContext) {
-    before(() => {
-        mochaObject.isRunning = true;
-    })
 
     it("should classify different versions of formats under the same name", function() {
         let result1: Formats = getCommonFormat("Doc", synonymObject);

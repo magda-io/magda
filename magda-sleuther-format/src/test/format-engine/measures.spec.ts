@@ -1,5 +1,4 @@
 import {} from "mocha";
-//import * as sinon from "sinon";
 import * as nock from "nock";
 import {
     expect
@@ -8,7 +7,7 @@ import {
 
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 
-import { Formats, mochaObject as mochaObjectFormats } from "../../format-engine/formats";
+import { Formats } from "../../format-engine/formats";
 let synonymObject =  require("../../format-engine/synonyms.json");
 import * as fs from "fs";
 
@@ -20,7 +19,7 @@ import getDownloadMeasureResult from "../../format-engine/measures/downloadMeasu
 //import getDownloadProcessedData from "../../format-engine/measures/processed-functions/dcatProcessedFns";
 //import getExtensionProcessedData from "../../format-engine/measures/processed-functions/extensionProcessedFns";
 
-//import  getBestMeasureResult  from "../../format-engine/MeasureEvaluator"
+//import getBestMeasureResult  from "../../format-engine/MeasureEvaluator"
 //import MeasureEvaluationSet from "src/format-engine/measures/MeasureEvaluationSet";
 //import MeasureEvalResult from "src/format-engine/MeasureEvalResult";
 import MeasureResult from "src/format-engine/measures/MeasureResult";
@@ -28,8 +27,6 @@ import {  } from "../../format-engine/formats";
 
 describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
     before(() => {
-        mochaObjectFormats.isRunning = true;
-
         nock("www.google.com")
             .get("/")
             .reply(

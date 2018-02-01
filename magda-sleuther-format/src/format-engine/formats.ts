@@ -1,10 +1,3 @@
-
-export var mochaObject = {
-    isRunning: false,
-    testVariables: {
-        synonymTable: {}
-    }
-};
 //TODO make synonym table
 //TODO fill out all formats that are possible in here
 export enum Formats {
