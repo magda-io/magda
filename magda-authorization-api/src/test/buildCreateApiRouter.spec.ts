@@ -11,7 +11,7 @@ import jsc from "@magda/typescript-common/dist/test/jsverify";
 import mockDatabase from "./mockDatabase";
 import mockUserDataStore from "@magda/typescript-common/dist/test/mockUserDataStore";
 import Database from "../Database";
-import { userDataArb } from "./arbitaries";
+import { userDataArb } from "./arbitraries";
 import { Request } from "supertest";
 import { User } from "@magda/typescript-common/src/authorization-api/model";
 
