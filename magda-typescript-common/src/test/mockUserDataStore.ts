@@ -22,30 +22,39 @@ const mockUserData = [
     }
 ];
 
+let runtimeUserDataStore: User[];
+
 const mockUserDataStore = {
+    reset: function() {
+        runtimeUserDataStore = mockUserData.map(item => ({ ...item }));
+    },
+
     getData: function() {
-        return mockUserData;
+        return runtimeUserDataStore;
     },
     getRecordBySourceAndSourceId(source: string, sourceId: string) {
-        return mockUserData.filter(record => {
+        return runtimeUserDataStore.filter(record => {
             return record.source == source && record.sourceId == sourceId;
         });
     },
     getRecordByUserId(userId: string) {
-        return mockUserData.filter(record => {
+        return runtimeUserDataStore.filter(record => {
             return record.id == userId;
         });
     },
     getRecordByIndex(idx: number) {
-        return mockUserData[idx];
+        return runtimeUserDataStore[idx];
     },
     createRecord(user: User) {
         const newRecord: any = { ...user, id: uuid.v4() };
-        mockUserData.push(newRecord);
+        runtimeUserDataStore.push(newRecord);
         return newRecord;
     },
     countRecord: function() {
-        return mockUserData.length;
+        return runtimeUserDataStore.length;
     }
 };
+
+mockUserDataStore.reset();
+
 export default mockUserDataStore;

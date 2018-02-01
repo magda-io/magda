@@ -13,18 +13,20 @@ import mockUserDataStore from "@magda/typescript-common/dist/test/mockUserDataSt
 import Database from "../Database";
 import { userDataArb } from "./arbitraries";
 import { Request } from "supertest";
-import { User } from "@magda/typescript-common/src/authorization-api/model";
 
 describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
 
     let app: express.Express;
     let argv: any;
-    let newlyCreatedUsers: User[] = [];
 
     before(function() {
         argv = retrieveArgv();
         app = buildExpressApp();
+    });
+
+    afterEach(function() {
+        mockUserDataStore.reset();
     });
 
     function retrieveArgv() {
@@ -98,6 +100,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 await jsc.assert(
                     jsc.forall(userDataArb, async userData => {
                         try {
+                            mockUserDataStore.reset();
                             const req = request(app)
                                 .post("/private/users")
                                 .send(userData);
@@ -124,6 +127,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 await jsc.assert(
                     jsc.forall(userDataArb, async userData => {
                         try {
+                            mockUserDataStore.reset();
                             const req = request(app)
                                 .post("/private/users")
                                 .send(userData);
@@ -151,6 +155,8 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 await jsc.assert(
                     jsc.forall(userDataArb, async userData => {
                         try {
+                            mockUserDataStore.reset();
+
                             const req = request(app)
                                 .post("/private/users")
                                 .send(userData);
@@ -172,12 +178,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                 newUserId
                             );
                             expect(users).to.be.an("array").that.is.not.empty;
-                            expect(users[0]).to.deep.equal({
-                                ...userData,
-                                id: newUserId
-                            });
-
-                            newlyCreatedUsers.push(users[0]);
+                            expect(users[0]).to.deep.include(userData);
 
                             return true;
                         } catch (e) {
@@ -193,27 +194,28 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
         silenceErrorLogs(() => {
             it("should return 401 status code if requested without sepecifying user ID", async () => {
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async ({ source, sourceId }) => {
-                            try {
-                                const req = request(app)
-                                    .get("/private/users/lookup")
-                                    .query({
-                                        source,
-                                        sourceId
-                                    });
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            mockUserDataStore.createRecord(userData);
 
-                                const res = await req.then(res => res);
+                            const { source, sourceId } = userData;
+                            const req = request(app)
+                                .get("/private/users/lookup")
+                                .query({
+                                    source,
+                                    sourceId
+                                });
 
-                                expect(res.status).to.equal(401);
+                            const res = await req.then(res => res);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            expect(res.status).to.equal(401);
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
 
@@ -221,60 +223,61 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
 
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async ({ source, sourceId }) => {
-                            try {
-                                const req = request(app)
-                                    .get("/private/users/lookup")
-                                    .query({
-                                        source,
-                                        sourceId
-                                    });
-                                setMockRequestSession(req, standardUserId);
-                                const res = await req.then(res => res);
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            mockUserDataStore.createRecord(userData);
 
-                                expect(res.status).to.equal(403);
+                            const { source, sourceId } = userData;
+                            const req = request(app)
+                                .get("/private/users/lookup")
+                                .query({
+                                    source,
+                                    sourceId
+                                });
+                            setMockRequestSession(req, standardUserId);
+                            const res = await req.then(res => res);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            expect(res.status).to.equal(403);
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
 
-            it("should return previous created user data if queried by previous `source` & `sourceID` and requested as an admin user", async () => {
+            it("should return correct user data if queried by `source` & `sourceID` and requested as an admin user", async () => {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
 
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async userData => {
-                            try {
-                                const { source, sourceId } = userData;
-                                const req = request(app)
-                                    .get("/private/users/lookup")
-                                    .query({
-                                        source,
-                                        sourceId
-                                    });
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            mockUserDataStore.createRecord(userData);
 
-                                setMockRequestSession(req, adminUserId);
+                            const { source, sourceId } = userData;
+                            const req = request(app)
+                                .get("/private/users/lookup")
+                                .query({
+                                    source,
+                                    sourceId
+                                });
 
-                                const res = await req.then(res => res);
-                                expect(res.status).to.equal(200);
-                                expect(res.body).to.be.a("object");
-                                expect(res.body.id).to.be.a("string");
-                                expect(res.body).to.deep.equal(userData);
+                            setMockRequestSession(req, adminUserId);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            const res = await req.then(res => res);
+                            expect(res.status).to.equal(200);
+                            expect(res.body).to.be.a("object");
+                            expect(res.body.id).to.be.a("string");
+                            expect(res.body).to.deep.include(userData);
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
         });
@@ -284,24 +287,25 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
         silenceErrorLogs(() => {
             it("should return 401 status code if requested without sepecifying user ID", async () => {
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async ({ id: userId }) => {
-                            try {
-                                const req = request(app).get(
-                                    `/private/users/${userId}`
-                                );
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            const {
+                                id: userId
+                            } = mockUserDataStore.createRecord(userData);
+                            const req = request(app).get(
+                                `/private/users/${userId}`
+                            );
 
-                                const res = await req.then(res => res);
+                            const res = await req.then(res => res);
 
-                                expect(res.status).to.equal(401);
+                            expect(res.status).to.equal(401);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
 
@@ -309,54 +313,59 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
 
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async ({ id: userId }) => {
-                            try {
-                                const req = request(app).get(
-                                    `/private/users/${userId}`
-                                );
-                                setMockRequestSession(req, standardUserId);
-                                const res = await req.then(res => res);
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            const {
+                                id: userId
+                            } = mockUserDataStore.createRecord(userData);
 
-                                expect(res.status).to.equal(403);
+                            const req = request(app).get(
+                                `/private/users/${userId}`
+                            );
+                            setMockRequestSession(req, standardUserId);
+                            const res = await req.then(res => res);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            expect(res.status).to.equal(403);
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
 
-            it("should return previous created user data if queried by previous `userId` and requested as an admin user", async () => {
+            it("should return correct user data if queried by `userId` and requested as an admin user", async () => {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
 
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async userData => {
-                            try {
-                                const { id: userId } = userData;
-                                const req = request(app).get(
-                                    `/private/users/${userId}`
-                                );
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            const {
+                                id: userId
+                            } = mockUserDataStore.createRecord(userData);
 
-                                setMockRequestSession(req, adminUserId);
+                            const req = request(app).get(
+                                `/private/users/${userId}`
+                            );
 
-                                const res = await req.then(res => res);
-                                expect(res.status).to.equal(200);
-                                expect(res.body).to.be.a("object");
-                                expect(res.body.id).to.be.a("string");
-                                expect(res.body).to.deep.equal(userData);
+                            setMockRequestSession(req, adminUserId);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            const res = await req.then(res => res);
+                            expect(res.status).to.equal(200);
+                            expect(res.body).to.be.a("object");
+                            expect(res.body.id).to.be.a("string");
+                            expect({ id: userId, ...userData }).to.deep.include(
+                                res.body
+                            );
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
         });
@@ -364,89 +373,98 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
     describe("GET /public/users/:userId", () => {
         silenceErrorLogs(() => {
-            it("should return previous created user data if queried by previous `userId` without sepecifying user ID", async () => {
+            it("should return correct user data if queried by `userId` without sepecifying user ID", async () => {
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async userData => {
-                            try {
-                                const { id: userId } = userData;
-                                const req = request(app).get(
-                                    `/public/users/${userId}`
-                                );
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            const {
+                                id: userId
+                            } = mockUserDataStore.createRecord(userData);
 
-                                const res = await req.then(res => res);
+                            const req = request(app).get(
+                                `/public/users/${userId}`
+                            );
 
-                                expect(res.status).to.equal(200);
-                                expect(res.body).to.be.a("object");
-                                expect(res.body.id).to.be.a("string");
-                                expect(userData).to.deep.include(res.body);
+                            const res = await req.then(res => res);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            expect(res.status).to.equal(200);
+                            expect(res.body).to.be.a("object");
+                            expect(res.body.id).to.be.a("string");
+                            expect({ id: userId, ...userData }).to.deep.include(
+                                res.body
+                            );
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
 
-            it("should return previous created user data if queried by previous `userId` and requested as a standard user", async () => {
+            it("should return correct user data if queried by `userId` and requested as a standard user", async () => {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
 
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async userData => {
-                            try {
-                                const { id: userId } = userData;
-                                const req = request(app).get(
-                                    `/public/users/${userId}`
-                                );
-                                setMockRequestSession(req, standardUserId);
-                                const res = await req.then(res => res);
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            const {
+                                id: userId
+                            } = mockUserDataStore.createRecord(userData);
 
-                                expect(res.status).to.equal(200);
-                                expect(res.body).to.be.a("object");
-                                expect(res.body.id).to.be.a("string");
-                                expect(userData).to.deep.include(res.body);
+                            const req = request(app).get(
+                                `/public/users/${userId}`
+                            );
+                            setMockRequestSession(req, standardUserId);
+                            const res = await req.then(res => res);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            expect(res.status).to.equal(200);
+                            expect(res.body).to.be.a("object");
+                            expect(res.body.id).to.be.a("string");
+                            expect({ id: userId, ...userData }).to.deep.include(
+                                res.body
+                            );
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
 
-            it("should return previous created user data if queried by previous `userId` and requested as an admin user", async () => {
+            it("should return correct user data if queried by `userId` and requested as an admin user", async () => {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
 
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(newlyCreatedUsers),
-                        async userData => {
-                            try {
-                                const { id: userId } = userData;
-                                const req = request(app).get(
-                                    `/public/users/${userId}`
-                                );
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            const {
+                                id: userId
+                            } = mockUserDataStore.createRecord(userData);
 
-                                setMockRequestSession(req, adminUserId);
+                            const req = request(app).get(
+                                `/public/users/${userId}`
+                            );
 
-                                const res = await req.then(res => res);
-                                expect(res.status).to.equal(200);
-                                expect(res.body).to.be.a("object");
-                                expect(res.body.id).to.be.a("string");
-                                expect(userData).to.deep.include(res.body);
+                            setMockRequestSession(req, adminUserId);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            const res = await req.then(res => res);
+                            expect(res.status).to.equal(200);
+                            expect(res.body).to.be.a("object");
+                            expect(res.body.id).to.be.a("string");
+                            expect({ id: userId, ...userData }).to.deep.include(
+                                res.body
+                            );
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
         });
@@ -458,6 +476,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 await jsc.assert(
                     jsc.forall(jsc.nat, async () => {
                         try {
+                            mockUserDataStore.reset();
                             const req = request(app).get(
                                 "/public/users/whoami"
                             );
@@ -476,28 +495,31 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
             it("should return correct user data specified by session header", async () => {
                 await jsc.assert(
-                    jsc.forall(
-                        jsc.elements(mockUserDataStore.getData()),
-                        async userData => {
-                            try {
-                                const { id: userId } = userData;
-                                const req = request(app).get(
-                                    `/public/users/whoami`
-                                );
-                                setMockRequestSession(req, userId);
-                                const res = await req.then(res => res);
+                    jsc.forall(userDataArb, async userData => {
+                        try {
+                            mockUserDataStore.reset();
+                            const {
+                                id: userId
+                            } = mockUserDataStore.createRecord(userData);
 
-                                expect(res.status).to.equal(200);
-                                expect(res.body).to.be.a("object");
-                                expect(res.body.id).to.be.a("string");
-                                expect(userData).to.deep.include(res.body);
+                            const req = request(app).get(
+                                `/public/users/whoami`
+                            );
+                            setMockRequestSession(req, userId);
+                            const res = await req.then(res => res);
 
-                                return true;
-                            } catch (e) {
-                                throw e;
-                            }
+                            expect(res.status).to.equal(200);
+                            expect(res.body).to.be.a("object");
+                            expect(res.body.id).to.be.a("string");
+                            expect({ id: userId, ...userData }).to.deep.include(
+                                res.body
+                            );
+
+                            return true;
+                        } catch (e) {
+                            throw e;
                         }
-                    )
+                    })
                 );
             });
         });

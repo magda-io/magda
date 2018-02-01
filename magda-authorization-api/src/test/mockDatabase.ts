@@ -8,15 +8,17 @@ export default class MockDatabase {
         return new Promise(function(resolve, reject) {
             resolve(
                 arrayToMaybe(
-                    mockUserDataStore.getRecordByUserId(id).map(item => ({
-                        id: item.id,
-                        email: item.email,
-                        displayName: item.displayName,
-                        photoURL: item.photoURL,
-                        source: item.source,
-                        sourceId: item.sourceId,
-                        isAdmin: item.isAdmin
-                    }))
+                    mockUserDataStore.getRecordByUserId(id).map(
+                        item =>
+                            ({
+                                id: item.id,
+                                email: item.email,
+                                displayName: item.displayName,
+                                photoURL: item.photoURL,
+                                source: item.source,
+                                isAdmin: item.isAdmin
+                            } as User)
+                    )
                 )
             );
         });
