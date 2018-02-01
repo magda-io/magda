@@ -67,10 +67,6 @@ export type EventType =
 */
 export class EventsPage {
     /**
-    * The total number of events available.
-    */
-    'totalCount': number;
-    /**
     * A token to be used to get the next page of events.
     */
     'nextPageToken': string;
@@ -85,6 +81,10 @@ export class JsObject {
 }
 
 export class JsValue {
+}
+
+export class MultipleDeleteResult {
+    'count': number;
 }
 
 export class Operation {
@@ -106,6 +106,10 @@ export class Record {
     * The aspects included in this record
     */
     'aspects': any;
+    /**
+    * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal).
+    */
+    'sourceTag': string;
 }
 
 /**
@@ -158,6 +162,10 @@ export class WebHookAcknowledgement {
     * The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.
     */
     'lastEventIdReceived': any;
+    /**
+    * Should the webhook be active or inactive?
+    */
+    'active': any;
 }
 
 /**
@@ -1218,8 +1226,9 @@ export class RecordsApi {
      * @param start The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
      * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
+     * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
      */
-    public getAll (aspect?: Array<string>, optionalAspect?: Array<string>, pageToken?: string, start?: number, limit?: number, dereference?: boolean) : Promise<{ response: http.IncomingMessage; body: Array<RecordSummary>;  }> {
+    public getAll (aspect?: Array<string>, optionalAspect?: Array<string>, pageToken?: string, start?: number, limit?: number, dereference?: boolean, aspectQuery?: Array<string>) : Promise<{ response: http.IncomingMessage; body: Array<Record>;  }> {
         const localVarPath = this.basePath + '/records';
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1248,6 +1257,70 @@ export class RecordsApi {
 
         if (dereference !== undefined) {
             queryParameters['dereference'] = dereference;
+        }
+
+        if (aspectQuery !== undefined) {
+            queryParameters['aspectQuery'] = aspectQuery;
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'GET',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: Array<Record>;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Get a list of all records as summaries
+     * 
+     * @param pageToken A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+     * @param start The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
+     * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+     */
+    public getAllSummary (pageToken?: string, start?: number, limit?: number) : Promise<{ response: http.IncomingMessage; body: Array<RecordSummary>;  }> {
+        const localVarPath = this.basePath + '/records/summary';
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        if (pageToken !== undefined) {
+            queryParameters['pageToken'] = pageToken;
+        }
+
+        if (start !== undefined) {
+            queryParameters['start'] = start;
+        }
+
+        if (limit !== undefined) {
+            queryParameters['limit'] = limit;
         }
 
         let useFormData = false;
@@ -1338,6 +1411,58 @@ export class RecordsApi {
             }
         }
         return new Promise<{ response: http.IncomingMessage; body: Record;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Get a summary record by ID
+     * Gets a summary record, including all the aspect ids for which this record has data.
+     * @param id ID of the record to be fetched.
+     */
+    public getByIdSummary (id: string) : Promise<{ response: http.IncomingMessage; body: RecordSummary;  }> {
+        const localVarPath = this.basePath + '/records/summary/{id}'
+            .replace('{' + 'id' + '}', String(id));
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        // verify required parameter 'id' is not null or undefined
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling getByIdSummary.');
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'GET',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: RecordSummary;  }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1527,6 +1652,79 @@ export class RecordsApi {
             }
         }
         return new Promise<{ response: http.IncomingMessage; body: Record;  }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Trim by source tag
+     * Trims records with the provided source that DON&#39;T have the supplied source tag
+     * @param sourceTagToPreserve Source tag of the records to PRESERVE.
+     * @param sourceId Source id of the records to delete.
+     * @param xMagdaSession Magda internal session id
+     */
+    public trimBySourceTag (sourceTagToPreserve: string, sourceId: string, xMagdaSession: string) : Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }> {
+        const localVarPath = this.basePath + '/records';
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+
+        // verify required parameter 'sourceTagToPreserve' is not null or undefined
+        if (sourceTagToPreserve === null || sourceTagToPreserve === undefined) {
+            throw new Error('Required parameter sourceTagToPreserve was null or undefined when calling trimBySourceTag.');
+        }
+
+        // verify required parameter 'sourceId' is not null or undefined
+        if (sourceId === null || sourceId === undefined) {
+            throw new Error('Required parameter sourceId was null or undefined when calling trimBySourceTag.');
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error('Required parameter xMagdaSession was null or undefined when calling trimBySourceTag.');
+        }
+
+        if (sourceTagToPreserve !== undefined) {
+            queryParameters['sourceTagToPreserve'] = sourceTagToPreserve;
+        }
+
+        if (sourceId !== undefined) {
+            queryParameters['sourceId'] = sourceId;
+        }
+
+        headerParams['X-Magda-Session'] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: 'DELETE',
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult;  }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);

@@ -18,8 +18,8 @@ object DeployPlugin extends AutoPlugin {
       println(rmi)
 
       // Delete pods associated with this deployment, so they spin back up with the new version
-      val delete = Process("kubectl delete pods -l service=" + baseDirectory.value.getName().replace("magda-", "")).!!
-      println(delete)
+      // val delete = Process("kubectl delete pods -l service=" + baseDirectory.value.getName().replace("magda-", "")).!!
+      // println(delete)
     },
     DeployKeys.deployLocalOnChange := Def.taskDyn {
       (sbt.Keys.compile in Compile).value // make sure the entire compile finishes first

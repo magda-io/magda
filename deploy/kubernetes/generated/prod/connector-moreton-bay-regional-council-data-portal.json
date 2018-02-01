@@ -13,7 +13,7 @@
         "containers": [
           {
             "name": "connector-moreton-bay-regional-council-data-portal",
-            "image": "data61/magda-project-open-data-connector:0.0.30",
+            "image": "data61/magda-project-open-data-connector:0.0.32",
             "command": [
               "node",
               "/usr/src/app/component/dist/index.js",

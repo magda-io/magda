@@ -3,7 +3,8 @@ import {
     Record,
     WebHook,
     Operation,
-    WebHookAcknowledgementResponse
+    WebHookAcknowledgementResponse,
+    MultipleDeleteResult
 } from "../generated/registry/api";
 import RegistryClient, { RegistryOptions } from "./RegistryClient";
 import retry from "../retry";
@@ -45,7 +46,9 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to create aspect definition "${aspectDefinition.id}".`,
+                        `Failed to create aspect definition "${
+                            aspectDefinition.id
+                        }".`,
                         e,
                         retriesLeft
                     )
@@ -149,12 +152,15 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     }
 
     resumeHook(
-        webhookId: string
+        webhookId: string,
+        succeeded: boolean = false,
+        lastEventIdReceived: string = null,
+        active?: boolean
     ): Promise<WebHookAcknowledgementResponse | Error> {
         const operation = () =>
             this.webHooksApi.ack(
                 encodeURIComponent(webhookId),
-                { succeeded: false, lastEventIdReceived: null },
+                { succeeded, lastEventIdReceived, active },
                 this.jwt
             );
 
@@ -189,7 +195,9 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to PUT data registry record with ID "${record.id}".`,
+                        `Failed to PUT data registry record with ID "${
+                            record.id
+                        }".`,
                         e,
                         retriesLeft
                     )
@@ -248,6 +256,30 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 console.log(
                     formatServiceError(
                         `Failed to PUT data registry aspect ${aspectId} for record with ID "${recordId}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then(result => result.body)
+            .catch(createServiceError);
+    }
+
+    deleteBySource(
+        sourceTagToPreserve: string,
+        sourceId: string
+    ): Promise<MultipleDeleteResult | Error> {
+        const operation = () =>
+            this.recordsApi.trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt);
+
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to DELETE with sourceTagToPreserve ${sourceTagToPreserve} and sourceId ${sourceId}`,
                         e,
                         retriesLeft
                     )

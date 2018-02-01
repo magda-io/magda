@@ -89,6 +89,10 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     sql"update WebHooks set isWaitingForResponse=$isWaitingForResponse where webHookId=$id".update.apply()
   }
 
+  def setActive(implicit session: DBSession, id: String, active: Boolean) = {
+    sql"update WebHooks set active=$active where webHookId=$id".update.apply()
+  }
+
   def putById(implicit session: DBSession, id: String, hook: WebHook): Try[WebHook] = {
     if (id != hook.id.getOrElse("")) {
       Failure(new RuntimeException("The provided ID does not match the web hook's ID."))
@@ -103,16 +107,21 @@ object HookPersistence extends Protocols with DiffsonProtocol {
 
   def acknowledgeRaisedHook(implicit session: DBSession, id: String, acknowledgement: WebHookAcknowledgement): Try[WebHookAcknowledgementResponse] = {
     Try {
+      val setActive = acknowledgement.active match {
+        case Some(active) => sqls", active=${active}"
+        case None         => sqls""
+      }
+
       if (acknowledgement.succeeded) {
         acknowledgement.lastEventIdReceived match {
           case Some(eventId) =>
-            sql"update WebHooks set isWaitingForResponse=false, lastEvent=${acknowledgement.lastEventIdReceived} where webHookId=$id".update.apply()
+            sql"update WebHooks set isWaitingForResponse=false, lastEvent=${acknowledgement.lastEventIdReceived} ${setActive} where webHookId=$id".update.apply()
             WebHookAcknowledgementResponse(eventId)
           case None =>
             throw new Exception("If acknowledgement succeeded is true, lastEventIdReceived must be provided")
         }
       } else {
-        sql"update WebHooks set isWaitingForResponse=false where webHookId=$id".update.apply()
+        sql"update WebHooks set isWaitingForResponse=false ${setActive} where webHookId=$id".update.apply()
         WebHookAcknowledgementResponse(sql"select lastEvent from WebHooks where webHookId=$id".map(rs => rs.long("lastEvent")).single.apply().get)
       }
     }
