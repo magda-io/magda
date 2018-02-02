@@ -28,7 +28,8 @@ class FacetRegion extends Component {
                regionId: undefined,
                regionType: undefined
              },
-            showMap: true
+            showMap: true,
+            applyButtonDisabled: true
         }
     }
 
@@ -42,6 +43,7 @@ class FacetRegion extends Component {
 
     onToggleOption(option){
         this.setState({
+          applyButtonDisabled: false,
           _activeRegion: option
         })
     }
@@ -58,6 +60,7 @@ class FacetRegion extends Component {
           regionName: feature.properties[nameProp]
         };
       this.setState({
+        applyButtonDisabled: false,
         _activeRegion: region
       });
     }
@@ -103,7 +106,7 @@ class FacetRegion extends Component {
                       <RegionSummray regionMapping={this.props.regionMapping} region={this.state._activeRegion}/>
                       <div className='facet-footer'>
                           <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
-                          <Button variant="flat" onClick={this.onApplyFilter}> Apply </Button>
+                          <Button variant="flat" onClick={this.onApplyFilter} disabled={this.state.applyButtonDisabled}> Apply </Button>
                       </div>
               </div>)
     }

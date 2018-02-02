@@ -13,7 +13,7 @@ class SearchFacets extends Component {
 
   componentWillMount(){
     const that = this;
-    window.addEventListener('click', that.closeFacetWithKeyBoard);
+    // window.addEventListener('click', that.closeFacetWithKeyBoard);
   }
 
   closeFacetWithKeyBoard(event){

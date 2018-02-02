@@ -126,6 +126,7 @@ class RegionSearchBox extends Component {
             <Input type='text'
                    value={this.state.searchText}
                    onInput={this.onSearchTextChange}
+                   placeholder='Search by Region'
                    />
           </Form>
           {this.state.searchText.length > 0 &&

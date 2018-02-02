@@ -107,7 +107,7 @@ class RegionMap extends Component {
               /*onEachFeature: onEachFeature, */
               clickableLayers: (props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
               mutexToggle: true,
-              onClick: function(evt) { if (evt.type === 'click' && evt.feature){
+              onClick: function(evt) {if (evt.type === 'click' && evt.feature){
                   props.onClick(evt.feature);
               }},
               getIDForLayerFeature: this.getID
