@@ -5,11 +5,11 @@ import publisher_passive from "../../assets/publisher-passive.svg";
 import format_passive from "../../assets/format-passive.svg";
 import temporal_passive from "../../assets/temporal-passive.svg";
 import region_passive from "../../assets/region-passive.svg";
-
 import publisher_active from "../../assets/publisher-active.svg";
 import format_active from "../../assets/format-active.svg";
 import temporal_active from "../../assets/temporal-active.svg";
 import region_active from "../../assets/region-active.svg";
+import remove_light from "../../assets/remove-light.svg";
 
 const IconList = {
   publisher_passive, format_passive, temporal_passive, region_passive,
@@ -27,7 +27,7 @@ class FacetHeader extends Component {
   componentWillReceiveProps(nextProps){
     if(nextProps.isOpen !== this.state.buttonActive ){
       this.setState({
-        buttonActive: nextProps.isOpen
+        buttonActive: nextProps.isOpen || this.hasFilter()
       })
     }
   }
@@ -74,11 +74,12 @@ class FacetHeader extends Component {
 
   render(){
     return (
-      <div className='facet-header'>
-        <Button className={`${this.hasFilter() ? 'not-empty': ''} ${this.props.isOpen ? 'is-open' : ''}`}
+      <div className={`facet-header ${this.hasFilter() ? 'not-empty': ''}`}>
+        <Button className={`${this.props.isOpen ? 'is-open' : ''}`}
                 onMouseOver={()=>this.setState({buttonActive: true})}
-                onMouseOut ={()=>{if(!this.props.isOpen){this.setState({buttonActive: false})}}}
-                onClick={this.props.onClick}><img src={this.state.buttonActive ? IconList[`${this.props.id}_active`] : IconList[`${this.props.id}_passive`]} alt={this.props.title}/>{this.calculateTitle()}</Button>
+                onMouseOut ={()=>{if(!this.props.isOpen && !this.hasFilter()){this.setState({buttonActive: false})}}}
+                onClick={this.props.onClick}><img className='facet-icon' src={this.state.buttonActive ? IconList[`${this.props.id}_active`] : IconList[`${this.props.id}_passive`]} alt={this.props.title}/>{this.calculateTitle()}</Button>
+        {this.props.hasQuery && <Button onClick={this.props.onResetFacet} className='btn-remove'><img src={remove_light}/></Button>}
       </div>
       );
   }

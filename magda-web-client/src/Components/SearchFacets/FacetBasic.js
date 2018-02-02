@@ -19,6 +19,7 @@ class FacetBasic extends Component {
     return <div className='facet-wrapper'>
               <FacetHeader
                      isOpen = {this.props.isOpen}
+                     onResetFacet={this.props.onResetFacet}
                      id ={this.props.id}
                      title={this.props.title}
                      activeOptions={this.props.activeOptions}
