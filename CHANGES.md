@@ -20,3 +20,4 @@
 * Added test cases for ApiClient class
 * Added test cased for Authorization APIs
 * Fixed minor frontend issue when Authorization APIs return non-json response
+* Add `userId` parameter to `package.json` of `magda-gateway` module
