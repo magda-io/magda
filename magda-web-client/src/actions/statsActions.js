@@ -44,6 +44,7 @@ export function fetchDatasetCount(){
             return dispatch(receiveDatasetCount(result.totalCount));
           }
           return dispatch(fetchDatasetCountError({title: "Error", detail: "Dataset count unavailable at the moment"}));
-      });
+      })
+      .catch(error => dispatch(fetchDatasetCountError({title: "Error", detail: "Dataset count unavailable at the moment"})));
   }
 }
