@@ -7,7 +7,7 @@ import { config } from "../../config";
 const { baseUrl } = config;
 
 export default function Login(props) {
-  const previousUrl = props.location.state && props.location.state.from.pathname ? props.location.state.from.pathname: '/account';
+  const previousUrl = props.location.state && props.location.state.from && props.location.state.from.pathname ? props.location.state.from.pathname: '/account';
   const baseRedirectUrl = `${window.location.protocol}//${window.location
     .host}`;
   const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${previousUrl}`;
