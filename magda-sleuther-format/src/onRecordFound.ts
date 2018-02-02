@@ -30,9 +30,6 @@ export default async function onRecordFound(
         return Promise.resolve();
     }
 
-    //TODO delete this piece of code
-    console.log("gott after distribution nul check");
-
     // 2D array: 1 row per distribution
     const retrievedEvalSets: MeasureEvaluationSet[][] = distributions.map(
         function(distribution) {
