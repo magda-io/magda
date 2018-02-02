@@ -167,6 +167,10 @@ topLevelRoutes.forEach(topLevelRoute => {
     });
 });
 
+app.get("/page/*", function(req, res) {
+    res.sendFile(path.join(clientBuild, "index.html"));
+});
+
 app.get("/admin", function(req, res) {
     res.sendFile(path.join(adminBuild, "index.html"));
 });

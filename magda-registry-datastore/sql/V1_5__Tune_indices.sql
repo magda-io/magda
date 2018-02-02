@@ -1,5 +1,5 @@
 -- In the future this should be dynamic.
-CREATE INDEX reports_data_gin_idx
+CREATE INDEX recordsaspects_data_distributions_gin_idx
     ON recordaspects USING gin
     ((data -> 'distributions'::text));
 

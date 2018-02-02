@@ -39,10 +39,13 @@ export function fetchRegionMapping() {
       }
     })
     .then((json: FacetSearchJson) =>{
-      if(!json.error){
-        return dispatch(receiveRegionMapping(json));
+        if(!json.error){
+          return dispatch(receiveRegionMapping(json));
+        } else{
+            return dispatch(requestRegionMappingError(json.error))
         }
       }
     )
+    .catch(error => dispatch(requestRegionMappingError(error)));
   }
 }

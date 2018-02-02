@@ -2,8 +2,8 @@ global:
     useCombinedDb: false
     externalUrl: https://search.data.gov.au
     image:
-        pullPolicy: Always
-        tag: "0.0.30"
+        pullPolicy: IfNotPresent
+        tag: "0.0.32"
 tags:
     all: false
 
@@ -59,7 +59,7 @@ preview-map:
             cpu: 250m
             memory: 200Mi
 registry-api:
-    logLevel: DEBUG
+    logLevel: INFO
     requests:
         cpu: 500m
         memory: 1000Mi
