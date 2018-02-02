@@ -1,6 +1,7 @@
 @import '../../variables';
 
 .facet-header{
+  display: flex;
   &.not-empty{
     button{
       background: #494949;
