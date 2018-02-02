@@ -10,7 +10,7 @@ import retryBackoff from '@magda/typescript-common/dist/retryBackoff';
 import { Record } from '@magda/typescript-common/dist/generated/registry/api';
 
 
-const timeFormats = [moment.ISO_8601, 'DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-[Q]Q'];
+const timeFormats = [moment.ISO_8601, 'D-M-YYYY', 'D/M/YYYY', 'D/M/YY', 'D-M-YY', 'YYYY-[Q]Q'];
 
 export default function onRecordFound(record: Record, registry: Registry): Promise<void> {
     const { downloadURL, format } = record.aspects['dcat-distribution-strings'];
@@ -97,7 +97,7 @@ function processCsv(record: Record, stream: Readable) : Promise<VisualizationInf
                         // First row. Set all attributes to true and modify that when a row doesn't validate
                         fields[field] = {
                             numeric: true,
-                            time: /^(.*[_ ])?(time|date)/i.test(field)
+                            time: true
                         };
                     }
                     if (fields[field].numeric && !values.every(val => typeof val === 'number')) {
