@@ -10,4 +10,14 @@
 * Optimised the query that finds new events for each webhook
 * Stopped async webhooks posting `success: false` on an uncaught failure, as this just causes them to process the same data and fail over and over.
 * Stopped the broken link sleuther from failing completely when it gets a string that isn't a valid URL - now records as "broken".
+
+## 0.0.33
 * Added ability to get records from the registry by the value of their aspects.
+* Add route for `/pages/*` requests so that `magda-web-server` won't response `Cannot GET /page/*`
+* Added format sleuther
+* Set `kubernetes-client` (required by magda-admin-api) version to `3.17.2` to sovle the travis build issue* Added ability to get records from the registry by the value of their aspects.* Added ability to get records from the registry by the value of their aspects.* Added access control layer to Authorization APIs: All `private` APIs (uri starts with /private/) can only be accessed by Admin users.
+* Auth API will return `401` status code for un-authorized users and `403` if the APIs require `admin` level access
+* Added test cases for ApiClient class
+* Added test cased for Authorization APIs
+* Fixed minor frontend issue when Authorization APIs return non-json response
+* Add `userId` parameter to `package.json` of `magda-gateway` module
