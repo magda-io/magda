@@ -7,6 +7,7 @@ export default class ConnectionResult {
     public datasetsConnected = 0;
     public distributionsConnected = 0;
     public recordsTrimmed = 0;
+    public trimStillProcessing = false;
 
     public aspectDefinitionFailures = Array<AspectCreationFailure>();
     public organizationFailures = Array<RecordCreationFailure>();
@@ -21,6 +22,9 @@ export default class ConnectionResult {
         result += 'Distributions Connected: ' + this.distributionsConnected + '\n';
         result += 'Organizations Connected: ' + this.organizationsConnected + '\n';
         result += 'Records Trimmed: ' + this.recordsTrimmed + '\n';
+        if (this.trimStillProcessing) {
+            result += '(trim still processing) \n';
+        }
 
         if (this.aspectDefinitionFailures.length > 0) {
             result += 'Aspect Definition Failures:\n' + JSON.stringify(this.aspectDefinitionFailures, undefined, '  ') + '\n';
@@ -47,6 +51,7 @@ export default class ConnectionResult {
             total.datasetsConnected += result.datasetsConnected;
             total.distributionsConnected += result.distributionsConnected;
             total.recordsTrimmed += result.recordsTrimmed;
+            total.trimStillProcessing = result.trimStillProcessing || total.trimStillProcessing;
 
             total.aspectDefinitionFailures.push(...result.aspectDefinitionFailures);
             total.organizationFailures.push(...result.organizationFailures);
