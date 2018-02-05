@@ -23,4 +23,4 @@
 * Fixed minor frontend issue when Authorization APIs return non-json response
 * Added `userId` parameter to `package.json` of `magda-gateway` module
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
-* Added prettier prettier `pre-commit` hook to make sure consistent code style
+* Added prettier `pre-commit` hook to make sure consistent code style
