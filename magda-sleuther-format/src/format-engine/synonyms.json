@@ -1,0 +1,6 @@
+{
+    "html": ["WWW:DOWNLOAD-1.0-ftp--download", "WWW:LINK-1.0-http--related", "WWW:DOWNLOAD-1.0-http--download", "WWW:LINK-1.0-http-link", "WWW:LINK-1.0-http--metadata-URL", "webpage", "website", "htm", "x-msdownload"],
+    "wms": ["OGC:WMS-1.3.0-http-get-capabilities", "OGC:WMS-1.3.0-http-get-map"],
+    "docx": ["doc", "msword"],
+    "xlsx": ["xls"]
+}
