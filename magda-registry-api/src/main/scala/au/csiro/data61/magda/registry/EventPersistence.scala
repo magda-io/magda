@@ -8,6 +8,7 @@ import scalikejdbc._
 
 object EventPersistence extends Protocols with DiffsonProtocol {
   val eventStreamPageSize = 1000
+  val recordPersistence = DefaultRecordPersistence
 
   def streamEventsSince(sinceEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set()) = {
     Source.unfold(sinceEventId)(offset => {
@@ -64,7 +65,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
     val eventTypesFilter = if (eventTypes.isEmpty) sqls"1=1" else
       SQLSyntax.joinWithOr(eventTypes.map(v => v.value).map(v => sqls"eventtypeid = $v").toArray: _*)
 
-    val linkAspects = RecordPersistence.buildDereferenceMap(session, aspectIds)
+    val linkAspects = recordPersistence.buildDereferenceMap(session, aspectIds)
     val dereferenceSelectors: Set[SQLSyntax] = linkAspects.toSet[(String, PropertyWithLink)].map {
       case (aspectId, propertyWithLink) =>
         if (propertyWithLink.isArray) {

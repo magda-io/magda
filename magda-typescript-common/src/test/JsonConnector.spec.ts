@@ -62,15 +62,29 @@ describe("JsonConnector", () => {
 
             scope
                 .delete(
-                    `/records?sourceTagToPreserve=${connector.sourceTag}&sourceId=${
-                        connector.source.id
-                    }`
+                    `/records?sourceTagToPreserve=${
+                        connector.sourceTag
+                    }&sourceId=${connector.source.id}`
                 )
                 .reply(201, { count: 1 });
 
             return connector.run().then(result => {
                 scope.done();
                 expect(result.recordsTrimmed).to.equal(1);
+                expect(result.trimStillProcessing).to.be.false;
+            });
+        });
+
+        it("accepts a 202 Accepted status from the registry when deleting", () => {
+            const { scope, connector } = setupCrawlTest();
+
+            scope.put(new RegExp("/records")).reply(200);
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then(result => {
+                scope.done();
+
+                expect(result.trimStillProcessing).to.be.true;
             });
         });
 
