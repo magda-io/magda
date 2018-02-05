@@ -94,6 +94,7 @@ class FacetBasicBody extends Component {
 
 
   render(){
+    debugger
     let that = this;
     // default list of options to display for the facet filter except those already active, which will be displayed in a seperate list
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
@@ -110,7 +111,7 @@ class FacetBasicBody extends Component {
               {this.state.showOptions && (<div>
                <ul className='mui-list--unstyled'>
                  {that.state._activeOptions.sort((a, b)=>b.hitCount - a.hitCount).map(o=><li key={`${o.value}-${o.hitCount}`}>{that.renderOption(o, maxOptionOptionList)}</li>)}
-                 {this.props.options.length === 0 && <li className='no-data'>No {this.props.id}</li>}
+                 {this.props.options.length === 0 && <li className='no-data'>No {this.props.title} available</li>}
                </ul>
                 {inactiveOptions.map(o => this.renderOption(o, maxOptionOptionList))}
                 <div className='facet-footer'>

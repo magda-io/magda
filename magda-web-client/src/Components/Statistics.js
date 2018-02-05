@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import type { Stats } from '../types';
 import './Statistics.css';
 
 
@@ -9,9 +8,9 @@ import './Statistics.css';
 // - Total number of spatial datasets
 // - If time, ElasticSearch query for total number of open licensed datasets
 
-function renderStats(error: ?number, loading: boolean, value: ?number){
+function renderStats(error, loading, value){
   if(error){
-    return "error loading stats"
+    return error.detail
   } else if(loading){
     return <i className="fa fa-spinner fa-spin fa-fw"></i>
   }
@@ -20,7 +19,7 @@ function renderStats(error: ?number, loading: boolean, value: ?number){
 
 
 export default function Statistics(props: {stats: Stats}){
-  const stats: Stats = props.stats;
+  const stats= props.stats;
   return (
     <div className='white-box statistics'>
       <div className='inner'>
