@@ -10,6 +10,7 @@
 * Added test cases for ApiClient class
 * Added test cased for Authorization APIs
 * Fixed minor frontend issue when Authorization APIs return non-json response
+* Updated visualization sleuther to stream file downloads and csv parsing, and relax time field specifications.
 * Add `userId` parameter to `package.json` of `magda-gateway` module
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
 
