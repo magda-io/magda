@@ -41,8 +41,8 @@ class Format extends Component {
     });
   }
 
-  onSearchFormatFacet(facetKeyword){
-    this.props.dispatch(fetchFormatSearchResults(queryString.parse(this.props.location.search).q, facetKeyword))
+  onSearchFormatFacet(){
+    this.props.dispatch(fetchFormatSearchResults(queryString.parse(this.props.location.search).q))
   }
 
   render() {

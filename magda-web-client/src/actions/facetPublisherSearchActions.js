@@ -5,11 +5,10 @@ import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import type { FacetAction, FacetSearchJson } from '../helpers/datasetSearch';
 
-export function requestPublishers(generalQuery:string, facetQuery:string):FacetAction{
+export function requestPublishers(generalQuery:string):FacetAction{
   return {
     type: actionTypes.FACET_REQUEST_PUBLISHERS,
     generalQuery,
-    facetQuery
   }
 }
 
@@ -20,24 +19,23 @@ export function requestPublishersFailed(error):FacetAction{
   }
 }
 
-export function receivePublishers(generalQuery:string, facetQuery:string, json:Object):FacetAction{
+export function receivePublishers(generalQuery:string, json:Object):FacetAction{
   return {
     type: actionTypes.FACET_RECEIVE_PUBLISHERS,
     json: json,
     generalQuery,
-    facetQuery
   }
 }
 
-export function fetchPublisherSearchResults(generalQuery:string, facetQuery:string) {
+export function fetchPublisherSearchResults(generalQuery:string) {
   return (dispatch: Function)=>{
-    dispatch(requestPublishers(generalQuery, facetQuery))
+    dispatch(requestPublishers(generalQuery))
     return fetch(config.searchApiUrl + `facets/publisher/options?generalQuery=${encodeURIComponent(generalQuery)}&start=0&limit=10000`)
     .then(response => {
       if (response.status === 200) {return response.json();}
       return dispatch(requestPublishersFailed({title: response.status, detail: response.statusText}))})
     .then((json: FacetSearchJson) =>
-      dispatch(receivePublishers(generalQuery, facetQuery, json))
+      dispatch(receivePublishers(generalQuery, json))
     )
   }
 }

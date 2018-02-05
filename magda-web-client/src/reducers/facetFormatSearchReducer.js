@@ -5,7 +5,6 @@ const initialData = {
   isFetching: false,
   data: [],
   generalQuery: '',
-  facetQuery: ''
 }
 
 const facetFormatSearch = (state: FacetSearchState=initialData, action: FacetAction) => {
@@ -19,7 +18,6 @@ const facetFormatSearch = (state: FacetSearchState=initialData, action: FacetAct
         isFetching: false,
         data: (action.json && action.json.options) && action.json.options,
         generalQuery: action.generalQuery && action.generalQuery,
-        facetQuery: action.facetQuery && action.facetQuery
       })
     default:
       return state

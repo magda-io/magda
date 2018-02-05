@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import {config} from '../config';
+import left_arrow from "../assets/left-arrow.svg";
+import right_arrow from "../assets/right-arrow.svg";
 
 import Button from 'muicss/lib/react/button';
 import './Pagination.css';
@@ -8,10 +10,23 @@ class Pagination extends Component {
     constructor(props) {
       super(props);
       this.onClick = this.onClick.bind(this);
+      this.renderNextButton = this.renderNextButton.bind(this);
+      this.renderPrevButton = this.renderPrevButton.bind(this);
     }
 
     onClick(page){
       this.props.onPageChange(page);
+    }
+    renderPrevButton(currentIndex){
+      return <Button onClick={this.onClick.bind(this, currentIndex + 1)} className='btn-prev'> <img src={left_arrow} alt='previous page'/> </Button>
+    }
+
+    renderNextButton(currentIndex){
+      return <Button onClick={this.onClick.bind(this, currentIndex - 1)} className='btn-next'> <img src={right_arrow} alt='next page'/> </Button>
+    }
+
+    renderDisabledButton(){
+      return <Button disabled={true}>...</Button>;
     }
 
     renderPageList(max, current){
@@ -20,27 +35,27 @@ class Pagination extends Component {
       if(max > 5){
         if(current <= 3 || current === max){
           return (<ul className= 'pagination-list'>
-                    {current > 1 && <Button onClick={this.onClick.bind(this, current - 1)}> prev </Button>}
+                    {current > 1 && this.renderPrevButton(current)}
                     {margins.map(i => <li key={i}><Button onClick={this.onClick.bind(this, i)} className={`${ i === current ? 'current' : ''}`}>{i}</Button></li>)}
-                    <li><Button disabled={true}>...</Button></li>
-                    <li><Button onClick={this.onClick.bind(this, max)}>{max}</Button></li>
-                    {current < this.props.maxPage && <Button onClick={this.onClick.bind(this, current + 1)}> next </Button>}
+                    <li>{this.renderDisabledButton()}</li>
+                    <li><Button onClick={this.onClick.bind(this, max)} className={`${ max === current ? 'current' : ''}`}>{max}</Button></li>
+                    {current < max && this.renderNextButton(current)}
                   </ul>)
       }
       return (<ul className= 'pagination-list'>
-                {current > 1 && <Button onClick={this.onClick.bind(this, current - 1)}> prev </Button>}
+                {current > 1 && this.renderPrevButton(current)}
                 {margins.map(i => <li key={i}><Button onClick={this.onClick.bind(this, i)}>{i}</Button></li>)}
-                <li><Button disabled={true}>...</Button></li>
+                <li>{this.renderDisabledButton()}</li>
                 <li><Button onClick={this.onClick.bind(this, current)} className='current'>{current}</Button></li>
-                <li><Button disabled={true}>...</Button></li>
+                <li>{this.renderDisabledButton()}</li>
                 <li><Button onClick={this.onClick.bind(max)}>{max}</Button></li>
-                {current < max && <Button onClick={this.onClick.bind(this, current + 1)}> next </Button>}
+                {current < max && this.renderNextButton(current)}
               </ul>)
       } else {
         return (<ul className= 'pagination-list'>
-                {current > 1 && <Button onClick={this.onClick.bind(this, current - 1)}> prev </Button>}
+                {current > 1 && this.renderPrevButton(current)}
                 {pages.map(i => <li key={i}><Button onClick={this.onClick.bind(this, i)} className={`${ i === current ? 'current' : ''}`}>{i}</Button></li>)}
-                {current < max && <Button onClick={this.onClick.bind(this, current + 1)}> next </Button>}
+                {current < max && this.renderNextButton(current)}
                </ul>)
       }
   }

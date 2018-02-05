@@ -9,9 +9,10 @@
     margin-bottom: 24px;
     button{
       height: 24px;
+      min-width: 24px;
       border-radius: 2px;
       line-height: 1;
-      padding: 4px 9px;
+      padding: 0px;
       margin: 12px;
       color: #CC3139;
       font-weight: 400;
@@ -27,5 +28,9 @@
     line-height: 16px;
     text-align: center;
     margin-bottom: 8px;
+  }
+
+  .pagination-list .btn-prev, .pagination-list .btn-next{
+    border: 1px solid rgba(#CC3139, 0.5);
   }
 }
