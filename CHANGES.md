@@ -13,6 +13,7 @@
 * Updated visualization sleuther to stream file downloads and csv parsing, and relax time field specifications.
 * Add `userId` parameter to `package.json` of `magda-gateway` module
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
+* Added index to `"publisher"` field in recordaspects table in order to stop indexer webhook queries taking 10 minutes.
 
 ## 0.0.32
 
