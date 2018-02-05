@@ -2,13 +2,9 @@ import React, { Component } from 'react';
 import MarkdownViewer from '../../UI/MarkdownViewer';
 import defined from '../../helpers/defined';
 import getDateString from '../../helpers/getDateString';
-import ToggleList from '../../UI/ToggleList';
 import QualityIndicator from '../../UI/QualityIndicator';
-import renderDistribution from '../../Components/Distribution';
 import './DatasetSummary.css';
 import { Link } from 'react-router-dom';
-import Button from 'muicss/lib/react/button';
-import Divider from 'muicss/lib/react/divider';
 import uniq from 'lodash.uniq';
 
 

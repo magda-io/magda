@@ -79,7 +79,7 @@ class FacetHeader extends Component {
                 onMouseOver={()=>this.setState({buttonActive: true})}
                 onMouseOut ={()=>{if(!this.props.isOpen && !this.hasFilter()){this.setState({buttonActive: false})}}}
                 onClick={this.props.onClick}><img className='facet-icon' src={this.state.buttonActive ? IconList[`${this.props.id}_active`] : IconList[`${this.props.id}_passive`]} alt={this.props.title}/>{this.calculateTitle()}</Button>
-        {this.props.hasQuery && <Button onClick={this.props.onResetFacet} className='btn-remove'><img src={remove_light}/></Button>}
+        {this.props.hasQuery && <Button onClick={this.props.onResetFacet} className='btn-remove'><img alt='remove' src={remove_light}/></Button>}
       </div>
       );
   }

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import {config} from '../../config' ;
-import Button from 'muicss/lib/react/button';
 import './SearchFacets.css';
 
 class SearchFacets extends Component {
@@ -12,7 +11,7 @@ class SearchFacets extends Component {
   }
 
   componentWillMount(){
-    const that = this;
+    // const that = this;
     // window.addEventListener('click', that.closeFacetWithKeyBoard);
   }
 

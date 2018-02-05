@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
-import FacetHeader from './FacetHeader';
 import find from 'lodash.find';
 import maxBy from 'lodash.maxby';
 import defined from '../../helpers/defined';
 import FacetSearchBox from './FacetSearchBox';
-import {config} from '../../config' ;
-import ToggleList from '../../UI/ToggleList';
 import Button from 'muicss/lib/react/button';
 
 // extends Facet class
@@ -23,7 +20,6 @@ class FacetBasicBody extends Component {
   }
 
   componentWillMount(){
-    const that = this;
     this.props.searchFacet();
     this.setState({
       _activeOptions: this.props.activeOptions
@@ -99,7 +95,6 @@ class FacetBasicBody extends Component {
 
   render(){
     let that = this;
-    let defaultSize = config.facetListSize;
     // default list of options to display for the facet filter except those already active, which will be displayed in a seperate list
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
     // the option that has the max object.value value, use to calculate volumne indicator

@@ -122,7 +122,7 @@ class RegionSearchBox extends Component {
     return (
       <div className='region-search-box  facet-search-box'>
         <Form onKeyDown={this.handleKeyDown}>
-            <img className='search-icon' src ={search} />
+            <img className='search-icon' src ={search} alt='search'/>
             <Input type='text'
                    value={this.state.searchText}
                    onInput={this.onSearchTextChange}

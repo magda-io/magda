@@ -1,7 +1,6 @@
 import 'leaflet/dist/leaflet.css';
 import './FacetRegion.css';
 import React, { Component } from 'react';
-import DropDown from '../../UI/DropDown';
 import FacetHeader from './FacetHeader';
 import RegionMap from './RegionMap';
 import RegionSearchBox from './RegionSearchBox';

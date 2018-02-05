@@ -7,7 +7,6 @@ import { fetchDatasetFromRegistry, fetchDistributionFromRegistry } from '../acti
 import Tabs from '../UI/Tabs';
 import {config} from '../config';
 import ErrorHandler from './ErrorHandler';
-import CustomIcons from '../UI/CustomIcons';
 import RouteNotFound from './RouteNotFound';
 import {
   Route,
@@ -49,7 +48,6 @@ class RecordHandler extends React.Component {
 
   renderByState(){
     const publisherName = this.props.dataset.publisher.name;
-    const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
     const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
     const distributionIdAsUrl = this.props.match.params.distributionId ? encodeURIComponent(this.props.match.params.distributionId) : '';
     if(this.props.match.params.distributionId){

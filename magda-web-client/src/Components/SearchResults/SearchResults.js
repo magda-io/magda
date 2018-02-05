@@ -3,10 +3,6 @@ import DatasetSummary from '../../Components/Dataset/DatasetSummary';
 import './SearchResults.css';
 
 class SearchResults extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   getSummaryText(){
     if(this.props.searchResults.length){
       if(this.props.strategy === 'match-part'){

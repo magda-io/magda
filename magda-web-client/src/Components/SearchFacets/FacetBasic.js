@@ -1,20 +1,9 @@
 import React, { Component } from 'react';
 import FacetHeader from './FacetHeader';
-import find from 'lodash.find';
-import maxBy from 'lodash.maxby';
-import defined from '../../helpers/defined';
-import FacetSearchBox from './FacetSearchBox';
-import {config} from '../../config' ;
-import ToggleList from '../../UI/ToggleList';
-import Button from 'muicss/lib/react/button';
 import FacetBasicBody from './FacetBasicBody';
 
 // extends Facet class
 class FacetBasic extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render(){
     return <div className='facet-wrapper'>
               <FacetHeader

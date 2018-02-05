@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import Dropdown from 'muicss/lib/react/dropdown';
 import Input from 'muicss/lib/react/input';
 import Button from 'muicss/lib/react/button';
 import PropTypes from 'prop-types';

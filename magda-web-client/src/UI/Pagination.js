@@ -18,10 +18,10 @@ class Pagination extends Component {
       const pages = [...Array(max).keys()].map(x => ++x);
       const margins = [...Array(3).keys()].map(x => ++x);
       if(max > 5){
-        if(current <= 3 || current == max){
+        if(current <= 3 || current === max){
           return (<ul className= 'pagination-list'>
                     {current > 1 && <Button onClick={this.onClick.bind(this, current - 1)}> prev </Button>}
-                    {margins.map(i => <li key={i}><Button onClick={this.onClick.bind(this, i)} className={`${ i == current ? 'current' : ''}`}>{i}</Button></li>)}
+                    {margins.map(i => <li key={i}><Button onClick={this.onClick.bind(this, i)} className={`${ i === current ? 'current' : ''}`}>{i}</Button></li>)}
                     <li><Button disabled={true}>...</Button></li>
                     <li><Button onClick={this.onClick.bind(this, max)}>{max}</Button></li>
                     {current < this.props.maxPage && <Button onClick={this.onClick.bind(this, current + 1)}> next </Button>}
@@ -39,7 +39,7 @@ class Pagination extends Component {
       } else {
         return (<ul className= 'pagination-list'>
                 {current > 1 && <Button onClick={this.onClick.bind(this, current - 1)}> prev </Button>}
-                {pages.map(i => <li key={i}><Button onClick={this.onClick.bind(this, i)} className={`${ i == current ? 'current' : ''}`}>{i}</Button></li>)}
+                {pages.map(i => <li key={i}><Button onClick={this.onClick.bind(this, i)} className={`${ i === current ? 'current' : ''}`}>{i}</Button></li>)}
                 {current < max && <Button onClick={this.onClick.bind(this, current + 1)}> next </Button>}
                </ul>)
       }
@@ -48,7 +48,7 @@ class Pagination extends Component {
 
     render(){
       let currentPage  = this.props.currentPage;
-      let startIndex = currentPage === 1 ? 1 : currentPage * config.resultsPerPage + 1;
+      let startIndex = currentPage ===  1 ? 1 : currentPage * config.resultsPerPage + 1;
 
       return (
         <div className='pagination'>

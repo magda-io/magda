@@ -4,7 +4,6 @@ import {config} from '../../config' ;
 import defined from '../../helpers/defined';
 import Pagination from '../../UI/Pagination';
 import Notification from '../../UI/Notification';
-import PublisherBox from '../../Components/PublisherBox';
 import ReactDocumentTitle from 'react-document-title';
 import React, { Component } from 'react';
 import SearchFacets from '../../Components/SearchFacets/SearchFacets';

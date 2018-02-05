@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import './FacetSearchBox.css';
-import debounce from 'lodash.debounce';
-import Form from 'muicss/lib/react/form';
-import Input from 'muicss/lib/react/input';
 import Autosuggest from 'react-autosuggest';
 import search from "../../assets/search-dark.svg";
 
@@ -80,7 +77,7 @@ class FacetSearchBox extends Component {
     // Finally, render it!
     return (
       <div className='facet-search-box'>
-        <img className='search-icon' src ={search} />
+        <img className='search-icon' src ={search} alt='search'/>
         <Autosuggest
           suggestions={suggestions}
           onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}

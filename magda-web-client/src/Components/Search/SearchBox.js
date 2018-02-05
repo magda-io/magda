@@ -9,7 +9,6 @@ import React, { Component } from 'react';
 import {fetchRegionMapping} from '../../actions/regionMappingActions';
 import Form from 'muicss/lib/react/form';
 import Input from 'muicss/lib/react/input';
-import Button from 'muicss/lib/react/button';
 import search from "../../assets/search.svg";
 // eslint-disable-next-line
 import PropTypes from 'prop-types';

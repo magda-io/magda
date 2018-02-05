@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import SearchBox from './Components/Search/SearchBox';
 import AccountNavbar from './Components/Account/AccountNavbar';
-import d61logo from './data61-logo.png';
 import ProjectsViewer from './Components/Project/ProjectsViewer';
 import ProjectDetails from './Components/Project/ProjectDetails';
 import CreateProject from './Components/Project/CreateProject';
@@ -87,7 +86,6 @@ class AppContainer extends React.Component {
 
   render() {
     const headerNavs = config.headerNavigation;
-    const footerNavs = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
         <Container className='app-container'>
