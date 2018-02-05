@@ -20,6 +20,7 @@ import akka.http.scaladsl.model.StatusCode
 class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit val executionContext: ExecutionContext) extends Protocols {
   private val http = Http(actorSystem)
   private implicit val materializer: ActorMaterializer = ActorMaterializer()(actorSystem)
+  val recordPersistence = DefaultRecordPersistence
 
   def sendSomeNotificationsForOneWebHook(id: String, webHook: WebHook, eventPage: EventsPage): Future[WebHookProcessor.SendResult] = {
     val events = eventPage.events
@@ -59,7 +60,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         val directRecordIds = directRecordChangeEvents.map(_.data.fields("recordId").asInstanceOf[JsString].value).toSet
 
         // Get records directly modified by these events.
-        val directRecords = if (directRecordIds.isEmpty) RecordsPage(0, None, List()) else RecordPersistence.getByIdsWithAspects(
+        val directRecords = if (directRecordIds.isEmpty) RecordsPage(0, None, List()) else recordPersistence.getByIdsWithAspects(
           session,
           directRecordIds,
           webHook.config.aspects.getOrElse(List()),
@@ -75,7 +76,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             if (allRecordIds.isEmpty) {
               List()
             } else {
-              RecordPersistence.getRecordsLinkingToRecordIds(
+              recordPersistence.getRecordsLinkingToRecordIds(
                 session,
                 allRecordIds,
                 directRecords.records.map(_.id),

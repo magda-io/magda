@@ -22,13 +22,15 @@ import com.typesafe.config.Config
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(value = "record aspects", produces = "application/json")
 class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, config: Config) extends Protocols with SprayJsonSupport {
+  val recordPersistence = DefaultRecordPersistence
+
   @ApiOperation(value = "Get a list of all aspects of a record", nickname = "getAll", httpMethod = "GET", response = classOf[Aspect], responseContainer = "Map")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch aspects.")))
   def getAll = get {
     path(Segment / "aspects") { (recordId: String) =>
       DB readOnly { session =>
-        RecordPersistence.getByIdWithAspects(session, recordId) match {
+        recordPersistence.getByIdWithAspects(session, recordId) match {
           case Some(result) => complete(result.aspects)
           case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
         }
@@ -47,7 +49,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
       {
         DB readOnly { session =>
-          RecordPersistence.getRecordAspectById(session, recordId, aspectId) match {
+          recordPersistence.getRecordAspectById(session, recordId, aspectId) match {
             case Some(recordAspect) => complete(recordAspect)
             case None               => complete(StatusCodes.NotFound, BadRequest("No record aspect exists with that ID."))
           }
@@ -70,7 +72,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
         {
           entity(as[JsObject]) { aspect =>
             val result = DB localTx { session =>
-              RecordPersistence.putRecordAspectById(session, recordId, aspectId, aspect) match {
+              recordPersistence.putRecordAspectById(session, recordId, aspectId, aspect) match {
                 case Success(result)    => complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
@@ -94,7 +96,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
       requireIsAdmin(authClient)(system, config) { _ =>
         DB localTx { session =>
-          RecordPersistence.deleteRecordAspect(session, recordId, aspectId) match {
+          recordPersistence.deleteRecordAspect(session, recordId, aspectId) match {
             case Success(result)    => complete(DeleteResult(result))
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
@@ -117,7 +119,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
         {
           entity(as[JsonPatch]) { aspectPatch =>
             DB localTx { session =>
-              RecordPersistence.patchRecordAspectById(session, recordId, aspectId, aspectPatch) match {
+              recordPersistence.patchRecordAspectById(session, recordId, aspectId, aspectPatch) match {
                 case Success(result)    => complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
