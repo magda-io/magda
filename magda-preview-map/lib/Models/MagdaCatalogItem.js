@@ -495,12 +495,14 @@ MagdaCatalogItem.prototype._load = function() {
                 magdaBaseUrl: that.url,
                 wmsDistributionFormat: that.allowWms ? that.wmsDistributionFormat : undefined,
                 kmlDistributionFormat: that.allowKml ? that.kmlDistributionFormat : undefined,
+                wfsDistributionFormat: that.allowWfs ? that.wfsDistributionFormat : undefined,
                 csvDistributionFormat: that.allowCsv ? that.csvDistributionFormat : undefined,
                 esriMapServerDistributionFormat: that.allowEsriMapServer ? that.esriMapServerDistributionFormat : undefined,
                 geoJsonDistributionFormat: that.allowGeoJson ? that.geoJsonDistributionFormat : undefined,
                 czmlDistributionFormat: that.allowCzml ? that.czmlDistributionFormat : undefined,
                 dataCustodian: that.dataCustodian,
                 itemProperties: that.itemProperties,
+                allowWfsGroups: true,
                 allowWmsGroups: true
             });
 
