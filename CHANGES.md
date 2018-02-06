@@ -15,6 +15,7 @@
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
 * Updated format sleuther to be a bit more optimistic in its sleuthing
 * Re-added viz sleuther to default helm config
+* Added a CONTRIBUTING.md file
 
 ## 0.0.32
 
