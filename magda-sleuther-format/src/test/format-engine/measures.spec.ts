@@ -141,9 +141,18 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 expect(testTXT.formats[0].format).to.eql("TXT");
         });
 
-        it("doesn't return CSW WWW: formats", () => {
+        it("Classes CSW WWW: formats in synonyms as HTML", () => {
             const testWWW: MeasureResult = getDcatMeasureResult(
                 getRecordStubForDcatFormatMeasure("WWW:LINK-1"),
+                synonymObject
+            );
+
+            expect(testWWW.formats[0].format).to.equal("HTML");
+        });
+
+        it("doesn't return CSW WWW: formats unless that aren't synonym'd", () => {
+            const testWWW: MeasureResult = getDcatMeasureResult(
+                getRecordStubForDcatFormatMeasure("WWW:DOWNLOAD"),
                 synonymObject
             );
 

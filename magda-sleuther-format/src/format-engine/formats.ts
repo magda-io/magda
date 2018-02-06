@@ -18,7 +18,7 @@ export function getCommonFormat(rawFormat: string, synonymObject: any): string {
         }
 
         if (format.startsWith("WWW:")) {
-            // We don't want WWW: formats because they don't give us any actual clue about the format.
+            // There are a million WWW: formats - if we haven't synonym'd them as HTML, assume they're rubbish
             return null;
         } else {
             // Can't find a synonym, just return the actual format.

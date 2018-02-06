@@ -1,5 +1,14 @@
 {
-    "html": ["webpage", "website", "htm", "x-msdownload"],
+    "html": [
+        "WWW:LINK-1",
+        "WWW:LINK-1.0-http--related",
+        "WWW:LINK-1.0-http-link",
+        "WWW:LINK-1.0-http--metadata-URL",
+        "webpage",
+        "website",
+        "htm",
+        "x-msdownload"
+    ],
     "wms": [
         "OGC:WMS-1.3.0-http-get-capabilities",
         "OGC:WMS-1.3.0-http-get-map",

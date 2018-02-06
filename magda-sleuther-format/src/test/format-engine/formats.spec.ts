@@ -17,22 +17,21 @@ describe("getCommonFormat", function(this: Mocha.ISuiteCallbackContext) {
         expect(result3).to.eql(result4);
     });
 
-    it("should classify CSW WWW:nonsense as 'null'", function() {
+    it("should classify synonym'd CSW WWW: links as their synonym", () => {
         expect(
             getCommonFormat("WWW:LINK-1.0-http--related", synonymObject)
-        ).to.eql(null);
-        
-        expect(
-            getCommonFormat("WWW:DOWNLOAD-1.0-http--download", synonymObject)
-        ).to.eql(null);
+        ).to.eql("HTML");
 
         expect(
             getCommonFormat("WWW:LINK-1.0-http--metadata-URL", synonymObject)
-        ).to.eql(null);
+        ).to.eql("HTML");
 
+        expect(getCommonFormat("WWW:LINK-1", synonymObject)).to.eql("HTML");
+    });
+
+    it("should classify unsynonym'd CSW WWW: links without synonyms as 'null'", function() {
         expect(
-            getCommonFormat("WWW:LINK-1", synonymObject)
+            getCommonFormat("WWW:DOWNLOAD-1.0-http--download", synonymObject)
         ).to.eql(null);
-       
     });
 });
