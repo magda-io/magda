@@ -1,11 +1,11 @@
 {
-  "apiVersion": "batch/v2alpha1",
+  "apiVersion": "batch/v1beta1",
   "kind": "CronJob",
   "metadata": {
     "name": "connector-victoria-government"
   },
   "spec": {
-    "schedule": "* * */3 * *",
+    "schedule": "30 11 */3 * *",
     "jobTemplate": {
       "spec": {
         "template": {
@@ -28,13 +28,33 @@
                 "imagePullPolicy": "Always",
                 "resources": {
                   "requests": {
-                    "cpu": "0m"
+                    "cpu": "100m",
+                    "memory": "100Mi"
+                  },
+                  "limits": {
+                    "cpu": "200m",
+                    "memory": "200Mi"
                   }
                 },
                 "volumeMounts": [
                   {
                     "mountPath": "/etc/config",
                     "name": "config"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "USER_ID",
+                    "value": "00000000-0000-4000-8000-000000000000"
+                  },
+                  {
+                    "name": "JWT_SECRET",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "auth-secrets",
+                        "key": "jwt-secret"
+                      }
+                    }
                   }
                 ]
               }

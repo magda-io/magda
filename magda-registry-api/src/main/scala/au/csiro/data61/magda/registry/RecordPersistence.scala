@@ -14,7 +14,68 @@ import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry._
 
-object RecordPersistence extends Protocols with DiffsonProtocol {
+trait RecordPersistence {
+  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary]
+
+  def getAllWithAspects(implicit session: DBSession,
+                        aspectIds: Iterable[String],
+                        optionalAspectIds: Iterable[String],
+                        pageToken: Option[String] = None,
+                        start: Option[Int] = None,
+                        limit: Option[Int] = None,
+                        dereference: Option[Boolean] = None,
+                        aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record]
+
+  def getById(implicit session: DBSession, id: String): Option[RecordSummary]
+
+  def getByIdWithAspects(implicit session: DBSession,
+                         id: String,
+                         aspectIds: Iterable[String] = Seq(),
+                         optionalAspectIds: Iterable[String] = Seq(),
+                         dereference: Option[Boolean] = None): Option[Record]
+
+  def getByIdsWithAspects(implicit session: DBSession,
+                          ids: Iterable[String],
+                          aspectIds: Iterable[String] = Seq(),
+                          optionalAspectIds: Iterable[String] = Seq(),
+                          dereference: Option[Boolean] = None): RecordsPage[Record]
+
+  def getRecordsLinkingToRecordIds(implicit session: DBSession,
+                                   ids: Iterable[String],
+                                   idsToExclude: Iterable[String] = Seq(),
+                                   aspectIds: Iterable[String] = Seq(),
+                                   optionalAspectIds: Iterable[String] = Seq(),
+                                   dereference: Option[Boolean] = None): RecordsPage[Record]
+
+  def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject]
+
+  def getPageTokens(implicit session: DBSession,
+                    aspectIds: Iterable[String],
+                    limit: Option[Int] = None,
+                    recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): List[String]
+
+  def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record]
+
+  def patchRecordById(implicit session: DBSession, id: String, recordPatch: JsonPatch): Try[Record]
+
+  def patchRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, aspectPatch: JsonPatch): Try[JsObject]
+
+  def putRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, newAspect: JsObject): Try[JsObject]
+
+  def createRecord(implicit session: DBSession, record: Record): Try[Record]
+
+  def deleteRecord(implicit session: DBSession, recordId: String): Try[Boolean]
+
+  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String)(implicit session: DBSession): Try[Long]
+
+  def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject]
+
+  def deleteRecordAspect(implicit session: DBSession, recordId: String, aspectId: String): Try[Boolean]
+
+  def reconstructRecordFromEvents(id: String, events: Source[RegistryEvent, NotUsed], aspects: Iterable[String], optionalAspects: Iterable[String]): Source[Option[Record], NotUsed]
+}
+
+object DefaultRecordPersistence extends Protocols with DiffsonProtocol with RecordPersistence {
   val maxResultCount = 1000
   val defaultResultCount = 100
 

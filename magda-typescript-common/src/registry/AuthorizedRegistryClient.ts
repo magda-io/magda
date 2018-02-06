@@ -268,9 +268,17 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     deleteBySource(
         sourceTagToPreserve: string,
         sourceId: string
-    ): Promise<MultipleDeleteResult | Error> {
+    ): Promise<MultipleDeleteResult | "Processing" | Error> {
         const operation = () =>
-            this.recordsApi.trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt);
+            this.recordsApi
+                .trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt)
+                .then(result => {
+                    if (result.response.statusCode === 202) {
+                        return "Processing" as "Processing";
+                    } else {
+                        return result.body as MultipleDeleteResult;
+                    }
+                });
 
         return retry(
             operation,
@@ -284,8 +292,6 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         retriesLeft
                     )
                 )
-        )
-            .then(result => result.body)
-            .catch(createServiceError);
+        ).catch(createServiceError);
     }
 }
