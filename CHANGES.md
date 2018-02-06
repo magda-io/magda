@@ -14,6 +14,7 @@
 * Add `userId` parameter to `package.json` of `magda-gateway` module
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
 * Added a CONTRIBUTING.md file
+* Fixed an issue that `Preview Map` doesn't support WFS API
 
 ## 0.0.32
 
