@@ -3,7 +3,6 @@ import MeasureResult from "./MeasureResult";
 
 /*
 * Tries to determine the format by parsing the downloadURL string and looking at the extension
-* TODO not finished
 */
 export default function getMeasureResults(
     relatedDistribution: any,
@@ -13,7 +12,7 @@ export default function getMeasureResults(
         "dcat-distribution-strings"
     ];
 
-    if (downloadURL === null || downloadURL === "") {
+    if (!downloadURL || downloadURL === "") {
         return null;
     }
 

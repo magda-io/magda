@@ -5,8 +5,7 @@ import {
     //should
 } from "chai";
 
-import { Formats } from "../../format-engine/formats";
-let synonymObject =  require("../../format-engine/synonyms.json");
+let synonymObject = require("../../../synonyms.json");
 import * as fs from "fs";
 
 import getDcatMeasureResult from "../../format-engine/measures/dcatFormatMeasure";
@@ -21,7 +20,7 @@ import getDownloadMeasureResult from "../../format-engine/measures/downloadMeasu
 //import MeasureEvaluationSet from "src/format-engine/measures/MeasureEvaluationSet";
 //import MeasureEvalResult from "src/format-engine/MeasureEvalResult";
 import MeasureResult from "src/format-engine/measures/MeasureResult";
-import {  } from "../../format-engine/formats";
+import {} from "../../format-engine/formats";
 
 describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
     before(() => {
@@ -31,14 +30,14 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 200,
                 fs.readFileSync(__dirname + "/resources/Google.html", "utf-8")
             );
-        
+
         nock("www.snee.com")
             .get("/xml/xslt/sample.doc")
             .reply(
                 200,
                 fs.readFileSync(__dirname + "/resources/sample.doc", "utf-8")
             );
-        
+
         nock("www.pj.com")
             .get("/whereispj.htm")
             .reply(
@@ -53,9 +52,12 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.snee.com/xml/xslt/sample.doc"
             );
 
-            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getDownloadMeasureResult(
+                record,
+                synonymObject
+            );
 
-            expect(ret.formats[0].format).to.eql(Formats.MSWORD);
+            expect(ret.formats[0].format).to.eql("DOCX");
         });
 
         it("returns a html page when supplied with a htm", function() {
@@ -63,9 +65,12 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.pj.com/whereispj.htm"
             );
 
-            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getDownloadMeasureResult(
+                record,
+                synonymObject
+            );
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0].format).to.eql("HTML");
         });
     });
 
@@ -75,9 +80,12 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.google.com/"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getExtensionMeasureResult(
+                record,
+                synonymObject
+            );
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0].format).to.eql("HTML");
         });
 
         it("returns a doc when supplied with a doc", function() {
@@ -85,9 +93,12 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.snee.com/xml/xslt/sample.doc"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getExtensionMeasureResult(
+                record,
+                synonymObject
+            );
 
-            expect(ret.formats[0].format).to.eql(Formats.DOCX);
+            expect(ret.formats[0].format).to.eql("DOCX");
         });
 
         it("returns a html page when supplied with a htm", function() {
@@ -95,83 +106,102 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.pj.com/whereispj.htm"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getExtensionMeasureResult(
+                record,
+                synonymObject
+            );
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0].format).to.eql("HTML");
         });
     });
 
     describe("DcatFormatMeasusre -> getSelectedFormats()", function() {
-        //try docx txt msword 
+        //try docx txt msword
         // it only tests formats not confidence levels
         it("returns 1 worded strings", function() {
-            let recordPDF = getRecordStubForDcatFormatMeasure(
-                "pDf"
+            let recordPDF = getRecordStubForDcatFormatMeasure("pDf");
+            let recordDOCX = getRecordStubForDcatFormatMeasure("DoCx");
+            let recordTXT = getRecordStubForDcatFormatMeasure("txT");
+
+            let testPDF: MeasureResult = getDcatMeasureResult(
+                recordPDF,
+                synonymObject
             );
-            let recordDOCX = getRecordStubForDcatFormatMeasure(
-                "DoCx"
+            let testDOCX: MeasureResult = getDcatMeasureResult(
+                recordDOCX,
+                synonymObject
             );
-            let recordTXT = getRecordStubForDcatFormatMeasure(
-                "txT"
+            let testTXT: MeasureResult = getDcatMeasureResult(
+                recordTXT,
+                synonymObject
             );
 
-            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
-            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
-            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
+            expect(testPDF.formats[0].format).to.eql("PDF") &&
+                expect(testDOCX.formats[0].format).to.eql("DOCX") &&
+                expect(testTXT.formats[0].format).to.eql("TXT");
+        });
 
-            expect(testPDF.formats[0].format).to.eql(Formats.PDF) &&
-            expect(testDOCX.formats[0].format).to.eql(Formats.DOCX) &&
-            expect(testTXT.formats[0].format).to.eql(Formats.TXT);
+        it("doesn't return CSW WWW: formats", () => {
+            const testWWW: MeasureResult = getDcatMeasureResult(
+                getRecordStubForDcatFormatMeasure("WWW:LINK-1"),
+                synonymObject
+            );
+
+            expect(testWWW.formats[0].format).to.equal(null);
         });
 
         it("successfully separates &", function() {
-            let recordPDF = getRecordStubForDcatFormatMeasure(
-                "pDf & Docx"
-            );
-            let recordDOCX = getRecordStubForDcatFormatMeasure(
-                "DoCx   & Pdf"
-            );
-            let recordTXT = getRecordStubForDcatFormatMeasure(
-                "txT    & html"
-            );
-            
-            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
-            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
-            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
+            let recordPDF = getRecordStubForDcatFormatMeasure("pDf & Docx");
+            let recordDOCX = getRecordStubForDcatFormatMeasure("DoCx   & Pdf");
+            let recordTXT = getRecordStubForDcatFormatMeasure("txT    & html");
 
-            expect(testPDF.formats[0].format).to.eql(Formats.PDF) &&
-            expect(testPDF.formats[1].format).to.eql(Formats.DOCX) &&
+            let testPDF: MeasureResult = getDcatMeasureResult(
+                recordPDF,
+                synonymObject
+            );
+            let testDOCX: MeasureResult = getDcatMeasureResult(
+                recordDOCX,
+                synonymObject
+            );
+            let testTXT: MeasureResult = getDcatMeasureResult(
+                recordTXT,
+                synonymObject
+            );
 
-            expect(testDOCX.formats[0].format).to.eql(Formats.DOCX) &&
-            expect(testDOCX.formats[1].format).to.eql(Formats.PDF) &&
-
-            expect(testTXT.formats[0].format).to.eql(Formats.TXT) &&
-            expect(testTXT.formats[1].format).to.eql(Formats.HTML);
+            expect(testPDF.formats[0].format).to.eql("PDF") &&
+                expect(testPDF.formats[1].format).to.eql("DOCX") &&
+                expect(testDOCX.formats[0].format).to.eql("DOCX") &&
+                expect(testDOCX.formats[1].format).to.eql("PDF") &&
+                expect(testTXT.formats[0].format).to.eql("TXT") &&
+                expect(testTXT.formats[1].format).to.eql("HTML");
         });
 
         it("successfully chooses () formats", function() {
-            let recordPDF = getRecordStubForDcatFormatMeasure(
-                "zIp (Docx)"
-            );
+            let recordPDF = getRecordStubForDcatFormatMeasure("zIp (Docx)");
             let recordDOCX = getRecordStubForDcatFormatMeasure(
                 "some zipper file    (Pdf)"
             );
-            let recordTXT = getRecordStubForDcatFormatMeasure(
-                "txT    (html)"
+            let recordTXT = getRecordStubForDcatFormatMeasure("txT    (html)");
+
+            let testPDF: MeasureResult = getDcatMeasureResult(
+                recordPDF,
+                synonymObject
+            );
+            let testDOCX: MeasureResult = getDcatMeasureResult(
+                recordDOCX,
+                synonymObject
+            );
+            let testTXT: MeasureResult = getDcatMeasureResult(
+                recordTXT,
+                synonymObject
             );
 
-            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
-            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
-            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
-
-            expect(testPDF.formats[0].format).to.eql(Formats.DOCX) &&
-            expect(testPDF.formats.length).to.equal(1) &&
-
-            expect(testDOCX.formats[0].format).to.eql(Formats.PDF) &&
-            expect(testDOCX.formats.length).to.equal(1) &&
-
-            expect(testTXT.formats[0].format).to.eql(Formats.HTML) &&
-            expect(testTXT.formats.length).to.equal(1);
+            expect(testPDF.formats[0].format).to.eql("DOCX") &&
+                expect(testPDF.formats.length).to.equal(1) &&
+                expect(testDOCX.formats[0].format).to.eql("PDF") &&
+                expect(testDOCX.formats.length).to.equal(1) &&
+                expect(testTXT.formats[0].format).to.eql("HTML") &&
+                expect(testTXT.formats.length).to.equal(1);
         });
     });
 });
@@ -190,7 +220,11 @@ function getRecordStubForDcatFormatMeasure(format: string) {
     return getGeneralRecordStub(null, format, null);
 }
 
-function getGeneralRecordStub(downloadURL: string, format: string, mediaType: string) {
+function getGeneralRecordStub(
+    downloadURL: string,
+    format: string,
+    mediaType: string
+) {
     return {
         aspects: {
             "dcat-distribution-strings": {
