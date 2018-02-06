@@ -13,6 +13,8 @@
 * Updated visualization sleuther to stream file downloads and csv parsing, and relax time field specifications.
 * Add `userId` parameter to `package.json` of `magda-gateway` module
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
+* Updated format sleuther to be a bit more optimistic in its sleuthing
+* Re-added viz sleuther to default helm config
 
 ## 0.0.32
 
