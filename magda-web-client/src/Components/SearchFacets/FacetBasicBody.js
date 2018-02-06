@@ -105,6 +105,7 @@ class FacetBasicBody extends Component {
                                 options={this.props.facetSearchResults}
                                 onToggleOption={this.onToggleOption}
                                 searchBoxValueChange = {this.searchBoxValueChange}
+                                title={this.props.title}
                                 />
               </div>
               {this.state.showOptions && (<div>

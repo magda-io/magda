@@ -69,7 +69,7 @@ class FacetSearchBox extends Component {
 
     // Autosuggest will pass through all these props to the input.
     const inputProps = {
-      placeholder: 'Search',
+      placeholder: `Search for ${this.props.title}`,
       value,
       onChange: this.onChange
     };
