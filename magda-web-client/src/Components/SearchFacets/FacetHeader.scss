@@ -2,6 +2,7 @@
 
 .facet-header{
   display: flex;
+
   &.not-empty{
     button{
       background: #494949;
@@ -19,6 +20,7 @@
     font-size: 14px;
     text-align: center;
     padding: 0 16px;
+    text-transform: capitalize;
     .facet-icon{
       padding: 4px 6px 4px 0;
       height: 24px;

@@ -137,7 +137,7 @@ class SearchBox extends Component {
                 </label>
               </td>
               <td width='30px'>
-                <button onClick={this.onClickSearch} className='icon-button' type='button'><img src={search} alt="search button"/><span className='sr-only'>submit search</span></button>
+                <button onClick={this.onClickSearch} className='search-btn' type='button'><img src={search} alt="search button"/><span className='sr-only'>submit search</span></button>
               </td>
               </tr>
               </tbody>

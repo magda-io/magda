@@ -94,7 +94,6 @@ class FacetBasicBody extends Component {
 
 
   render(){
-    debugger
     let that = this;
     // default list of options to display for the facet filter except those already active, which will be displayed in a seperate list
     let inactiveOptions = this.props.options.filter(o=>!this.checkActiveOption(o));
