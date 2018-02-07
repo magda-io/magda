@@ -36,12 +36,12 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       expectWebHookGet(param)
 
       // Expect the new hook to be posted
-      (param.fetcher.post(_: String, _: WebHook, _: Seq[HttpHeader])(_: ToEntityMarshaller[WebHook]))
-        .expects("/v0/hooks", *, *, *)
+      (param.fetcher.put(_: String, _: WebHook, _: Seq[HttpHeader])(_: ToEntityMarshaller[WebHook]))
+        .expects(s"/v0/hooks/indexer", *, *, *)
         .onCall((url: String, webhook: WebHook, headers: Seq[HttpHeader], marshaller: ToEntityMarshaller[WebHook]) => {
           // Forward the req to the registry api
           expectAdminCheck(param.fetcher, true)
-          val request = Post(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
+          val request = Put(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
 
           assert(webhook.id.isDefined)
 
@@ -93,6 +93,21 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
 
       // Expect an existing webhook to be looked for.
       expectWebHookGet(param)
+
+      // Expect the hook to update itself
+      (param.fetcher.put(_: String, _: WebHook, _: Seq[HttpHeader])(_: ToEntityMarshaller[WebHook]))
+        .expects(s"/v0/hooks/$webhookId", *, *, *)
+        .onCall((url: String, webhook: WebHook, headers: Seq[HttpHeader], marshaller: ToEntityMarshaller[WebHook]) => {
+          // Forward the req to the registry api
+          expectAdminCheck(param.fetcher, true)
+          val request = Put(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
+
+          assert(webhook.id.isDefined)
+
+          request ~> param.api.routes ~> check {
+            Future.successful(response)
+          }
+        })
 
       // Expect an ACK call once the indexer has determined that the webhook already exists
       (param.fetcher.post(_: String, _: WebHookAcknowledgement, _: Seq[HttpHeader])(_: ToEntityMarshaller[WebHookAcknowledgement]))
