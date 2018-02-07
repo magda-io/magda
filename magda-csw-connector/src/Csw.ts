@@ -1,14 +1,14 @@
-import { ConnectorSource } from '@magda/typescript-common/dist/JsonConnector';
-import * as URI from 'urijs';
-import * as request from 'request';
-import AsyncPage from '@magda/typescript-common/dist/AsyncPage';
-import CswUrlBuilder from './CswUrlBuilder';
-import retry from '@magda/typescript-common/dist/retry';
-import formatServiceError from '@magda/typescript-common/dist/formatServiceError';
-import * as xmldom from 'xmldom';
-import * as xml2js from 'xml2js';
-import * as jsonpath from 'jsonpath';
-import { groupBy } from 'lodash';
+import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
+import * as URI from "urijs";
+import * as request from "request";
+import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
+import CswUrlBuilder from "./CswUrlBuilder";
+import retry from "@magda/typescript-common/dist/retry";
+import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
+import * as xmldom from "xmldom";
+import * as xml2js from "xml2js";
+import * as jsonpath from "jsonpath";
+import { groupBy } from "lodash";
 
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
@@ -37,9 +37,9 @@ export default class Csw implements ConnectorSource {
     }
 
     public getRecords(options?: {
-        constraint?: string,
-        start?: number,
-        maxResults?: number
+        constraint?: string;
+        start?: number;
+        maxResults?: number;
     }): AsyncPage<Document> {
         options = options || {};
 
@@ -50,15 +50,33 @@ export default class Csw implements ConnectorSource {
 
         return AsyncPage.create<any>(previous => {
             if (previous) {
-                const searchResults = previous.documentElement.getElementsByTagNameNS('*', 'SearchResults')[0];
-                const numberOfRecordsMatched = parseInt(searchResults.attributes.getNamedItem('numberOfRecordsMatched').value, 10);
-                const nextRecord = parseInt(searchResults.attributes.getNamedItem('nextRecord').value, 10);
+                const searchResults = previous.documentElement.getElementsByTagNameNS(
+                    "*",
+                    "SearchResults"
+                )[0];
+                const numberOfRecordsMatched = parseInt(
+                    searchResults.attributes.getNamedItem(
+                        "numberOfRecordsMatched"
+                    ).value,
+                    10
+                );
+                const nextRecord = parseInt(
+                    searchResults.attributes.getNamedItem("nextRecord").value,
+                    10
+                );
 
                 const nextStartIndex = nextRecord - 1;
 
-                const remaining = options.maxResults ? (options.maxResults - (nextStartIndex - startStart)) : undefined;
+                const remaining = options.maxResults
+                    ? options.maxResults - (nextStartIndex - startStart)
+                    : undefined;
 
-                if (nextRecord === 0 || nextRecord >= numberOfRecordsMatched || nextStartIndex === startIndex || remaining <= 0) {
+                if (
+                    nextRecord === 0 ||
+                    nextRecord >= numberOfRecordsMatched ||
+                    nextStartIndex === startIndex ||
+                    remaining <= 0
+                ) {
                     return undefined;
                 }
 
@@ -66,19 +84,32 @@ export default class Csw implements ConnectorSource {
 
                 return this.requestRecordsPage(url, startIndex, remaining);
             } else {
-                return this.requestRecordsPage(url, startIndex, options.maxResults);
+                return this.requestRecordsPage(
+                    url,
+                    startIndex,
+                    options.maxResults
+                );
             }
         });
     }
 
-    public getJsonDatasets(constraint?: string, maxResults?: number): AsyncPage<any[]> {
+    public getJsonDatasets(
+        constraint?: string,
+        maxResults?: number
+    ): AsyncPage<any[]> {
         const recordPages = this.getRecords({
             constraint: constraint,
             maxResults: maxResults
         });
         return recordPages.map(pageXml => {
-            const searchResults = pageXml.documentElement.getElementsByTagNameNS('*', 'SearchResults')[0];
-            const records = searchResults.getElementsByTagNameNS('*', 'MD_Metadata');
+            const searchResults = pageXml.documentElement.getElementsByTagNameNS(
+                "*",
+                "SearchResults"
+            )[0];
+            const records = searchResults.getElementsByTagNameNS(
+                "*",
+                "MD_Metadata"
+            );
 
             const result = [];
 
@@ -105,24 +136,35 @@ export default class Csw implements ConnectorSource {
         });
 
         return xmlPromise.then(xml => {
-            const recordXml = xml.documentElement.getElementsByTagNameNS('*', 'MD_Metadata')[0];
+            const recordXml = xml.documentElement.getElementsByTagNameNS(
+                "*",
+                "MD_Metadata"
+            )[0];
             return this.xmlRecordToJsonRecord(recordXml);
         });
     }
 
-    public searchDatasetsByTitle(title: string, maxResults: number): AsyncPage<any[]> {
+    public searchDatasetsByTitle(
+        title: string,
+        maxResults: number
+    ): AsyncPage<any[]> {
         const constraint = `
             <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:dc="http://purl.org/dc/elements/1.1/">
                 <ogc:PropertyIsLike escapeChar="\\" singleChar="?" wildCard="*">
                     <ogc:PropertyName>Title</ogc:PropertyName>
-                        <ogc:Literal>*${title.replace(/\\/g, '\\\\').replace(/\*/g, '\\*').replace(/\?/g, '\\?')}*</ogc:Literal>
+                        <ogc:Literal>*${title
+                            .replace(/\\/g, "\\\\")
+                            .replace(/\*/g, "\\*")
+                            .replace(/\?/g, "\\?")}*</ogc:Literal>
                 </ogc:PropertyIsLike>
-            </ogc:Filter>`.replace(/\s\s+/g, ' ');
+            </ogc:Filter>`.replace(/\s\s+/g, " ");
         return this.getJsonDatasets(constraint, 10);
     }
 
     public getJsonDistributions(dataset: any): AsyncPage<object[]> {
-        return AsyncPage.single<object[]>(this.getJsonDistributionsArray(dataset));
+        return AsyncPage.single<object[]>(
+            this.getJsonDistributionsArray(dataset)
+        );
     }
 
     public readonly hasFirstClassOrganizations = false;
@@ -135,7 +177,10 @@ export default class Csw implements ConnectorSource {
         return undefined;
     }
 
-    public searchFirstClassOrganizationsByTitle(title: string, maxResults: number): AsyncPage<any[]> {
+    public searchFirstClassOrganizationsByTitle(
+        title: string,
+        maxResults: number
+    ): AsyncPage<any[]> {
         return undefined;
     }
 
@@ -145,9 +190,18 @@ export default class Csw implements ConnectorSource {
 
     public getJsonDatasetPublisher(dataset: any): Promise<any> {
         // Find all parties that are publishers, owners, or custodians.
-        const responsibleParties = jsonpath.query(dataset.json, '$..CI_ResponsibleParty[*]');
-        const byRole = groupBy(responsibleParties, party => jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'));
-        const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian;
+        const responsibleParties = jsonpath.query(
+            dataset.json,
+            "$..CI_ResponsibleParty[*]"
+        );
+        const byRole = groupBy(responsibleParties, party =>
+            jsonpath.value(
+                party,
+                '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
+            )
+        );
+        const datasetOrgs =
+            byRole.publisher || byRole.owner || byRole.custodian;
         if (!datasetOrgs || datasetOrgs.length === 0) {
             return undefined;
         }
@@ -156,14 +210,17 @@ export default class Csw implements ConnectorSource {
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
-        return jsonpath.query(dataset.json, '$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]');
+        return jsonpath.query(
+            dataset.json,
+            "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+        );
     }
 
     private xmlRecordToJsonRecord(recordXml: Element) {
         const xml2jsany: any = xml2js; // needed because the current TypeScript declarations don't know about xml2js.processors.
         const parser = new xml2js.Parser({
             xmlns: true,
-            tagNameProcessors: [ xml2jsany.processors.stripPrefix ],
+            tagNameProcessors: [xml2jsany.processors.stripPrefix],
             async: false,
             explicitRoot: false
         });
@@ -179,31 +236,51 @@ export default class Csw implements ConnectorSource {
 
         return {
             json: json,
-//            xml: recordXml,
+            //            xml: recordXml,
             xmlString: xmlString
         };
     }
 
-    private requestRecordsPage(url: uri.URI, startIndex: number, maxResults: number): Promise<any> {
-        const pageSize = maxResults && maxResults < this.pageSize ? maxResults : this.pageSize;
+    private requestRecordsPage(
+        url: uri.URI,
+        startIndex: number,
+        maxResults: number
+    ): Promise<any> {
+        const pageSize =
+            maxResults && maxResults < this.pageSize
+                ? maxResults
+                : this.pageSize;
 
         const pageUrl = url.clone();
-        pageUrl.addSearch('startPosition', startIndex + 1);
-        pageUrl.addSearch('maxRecords', pageSize);
+        pageUrl.addSearch("startPosition", startIndex + 1);
+        pageUrl.addSearch("maxRecords", pageSize);
 
-        const operation = () => new Promise<any>((resolve, reject) => {
-            console.log('Requesting ' + pageUrl.toString());
-            request(pageUrl.toString(), {}, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-                console.log('Received@' + startIndex);
-                resolve(this.xmlParser.parseFromString(body));
+        const operation = () =>
+            new Promise<any>((resolve, reject) => {
+                console.log("Requesting " + pageUrl.toString());
+                request(pageUrl.toString(), {}, (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+                    console.log("Received@" + startIndex);
+                    resolve(this.xmlParser.parseFromString(body));
+                });
             });
-        });
 
-        return retry(operation, this.secondsBetweenRetries, this.maxRetries, (e, retriesLeft) => console.log(formatServiceError(`Failed to GET ${pageUrl.toString()}.`, e, retriesLeft)));
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to GET ${pageUrl.toString()}.`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        );
     }
 }
 

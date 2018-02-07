@@ -62,10 +62,10 @@ export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
 );
 
 /**
-   * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with
-   * at least one distribution per dataset and with at least one valid url per
-   * distribution, for testing retries.
-   */
+ * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with
+ * at least one distribution per dataset and with at least one valid url per
+ * distribution, for testing retries.
+ */
 export const httpOnlyRecordArb = jsc.suchthat(
     recordArbWithDistArbs(
         jsc.oneof([
@@ -80,26 +80,27 @@ export const httpOnlyRecordArb = jsc.suchthat(
     ),
     record =>
         record.aspects["dataset-distributions"].distributions.length > 1 &&
-        record.aspects[
-            "dataset-distributions"
-        ].distributions.every((dist: any) => {
-            const aspect = dist.aspects["dcat-distribution-strings"];
+        record.aspects["dataset-distributions"].distributions.every(
+            (dist: any) => {
+                const aspect = dist.aspects["dcat-distribution-strings"];
 
-            const definedURLs = [aspect.accessURL, aspect.downloadURL].filter(
-                x => !!x
-            );
+                const definedURLs = [
+                    aspect.accessURL,
+                    aspect.downloadURL
+                ].filter(x => !!x);
 
-            return (
-                definedURLs.length > 0 &&
-                definedURLs.every(x => x.startsWith("http"))
-            );
-        })
+                return (
+                    definedURLs.length > 0 &&
+                    definedURLs.every(x => x.startsWith("http"))
+                );
+            }
+        )
 );
 
 /**
-   * Generates a failing HTTP code at random, excepting 429 because that
-   * triggers different behaviour.
-   */
+ * Generates a failing HTTP code at random, excepting 429 because that
+ * triggers different behaviour.
+ */
 export const failureCodeArb = jsc.suchthat(
     jsc.integer(300, 600),
     int => int !== 429
