@@ -9,4 +9,4 @@ export default interface MeasureEvaluationSet {
     measureResult: MeasureResult;
     getProcessedData: (state?: ProbeResult) => MeasureAspect;
     setProcessedData?: (aspect: MeasureAspect) => void;
-}
+};

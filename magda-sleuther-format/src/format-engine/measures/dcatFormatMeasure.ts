@@ -26,7 +26,9 @@ function foundationalCleanup(formats: Array<string>): Array<string> {
  * turns ['pdf   & (xlsx)'] into ['pdf', '(xlsx)'] or ['pdf, xlsx'] into ['pdf, xlsx']
  */
 function replaceAmpersandFormats(formats: Array<string>): Array<string> {
-    return _(formats).flatMap((format: string) => format.split(/\s*\&\s*/g)).value();
+    return _(formats)
+        .flatMap((format: string) => format.split(/\s*\&\s*/g))
+        .value();
 }
 
 /**
@@ -68,10 +70,7 @@ function filterBracketedFormats(formats: Array<string>) {
 
 function getFilteredBracketedFormats(formats: Array<string>) {
     return formats.filter(format => {
-        return (
-            format.indexOf("(") > -1 &&
-            format.indexOf(")") > -1
-        );
+        return format.indexOf("(") > -1 && format.indexOf(")") > -1;
     });
 }
 
@@ -98,7 +97,8 @@ export default function getMeasureResult(
     //TODO ask gilleran the compiler doesn't let me compile this
 
     let processedFormats: Array<string> = cleanUpAssemblyChain.reduce(
-        (accumulation, currentTransformer) => currentTransformer(accumulation), [format]
+        (accumulation, currentTransformer) => currentTransformer(accumulation),
+        [format]
     );
 
     if (processedFormats.length < 1) {

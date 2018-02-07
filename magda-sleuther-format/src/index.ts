@@ -15,8 +15,7 @@ function sleuthLayerer() {
         optionalAspects: [],
         async: true,
         writeAspectDefs: [summarizeAspectDef],
-        onRecordFound: (record, registry) =>
-            onRecordFound(record, registry)
+        onRecordFound: (record, registry) => onRecordFound(record, registry)
     });
 }
 

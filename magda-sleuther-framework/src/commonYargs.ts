@@ -6,11 +6,11 @@ export type SleutherArguments = yargs.Arguments;
 
 /**
  * Builds an argv object that will accept command line arguments used by all common argv sleuthers.
- * 
- * @param id 
- * @param defaultPort 
- * @param defaultInternalUrl 
- * @param additions 
+ *
+ * @param id
+ * @param defaultPort
+ * @param defaultInternalUrl
+ * @param additions
  */
 export default function commonYargs(
     id: string,
