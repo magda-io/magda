@@ -13,6 +13,8 @@
 * Updated visualization sleuther to stream file downloads and csv parsing, and relax time field specifications.
 * Added `userId` parameter to `package.json` of `magda-gateway` module
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
+* Added a CONTRIBUTING.md file
+* Fixed an issue that `Preview Map` doesn't support WFS API
 * Added prettier `pre-commit` hook to make sure consistent code style
 
 ## 0.0.32
