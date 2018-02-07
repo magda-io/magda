@@ -64,6 +64,8 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
 
         hooks.size should equal(1)
         hooks.head.url should equal(config.getString("registry.webhookUrl"))
+        hooks.head.config.includeEvents should equal(Some(true))
+        hooks.head.config.includeRecords should equal(Some(true))
         hooks.head.config.aspects should equal(Some(RegistryConstants.aspects))
         hooks.head.config.optionalAspects should equal(Some(RegistryConstants.optionalAspects))
       }

@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.registry
+package au.csiro.data61.magda.indexer
 
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -32,114 +32,173 @@ import au.csiro.data61.magda.model.Temporal.ApiDate
 import scala.concurrent.duration._
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
+import au.csiro.data61.magda.search.SearchQueryer
+import au.csiro.data61.magda.indexer.search.SearchIndexer
+import akka.stream.scaladsl.Source
+import scala.concurrent.Await
 
 class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols with ApiProtocols {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
 
-  describe("records.changed") {
+  describe("when webhook received") {
     it("should index new datasets") {
-      try {
-        doTest() { (allDataSets: List[DataSet], response: SearchResult) =>
-          val cleanedInputDataSets = allDataSets.map(dataSet => dataSet.copy(
-            // The registry only looks for the duration text so copy the actual duration into the text
-            accrualPeriodicity = dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => Periodicity(text = Some(duration.get(ChronoUnit.SECONDS) * 1000 + " ms"))),
+      loadDatasetsThroughEvents() { (allDataSets: List[DataSet], response: SearchResult) =>
+        val cleanedInputDataSets = allDataSets.map(dataSet => dataSet.copy(
+          // The registry only looks for the duration text so copy the actual duration into the text
+          accrualPeriodicity = dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => Periodicity(text = Some(duration.get(ChronoUnit.SECONDS) * 1000 + " ms"))),
 
-            publisher = dataSet.publisher.map(publisher =>
-              Agent(
-                identifier = publisher.identifier,
-                name = publisher.name,
-                imageUrl = publisher.imageUrl)),
+          publisher = dataSet.publisher.map(publisher =>
+            Agent(
+              identifier = publisher.identifier,
+              name = publisher.name,
+              imageUrl = publisher.imageUrl)),
 
-            quality = 0,
+          quality = 0,
 
-            distributions = dataSet.distributions.map(distribution => distribution.copy(
-              // Distribution only takes into account the name
-              license = distribution.license.flatMap(_.name).map(name => License(Some(name))),
+          distributions = dataSet.distributions.map(distribution => distribution.copy(
+            // Distribution only takes into account the name
+            license = distribution.license.flatMap(_.name).map(name => License(Some(name))),
 
-              // Code derives media type from the format rather than reading it directly.
-              mediaType = None)),
+            // Code derives media type from the format rather than reading it directly.
+            mediaType = None)),
 
-            // Contact points only look for name at the moment
-            contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
+          // Contact points only look for name at the moment
+          contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
 
-            // Registry doesn't know how to do spatial extent yet, so just keep the text, no text == None
-            spatial = dataSet.spatial match {
-              case Some(Location(None, _)) => None
-              case Some(spatial)           => Some(Location(spatial.text))
-              case other                   => other
-            },
+          // Registry doesn't know how to do spatial extent yet, so just keep the text, no text == None
+          spatial = dataSet.spatial match {
+            case Some(Location(None, _)) => None
+            case Some(spatial)           => Some(Location(spatial.text))
+            case other                   => other
+          },
 
-            temporal = dataSet.temporal match {
-              // The registry -> dataset converter rightly does this conversion.
-              case Some(PeriodOfTime(None, None)) => None
+          temporal = dataSet.temporal match {
+            // The registry -> dataset converter rightly does this conversion.
+            case Some(PeriodOfTime(None, None)) => None
 
-              // The converter also filters out spatial extends that are a blank string, so we need to do that.
-              case Some(PeriodOfTime(from, to)) => PeriodOfTime(filterDate(from), filterDate(to)) match {
-                case PeriodOfTime(None, None) => None
-                case other                    => Some(other)
-              }
-              case other => other
-            }))
-
-          val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
-            // We don't care about this.
-            indexed = None,
-            quality = 0,
-
-            distributions = dataSet.distributions.map(distribution => distribution.copy(
-              // This will be derived from the format so might not match the input
-              mediaType = None))))
-
-          withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
-            cleanedOutputDataSets.toSet should equal(cleanedInputDataSets.toSet)
-
-            val matched = cleanedOutputDataSets.map(input => input -> cleanedInputDataSets.find(_.identifier == input.identifier).get)
-            val eps = 1e-3
-            matched.foreach {
-              case (input, output) =>
-                input.quality should be(output.quality +- eps)
+            // The converter also filters out spatial extends that are a blank string, so we need to do that.
+            case Some(PeriodOfTime(from, to)) => PeriodOfTime(filterDate(from), filterDate(to)) match {
+              case PeriodOfTime(None, None) => None
+              case other                    => Some(other)
             }
+            case other => other
+          }))
+
+        val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
+          // We don't care about this.
+          indexed = None,
+          quality = 0,
+
+          distributions = dataSet.distributions.map(distribution => distribution.copy(
+            // This will be derived from the format so might not match the input
+            mediaType = None))))
+
+        withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
+          cleanedOutputDataSets.toSet should equal(cleanedInputDataSets.toSet)
+
+          val matched = cleanedOutputDataSets.map(input => input -> cleanedInputDataSets.find(_.identifier == input.identifier).get)
+          val eps = 1e-3
+          matched.foreach {
+            case (input, output) =>
+              input.quality should be(output.quality +- eps)
+          }
+        }
+
+      }
+    }
+
+    it("should delete datasets mentioned in deletion events") {
+
+      val gen = for {
+        gennedDataSets <- dataSetsGen
+        dataSets = gennedDataSets.map(_._1)
+        dataSetsToDelete <- Generators.subListGen(dataSets)
+      } yield (dataSets, dataSetsToDelete)
+
+      forAll(gen) {
+        case (dataSets, dataSetsToDelete) =>
+          val builtIndex = buildIndex()
+          Await.result(builtIndex.indexer.index(Source.fromIterator(() => dataSets.iterator)), 10 seconds)
+
+          Await.result(builtIndex.indexer.ready, 10 seconds)
+          refresh(builtIndex.indexId)
+          blockUntilExactCount(dataSets.size, builtIndex.indexId, builtIndex.indices.getType(Indices.DataSetsIndexType))
+
+          val events = dataSetsToDelete.map(dataSet =>
+            RegistryEvent(
+              id = None,
+              eventTime = None,
+              eventType = EventType.DeleteRecord,
+              userId = 0,
+              data = JsObject("recordId" -> JsString(dataSet.identifier))))
+
+          val payload = WebHookPayload(
+            action = "records.changed",
+            lastEventId = 104856,
+            events = Some(events),
+            records = None,
+            aspectDefinitions = None,
+            deferredResponseUrl = None)
+
+          Post("/", payload) ~> builtIndex.webhookApi.routes ~> check {
+            status shouldBe Accepted
           }
 
-        }
-      } catch {
-        case (e: Throwable) =>
-          e.printStackTrace
-          throw e
+          val expectedDataSets = dataSets.filter(dataSet => !dataSetsToDelete.contains(dataSet))
+
+          refresh(builtIndex.indexId)
+          blockUntilExactCount(expectedDataSets.size, builtIndex.indexId, builtIndex.indices.getType(Indices.DataSetsIndexType))
+
+          Get("/v0/datasets?query=*&limit=10000") ~> builtIndex.searchApi.routes ~> check {
+            status shouldBe OK
+            val result = responseAs[SearchResult]
+
+            result.dataSets.length shouldEqual expectedDataSets.length
+            result.dataSets.map(_.identifier).toSet shouldEqual expectedDataSets.map(_.identifier).toSet
+          }
+
+          deleteIndex(builtIndex.indexId)
       }
     }
   }
 
-  def doTest()(fn: (List[DataSet], SearchResult) => Unit) {
+  val dataSetsGen = Generators.listSizeBetween(0, 20, Generators.dataSetGen(cachedListCache)).flatMap { dataSets =>
+    val qualityFacetGen = for {
+      skewPrimary <- Generators.twoDigitDoubleGen
+      weightingPrimary <- Generators.twoDigitDoubleGen
+      skewOtherWay <- Generators.twoDigitDoubleGen
+      name <- Gen.alphaNumStr
+    } yield (name, skewPrimary, weightingPrimary, skewOtherWay)
 
-    val dataSetsGen = Generators.listSizeBetween(0, 20, Generators.dataSetGen(cachedListCache)).flatMap { dataSets =>
-      val qualityFacetGen = for {
-        skewPrimary <- Generators.twoDigitDoubleGen
-        weightingPrimary <- Generators.twoDigitDoubleGen
-        skewOtherWay <- Generators.twoDigitDoubleGen
-        name <- Gen.alphaNumStr
-      } yield (name, skewPrimary, weightingPrimary, skewOtherWay)
+    val qualityGen = Gen.listOfN(dataSets.size, Gen.nonEmptyListOf(qualityFacetGen))
 
-      val qualityGen = Gen.listOfN(dataSets.size, Gen.nonEmptyListOf(qualityFacetGen))
+    qualityGen.map { case x => dataSets.zip(x) }
+  }
 
-      qualityGen.map { case x => dataSets.zip(x) }
-    }
+  case class TestIndex(indexId: String, indices: Indices, indexer: SearchIndexer, webhookApi: WebhookApi, searchQueryer: SearchQueryer, searchApi: SearchApi)
+
+  def buildIndex(): TestIndex = {
+    val indexId = UUID.randomUUID().toString
+
+    val indices = new FakeIndices(indexId.toString)
+    val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
+    val webhookApi = new WebhookApi(indexer)
+    val searchQueryer = new ElasticSearchQueryer(indices)
+    val searchApi = new SearchApi(searchQueryer)(config, logger)
+
+    indexer.ready.await(60 seconds)
+    blockUntilIndexExists(indices.getIndex(config, Indices.DataSetsIndex))
+
+    TestIndex(indexId, indices, indexer, webhookApi, searchQueryer, searchApi)
+  }
+
+  def loadDatasetsThroughEvents()(fn: (List[DataSet], SearchResult) => Unit) {
     val dataSetsBatchesGen = Generators.listSizeBetween(0, 3, dataSetsGen)
 
     forAll(dataSetsBatchesGen) { dataSetsBatches =>
-      val indexId = UUID.randomUUID().toString
-
-      val indices = new FakeIndices(indexId.toString)
-      val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
-      val webhookApi = new WebhookApi(indexer)
-      val searchQueryer = new ElasticSearchQueryer(indices)
-      val searchApi = new SearchApi(searchQueryer)(config, logger)
-
-      val routes = webhookApi.routes
-      indexer.ready.await(60 seconds)
-
-      blockUntilIndexExists(indices.getIndex(config, Indices.DataSetsIndex))
+      val builtIndex = buildIndex()
+      val routes = builtIndex.webhookApi.routes
 
       val payloads = dataSetsBatches.map(dataSets =>
         new WebHookPayload(
@@ -161,18 +220,17 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
       }
       val allDataSets = dataSetsBatches.flatten.map(_._1)
 
-      refresh(indexId)
+      refresh(builtIndex.indexId)
+      blockUntilExactCount(allDataSets.size, builtIndex.indexId, builtIndex.indices.getType(Indices.DataSetsIndexType))
 
-      blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
-
-      Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> searchApi.routes ~> check {
+      Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> builtIndex.searchApi.routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
 
         fn(allDataSets, response)
       }
 
-      deleteIndex(indexId)
+      deleteIndex(builtIndex.indexId)
     }
   }
 
