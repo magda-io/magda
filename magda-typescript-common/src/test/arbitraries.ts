@@ -35,6 +35,18 @@ export const lcAlphaNumStringArbNe = jsc
     .nearray(lcAlphaNumCharArb)
     .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
 
+export const lcAlphaStringArb = jsc
+    .array(lowerCaseAlphaCharArb)
+    .smap(chars => chars.join(""), string => string.split(""));
+
+export const lcAlphaStringArbNe = jsc
+    .nearray(lowerCaseAlphaCharArb)
+    .smap(chars => chars.join(""), string => string.split(""));
+
+export const peopleNameArb = jsc
+    .tuple([lcAlphaStringArbNe, lcAlphaStringArbNe])
+    .smap(strArr => strArr.join(" "), string => string.split(" "));
+
 const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     generator: jsc.generator.bless(x => uuid()),
     shrink: jsc.shrink.bless(x => []),
@@ -203,12 +215,10 @@ const urlPartsArb = (options: UrlArbOptions) =>
     });
 
 /** Generates a URL for a distribution - this could be ftp, http or https */
-export const distUrlArb = (
-    {
-        schemeArb = defaultSchemeArb,
-        hostArb = lcAlphaNumStringArbNe
-    }: UrlArbOptions = {}
-) =>
+export const distUrlArb = ({
+    schemeArb = defaultSchemeArb,
+    hostArb = lcAlphaNumStringArbNe
+}: UrlArbOptions = {}) =>
     urlPartsArb({ schemeArb, hostArb }).smap(
         urlParts => {
             const port =
@@ -217,8 +227,8 @@ export const distUrlArb = (
                     ? ""
                     : ":" + urlParts.port;
 
-            return `${urlParts.scheme}://${urlParts.host}.com${port}/${(urlParts.path ||
-                []
+            return `${urlParts.scheme}://${urlParts.host}.com${port}/${(
+                urlParts.path || []
             ).join("/")}` as string;
         },
         (url: string) => {
@@ -258,8 +268,8 @@ export const distStringsArb = ({
     });
 
 /**
-   * Generates records, allowing specific arbs to be defined for the distribution.
-   */
+ * Generates records, allowing specific arbs to be defined for the distribution.
+ */
 export const recordArbWithDistArbs = (
     overrides: DistStringsOverrideArbs = {}
 ) =>
