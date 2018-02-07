@@ -15,6 +15,7 @@
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
 * Added a CONTRIBUTING.md file
 * Fixed an issue that `Preview Map` doesn't support WFS API
+* Made the indexer listen to delete record events and remove the deleted record from the index
 
 ## 0.0.32
 
