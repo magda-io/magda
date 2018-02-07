@@ -35,8 +35,7 @@ const argv = addJwtSecretFromEnvVar(
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
-        })
-        .argv
+        }).argv
 );
 
 const app = express();

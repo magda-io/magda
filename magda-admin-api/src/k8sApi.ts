@@ -15,7 +15,10 @@ export default class K8SApi {
     private coreApi: any;
     public readonly minikubeIP: string;
 
-    constructor(public readonly apiType: K8SApiType, private namespace: string = "default") {
+    constructor(
+        public readonly apiType: K8SApiType,
+        private namespace: string = "default"
+    ) {
         const details = K8SApi.getDetails(apiType);
         this.batchApi = new Api.Batch(details);
         this.coreApi = new Api.Core(details);
@@ -25,65 +28,48 @@ export default class K8SApi {
     }
 
     getJobs(): Promise<any> {
-        const jobs = this.batchApi
-            .ns(this.namespace)
-            .jobs;
+        const jobs = this.batchApi.ns(this.namespace).jobs;
         return promisify(jobs.get.bind(jobs))();
     }
 
     getJob(id: string): Promise<any> {
-        const jobs = this.batchApi
-            .ns(this.namespace)
-            .jobs(id);
+        const jobs = this.batchApi.ns(this.namespace).jobs(id);
         return promisify(jobs.get.bind(jobs))();
     }
 
     getPodsWithSelector(selector: any): Promise<any> {
-        const pods = this.coreApi
-            .ns(this.namespace)
-            .pods
-            .matchLabels(selector);
+        const pods = this.coreApi.ns(this.namespace).pods.matchLabels(selector);
         return promisify(pods.get.bind(pods))();
     }
 
     getService(id: string): Promise<any> {
-        const services = this.coreApi
-            .ns(this.namespace)
-            .services(id);
+        const services = this.coreApi.ns(this.namespace).services(id);
         return promisify(services.get.bind(services))();
     }
 
     getJobStatus(id: string): Promise<any> {
-        const jobs = this.batchApi
-            .ns(this.namespace)
-            .jobs(id);
+        const jobs = this.batchApi.ns(this.namespace).jobs(id);
         return promisify(jobs.get.bind(jobs))({
             name: `status`
         });
     }
 
     createJob(body: any): Promise<any> {
-        const jobs = this.batchApi
-            .ns(this.namespace)
-            .jobs;
+        const jobs = this.batchApi.ns(this.namespace).jobs;
         return promisify(jobs.post.bind(jobs))({
             body
         });
     }
 
     createService(body: any): Promise<any> {
-        const services = this.coreApi
-            .ns(this.namespace)
-            .services;
+        const services = this.coreApi.ns(this.namespace).services;
         return promisify(services.post.bind(services))({
             body
         });
     }
 
     deleteJob(id: string) {
-        const jobs = this.batchApi
-            .ns(this.namespace)
-            .jobs;
+        const jobs = this.batchApi.ns(this.namespace).jobs;
 
         return promisify(jobs.delete.bind(jobs))({
             name: id,
@@ -110,17 +96,13 @@ export default class K8SApi {
     }
 
     deleteService(id: string) {
-        const services = this.coreApi
-            .ns(this.namespace)
-            .services(id);
+        const services = this.coreApi.ns(this.namespace).services(id);
 
         return promisify(services.delete.bind(services))();
     }
 
     getConnectorConfigMap(): Promise<any> {
-        const configmaps = this.coreApi
-            .ns(this.namespace)
-            .configmaps;
+        const configmaps = this.coreApi.ns(this.namespace).configmaps;
 
         return promisify(configmaps.get.bind(configmaps))({
             name: "connector-config"
@@ -135,9 +117,7 @@ export default class K8SApi {
     }
 
     updateConnectorConfigMap(id: string, newConfig: any) {
-        const configmaps = this.coreApi
-            .ns(this.namespace)
-            .configmaps;
+        const configmaps = this.coreApi.ns(this.namespace).configmaps;
 
         return promisify(configmaps.patch.bind(configmaps))({
             name: "connector-config",

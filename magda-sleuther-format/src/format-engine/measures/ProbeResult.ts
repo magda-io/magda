@@ -3,11 +3,11 @@
  */
 export default interface ProbeResult {
     id: string;
-}
+};
 
 /**
  * an enum of probes that all Measures should implement
  */
- export enum CommonProbes {
+export enum CommonProbes {
     CANT_DEDUCE_FORMAT = "cantDeduceFormat"
- }
+}
