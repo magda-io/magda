@@ -5,4 +5,4 @@ export default interface MeasureResult {
     formats: SelectedFormat[];
     state?: ProbeResult;
     distribution: any;
-}
+};

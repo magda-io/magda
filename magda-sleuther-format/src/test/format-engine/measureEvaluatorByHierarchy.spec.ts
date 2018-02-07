@@ -1,8 +1,8 @@
 import MeasureEvalResult from "../../format-engine/MeasureEvalResult";
 import MeasureEvaluationSet from "../../format-engine/measures/MeasureEvaluationSet";
 
-import {} from 'mocha';
-import { expect } from 'chai'
+import {} from "mocha";
+import { expect } from "chai";
 // import chai
 // import sinon
 
@@ -38,9 +38,8 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
 
         // turn table data into actual results to test
         combinationTable.forEach(function(combination) {
-
             // figure out actual result [ expect(actualResult) ]
-            let dcatSet: MeasureEvaluationSet  = {
+            let dcatSet: MeasureEvaluationSet = {
                 measureResult: {
                     formats: [
                         {
@@ -52,7 +51,7 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                     distribution: null
                 },
                 getProcessedData: getDcatProcessedData
-            }
+            };
 
             let extensionSet: MeasureEvaluationSet = {
                 measureResult: {
@@ -66,7 +65,7 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                     distribution: null
                 },
                 getProcessedData: getExtensionProcessedData
-            }
+            };
 
             let downloadSet: MeasureEvaluationSet = {
                 measureResult: {
@@ -80,21 +79,25 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                     distribution: null
                 },
                 getProcessedData: getDownloadProcessedData
+            };
+
+            if (combination[0] <= 0) {
+                dcatSet.measureResult = null;
             }
 
-            if(combination[0] <= 0) {
-                dcatSet.measureResult = null;
-            } 
-
-            if(combination[1] <= 0) {
+            if (combination[1] <= 0) {
                 extensionSet.measureResult = null;
             }
 
-            if(combination[2] <= 0) {
+            if (combination[2] <= 0) {
                 downloadSet.measureResult = null;
             }
 
-            let actualResult = getBestMeasureResult([dcatSet, extensionSet, downloadSet]);
+            let actualResult = getBestMeasureResult([
+                dcatSet,
+                extensionSet,
+                downloadSet
+            ]);
 
             // figure out expected result [ .to.be.eql(expectedResult) ]:
             let expectedResult: MeasureEvalResult = {
@@ -104,15 +107,15 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                 },
                 absConfidenceLevel: null,
                 distribution: null
-            }
+            };
 
-            if(combination[2] >= 1) {
+            if (combination[2] >= 1) {
                 expectedResult.format.format = Formats.PDF;
                 expectedResult.absConfidenceLevel = 90;
-            } else if(combination[1] >= 1) {
+            } else if (combination[1] >= 1) {
                 expectedResult.format.format = Formats.XLSX;
-                expectedResult.absConfidenceLevel = 70
-            } else if(combination[0] >= 1) {
+                expectedResult.absConfidenceLevel = 70;
+            } else if (combination[0] >= 1) {
                 expectedResult.format.format = Formats.DOCX;
                 expectedResult.absConfidenceLevel = 33;
             } else {
@@ -121,7 +124,6 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
 
             console.log("doing test: " + combination.toString());
             expect(actualResult).to.eql(expectedResult);
-
         });
     });
 
@@ -132,6 +134,4 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
     it("should return null when input is empty", function() {
         expect(getBestMeasureResult([])).to.eql(null);
     });
-
 });
-

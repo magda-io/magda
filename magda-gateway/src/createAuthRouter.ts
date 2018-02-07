@@ -18,7 +18,11 @@ export interface AuthRouterOptions {
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
     const authRouter: Router = Router();
-    const authApi = new ApiClient(options.authorizationApi, options.jwtSecret, options.userId);
+    const authApi = new ApiClient(
+        options.authorizationApi,
+        options.jwtSecret,
+        options.userId
+    );
 
     if (options.authenticator) {
         options.authenticator.applyToRoute(authRouter);

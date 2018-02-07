@@ -6,7 +6,10 @@ import MeasureResult from "./MeasureResult";
 * Tries to determine the format by downloading the downloadURL, and deciphering the MIME type
 * TODO not thouroughly unit tested
 */
-export default function getMeasureResult(relatedDistribution: any, synonymObject: any): MeasureResult {
+export default function getMeasureResult(
+    relatedDistribution: any,
+    synonymObject: any
+): MeasureResult {
     const { downloadURL } = relatedDistribution.aspects[
         "dcat-distribution-strings"
     ];
