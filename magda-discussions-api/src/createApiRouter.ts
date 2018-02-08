@@ -27,7 +27,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
         getUserIdHandling(req, res, options.jwtSecret, (userId: string) => {
             const message: Object = req.body;
 
-            database.addMessageToDiscussion(userId, req.params.discussionId, message)
+            database
+                .addMessageToDiscussion(
+                    userId,
+                    req.params.discussionId,
+                    message
+                )
                 .then(message => {
                     res.status(201);
                     return getMessages(req.params.discussionId, res);
@@ -42,7 +47,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.get("/linked/:linkedType/:linkedId", (req, res) => {
         const { linkedType, linkedId } = req.params;
 
-        database.getLinkedDiscussion(linkedType, linkedId)
+        database
+            .getLinkedDiscussion(linkedType, linkedId)
             .then(maybe =>
                 maybe.caseOf({
                     just: discussion => res.json(discussion).send(),
@@ -57,7 +63,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     router.get("/linked/:linkedType/:linkedId/messages", (req, res) => {
         return handleMessages(
-            database.getLinkedMessages(req.params.linkedType, req.params.linkedId),
+            database.getLinkedMessages(
+                req.params.linkedType,
+                req.params.linkedId
+            ),
             res
         );
     });
@@ -66,12 +75,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
         getUserIdHandling(req, res, options.jwtSecret, (userId: string) => {
             const message: Object = req.body;
 
-            database.addMessageToLinkedDiscussion(
-                userId,
-                req.params.linkedType,
-                req.params.linkedId,
-                message
-            )
+            database
+                .addMessageToLinkedDiscussion(
+                    userId,
+                    req.params.linkedType,
+                    req.params.linkedId,
+                    message
+                )
                 .then(({ message, discussion }) => {
                     res.status(201);
                     return getMessages(discussion.id, res);
@@ -84,7 +94,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     function getMessages(discussionId: string, res: express.Response) {
-        return handleMessages(database.getMessagesForDiscussion(discussionId), res);
+        return handleMessages(
+            database.getMessagesForDiscussion(discussionId),
+            res
+        );
     }
 
     function handleMessages(
@@ -101,15 +114,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
             .catch(e => {
                 console.error(e);
                 res.status(500).send();
-            }).
-            then(() => Promise.resolve())
+            })
+            .then(() => Promise.resolve());
     }
 
     /**
      * Gets a bunch of messages with user ids, looks up the object that corresponds to them and then writes that out to the message.
      */
     function addUsers(messages: Message[]): Promise<Message[]> {
-        const userIds = _(messages).map(message => message.userId).uniq().value();
+        const userIds = _(messages)
+            .map(message => message.userId)
+            .uniq()
+            .value();
 
         const userPromises = userIds.map(id => authApi.getUserPublic(id));
 
@@ -130,7 +146,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             })
             .then(userLookup => {
                 return messages.map(message =>
-                    Object.assign({}, message, { user: userLookup[message.userId] })
+                    Object.assign({}, message, {
+                        user: userLookup[message.userId]
+                    })
                 );
             });
     }
