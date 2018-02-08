@@ -72,12 +72,7 @@ const argv = yargs
 
 var app = express();
 
-const magda = path.join(
-    __dirname,
-    "..",
-    "node_modules",
-    "@magda"
-);
+const magda = path.join(__dirname, "..", "node_modules", "@magda");
 
 const clientRoot = path.join(magda, "web-client");
 const clientBuild = path.join(clientRoot, "build");

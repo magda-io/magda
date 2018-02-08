@@ -1,16 +1,16 @@
-import AspectBuilder from '@magda/typescript-common/dist/AspectBuilder';
-import CkanTransformer from './CkanTransformer';
-import CkanUrlBuilder from './CkanUrlBuilder';
-import * as moment from 'moment';
-import * as URI from 'urijs';
+import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
+import CkanTransformer from "./CkanTransformer";
+import CkanUrlBuilder from "./CkanUrlBuilder";
+import * as moment from "moment";
+import * as URI from "urijs";
 
 export interface CreateTransformerOptions {
-    name: string,
-    id: string,
-    sourceUrl: string,
-    datasetAspectBuilders: AspectBuilder[],
-    distributionAspectBuilders: AspectBuilder[],
-    organizationAspectBuilders: AspectBuilder[]
+    name: string;
+    id: string;
+    sourceUrl: string;
+    datasetAspectBuilders: AspectBuilder[];
+    distributionAspectBuilders: AspectBuilder[];
+    organizationAspectBuilders: AspectBuilder[];
 }
 
 export default function createTransformer({

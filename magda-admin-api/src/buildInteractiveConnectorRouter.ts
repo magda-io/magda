@@ -8,8 +8,8 @@ import * as HttpProxy from "http-proxy";
 declare global {
     namespace Express {
         export interface Request {
-            connectorProxy: HttpProxy,
-            connectorID: string
+            connectorProxy: HttpProxy;
+            connectorID: string;
         }
     }
 }
@@ -41,7 +41,7 @@ export default function buildInteractiveConnectorRouter(options: Options) {
             });
     });
 
-    router.get('*', (req, res) => {
+    router.get("*", (req, res) => {
         req.connectorProxy.web(req, res);
     });
 
@@ -50,7 +50,11 @@ export default function buildInteractiveConnectorRouter(options: Options) {
 
 const prefixId = (id: string) => `connector-interactive-${id}`;
 
-async function createInteractiveJob(k8sApi: K8SApi, id: any, options: Options): Promise<any> {
+async function createInteractiveJob(
+    k8sApi: K8SApi,
+    id: any,
+    options: Options
+): Promise<any> {
     await k8sApi.deleteJobIfPresent(prefixId(id));
 
     const configMap = await k8sApi.getConnectorConfigMap();
@@ -58,19 +62,25 @@ async function createInteractiveJob(k8sApi: K8SApi, id: any, options: Options): 
         throw new Error("No config for connector ID: " + id);
     }
 
-    return k8sApi.createJob(buildConnectorManifest({
-        id,
-        dockerImage: configMap[id].type,
-        dockerImageTag: options.imageTag,
-        dockerRepo: options.dockerRepo,
-        registryApiUrl: options.registryApiUrl,
-        pullPolicy: options.pullPolicy,
-        userId: options.userId,
-        interactive: true
-    }));
+    return k8sApi.createJob(
+        buildConnectorManifest({
+            id,
+            dockerImage: configMap[id].type,
+            dockerImageTag: options.imageTag,
+            dockerRepo: options.dockerRepo,
+            registryApiUrl: options.registryApiUrl,
+            pullPolicy: options.pullPolicy,
+            userId: options.userId,
+            interactive: true
+        })
+    );
 }
 
-function retryUntil<T>(op: () => Promise<T>, expirationTime: number, failureMessage: string): Promise<T> {
+function retryUntil<T>(
+    op: () => Promise<T>,
+    expirationTime: number,
+    failureMessage: string
+): Promise<T> {
     // This is carefully written to avoid using a bunch of memory even if op() fails really quickly.
     // Things that _won't_ work (they'll use a gig of memory after a few seconds of a
     // fast-failing `op`, at least as of node.js 8.9.0):
@@ -78,44 +88,67 @@ function retryUntil<T>(op: () => Promise<T>, expirationTime: number, failureMess
     // * This code but without the `setImmediate`. There's no stack overflow, but it will use heaps of memory.
     return new Promise<T>((resolve, reject) => {
         function tryIt() {
-            op().then(result => {
-                resolve(result);
-            }).catch(e => {
-                if (Date.now() < expirationTime) {
-                    setImmediate(tryIt);
-                } else {
-                    reject(new Error(failureMessage));
-                }
-            });
+            op()
+                .then(result => {
+                    resolve(result);
+                })
+                .catch(e => {
+                    if (Date.now() < expirationTime) {
+                        setImmediate(tryIt);
+                    } else {
+                        reject(new Error(failureMessage));
+                    }
+                });
         }
 
         tryIt();
     });
 }
 
-function retryForTime<T>(op: () => Promise<T>, maxMilliseconds: number, failureMessage: string) {
+function retryForTime<T>(
+    op: () => Promise<T>,
+    maxMilliseconds: number,
+    failureMessage: string
+) {
     const timeLimit = Date.now() + maxMilliseconds;
     return retryUntil(op, timeLimit, failureMessage);
 }
 
-function ensureInteractiveConnector(k8sApi: K8SApi, id: any, options: Options): Promise<HttpProxy> {
+function ensureInteractiveConnector(
+    k8sApi: K8SApi,
+    id: any,
+    options: Options
+): Promise<HttpProxy> {
     return retryForTime(
         () => ensureInteractiveConnectorOnce(k8sApi, id, options),
         10000,
-        "Could not create interactive connector: " + id);
+        "Could not create interactive connector: " + id
+    );
 }
 
-async function ensureInteractiveConnectorOnce(k8sApi: K8SApi, id: any, options: Options): Promise<HttpProxy> {
+async function ensureInteractiveConnectorOnce(
+    k8sApi: K8SApi,
+    id: any,
+    options: Options
+): Promise<HttpProxy> {
     let job = await k8sApi.getJob(prefixId(id)).catch(e => undefined);
 
     // A usable interactive job will have job.status.active===1.  If the job is not usable, we need to
     // distinguish between "already completed" and "not yet started".
-    if (job === undefined || (job.status !== undefined && job.status.succeeded === 1)) {
+    if (
+        job === undefined ||
+        (job.status !== undefined && job.status.succeeded === 1)
+    ) {
         // No job or it's already completed - restart the job.
         job = await createInteractiveJob(k8sApi, id, options);
     }
 
-    if (job === undefined || job.status === undefined || job.status.active === undefined || job.status.active < 1) {
+    if (
+        job === undefined ||
+        job.status === undefined ||
+        job.status.active === undefined ||
+        job.status.active < 1
+    ) {
         throw new Error("Could not create interactive connector: " + id);
     }
 
@@ -125,7 +158,9 @@ async function ensureInteractiveConnectorOnce(k8sApi: K8SApi, id: any, options: 
         // We need a Service with a nodePort in order to be able to call into the connector
         // running inside the cluster.
 
-        let service = await k8sApi.getService(prefixId(id)).catch(e => undefined);
+        let service = await k8sApi
+            .getService(prefixId(id))
+            .catch(e => undefined);
         if (service === undefined) {
             // Service does not exist, create it.
 
@@ -137,29 +172,35 @@ async function ensureInteractiveConnectorOnce(k8sApi: K8SApi, id: any, options: 
             // like a fairly remote possibility, and it will only happen in development
             // (never in anything resembling a real deployment), so ¯\_(ツ)_/¯.
             service = await k8sApi.createService({
-                apiVersion: 'v1',
-                kind: 'Service',
+                apiVersion: "v1",
+                kind: "Service",
                 metadata: {
                     name: prefixId(id)
                 },
                 spec: {
                     ports: [
                         {
-                            name: 'http',
+                            name: "http",
                             port: 80,
                             targetPort: 80
                         }
                     ],
-                    type: 'NodePort',
+                    type: "NodePort",
                     selector: job.spec.selector.matchLabels
                 }
             });
-        } else if (JSON.stringify(service.spec.selector) !== JSON.stringify(job.spec.selector.matchLabels)) {
+        } else if (
+            JSON.stringify(service.spec.selector) !==
+            JSON.stringify(job.spec.selector.matchLabels)
+        ) {
             // We already have a service, but it's not using the right selector,
             // so we need to recreate it.  Delete it and throw to trigger a retry.
-            console.log('bad selector');
+            console.log("bad selector");
             await k8sApi.deleteService(prefixId(id));
-            throw new Error("Service exists but has an incorrect selector for interactive connector: " + id);
+            throw new Error(
+                "Service exists but has an incorrect selector for interactive connector: " +
+                    id
+            );
         }
 
         // Wait a second for Kubernetes to get its act together on this new Service.
@@ -169,15 +210,24 @@ async function ensureInteractiveConnectorOnce(k8sApi: K8SApi, id: any, options: 
             setTimeout(resolve, 1000);
         });
 
-        connectorUrl = `http://${k8sApi.minikubeIP}:${service.spec.ports[0].nodePort}/v0`;
+        connectorUrl = `http://${k8sApi.minikubeIP}:${
+            service.spec.ports[0].nodePort
+        }/v0`;
     } else {
         // The Admin API is running inside the cluster.
         // We just need the IP address of the pod and we can talk to it directly.
-        const pods = await k8sApi.getPodsWithSelector(job.spec.selector.matchLabels);
-        const podsWithIP = pods.items.filter((pod: any) => pod.status && pod.status.podIP);
+        const pods = await k8sApi.getPodsWithSelector(
+            job.spec.selector.matchLabels
+        );
+        const podsWithIP = pods.items.filter(
+            (pod: any) => pod.status && pod.status.podIP
+        );
 
         if (podsWithIP.length === 0) {
-            throw new Error("Could not find a pod with an IP address for interactive connector: " + id);
+            throw new Error(
+                "Could not find a pod with an IP address for interactive connector: " +
+                    id
+            );
         }
 
         const ip = podsWithIP[0].status.podIP;
@@ -196,7 +246,9 @@ async function ensureInteractiveConnectorOnce(k8sApi: K8SApi, id: any, options: 
         // The job exists and appears to be running, but it's not responding correctly.
         // The most likely cause is that it just timed out and shut down. If that's the
         // case, throwing here should start another iteration that will detect and fix that.
-        throw new Error("Could not create a working interactive connector: " + id);
+        throw new Error(
+            "Could not create a working interactive connector: " + id
+        );
     }
 
     const proxy = HttpProxy.createProxyServer({
