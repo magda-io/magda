@@ -20,7 +20,9 @@ export function getCommonFormat(
     rawFormat: string,
     synonymObject: any
 ): Formats {
-    let commonFormat: Formats = (<any>Formats)[rawFormat.toString().toUpperCase()];
+    let commonFormat: Formats = (<any>Formats)[
+        rawFormat.toString().toUpperCase()
+    ];
     if (commonFormat) {
         return commonFormat;
     } else {
