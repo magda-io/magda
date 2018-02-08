@@ -18,6 +18,7 @@
 * Fixed an issue that `Preview Map` doesn't support WFS API
 * Added prettier `pre-commit` hook to make sure consistent code style
 * Formatted existing typescript source code using `prettier`
+* Updated `building-and-running.md`
 
 ## 0.0.32
 
