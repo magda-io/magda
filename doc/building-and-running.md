@@ -99,7 +99,7 @@ From root level of the project directory:
 helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
 
-2. Port forward database service port to localhost so that your local running program (outside the `kubenates` cluster in `minikube`) can connect to them:
+2. Port forward database service port to localhost so that your local running program (outside the `Kubernetes` cluster in `minikube`) can connect to them:
 
 ```bash
 # Port forward database
@@ -151,6 +151,35 @@ Running individual components is easy enough, but how do we get a fully working 
 | `magda-search-api` | `magda-elastic-search` |
 | `magda-web-client` | `magda-web-server`, but uses API at http://magda-dev.terria.io/api if server is not running. |
 | `magda-web-server` | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail. |
+
+### Architecture Diagram
+
+The following `Architecture Diagram` may help you to get clearer idea which components you need to run in order to look at a particular function area:
+
+![Magda Architecture Diagram](./magda-architecture.png)
+
+The following table shows the relationship between `Madga commponents` and `Diagram elements`:
+
+| Component | Diagram elements |
+| --------- | ---------------- |
+| `magda-admin-api` | `Admin API (NodeJS)` |
+| `magda-*-connector` | `Connectors` |
+| `magda-elastic-search` | `ES Clinet`, `ES Data (x2)`, `ES Master (x3)` |
+| `magda-*-sleuther` | `Sleuthers` |
+| `magda-authorization-api` | `Auth API (NodeJS)` |
+| `magda-discussions-api` | `Discussion API (NodeJS)` |
+| `magda-gateway` | `Gateway (x1+) (NodeJS)` |
+| `magda-indexer` | `Search Indexer (Scala)` |
+| `magda-registry-api` | `Registry API (Scala)` |
+| `magda-search-api` | `Search API (Scala)` |
+| `magda-web-client` | `MAGDA Web UI` |
+| `magda-web-server` | `Web Server (NodeJS)` |
+| `magda-preview-map` | `Terria Server (NodeJS)` |
+| `magda-authorization-db` | `Auth DB (Postgres)`. `magda-authorization-db` is only used for production environment. |
+| `magda-discussions-db` | `Discussion DB (Postgres)`. `magda-discussions-db` is only used for production environment. |
+| `magda-registry-datastore` | `Registry DB (Postgres)`. `magda-registry-datastore` is only used for production environment. |
+| `magda-session-store` | `Session Store (Postgres)`. `magda-session-store` is only used for production environment. |
+| `magda-combined-db` | `Registry DB (Postgres)`, `Session Store (Postgres)`, `Discussion DB (Postgres)`, `Auth DB (Postgres)`. `magda-combined-db` component is only used for dev environment. Production environment will launch all DB components above separately.  |
 
 # Debugging Node.js / TypeScript components
 
