@@ -109,6 +109,7 @@ class RegionMap extends Component {
               mutexToggle: true,
               onClick: function(evt) {if (evt.type === 'click' && evt.feature){
                   props.onClick(evt.feature);
+                  evt.originalEvent.stopPropagation();
               }},
               getIDForLayerFeature: this.getID
           });
