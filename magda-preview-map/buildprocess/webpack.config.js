@@ -8,7 +8,7 @@ var path = require('path');
 
 module.exports = function(devMode, hot) {
     var config = {
-        entry: './index.js',
+        entry: ['babel-polyfill', './index.js'],
         output: {
             path: path.resolve(__dirname, '..', 'wwwroot', 'build'),
             filename: 'TerriaMap.js',
