@@ -158,7 +158,7 @@ The following `Architecture Diagram` may help you to get clearer idea which comp
 
 ![Magda Architecture Diagram](./magda-architecture.png)
 
-The following table shows the relationship between `Magda commponents` and `Diagram elements`:
+The following table shows the relationship between `Magda components` and `Diagram elements`:
 
 | Component | Diagram elements |
 | --------- | ---------------- |
