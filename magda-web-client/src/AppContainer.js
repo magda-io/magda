@@ -23,6 +23,7 @@ import Login from './Components/Account/Login';
 import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
 import Container from 'muicss/lib/react/container';
+import d61logo from './data61-logo.png';
 
 import {
   Route,
@@ -86,8 +87,10 @@ class AppContainer extends React.Component {
 
   render() {
     const headerNavs = config.headerNavigation;
+    const footerNavs = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
+      <div>
         <Container className='app-container'>
              <table width="100%">
                <tbody>
@@ -106,7 +109,27 @@ class AppContainer extends React.Component {
           <SearchBox location={this.props.location} />
 
           {this.renderBody()}
+
         </Container>
+
+        <footer className='footer clearfix'>
+            <Container>
+              <ul className='mui-list--unstyled'>
+                {footerNavs.map(item =>
+                  <li key={item.category} className='mui-col-md-2 mui-col-sm-4'>
+                    <span className='nav-title'>{item.category}</span>
+                    <ul className='mui-list--unstyled'>
+                      {item.links.map(link =>
+                        <li key={link[1]}>{this.renderLink(link)}</li>
+                      )}
+                    </ul>
+                  </li>
+                )}
+              </ul>
+              <div className='copyright'> Developed by <img src={d61logo} alt='data61-logo'/></div>
+            </Container>
+          </footer>
+        </div>
       </ReactDocumentTitle>
     );
   }

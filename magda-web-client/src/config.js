@@ -76,20 +76,8 @@ export const config = {
       category: "Search",
       links: [
         ["Data sources", "page/data-sources"],
-        ["Search syntax", "page/search-syntax"]
       ]
     },
-    ...(serverConfig.disableAuthenticationFeatures
-      ? []
-      : [
-          {
-            category: "Projects",
-            links: [
-              ["Browse projects", "projects"],
-              ["Start a project", "projects/new"]
-            ]
-          }
-        ]),
     {
       category: "Publishers",
       links: [
@@ -100,7 +88,6 @@ export const config = {
     {
       category: "Developers",
       links: [
-        ["Architecture", "page/architecture"],
         ["API Docs", "http://search.data.gov.au/api/v0/registry/swagger/index.html"]
       ]
     },

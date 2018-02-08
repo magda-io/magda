@@ -23,3 +23,29 @@
     }
     }
 }
+
+.footer{
+    background-color: $magda-dark-blue;
+    color: #fff;
+    padding: 50px 0;
+    a{
+        color: #fff;
+        text-decoration: underline;
+        font-size: 0.9rem;
+    }
+    .nav > li > a{
+        padding: 10px 0px;
+        &:hover{
+            background: transparent;
+        }
+    }
+    .nav-title{
+        text-transform: uppercase;
+    }
+    .copyright{
+      text-align: right;
+      img{
+        height: 40px;
+      }
+    }
+}
