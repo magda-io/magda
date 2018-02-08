@@ -141,7 +141,7 @@ Running individual components is easy enough, but how do we get a fully working 
 
 | Component | Dependencies |
 | --------- | ------------ |
-| `magda-*-connector` | `magda-registry-api`, `magda-authorization-api` |
+| `magda-*-connector` | `magda-registry-api` |
 | `magda-*-sleuther` | `magda-registry-api` |
 | `magda-authorization-api` | `magda-combined-db` |
 | `magda-discussions-api` | `magda-combined-db` |
@@ -158,13 +158,13 @@ The following `Architecture Diagram` may help you to get clearer idea which comp
 
 ![Magda Architecture Diagram](./magda-architecture.png)
 
-The following table shows the relationship between `Madga commponents` and `Diagram elements`:
+The following table shows the relationship between `Magda commponents` and `Diagram elements`:
 
 | Component | Diagram elements |
 | --------- | ---------------- |
 | `magda-admin-api` | `Admin API (NodeJS)` |
 | `magda-*-connector` | `Connectors` |
-| `magda-elastic-search` | `ES Clinet`, `ES Data (x2)`, `ES Master (x3)` |
+| `magda-elastic-search` | `ES Client`, `ES Data (x2)`, `ES Master (x3)` |
 | `magda-*-sleuther` | `Sleuthers` |
 | `magda-authorization-api` | `Auth API (NodeJS)` |
 | `magda-discussions-api` | `Discussion API (NodeJS)` |
