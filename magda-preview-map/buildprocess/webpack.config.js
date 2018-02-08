@@ -33,7 +33,7 @@ module.exports = function(devMode, hot) {
                     loader: 'babel-loader',
                     query: {
                         sourceMap: false, // generated sourcemaps are currently bad, see https://phabricator.babeljs.io/T7257
-                        presets: ['es2015', 'react'],
+                        presets: ['env', 'react'],
                         plugins: [
                             'jsx-control-statements'
                         ]
