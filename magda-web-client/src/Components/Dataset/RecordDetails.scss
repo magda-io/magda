@@ -17,12 +17,18 @@
   color: $magda-dark-grey;
 }
 
-.publisher{
+.publisher, .updated-date{
   color: #888;
 }
 
 .tags{
   .badge{
     display: block;
+  }
+}
+
+.temporal-aspect-viewer{
+  th{
+    font-weight: 400;
   }
 }
