@@ -61,8 +61,7 @@ object RegisterWebhook {
         EventType.DeleteRecord,
         EventType.CreateRecordAspect,
         EventType.PatchRecord,
-        EventType.DeleteRecordAspect,
-        EventType.DeleteRecord),
+        EventType.DeleteRecordAspect),
       url = config.getString("registry.webhookUrl"),
       config = WebHookConfig(
         aspects = Some(aspects),
