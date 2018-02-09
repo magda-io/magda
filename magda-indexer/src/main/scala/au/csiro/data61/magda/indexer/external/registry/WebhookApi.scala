@@ -34,21 +34,18 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
     magdaRoute {
       post {
         entity(as[WebHookPayload]) { payload =>
-          val events = payload.events match {
-            case None       => List()
-            case Some(list) => list
-          }
+          val events = payload.events.getOrElse(List())
 
           val idsToDelete = events.filter(_.eventType == EventType.DeleteRecord)
             .map(event => event.data.getFields("recordId").head.convertTo[String])
             .map(DataSet.registryIdToIdentifier)
 
-          val deleteFuture = idsToDelete match {
+          val deleteOp = () => idsToDelete match {
             case Nil  => Future.successful(Unit)
             case list => indexer.delete(list)
           }
 
-          val insertFuture = payload.records match {
+          val insertOp = () => payload.records match {
             case None | Some(Nil) => Future.successful(Unit)
             case Some(list) =>
               val dataSets = list.map(record => try {
@@ -62,9 +59,11 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
               indexer.index(Source(dataSets.flatten))
           }
 
+          val future = deleteOp().flatMap(_ => insertOp())
+
           // The registry should never pass us a deleted record, so we can insert and delete
           // concurrently without the risk of inserting something we just deleted.
-          onSuccess(Future.sequence(List(deleteFuture, insertFuture))) { result =>
+          onSuccess(future) { x =>
             complete(Accepted)
           }
         }

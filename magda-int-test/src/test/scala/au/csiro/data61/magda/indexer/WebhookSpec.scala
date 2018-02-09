@@ -161,6 +161,57 @@ class WebhookSpec extends BaseApiSpec with RegistryProtocols with ModelProtocols
           deleteIndex(builtIndex.indexId)
       }
     }
+
+    it("given a combination of deletions and insertions, it should not delete anything that was included as a record") {
+      val gen = for {
+        gennedDataSets <- dataSetsGen
+        dataSets = gennedDataSets.map(_._1)
+        dataSetsToDelete <- Generators.subListGen(dataSets)
+        deletedDataSetsToSave <- Generators.subListGen(dataSetsToDelete)
+      } yield (dataSetsToDelete, deletedDataSetsToSave)
+
+      forAll(gen) {
+        case (dataSetsToDelete, deletedDataSetsToSave) =>
+          val builtIndex = buildIndex()
+          Await.result(builtIndex.indexer.ready, 10 seconds)
+          refresh(builtIndex.indexId)
+
+          val events = dataSetsToDelete.map(dataSet =>
+            RegistryEvent(
+              id = None,
+              eventTime = None,
+              eventType = EventType.DeleteRecord,
+              userId = 0,
+              data = JsObject("recordId" -> JsString(dataSet.identifier))))
+
+          val payload = WebHookPayload(
+            action = "records.changed",
+            lastEventId = 104856,
+            events = Some(events),
+            records = Some(deletedDataSetsToSave.map(x => dataSetToRecord((x, Nil)))),
+            aspectDefinitions = None,
+            deferredResponseUrl = None)
+
+          Post("/", payload) ~> builtIndex.webhookApi.routes ~> check {
+            status shouldBe Accepted
+          }
+
+          val expectedDataSets = deletedDataSetsToSave
+
+          refresh(builtIndex.indexId)
+          blockUntilExactCount(expectedDataSets.size, builtIndex.indexId, builtIndex.indices.getType(Indices.DataSetsIndexType))
+
+          Get("/v0/datasets?query=*&limit=10000") ~> builtIndex.searchApi.routes ~> check {
+            status shouldBe OK
+            val result = responseAs[SearchResult]
+
+            result.dataSets.length shouldEqual expectedDataSets.length
+            result.dataSets.map(_.identifier).toSet shouldEqual expectedDataSets.map(_.identifier).toSet
+          }
+
+          deleteIndex(builtIndex.indexId)
+      }
+    }
   }
 
   val dataSetsGen = Generators.listSizeBetween(0, 20, Generators.dataSetGen(cachedListCache)).flatMap { dataSets =>
