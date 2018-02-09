@@ -86,7 +86,8 @@ export function fetchPreviewData(distribution){
                 "type": "magda-item",
                 "url": config.baseUrl,
                 "distributionId": prop.id,
-                "isEnabled": true
+                "isEnabled": true,
+                "zoomOnEnable": true
               }
             ]
           }]}
