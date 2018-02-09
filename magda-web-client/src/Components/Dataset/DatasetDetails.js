@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import TemporalAspectViewer from '../../UI/TemporalAspectViewer';
 import OverviewBox from '../../UI/OverviewBox';
 import MarkdownViewer from '../../UI/MarkdownViewer';
-import Social from '../../Components/Social';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import renderDistribution from '../../Components/Distribution';
