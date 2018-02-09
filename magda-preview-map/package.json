@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.33-0",
+    "babel-core": "^6.26.0",
     "babel-eslint": "^7.0.0",
     "babel-loader": "^7.0.0",
     "babel-plugin-jsx-control-statements": "^3.2.8",
