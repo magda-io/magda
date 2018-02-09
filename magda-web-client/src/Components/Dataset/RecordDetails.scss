@@ -1,9 +1,10 @@
 @import '../../variables';
 .record-details__sidebar{
-    margin-top: 47px;
-    &>div{
-        margin-bottom: 10px;
-    }
+  margin-bottom: 10px;
+}
+
+.dataset-details__body{
+  margin-bottom: 40px;
 }
 
 .dataset-discussion{

@@ -95,11 +95,11 @@ class RecordHandler extends React.Component {
          if(this.props.datasetFetchError){
            return <ErrorHandler error={this.props.datasetFetchError}/>;
          }
-         const datasetTabs = [
-           {id: 'details', name: 'Details', isActive: true},
-           {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
-           {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
-         ];
+         // const datasetTabs = [
+         //   {id: 'details', name: 'Details', isActive: true},
+         //   {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
+         //   {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
+         // ];
 
          const baseUrlDataset = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`;
 
@@ -114,7 +114,6 @@ class RecordHandler extends React.Component {
                  </div>
                </div>
 
-               <Tabs list={datasetTabs} baseUrl={baseUrlDataset} onTabChange={(tab)=>{console.log(tab)}}/>
                <div className='tab-content'>
                  <Switch>
                    <Route path='/dataset/:datasetId/details' component={DatasetDetails} />

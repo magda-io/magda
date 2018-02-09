@@ -18,7 +18,7 @@ export default class DatasetSummary extends Component {
     const formats = uniq(dataset.distributions.map((dis)=> dis.format));
     return <div className='dataset-summary-downloads'>
               {formats.map((f, i)=>
-              <a key={i}>{f}</a>)}
+              <span key={i}>{f}</span>)}
            </div>
   }
 

@@ -2,14 +2,14 @@ import React from 'react';
 import MarkdownIt from 'markdown-it';
 import './MarkdownViewer.css';
 import defined from '../helpers/defined';
-import truncate from 'truncate-html';
+import truncate from 'html-truncate';
 var DOMPurify = require('dompurify/dist/purify');
 
 class MarkdownViewer extends React.Component  {
  render(){
    let html = markdownToHtml(this.props.markdown);
    if(this.props.truncate === true){
-       html = truncate(html, 150, {stripTags: true, byWords: true});
+       html = truncate(html, 150);
    }
    let markdown = {__html: html};
    return(

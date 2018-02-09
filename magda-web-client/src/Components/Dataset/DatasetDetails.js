@@ -23,7 +23,7 @@ class DatasetDetails extends Component{
                 <div className='dataset-details__body mui-col-sm-8'>
                   <div className='dataset-details-overview'>
                     <h3 className='section-heading'>Overview</h3>
-                    <OverviewBox content={dataset.description}/>
+                    <OverviewBox content={dataset.description} truncate ={false}/>
                   </div>
                   <div className='dataset-details-source'>
                     <h3 className='section-heading'>Source</h3>
@@ -40,7 +40,6 @@ class DatasetDetails extends Component{
               </div>
 
             <div className='record-details__sidebar mui-col-sm-4'>
-                <Social/>
                 <div className='tags'>
                   <h5>Tags</h5>
                   {dataset.tags && dataset.tags.map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}

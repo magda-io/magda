@@ -25,7 +25,7 @@ class OverviewBox extends Component {
     }
 
     renderContent(content){
-      return <MarkdownViewer markdown={content} truncate={true}/>
+      return <MarkdownViewer markdown={content} truncate={this.props.truncate}/>
     }
 
     render(){

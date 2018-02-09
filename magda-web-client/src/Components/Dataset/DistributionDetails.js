@@ -39,10 +39,6 @@ class DistributionDetails extends Component {
                       <TemporalAspectViewer data={distribution.temporalCoverage}/>
                   </div>
               </div>
-
-              <div className='record-details__sidebar col-sm-4'>
-                  <Social/>
-              </div>
               </div>
 
           </div>
