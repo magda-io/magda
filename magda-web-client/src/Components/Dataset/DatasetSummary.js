@@ -37,11 +37,10 @@ export default class DatasetSummary extends Component {
                   <MarkdownViewer markdown={dataset.description} truncate={true}/>
                 </div>
                 <div className='dataset-summary-meta'>
-                  {defined(dataset.modified) && <span className='dataset-summary-updated'> Dataset Updated {getDateString(dataset.modified)}</span>}
-                  {defined(dataset.quality) && <span className='dataset-summary-quality'> <QualityIndicator quality={dataset.quality}/></span>}
-                  {defined(dataset.distributions && dataset.distributions.length > 0) && this.renderDownloads(dataset)}
+                    {defined(dataset.modified) && <span className='dataset-summary-updated'> Dataset Updated {getDateString(dataset.modified)}</span>}
+                    {defined(dataset.quality) && <span className='dataset-summary-quality'> <QualityIndicator quality={dataset.quality}/></span>}
+                    {defined(dataset.distributions && dataset.distributions.length > 0) && this.renderDownloads(dataset)}
                 </div>
-
           </div>
   }
 }

@@ -1,6 +1,8 @@
 @import '../../variables';
 
 .dataset-summary{
+  height: auto;
+  clear: both;
   .dataset-summary-title{
     	color: $body;
       font-size: 20px;
@@ -20,7 +22,7 @@
     opacity: 0.5;
     font-size: 14px;
     line-height: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 8px;
     overflow: hidden;
     h1, h2, h3, h4 {
       margin: 0 0 10px;
@@ -30,11 +32,10 @@
   }
 
   .dataset-summary-meta{
-    display: flex;
-    justify-content: flex-start;
     font-size: 14px;
     line-height: 16px;
     color: rgba($body, 0.5);
+    clear: both;
   }
 
   .dataset-summary-updated,
@@ -42,8 +43,14 @@
     margin-right: 24px;
   }
 
+  .dataset-summary-downloads,
+  .dataset-summary-updated,
+  .dataset-summary-quality{
+      float: left;
+  }
+
+
   .dataset-summary-downloads{
-    max-width: calc(100% - 500px);
     span{
       	color: #CC3139;
         font-size: 14px;
