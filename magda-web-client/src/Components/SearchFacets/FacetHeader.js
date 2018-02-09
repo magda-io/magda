@@ -53,7 +53,7 @@ class FacetHeader extends Component {
         } else if(this.props.activeOptions.length === 1){
           return <span>{this.props.activeOptions[0].value || this.props.activeOptions[0].regionType + ': ' + this.props.activeOptions[0].regionName} </span>;
         } else{
-          return <span>{this.props.title + ': ' + this.props.activeOptions.length}  </span>
+          return <span>{this.props.title + 's' + ': ' + this.props.activeOptions.length}  </span>
         }
     }
   }

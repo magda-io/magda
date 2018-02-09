@@ -35,6 +35,7 @@ class RegionSearchBox extends Component {
   }
 
   componentWillUnmount(){
+    this.props.searchBoxValueChange('');
     window.removeEventListener('keydown', this.onExcKeyDown);
   }
 

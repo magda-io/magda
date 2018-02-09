@@ -79,11 +79,12 @@
   justify-content: space-between;
   font-size: 16px;
   line-height: 20px;
-  margin: 0 -16px;
+  margin: 1px -16px;
   button {
     text-transform: none;
     font-weight: 400;
     padding: 0 16px;
+    font-size: 16px;
     &:last-child{
       color: #CC3139;
     }
