@@ -1,10 +1,14 @@
 @import '../../variables';
 .search-facets{
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 40px;
+  @media (min-width: 768px) {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 40px;
+  }
+
   .search-facet{
     margin-right: 8px;
+    position: relative;
   }
   .mui-form {
     margin-bottom: 0;
@@ -21,7 +25,7 @@
 }
 
 .facet-body{
-    width: 496px;
+    width: 460px;
     margin-top: 8px;
     box-shadow: 0 3px 6px 0 rgba(0,0,0,0.23), 0 3px 6px 0 rgba(0,0,0,0.16);
     background: #fff;
@@ -29,6 +33,14 @@
     position: absolute;
     z-index: 1;
     padding: 0 16px;
+    @media (min-width: 768px) {
+      &.facet-format{
+        right: 0;
+      }
+      &.facet-temporal{
+        right: 0;
+      }
+  }
 }
 
 
