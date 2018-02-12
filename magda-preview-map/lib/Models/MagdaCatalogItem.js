@@ -424,6 +424,10 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
             newItem.id = parent.uniqueId + '/' + distribution.id;
         }
 
+        if(defined(options.zoomOnEnable)) {
+            newItem.zoomOnEnable = options.zoomOnEnable;
+        }
+
         return newItem;
     });
 };
@@ -503,7 +507,8 @@ MagdaCatalogItem.prototype._load = function() {
                 dataCustodian: that.dataCustodian,
                 itemProperties: that.itemProperties,
                 allowWfsGroups: true,
-                allowWmsGroups: true
+                allowWmsGroups: true,
+                zoomOnEnable: that.zoomOnEnable
             });
 
             if (defined(catalogItem)) {

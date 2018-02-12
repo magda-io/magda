@@ -19,6 +19,9 @@
 * Added prettier `pre-commit` hook to make sure consistent code style
 * Formatted existing typescript source code using `prettier`
 * Updated `building-and-running.md`
+* Added preview map support for geojson data type
+* Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
+* Map preview will zoom to dataset (except KML data)
 
 ## 0.0.32
 
