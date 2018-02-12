@@ -18,6 +18,7 @@
 * Added index to `"publisher"` field in recordaspects table in order to stop indexer webhook queries taking 10 minutes.
 * Added a CONTRIBUTING.md file
 * Fixed an issue that `Preview Map` doesn't support WFS API
+* Made the indexer listen to delete record events and remove the deleted record from the index
 * Added prettier `pre-commit` hook to make sure consistent code style
 * Formatted existing typescript source code using `prettier`
 * Updated `building-and-running.md`
