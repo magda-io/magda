@@ -13,6 +13,8 @@
 * Updated visualization sleuther to stream file downloads and csv parsing, and relax time field specifications.
 * Added `userId` parameter to `package.json` of `magda-gateway` module
 * Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
+* Updated format sleuther to be a bit more optimistic in its sleuthing
+* Re-added viz sleuther to default helm config
 * Added index to `"publisher"` field in recordaspects table in order to stop indexer webhook queries taking 10 minutes.
 * Added a CONTRIBUTING.md file
 * Fixed an issue that `Preview Map` doesn't support WFS API

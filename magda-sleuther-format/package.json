@@ -1,5 +1,5 @@
 {
-  "name": "@magda/sleuther-layerer",
+  "name": "@magda/sleuther-format",
   "description": "MAGDA Layering Sleuther",
   "version": "0.0.33-0",
   "scripts": {
@@ -53,8 +53,8 @@
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-sleuther-layerer",
-      "include": "node_modules dist Dockerfile"
+      "name": "data61/magda-sleuther-format",
+      "include": "node_modules dist Dockerfile synonyms.json"
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000"

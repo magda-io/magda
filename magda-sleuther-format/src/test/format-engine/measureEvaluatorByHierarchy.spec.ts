@@ -10,7 +10,6 @@ import { expect } from "chai";
 //import ProbeResult from "../../format-engine/measures/ProbeResult";
 //import MeasureAspect from "../../format-engine/measures/aspects/MeasureAspect";
 
-import { Formats } from "../../format-engine/formats";
 
 import getDcatProcessedData from "../../format-engine/measures/processed-functions/dcatProcessedFns";
 import getDownloadProcessedData from "../../format-engine/measures/processed-functions/downloadProcessedFns";
@@ -43,7 +42,7 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                 measureResult: {
                     formats: [
                         {
-                            format: Formats.DOCX,
+                            format: "DOCX",
                             correctConfidenceLevel: 0
                         }
                     ],
@@ -57,7 +56,7 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                 measureResult: {
                     formats: [
                         {
-                            format: Formats.XLSX,
+                            format: "XLSX",
                             correctConfidenceLevel: 0
                         }
                     ],
@@ -71,7 +70,7 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                 measureResult: {
                     formats: [
                         {
-                            format: Formats.PDF,
+                            format: "PDF",
                             correctConfidenceLevel: 0
                         }
                     ],
@@ -102,21 +101,21 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
             // figure out expected result [ .to.be.eql(expectedResult) ]:
             let expectedResult: MeasureEvalResult = {
                 format: {
-                    format: Formats.OTHER,
+                    format: "OTHER",
                     correctConfidenceLevel: 0
                 },
                 absConfidenceLevel: null,
                 distribution: null
             };
 
-            if (combination[2] >= 1) {
-                expectedResult.format.format = Formats.PDF;
+            if(combination[2] >= 1) {
+                expectedResult.format.format = "PDF";
                 expectedResult.absConfidenceLevel = 90;
-            } else if (combination[1] >= 1) {
-                expectedResult.format.format = Formats.XLSX;
-                expectedResult.absConfidenceLevel = 70;
-            } else if (combination[0] >= 1) {
-                expectedResult.format.format = Formats.DOCX;
+            } else if(combination[1] >= 1) {
+                expectedResult.format.format = "XLSX";
+                expectedResult.absConfidenceLevel = 70
+            } else if(combination[0] >= 1) {
+                expectedResult.format.format = "DOCX";
                 expectedResult.absConfidenceLevel = 33;
             } else {
                 expectedResult = null;
