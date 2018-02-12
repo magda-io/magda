@@ -11,13 +11,11 @@ body {
   font-size: 1rem;
 }
 
-
 @keyframes hideMessage {
   0%   { opacity: 1; }
   90%   { opacity: 1; }
   100% { opacity: 0; }
 }
-
 
 .mui-btn{
   font-weight: 400;
@@ -34,5 +32,23 @@ div{
   .breadcrumb-item{
     display: inline-block;
     padding-right: 16px;
+  }
+}
+
+a{
+  -webkit-appearance: none;
+  position: relative;
+  background: transparent;
+  text-decoration: none;
+  border: none;
+  border-bottom: solid 1px $magda-red;
+  transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+  cursor: pointer;
+  color: $body;
+  &:hover, &:focus{
+    text-decoration: none;
+    background-color: $magda-red;
+    border-color: transparent;
+    color: #ffffff;
   }
 }

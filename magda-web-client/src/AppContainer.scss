@@ -2,14 +2,28 @@
 
 
 .app-container{
-  .mui--appbar-right{
-    display: flex;
-    justify-content: flex-end;
+  .nav-table{
+    padding: 24px 0;
+  }
+
+  .nav-bar-right{
+    float: right;
+  }
+
+
+  td, .account-navbar{
+    display: inline-block;
     a{
-      line-height: 4;
-      padding-right: 16px;
-      font-size: 16px;
       color: $body;
+      text-decoration: none;
+      border-bottom: solid 1px $magda-red;
+      transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+      display: inline-block;
+      margin-right: 5px;
+      display: inline-block;
+      &:hover, &:focus{
+        color: #fff;
+      }
     }
   }
   .logo a{
@@ -21,7 +35,7 @@
     .highlight{
       color: $main;
     }
-    }
+  }
 }
 
 .footer{

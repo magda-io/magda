@@ -92,11 +92,11 @@ class AppContainer extends React.Component {
       <ReactDocumentTitle title={config.appName}>
       <div>
         <Container className='app-container'>
-             <table width="100%">
+             <table width="100%" className='nav-table'>
                <tbody>
                  <tr style={{verticalAlign: 'middle'}}>
-                   <td className="mui--appbar-height logo"><Link to='/'>{config.appName}</Link></td>
-                   <td className="mui--appbar-height mui--appbar-right">
+                   <td className="logo"><Link to='/'>{config.appName}</Link></td>
+                   <td className="nav-bar-right">
                      {headerNavs.map(nav =>
                          <Link key={nav[1]} to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
                      )}
