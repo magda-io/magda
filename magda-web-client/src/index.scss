@@ -41,13 +41,13 @@ a{
   background: transparent;
   text-decoration: none;
   border: none;
-  border-bottom: solid 1px $magda-red;
+  border-bottom: solid 1px $magda;
   transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
   cursor: pointer;
   color: $body;
   &:hover, &:focus{
     text-decoration: none;
-    background-color: $magda-red;
+    background-color: $magda;
     border-color: transparent;
     color: #ffffff;
   }

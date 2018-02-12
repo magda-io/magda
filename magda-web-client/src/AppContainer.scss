@@ -16,7 +16,7 @@
     a{
       color: $body;
       text-decoration: none;
-      border-bottom: solid 1px $magda-red;
+      border-bottom: solid 1px $magda;
       transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
       display: inline-block;
       margin-right: 5px;
@@ -44,13 +44,13 @@
     padding: 50px 0;
     a{
         color: #fff;
-        text-decoration: underline;
         font-size: 0.9rem;
     }
     .nav > li > a{
         padding: 10px 0px;
-        &:hover{
-            background: transparent;
+        &:hover, &:focus{
+            background: $magda;
+            color: #fff;
         }
     }
     .nav-title{
