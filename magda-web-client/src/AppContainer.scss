@@ -16,10 +16,10 @@
     a{
       color: $body;
       text-decoration: none;
-      border-bottom: solid 1px $magda;
+      border-bottom: 0;
       transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
       display: inline-block;
-      margin-right: 5px;
+      margin-right: 16px;
       display: inline-block;
       &:hover, &:focus{
         color: #fff;
