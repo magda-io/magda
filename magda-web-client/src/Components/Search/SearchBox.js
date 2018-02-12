@@ -9,10 +9,11 @@ import React, { Component } from 'react';
 import {fetchRegionMapping} from '../../actions/regionMappingActions';
 import Form from 'muicss/lib/react/form';
 import Input from 'muicss/lib/react/input';
-import search from "../../assets/search.svg";
+import search from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
 import queryString from 'query-string';
+import Particles from '../../UI/Particles';
 
 
 class SearchBox extends Component {
@@ -118,6 +119,7 @@ class SearchBox extends Component {
   render() {
     return (
         <Form className='searchBox'>
+          <div className='searchBox-background'> <div className='searchBox-background-overlay'></div><Particles /></div>
           <table width='100%'>
             <tbody>
             <tr>
