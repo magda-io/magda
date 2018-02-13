@@ -1,7 +1,7 @@
-import { AspectDefinition, Record } from './generated/registry/api';
-import AspectBuilder from './AspectBuilder';
-import ConnectorRecordId from './ConnectorRecordId';
-import createServiceError from './createServiceError';
+import { AspectDefinition, Record } from "./generated/registry/api";
+import AspectBuilder from "./AspectBuilder";
+import ConnectorRecordId from "./ConnectorRecordId";
+import createServiceError from "./createServiceError";
 
 /**
  * A base class for transformers for most any JSON-based catalog source.
@@ -45,9 +45,21 @@ export default abstract class JsonTransformer {
         organizationParameters.libraries = libraries;
         organizationParameters.transformer = this;
 
-        this.datasetAspects = buildersToCompiledAspects(datasetAspectBuilders, setupParameters, datasetParameters);
-        this.distributionAspects = buildersToCompiledAspects(distributionAspectBuilders, setupParameters, distributionParameters);
-        this.organizationAspects = buildersToCompiledAspects(organizationAspectBuilders, setupParameters, organizationParameters);
+        this.datasetAspects = buildersToCompiledAspects(
+            datasetAspectBuilders,
+            setupParameters,
+            datasetParameters
+        );
+        this.distributionAspects = buildersToCompiledAspects(
+            distributionAspectBuilders,
+            setupParameters,
+            distributionParameters
+        );
+        this.organizationAspects = buildersToCompiledAspects(
+            organizationAspectBuilders,
+            setupParameters,
+            organizationParameters
+        );
     }
 
     /**
@@ -63,9 +75,17 @@ export default abstract class JsonTransformer {
     organizationJsonToRecord(jsonOrganization: object): Record {
         this.organizationAspects.parameters.organization = jsonOrganization;
 
-        const id = this.getIdFromJsonOrganization(jsonOrganization, this.sourceId);
+        const id = this.getIdFromJsonOrganization(
+            jsonOrganization,
+            this.sourceId
+        );
         const name = this.getNameFromJsonOrganization(jsonOrganization);
-        return this.jsonToRecord(id, name, jsonOrganization, this.organizationAspects);
+        return this.jsonToRecord(
+            id,
+            name,
+            jsonOrganization,
+            this.organizationAspects
+        );
     }
 
     datasetJsonToRecord(jsonDataset: object): Record {
@@ -76,49 +96,90 @@ export default abstract class JsonTransformer {
         return this.jsonToRecord(id, name, jsonDataset, this.datasetAspects);
     }
 
-    distributionJsonToRecord(jsonDistribution: object, jsonDataset: object): Record {
+    distributionJsonToRecord(
+        jsonDistribution: object,
+        jsonDataset: object
+    ): Record {
         this.distributionAspects.parameters.dataset = jsonDataset;
         this.distributionAspects.parameters.distribution = jsonDistribution;
 
-        const id = this.getIdFromJsonDistribution(jsonDistribution, jsonDataset, this.sourceId);
-        const name = this.getNameFromJsonDistribution(jsonDistribution, jsonDataset);
-        return this.jsonToRecord(id, name, jsonDistribution, this.distributionAspects);
+        const id = this.getIdFromJsonDistribution(
+            jsonDistribution,
+            jsonDataset,
+            this.sourceId
+        );
+        const name = this.getNameFromJsonDistribution(
+            jsonDistribution,
+            jsonDataset
+        );
+        return this.jsonToRecord(
+            id,
+            name,
+            jsonDistribution,
+            this.distributionAspects
+        );
     }
 
     getRequiredAspectDefinitions(): AspectDefinition[] {
-        const allBuilders = this.datasetAspectBuilders.concat(this.distributionAspectBuilders).concat(this.organizationAspectBuilders);
-        const builderAspectDefinitions = allBuilders.map(builder => builder.aspectDefinition);
+        const allBuilders = this.datasetAspectBuilders
+            .concat(this.distributionAspectBuilders)
+            .concat(this.organizationAspectBuilders);
+        const builderAspectDefinitions = allBuilders.map(
+            builder => builder.aspectDefinition
+        );
         return builderAspectDefinitions.concat([
             {
-                id: 'dataset-distributions',
-                name: 'Dataset Distributions',
-                jsonSchema: require('@magda/registry-aspects/dataset-distributions.schema.json')
+                id: "dataset-distributions",
+                name: "Dataset Distributions",
+                jsonSchema: require("@magda/registry-aspects/dataset-distributions.schema.json")
             },
             {
-                id: 'source',
-                name: 'Source',
-                jsonSchema: require('@magda/registry-aspects/source.schema.json')
+                id: "source",
+                name: "Source",
+                jsonSchema: require("@magda/registry-aspects/source.schema.json")
             },
             {
-                id: 'dataset-publisher',
-                name: 'Dataset Publisher',
-                jsonSchema: require('@magda/registry-aspects/dataset-publisher.schema.json')
+                id: "dataset-publisher",
+                name: "Dataset Publisher",
+                jsonSchema: require("@magda/registry-aspects/dataset-publisher.schema.json")
             }
         ]);
     }
 
-    abstract getIdFromJsonOrganization(jsonOrganization: any, sourceId: string): ConnectorRecordId;
-    abstract getIdFromJsonDataset(jsonDataset: any, sourceId: string): ConnectorRecordId;
-    abstract getIdFromJsonDistribution(jsonDistribution: any, jsonDataset: any, sourceId: string): ConnectorRecordId;
+    abstract getIdFromJsonOrganization(
+        jsonOrganization: any,
+        sourceId: string
+    ): ConnectorRecordId;
+    abstract getIdFromJsonDataset(
+        jsonDataset: any,
+        sourceId: string
+    ): ConnectorRecordId;
+    abstract getIdFromJsonDistribution(
+        jsonDistribution: any,
+        jsonDataset: any,
+        sourceId: string
+    ): ConnectorRecordId;
 
     abstract getNameFromJsonOrganization(jsonOrganization: any): string;
     abstract getNameFromJsonDataset(jsonDataset: any): string;
-    abstract getNameFromJsonDistribution(jsonDistribution: any, jsonDataset: any): string;
+    abstract getNameFromJsonDistribution(
+        jsonDistribution: any,
+        jsonDataset: any
+    ): string;
 
-    private jsonToRecord(id: ConnectorRecordId, name: string, json: any, aspects: CompiledAspects): Record {
+    private jsonToRecord(
+        id: ConnectorRecordId,
+        name: string,
+        json: any,
+        aspects: CompiledAspects
+    ): Record {
         const problems: ProblemReport[] = [];
 
-        function reportProblem(title: string, message?: string, additionalInfo?: any) {
+        function reportProblem(
+            title: string,
+            message?: string,
+            additionalInfo?: any
+        ) {
             problems.push({ title, message, additionalInfo });
         }
 
@@ -128,35 +189,47 @@ export default abstract class JsonTransformer {
         aspects.aspects.forEach(aspect => {
             try {
                 aspects.parameters.setup = aspect.setupResult;
-                const aspectValue = aspect.builderFunction(...aspects.parameterNames.map(parameter => aspects.parameters[parameter]));
+                const aspectValue = aspect.builderFunction(
+                    ...aspects.parameterNames.map(
+                        parameter => aspects.parameters[parameter]
+                    )
+                );
                 if (aspectValue !== undefined) {
                     generatedAspects[aspect.id] = aspectValue;
                 }
-            } catch(e) {
+            } catch (e) {
                 const exception = createServiceError(e);
-                reportProblem('Exception while creating aspect ' + aspect.id, exception.toString());
+                reportProblem(
+                    "Exception while creating aspect " + aspect.id,
+                    exception.toString()
+                );
             }
         });
 
-        if (!generatedAspects['source']) {
-            generatedAspects['source'] = {};
+        if (!generatedAspects["source"]) {
+            generatedAspects["source"] = {};
         }
 
         if (problems.length > 0) {
-            generatedAspects['source'].problems = problems;
+            generatedAspects["source"].problems = problems;
         } else {
-            generatedAspects['source'].problems = undefined;
+            generatedAspects["source"].problems = undefined;
         }
 
         return {
             id: id.toString(),
             name: name,
-            aspects: generatedAspects
+            aspects: generatedAspects,
+            sourceTag: undefined
         };
     }
 }
 
-function buildersToCompiledAspects(builders: AspectBuilder[], setupParameters: BuilderSetupFunctionParameters, buildParameters: BuilderFunctionParameters): CompiledAspects {
+function buildersToCompiledAspects(
+    builders: AspectBuilder[],
+    setupParameters: BuilderSetupFunctionParameters,
+    buildParameters: BuilderFunctionParameters
+): CompiledAspects {
     const setupParameterNames = Object.keys(setupParameters);
     const buildParameterNames = Object.keys(buildParameters);
 
@@ -166,12 +239,23 @@ function buildersToCompiledAspects(builders: AspectBuilder[], setupParameters: B
         aspects: builders.map(builder => {
             let setupResult = undefined;
             if (builder.setupFunctionString) {
-                const setupFunction = new Function(...setupParameterNames, builder.setupFunctionString);
+                const setupFunction = new Function(
+                    ...setupParameterNames,
+                    builder.setupFunctionString
+                );
                 const setupParametersUntyped: any = setupParameters;
-                setupResult = setupFunction.apply(undefined, setupParameterNames.map(name => setupParametersUntyped[name]));
+                setupResult = setupFunction.apply(
+                    undefined,
+                    setupParameterNames.map(
+                        name => setupParametersUntyped[name]
+                    )
+                );
             }
 
-            const builderFunction = new Function(...buildParameterNames, builder.builderFunctionString);
+            const builderFunction = new Function(
+                ...buildParameterNames,
+                builder.builderFunctionString
+            );
 
             return {
                 id: builder.aspectDefinition.id,
@@ -183,12 +267,12 @@ function buildersToCompiledAspects(builders: AspectBuilder[], setupParameters: B
 }
 
 export interface JsonTransformerOptions {
-    sourceId: string,
-    libraries?: object,
-    datasetAspectBuilders?: AspectBuilder[],
-    distributionAspectBuilders?: AspectBuilder[],
-    organizationAspectBuilders?: AspectBuilder[],
-    maxConcurrency?: number
+    sourceId: string;
+    libraries?: object;
+    datasetAspectBuilders?: AspectBuilder[];
+    distributionAspectBuilders?: AspectBuilder[];
+    organizationAspectBuilders?: AspectBuilder[];
+    maxConcurrency?: number;
 }
 
 interface CompiledAspects {
@@ -198,9 +282,9 @@ interface CompiledAspects {
 }
 
 interface CompiledAspect {
-    id: string,
-    builderFunction: Function,
-    setupResult: any
+    id: string;
+    builderFunction: Function;
+    setupResult: any;
 }
 
 interface Aspects {
@@ -208,13 +292,13 @@ interface Aspects {
 }
 
 interface ProblemReport {
-    title: string,
-    message?: string,
-    additionalInfo?: any
+    title: string;
+    message?: string;
+    additionalInfo?: any;
 }
 
 interface ReportProblem {
-    (title: string, message?: string, additionalInfo?: any): void
+    (title: string, message?: string, additionalInfo?: any): void;
 }
 
 interface BuilderSetupFunctionParameters {

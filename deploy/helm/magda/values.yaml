@@ -6,7 +6,6 @@ global:
   exposeNodePorts: false
   image:
     repository: "data61"
-    tag: "0.0.29"
     pullPolicy: Always
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
   logLevel: INFO
@@ -30,4 +29,5 @@ tags:
   sleuther-broken-link: false
   sleuther-linked-data-rating: false
   sleuther-visualization: false
+  sleuther-format: false
   web-server: false

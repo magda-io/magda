@@ -72,12 +72,7 @@ const argv = yargs
 
 var app = express();
 
-const magda = path.join(
-    __dirname,
-    "..",
-    "node_modules",
-    "@magda"
-);
+const magda = path.join(__dirname, "..", "node_modules", "@magda");
 
 const clientRoot = path.join(magda, "web-client");
 const clientBuild = path.join(clientRoot, "build");
@@ -165,6 +160,10 @@ topLevelRoutes.forEach(topLevelRoute => {
     app.get("/" + topLevelRoute + "/*", function(req, res) {
         res.sendFile(path.join(clientBuild, "index.html"));
     });
+});
+
+app.get("/page/*", function(req, res) {
+    res.sendFile(path.join(clientBuild, "index.html"));
 });
 
 app.get("/admin", function(req, res) {

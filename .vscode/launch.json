@@ -53,6 +53,24 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "Sleuther Format Layerer",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "runtimeArgs": [
+                "src/index.ts"
+            ],
+            "args": [
+                "--jwtSecret", "squirrel",
+                "--userId", "00000000-0000-4000-8000-000000000000"
+            ],
+            "cwd": "${workspaceRoot}/magda-sleuther-format-layerer"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "magda-typescript-common tests",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-typescript-common",
@@ -77,23 +95,36 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "format sleuther api tests",
+            "program": "${workspaceRoot}/magda-sleuther-format/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-sleuther-format",
+            "args": [
+                "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
+                "--require", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
+        },
+
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Launch Gateway",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
             },
-            "runtimeArgs":[
-                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
-                "src/index.ts"
-            ],
             "args":[
+                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/index.ts",
                 "--jwtSecret", "squirrel",
                 "--sessionSecret", "keyboard cat",
                 "--ckanUrl", "https://data.gov.au",
                 "--googleClientId", "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
                 "--googleClientSecret", "secret",
                 "--facebookClientId", "1906944756293015",
-                "--facebookClientSecret", "secret"
+                "--facebookClientSecret", "secret",
+                "--userId", "00000000-0000-4000-8000-000000000000"
             ],
             "cwd": "${workspaceRoot}/magda-gateway"
         },
@@ -102,8 +133,17 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Auth API",
-            "program": "${workspaceRoot}/magda-authorization-api/lib/index.js",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "cwd": "${workspaceRoot}/magda-authorization-api",
+            "args":[
+                "src/index.ts"
+                "--jwtSecret", "squirrel",
+                "--sessionSecret", "keyboard cat",
+                "--googleClientId", "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
+                "--googleClientSecret", "secret",
+                "--facebookClientId", "1906944756293015",
+                "--facebookClientSecret", "secret"
+            ],
             "env": {
                 "JWT_SECRET": "squirrel",
                 "SESSION_SECRET": "keyboard cat",
@@ -124,6 +164,16 @@
                "--configuration", "../deploy/kubernetes/local/base/combined-db.yml",
                "--selector", "service=combined-db",
                "--port", "5432"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "build-changed",
+            "program": "${workspaceRoot}/scripts/build-changed.js",
+            "cwd": "${workspaceRoot}/scripts",
+            "args": [
             ]
         },
         {

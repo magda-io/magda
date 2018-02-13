@@ -39,7 +39,7 @@ spec:
             "-Dakka.loglevel={{ .Values.logLevel | default .Values.global.logLevel }}",
             "-DauthApi.baseUrl=http://authorization-api",
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}",
-            "-Dauthorization.skip=false"
+            "-Dauthorization.skip={{ .Values.skipAuthorization | default false }}"
         ]
         ports:
         - containerPort: 80

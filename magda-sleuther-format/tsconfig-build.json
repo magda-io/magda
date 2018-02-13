@@ -1,0 +1,12 @@
+{
+    "extends": "../tsconfig-global.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "dist",
+        "baseUrl": "."
+    },
+    "include": [
+        "src",
+        "src/format-engine/synonyms.json"
+    ]
+}

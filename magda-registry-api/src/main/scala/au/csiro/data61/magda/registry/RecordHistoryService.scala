@@ -16,6 +16,8 @@ import scalikejdbc.DB
 @Path("/records/{recordId}/history")
 @io.swagger.annotations.Api(value = "record history", produces = "application/json")
 class RecordHistoryService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+  val recordPersistence = DefaultRecordPersistence
+  
   @ApiOperation(value = "Get a list of all events affecting this record", nickname = "history", httpMethod = "GET", response = classOf[EventsPage])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch history.")
@@ -40,7 +42,7 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
   def version = get { path(Segment / "history" / Segment) { (id, version) => { parameters('aspect.*, 'optionalAspect.*) { (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
     DB readOnly { session =>
       val events = EventPersistence.streamEventsUpTo(version.toLong, recordId = Some(id))
-      val recordSource = RecordPersistence.reconstructRecordFromEvents(id, events, aspects, optionalAspects)
+      val recordSource = recordPersistence.reconstructRecordFromEvents(id, events, aspects, optionalAspects)
       val sink = Sink.head[Option[Record]]
       val future = recordSource.runWith(sink)(materializer)
       Await.result[Option[Record]](future, 5 seconds) match {

@@ -2,7 +2,7 @@
   "lerna": "2.5.1",
   "npmClient": "yarn",
   "useWorkspaces": true,
-  "version": "0.0.32-0",
+  "version": "0.0.33-0",
   "hoist": [
     "tsmonad",
     "urijs",

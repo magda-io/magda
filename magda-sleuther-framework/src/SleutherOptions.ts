@@ -7,7 +7,7 @@ import {
 } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
-export default interface SleutherOptions {
+export default class SleutherOptions {
     argv: SleutherArguments;
     id: string;
     aspects: string[];
@@ -17,4 +17,5 @@ export default interface SleutherOptions {
     onRecordFound: (record: Record, registry: Registry) => Promise<void>;
     express?: () => express.Express;
     maxRetries?: number;
+    concurrency?: number;
 }

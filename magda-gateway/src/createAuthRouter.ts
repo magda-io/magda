@@ -13,11 +13,16 @@ export interface AuthRouterOptions {
     ckanUrl: string;
     authorizationApi: string;
     externalUrl: string;
+    userId: string;
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
     const authRouter: Router = Router();
-    const authApi = new ApiClient(options.authorizationApi);
+    const authApi = new ApiClient(
+        options.authorizationApi,
+        options.jwtSecret,
+        options.userId
+    );
 
     if (options.authenticator) {
         options.authenticator.applyToRoute(authRouter);

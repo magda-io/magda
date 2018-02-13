@@ -1,7 +1,6 @@
 import * as _ from "lodash";
 import * as request from "request";
 import * as http from "http";
-import * as URI from "urijs";
 
 import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
@@ -13,6 +12,7 @@ import brokenLinkAspectDef, {
 } from "./brokenLinkAspectDef";
 import datasetQualityAspectDef from "@magda/sleuther-framework/dist/common-aspect-defs/datasetQualityAspectDef";
 import FTPHandler from "./FtpHandler";
+import parseUriSafe from "./parseUriSafe";
 
 export default async function onRecordFound(
     record: Record,
@@ -147,11 +147,11 @@ type DistributionLinkCheck = {
 };
 
 /**
-   * Checks a distribution's URL. Returns a tuple of the distribution's host and a no-arg function that when executed will fetch the url, returning a promise.
-   * 
-   * @param distribution The distribution Record
-   * @param distStringsAspect The dcat-distributions-strings aspect for this distribution
-   */
+ * Checks a distribution's URL. Returns a tuple of the distribution's host and a no-arg function that when executed will fetch the url, returning a promise.
+ *
+ * @param distribution The distribution Record
+ * @param distStringsAspect The dcat-distributions-strings aspect for this distribution
+ */
 function checkDistributionLink(
     distribution: Record,
     distStringsAspect: any,
@@ -160,7 +160,7 @@ function checkDistributionLink(
     ftpHandler: FTPHandler
 ): DistributionLinkCheck[] {
     type DistURL = {
-        url?: string;
+        url?: uri.URI;
         type: "downloadURL" | "accessURL";
     };
 
@@ -173,7 +173,9 @@ function checkDistributionLink(
             url: distStringsAspect.accessURL as string,
             type: "accessURL" as "accessURL"
         }
-    ].filter(x => !!x.url);
+    ]
+        .map(urlObj => ({ ...urlObj, url: parseUriSafe(urlObj.url) }))
+        .filter(x => x.url && x.url.protocol().length > 0);
 
     if (urls.length === 0) {
         return [
@@ -193,25 +195,31 @@ function checkDistributionLink(
         ];
     }
 
-    return urls.map(url => {
-        const parsedURL = new URI(url.url);
+    return urls.map(({ type, url: parsedURL }) => {
         return {
             host: (parsedURL && parsedURL.host()) as string,
-            op: () =>
-                retrieve(parsedURL, baseRetryDelay, retries, ftpHandler)
+            op: () => {
+                console.info("Retrieving " + parsedURL);
+
+                return retrieve(parsedURL, baseRetryDelay, retries, ftpHandler)
+                    .then(aspect => {
+                        console.info("Finished retrieving  " + parsedURL);
+                        return aspect;
+                    })
                     .then(aspect => ({
                         distribution,
-                        urlType: url.type,
+                        urlType: type,
                         aspect
                     }))
                     .catch(err => ({
                         distribution,
-                        urlType: url.type,
+                        urlType: type,
                         aspect: {
                             status: "broken" as RetrieveResult,
                             errorDetails: err
                         }
-                    })) as Promise<BrokenLinkSleuthingResult>
+                    })) as Promise<BrokenLinkSleuthingResult>;
+            }
         };
     });
 }
@@ -262,10 +270,10 @@ function retrieveFtp(
 }
 
 /**
-   * Retrieves an HTTP/HTTPS url
-   * 
-   * @param url The url to retrieve
-   */
+ * Retrieves an HTTP/HTTPS url
+ *
+ * @param url The url to retrieve
+ */
 function retrieveHttp(
     url: string,
     baseRetryDelay: number,

@@ -98,6 +98,14 @@ const argv = addJwtSecretFromEnvVar(
         .options("ckanUrl", {
             describe: "The URL of a CKAN server to use for authentication.",
             type: "string"
+        })
+        .option("userId", {
+            describe:
+                "The user id to use when making authenticated requests to the registry",
+            type: "string",
+            demand: true,
+            default:
+                process.env.USER_ID || process.env.npm_package_config_userId
         }).argv
 );
 
@@ -135,7 +143,8 @@ app.use(
         googleClientSecret: argv.googleClientSecret,
         ckanUrl: argv.ckanUrl,
         authorizationApi: argv.authorizationApi,
-        externalUrl: argv.externalUrl
+        externalUrl: argv.externalUrl,
+        userId: argv.userId
     })
 );
 app.use(

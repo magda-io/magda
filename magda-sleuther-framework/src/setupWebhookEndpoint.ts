@@ -1,32 +1,34 @@
-import * as fetch from "isomorphic-fetch";
 import * as _ from "lodash";
 import * as express from "express";
 
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 
 import SleutherOptions from "./SleutherOptions";
 import getWebhookUrl from "./getWebhookUrl";
+import AsyncPage, {
+    forEachAsync
+} from "@magda/typescript-common/dist/AsyncPage";
 
 export default function setupWebhookEndpoint(
     options: SleutherOptions,
     registry: Registry
 ) {
     const server = options.express();
-    server.use(require("body-parser").json({limit: '50mb'}));
+    server.use(require("body-parser").json({ limit: "50mb" }));
 
     server.post(
         "/hook",
         (request: express.Request, response: express.Response) => {
             const payload = request.body;
 
-            const promises: Promise<
-                void
-            >[] = payload.records.map((record: Record) =>
-                options.onRecordFound(record, registry)
+            const recordsPage = AsyncPage.single(payload.records);
+            const megaPromise = forEachAsync(
+                recordsPage,
+                options.concurrency || 1,
+                (record: Record) => options.onRecordFound(record, registry)
             );
-
-            const megaPromise = Promise.all(promises);
 
             const lastEventIdExists = !_.isUndefined(payload.lastEventId);
             const deferredResponseUrlExists = !_.isUndefined(
@@ -57,23 +59,46 @@ export default function setupWebhookEndpoint(
                 });
 
                 const sendResult = (success: boolean) =>
-                    fetch(payload.deferredResponseUrl, {
-                        method: "POST",
-                        body: JSON.stringify({
-                            succeeded: success,
-                            lastEventIdReceived: payload.lastEventId
+                    registry
+                        .resumeHook(options.id, success, payload.lastEventId)
+                        .then(unionToThrowable)
+                        .then(result => {
+                            console.info(
+                                "Successfully posted back to registry for event " +
+                                    payload.lastEventId
+                            );
+                            return result;
                         })
-                    });
+                        .catch((error: Error) => {
+                            console.error(error);
+                            throw error;
+                        });
 
                 megaPromise
-                    .then(results => sendResult(true))
+                    .then(() =>
+                        // On success, send the result as true, if we fail to send the result (even though the hook worked) then just log
+                        // the error - this is presumably because the registry has gone down, when it comes back up it'll resume the hook.
+                        sendResult(true).catch((err: Error) => {
+                            console.error(err);
+                        })
+                    )
                     .catch((err: Error) => {
+                        // Something has actually gone wrong with the sleuther behaviour itself that hasn't been handled by the sleuther.
+                        // We class this as pretty catastrophic, so we log it and shut down the hook (set to inactive)
+                        // TODO: Figure out some way to notify of failures.
                         console.error(err);
-                        return sendResult(false);
+
+                        console.info("Setting hook to inactive");
+                        return registry.resumeHook(
+                            options.id,
+                            false,
+                            payload.lastEventId,
+                            false
+                        );
                     });
             } else {
                 megaPromise
-                    .then(results => {
+                    .then(() => {
                         response.status(201).send({
                             status: "Received",
                             deferResponse: false
