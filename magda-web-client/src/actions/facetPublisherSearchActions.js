@@ -4,6 +4,7 @@ import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import type { FacetAction, FacetSearchJson } from '../helpers/datasetSearch';
+import type { Error } from '../types';
 
 export function requestPublishers(generalQuery:string):FacetAction{
   return {
@@ -12,7 +13,7 @@ export function requestPublishers(generalQuery:string):FacetAction{
   }
 }
 
-export function requestPublishersFailed(error):FacetAction{
+export function requestPublishersFailed(error: Error):FacetAction{
   return {
     type: actionTypes.FACET_REQUEST_PUBLISHERS_FAILED,
     error
@@ -28,14 +29,14 @@ export function receivePublishers(generalQuery:string, json:Object):FacetAction{
 }
 
 export function fetchPublisherSearchResults(generalQuery:string) {
-  return (dispatch: Function)=>{
-    dispatch(requestPublishers(generalQuery))
+  return (dispatch: (FacetAction) => void) => {
+    dispatch(requestPublishers(generalQuery));
     return fetch(config.searchApiUrl + `facets/publisher/options?generalQuery=${encodeURIComponent(generalQuery)}&start=0&limit=10000`)
     .then(response => {
-      if (response.status === 200) {return response.json();}
-      return dispatch(requestPublishersFailed({title: response.status, detail: response.statusText}))})
+      if (response.ok) {return response.json(); }
+      return dispatch(requestPublishersFailed({title: response.status, detail: response.statusText}));})
     .then((json: FacetSearchJson) =>
       dispatch(receivePublishers(generalQuery, json))
-    )
+    );
   }
 }

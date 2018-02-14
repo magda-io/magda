@@ -23,7 +23,7 @@ class CreateProject extends Component {
     state: {
       project: Object
     }
-    constructor(props: {location: Location}) {
+    constructor(props) {
       super(props);
 
       // use immutable here for easy manipulation

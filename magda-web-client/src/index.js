@@ -20,7 +20,7 @@ import PropTypes from 'prop-types';
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
 
-const store: Store = createStore(
+const store = createStore(
   reducer,
   applyMiddleware(
     thunkMiddleware, // lets us dispatch() functions

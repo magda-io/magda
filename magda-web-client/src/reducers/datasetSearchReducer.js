@@ -84,8 +84,8 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       let freeText: string = data.query.freeText;
 
       let activePublishers: Array<FacetOption> = findMatchingObjs(query.publishers, publisherOptions);
-      let activeDateFrom : ?number = query.dateFrom ? query.dateFrom: initialData.activeDateFrom;
-      let activeDateTo : ?number = query.dateTo ? query.dateTo : initialData.activeDateTo;
+      let activeDateFrom : ?string = query.dateFrom ? query.dateFrom: initialData.activeDateFrom;
+      let activeDateTo : ?string = query.dateTo ? query.dateTo : initialData.activeDateTo;
 
       let activeFormats: Array<FacetOption> = findMatchingObjs(query.formats, formatOptions);;
 
