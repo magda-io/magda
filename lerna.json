@@ -1,25 +1,26 @@
 {
-  "lerna": "2.5.1",
-  "npmClient": "yarn",
-  "useWorkspaces": true,
-  "version": "0.0.33-0",
-  "hoist": [
-    "tsmonad",
-    "urijs",
-    "@types/urijs",
-    "express",
-    "@types/express",
-    "@types/supertest"
-  ],
-  "concurrency": "1",
-  "commands": {
-    "docker-build-prod": {
-      "ignore": [
-        "magda-authorization-db",
-        "magda-discussions-db",
-        "magda-authorization-api",
-        "magda-discussions-api"
-      ]
+    "lerna": "2.5.1",
+    "npmClient": "yarn",
+    "useWorkspaces": true,
+    "version": "0.0.33-0",
+    "packages": ["deploy", "scripts", "magda-*"],
+    "hoist": [
+        "tsmonad",
+        "urijs",
+        "@types/urijs",
+        "express",
+        "@types/express",
+        "@types/supertest"
+    ],
+    "concurrency": "1",
+    "commands": {
+        "docker-build-prod": {
+            "ignore": [
+                "magda-authorization-db",
+                "magda-discussions-db",
+                "magda-authorization-api",
+                "magda-discussions-api"
+            ]
+        }
     }
-  }
 }
