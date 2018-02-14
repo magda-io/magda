@@ -41,7 +41,13 @@ class DatasetDetails extends Component{
             <div className='record-details__sidebar mui-col-sm-4'>
                 <div className='tags'>
                   <h5>Tags</h5>
-                  {dataset.tags && dataset.tags.map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
+                  {dataset.tags && dataset.tags.reduce((acc,cur)=>{
+                      const stdStr = cur.toLowerCase().trim().replace(/^[\u00C0-\u1FFF\u2C00-\uD7FF\w]|\s[\u00C0-\u1FFF\u2C00-\uD7FF\w]/g, function(letter) {
+                        return letter.toUpperCase();
+                      });
+                      if(acc.indexOf(stdStr)==-1) acc.push(stdStr);
+                      return acc;
+                  },[]).map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
                 </div>
             </div>
             </div>
