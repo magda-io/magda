@@ -14,6 +14,7 @@ export default class ChartConfig extends Component {
           {options.map(o=><Option value={o} label={o}/>)}
       </Select>)
   }
+  
   render(){
     return (<div className='chart-config'>
               <div className='chart-type'>{this.renderTypeSelect(VEGAMARK, 'Chart type')}</div>
