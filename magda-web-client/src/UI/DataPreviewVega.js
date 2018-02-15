@@ -34,25 +34,25 @@ class DataPreviewVega extends Component {
   }
 
   componentWillMount(){
-    const spec = {
-      "width": 600,
-      "height": 200,
-      "description": "",
-      "mark": "line",
-      "encoding": {
-        "x": {"field": this.props.data.meta.chartFields.time[0], "type": "temporal"},
-        "y": {"field": this.props.data.meta.chartFields.numeric[0], "type": "quantitative"}
-      }
-    }
-
-    const data ={
-      values: this.props.data.data
-    }
-
-    this.setState({
-      spec: spec,
-      data: data
-    })
+    // const spec = {
+    //   "width": 600,
+    //   "height": 200,
+    //   "description": "",
+    //   "mark": "line",
+    //   "encoding": {
+    //     "x": {"field": this.props.data.meta.chartFields.time[0], "type": "temporal"},
+    //     "y": {"field": this.props.data.meta.chartFields.numeric[0], "type": "quantitative"}
+    //   }
+    // }
+    //
+    // const data ={
+    //   values: this.props.data.data
+    // }
+    //
+    // this.setState({
+    //   spec: spec,
+    //   data: data
+    // })
   }
 
   handleConfigChange(spec){
@@ -114,11 +114,14 @@ class DataPreviewVega extends Component {
       )
   }
 
+  // render(){
+  //   return <div className='data-preview-vega'>
+  //           {this.renderCharts()}
+  //           {this.renderConfigForm()}
+  //          </div>
+  // }
   render(){
-    return <div className='data-preview-vega'>
-            {this.renderCharts()}
-            {this.renderConfigForm()}
-           </div>
+    return <h3>Data Preview</h3>
   }
 }
 

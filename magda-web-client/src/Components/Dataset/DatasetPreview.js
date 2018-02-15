@@ -1,54 +1,18 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import {fetchPreviewData} from '../../actions/previewDataActions'
-import { bindActionCreators } from 'redux';
-import DataPreviewer from '../../Components/DataPreviewer';
-import ProgressBar from "../UI/ProgressBar";
-
+import DataPreviewVega from '../../UI/DataPreviewVega';
+import DataPreviewMap from '../../UI/DataPreviewMap';
+import PropTypes from 'prop-types';
 import './DatasetPreview.css'
 
-class DatasetPreview extends Component {
-  componentWillMount(){
-    this.props.fetchPreviewData(this.props.dataset.distributions);
-  }
-
-  componentWillReceiveProps(nextProps){
-      if(nextProps.dataset.identifier !== this.props.dataset.identifier){
-        this.props.fetchPreviewData(nextProps.dataset.distributions);
-      }
-  }
-
-
-  visualisable(){
-    return !this.props.isFetching && !this.props.error && this.props.data;
-  }
-
+export default class DatasetPreview extends Component {
   render(){
     return (<div className='dataset-preview container'>
-                  {this.props.isFetching && <ProgressBar/>}
-                  {this.visualisable() && <DataPreviewer data={this.props.data} url= {this.props.url}/>}
-                  {(!this.props.isFetching && !this.props.data && !this.props.error) && <div>No preview available</div>}
-                  {this.props.error && <div> {this.props.error}</div>}
+                  <DataPreviewVega dataset={this.props.dataset}/>
+                  <DataPreviewMap dataset={this.props.dataset}/>
             </div>)
   }
 }
 
-function mapStateToProps(state) {
-  const dataset = state.record.dataset;
-  const previewData= state.previewData;
-  const data = previewData.previewData;
-  const isFetching = previewData.isFetching;
-  const error = previewData.error;
-  const url = previewData.url;
-  return {
-    data, isFetching, error, dataset, url
-  };
-}
-
-const  mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({
-    fetchPreviewData: fetchPreviewData,
-  }, dispatch);
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(DatasetPreview);
+DatasetPreview.propTypes = {
+  dataset: PropTypes.object
+};

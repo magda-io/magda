@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import TemporalAspectViewer from '../../UI/TemporalAspectViewer';
+import DatasetPreview from './DatasetPreview';
 import OverviewBox from '../../UI/OverviewBox';
 import MarkdownViewer from '../../UI/MarkdownViewer';
 import { Link } from 'react-router-dom';
@@ -27,6 +28,9 @@ class DatasetDetails extends Component{
                   <div className='dataset-details-source'>
                     <h3 className='section-heading'>Source</h3>
                     <MarkdownViewer markdown={source} truncate={false}/>
+                  </div>
+                  <div className='dataset-preview'>
+                    <DatasetPreview dataset={dataset}/>
                   </div>
                   <div className='dataset-details-source'>
                       <h3 className='clearfix'><span className='section-heading'>Data and APIs</span></h3>

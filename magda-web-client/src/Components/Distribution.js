@@ -1,4 +1,3 @@
-import DataPreviewer from '../Components/DataPreviewer';
 import type {ParsedDistribution} from '../helpers/record';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -14,6 +13,5 @@ export default function renderDistribution(distribution: ParsedDistribution, dat
            {distribution.license && (typeof distribution.license === 'string' ? distribution.license : (distribution.license.name ?  distribution.license.name : ''))}
            </div>
           </div>
-        {preview && <DataPreviewer distribution={distribution}/>}
         </div>
 }
