@@ -45,6 +45,22 @@ div{
   }
 }
 
+.mui-tabs__bar{
+  a, a:hover, a:focus{
+    border-bottom: 0;
+    color: #fff;
+  }
+  &>li.mui--is-active{
+    border-bottom: 2px solid $main;
+    &>a{
+      &:hover, &:focus{
+        color: #fff;
+      }
+      color: $main;
+    }
+  }
+}
+
 a{
   display: inline-block;
   -webkit-appearance: none;
