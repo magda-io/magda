@@ -127,8 +127,8 @@ export function updateProjectStatus(project: ProjectProps){
         credentials: "include"
       })
       .then(response => {
-        if(response.status === 200){
-          return response.json()
+        if(response.ok){
+          return response.json();
         }
         const error = {
           title: response.status,

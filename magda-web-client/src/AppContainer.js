@@ -33,13 +33,7 @@ import {
 import './AppContainer.css';
 
 class AppContainer extends React.Component {
-  state :{
-    isOpen: boolean,
-  }
-  constructor(props: {
-    location: Location,
-    children: React$Element<any>
-  }) {
+  constructor(props) {
     super(props);
     this.state = { isOpen: false};
   }
@@ -47,7 +41,7 @@ class AppContainer extends React.Component {
   componentWillMount(){
     this.props.requestWhoAmI()
   }
-  renderLink(link: string) {
+  renderLink(link) {
     const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
     if (!regex.test(link[1])) {
       return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;

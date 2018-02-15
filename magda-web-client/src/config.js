@@ -6,7 +6,14 @@ import Temporal from "./Components/SearchFacets/Temporal";
 
 const fallbackApiHost = "http://magda-dev.terria.io/";
 
-const serverConfig = window.magda_server_config || {};
+const serverConfig: {
+    authApiBaseUrl?: string,
+    baseUrl?: string,
+    discussionsApiBaseUrl?: string,
+    previewMapBaseUrl?: string,
+    registryApiBaseUrl?: string,
+    searchApiBaseUrl?: string,
+} = window.magda_server_config || {};
 
 const registryApiUrl =
   serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
