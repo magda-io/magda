@@ -29,7 +29,7 @@ class DatasetDetails extends Component{
                     <MarkdownViewer markdown={source} truncate={false}/>
                   </div>
                   <div className='dataset-details-source'>
-                      <h3 className='clearfix'><span className='section-heading'>Data and APIs</span><Button onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</Button></h3>
+                      <h3 className='clearfix'><span className='section-heading'>Data and APIs</span></h3>
                       <div className='clearfix'>{dataset.distributions.map(s=> renderDistribution(s, datasetId, this.state.showPreview))}</div>
                   </div>
                   <div className='dataset-details-temporal-coverage'>

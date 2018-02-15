@@ -8,6 +8,11 @@
 
   .nav-bar-right{
     float: right;
+    a{
+      display: inline-block;
+      margin-right: 10px;
+      border-bottom: 0;
+    }
   }
 
 
