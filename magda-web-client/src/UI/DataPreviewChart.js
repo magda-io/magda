@@ -8,6 +8,7 @@ import fetch from 'isomorphic-fetch';
 import {fetchPreviewData} from '../actions/previewDataActions';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import VegaLite from 'react-vega-lite';
 
 const VEGAMARK = ['area', 'bar', 'circle', 'line', 'point', 'rect', 'square', 'text', 'tick'];
 const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
@@ -15,6 +16,14 @@ const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
 class DataPreviewChart extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      chartType: 'line',
+      chartTitle: '',
+      Yaxis: '',
+      xAxis: '',
+      xScale: 'temporal',
+      yScale: 'quantitative'
+    }
   }
 
   componentWillMount(){
@@ -38,10 +47,27 @@ class DataPreviewChart extends Component {
   }
 
   renderChart(){
-    debugger
+    const previewData = this.props.data[this.props.distribution.identifier];
+    const spec = {
+      "height": 200,
+      "description": this.state.title,
+      "mark": this.state.chartType,
+      "encoding": {
+        "x": {"field": previewData.meta.chartFields.time[0], "type": this.state.xScale},
+        "y": {"field": previewData.meta.chartFields.numeric[0], "type": this.state.yScale}
+      }
+    }
+
+    const data ={
+      values: previewData.data
+    }
+
     return (<div className='mui-row'>
-              <div className='mui-col-sm-6'>Chart</div>
-              <div className='mui-col-sm-6'><ChartConfig/></div>
+              <div className='mui-col-sm-6'><VegaLite spec={spec} data={data}/></div>
+              <div className='mui-col-sm-6'><ChartConfig chartType={this.state.chartType}
+                                                         chartTitle={this.state.chartTitle}
+                                                         xScale={this.state.xScale}
+                                                         yScale={this.state.yScale}/></div>
             </div>)
   }
 
