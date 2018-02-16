@@ -1,7 +1,7 @@
 {
-    "name": "@magda/discussions-db",
+    "name": "@magda/session-store",
     "version": "0.0.33-0",
-    "description": "Magda auth's PostgreSQL database.",
+    "description": "The database storing session information.",
     "scripts": {
         "dev": "echo \"No dev mode available, use helm instead.\"",
         "docker-build-local":
@@ -9,11 +9,10 @@
         "docker-build-prod":
             "create-docker-context-for-node-component --build --push --tag auto"
     },
-    "author": "",
     "license": "Apache-2.0",
     "config": {
         "docker": {
-            "name": "data61/magda-discussions-db",
+            "name": "data61/magda-migrator-session-db",
             "include": "Dockerfile sql"
         }
     },
