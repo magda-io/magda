@@ -10,7 +10,7 @@ import DataPreviewGoogleViewer from '../UI/DataPreviewGoogleViewer';
 import DataPreviewJson from '../UI/DataPreviewJson';
 import DataPreviewTable from '../UI/DataPreviewTable';
 import DataPreviewTextBox from '../UI/DataPreviewTextBox';
-import DataPreviewVega from '../UI/DataPreviewVega';
+import DataPreviewChart from '../UI/DataPreviewChart';
 import DropDown from '../UI/DropDown';
 import MarkdownViewer from '../UI/MarkdownViewer';
 import News from '../UI/News';
@@ -110,7 +110,7 @@ storiesOf('Dataset preview', module)
     .add('DataPreviewJson', ()=><DataPreviewJson data={{data: {object : {test: 1}}}}/>)
     .add('DataPreviewTable', ()=><DataPreviewTable data={exampleData}/>)
     .add('DataPreviewTextBox', ()=><DataPreviewTextBox data={{data: 'some text'}}/>)
-    .add('DataPreviewVega', ()=><DataPreviewVega data={exampleData} logAction={action()}/>);
+    .add('DataPreviewChart', ()=><DataPreviewChart data={exampleData} logAction={action()}/>);
 
 
 storiesOf('API viewer', module)
