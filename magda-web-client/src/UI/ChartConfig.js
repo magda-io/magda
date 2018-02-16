@@ -11,10 +11,10 @@ const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
 export default class ChartConfig extends Component {
   renderTypeSelect(options, label){
       return (<Select name="input" label={label} defaultValue={options[0]}>
-          {options.map(o=><Option value={o} label={o}/>)}
+          {options.map(o=><Option key={o} value={o} label={o}/>)}
       </Select>)
   }
-  
+
   render(){
     return (<div className='chart-config'>
               <div className='chart-type'>{this.renderTypeSelect(VEGAMARK, 'Chart type')}</div>
