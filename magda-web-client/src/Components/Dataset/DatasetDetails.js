@@ -45,7 +45,7 @@ class DatasetDetails extends Component{
             <div className='record-details__sidebar mui-col-sm-4'>
                 <div className='tags'>
                   <h5>Tags</h5>
-                  {dataset.tags && dataset.tags.map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
+                  {dataset.tags && dataset.tags.map(t=><span className='badge'><Link key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link></span>)}
                 </div>
             </div>
             </div>
