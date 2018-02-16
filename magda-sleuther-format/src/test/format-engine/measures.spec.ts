@@ -53,9 +53,9 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.snee.com/xml/xslt/sample.doc"
             );
 
-            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject,null);
 
-            expect(ret.formats[0].format).to.eql(Formats.MSWORD);
+            expect(ret.formats[0]).to.eql(Formats.MSWORD);
         });
 
         it("returns a html page when supplied with a htm", function() {
@@ -63,9 +63,9 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.pj.com/whereispj.htm"
             );
 
-            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getDownloadMeasureResult(record, synonymObject,null);
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0]).to.eql(Formats.HTML);
         });
     });
 
@@ -75,9 +75,9 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.google.com/"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject, null);
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0]).to.eql(Formats.HTML);
         });
 
         it("returns a doc when supplied with a doc", function() {
@@ -85,9 +85,9 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.snee.com/xml/xslt/sample.doc"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject, null);
 
-            expect(ret.formats[0].format).to.eql(Formats.DOCX);
+            expect(ret.formats[0]).to.eql(Formats.DOCX);
         });
 
         it("returns a html page when supplied with a htm", function() {
@@ -95,9 +95,9 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "www.pj.com/whereispj.htm"
             );
 
-            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject);
+            const ret: MeasureResult = getExtensionMeasureResult(record, synonymObject, null);
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0]).to.eql(Formats.HTML);
         });
     });
 
@@ -115,13 +115,13 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "txT"
             );
 
-            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
-            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
-            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
+            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject, null);
+            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject, null);
+            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject, null);
 
-            expect(testPDF.formats[0].format).to.eql(Formats.PDF) &&
-            expect(testDOCX.formats[0].format).to.eql(Formats.DOCX) &&
-            expect(testTXT.formats[0].format).to.eql(Formats.TXT);
+            expect(testPDF.formats[0]).to.eql(Formats.PDF) &&
+            expect(testDOCX.formats[0]).to.eql(Formats.DOCX) &&
+            expect(testTXT.formats[0]).to.eql(Formats.TXT);
         });
 
         it("successfully separates &", function() {
@@ -135,18 +135,18 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "txT    & html"
             );
             
-            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
-            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
-            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
+            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject, null);
+            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject, null);
+            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject, null);
 
-            expect(testPDF.formats[0].format).to.eql(Formats.PDF) &&
-            expect(testPDF.formats[1].format).to.eql(Formats.DOCX) &&
+            expect(testPDF.formats[0]).to.eql(Formats.PDF) &&
+            expect(testPDF.formats[1]).to.eql(Formats.DOCX) &&
 
-            expect(testDOCX.formats[0].format).to.eql(Formats.DOCX) &&
-            expect(testDOCX.formats[1].format).to.eql(Formats.PDF) &&
+            expect(testDOCX.formats[0]).to.eql(Formats.DOCX) &&
+            expect(testDOCX.formats[1]).to.eql(Formats.PDF) &&
 
-            expect(testTXT.formats[0].format).to.eql(Formats.TXT) &&
-            expect(testTXT.formats[1].format).to.eql(Formats.HTML);
+            expect(testTXT.formats[0]).to.eql(Formats.TXT) &&
+            expect(testTXT.formats[1]).to.eql(Formats.HTML);
         });
 
         it("successfully chooses () formats", function() {
@@ -160,17 +160,17 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 "txT    (html)"
             );
 
-            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject);
-            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject);
-            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject);
+            let testPDF: MeasureResult = getDcatMeasureResult(recordPDF, synonymObject, null);
+            let testDOCX: MeasureResult = getDcatMeasureResult(recordDOCX, synonymObject, null);
+            let testTXT: MeasureResult = getDcatMeasureResult(recordTXT, synonymObject, null);
 
-            expect(testPDF.formats[0].format).to.eql(Formats.DOCX) &&
+            expect(testPDF.formats[0]).to.eql(Formats.DOCX) &&
             expect(testPDF.formats.length).to.equal(1) &&
 
-            expect(testDOCX.formats[0].format).to.eql(Formats.PDF) &&
+            expect(testDOCX.formats[0]).to.eql(Formats.PDF) &&
             expect(testDOCX.formats.length).to.equal(1) &&
 
-            expect(testTXT.formats[0].format).to.eql(Formats.HTML) &&
+            expect(testTXT.formats[0]).to.eql(Formats.HTML) &&
             expect(testTXT.formats.length).to.equal(1);
         });
     });

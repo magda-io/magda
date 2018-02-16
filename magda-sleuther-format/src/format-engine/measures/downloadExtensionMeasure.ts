@@ -7,7 +7,8 @@ import MeasureResult from "./MeasureResult";
 */
 export default function getMeasureResults(
     relatedDistribution: any,
-    synonymObject: any
+    synonymObject: any,
+    rating: number
 ): MeasureResult {
     const { downloadURL } = relatedDistribution.aspects[
         "dcat-distribution-strings"
@@ -43,13 +44,9 @@ export default function getMeasureResults(
 
     if (formatFromURL && formatFromURL.length > 0) {
         return {
-            formats: [
-                {
-                    format: getCommonFormat(formatFromURL[1], synonymObject),
-                    correctConfidenceLevel: 100
-                }
-            ],
-            distribution: relatedDistribution
+            formats: [getCommonFormat(formatFromURL[1], synonymObject)],
+            distribution: relatedDistribution,
+            measureRating: rating
         };
     } else {
         return null;

@@ -9,14 +9,12 @@ import getDcatMeasureResult from "./format-engine/measures/dcatFormatMeasure";
 import getExtensionMeasureResult from "./format-engine/measures/downloadExtensionMeasure";
 import getDownloadMeasureResult from "./format-engine/measures/downloadMeasure";
 
-import getDcatProcessedData from "./format-engine/measures/processed-functions/dcatProcessedFns";
-import getDownloadProcessedData from "./format-engine/measures/processed-functions/downloadProcessedFns";
-import getExtensionProcessedData from "./format-engine/measures/processed-functions/extensionProcessedFns";
-
-import getBestMeasureResult from "./format-engine/measureEvaluatorByHierarchy";
-import MeasureEvaluationSet from "./format-engine/measures/MeasureEvaluationSet";
+import getBestMeasureResult from "./format-engine/differenceEvaluator";
+import MeasureResult from "./format-engine/measures/MeasureResult";
 import MeasureEvalResult from "./format-engine/MeasureEvalResult";
+
 let synonymObject = require("./format-engine/synonyms.json");
+let formatVec = require("./format2vec.json");
 
 export default async function onRecordFound(
     record: Record,
@@ -31,36 +29,46 @@ export default async function onRecordFound(
     }
 
     // 2D array: 1 row per distribution
-    const retrievedEvalSets: MeasureEvaluationSet[][] = distributions.map(
+    const retrievedResults: MeasureResult[][] = distributions.map(
         function(distribution) {
-            const dcatSet: MeasureEvaluationSet = {
-                measureResult: getDcatMeasureResult(
-                    distribution,
-                    synonymObject
-                ),
-                getProcessedData: getDcatProcessedData
-            };
-            const extensionSet: MeasureEvaluationSet = {
-                measureResult: getExtensionMeasureResult(
-                    distribution,
-                    synonymObject
-                ),
-                getProcessedData: getExtensionProcessedData
-            };
-            const downloadSet: MeasureEvaluationSet = {
-                measureResult: getDownloadMeasureResult(
-                    distribution,
-                    synonymObject
-                ),
-                getProcessedData: getDownloadProcessedData
-            };
+            let results = [];
+            
+            const dcatResult: MeasureResult = getDcatMeasureResult(
+                distribution, 
+                synonymObject,
+                3
+            );
 
-            return [dcatSet, extensionSet, downloadSet];
+            const extensionResult: MeasureResult = getExtensionMeasureResult(
+                distribution, 
+                synonymObject,
+                2
+            );
+
+            const downloadResult: MeasureResult = getDownloadMeasureResult(
+                distribution,
+                synonymObject,
+                1
+            );
+
+            if(dcatResult){
+                results.push(dcatResult);
+            }
+
+            if(extensionResult){
+                results.push(extensionResult);
+            }
+
+            if(downloadResult){
+                results.push(downloadResult);
+            }
+
+            return results;
         }
     );
 
-    const bestFormatResults: MeasureEvalResult[] = retrievedEvalSets.map(
-        evalSetsPerDist => getBestMeasureResult(evalSetsPerDist)
+    const bestFormatResults: MeasureEvalResult[] = retrievedResults.map(
+        measureResultsPerDist => getBestMeasureResult(measureResultsPerDist, formatVec)
     );
 
     bestFormatResults.forEach(function(formatResult) {
@@ -78,8 +86,7 @@ export default async function onRecordFound(
             }
 
             recordFormatAspect(registry, formatResult.distribution, {
-                format: formatResult.format.format,
-                confidenceLevel: formatResult.absConfidenceLevel
+                format: formatResult.format
             });
         }
     });

@@ -1,6 +1,5 @@
-import { SelectedFormat } from "../format-engine/formats";
+import { Formats } from "../format-engine/formats";
 export default interface MeasureEvalResult {
-    format: SelectedFormat;
-    absConfidenceLevel: number;
+    format: Formats;
     distribution: any
 }

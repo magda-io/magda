@@ -1,0 +1,2094 @@
+{
+"categories":[{
+    "title": "document",
+    "formats":[{
+"name":"0",
+"description":"Plain Text Document, normally used for licensing",
+ "index": "0" },{
+"name":"1ST",
+"description":"Plain Text Document, normally preceded by the words  (README.1ST)",
+ "index": "0" },{
+"name":"600",
+"description":"Plain Text Document, used in UNZIP history log",
+ "index": "0" },{
+"name":"602",
+"description":"Text602 document",
+ "index": "0" },{
+"name":"ABW",
+"description":"AbiWord document",
+ "index": "0" },{
+"name":"ACL",
+"description":"MS Word AutoCorrect List",
+ "index": "0" },{
+"name":"AFP",
+"description":"Advanced Function Presentation",
+ "index": "0" },{
+"name":"IBc",
+"description":"Lostus Ami Pro",
+ "index": "0" },{
+"name":"AMI",
+"description":"American National Standards Institute (ANSI) text",
+ "index": "0" },{
+"name":"Amigaguide",
+"description":"ASCII text",
+ "index": "0" },{
+"name":"ANS",
+"description":"Ability Write",
+ "index": "0" },{
+"name":"ASC",
+"description":"Color Chat 1.0",
+ "index": "0" },{
+"name":"AWW",
+"description":"ASCII text as comma-separated values, used in spreadsheets and database management systems",
+ "index": "0" },{
+"name":"CCF",
+"description":"ClarisWorks-AppleWorks document",
+ "index": "0" },{
+"name":"CSV",
+"description":"DocBook XML sub-format",
+ "index": "0" },{
+"name":"CWK",
+"description":"Darwin Information Typing Architecture document",
+ "index": "0" },{
+"name":"DBK",
+"description":"Microsoft Word document",
+ "index": "0" },{
+"name":"DITA",
+"description":"Microsoft Word macro-enabled document",
+ "index": "0" },{
+"name":"DOC",
+"description":"Office Open XML document",
+ "index": "0" },{
+"name":"DOCM",
+"description":"Microsoft Word document template",
+ "index": "0" },{
+"name":"DOCX",
+"description":"Office Open XML text document template",
+ "index": "0" },{
+"name":"DOT",
+"description":"EGT Universal Document",
+ "index": "0" },{
+"name":"DOTX",
+"description":"EPUB open standard for e-books",
+ "index": "0" },{
+"name":"EGT",
+"description":"Reagency Systems easyOFFER document[4]",
+ "index": "0" },{
+"name":"EPUB",
+"description":"Final Draft",
+ "index": "0" },{
+"name":"EZW",
+"description":"Fielded Text Meta",
+ "index": "0" },{
+"name":"FDX",
+"description":"Fielded Text (Declared)",
+ "index": "0" },{
+"name":"FTM",
+"description":"Google Drive Document",
+ "index": "0" },{
+"name":"FTX",
+"description":"HyperText Markup Language (.html, .htm)",
+ "index": "0" },{
+"name":"GDOC",
+"description":"Haansoft (Hancom) Hangul Word Processor document",
+ "index": "0" },{
+"name":"HTML",
+"description":"Haansoft (Hancom) Hangul Word Processor Markup Language document",
+ "index": "0" },{
+"name":"HWP",
+"description":"Text log file",
+ "index": "0" },{
+"name":"HWPML",
+"description":"Lotus Word Pro",
+ "index": "0" },{
+"name":"LOG",
+"description":"metadata for Mobipocket documents",
+ "index": "0" },{
+"name":"LWP",
+"description":"Markdown text document",
+ "index": "0" },{
+"name":"MBP",
+"description":"Plain text document normally preceded by the word  (READ.ME)",
+ "index": "0" },{
+"name":"MD",
+"description":"Microsoft Word for Macintosh (versions 4.05.1)",
+ "index": "0" },{
+"name":"ME",
+"description":"Mobipocket documents",
+ "index": "0" },{
+"name":"MCW",
+"description":"Mathematica Notebook",
+ "index": "0" },{
+"name":"Mobi",
+"description":"Mathematica Player Notebook",
+ "index": "0" },{
+"name":"NB",
+"description":"학교생활기록부 작성 프로그램 (Student Record Writing Program) Document",
+ "index": "0" },{
+"name":"NBP",
+"description":"OpenDocument master document",
+ "index": "0" },{
+"name":"NEIS",
+"description":"ODOC - Synology Drive Office Document",
+ "index": "0" },{
+"name":"ODM",
+"description":"OpenDocument text document",
+ "index": "0" },{
+"name":"ODT",
+"description":"OSHEET - Synology Drive Office Spreadsheet",
+ "index": "0" },{
+"name":"OTT",
+"description":"OpenDocument text document template",
+ "index": "0" },{
+"name":"OMM",
+"description":"OmmWriter text document",
+ "index": "0" },{
+"name":"PAGES",
+"description":"Apple Pages document",
+ "index": "0" },{
+"name":"PAP",
+"description":"Papyrus word processor document",
+ "index": "0" },{
+"name":"PDAX",
+"description":"Portable Document Archive (PDA) document index file",
+ "index": "0" },{
+"name":"PDF",
+"description":"Portable Document Format",
+ "index": "0" },{
+"name":"QUOX",
+"description":"Question Object File Format for Quobject Designer or Quobject Explorer",
+ "index": "0" },{
+"name":"Radix-64",
+"description":"Rich Text document",
+ "index": "0" },{
+"name":"RTF",
+"description":"Crystal Reports",
+ "index": "0" },{
+"name":"RPT",
+"description":"StarWriter text document, used in earlier versions of StarOffice",
+ "index": "0" },{
+"name":"SDW",
+"description":"Shuttle Document",
+ "index": "0" },{
+"name":"SE",
+"description":"OpenOffice.org XML (obsolete) text document template",
+ "index": "0" },{
+"name":"STW",
+"description":"OpenOffice.org XML (obsolete) text document",
+ "index": "0" },{
+"name":"Sxw",
+"description":"ASCII or Unicode plain text file",
+ "index": "0" },{
+"name":"TeX",
+"description":"Uniform Office Format",
+ "index": "0" },{
+"name":"TeX",
+"description":"Unique Object Markup Language",
+ "index": "0" },{
+"name":"INFO",
+"description":"Revoware VIA Document Project File",
+ "index": "0" },{
+"name":"Texinfo",
+"description":"WordPerfect document",
+ "index": "0" },{
+"name":"Troff",
+"description":"Microsoft Works document",
+ "index": "0" },{
+"name":"TXT",
+"description":"Microsoft Works document template",
+ "index": "0" },{
+"name":"UOF",
+"description":"WordIt! document",
+ "index": "0" },{
+"name":"UOML",
+"description":"ThinkFree Write",
+ "index": "0" },{
+"name":"VIA",
+"description":"Microsoft Write document",
+ "index": "0" },{
+"name":"WPD",
+"description":"XHTML (xhtml, xht)",
+ "index": "0" },{
+"name":"WPS",
+"description":"eXtensible HyperText Markup Language",
+ "index": "0" },{
+"name":"WPT",
+"description":"eXtensible Markup Language",
+ "index": "0" },{
+"name":"WRD",
+"description":"Open XML Paper Specification",
+ "index": "0" },{
+"name":"WRF",
+"description":"undefined",
+ "index": "0" },{
+"name":"WRI",
+"description":"undefined",
+ "index": "0" },{
+"name":"XML",
+"description":"undefined",
+ "index": "0" },{
+"name":"XPS",
+"description":"undefined",
+ "index": "0" }]
+},{
+    "title": "archive",
+ "formats": [{
+"name":".?Q?",
+"description":"files compressed by the SQ program",
+ "index": "0" },{
+"name":"7z",
+"description":"7-Zip compressed file",
+ "index": "0" },{
+"name":"AAC",
+"description":"Advanced Audio Coding",
+ "index": "0" },{
+"name":"ace",
+"description":"ACE compressed file",
+ "index": "0" },{
+"name":"ALZ",
+"description":"ALZip compressed file",
+ "index": "0" },{
+"name":"APK",
+"description":"Applications installable on Android",
+ "index": "0" },{
+"name":"AT3",
+"description":"Sony's UMD data compression",
+ "index": "0" },{
+"name":".bke",
+"description":"BackupEarth.com data compression",
+ "index": "0" },{
+"name":"ARC",
+"description":"pre-Zip data compression",
+ "index": "0" },{
+"name":"ARJ",
+"description":"ARJ compressed file",
+ "index": "0" },{
+"name":"B",
+"description":"ASS (also SAS)",
+ "index": "0" },{
+"name":"BA",
+"description":"a subtitles file created by Aegisub, a video typesetting application (also a Halo game engine file)",
+ "index": "0" },{
+"name":"big",
+"description":"(B file) Similar to .a, but a little less compressed...",
+ "index": "0" },{
+"name":"BIN",
+"description":"Scifer Archive (.ba), Scifer External Archive Type",
+ "index": "0" },{
+"name":"bjsn",
+"description":"Special file compression format used by Electronic Arts to compress the data for many of EA's games",
+ "index": "0" },{
+"name":"bzip2",
+"description":"compressed archive, can be read and used by CD-ROMs and Java, extractable by 7-zip and WINRAR",
+ "index": "0" },{
+"name":"bld",
+"description":"Used to store The Escapists saves on Android.",
+ "index": "0" },{
+"name":"c4",
+"description":"BKF (.bkf)",
+ "index": "0" },{
+"name":"cab",
+"description":"Microsoft backup created by NTBackup.c",
+ "index": "0" },{
+"name":"cals",
+"description":".bz2) ",
+ "index": "0" },{
+"name":"DAA",
+"description":"Skyscraper Simulator Building",
+ "index": "0" },{
+"name":"deb",
+"description":"JEDMICS image files, a DOD system",
+ "index": "0" },{
+"name":"DMG",
+"description":"Microsoft Cabinet",
+ "index": "0" },{
+"name":"DDZ",
+"description":"JEDMICS image files, a DOD system",
+ "index": "0" },{
+"name":"DPE",
+"description":"CLIPFLAIR (.clipflair, .clipflair.zip)",
+ "index": "0" },{
+"name":".egg",
+"description":"ClipFlair Studio [1] component saved state file (contains component options in XML, extra/attached files and nested components' state in child .clipflair.zip files",
+ "index": "0" },{
+"name":"jar",
+"description":"activities are also components and can be nested at any depth)",
+ "index": "0" },{
+"name":"LBR",
+"description":"CPT, SEA",
+ "index": "0" },{
+"name":"LQR",
+"description":"Compact Pro (Macintosh)",
+ "index": "0" },{
+"name":"lzo",
+"description":"Closed-format, Windows-only compressed disk image",
+ "index": "0" },{
+"name":"lzma",
+"description":"Debian install package",
+ "index": "0" },{
+"name":"LZX",
+"description":"an Apple compressed/encrypted format",
+ "index": "0" },{
+"name":"algorithm)",
+"description":"a file which can only be used by the \"daydreamer engine\" created by \"fever-dreamer\", a program similar to RAGS, it's mainly used to make somewhat short games.",
+ "index": "0" },{
+"name":"MacBinary",
+"description":"Package of AVE documents made with Aquafadas digital publishing tools.",
+ "index": "0" },{
+"name":"OSZ",
+"description":"Alzip Egg Edition compressed file",
+ "index": "0" },{
+"name":"PAK",
+"description":"EGT (.egt)",
+ "index": "0" },{
+"name":"Parchive",
+"description":"EGT Universal Document also used to create compressed cabinet files replaces .ecab",
+ "index": "0" },{
+"name":"RPM",
+"description":"ECAB (.ECAB, .ezip)",
+ "index": "0" },{
+"name":"SEN",
+"description":"EGT Compressed Folder used in advanced systems to compress entire system folders, replaced by EGT Universal Document",
+ "index": "0" },{
+"name":"SKB",
+"description":"ESS (.ess)",
+ "index": "0" },{
+"name":"SZS",
+"description":"EGT SmartSense File, detects files compressed using the EGT compression system.",
+ "index": "0" },{
+"name":"TAR",
+"description":"Flipchart file (.flipchart)",
+ "index": "0" },{
+"name":"UHA",
+"description":"Used in Promethean ActivInspire Flipchart Software.",
+ "index": "0" },{
+"name":"VIV",
+"description":"GHO (.gho, .ghs)",
+ "index": "0" },{
+"name":"VOL",
+"description":"Norton Ghost",
+ "index": "0" },{
+"name":"VSA",
+"description":"GIF (.gif)",
+ "index": "0" },{
+"name":"WAX",
+"description":"Graphics Interchange Format",
+ "index": "0" },{
+"name":"Wavexpress",
+"description":"gzip (.gz)",
+ "index": "0" },{
+"name":"Z",
+"description":"Compressed file",
+ "index": "0" },{
+"name":"zoo",
+"description":"IPG (.ipg)",
+ "index": "0" },{
+"name":"zip",
+"description":"Format in which Apple Inc. packages their iPod games. can be extracted through Winrar",
+ "index": "0" }]},{
+     "title": "prma",
+     "formats": [{
+"name":"ISO",
+"description":"The generic format for most optical media, including CD-ROM, DVD-ROM, Blu-ray Disc, HD DVD and UMD.",
+ "index": "0" },{
+"name":"NRG",
+"description":"The proprietary optical media archive format used by Nero applications.",
+ "index": "0" },{
+"name":"IMG",
+"description":"For archiving DOS formatted floppy disks, larger optical media, and hard disk drives.",
+ "index": "0" },{
+"name":"ADF",
+"description":"Amiga Disk Format, for archiving Amiga floppy disks",
+ "index": "0" },{
+"name":"ADZ",
+"description":"The GZip-compressed version of ADF.",
+ "index": "0" },{
+"name":"DMS",
+"description":"Disk Masher System, a disk-archiving system native to the Amiga.",
+ "index": "0" },{
+"name":"DSK",
+"description":"For archiving floppy disks from a number of other platforms, including the ZX Spectrum and Amstrad CPC.",
+ "index": "0" },{
+"name":"D64",
+"description":"An archive of a Commodore 64 floppy disk.",
+ "index": "0" },{
+"name":"SDI",
+"description":"System Deployment Image, used for archiving and providing \"virtual disk\" functionality.",
+ "index": "0" },{
+"name":"MDS",
+"description":"DAEMON tools native disc image format used for making images from optical CD-ROM, DVD-ROM, HD DVD or Blu-ray Disc. It comes together with MDF file and can be mounted with DAEMON Tools.",
+ "index": "0" },{
+"name":"MDX",
+"description":"New DAEMON Tools format that allows getting one MDX disc image file instead of two (MDF and MDS).",
+ "index": "0" },{
+"name":"DMG",
+"description":"Macintosh disk image files",
+ "index": "0" },{
+"name":"CDI",
+"description":"(MPEG-1 is found in a .DAT file on a video CD.)",
+ "index": "0" },{
+"name":"CUE",
+"description":"DiscJuggler image file",
+ "index": "0" },{
+"name":"CIF",
+"description":"CDRWrite CUE image file",
+ "index": "0" },{
+"name":"C2D",
+"description":"Easy CD Creator .cif format",
+ "index": "0" },{
+"name":"DAA",
+"description":"Roxio-WinOnCD .c2d format",
+ "index": "0" },{
+"name":"B6T",
+"description":"PowerISO .daa format",
+ "index": "0" }]},{
+     "title": "cad",
+     "formats": [{
+"name":"3DXML",
+"description":"Dassault Systemes graphic representation",
+ "index": "0" },{
+"name":"3MF",
+"description":"Microsoft 3D Manufacturing Format[2]",
+ "index": "0" },{
+"name":"ACP",
+"description":"VA Software VA",
+ "index": "0" },{
+"name":"AMF",
+"description":"Virtual Architecture CAD file",
+ "index": "0" },{
+"name":"AEC",
+"description":"Additive Manufacturing File Format",
+ "index": "0" },{
+"name":"AR",
+"description":"DataCAD drawing format[3]",
+ "index": "0" },{
+"name":"ART",
+"description":"Ashlar-Vellum Argon",
+ "index": "0" },{
+"name":"ASC",
+"description":"3D Modeling",
+ "index": "0" },{
+"name":"ASM",
+"description":"ArtCAM model",
+ "index": "0" },{
+"name":"BREP",
+"description":"BRL-CAD Geometry File (old ASCII format)",
+ "index": "0" },{
+"name":"C3D",
+"description":"Solidedge Assembly, Pro/ENGINEER Assembly",
+ "index": "0" },{
+"name":"CCC",
+"description":"BIN, BIM",
+ "index": "0" },{
+"name":"CCM",
+"description":"Data Design System DDS-CAD",
+ "index": "0" },{
+"name":"CCS",
+"description":"Open CASCADE 3D model (shape)",
+ "index": "0" },{
+"name":"CAD",
+"description":"C3D Toolkit File Format",
+ "index": "0" },{
+"name":"CadStd",
+"description":"CopyCAD Curves",
+ "index": "0" },{
+"name":"CATDrawing",
+"description":"CopyCAD Model",
+ "index": "0" },{
+"name":"CATPart",
+"description":"CopyCAD Session",
+ "index": "0" },{
+"name":"CATProduct",
+"description":"CATIA V5 Drawing document",
+ "index": "0" },{
+"name":"CATProcess",
+"description":"CATIA V5 Part document",
+ "index": "0" },{
+"name":"cgr",
+"description":"CATIA V5 Assembly document",
+ "index": "0" },{
+"name":"ckd",
+"description":"CATIA V5 Manufacturing document",
+ "index": "0" },{
+"name":"ckt",
+"description":"CATIA V5 graphic representation file",
+ "index": "0" },{
+"name":"CO",
+"description":"KeyCreator CAD Modeling",
+ "index": "0" },{
+"name":"DRW",
+"description":"KeyCreator CAD Modeling",
+ "index": "0" },{
+"name":"DFT",
+"description":"Ashlar-Vellum Cobalt",
+ "index": "0" },{
+"name":"DGN",
+"description":"parametric drafting and 3D modeling",
+ "index": "0" },{
+"name":"DGK",
+"description":"Caddie Early version of Caddie drawing",
+ "index": "0" },{
+"name":"DMT",
+"description":"Prior to Caddie changing to DWG",
+ "index": "0" },{
+"name":"DXF",
+"description":"Solidedge Draft",
+ "index": "0" },{
+"name":"DWB",
+"description":"MicroStation design file",
+ "index": "0" },{
+"name":"DWF",
+"description":"Delcam Geometry",
+ "index": "0" },{
+"name":"DWG",
+"description":"Delcam Machining Triangles",
+ "index": "0" },{
+"name":"EASM",
+"description":"ASCII Drawing Interchange file format, AutoCAD",
+ "index": "0" },{
+"name":"EDRW",
+"description":"VariCAD drawing file",
+ "index": "0" },{
+"name":"EMB",
+"description":"Autodesk's Web Design Format; AutoCAD & Revit can publish to this format; similar in concept to PDF files; Autodesk Design Review is the reader",
+ "index": "0" },{
+"name":"EPRT",
+"description":"Popular file format for Computer Aided Drafting applications, notably AutoCAD, Open Design Alliance applications, and Autodesk Inventor Drawing files",
+ "index": "0" },{
+"name":"EscPcb",
+"description":"SolidWorks eDrawings assembly file",
+ "index": "0" },{
+"name":"EscSch",
+"description":"eDrawings drawing file",
+ "index": "0" },{
+"name":"ESW",
+"description":"Wilcom ES Designer Embroidery CAD file",
+ "index": "0" },{
+"name":"EXCELLON",
+"description":"eDrawings part file",
+ "index": "0" },{
+"name":"EXP",
+"description":"\"esCAD pcb\" EsCAD.pngEsCAD pcb.png data file by Electro-System Japan.pngElectro-System (Japan)",
+ "index": "0" },{
+"name":"F3D",
+"description":"\"esCAD sch\" EsCAD.pngEsCAD sch.png data file by Electro-System Japan.pngElectro-System (Japan)",
+ "index": "0" },{
+"name":"FCStd",
+"description":"AGTEK format",
+ "index": "0" },{
+"name":"FM",
+"description":"Excellon file",
+ "index": "0" },{
+"name":"FMZ",
+"description":"Drawing Express format",
+ "index": "0" },{
+"name":"G",
+"description":"Autodesk Fusion 360 project file",
+ "index": "0" },{
+"name":"GBR",
+"description":"Native file format of FreeCAD CAD/CAM package",
+ "index": "0" },{
+"name":"GLM",
+"description":"FeatureCAM Part File",
+ "index": "0" },{
+"name":"GRB",
+"description":"FormZ Project file",
+ "index": "0" },{
+"name":"GTC",
+"description":"BRL-CAD Geometry File",
+ "index": "0" },{
+"name":"IAM",
+"description":"Gerber file",
+ "index": "0" },{
+"name":"ICD",
+"description":"KernelCAD model",
+ "index": "0" },{
+"name":"IDW",
+"description":"T-FLEX CAD File",
+ "index": "0" },{
+"name":"IFC",
+"description":"GRAITEC Advance format",
+ "index": "0" },{
+"name":"IGES",
+"description":"Autodesk Inventor Assembly file",
+ "index": "0" },{
+"name":"Intergraph",
+"description":"IronCAD 2D CAD file",
+ "index": "0" },{
+"name":"IPN",
+"description":"Autodesk Inventor Drawing file",
+ "index": "0" },{
+"name":"IPT",
+"description":"buildingSMART for sharing AEC and FM data",
+ "index": "0" },{
+"name":"JT",
+"description":"Initial Graphics Exchange Specification",
+ "index": "0" },{
+"name":"MCD",
+"description":"Intergraph Standard File Formats",
+ "index": "0" },{
+"name":"model",
+"description":"Autodesk Inventor Presentation file",
+ "index": "0" },{
+"name":"OCD",
+"description":"Autodesk Inventor Part file",
+ "index": "0" },{
+"name":"PAR",
+"description":"Jupiter Tesselation",
+ "index": "0" },{
+"name":"PIPE",
+"description":"Monu-CAD (Monument/Headstone Drawing file)",
+ "index": "0" },{
+"name":"PLN",
+"description":"CATIA V4 part document",
+ "index": "0" },{
+"name":"PRT",
+"description":"Orienteering Computer Aided Design (OCAD) file",
+ "index": "0" },{
+"name":"PSM",
+"description":"Solidedge Part",
+ "index": "0" },{
+"name":"PSMODEL",
+"description":"PIPE-FLO Professional Piping system design file",
+ "index": "0" },{
+"name":"PWI",
+"description":"ArchiCad project",
+ "index": "0" },{
+"name":"PYT",
+"description":"NX (recently known as Unigraphics), Pro/ENGINEER Part, CADKEY Part",
+ "index": "0" },{
+"name":"SKP",
+"description":"Solidedge Sheet",
+ "index": "0" },{
+"name":"RLF",
+"description":"PowerSHAPE Model",
+ "index": "0" },{
+"name":"RVM",
+"description":"PowerINSPECT File",
+ "index": "0" },{
+"name":"RVT",
+"description":"Pythagoras File",
+ "index": "0" },{
+"name":"RFA",
+"description":"SketchUp Model",
+ "index": "0" },{
+"name":"S12",
+"description":"ArtCAM Relief",
+ "index": "0" },{
+"name":"SCAD",
+"description":"AVEVA PDMS 3D Review model",
+ "index": "0" },{
+"name":"SCDOC",
+"description":"Autodesk Revit project files",
+ "index": "0" },{
+"name":"SLDASM",
+"description":"Autodesk Revit family files",
+ "index": "0" },{
+"name":"SLDDRW",
+"description":"Spirit file, by Softtech",
+ "index": "0" },{
+"name":"SLDPRT",
+"description":"OpenSCAD 3D part model",
+ "index": "0" },{
+"name":"dotXSI",
+"description":"SpaceClaim 3D Part/Assembly",
+ "index": "0" },{
+"name":"STEP",
+"description":"SolidWorks Assembly drawing",
+ "index": "0" },{
+"name":"STL",
+"description":"SolidWorks 2D drawing",
+ "index": "0" },{
+"name":"TCT",
+"description":"SolidWorks 3D part model",
+ "index": "0" },{
+"name":"TCW",
+"description":"For Softimage",
+ "index": "0" },{
+"name":"UNV",
+"description":"Standard for the Exchange of Product model data",
+ "index": "0" },{
+"name":"VC6",
+"description":"Stereo Lithographic data format used by various CAD systems and stereo lithographic printing machines.",
+ "index": "0" },{
+"name":"VLM",
+"description":"TurboCAD drawing template",
+ "index": "0" },{
+"name":"VS",
+"description":"TurboCAD for Windows 2D and 3D drawing",
+ "index": "0" },{
+"name":"WRL",
+"description":"I-DEAS I-DEAS (Integrated Design and Engineering Analysis Software)",
+ "index": "0" },{
+"name":"X_B",
+"description":"Ashlar-Vellum Graphite",
+ "index": "0" },{
+"name":"X_T",
+"description":"2D and 3D drafting",
+ "index": "0" },{
+"name":"Parasolids",
+"description":"Ashlar-Vellum Vellum, Vellum 2D, Vellum Draft, Vellum 3D, DrawingBoard",
+ "index": "0" },{
+"name":"XE",
+"description":"Ashlar-Vellum Vellum Solids",
+ "index": "0" }]},{
+     "title": "eda",
+     "formats": [{
+"name":"BRD",
+"description":"Board file for EAGLE Layout Editor, a commercial PCB design tool",
+ "index": "0" },{
+"name":"BSDL",
+"description":"Description language for testing through JTAG",
+ "index": "0" },{
+"name":"CDL",
+"description":"Transistor-level netlist format for IC design",
+ "index": "0" },{
+"name":"CPF",
+"description":"Power-domain specification in system-on-a-chip (SoC) implementation (see also UPF)",
+ "index": "0" },{
+"name":"DEF",
+"description":"Gate-level layout",
+ "index": "0" },{
+"name":"DSPF",
+"description":"Detailed Standard Parasitic Format, Analog-level parasitics of interconnections in IC design",
+ "index": "0" },{
+"name":"EDIF",
+"description":"Vendor neutral gate-level netlist format",
+ "index": "0" },{
+"name":"FSDB",
+"description":"Analog waveform format (see also Waveform viewer)",
+ "index": "0" },{
+"name":"GDSII",
+"description":"Format for PCB and layout of integrated circuits",
+ "index": "0" },{
+"name":"HEX",
+"description":"ASCII-coded binary format for memory dumps",
+ "index": "0" },{
+"name":"LEF",
+"description":"Library Exchange Format, physical abstract of cells for IC design",
+ "index": "0" },{
+"name":"LIB",
+"description":"Library modeling (function, timing) format",
+ "index": "0" },{
+"name":"MS12",
+"description":"NI Multisim file",
+ "index": "0" },{
+"name":"OASIS",
+"description":"Open Artwork System Interchange Standard",
+ "index": "0" },{
+"name":"OpenAccess",
+"description":"Design database format with APIs",
+ "index": "0" },{
+"name":"SDC",
+"description":"Synopsys Design Constraints, format for synthesis constraints",
+ "index": "0" },{
+"name":"SDF",
+"description":"Standard for gate-level timings",
+ "index": "0" },{
+"name":"SPEF",
+"description":"Standard format for parasitics of interconnections in IC design",
+ "index": "0" },{
+"name":"STIL",
+"description":"SPI, CIR",
+ "index": "0" },{
+"name":"SV",
+"description":"SPICE Netlist, device-level netlist and commands for simulation",
+ "index": "0" },{
+"name":"S*P",
+"description":"SREC, S19",
+ "index": "0" },{
+"name":"UPF",
+"description":"S-record, ASCII-coded format for memory dumps",
+ "index": "0" },{
+"name":"V",
+"description":"Standard Test Interface Language, IEEE1450-1999 standard for Test Patterns for IC",
+ "index": "0" },{
+"name":"VCD",
+"description":"SystemVerilog source file",
+ "index": "0" },{
+"name":"WGL",
+"description":"Touchstone/EEsof Scattering parameter data file",
+ "index": "0" }]},{
+     "title": "database",
+     "formats": [
+    {
+"name":"4DB",
+"description":"4D database Structure file",
+ "index": "0" },{
+"name":"4DD",
+"description":"4D database Data file",
+ "index": "0" },{
+"name":"4DIndy",
+"description":"4D database Structure Index file",
+ "index": "0" },{
+"name":"4DIndx",
+"description":"4D database Data Index file",
+ "index": "0" },{
+"name":"4DR",
+"description":"4D database Data resource file (in old 4D versions)",
+ "index": "0" },{
+"name":"ACCDB",
+"description":"Microsoft Database (Microsoft Office Access 2007 and later)",
+ "index": "0" },{
+"name":"ACCDE",
+"description":"Compiled Microsoft Database (Microsoft Office Access 2007 and later)",
+ "index": "0" },{
+"name":"ADT",
+"description":"Sybase Advantage Database Server (ADS)",
+ "index": "0" },{
+"name":"APR",
+"description":"Lotus Approach data entry & reports",
+ "index": "0" },{
+"name":"BOX",
+"description":"Lotus Notes Post Office mail routing database",
+ "index": "0" },{
+"name":"CHML",
+"description":"Krasbit Technologies Encrypted database file for 1 click integration between contact management software and the chameleon(tm) line of imaging workflow solutions",
+ "index": "0" },{
+"name":"DAF",
+"description":"Digital Anchor data file",
+ "index": "0" },{
+"name":"DAT",
+"description":"DOS Basic",
+ "index": "0" },{
+"name":"DAT",
+"description":"Intersystems Caché database file",
+ "index": "0" },{
+"name":"DB",
+"description":"db/dbase II,III,IV and V, Clipper, Harbour/xHarbour, Fox/FoxPro, Oracle",
+ "index": "0" },{
+"name":"Paradox",
+"description":"EGT Universal Document, used to compress sql databases to smaller files, may contain original EGT database style.",
+ "index": "0" },{
+"name":"DB",
+"description":"EGT SmartSense is a database of files and its compression style. Specific to EGT SmartSense",
+ "index": "0" },{
+"name":"SQLite",
+"description":"Enterprise Architect Project",
+ "index": "0" },{
+"name":"DBF",
+"description":"Firebird Databases",
+ "index": "0" },{
+"name":"EGT",
+"description":"Navision database file",
+ "index": "0" },{
+"name":"ESS",
+"description":"FP, FP3, FP5, and FP7",
+ "index": "0" },{
+"name":"EAP",
+"description":"FileMaker Pro",
+ "index": "0" },{
+"name":"FDB",
+"description":"MySQL table definition",
+ "index": "0" },{
+"name":"FDB",
+"description":"Borland InterBase Databases",
+ "index": "0" },{
+"name":"FRM",
+"description":"Google Drive Fusion Table",
+ "index": "0" },{
+"name":"GDB",
+"description":"Kexi database file (SQLite-based)",
+ "index": "0" },{
+"name":"GTABLE",
+"description":"shortcut to a database connection for a Kexi databases on a server",
+ "index": "0" },{
+"name":"KEXI",
+"description":"shortcut to a Kexi database",
+ "index": "0" },{
+"name":"KEXIC",
+"description":"Temporary database file, only existing when database is open",
+ "index": "0" },{
+"name":"KEXIS",
+"description":"Add-in file for Microsoft Access",
+ "index": "0" },{
+"name":"LDB",
+"description":"Microsoft Access database",
+ "index": "0" },{
+"name":"MDA",
+"description":"Microsoft Access project (used for accessing databases on a server)",
+ "index": "0" },{
+"name":"MDB",
+"description":"Compiled Microsoft Database (Access)",
+ "index": "0" },{
+"name":"ADP",
+"description":"Microsoft SQL Server Database",
+ "index": "0" },{
+"name":"MDE",
+"description":"MySQL MyISAM table data",
+ "index": "0" },{
+"name":"MDF",
+"description":"MySQL MyISAM table index",
+ "index": "0" },{
+"name":"MYD",
+"description":"Lotus Notes configuration file",
+ "index": "0" },{
+"name":"MYI",
+"description":"Lotus Notes database",
+ "index": "0" },{
+"name":"NCF",
+"description":"Lotus Notes database design template",
+ "index": "0" },{
+"name":"NSF",
+"description":"QW Page NewViews object oriented accounting database",
+ "index": "0" },{
+"name":"NTF",
+"description":"LibreOffice Base or OpenOffice Base database",
+ "index": "0" },{
+"name":"NV2",
+"description":"Oracle tablespace files sometimes get this extension (also used for configuration files)",
+ "index": "0" },{
+"name":"ODB",
+"description":"WinIM Contact file",
+ "index": "0" },{
+"name":"ORA",
+"description":"Palm OS Database",
+ "index": "0" },{
+"name":"PCONTACT",
+"description":"Portable Database Image",
+ "index": "0" },{
+"name":"PDB",
+"description":"Corel Paradox database management",
+ "index": "0" },{
+"name":"PDI",
+"description":"Palm OS resource database",
+ "index": "0" },{
+"name":"PDX",
+"description":"bundled SQL queries",
+ "index": "0" },{
+"name":"PRC",
+"description":"GNU recutils database",
+ "index": "0" },{
+"name":"SQL",
+"description":"Sage Retrieve 4GL data file",
+ "index": "0" },{
+"name":"REC",
+"description":"Sage Retrieve 4GL index file",
+ "index": "0" },{
+"name":"REL",
+"description":"StarOffice's StarBase",
+ "index": "0" },{
+"name":"RIN",
+"description":"SQL Compact Database file",
+ "index": "0" },{
+"name":"SDB",
+"description":"Universal Data Link",
+ "index": "0" },{
+"name":"SDF",
+"description":"Wakanda (software) database Data file",
+ "index": "0" },{
+"name":"sqlite",
+"description":"Wakanda (software) database Index file",
+ "index": "0" },{
+"name":"SQLite",
+"description":"Wakanda (software) database Model file",
+ "index": "0" },{
+"name":"UDL",
+"description":"Wakanda (software) database Journal file",
+ "index": "0" },{
+"name":"waData",
+"description":"Microsoft Works Database",
+ "index": "0" },{
+"name":"waIndx",
+"description":"Windows Media Database file",
+ "index": "0" },{
+"name":"waModel",
+"description":"The CurrentDatabase_360.wmdb file can contain file name, file properties, music, video, photo and playlist information.",
+ "index": "0" },{
+"name":"waJournal",
+"description":"undefined",
+ "index": "0" },{
+"name":"WDB",
+"description":"undefined",
+ "index": "0" },{
+"name":"WMDB",
+"description":"undefined",
+ "index": "0" }
+ ]},{
+     "title": "desktop-publishing",
+     "formats": [{
+"name":"AI",
+"description":"Adobe Illustrator",
+ "index": "0" },{
+"name":"Aquafadas",
+"description":"AVE / ZAVE",
+ "index": "0" },{
+"name":"CDR",
+"description":"CHP / pub / STY / CAP / CIF / VGR / FRM",
+ "index": "0" },{
+"name":"CorelDRAW",
+"description":"Ventura Publisher",
+ "index": "0" },{
+"name":"CPT",
+"description":"Xerox (DOS / GEM)",
+ "index": "0" },{
+"name":"DTP",
+"description":"Corel Photo-Paint",
+ "index": "0" },{
+"name":"GDRAW",
+"description":"Greenstreet Publisher, GST PressWorks",
+ "index": "0" },{
+"name":"ILDOC",
+"description":"Google Drive Drawing",
+ "index": "0" },{
+"name":"INDD",
+"description":"Broadvision Quicksilver document",
+ "index": "0" },{
+"name":"PSD",
+"description":"Adobe InDesign",
+ "index": "0" },{
+"name":"MCF",
+"description":"Adobe Photoshop",
+ "index": "0" },{
+"name":"PDF",
+"description":"FotoInsight Designer",
+ "index": "0" },{
+"name":"PMD",
+"description":"Adobe Acrobat or Adobe Reader",
+ "index": "0" },{
+"name":"PPP",
+"description":"Adobe PageMaker",
+ "index": "0" },{
+"name":"PUB",
+"description":"Serif PagePlus",
+ "index": "0" },{
+"name":"QXD",
+"description":"Microsoft Publisher",
+ "index": "0" },{
+"name":"QuarkXPress",
+"description":"Adobe FrameMaker",
+ "index": "0" },{
+"name":"FM",
+"description":"SLA / SCD",
+ "index": "0" },{
+"name":"Scribus",
+"description":"Windows Live Movie Maker project file",
+ "index": "0" },{
+"name":"WLMP",
+"description":"undefined",
+ "index": "0" }]},{
+     "title": "financial-records",
+     "formats": [
+    {
+"name":"MYO",
+"description":"MYOB Limited (Windows) File",
+ "index": "0" },{
+"name":"MYOB",
+"description":"MYOB Limited (Mac) File",
+ "index": "0" },{
+"name":"TAX",
+"description":"TurboTax File",
+ "index": "0" },{
+"name":"YNAB",
+"description":"You Need a Budget (YNAB) File",
+ "index": "0" }
+ ]},{
+     "title": "geographic-information-system",
+     "formats": [{
+"name":"ASC",
+"description":"ASCII point of interest (POI) text file",
+ "index": "0" },{
+"name":"APR",
+"description":"ESRI ArcView 3.3 and earlier project file",
+ "index": "0" },{
+"name":"DEM",
+"description":"USGS DEM file format",
+ "index": "0" },{
+"name":"E00",
+"description":"ARC/INFO interchange file format",
+ "index": "0" },{
+"name":"GeoTIFF",
+"description":"GeoJSON Geographically located data in object notation",
+ "index": "0" },{
+"name":"GML",
+"description":"Geographically located raster data",
+ "index": "0" },{
+"name":"GPX",
+"description":"Geography Markup Language file[5]",
+ "index": "0" },{
+"name":"ITN",
+"description":"XML-based interchange format",
+ "index": "0" },{
+"name":"MXD",
+"description":"TomTom Itinerary format",
+ "index": "0" },{
+"name":"NTF",
+"description":"ESRI ArcGIS project file, 8.0 and higher",
+ "index": "0" },{
+"name":"OV2",
+"description":"National Transfer Format file",
+ "index": "0" },{
+"name":"SHP",
+"description":"TomTom POI overlay file",
+ "index": "0" },{
+"name":"TAB",
+"description":"ESRI shapefile",
+ "index": "0" },{
+"name":"DTED",
+"description":"MapInfo Table file format",
+ "index": "0" },{
+"name":"KML",
+"description":"World TIFF",
+ "index": "0" }]},{
+     "title":  "graphic-organizer",
+     "formats": [{
+"name":"3DT",
+"description":"3D Topicscape, the database in which the meta-data of a 3D Topicscape is held, it is a form of 3D concept map (like a 3D mind-map) used to organize ideas, information, and computer files",
+ "index": "0" },{
+"name":"ATY",
+"description":"3D Topicscape file, produced when an association type is exported; used to permit round-trip (export Topicscape, change files and folders as desired, re-import to 3D Topicscape)",
+ "index": "0" },{
+"name":"CAG",
+"description":"Linear Reference System",
+ "index": "0" },{
+"name":"FES",
+"description":"3D Topicscape file, produced when a fileless occurrence in 3D Topicscape is exported to Windows. Used to permit round-trip (export Topicscape, change files and folders as desired, re-import them to 3D Topicscape)",
+ "index": "0" },{
+"name":"MGMF",
+"description":"MindGenius Mind Mapping Software file format",
+ "index": "0" },{
+"name":"MM",
+"description":"FreeMind mind map file (XML)",
+ "index": "0" },{
+"name":"MMP",
+"description":"Mind Manager mind map file",
+ "index": "0" },{
+"name":"TPC",
+"description":"3D Topicscape file, produced when an inter-Topicscape topic link file is exported to Windows; used to permit round-trip (export Topicscape, change files and folders as desired, re-import to 3D Topicscape)",
+ "index": "0" }]},{
+     "title": "raster-graphics",
+     "formats": [{
+"name":"ASE",
+"description":"Adobe Swatch",
+ "index": "0" },{
+"name":"ART",
+"description":"America Online proprietary format",
+ "index": "0" },{
+"name":"BLP",
+"description":"Blizzard Entertainment proprietary texture format",
+ "index": "0" },{
+"name":"BMP",
+"description":"Microsoft Windows Bitmap formatted image",
+ "index": "0" },{
+"name":"BTI",
+"description":"Nintendo proprietary texture format",
+ "index": "0" },{
+"name":"CD5",
+"description":"Chasys Draw IES image",
+ "index": "0" },{
+"name":"CIT",
+"description":"Intergraph is a monochrome bitmap format",
+ "index": "0" },{
+"name":"CPT",
+"description":"Corel PHOTO-PAINT image",
+ "index": "0" },{
+"name":"CR2",
+"description":"Canon camera raw format; photos have this on some Canon cameras if the quality RAW is selected in camera settings",
+ "index": "0" },{
+"name":"CSP",
+"description":"CLIP STUDIO PAINT format",
+ "index": "0" },{
+"name":"CUT",
+"description":"Dr. Halo image file",
+ "index": "0" },{
+"name":"DDS",
+"description":"DirectX texture file",
+ "index": "0" },{
+"name":"DIB",
+"description":"Device-Independent Bitmap graphic",
+ "index": "0" },{
+"name":"DjVu",
+"description":"DjVu for scanned documents",
+ "index": "0" },{
+"name":"EGT",
+"description":"EGT Universal Document, used in EGT SmartSense to compress PNG files to yet a smaller file",
+ "index": "0" },{
+"name":"Exif",
+"description":"Exchangeable image file format (Exif) is a specification for the image format used by digital cameras",
+ "index": "0" },{
+"name":"GIF",
+"description":"CompuServe's Graphics Interchange Format",
+ "index": "0" },{
+"name":"GPL",
+"description":"GIMP Palette, using a text representation of color names and RGB values",
+ "index": "0" },{
+"name":"GRF",
+"description":"Zebra Technologies proprietary format",
+ "index": "0" },{
+"name":"ICNS",
+"description":"format for icons in macOS. Contains bitmap images at multiple resolutions and bitdepths with alpha channel.",
+ "index": "0" },{
+"name":"ICO",
+"description":"a format used for icons in Microsoft Windows. Contains small bitmap images at multiple resolutions and sizes",
+ "index": "0" },{
+"name":"ILBM",
+"description":"IFF (.iff, .ilbm, .lbm)",
+ "index": "0" },{
+"name":"JNG",
+"description":"a single-frame MNG using JPEG compression and possibly an alpha channel",
+ "index": "0" },{
+"name":"JP2",
+"description":"JPEG, JFIF (.jpg or .jpeg)",
+ "index": "0" },{
+"name":"JPEG2000",
+"description":"Joint Photographic Experts Group; a lossy image format widely used to display photographic images",
+ "index": "0" },{
+"name":"JPS",
+"description":"JPEG Stereo",
+ "index": "0" },{
+"name":"LBM",
+"description":"Deluxe Paint image file",
+ "index": "0" },{
+"name":"MAX",
+"description":"ScanSoft PaperPort document",
+ "index": "0" },{
+"name":"MIFF",
+"description":"ImageMagick's native file format",
+ "index": "0" },{
+"name":"MNG",
+"description":"Multiple-image Network Graphics, the animated version of PNG",
+ "index": "0" },{
+"name":"MSP",
+"description":"a format used by old versions of Microsoft Paint; replaced by BMP in Microsoft Windows 3.0",
+ "index": "0" },{
+"name":"NITF",
+"description":"A U.S. Government standard commonly used in Intelligence systems",
+ "index": "0" },{
+"name":"OTB",
+"description":"Over The Air bitmap, a specification designed by Nokia for black and white images for mobile phones",
+ "index": "0" },{
+"name":"PBM",
+"description":"Portable bitmap",
+ "index": "0" },{
+"name":"PC1",
+"description":"Low resolution, compressed Degas picture file",
+ "index": "0" },{
+"name":"PC2",
+"description":"Medium resolution, compressed Degas picture file",
+ "index": "0" },{
+"name":"PC3",
+"description":"High resolution, compressed Degas picture file",
+ "index": "0" },{
+"name":"PCF",
+"description":"Pixel Coordination Format",
+ "index": "0" },{
+"name":"PCX",
+"description":"a lossless format used by ZSoft's PC Paint, popular for a time on DOS systems.",
+ "index": "0" },{
+"name":"PDN",
+"description":"Portable graymap",
+ "index": "0" },{
+"name":"PGM",
+"description":"Low resolution, uncompressed Degas picture file",
+ "index": "0" },{
+"name":"PI1",
+"description":"Medium resolution, uncompressed Degas picture file; also Portrait Innovations encrypted image format",
+ "index": "0" },{
+"name":"PI2",
+"description":"High resolution, uncompressed Degas picture file",
+ "index": "0" },{
+"name":"PI3",
+"description":"PICT, PCT",
+ "index": "0" },{
+"name":"PNG",
+"description":"Apple Macintosh PICT image",
+ "index": "0" },{
+"name":"PNM",
+"description":"Portable Network Graphic (lossless, recommended for display and edition of graphic images)",
+ "index": "0" },{
+"name":"PNS",
+"description":"Portable anymap graphic bitmap image",
+ "index": "0" },{
+"name":"PPM",
+"description":"PNG Stereo",
+ "index": "0" },{
+"name":"PSB",
+"description":"Portable Pixmap (Pixel Map) image",
+ "index": "0" },{
+"name":"PSP",
+"description":"Adobe Photoshop Big image file (for large files)",
+ "index": "0" },{
+"name":"PX",
+"description":"PSD, PDD",
+ "index": "0" },{
+"name":"PXM",
+"description":"Adobe Photoshop Drawing",
+ "index": "0" },{
+"name":"PXR",
+"description":"Paint Shop Pro image",
+ "index": "0" },{
+"name":"QFX",
+"description":"Pixel image editor image file",
+ "index": "0" },{
+"name":"RAW",
+"description":"Pixelmator image file",
+ "index": "0" },{
+"name":"RLE",
+"description":"Pixar Image Computer image file",
+ "index": "0" },{
+"name":"SCT",
+"description":"QuickLink Fax image",
+ "index": "0" },{
+"name":"VTF",
+"description":"General term for minimally processed image data (acquired by a digital camera)",
+ "index": "0" },{
+"name":"XBM",
+"description":"a run-length encoding image",
+ "index": "0" },{
+"name":"XCF",
+"description":"Scitex Continuous Tone image file",
+ "index": "0" },{
+"name":"XPM",
+"description":"SGI, RGB, INT, BW",
+ "index": "0" },{
+"name":"ZIF",
+"description":"Silicon Graphics Image",
+ "index": "0" },{
+     "name": "tiff"
+ }, {
+     "name":"tif"
+ }]},{
+     "title": "vector-graphics",
+     "formats": [{
+"name":"3DV",
+"description":"3-D wireframe graphics by Oscar Garcia",
+ "index": "0" },{
+"name":"AMF",
+"description":"Additive Manufacturing File Format",
+ "index": "0" },{
+"name":"AWG",
+"description":"Ability Draw",
+ "index": "0" },{
+"name":"AI",
+"description":"Adobe Illustrator Document",
+ "index": "0" },{
+"name":"CGM",
+"description":"Computer Graphics Metafile, an ISO Standard",
+ "index": "0" },{
+"name":"CDR",
+"description":"CorelDRAW Document",
+ "index": "0" },{
+"name":"CMX",
+"description":"CorelDRAW vector image",
+ "index": "0" },{
+"name":"DXF",
+"description":"ASCII Drawing Interchange file Format, used in AutoCAD and other CAD-programs",
+ "index": "0" },{
+"name":"E2D",
+"description":"2-dimensional vector graphics used by the editor which is included in JFire",
+ "index": "0" },{
+"name":"EGT",
+"description":"EGT Universal Document, EGT Vector Draw images are used to draw vector to a website",
+ "index": "0" },{
+"name":"EPS",
+"description":"Encapsulated Postscript",
+ "index": "0" },{
+"name":"FS",
+"description":"FlexiPro file",
+ "index": "0" },{
+"name":"GBR",
+"description":"Gerber file",
+ "index": "0" },{
+"name":"ODG",
+"description":"OpenDocument Drawing",
+ "index": "0" },{
+"name":"MOVIE.BYU",
+"description":"Scalable Vector Graphics, employs XML",
+ "index": "0" },{
+"name":"RenderMan",
+"description":"Scene description languages (3D vector image formats)",
+ "index": "0" },{
+"name":"SVG",
+"description":"Stereo Lithographic data format (see STL (file format)) used by various CAD systems and stereo lithographic printing machines. See above.",
+ "index": "0" },{
+"name":"STL",
+"description":"VRML Uses .wrl extension",
+ "index": "0" },{
+"name":"X3D",
+"description":"Virtual Reality Modeling Language, for the creation of 3D viewable web images.",
+ "index": "0" },{
+"name":"SXD",
+"description":"OpenOffice.org XML (obsolete) Drawing",
+ "index": "0" },{
+"name":"V2D",
+"description":"voucher design used by the voucher management included in JFire",
+ "index": "0" },{
+"name":"VDOC",
+"description":"Vector format used in AnyCut, CutStorm, DrawCut, DragonCut, FutureDRAW, MasterCut, SignMaster, VinylMaster software by Future Corporation",
+ "index": "0" },{
+"name":"VSD",
+"description":"Vector format used by Microsoft Visio",
+ "index": "0" },{
+"name":"VSDX",
+"description":"Vector format used by MS Visio and opened by VSDX Annotator",
+ "index": "0" },{
+"name":"VND",
+"description":"Vision numeric Drawing file used in TypeEdit, Gravostyle.",
+ "index": "0" },{
+"name":"WMF",
+"description":"Windows Meta File",
+ "index": "0" },{
+"name":"EMF",
+"description":"Enhanced (Windows) MetaFile, an extension to WMF",
+ "index": "0" },{
+"name":"ART",
+"description":"Drawing (superseded by XAR)",
+ "index": "0" },{
+"name":"Xara",
+"description":"undefined",
+ "index": "0" },{
+"name":"XAR",
+"description":"undefined",
+ "index": "0" },{
+"name":"Xara",
+"description":"undefined",
+ "index": "0" },{
+"name":"Drawing",
+"description":"undefined",
+ "index": "0" }]},{
+ "title": "3d-graphics",
+ "formats": [{
+"name":"3DMF",
+"description":"QuickDraw 3D Metafile (.3dmf)",
+ "index": "0" },{
+"name":"3DM",
+"description":"OpenNURBS Initiative 3D Model (used by Rhinoceros 3D) (.3dm)",
+ "index": "0" },{
+"name":"3MF",
+"description":"Microsoft 3D Manufacturing Format (.3mf)[2]",
+ "index": "0" },{
+"name":"3DS",
+"description":"Legacy 3D Studio Model (.3ds)",
+ "index": "0" },{
+"name":"ABC",
+"description":"Alembic (computer graphics)",
+ "index": "0" },{
+"name":"AC",
+"description":"AC3D Model (.ac)",
+ "index": "0" },{
+"name":"AMF",
+"description":"Additive Manufacturing File Format",
+ "index": "0" },{
+"name":"AN8",
+"description":"Anim8or Model (.an8)",
+ "index": "0" },{
+"name":"AOI",
+"description":"Art of Illusion Model (.aoi)",
+ "index": "0" },{
+"name":"ASM",
+"description":"PTC Creo assembly (.asm)",
+ "index": "0" },{
+"name":"B3D",
+"description":"Blitz3D Model (.b3d)",
+ "index": "0" },{
+"name":"BLEND",
+"description":"Blender (.blend)",
+ "index": "0" },{
+"name":"BLOCK",
+"description":"Blender encrypted blend files (.block)",
+ "index": "0" },{
+"name":"BMD3",
+"description":"Nintendo GameCube first-party proprietary model format (.bmd)",
+ "index": "0" },{
+"name":"BRRES",
+"description":"BDL (BMD4)",
+ "index": "0" },{
+"name":"C4D",
+"description":"Nintendo Wii first-party proprietary model format 20062010 (.bdl)",
+ "index": "0" },{
+"name":"Cal3D",
+"description":"Nintendo Wii first-party proprietary model format 2010+ (.brres)",
+ "index": "0" },{
+"name":"CCP4",
+"description":"Cinema 4D (.c4d)",
+ "index": "0" },{
+"name":"CFL",
+"description":"Cal3D (.cal3d)",
+ "index": "0" },{
+"name":"COB",
+"description":"X-ray crystallography voxels (electron density)",
+ "index": "0" },{
+"name":"CORE3D",
+"description":"Compressed File Library (.cfl)",
+ "index": "0" },{
+"name":"CTM",
+"description":"Caligari Object (.cob)",
+ "index": "0" },{
+"name":"DAE",
+"description":"Coreona 3D Coreona 3D Virtual File(.core3d)",
+ "index": "0" },{
+"name":"DFF",
+"description":"OpenCTM (.ctm)",
+ "index": "0" },{
+"name":"DPM",
+"description":"COLLADA (.dae)",
+ "index": "0" },{
+"name":"DTS",
+"description":"RenderWare binary stream, commonly used by Grand Theft Auto III-era games as well as other RenderWare titles",
+ "index": "0" },{
+"name":"EGG",
+"description":"deepMesh (.dpm)",
+ "index": "0" },{
+"name":"FACT",
+"description":"Torque Game Engine (.dts)",
+ "index": "0" },{
+"name":"FBX",
+"description":"Panda3D Engine",
+ "index": "0" },{
+"name":"G",
+"description":"Electric Image (.fac)",
+ "index": "0" },{
+"name":"GLM",
+"description":"Autodesk FBX (.fbx)",
+ "index": "0" },{
+"name":"IOB",
+"description":"BRL-CAD geometry (.g)",
+ "index": "0" },{
+"name":"JAS",
+"description":"Ghoul Mesh (.glm)",
+ "index": "0" },{
+"name":"LWO",
+"description":"Imagine (3D modeling software) (.iob)",
+ "index": "0" },{
+"name":"LWS",
+"description":"Cheetah 3D file (.jas)",
+ "index": "0" },{
+"name":"LXF",
+"description":"Lightwave Object (.lwo)",
+ "index": "0" },{
+"name":"LXO",
+"description":"Lightwave Scene (.lws)",
+ "index": "0" },{
+"name":"MA",
+"description":"LEGO Digital Designer Model file (.lxf)",
+ "index": "0" },{
+"name":"MAX",
+"description":"Luxology Modo (software) file (.lxo)",
+ "index": "0" },{
+"name":"MB",
+"description":"Autodesk Maya ASCII File (.ma)",
+ "index": "0" },{
+"name":"MD2",
+"description":"Autodesk 3D Studio Max file (.max)",
+ "index": "0" },{
+"name":"MD3",
+"description":"Autodesk Maya Binary File (.mb)",
+ "index": "0" },{
+"name":"MD5",
+"description":"Quake 2 model format (.md2)",
+ "index": "0" },{
+"name":"MDX",
+"description":"Quake 3 model format (.md3)",
+ "index": "0" },{
+"name":"MESH",
+"description":"Doom 3 model format (.md5)",
+ "index": "0" },{
+"name":"MESH",
+"description":"Blizzard Entertainment's own model format (.mdx)",
+ "index": "0" },{
+"name":"MM3D",
+"description":"New York University(.m)",
+ "index": "0" },{
+"name":"MPO",
+"description":"Meshwork Model (.mesh)",
+ "index": "0" },{
+"name":"MRC",
+"description":"Misfit Model 3d (.mm3d)",
+ "index": "0" },{
+"name":"NIF",
+"description":"Multi-Picture Object",
+ "index": "0" },{
+"name":"OBJ",
+"description":"This JPEG standard is used for 3d images, as with the Nintendo 3DS",
+ "index": "0" },{
+"name":"OFF",
+"description":"voxels in cryo-electron microscopy",
+ "index": "0" },{
+"name":"OGEX",
+"description":"Gamebryo NetImmerse File (.nif)",
+ "index": "0" },{
+"name":"PLY",
+"description":"Wavefront .obj file (.obj)",
+ "index": "0" },{
+"name":"PRC",
+"description":"OFF Object file format (.off)",
+ "index": "0" },{
+"name":"PRT",
+"description":"Open Game Engine Exchange (OpenGEX) format (.ogex)",
+ "index": "0" },{
+"name":"POV",
+"description":"Polygon File Format / Stanford Triangle Format (.ply)",
+ "index": "0" },{
+"name":"R3D",
+"description":"Adobe PRC (embedded in PDF files)",
+ "index": "0" },{
+"name":"RWX",
+"description":"PTC Creo part (.prt)",
+ "index": "0" },{
+"name":"SIA",
+"description":"POV-Ray document (.pov)",
+ "index": "0" },{
+"name":"SIB",
+"description":"Realsoft 3D (Real-3D) (.r3d)",
+ "index": "0" },{
+"name":"SKP",
+"description":"RenderWare Object (.rwx)",
+ "index": "0" },{
+"name":"SLDASM",
+"description":"Nevercenter Silo Object (.sia)",
+ "index": "0" },{
+"name":"SLDPRT",
+"description":"Nevercenter Silo Object (.sib)",
+ "index": "0" },{
+"name":"SMD",
+"description":"Google Sketchup file (.skp)",
+ "index": "0" },{
+"name":"U3D",
+"description":"SolidWorks Assembly Document (.sldasm)",
+ "index": "0" },{
+"name":"VIM",
+"description":"SolidWorks Part Document (.sldprt)",
+ "index": "0" },{
+"name":"VRML97",
+"description":"Valve Studiomdl Data format (.smd)",
+ "index": "0" },{
+"name":"VUE",
+"description":"Universal 3D format (.u3d)",
+ "index": "0" },{
+"name":"VWX",
+"description":"Revizto visual information model format (.vimproj)",
+ "index": "0" },{
+"name":"WINGS",
+"description":"VRML Virtual reality modeling language (.wrl)",
+ "index": "0" },{
+"name":"W3D",
+"description":"Vue scene file (.vue)",
+ "index": "0" },{
+"name":"X",
+"description":"Vectorworks (.vwx)",
+ "index": "0" },{
+"name":"X3D",
+"description":"Wings3D (.wings)",
+ "index": "0" },{
+"name":"Z3D",
+"description":"Westwood 3D Model (.w3d)",
+ "index": "0" }]},
+ {
+     "title": "page-description-format",
+     "formats": [{
+"name":"DVI",
+"description":"Device independent format",
+ "index": "0" },{
+"name":"EGT",
+"description":"Universal Document can be used to store CSS type styles (*.egt)",
+ "index": "0" },{
+"name":"PLD",
+"description":"Portable Document Format",
+ "index": "0" },{
+"name":"PCL",
+"description":"PostScript (.ps, .ps.gz)",
+ "index": "0" },{
+"name":"PDF",
+"description":"Microsoft Access Report Snapshot",
+ "index": "0" },{
+"name":"SNP",
+"description":"XSL-FO (Formatting Objects)",
+ "index": "0" },{
+"name":"XPS",
+"description":"Configurations, Metadata",
+ "index": "0" },{
+"name":"CSS",
+"description":"Cascading Style Sheets",
+ "index": "0" },{
+"name":"TPL",
+"description":"XSLT, XSL",
+ "index": "0" }]},{
+ "title": "presentations",
+ "formats": [
+    {
+"name":"GSLIDES",
+"description":"Google Drive Presentation",
+ "index": "0" },{
+"name":"NB",
+"description":"KEY, KEYNOTE",
+ "index": "0" },{
+"name":"NBP",
+"description":"Apple Keynote Presentation",
+ "index": "0" },{
+"name":"ODP",
+"description":"Mathematica Slideshow",
+ "index": "0" },{
+"name":"OTP",
+"description":"Mathematica Player slideshow",
+ "index": "0" },{
+"name":"PEZ",
+"description":"OpenDocument Presentation",
+ "index": "0" },{
+"name":"POT",
+"description":"OpenDocument Presentation template",
+ "index": "0" },{
+"name":"PPS",
+"description":"Prezi Desktop Presentation",
+ "index": "0" },{
+"name":"PPT",
+"description":"Microsoft PowerPoint template",
+ "index": "0" },{
+"name":"PPTX",
+"description":"Microsoft PowerPoint Show",
+ "index": "0" },{
+"name":"PRZ",
+"description":"Microsoft PowerPoint Presentation",
+ "index": "0" },{
+"name":"SDD",
+"description":"Office Open XML Presentation",
+ "index": "0" },{
+"name":"SHF",
+"description":"Lotus Freelance Graphics",
+ "index": "0" },{
+"name":"SHOW",
+"description":"StarOffice's StarImpress",
+ "index": "0" },{
+"name":"SHW",
+"description":"ThinkFree Show",
+ "index": "0" },{
+"name":"SLP",
+"description":"Haansoft(Hancom) Presentation software document",
+ "index": "0" },{
+"name":"SSPSS",
+"description":"Corel Presentations slide show creation",
+ "index": "0" },{
+"name":"STI",
+"description":"Logix-4D Manager Show Control Project",
+ "index": "0" },{
+"name":"SXI",
+"description":"SongShow Plus Slide Show",
+ "index": "0" },{
+"name":"THMX",
+"description":"OpenOffice.org XML (obsolete) Presentation template",
+ "index": "0" },{
+"name":"WATCH",
+"description":"OpenOffice.org XML (obsolete) Presentation",
+ "index": "0" }
+ ]},{ "title":"video",
+    "formats": [{
+"name":"AAF",
+"description":"mostly intended to hold edit decisions and rendering information, but can also contain compressed media essence",
+ "index": "0" },{
+"name":"3GP",
+"description":"the most common video format for cell phones",
+ "index": "0" },{
+"name":"GIF",
+"description":"Animated GIF (simple animation; until recently often avoided because of patent problems)",
+ "index": "0" },{
+"name":"ASF",
+"description":"container (enables any form of compression to be used; MPEG-4 is common; video in ASF-containers is also called Windows Media Video (WMV))",
+ "index": "0" },{
+"name":"AVCHD",
+"description":"Advanced Video Codec High Definition",
+ "index": "0" },{
+"name":"AVI",
+"description":"container (a shell, which enables any form of compression to be used)",
+ "index": "0" },{
+"name":"CAM",
+"description":"BIK (.bik)",
+ "index": "0" },{
+"name":"COLLAB",
+"description":"Bink Video file. A video compression system developed by RAD Game Tools",
+ "index": "0" },{
+"name":"DAT",
+"description":"aMSN webcam log file",
+ "index": "0" },{
+"name":"DSH",
+"description":"Blackboard Collaborate session recording",
+ "index": "0" },{
+"name":"DVR-MS",
+"description":"video standard data file (automatically created when we attempted to burn as video file on the CD)",
+ "index": "0" },{
+"name":"FLV",
+"description":"Windows XP Media Center Edition's Windows Media Center recorded television format",
+ "index": "0" },{
+"name":"Video",
+"description":"Flash video (encoded to run in a flash animation)",
+ "index": "0" },{
+"name":"Video",
+"description":"M1V MPEG-1",
+ "index": "0" },{
+"name":"FLA",
+"description":"M2V MPEG-2",
+ "index": "0" },{
+"name":"FLR",
+"description":"Macromedia Flash (for producing)",
+ "index": "0" },{
+"name":"SOL",
+"description":"(text file which contains scripts extracted from SWF by a free ActionScript decompiler named FLARE)",
+ "index": "0" },{
+"name":"M4V",
+"description":"Adobe Flash shared object (\"Flash cookie\")",
+ "index": "0" },{
+"name":"WRAP",
+"description":"video container file format developed by Apple",
+ "index": "0" },{
+"name":"MNG",
+"description":"Matroska (*.mkv)",
+ "index": "0" },{
+"name":"THP",
+"description":"Matroska is a container format, which enables any video format such as MPEG-4 ASP or AVC to be used along with other content such as subtitles and detailed meta information",
+ "index": "0" },{
+"name":"MXF",
+"description":"MediaForge (*.wrap)",
+ "index": "0" },{
+"name":"ROQ",
+"description":"mainly simple animation containing PNG and JPEG objects, often somewhat more complex than animated GIF",
+ "index": "0" },{
+"name":"NSV",
+"description":"QuickTime (.mov)",
+ "index": "0" },{
+"name":"Ogg",
+"description":"container which enables any form of compression to be used; Sorenson codec is the most common; QTCH is the filetype for cached video and audio streams",
+ "index": "0" },{
+"name":"RM",
+"description":"MPEG (.mpeg, .mpg, .mpe)",
+ "index": "0" },{
+"name":"RealMedia",
+"description":"Nintendo proprietary movie/video format",
+ "index": "0" },{
+"name":"SVI",
+"description":"MPEG-4 Part 14, shortened",
+ "index": "0" },{
+"name":"SMI",
+"description":"multimedia container (most often used for Sony's PlayStation Portable and Apple's iPod)",
+ "index": "0" },{
+"name":"SWF",
+"description":"Material Exchange Format (standardized wrapper format for audio/visual material developed by SMPTE)",
+ "index": "0" },{
+"name":"WMV",
+"description":"used by Quake 3",
+ "index": "0" },{
+"name":"WTV",
+"description":"Nullsoft Streaming Video (media container designed for streaming video content over the Internet)",
+ "index": "0" },{
+"name":"YUV",
+"description":"container, multimedia",
+ "index": "0" },{
+"name":"WebM",
+"description":"Samsung video format for portable players",
+ "index": "0" }, {
+     "name": "mp4"
+ }]},{
+    "title": "spreadsheet",
+    "formats": [
+    {
+"name":"123",
+"description":"Lotus 1-2-3",
+ "index": "0" },{
+"name":"AB2",
+"description":"Abykus worksheet",
+ "index": "0" },{
+"name":"AB3",
+"description":"Abykus workbook",
+ "index": "0" },{
+"name":"AWS",
+"description":"Ability Spreadsheet",
+ "index": "0" },{
+"name":"BCSV",
+"description":"Nintendo proprietary table format",
+ "index": "0" },{
+"name":"CLF",
+"description":"ThinkFree Calc",
+ "index": "0" },{
+"name":"CELL",
+"description":"Haansoft(Hancom) SpreadSheet software document",
+ "index": "0" },{
+"name":"CSV",
+"description":"Comma-Separated Values",
+ "index": "0" },{
+"name":"GSHEET",
+"description":"Google Drive Spreadsheet",
+ "index": "0" },{
+"name":"numbers",
+"description":"An Apple Numbers Spreadsheet file",
+ "index": "0" },{
+"name":"gnumeric",
+"description":"Gnumeric spreadsheet, a gziped XML file",
+ "index": "0" },{
+"name":"ODS",
+"description":"OpenDocument spreadsheet",
+ "index": "0" },{
+"name":"OTS",
+"description":"OpenDocument spreadsheet template",
+ "index": "0" },{
+"name":"QPW",
+"description":"Quattro Pro spreadsheet",
+ "index": "0" },{
+"name":"SDC",
+"description":"StarOffice StarCalc Spreadsheet",
+ "index": "0" },{
+"name":"SLK",
+"description":"SYLK (SYmbolic LinK)",
+ "index": "0" },{
+"name":"STC",
+"description":"OpenOffice.org XML (obsolete) Spreadsheet template",
+ "index": "0" },{
+"name":"SXC",
+"description":"OpenOffice.org XML (obsolete) Spreadsheet",
+ "index": "0" },{
+"name":"TAB",
+"description":"tab delimited columns; also TSV (Tab-Separated Values)",
+ "index": "0" },{
+"name":"TXT",
+"description":"text file",
+ "index": "0" },{
+"name":"VC",
+"description":"Lotus 1-2-3 up to version 2.01",
+ "index": "0" },{
+"name":"Visicalc",
+"description":"Lotus 1-2-3 version 3.0",
+ "index": "0" },{
+"name":"WK1",
+"description":"Lotus 1-2-3 version 4.0",
+ "index": "0" },{
+"name":"WK3",
+"description":"Lotus 1-2-3",
+ "index": "0" },{
+"name":"WK4",
+"description":"Microsoft Works",
+ "index": "0" },{
+"name":"WKS",
+"description":"Quattro Pro DOS version",
+ "index": "0" },{
+"name":"WKS",
+"description":"Microsoft Excel worksheet backup",
+ "index": "0" },{
+"name":"WQ1",
+"description":"Microsoft Excel worksheet sheet (972003)",
+ "index": "0" },{
+"name":"XLK",
+"description":"Microsoft Excel binary workbook",
+ "index": "0" },{
+"name":"XLS",
+"description":"Microsoft Excel Macro-enabled workbook",
+ "index": "0" },{
+"name":"XLSB",
+"description":"Office Open XML worksheet sheet",
+ "index": "0" },{
+"name":"XLSM",
+"description":"Microsoft Works version 6.0",
+ "index": "0" },{
+"name":"XLSX",
+"description":"Microsoft Excel worksheet template",
+ "index": "0" },{
+"name":"XLR",
+"description":"Microsoft Excel Macro-enabled worksheet template",
+ "index": "0" },{
+"name":"XLT",
+"description":"Microsoft Excel worksheet workspace (version 4.0)",
+ "index": "0" },{
+"name":"XLTM",
+"description":"undefined",
+ "index": "0" },{
+"name":"XLW",
+"description":"undefined",
+ "index": "0" }
+ ]},{
+     "title": "tabular",
+     "formats": [{
+"name":"TSV",
+"description":"Tab-separated values",
+ "index": "0" },{
+"name":"CSV",
+"description":"Comma-separated values",
+ "index": "0" },{
+"name":"db",
+"description":"databank format; accessible by many econometric applications",
+ "index": "0" },{
+"name":"dif",
+"description":"accessible by many spreadsheet applications",
+ "index": "0" }]},{
+     "title": "webpage",
+     "formats":[{
+             "title": "webpage-static",
+             "formats":[{
+                "name":"DTD",
+                "description":"Document Type Definition (standard), MUST be public and free",
+                "index": "0" },{
+                "name":"HTML",
+                "description":"(.html, .htm)",
+                "index": "0" },{
+                "name":"XHTML",
+                "description":"HyperText Markup Language",
+                "index": "0" },{
+                "name":"MHTML",
+                "description":"(.xhtml, .xht)",
+                "index": "0" }, { "name": "htm"}
+            ]},{
+        "title": "webpage-dynamic",
+        "formats": [{
+                "name":"ASP",
+                "description":"Microsoft Active Server Page",
+                "index": "0" },{
+                "name":"(.asp)",
+                "description":" (.aspx)",
+                "index": "0" },{
+                "name":"ASPX",
+                "description":"Microsoft Active Server Page. NET",
+                "index": "0" },{
+                "name":"ADP",
+                "description":"AOLserver Dynamic Page",
+                "index": "0" },{
+                "name":"BML",
+                "description":" (.bml)",
+                "index": "0" },{
+                "name":"CFM",
+                "description":"Better Markup Language (templating)",
+                "index": "0" },{
+                "name":"ColdFusion",
+                "description":" (.cfm)",
+                "index": "0" },{
+                "name":"CGI",
+                "description":" (.cgi)",
+                "index": "0" },{
+                "name":"iHTML",
+                "description":" (.ihtml)",
+                "index": "0" },{
+                "name":"JSP",
+                "description":"Inline HTML",
+                "index": "0" },{
+                "name":"Lasso",
+                "description":" (.jsp) JavaServer Pages",
+                "index": "0" },{
+                "name":"PL",
+                "description":" (.las, .lasso, .lassoapp)",
+                "index": "0" },{
+                "name":"Perl",
+                "description":"A file created or served with the Lasso Programming Language",
+                "index": "0" },{
+                "name":"(.pl)",
+                "description":" (.php, .php?, .phtml)",
+                "index": "0" },{
+                "name":"PHP",
+                "description":"? is version number (previously abbreviated Personal Home Page, later changed to PHP: Hypertext Preprocessor)",
+                "index": "0" },{
+                "name":"(.rna)",
+                "description":"RNA[permanent dead link]",
+                "index": "0" },{
+                "name":"(.r)",
+                "description":"Real Native Application File",
+                "index": "0" },{
+                "name":"(.rnx)",
+                "description":"R[permanent dead link]",
+                "index": "0" },{
+                "name":"SSI",
+                "description":"Real Native Application File (short alternative)",
+                "index": "0" },{
+                "name":"SSI",
+                "description":"RNX[permanent dead link]",
+                "index": "0" }
+            ]}
+        ]},{
+        "title": "misc",
+        "formats":[{
+         "name": "other",
+         "description": "all other deduced formats that aren't on this list"
+        }]
+    }]
+}

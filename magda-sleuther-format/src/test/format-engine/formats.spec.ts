@@ -17,10 +17,4 @@ describe("getCommonFormat", function(this: Mocha.ISuiteCallbackContext) {
         expect(result1).to.eql(result2) && 
         expect(result3).to.eql(result4);
     });
-
-    it("should classify all of ckan's html standards under the same name", function() {
-        expect(getCommonFormat("WWW:LINK-1.0-http--related", synonymObject)).to.eql(Formats.HTML) &&
-        expect(getCommonFormat("WWW:DOWNLOAD-1.0-http--download", synonymObject)).to.eql(Formats.HTML) &&
-        expect(getCommonFormat("WWW:LINK-1.0-http--metadata-URL", synonymObject)).to.eql(Formats.HTML);
-    });
 });

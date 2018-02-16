@@ -1,8 +1,7 @@
-import { SelectedFormat } from "../formats";
-import ProbeResult from "./ProbeResult";
+import { Formats } from "../formats";
 
 export default interface MeasureResult {
-    formats: SelectedFormat[];
-    state?: ProbeResult;
+    formats: Formats[];
     distribution: any;
+    measureRating: number
 }

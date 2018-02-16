@@ -9,6 +9,7 @@ export enum Formats {
     TXT = "TXT",
     DOCX = "DOCX",
     MSWORD = "MSWORD",
+    CSV = "CSV",
     OTHER = "OTHER"
 }
 
@@ -49,7 +50,3 @@ export function getCommonFormat(
     }
 }
 
-export interface SelectedFormat {
-    format: Formats;
-    correctConfidenceLevel: number;
-}

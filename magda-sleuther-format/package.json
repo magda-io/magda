@@ -48,7 +48,8 @@
     "urijs": "^1.18.12",
     "mime-types": "^1.0.0",
     "jquery": "^1.12.4",
-    "load-json-file": "^4.0.0"
+    "load-json-file": "^4.0.0",
+    "typescript-json-schema": "^0.20.0"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",

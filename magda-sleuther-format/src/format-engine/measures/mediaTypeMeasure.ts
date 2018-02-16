@@ -1,6 +1,6 @@
 /*
 * Tries to determine the format by deciphering DCAT-DISTRIBUTION-STRING -> format
-* TODO add more unit tests to test foundational function and more permutations of other functions
+* TODO add unit tests if this changes from the dcat measure
 */
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
@@ -77,12 +77,11 @@ function getFilteredBracketedFormats(formats: Array<string>) {
 
 export default function getMeasureResult(
     relatedDistribution: any,
-    synonymObject: any,
-    rating: number
+    synonymObject: any
 ): MeasureResult {
-    const { format } = relatedDistribution.aspects["dcat-distribution-strings"];
+    const { mediaType } = relatedDistribution.aspects["dcat-distribution-strings"];
 
-    if (format === null || format === "") {
+    if (mediaType === null || mediaType === "") {
         return null;
     }
 
@@ -97,16 +96,20 @@ export default function getMeasureResult(
     ];
 
     let processedFormats: Array<string> = cleanUpAssemblyChain.reduce(
-        (accumulation, currentTransformer) => currentTransformer(accumulation), [format]
+        (accumulation, currentTransformer) => currentTransformer(accumulation), [mediaType]
     );
 
     if (processedFormats.length < 1) {
         return null;
     } else {
         return {
-            formats: processedFormats.map(eachFormat => getCommonFormat(eachFormat, synonymObject)),
-            distribution: relatedDistribution,
-            measureRating: rating
+            formats: processedFormats.map(eachFormat => {
+                return {
+                    format: getCommonFormat(eachFormat, synonymObject),
+                    correctConfidenceLevel: 100
+                };
+            }),
+            distribution: relatedDistribution
         };
     }
 }
