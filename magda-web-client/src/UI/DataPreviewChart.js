@@ -48,27 +48,31 @@ class DataPreviewChart extends Component {
 
   renderChart(){
     const previewData = this.props.data[this.props.distribution.identifier];
-    const spec = {
-      "height": 200,
-      "description": this.state.title,
-      "mark": this.state.chartType,
-      "encoding": {
-        "x": {"field": previewData.meta.chartFields.time[0], "type": this.state.xScale},
-        "y": {"field": previewData.meta.chartFields.numeric[0], "type": this.state.yScale}
+    if(defined(previewData)){
+      const spec = {
+        "height": 200,
+        "description": this.state.title,
+        "mark": this.state.chartType,
+        "encoding": {
+          "x": {"field": previewData.meta.chartFields.time[0], "type": this.state.xScale},
+          "y": {"field": previewData.meta.chartFields.numeric[0], "type": this.state.yScale}
+        }
       }
-    }
 
-    const data ={
-      values: previewData.data
-    }
+      const data ={
+        values: previewData.data
+      }
 
-    return (<div className='mui-row'>
-              <div className='mui-col-sm-6'><VegaLite spec={spec} data={data}/></div>
-              <div className='mui-col-sm-6'><ChartConfig chartType={this.state.chartType}
-                                                         chartTitle={this.state.chartTitle}
-                                                         xScale={this.state.xScale}
-                                                         yScale={this.state.yScale}/></div>
-            </div>)
+      return (<div className='mui-row'>
+                <div className='mui-col-sm-6'><VegaLite spec={spec} data={data}/></div>
+                <div className='mui-col-sm-6'><ChartConfig chartType={this.state.chartType}
+                                                           chartTitle={this.state.chartTitle}
+                                                           xScale={this.state.xScale}
+                                                           yScale={this.state.yScale}/></div>
+              </div>)
+    }
+    return <div>no chart here</div>
+
   }
 
   renderTable(){
