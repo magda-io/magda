@@ -46,12 +46,12 @@ export function fetchSearchResults(query: string): Store {
       if (response.status === 200) {
           return response.json();
       }
-      throw({title: response.status, detail: response.statusText})
+      throw(new Error(response.statusText));
     })
     .then((json: DataSearchJson) =>{
       return dispatch(receiveResults(query, json));
       })
-    .catch(error => dispatch(transferFailed(error)))
+    .catch(error => dispatch(transferFailed({title: error.name, detail: error.message})))
   }
 }
 

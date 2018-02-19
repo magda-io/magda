@@ -31,16 +31,15 @@ export function fetchRegionMapping() {
     dispatch(requestRegionMapping())
     return fetch(config.searchApiUrl + 'region-types')
     .then(response => {
-      if (response.status !== 200) {
-        throw({title: response.status, detail: response.statusText});
-      }
-      else {
+      if (response.status === 200) {
         return response.json()
+
       }
+      throw(new Error(response.statusText));
     })
     .then((json: FacetSearchJson) =>{
         return dispatch(receiveRegionMapping(json));
     })
-    .catch(error => dispatch(requestRegionMappingError(error)));
+    .catch(error => dispatch(requestRegionMappingError({title: error.name, detail: error.message})));
   }
 }

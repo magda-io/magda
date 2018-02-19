@@ -37,12 +37,10 @@ export function fetchNewsfromRss(){
       const url = config.rssUrl;
       fetch(url)
       .then(response=>{
-        if (response.status !== 200) {
-          throw ({title: response.status, detail: response.statusText});
+        if (response.status === 200) {
+          return response.text();
         }
-        else {
-          return response.text()
-        }
+        throw(new Error(response.statusText));
       }).then(text=>{
         parser.parseString(text, (err, result)=>{
           if(err){
@@ -53,6 +51,6 @@ export function fetchNewsfromRss(){
           }
         })
       })
-      .catch(error => dispatch(requestNewsError(error)))
+      .catch(error => dispatch(requestNewsError({title: error.name, detail: error.message})))
   }
 }

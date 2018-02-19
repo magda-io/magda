@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import renderDistribution from '../../Components/Distribution';
 import './RecordDetails.css';
-import Button from 'muicss/lib/react/button';
 
 class DatasetDetails extends Component{
   state={

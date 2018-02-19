@@ -30,11 +30,11 @@ export function fetchDatasetCount(){
         return false;
       }
       dispatch(requestDatasetCount())
-      const url = `${config.registryApiUrl}records?limit=0&aspect=dcat-dataset-strings`;
+      const url = `${config.registryApiUrl}/giberish/records?limit=0&aspect=dcat-dataset-strings`;
       fetch(url)
       .then(response=>{
         if (response.status !== 200) {
-          throw({title: response.status, detail: response.statusText});
+          throw(new Error(response.statusText));
         }
         else {
           return response.json()
@@ -42,6 +42,6 @@ export function fetchDatasetCount(){
       }).then(result=>{
           return dispatch(receiveDatasetCount(result.totalCount));
       })
-      .catch(error => dispatch(fetchDatasetCountError(error)));
+      .catch(error => dispatch(fetchDatasetCountError({title: error.name, detail: error.message})));
   }
 }

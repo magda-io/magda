@@ -35,11 +35,11 @@ export function fetchRegionSearchResults(facetQuery: string ) : Store {
       if(response.status === 200){
         return response.json();
       }
-      throw({title: response.status, detail: response.statusText})
+      throw(new Error(response.status))
     })
     .then((json: FacetSearchJson) =>
       dispatch(receiveRegions(facetQuery, json))
     )
-    .catch(error => dispatch(requestRegionsFailed(error)))
+    .catch(error => dispatch(requestRegionsFailed({title: error.name, detail: error.message})))
   }
 }

@@ -37,11 +37,11 @@ export function fetchFormatSearchResults(generalQuery: string):Object{
         return response.json()
 
       }
-      throw({title: response.status, detail: response.statusText});
+      throw(new Error(response.statusText));
     })
     .then((json: FacetSearchJson) =>{
         return dispatch(receiveFormats(generalQuery, json));
     })
-    .catch((error) => dispatch(requestFormatsFailed(error)));
+    .catch((error) => dispatch(requestFormatsFailed({title: error.name, detail: error.message})));
   }
 }

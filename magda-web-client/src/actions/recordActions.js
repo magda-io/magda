@@ -60,12 +60,12 @@ export function fetchDatasetFromRegistry(id: string):Function{
         if (response.status === 200) {
             return response.json()
         }
-        throw({title: response.status, detail: response.statusText});
+        throw(new Error(response.statusText));
     })
     .then((json: Object) => {
         return dispatch(receiveDataset(json));
       })
-    .catch(error => dispatch(requestDatasetError(error)))
+    .catch(error => dispatch(requestDatasetError({title: error.name, detail: error.message})))
   }
 }
 
@@ -80,11 +80,11 @@ export function fetchDistributionFromRegistry(id: string):Object{
         if (response.status === 200) {
             return response.json()
         }
-        throw({title: response.status, detail: response.statusText});
+        throw(new Error(response.statusText));
     })
     .then((json: Object) => {
           return dispatch(receiveDistribution(json));
       })
-    .catch(error=> dispatch(requestDistributionError(error)))
+    .catch(error=> dispatch(requestDistributionError({title: error.name, detail: error.message})))
   }
 }
