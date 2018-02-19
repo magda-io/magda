@@ -4,14 +4,10 @@ import Tabs from 'muicss/lib/react/tabs';
 import Tab from 'muicss/lib/react/tab';
 import ChartConfig from './ChartConfig';
 import defined from '../helpers/defined';
-import fetch from 'isomorphic-fetch';
 import {fetchPreviewData} from '../actions/previewDataActions';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import VegaLite from 'react-vega-lite';
-
-const VEGAMARK = ['area', 'bar', 'circle', 'line', 'point', 'rect', 'square', 'text', 'tick'];
-const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
 
 class DataPreviewChart extends Component {
   constructor(props) {
