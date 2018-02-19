@@ -17,10 +17,12 @@ import spray.json._
 import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.indexer.crawler.Crawler
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi
+import au.csiro.data61.magda.model.Registry.EventType
 import com.typesafe.config.Config
 import akka.stream.scaladsl.Source
 import java.time.ZoneOffset
 import scala.util.Try
+import au.csiro.data61.magda.model.misc.DataSet
 
 class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryConverters {
   implicit val ec = system.dispatcher
@@ -32,10 +34,21 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
     magdaRoute {
       post {
         entity(as[WebHookPayload]) { payload =>
-          payload.records match {
-            // TODO: Handle registry config not found
-            case Some(records) =>
-              val dataSets = records.map(record => try {
+          val events = payload.events.getOrElse(List())
+
+          val idsToDelete = events.filter(_.eventType == EventType.DeleteRecord)
+            .map(event => event.data.getFields("recordId").head.convertTo[String])
+            .map(DataSet.registryIdToIdentifier)
+
+          val deleteOp = () => idsToDelete match {
+            case Nil  => Future.successful(Unit)
+            case list => indexer.delete(list)
+          }
+
+          val insertOp = () => payload.records match {
+            case None | Some(Nil) => Future.successful(Unit)
+            case Some(list) =>
+              val dataSets = list.map(record => try {
                 Some(convertRegistryDataSet(record))
               } catch {
                 case CausedBy(e: spray.json.DeserializationException) =>
@@ -43,12 +56,15 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
                   None
               })
 
-              onSuccess(indexer.index(Source(dataSets.flatten))) { result =>
-                complete(Accepted)
-              }
-            case None =>
-              getLogger.error("Recieved webhook payload with no records")
-              complete(BadRequest, "Needs records")
+              indexer.index(Source(dataSets.flatten))
+          }
+
+          val future = deleteOp().flatMap(_ => insertOp())
+
+          // The registry should never pass us a deleted record, so we can insert and delete
+          // concurrently without the risk of inserting something we just deleted.
+          onSuccess(future) { x =>
+            complete(Accepted)
           }
         }
       }

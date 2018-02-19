@@ -73,11 +73,15 @@ package misc {
       indexed: Option[OffsetDateTime] = None,
       quality: Double) {
 
-    def uniqueId: String = java.net.URLEncoder.encode(catalog.getOrElse("nocatalog") + "/" + identifier, "UTF-8")
+    def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
 
     override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
 
     def normalToString: String = ScalaRunTime._toString(this)
+  }
+
+  object DataSet {
+    def registryIdToIdentifier(registryId: String) = java.net.URLEncoder.encode(registryId, "UTF-8")
   }
 
   case class Agent(

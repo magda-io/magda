@@ -8,6 +8,8 @@ You need the following in order to build and run MAGDA:
 * [lerna](https://lernajs.io/) - To manage our multiple-project repo.  Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
 * [Minikube](https://github.com/kubernetes/minikube) - To run a Kubernetes cluster on your local development machine.  It is possible to run all of the Magda microservices directly on your local machine instead of on a Kubernetes cluster, in which case you don't, strictly speaking, need Minikube.  However, you will probably want to run at least some of the services, such as the databases, on a cluster for ease of setup.
 * [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster.  You will also need to this to deploy to our test and production environment on Google Cloud.
+* [GNU tar](https://www.gnu.org/software/tar/) - MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
+* [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
 These instructions assume you are using a Bash shell.  You can easily get a Bash shell on Windows by installing the [git](https://git-scm.com/downloads) client.
 
@@ -80,7 +82,7 @@ kubectl create -f kubernetes/generated/local/
 
 ## Running on your local machine
 
-For a quick development cycle on any component, run:
+For a quick development cycle on any component (except `magda-combined-db` and `magda-elastic-search`), run:
 
 ```bash
 npm run dev
@@ -88,16 +90,50 @@ npm run dev
 
 This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected.  In some cases (e.g. code generation), it is necessary to run `npm run build` at least once before `npm run dev` will work.  Typically it is _not_ necessary to run `npm run build` again in the course of development, though, unless you're changing something other than source code.
 
-This even works in `magda-combined-db` and `magda-elastic-search`, so you can start up the database (on Minikube), the registry API, and a connector by executing the following three commands in three separate windows:
+A typical use case would be:
+
+1. Start `magda-combined-db` in `Minikube` using `helm:`
+
+From root level of the project directory:
+```bash
+helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
+```
+
+2. Port forward database service port to localhost so that your local running program (outside the `Kubernetes` cluster in `minikube`) can connect to them:
 
 ```bash
-# these three commands don't terminate, so run them in separate terminals
-cd magda-combined-db && npm run dev
+# Port forward database
+# this command doesn't terminate, so run it in a separate terminal
+kubectl port-forward combined-db-0 5432:5432
+```
+
+3. Start the registry API and a connector (via `npm run dev`) by executing the following two commands in two separate terminal windows:
+
+```bash
+# these two commands don't terminate, so run them in separate terminals
 cd magda-registry-api && npm run dev
 cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/data-gov-au.json
 ```
 
 See [connectors](connectors.md) for more detailed information about running connectors.
+
+4. (Optional) If later you wanted to start `magda-elastic-search` as well:
+
+Like `magda-combined-db`, `magda-elastic-search` can only be started in `minikiube` via `helm` rather than `npm run dev`.
+
+You need to upgrade previously installed `helm` chart `magda` to include `magda-elastic-search` component:
+
+```bash
+helm upgrade magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true --set tags.elasticsearch=true
+```
+And then, port forward `elasticsearch` so that you can run other components that may need to connect to `elasticsearch` outside the `minikube`:
+
+```bash
+# Port forward elasticsearch
+# this commands doesn't terminate, so run it in a separate terminal
+kubectl port-forward es-data-0 9300:9300
+```
+You can find more information regarding starting `magda` components via `helm` in `minikube` from [the `Running on Minikube` section below](#running-on-minikube)
 
 ## What do I need to run?
 
@@ -115,6 +151,35 @@ Running individual components is easy enough, but how do we get a fully working 
 | `magda-search-api` | `magda-elastic-search` |
 | `magda-web-client` | `magda-web-server`, but uses API at http://magda-dev.terria.io/api if server is not running. |
 | `magda-web-server` | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail. |
+
+### Architecture Diagram
+
+The following `Architecture Diagram` may help you to get clearer idea which components you need to run in order to look at a particular function area:
+
+![Magda Architecture Diagram](./magda-architecture.png)
+
+The following table shows the relationship between `Magda components` and `Diagram elements`:
+
+| Component | Diagram elements |
+| --------- | ---------------- |
+| `magda-admin-api` | `Admin API (NodeJS)` |
+| `magda-*-connector` | `Connectors` |
+| `magda-elastic-search` | `ES Client`, `ES Data (x2)`, `ES Master (x3)` |
+| `magda-*-sleuther` | `Sleuthers` |
+| `magda-authorization-api` | `Auth API (NodeJS)` |
+| `magda-discussions-api` | `Discussion API (NodeJS)` |
+| `magda-gateway` | `Gateway (x1+) (NodeJS)` |
+| `magda-indexer` | `Search Indexer (Scala)` |
+| `magda-registry-api` | `Registry API (Scala)` |
+| `magda-search-api` | `Search API (Scala)` |
+| `magda-web-client` | `MAGDA Web UI` |
+| `magda-web-server` | `Web Server (NodeJS)` |
+| `magda-preview-map` | `Terria Server (NodeJS)` |
+| `magda-authorization-db` | `Auth DB (Postgres)`. `magda-authorization-db` is only used for production environment. |
+| `magda-discussions-db` | `Discussion DB (Postgres)`. `magda-discussions-db` is only used for production environment. |
+| `magda-registry-datastore` | `Registry DB (Postgres)`. `magda-registry-datastore` is only used for production environment. |
+| `magda-session-store` | `Session Store (Postgres)`. `magda-session-store` is only used for production environment. |
+| `magda-combined-db` | `Registry DB (Postgres)`, `Session Store (Postgres)`, `Discussion DB (Postgres)`, `Auth DB (Postgres)`. `magda-combined-db` component is only used for dev environment. Production environment will launch all DB components above separately.  |
 
 # Debugging Node.js / TypeScript components
 
@@ -183,6 +248,8 @@ If you want to just start up individual pods (e.g. just the combined database) y
 ```bash
 helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
+
+**You can find all available tags in [deploy/helm/magda/requirements.yaml](../deploy/helm/magda/requirements.yaml)**
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30100.  The IP address may be different on your system.  Get the real IP address by running:
 
