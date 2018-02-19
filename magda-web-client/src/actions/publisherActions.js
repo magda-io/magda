@@ -55,13 +55,12 @@ function fetchPublishers(start){
                 if (response.status === 200) {
                     return response.json();
                 }
-                return dispatch(requestPublishersError({title: response.status, detail: response.statusText}))
+                throw({title: response.status, detail: response.statusText})
             })
             .then(json => {
-                if(!json.error){
-                    return dispatch(receivePublishers(json));
-                }
+                return dispatch(receivePublishers(json));
             })
+            .catch(error => dispatch(requestPublishersError(error)))
     }
 }
 
@@ -95,13 +94,12 @@ function fetchPublisher(id){
                 if (response.status === 200) {
                     return response.json()
                 }
-                return dispatch(requestPublisherError({title: response.status, detail: response.statusText}))
+                throw({title: response.status, detail: response.statusText})
             })
             .then(json => {
-                if(!json.error){
-                    return dispatch(receivePublisher(json));
-                }
+                return dispatch(receivePublisher(json));
             })
+            .catch(error => dispatch(requestPublisherError(error)))
     }
 }
 

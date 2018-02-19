@@ -79,6 +79,7 @@ export type FacetAction = {
 export type SearchAction = {
   type: string,
   apiQuery? : string,
+  items?: Array<FacetOption>,
   item?: FacetOption,
   json?: DataSearchJson,
   error?: Error

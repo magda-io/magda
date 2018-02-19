@@ -33,10 +33,16 @@ export function fetchPublisherSearchResults(generalQuery:string) {
     dispatch(requestPublishers(generalQuery));
     return fetch(config.searchApiUrl + `facets/publisher/options?generalQuery=${encodeURIComponent(generalQuery)}&start=0&limit=10000`)
     .then(response => {
-      if (response.ok) {return response.json(); }
-      return dispatch(requestPublishersFailed({title: response.status, detail: response.statusText}));})
-    .then((json: FacetSearchJson) =>
-      dispatch(receivePublishers(generalQuery, json))
-    );
+      if (response.status !== 200) {
+        throw({title: response.status, detail: response.statusText});
+      }
+      else {
+        return response.json()
+      }
+    })
+    .then((json: FacetSearchJson) =>{
+        return dispatch(receivePublishers(generalQuery, json));
+    })
+    .catch(error => dispatch(requestPublishersFailed(error)));
   }
 }

@@ -30,22 +30,17 @@ export function fetchRegionMapping() {
   return (dispatch: Function)=>{
     dispatch(requestRegionMapping())
     return fetch(config.searchApiUrl + 'region-types')
-    .then(response=>{
+    .then(response => {
       if (response.status !== 200) {
-        return dispatch(requestRegionMappingError({title: response.status, detail: response.statusText}));
+        throw({title: response.status, detail: response.statusText});
       }
       else {
         return response.json()
       }
     })
     .then((json: FacetSearchJson) =>{
-        if(!json.error){
-          return dispatch(receiveRegionMapping(json));
-        } else{
-            return dispatch(requestRegionMappingError(json.error))
-        }
-      }
-    )
+        return dispatch(receiveRegionMapping(json));
+    })
     .catch(error => dispatch(requestRegionMappingError(error)));
   }
 }
