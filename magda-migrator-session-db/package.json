@@ -1,5 +1,5 @@
 {
-    "name": "@magda/session-store",
+    "name": "@magda/migrator-session-db",
     "version": "0.0.33-0",
     "description": "The database storing session information.",
     "scripts": {

@@ -15,9 +15,9 @@ tags:
     indexer: true
     preview-map: true
     registry-api: true
-    registry-datastore: true
+    registry-db: true
     search-api: true
-    session-store: true
+    session-db: true
     sleuther-broken-link: true
     sleuther-linked-data-rating: true
     web-server: true
@@ -63,7 +63,7 @@ registry-api:
     requests:
         cpu: 500m
         memory: 1000Mi
-registry-datastore:
+registry-db:
     resources:
         requests:
             cpu: 900m
@@ -91,7 +91,7 @@ authorization-db:
         googleApplicationCreds:
             secretName: storage-account-credentials
             fileName: TerriaJS-5e042b649f8a.json
-session-store:
+session-db:
     data:
         storageClass: "fast-ssd"
     resources:

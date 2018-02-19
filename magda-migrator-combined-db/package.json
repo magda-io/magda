@@ -17,7 +17,7 @@
         "docker": {
             "name": "data61/magda-migrator-combined-db",
             "include":
-                "Dockerfile node_modules/@magda/authorization-db/sql node_modules/@magda/registry-datastore/sql node_modules/@magda/session-store/sql node_modules/@magda/discussions-db/sql"
+                "Dockerfile node_modules/@magda/migrator-authorization-db/sql node_modules/@magda/migrator-registry-db/sql node_modules/@magda/migrator-session-db/sql node_modules/@magda/migrator-discussions-db/sql"
         }
     },
     "devDependencies": {

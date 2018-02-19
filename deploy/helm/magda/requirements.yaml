@@ -55,22 +55,22 @@ dependencies:
     tags:
       - all
       - registry-api
-  - name: registry-datastore
+  - name: registry-db
     version: 0.1.0
     tags:
       - all
-      - registry-datastore
+      - registry-db
       - combined-db
   - name: search-api
     version: 0.1.0
     tags:
       - all
       - search-api
-  - name: session-store
+  - name: session-db
     version: 0.1.0
     tags:
       - all
-      - session-store
+      - session-db
       - combined-db
   - name: sleuther-broken-link
     version: 0.1.0

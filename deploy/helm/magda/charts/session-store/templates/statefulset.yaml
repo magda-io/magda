@@ -2,9 +2,9 @@
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: session-store
+  name: session-db
 spec:
-  serviceName: session-store
+  serviceName: session-db
   replicas: 1
 {{- if semverCompare "^1.7.0" (printf "%s" .Capabilities.KubeVersion) }}
   updateStrategy:
@@ -13,11 +13,11 @@ spec:
   template:
     metadata:
       labels:
-        service: session-store
+        service: session-db
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: session-store
+      - name: session-db
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}

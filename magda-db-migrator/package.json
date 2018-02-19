@@ -17,14 +17,10 @@
         "docker": {
             "name": "data61/magda-db-migrator",
             "include":
-                "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate.sh node_modules/@magda/authorization-db/sql node_modules/@magda/registry-datastore/sql node_modules/@magda/session-store/sql node_modules/@magda/discussions-db/sql"
+                "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate.sh"
         }
     },
     "devDependencies": {
-        "@magda/authorization-db": "^0.0.33-0",
-        "@magda/discussions-db": "^0.0.33-0",
-        "@magda/registry-datastore": "^0.0.33-0",
-        "@magda/scripts": "^0.0.33-0",
-        "@magda/session-store": "^0.0.33-0"
+        "@magda/scripts": "^0.0.33-0"
     }
 }

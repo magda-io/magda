@@ -16,8 +16,9 @@ spec:
       - name: combined-db
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-        image: {{ template "dockerimage" . }}
+        image: localhost:5000/data61/magda-postgres:latest
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        command: ["migrate-and-start.sh", "postgres"]
         ports:
         - containerPort: 5432
         env:
@@ -29,8 +30,10 @@ spec:
           mountPath: /var/pv
         {{- template "magda.waleGoogleStorageCredentials.volumeMount" . }}
       - name: combined-db-migrator
-        image: localhost:5000/data61/magda-db-migrator
+        image: localhost:5000/data61/magda-migrator-combined-db
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        env: 
+        {{- template "magda.postgres-env" . }}
       volumes:
       {{- template "magda.waleGoogleStorageCredentials.volume" . }}
   volumeClaimTemplates:

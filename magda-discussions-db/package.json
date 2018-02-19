@@ -1,5 +1,5 @@
 {
-    "name": "@magda/discussions-db",
+    "name": "@magda/migrator-discussions-db",
     "version": "0.0.33-0",
     "description": "Magda auth's PostgreSQL database.",
     "scripts": {
@@ -13,7 +13,7 @@
     "license": "Apache-2.0",
     "config": {
         "docker": {
-            "name": "data61/magda-discussions-db",
+            "name": "data61/magda-migrator-discussions-db",
             "include": "Dockerfile sql"
         }
     },

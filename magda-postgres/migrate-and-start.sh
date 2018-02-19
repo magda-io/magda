@@ -44,22 +44,7 @@ function join_by { local IFS="$1"; shift; echo "$*"; }
 JOINED_MEMORY_COMMAND_LINE_ARGS=$(join_by " " "${MEMORY_COMMAND_LINE_ARGS[@]}")
 JOINED_BACKUP_COMMAND_LINE_ARGS=$(join_by " " "${BACKUP_COMMAND_LINE_ARGS[@]}")
 
-cd /flyway
-tar xzf flyway-commandline-4.2.0-linux-x64.tar.gz
-cd flyway-4.2.0
 PGARGS="-c listen_addresses='*' -c max_prepared_transactions=0 $JOINED_MEMORY_COMMAND_LINE_ARGS $JOINED_BACKUP_COMMAND_LINE_ARGS"
-PGUSER="${PGUSER:-postgres}" pg_ctl -D "$PGDATA" -o "$PGARGS" -w start
-
-for d in /flyway/sql/*; do
-    if [[ -d "$d" ]]; then
-        echo "Creating database $(basename "$d") (this will fail if it already exists; that's ok)"
-        psql -U "${PGUSER:-postgres}" -c "CREATE DATABASE $(basename "$d") WITH OWNER = postgres ENCODING = 'UTF8' LC_COLLATE = 'en_US.utf8' LC_CTYPE = 'en_US.utf8' TABLESPACE = pg_default CONNECTION LIMIT = -1;"
-        echo "Migrating database $(basename "$d")"
-        ./flyway migrate -baselineOnMigrate=true -url=jdbc:postgresql://localhost/$(basename "$d") -locations=filesystem:$d -user=${PGUSER:-postgres} -placeholders.clientUserName="${CLIENT_USERNAME}" -placeholders.clientPassword="${CLIENT_PASSWORD}" -n
-    fi
-done
-
-pg_ctl -D "$PGDATA" -m fast -w stop
 
 if [[ ! -z "${BACKUP}" ]]; then
     #https://github.com/wal-e/wal-e/issues/200
@@ -82,6 +67,6 @@ fi
 
 # Why this elaborate way of running the command? It lets us use the same string of PGARGS for running pg_ctl (above) as it does for postgres (below).
 # Without it we get all these issues with exec expecting an array of strings vs pg_ctl -o expecting one big string.
-COMMAND="$* $PGARGS"
+COMMAND="gosu ${PGUSER:-postgres} $* $PGARGS"
 echo "Running command $COMMAND"
 exec echo "$COMMAND" | bash

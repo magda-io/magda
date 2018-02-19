@@ -1,5 +1,5 @@
-FROM data61/magda-postgres:0.0.33-0
-COPY component/node_modules/@magda/authorization-db/sql/* /flyway/sql/auth/
-COPY component/node_modules/@magda/registry-datastore/sql/* /flyway/sql/postgres/
-COPY component/node_modules/@magda/discussions-db/sql/* /flyway/sql/discussions/
-COPY component/node_modules/@magda/session-store/sql/* /flyway/sql/session/
+FROM localhost:5000/data61/magda-db-migrator:latest
+COPY component/node_modules/@magda/migrator-authorization-db/sql/* /flyway/sql/auth/
+COPY component/node_modules/@magda/migrator-registry-db/sql/* /flyway/sql/postgres/
+COPY component/node_modules/@magda/migrator-discussions-db/sql/* /flyway/sql/discussions/
+COPY component/node_modules/@magda/migrator-session-db/sql/* /flyway/sql/session/
