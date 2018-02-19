@@ -1,0 +1,17 @@
+@import '../variables';
+.banner {
+  text-align: center;
+  background: $banner-background;
+  color:$banner-text;
+  padding: 8px 0;
+  a{
+    color: $banner-text;
+    border-bottom: solid 1px $banner-text;
+  }
+  button{
+    background: transparent;
+    color: $banner-text;
+    border: none;
+    box-shadow: none;
+  }
+}
