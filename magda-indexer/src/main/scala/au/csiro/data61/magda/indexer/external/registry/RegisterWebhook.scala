@@ -27,9 +27,12 @@ object RegisterWebhook {
     logger.info("Looking up existing webhook with id {}", config.getString("registry.webhookId"))
     interface.getWebhook(config.getString("registry.webhookId")).flatMap {
       case Some(existingHook) =>
-        logger.info("Hook already exists, attempting to resume")
-        interface.resumeWebhook(config.getString("registry.webhookId"))
+        logger.info("Hook already exists, updating...")
+        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
           .map { _ =>
+            logger.info("Updated, attempting to resume...")
+            interface.resumeWebhook(config.getString("registry.webhookId"))
+          } map { _ =>
             logger.info("Successfully resumed webhook")
 
             ShouldNotCrawl
@@ -39,7 +42,7 @@ object RegisterWebhook {
         registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
           .map { _ =>
             logger.info("Successfully registered new webhook")
-            
+
             ShouldCrawl
           }
     }
@@ -63,13 +66,14 @@ object RegisterWebhook {
       config = WebHookConfig(
         aspects = Some(aspects),
         optionalAspects = Some(optionalAspects),
+        includeEvents = Some(true),
         includeRecords = Some(true),
         dereference = Some(true)),
       userId = Some(0), // TODO: Will have to change this when it becomes important
       isWaitingForResponse = None,
       active = true)
 
-    interface.addWebhook(webhook).map { _ =>
+    interface.putWebhook(webhook).map { _ =>
       system.log.info("Successfully added webhook")
 
       Unit

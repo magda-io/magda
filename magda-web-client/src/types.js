@@ -1,6 +1,6 @@
 // @flow
 
-export type Error = {
+export type FetchError = {
   title: string | number,
   detail: string
 }

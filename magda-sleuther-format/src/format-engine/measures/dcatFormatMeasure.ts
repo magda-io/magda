@@ -10,6 +10,13 @@ import * as _ from "lodash";
 // all functions must be executed in the order they appear in this file
 
 /**
+ * Removes falsy values
+ */
+function removeFalsy(formats: Array<string>): Array<string> {
+    return formats.filter(x => !!x);
+}
+
+/**
  * Removes commas, periods, and makes everything lower case
  * @param format the current format string to clean up
  */
@@ -47,9 +54,9 @@ function splitWhiteSpaceFormats(formats: Array<string>): Array<string> {
 function reduceMimeType(formats: Array<string>): Array<string> {
     return formats.map(
         format =>
-            format.indexOf("/") < 0
+            format.lastIndexOf("/") < 0
                 ? format
-                : format.substr(format.indexOf("/"))
+                : format.substr(format.lastIndexOf("/"))
     );
 }
 
@@ -87,14 +94,13 @@ export default function getMeasureResult(
     // this is an array that acts like an assembly belt, you input in the string, the middle functions are the assembly robots,
     // and the last function returns the output.
     const cleanUpAssemblyChain = [
+        removeFalsy,
         foundationalCleanup,
         replaceAmpersandFormats,
         splitWhiteSpaceFormats,
         reduceMimeType,
         filterBracketedFormats
     ];
-
-    //TODO ask gilleran the compiler doesn't let me compile this
 
     let processedFormats: Array<string> = cleanUpAssemblyChain.reduce(
         (accumulation, currentTransformer) => currentTransformer(accumulation),

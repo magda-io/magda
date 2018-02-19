@@ -15,6 +15,7 @@ import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 
 trait SearchIndexer {
   def index(dataSetStream: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult]
+  def delete(identifiers: Seq[String]) : Future[Unit]
   def snapshot(): Future[Unit]
   def ready: Future[Unit]
   def trim(before: OffsetDateTime): Future[Unit]

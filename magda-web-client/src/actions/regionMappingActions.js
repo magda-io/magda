@@ -2,7 +2,7 @@
 import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Error } from '../types';
+import type { FetchError } from '../types';
 import type {FacetAction, FacetSearchJson} from '../helpers/datasetSearch';
 
 
@@ -19,7 +19,7 @@ export function receiveRegionMapping(json: Object): FacetAction{
   }
 }
 
-export function requestRegionMappingError(error: Error): FacetAction {
+export function requestRegionMappingError(error: FetchError): FacetAction {
   return {
     type: actionTypes.REQUEST_REGION_MAPPING_ERROR,
     error,
@@ -30,22 +30,16 @@ export function fetchRegionMapping() {
   return (dispatch: Function)=>{
     dispatch(requestRegionMapping())
     return fetch(config.searchApiUrl + 'region-types')
-    .then(response=>{
-      if (response.status !== 200) {
-        return dispatch(requestRegionMappingError({title: response.status, detail: response.statusText}));
-      }
-      else {
+    .then(response => {
+      if (response.status === 200) {
         return response.json()
+
       }
+      throw(new Error(response.statusText));
     })
     .then((json: FacetSearchJson) =>{
-        if(!json.error){
-          return dispatch(receiveRegionMapping(json));
-        } else{
-            return dispatch(requestRegionMappingError(json.error))
-        }
-      }
-    )
-    .catch(error => dispatch(requestRegionMappingError(error)));
+        return dispatch(receiveRegionMapping(json));
+    })
+    .catch(error => dispatch(requestRegionMappingError({title: error.name, detail: error.message})));
   }
 }

@@ -1,4 +1,3 @@
-import { Formats } from "./format-engine/formats";
 export default {
     id: "dataset-format",
     name: "Details about the format of the distribution",
@@ -6,7 +5,7 @@ export default {
 };
 
 export interface FormatAspect {
-    format: Formats;
+    format: string;
     confidenceLevel: confidencetype;
     errorDetails?: any;
 }
