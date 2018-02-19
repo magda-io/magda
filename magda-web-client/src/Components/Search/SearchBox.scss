@@ -12,9 +12,10 @@
 .searchBox{
   position: relative;
   box-shadow: 1px 1px 1px 1px rgba(73,73,73,0.25);
+  margin-bottom: 32px;
   @media (min-width: 768px) {
     padding: 50px 135px;
-    margin-bottom: 32px;
+
   }
   input, input:focus{
     @include text();
