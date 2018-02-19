@@ -86,6 +86,10 @@ function processCsv(
     // Currently only supports CSV:
     const fields: { [key: string]: Field } = {};
     let errorAbort: Boolean = false;
+    const categories: { [key: string]: Set<string> } = {};
+    const MAX_CATEGORIES = 50;
+    // Track the number of rows
+    let rows = 0;
 
     return new Promise((resolve, reject) => {
         // @types/papaparse types doesn't recognise Node's stream.Readable (they want a browser ReadableStream)
@@ -112,6 +116,14 @@ function processCsv(
             },
             complete() {
                 if (!errorAbort) {
+                    // Check that the number of categories is no more than half the number of rows (rounded up)
+                    let halfRows = Math.ceil(rows/2);
+                    Object.keys(fields).forEach(field => {
+                        if (fields[field].categorical && categories[field].size > halfRows)
+                        {
+                            fields[field].categorical = false;
+                        }
+                    });
                     resolve({
                         format: "CSV",
                         wellFormed: true,
@@ -139,14 +151,17 @@ function processCsv(
                     parser.abort();
                     return;
                 }
+                rows++;
                 results.meta.fields.forEach(field => {
                     const values = results.data.map(row => row[field]);
                     if (!fields[field]) {
                         // First row. Set all attributes to true and modify that when a row doesn't validate
                         fields[field] = {
                             numeric: true,
-                            time: true
+                            time: true,
+                            categorical: true
                         };
+                        categories[field] = new Set();
                     }
                     if (
                         fields[field].numeric &&
@@ -162,6 +177,13 @@ function processCsv(
                         )
                     ) {
                         fields[field].time = false;
+                    }
+                    if (fields[field].categorical) {
+                        values.forEach(val => categories[field].add(val));
+                        if (categories[field].size > MAX_CATEGORIES) {
+                            fields[field].categorical = false;
+                            categories[field] = undefined;
+                        }
                     }
                 });
                 if (
@@ -202,4 +224,5 @@ class BadHttpResponseError extends Error {
 interface Field {
     numeric?: boolean;
     time?: boolean;
+    categorical?: boolean;
 }
