@@ -57,8 +57,10 @@ a{
   color: $body;
   &:hover, &:focus{
     text-decoration: none;
-    background-color: $magda;
-    border-color: transparent;
+  }
+
+  &:hover{
     color: #ffffff;
+    background-color: $magda;
   }
 }
