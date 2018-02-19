@@ -4,7 +4,7 @@ import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import type { RecordAction, RawDataset } from '../helpers/record';
-import type {Error } from '../types';
+import type {FetchError } from '../types';
 
 export function requestDataset(id: string):RecordAction {
   return {
@@ -20,7 +20,7 @@ export function receiveDataset(json: RawDataset): RecordAction {
   }
 }
 
-export function requestDatasetError(error: Error): RecordAction {
+export function requestDatasetError(error: FetchError): RecordAction {
   return {
     type: actionTypes.REQUEST_DATASET_ERROR,
     error,
@@ -42,7 +42,7 @@ export function receiveDistribution(json: Object): RecordAction {
   }
 }
 
-export function requestDistributionError(error: Error): RecordAction {
+export function requestDistributionError(error: FetchError): RecordAction {
   return {
     type: actionTypes.REQUEST_DISTRIBUTION_ERROR,
     error,

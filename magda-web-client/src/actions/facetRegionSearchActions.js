@@ -4,7 +4,7 @@ import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import type { FacetAction, FacetSearchJson } from '../helpers/datasetSearch';
-import type {Error } from '../types';
+import type {FetchError } from '../types';
 
 export function requestRegions(facetQuery: string ): FacetAction{
   return {
@@ -21,7 +21,7 @@ export function receiveRegions(facetQuery: string , json: Object ): FacetAction{
   }
 }
 
-export function requestRegionsFailed(error: Error ): FacetAction{
+export function requestRegionsFailed(error: FetchError ): FacetAction{
   return {
     type: actionTypes.FACET_RECEIVE_REGIONS_ERROR,
   }

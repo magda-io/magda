@@ -4,7 +4,7 @@ import fetch from 'isomorphic-fetch'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import type { FacetAction, FacetSearchJson } from '../helpers/datasetSearch';
-import type { Error } from '../types';
+import type { FetchError } from '../types';
 
 export function requestPublishers(generalQuery:string):FacetAction{
   return {
@@ -13,7 +13,7 @@ export function requestPublishers(generalQuery:string):FacetAction{
   }
 }
 
-export function requestPublishersFailed(error: Error):FacetAction{
+export function requestPublishersFailed(error: FetchError):FacetAction{
   return {
     type: actionTypes.FACET_REQUEST_PUBLISHERS_FAILED,
     error

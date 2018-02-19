@@ -1,5 +1,5 @@
 // @flow
-import type {Error } from '../types';
+import type {FetchError } from '../types';
 
 export type DatasetDistribution = {
   format: string,
@@ -72,7 +72,7 @@ export type FacetAction = {
   generalQuery?: string,
   facetQuery?: string,
   json?: FacetSearchJson,
-  error?: Error
+  error?: FetchError
 }
 
 
@@ -82,7 +82,7 @@ export type SearchAction = {
   items?: Array<FacetOption>,
   item?: FacetOption,
   json?: DataSearchJson,
-  error?: Error
+  error?: FetchError
 }
 
 
@@ -149,6 +149,6 @@ export type SearchState = {
   publisherOptions: Array<Object>,
   formatOptions: Array<Object>,
   apiQuery: string,
-  error: ?Error,
+  error: ?FetchError,
   strategy: string,
 }
