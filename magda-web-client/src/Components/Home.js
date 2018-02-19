@@ -1,4 +1,3 @@
-// @flow
 import React from 'react';
 import Statistics from '../Components/Statistics';
 import News from '../UI/News';
@@ -22,18 +21,22 @@ class Home extends React.Component {
     return (
       <ReactDocumentTitle title={'Welcome | ' + config.appName}>
       <div className='container home'>
-        <div className='row'>
-          <div className='col-sm-8'>
+        <div className='mui-row'>
+          <div className='mui-col-sm-8'>
+            <h2>About</h2>
+              <div className='about' dangerouslySetInnerHTML={{__html: config.about}}/>
             <h2>Featured datasets</h2>
             <div className='white-box'>
               {this.props.datasets.map((d, i )=><DatasetSummary key={d.identifier || i} dataset={d}/>)}
             </div>
-            <h2>News</h2>
-            <News isFetching={this.props.isNewsFetching} error={this.props.newsFetchingError} newsItems={this.props.newsItems}/>
+
           </div>
-          <div className='col-sm-4'>
-            <h2>data.gov.au statistics</h2>
+          <div className='mui-col-sm-4'>
             <Statistics stats={this.props.stats}/>
+            <div className='latest-news'>
+              <h2>LATEST NEWS</h2>
+              <News isFetching={this.props.isNewsFetching} error={this.props.newsFetchingError} newsItems={this.props.newsItems}/>
+            </div>
           </div>
         </div>
       </div>
@@ -53,7 +56,7 @@ const mapStateToProps=(state)=> {
   return {datasets, isFetching, error, isNewsFetching, newsItems, newsFetchingError, stats}
 }
 
-const mapDispatchToProps=(dispatch: Dispatch<*>)=> {
+const mapDispatchToProps=(dispatch)=> {
   return bindActionCreators({
     fetchFeaturedDatasets: fetchFeaturedDatasetsFromRegistry,
     fetchNewsfromRss: fetchNewsfromRss,

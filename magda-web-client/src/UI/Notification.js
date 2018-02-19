@@ -1,5 +1,7 @@
 import React from 'react';
 import './Notification.css';
+import Button from 'muicss/lib/react/button';
+
 
 function Notification(props) {
   return (
@@ -7,10 +9,9 @@ function Notification(props) {
               <div className='notification__inner'>
                 <div className='notification__heading'>{props.content.title}</div>
                 <div className='notification__body'>{props.content.detail}</div>
-                <button className='btn notification__dismiss-btn'
-                        onClick={props.onDismiss}>
+                <Button onClick={props.onDismiss}>
                         Dismiss
-                </button>
+                </Button>
               </div>
            </div>
   );

@@ -1,5 +1,6 @@
 .facet-region__preview{
-    height: 400px;
+    height: 270px;
+    width: 424px;
 }
 
 .facet-region__preview .map{
@@ -7,5 +8,17 @@
 }
 
 .facet-region.facet-body {
-  width: 600px;
+  width: 460px;
+}
+
+.facet-option__region-type{
+  opacity: 0.5;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.facet-option__region-name{
+  opacity: 0.75;
+  font-size: 14px;
+  line-height: 20px;
 }

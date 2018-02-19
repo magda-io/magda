@@ -1,7 +1,7 @@
 // @flow
 import {parsePublisher} from '../helpers/publisher';
 import type {FeaturedAction} from  '../types';
-import type {Publisher} from  '../helpers/publisher';
+import type {Publisher} from '../helpers/record';
 
 type FeaturedPublisher = {
   publishers: Array<Publisher>,

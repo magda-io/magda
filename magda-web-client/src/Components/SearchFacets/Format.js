@@ -1,10 +1,8 @@
-import {addFormat, removeFormat, resetFormat} from '../../actions/datasetSearchActions';
+import {updateFormats, resetFormat} from '../../actions/datasetSearchActions';
 import {connect} from 'react-redux';
 import {fetchFormatSearchResults} from '../../actions/facetFormatSearchActions';
 import React, { Component } from 'react';
 import FacetBasic from './FacetBasic';
-import toggleBasicOption from '../../helpers/toggleBasicOption'
-import Recommendations from '../Search/Recommendations';
 import queryString from 'query-string';
 
 class Format extends Component {
@@ -14,16 +12,19 @@ class Format extends Component {
     this.onResetFormatFacet = this.onResetFormatFacet.bind(this);
     this.onSearchFormatFacet = this.onSearchFormatFacet.bind(this);
     this.onToggleFormatOption = this.onToggleFormatOption.bind(this);
+    // we use an integer event to notify children of the reset event
+    this.state = {
+      resetFilterEvent: 0
+    }
   }
 
-  onToggleFormatOption(format){
-    toggleBasicOption(format,
-                      this.props.activeFormats,
-                      'format',
-                      removeFormat,
-                      addFormat,
-                      this.props.updateQuery,
-                      this.props.dispatch);
+  onToggleFormatOption(formats){
+    const queryOptions = formats.map(p => p.value);
+    this.props.updateQuery({
+      format: queryOptions
+    });
+    this.props.dispatch(updateFormats(formats));
+    this.props.closeFacet();
   }
 
   onResetFormatFacet(){
@@ -32,43 +33,35 @@ class Format extends Component {
       format: [],
       page: undefined
     })
-    this.props.toggleFacet();
     // update redux
     this.props.dispatch(resetFormat());
+    // let children know that the filter is being reset
+    this.setState({
+      resetFilterEvent: this.state.resetFilterEvent + 1
+    });
   }
 
-  onSearchFormatFacet(facetKeyword){
-    this.props.dispatch(fetchFormatSearchResults(queryString.parse(this.props.location.search).q, facetKeyword))
+  onSearchFormatFacet(){
+    this.props.dispatch(fetchFormatSearchResults(queryString.parse(this.props.location.search).q))
   }
 
   render() {
-    switch (this.props.component) {
-      case 'facet':
-        return (
-          <FacetBasic title='format'
-                      id='format'
-                      hasQuery={Boolean(this.props.activeFormats.length)}
-                      options={this.props.formatOptions}
-                      activeOptions={this.props.activeFormats}
-                      facetSearchResults={this.props.formatSearchResults}
-                      onToggleOption={this.onToggleFormatOption}
-                      onResetFacet={this.onResetFormatFacet}
-                      searchFacet={this.onSearchFormatFacet}
-                      toggleFacet={this.props.toggleFacet}
-                      isOpen={this.props.isOpen}
-          />
-        );
-      case 'recommendations':
-        return (
-          <Recommendations options={this.props.formatOptions}
-                           onClick={this.onToggleFormatOption}
-                           activeOptions={this.props.activeFormats}
-                           description={'Are you searching for items in the following format '}
-          />
-        );
-      default:
-        return null;
-      }
+    return (
+      <FacetBasic title='format'
+                  id='format'
+                  hasQuery={Boolean(this.props.activeFormats.length)}
+                  options={this.props.formatOptions}
+                  activeOptions={this.props.activeFormats}
+                  facetSearchResults={this.props.formatSearchResults}
+                  onToggleOption={this.onToggleFormatOption}
+                  onResetFacet={this.onResetFormatFacet}
+                  searchFacet={this.onSearchFormatFacet}
+                  toggleFacet={this.props.toggleFacet}
+                  isOpen={this.props.isOpen}
+                  closeFacet = {this.props.closeFacet}
+                  resetFilterEvent = {this.state.resetFilterEvent}
+      />
+    );
   }
 }
 

@@ -1,5 +1,5 @@
 // @flow
-import type { SearchState, DataSearchJson, Dataset, Query, FacetOption, Region, SearchAction} from '../types';
+import type { SearchState, DataSearchJson, Dataset, Query, FacetOption, Region, SearchAction} from '../helpers/datasetSearch';
 
 import findIndex from 'lodash.findindex';
 import findMatchingObjs from '../helpers/findMatchingObjs';
@@ -25,7 +25,6 @@ const initialData = {
   activeDateTo:undefined,
   freeText: '',
   publisherOptions: [],
-  temporalOptions: [],
   formatOptions: [],
   apiQuery: '',
   strategy: 'match-all',
@@ -38,7 +37,14 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       return Object.assign({}, state, {
         isFetching: true,
         error: null,
-        apiQuery: action.apiQuery && action.apiQuery
+        apiQuery: action.apiQuery && action.apiQuery,
+        publisherOptions: initialData.publisherOptions,
+        formatOptions: initialData.formatOptions,
+        activePublishers: initialData.activePublishers,
+        activeRegion: initialData.activeRegion,
+        activeDateFrom: initialData.activeDateFrom,
+        activeDateTo: initialData.activeDateTo,
+        activeFormats: initialData.activeFormats
       })
     case 'FETCH_ERROR':
       return Object.assign({}, state, {
@@ -72,15 +78,14 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       let datasets : Array<Dataset> = data && data.dataSets && data.dataSets;
       let hitCount : number = data && data.hitCount && data.hitCount;
 
-      let publisherOptions :Array<FacetOption> = (data && data.facets) ? data.facets[0].options : []
-      let temporalOptions :Array<FacetOption> = data.facets[1].options.sort((a, b)=>( + b.lowerBound - (+ a.lowerBound)));
-      let formatOptions :Array<FacetOption> = data.facets[2].options;
+      let publisherOptions :Array<FacetOption> = (data && data.facets) ? data.facets[0].options: []
+      let formatOptions :Array<FacetOption> = (data && data.facets) ? data.facets[2].options: []
 
       let freeText: string = data.query.freeText;
 
       let activePublishers: Array<FacetOption> = findMatchingObjs(query.publishers, publisherOptions);
-      let activeDateFrom : ?number = query.dateFrom ? +query.dateFrom.slice(0, 4): initialData.activeDateFrom;
-      let activeDateTo : ?number = query.dateTo ? +query.dateTo.slice(0, 4) : initialData.activeDateTo;
+      let activeDateFrom : ?string = query.dateFrom ? query.dateFrom: initialData.activeDateFrom;
+      let activeDateTo : ?string = query.dateTo ? query.dateTo : initialData.activeDateTo;
 
       let activeFormats: Array<FacetOption> = findMatchingObjs(query.formats, formatOptions);;
 
@@ -93,7 +98,6 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
         datasets,
         hitCount,
         publisherOptions,
-        temporalOptions,
         formatOptions,
         freeText,
         activePublishers,
@@ -105,17 +109,11 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       })
 
 
-    case 'ADD_PUBLISHER':
-      let updatedOptions = [...state.activePublishers, action.item];
+    case 'UPDATE_PUBLISHERS':
       return Object.assign({}, state, {
-        activePublishers: updatedOptions
+        activePublishers: action.items
       })
 
-    case 'REMOVE_PUBLISHER':
-     let publisherIndex = findIndex(state.activePublishers, item => item.value === (action.item && action.item.value));
-      return Object.assign({}, state, {
-        activePublishers: [...state.activePublishers.slice(0, publisherIndex), ...state.activePublishers.slice(publisherIndex+1)]
-      })
 
     case 'RESET_PUBLISHER':
       return Object.assign({}, state,
@@ -148,9 +146,9 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       return Object.assign({}, state,
         {activeDateTo: initialData.activeDateTo})
 
-    case 'ADD_FORMAT':
+    case 'UPDATE_FORMATS':
       return Object.assign({}, state, {
-        activeFormats: [...state.activeFormats, action.item]
+        activeFormats: action.items
       })
 
     case 'REMOVE_FORMAT':

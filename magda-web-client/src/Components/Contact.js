@@ -5,6 +5,7 @@ import FacetSearchBox from '../Components/SearchFacets/FacetSearchBox';
 import ContactForm from '../UI/ContactForm';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import Button from 'muicss/lib/react/button';
 import {fetchPublisherSearchResults} from '../actions/facetPublisherSearchActions';
 
 class Contact extends React.Component {
@@ -28,11 +29,10 @@ class Contact extends React.Component {
     }
 
     return(
-    <button type='button'
-            onClick={onClick.bind(this, option)}
+    <Button onClick={onClick.bind(this, option)}
             title={option.value}>
         {option.value}
-    </button>);
+    </Button>);
   }
 
   selectPublisher(publisher){
@@ -64,7 +64,7 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     { fetchPublisherSearchResults : fetchPublisherSearchResults
     },

@@ -1,28 +1,22 @@
-// @flow
-
-import {Link } from 'react-router-dom';
 import './Search.css';
 import {connect} from 'react-redux';
 import {config} from '../../config' ;
 import defined from '../../helpers/defined';
 import Pagination from '../../UI/Pagination';
 import Notification from '../../UI/Notification';
-import PublisherBox from '../../Components/PublisherBox';
 import ReactDocumentTitle from 'react-document-title';
 import React, { Component } from 'react';
 import SearchFacets from '../../Components/SearchFacets/SearchFacets';
-import Publisher from '../../Components/SearchFacets/Publisher';
 import SearchResults from '../SearchResults/SearchResults';
 import MatchingStatus from './MatchingStatus';
 import { bindActionCreators } from 'redux';
 import { fetchSearchResultsIfNeeded, resetDatasetSearch } from '../../actions/datasetSearchActions';
-import {fetchFeaturedPublishersFromRegistry} from '../../actions/featuredPublishersActions';
+import queryString from 'query-string';
+import ProgressBar from '../../UI/ProgressBar';
 
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
 
-import queryString from 'query-string';
-import ProgressBar from '../../UI/ProgressBar';
 
 
 class Search extends Component {
@@ -56,12 +50,6 @@ class Search extends Component {
 
   componentWillReceiveProps(nextProps){
     nextProps.fetchSearchResultsIfNeeded(queryString.parse(nextProps.location.search));
-    if(nextProps.datasets.length > 0 &&
-       nextProps.publisherOptions.length > 0 &&
-       nextProps.publisherOptions.filter(o=>o.identifier).map(o=>o.identifier).toString() !== this.props.publisherOptions.filter(o=>o.identifier).map(o=>o.identifier).toString()){
-      const featuredPublishersById = nextProps.publisherOptions.filter(o=>o.identifier).map(o=> o.identifier);
-      this.props.fetchFeaturedPublishersFromRegistry(featuredPublishersById);
-    }
   }
 
   componentWillUnmount(){
@@ -118,10 +106,6 @@ class Search extends Component {
     return !defined(queryString.parse(this.props.location.search).q) || queryString.parse(this.props.location.search).q.length === 0
   }
 
-  renderSuggestions(){
-    return <div><h3> Try search for </h3><ul>{config.exampleSearch.map(item=><li key={item}><Link to={`search?q=${item}`} key={item}> {item}</Link></li>)}</ul></div>
-  }
-
   onPageChange(i){
     this.context.router.history.push({
       pathname: this.props.location.pathname,
@@ -137,28 +121,18 @@ class Search extends Component {
       {this.props.isFetching && <ProgressBar/>}
         <div className='search'>
           <div className='search__search-body container'>
-          <div className='row'>
-            <div className='col-sm-8'>
+              {searchText.length > 0 && <div className= 'sub-heading'> Filters </div>}
               {searchText.length > 0 &&
                  <SearchFacets updateQuery={this.updateQuery}
                                location={this.props.location}
                  />
                 }
-            </div>
-
-          </div>
-          <div className='row'>
-            <div className='col-sm-8'>
                 {searchText.length > 0 && !this.props.isFetching &&
-                 !this.props.error && <div className='results-count'>{this.props.hitCount} results found</div>}
-                {searchText.length === 0 && <div>{this.renderSuggestions()}</div>}
+                 !this.props.error && <div className='sub-heading'> results ( {this.props.hitCount} )</div>}
                 {searchText.length > 0 &&
                  !this.props.isFetching &&
                  !this.props.error &&
                  <div>
-                 <Publisher updateQuery={this.updateQuery}
-                            component={'recommendations'}
-                 />
 
                  {!this.searchBoxEmpty() &&
                     <MatchingStatus datasets={this.props.datasets}
@@ -187,15 +161,9 @@ class Search extends Component {
                                 type='error'
                                 onDismiss={this.onDismissError}/>
                }
-              </div>
-
-            <div className='col-sm-4'>
-            {(!this.searchBoxEmpty() && this.props.datasets.length > 0) && this.props.featuredPublishers.map(p=><PublisherBox key={p.id} publisher={p}/>)}
             </div>
             </div>
-          </div>
         </div>
-      </div>
       </ReactDocumentTitle>
     );
   }
@@ -206,16 +174,15 @@ Search.contextTypes ={
 }
 
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) =>
+const mapDispatchToProps = (dispatch) =>
  bindActionCreators({
     fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
-    fetchFeaturedPublishersFromRegistry: fetchFeaturedPublishersFromRegistry,
     resetDatasetSearch: resetDatasetSearch
   }, dispatch);
 
 
 function mapStateToProps(state, ownProps) {
-  let { datasetSearch, featuredPublishers } = state;
+  let { datasetSearch } = state;
   return {
     datasets: datasetSearch.datasets,
     publisherOptions: datasetSearch.publisherOptions.slice(0, 5),
@@ -224,8 +191,7 @@ function mapStateToProps(state, ownProps) {
     progress: datasetSearch.progress,
     strategy: datasetSearch.strategy,
     error: datasetSearch.error,
-    freeText: datasetSearch.freeText,
-    featuredPublishers: featuredPublishers.publishers
+    freeText: datasetSearch.freeText
   }
 }
 

@@ -1,9 +1,8 @@
-// @flow
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './PublisherBox.css'
 
-export default function PublisherBox(props: Object){
+export default function PublisherBox(props){
   const publisher = props.publisher;
   return (
     <div className='white-box publisher-box'>

@@ -1,7 +1,5 @@
-// @flow
 // eslint-disable-next-line
 import'es6-shim';
-
 import createLogger from "redux-logger";
 import "./index.css";
 import {
@@ -22,7 +20,7 @@ import PropTypes from 'prop-types';
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
 
-const store: Store = createStore(
+const store = createStore(
   reducer,
   applyMiddleware(
     thunkMiddleware, // lets us dispatch() functions

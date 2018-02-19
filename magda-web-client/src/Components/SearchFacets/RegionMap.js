@@ -74,15 +74,15 @@ class RegionMap extends Component {
     generateStyle(region) {
         return (feature) => {
           return{
-            color: (region === this.getID(feature)) ? 'rgba(0, 181, 255, 0.6)' : 'rgba(0,0,0,0)',
+            color: (region === this.getID(feature)) ? 'rgba(245, 88, 96, 0.6)' : 'rgba(0,0,0,0)',
             outline: {
                 color: '#ddd',
                 size: 1
             },
             selected: {
-                color: (region === this.getID(feature)) ? 'rgba(0, 181, 255, 0.6)' : 'rgba(0,0,0,0)',
+                color: (region === this.getID(feature)) ? 'rgba(245, 88, 96, 0.6)' : 'rgba(0,0,0,0)',
                 outline: {
-                    color: '#00B5FF'
+                    color: '#ffffff'
                 }
             }
         }};
@@ -107,8 +107,9 @@ class RegionMap extends Component {
               /*onEachFeature: onEachFeature, */
               clickableLayers: (props.interaction) ? undefined : [], // Enable clicks for all layers if interaction
               mutexToggle: true,
-              onClick: function(evt) { if (evt.type === 'click' && evt.feature){
+              onClick: function(evt) {if (evt.type === 'click' && evt.feature){
                   props.onClick(evt.feature);
+                  evt.originalEvent.stopPropagation();
               }},
               getIDForLayerFeature: this.getID
           });

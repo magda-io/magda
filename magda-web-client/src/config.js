@@ -6,7 +6,14 @@ import Temporal from "./Components/SearchFacets/Temporal";
 
 const fallbackApiHost = "http://magda-dev.terria.io/";
 
-const serverConfig = window.magda_server_config || {};
+const serverConfig: {
+    authApiBaseUrl?: string,
+    baseUrl?: string,
+    discussionsApiBaseUrl?: string,
+    previewMapBaseUrl?: string,
+    registryApiBaseUrl?: string,
+    searchApiBaseUrl?: string,
+} = window.magda_server_config || {};
 
 const registryApiUrl =
   serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
@@ -15,6 +22,7 @@ const proxyUrl = previewMapUrl + "proxy/";
 
 export const config = {
   appName: "data.gov.au",
+  about: "<p><span style='color:#F55860;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
   baseUrl: serverConfig.baseUrl || fallbackApiHost,
   searchApiUrl:
     serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
@@ -64,32 +72,19 @@ export const config = {
     { id: "format", component: Format }
   ],
   headerNavigation: [
-    ["Search", "search"],
+    ["About", "page/about"],
+    ["Publishers", "publishers"],
     ...(serverConfig.disableAuthenticationFeatures
       ? []
-      : [["Projects", "projects"]]),
-    ["Publishers", "publishers"],
-    ["About", "page/about"]
+      : [["Projects", "projects"]])
   ],
   footerNavigation: [
     {
       category: "Search",
       links: [
         ["Data sources", "page/data-sources"],
-        ["Search syntax", "page/search-syntax"]
       ]
     },
-    ...(serverConfig.disableAuthenticationFeatures
-      ? []
-      : [
-          {
-            category: "Projects",
-            links: [
-              ["Browse projects", "projects"],
-              ["Start a project", "projects/new"]
-            ]
-          }
-        ]),
     {
       category: "Publishers",
       links: [
@@ -100,7 +95,6 @@ export const config = {
     {
       category: "Developers",
       links: [
-        ["Architecture", "page/architecture"],
         ["API Docs", "http://search.data.gov.au/api/v0/registry/swagger/index.html"]
       ]
     },

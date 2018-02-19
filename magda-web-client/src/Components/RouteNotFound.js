@@ -1,7 +1,5 @@
-//@flow
 import React from 'react';
 import ErrorHandler from "./ErrorHandler";
-
 
 export default function RouteNotFound() {
   return (

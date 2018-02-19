@@ -1,38 +1,28 @@
-//@flow
 import ReactDocumentTitle from 'react-document-title';
 import React from 'react';
-import logo from './assets/logo.svg';
 import { config } from './config.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
-
 import SearchBox from './Components/Search/SearchBox';
 import AccountNavbar from './Components/Account/AccountNavbar';
-import d61logo from './data61-logo.png';
-
-
 import ProjectsViewer from './Components/Project/ProjectsViewer';
 import ProjectDetails from './Components/Project/ProjectDetails';
 import CreateProject from './Components/Project/CreateProject';
-
 import PublishersViewer from './Components/Publisher/PublishersViewer';
 import PublisherDetails from './Components/Publisher/PublisherDetails';
-
-
-
 import Home from './Components/Home';
 import RouteNotFound from './Components/RouteNotFound';
 import Search from './Components/Search/Search';
 import RecordHandler from './Components/RecordHandler';
 import { staticPageRegister } from './content/register';
-
 import Feedback from './Components/Feedback';
 import Contact from './Components/Contact';
 import Account from './Components/Account/Account';
 import Login from './Components/Account/Login';
 import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
+import Container from 'muicss/lib/react/container';
+import d61logo from './data61-logo.png';
 
 import {
   Route,
@@ -40,17 +30,10 @@ import {
   Switch
 } from 'react-router-dom';
 
-import { ExtraSmall, Small } from './UI/Responsive';
 import './AppContainer.css';
 
 class AppContainer extends React.Component {
-  state :{
-    isOpen: boolean,
-  }
-  constructor(props: {
-    location: Location,
-    children: React$Element<any>
-  }) {
+  constructor(props) {
     super(props);
     this.state = { isOpen: false};
   }
@@ -58,7 +41,7 @@ class AppContainer extends React.Component {
   componentWillMount(){
     this.props.requestWhoAmI()
   }
-  renderLink(link: string) {
+  renderLink(link) {
     const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
     if (!regex.test(link[1])) {
       return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
@@ -96,108 +79,39 @@ class AppContainer extends React.Component {
 
 
   render() {
-    const headerNavs: Array<Array<string>> = config.headerNavigation;
-    const footerNavs: Array<Object> = config.footerNavigation;
+    const headerNavs = config.headerNavigation;
+    const footerNavs = config.footerNavigation;
     return (
       <ReactDocumentTitle title={config.appName}>
-        <div>
-          <nav className='appContainer__nav'>
-            <div className='container'>
-              <div className='row'>
-                <Small>
-                  <div className='col-sm-2'>
-                    <div className='navbar-header'>
-                      <a className='navbar-brand' href='/'>
-                        <img
-                          className='logo'
-                          alt='data.gov.au-alpha'
-                          src={logo}
-                        />
-                      </a>
-                    </div>
-                  </div>
-                  <div className='col-sm-10 nav-links'>
-                    {config.disableAuthenticationFeatures || <AccountNavbar />}
+      <div>
+        <Container className='app-container'>
+             <table width="100%" className='nav-table'>
+               <tbody>
+                 <tr style={{verticalAlign: 'middle'}}>
+                   <td className="logo"><Link to='/'>{config.appName}</Link></td>
+                   <td className="nav-bar-right">
+                     {headerNavs.map(nav =>
+                         <Link key={nav[1]} to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
+                     )}
+                     {config.disableAuthenticationFeatures || <AccountNavbar />}
+                   </td>
+                 </tr>
+               </tbody>
+             </table>
 
-                    <ul className='nav navbar-nav'>
-                      {headerNavs.map(nav =>
-                        <li key={nav[1]}>
-                          <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                </Small>
-                <ExtraSmall>
-                  <div className='mobile-nav'>
-                    <button
-                      className='btn navbar-toggle'
-                      onClick={() => this.toggleMenu()}
-                    >
-                      {' '}<span className='sr-only'>Toggle navigation</span>
-                      {' '}MENU
-                      {' '}
-                    </button>
-                    <a className='navbar-brand' href='/'>
-                      <img
-                        className='logo'
-                        alt='data.gov.au-alpha'
-                        src={logo}
-                      />
-                    </a>
-                    <div
-                      className={`navbar-collapse collapse ${this.state.isOpen
-                        ? 'in'
-                        : ''}`}
-                      aria-expanded={this.state.isOpen ? true : false}
-                    >
-                      <ul className='nav nav-pills nav-stacked'>
-                        {headerNavs.map(nav =>
-                          <li key={nav[1]}>
-                            <Link to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </ExtraSmall>
+          <SearchBox location={this.props.location} />
 
-              </div>
-              <div className='row nav_second'>
-                <div className='col-sm-8'>
-                  <h1 className='search-heading'> {config.appTitle}</h1>
-                  <SearchBox location={this.props.location} />
-                  {' '}
-                </div>
-                <Small>
-                  <div className='col-sm-4'>
-                    <div className='appContainer__suggestion'>
-                      Try Search for
-                      <ul className='list-unstyled'>
-                      {config.suggestion.map(s=>
-                        <li key={s}><Link to={'/search?q=' + encodeURI(s)}>
-                        {s}
-                        </Link></li>)}
-                    </ul>
+          {this.renderBody()}
 
-                      <Link to={'/page/search-syntax'}> Learn about the new search</Link>
-                    </div>
-                  </div>
-                </Small>
-              </div>
-            </div>
-          </nav>
+        </Container>
 
-          <div id='content' className='clearfix'>
-            {this.renderBody()}
-          </div>
-          <footer className='footer clearfix'>
-            <div className='container'>
-              <ul className='nav row'>
+        <footer className='footer clearfix'>
+            <Container>
+              <ul className='mui-list--unstyled'>
                 {footerNavs.map(item =>
-                  <li key={item.category} className='col-md-2 col-sm-4'>
+                  <li key={item.category} className='mui-col-md-2 mui-col-sm-4'>
                     <span className='nav-title'>{item.category}</span>
-                    <ul className='nav nav-pills nav-stacked'>
+                    <ul className='mui-list--unstyled'>
                       {item.links.map(link =>
                         <li key={link[1]}>{this.renderLink(link)}</li>
                       )}
@@ -206,8 +120,7 @@ class AppContainer extends React.Component {
                 )}
               </ul>
               <div className='copyright'> Developed by <img src={d61logo} alt='data61-logo'/></div>
-            </div>
-
+            </Container>
           </footer>
         </div>
       </ReactDocumentTitle>
@@ -216,7 +129,7 @@ class AppContainer extends React.Component {
 }
 
 
-const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const  mapDispatchToProps = (dispatch) => {
   return bindActionCreators({
     requestWhoAmI: requestWhoAmI,
   }, dispatch);

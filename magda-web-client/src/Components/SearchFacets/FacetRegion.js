@@ -1,13 +1,12 @@
 import 'leaflet/dist/leaflet.css';
 import './FacetRegion.css';
 import React, { Component } from 'react';
-import DropDown from '../../UI/DropDown';
 import FacetHeader from './FacetHeader';
 import RegionMap from './RegionMap';
-import FacetSearchBox from './FacetSearchBox';
+import RegionSearchBox from './RegionSearchBox';
 import defined from '../../helpers/defined';
 import RegionSummray from './RegionSummary';
-
+import Button from 'muicss/lib/react/button';
 /*
 * the region (location) facet facet, extends Facet class
 */
@@ -17,8 +16,8 @@ class FacetRegion extends Component {
         this.renderOption = this.renderOption.bind(this);
         this.onToggleOption = this.onToggleOption.bind(this);
         this.onFeatureClick = this.onFeatureClick.bind(this);
-        this.selectRegionType = this.selectRegionType.bind(this);
-
+        this.onApplyFilter = this.onApplyFilter.bind(this);
+        this.searchBoxValueChange = this.searchBoxValueChange.bind(this);
         /**
          * @type {object}
          * @property {boolean} popUpIsOpen whether the popup window that shows the bigger map is open or not
@@ -27,7 +26,9 @@ class FacetRegion extends Component {
             _activeRegion: {
                regionId: undefined,
                regionType: undefined
-             }
+             },
+            showMap: true,
+            applyButtonDisabled: true
         }
     }
 
@@ -40,7 +41,10 @@ class FacetRegion extends Component {
     }
 
     onToggleOption(option){
-        this.props.onToggleOption(option);
+        this.setState({
+          applyButtonDisabled: false,
+          _activeRegion: option
+        })
     }
 
     onFeatureClick(feature){
@@ -54,83 +58,66 @@ class FacetRegion extends Component {
           regionId: feature.properties[regionProp],
           regionName: feature.properties[nameProp]
         };
-
       this.setState({
+        applyButtonDisabled: false,
         _activeRegion: region
       });
-      this.props.onToggleOption(region);
-
-    }
-
-    selectRegionType(regionType){
-        this.setState({
-            _activeRegion: Object.assign({}, this.state._activeRegion, {regionType: regionType.id})
-        })
     }
 
 
+    onApplyFilter(){
+      this.props.onToggleOption(this.state._activeRegion);
+    }
 
+    searchBoxValueChange(value){
+      this.setState({
+        showMap: !value || value.length === 0
+      });
+    }
     // see Facet.renderOption(option, optionMax, onFocus)
     // Here is only for mark up change
     renderOption(option, onClick, optionMax, onFocus){
      let regionType = option.regionType;
       return (
-            <button type='button'
-                    ref={b=>{if(b != null && onFocus === true){b.focus()}}}
-                    className='btn-facet-option btn btn-facet-option__location'
+            <button className='btn-facet-option mui-btn btn-facet-option__location'
                     onClick={onClick.bind(this, option)}
-                    title={option.regionName}>
-              <span className='btn-facet-option__name'>{option.regionName}</span><br />
-              <span className='btn-facet-option__detail'>
+                    title={option.regionName}
+                    ref={b=>{if(b != null && onFocus === true){b.focus()}}}
+                    type='button'>
+              <div className='facet-option__region-name'>{option.regionName}</div>
+              <div className='facet-option__region-type'>
                 {(defined(regionType) && defined(this.props.regionMapping[regionType])) ?
                   this.props.regionMapping[regionType].description : ''}
-              </span>
+              </div>
             </button>);
     }
 
-    getDropDownOptions(){
-      let ids = Object.keys(this.props.regionMapping);
-      return ids.map(id=> ({
-        id,
-        value: this.props.regionMapping[id].description
-      }))
+    renderMap(){
+      return (<div>
+                <div className='facet-region__preview'>
+                  <RegionMap title='region'
+                             id='region'
+                             interaction={true}
+                             region={this.state._activeRegion}
+                             regionMapping={this.props.regionMapping}
+                             onClick={this.onFeatureClick}/>
+                      </div>
+                      <RegionSummray regionMapping={this.props.regionMapping} region={this.state._activeRegion}/>
+                      <div className='facet-footer'>
+                          <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
+                          <Button variant="flat" onClick={this.onApplyFilter} disabled={this.state.applyButtonDisabled}> Apply </Button>
+                      </div>
+              </div>)
     }
-
-    getActiveRegionType(){
-      let region = this.state._activeRegion;
-      let regionType = '';
-      if(this.props.regionMapping){
-        if(defined(region.regionType) && this.props.regionMapping[region.regionType] && this.props.regionMapping[region.regionType].description){
-          regionType = this.props.regionMapping[region.regionType].description
-        }
-      }
-      return regionType;
-    }
-
 
     renderBox(){
         return (<div className='facet-body facet-region'>
-                    <FacetSearchBox renderOption={this.renderOption}
-                                    onToggleOption={this.onToggleOption}
-                                    options={this.props.facetSearchResults}
-                                    searchFacet={this.props.searchFacet}/>
-                    <button className='btn btn-reset' onClick={this.props.onResetFacet}> Clear </button>
-                    {defined(this.props.regionMapping) &&
-                                <DropDown activeOption={this.getActiveRegionType()}
-                                          options={this.getDropDownOptions()}
-                                          select={this.selectRegionType}/>
-                      }
-                    <RegionSummray regionMapping={this.props.regionMapping}
-                                 region={this.state._activeRegion}/>
-                    <div className='facet-region__preview'>
-                        <RegionMap title='region'
-                               id='region'
-                               interaction={true}
-                               region={this.state._activeRegion}
-                               regionMapping={this.props.regionMapping}
-                               onClick={this.onFeatureClick}
-                        />
-                    </div>
+                    <RegionSearchBox renderOption={this.renderOption}
+                                     onToggleOption={this.onToggleOption}
+                                     options={this.props.facetSearchResults}
+                                     searchFacet={this.props.searchFacet}
+                                     searchBoxValueChange ={this.searchBoxValueChange}/>
+                    {this.state.showMap && this.renderMap()}
                 </div>)
     }
 
@@ -139,6 +126,7 @@ class FacetRegion extends Component {
             <div className='facet-wrapper'>
                <FacetHeader onResetFacet={this.props.onResetFacet}
                      title={this.props.title}
+                     id={this.props.id}
                      activeOptions={[this.props.activeRegion]}
                      hasQuery={this.props.hasQuery}
                      onClick={this.props.toggleFacet}/>

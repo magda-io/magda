@@ -2,7 +2,8 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import type { FacetAction, Dispatch, GetState } from "../types";
+import type { Dispatch, GetState } from "../types";
+import type {FacetAction} from '../helpers/datasetSearch'
 
 export function requestWhoAmI() {
   return (dispatch: Dispatch, getState: GetState) => {

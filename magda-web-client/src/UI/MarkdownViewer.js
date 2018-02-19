@@ -2,35 +2,18 @@ import React from 'react';
 import MarkdownIt from 'markdown-it';
 import './MarkdownViewer.css';
 import defined from '../helpers/defined';
+import truncate from 'html-truncate';
 var DOMPurify = require('dompurify/dist/purify');
 
 class MarkdownViewer extends React.Component  {
-  constructor(props) {
-   super(props);
-   this.state = {isCollapsed: true};
- }
-
- componentDidMount(){
-   this.notifyParentOfContentLength();
- }
-
- componentWillReceiveProps(nextProps){
-   if(nextProps.markdown !== this.props.markdown){
-     this.notifyParentOfContentLength();
-   }
- }
-
- notifyParentOfContentLength(){
-   const numberOfChildrenFromMarkdownAsHtml = this.markdown.children.length;
-   if (this.props.updateContentLength){
-     this.props.updateContentLength(numberOfChildrenFromMarkdownAsHtml);
-   }
- }
-
  render(){
-   let markdown = {__html: markdownToHtml(this.props.markdown)};
+   let html = markdownToHtml(this.props.markdown);
+   if(this.props.truncate === true){
+       html = truncate(html, 150);
+   }
+   let markdown = {__html: html};
    return(
-      <div className='markdown' dangerouslySetInnerHTML={markdown} ref={markdown => this.markdown = markdown}></div>
+      <div className='markdown' dangerouslySetInnerHTML={markdown}/>
    )
  }
 }

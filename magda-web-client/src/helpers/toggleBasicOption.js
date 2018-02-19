@@ -1,5 +1,5 @@
 // @flow
-import type { FacetOption } from '../types';
+import type { FacetOption } from '../helpers/datasetSearch';
 
 
 export default function toggleBasicOption(option: FacetOption, activeOptions: Array<FacetOption>, key: string,  removeOption: Function, addOption:Function, updateQuery: Function, dispatch: Function) {

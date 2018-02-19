@@ -21,8 +21,8 @@ class Region extends Component {
       regionType,
       page: undefined
     });
-
     this.props.dispatch(addRegion(region));
+    this.props.closeFacet();
   }
 
   onResetRegionFacet(){
@@ -31,8 +31,8 @@ class Region extends Component {
       regionType: undefined,
       page: undefined
     });
-    this.props.toggleFacet();
     this.props.dispatch(resetRegion());
+    this.props.closeFacet();
   }
 
   onSearchRegionFacet(facetKeyword){
