@@ -4,17 +4,22 @@ import Tabs from 'muicss/lib/react/tabs';
 import Tab from 'muicss/lib/react/tab';
 import ChartConfig from './ChartConfig';
 import defined from '../helpers/defined';
-import fetch from 'isomorphic-fetch';
 import {fetchPreviewData} from '../actions/previewDataActions';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
-const VEGAMARK = ['area', 'bar', 'circle', 'line', 'point', 'rect', 'square', 'text', 'tick'];
-const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
+import VegaLite from 'react-vega-lite';
 
 class DataPreviewChart extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      chartType: 'line',
+      chartTitle: '',
+      Yaxis: '',
+      xAxis: '',
+      xScale: 'temporal',
+      yScale: 'quantitative'
+    }
   }
 
   componentWillMount(){
@@ -38,11 +43,32 @@ class DataPreviewChart extends Component {
   }
 
   renderChart(){
-    debugger
-    return (<div className='mui-row'>
-              <div className='mui-col-sm-6'>Chart</div>
-              <div className='mui-col-sm-6'><ChartConfig/></div>
-            </div>)
+    const previewData = this.props.data[this.props.distribution.identifier];
+    if(defined(previewData)){
+      const spec = {
+        "height": 200,
+        "description": this.state.title,
+        "mark": this.state.chartType,
+        "encoding": {
+          "x": {"field": previewData.meta.chartFields.time[0], "type": this.state.xScale},
+          "y": {"field": previewData.meta.chartFields.numeric[0], "type": this.state.yScale}
+        }
+      }
+
+      const data ={
+        values: previewData.data
+      }
+
+      return (<div className='mui-row'>
+                <div className='mui-col-sm-6'><VegaLite spec={spec} data={data}/></div>
+                <div className='mui-col-sm-6'><ChartConfig chartType={this.state.chartType}
+                                                           chartTitle={this.state.chartTitle}
+                                                           xScale={this.state.xScale}
+                                                           yScale={this.state.yScale}/></div>
+              </div>)
+    }
+    return <div>no chart here</div>
+
   }
 
   renderTable(){

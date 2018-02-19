@@ -14,6 +14,11 @@ import com.typesafe.config.Config
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.event.Logging
+import scala.concurrent.Await
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+import java.util.concurrent.TimeoutException
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._

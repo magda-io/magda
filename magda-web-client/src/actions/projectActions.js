@@ -5,7 +5,7 @@ import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
 import {validateProjectName, validateProjectDescription} from '../helpers/project';
 import type {ProjectAction, RawProject, RawProjects, ProjectProps} from '../helpers/project';
-import type { Dispatch, GetState, Error } from '../types';
+import type { Dispatch, GetState, FetchError } from '../types';
 // import {browserHistory} from 'react-router-dom';
 
 export function requestProjects():ProjectAction {
@@ -21,7 +21,7 @@ export function receiveProjects(json: RawProjects): ProjectAction {
   }
 }
 
-export function requestProjectsError(error: Error ): ProjectAction {
+export function requestProjectsError(error: FetchError ): ProjectAction {
   return {
     type: actionTypes.REQUEST_PROJECTS_ERROR,
     error,
@@ -42,7 +42,7 @@ export function receiveProject(json: RawProject): ProjectAction {
   }
 }
 
-export function requestProjectError(error: Error): ProjectAction {
+export function requestProjectError(error: FetchError): ProjectAction {
   return {
     type: actionTypes.REQUEST_PROJECT_ERROR,
     error,
@@ -82,7 +82,7 @@ export function createProjectSuccess(json: RawProject, showNotification: boolean
   };
 }
 
-export function createProjectFailure(error: Error): ProjectAction {
+export function createProjectFailure(error: FetchError): ProjectAction {
   return {
     type: actionTypes.CREATE_PROJECT_FAILURE,
     error
@@ -102,7 +102,7 @@ export function updateProjectSuccess(json: ProjectProps){
   }
 }
 
-export function updateProjectFailure(error: Error){
+export function updateProjectFailure(error: FetchError){
   return {
     type: actionTypes.UPDATE_PROJECT_FAILURE,
     error

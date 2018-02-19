@@ -80,7 +80,6 @@ export function fetchPreviewData(distribution){
             complete: function(data) {
               data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
               data.meta.chartFields = distribution.chartFields;
-
               dispatch(receivePreviewData({[distribution.identifier]: data}))
             },
             error: (error)=>{dispatch(requestPreviewDataError(error))}

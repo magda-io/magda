@@ -1,57 +1,33 @@
-//TODO make synonym table
-//TODO fill out all formats that are possible in here
-export enum Formats {
-    SVG = "SVG",
-    HTML = "HTML",
-    XML = "XML",
-    XLSX = "XLSX",
-    PDF = "PDF",
-    TXT = "TXT",
-    DOCX = "DOCX",
-    MSWORD = "MSWORD",
-    OTHER = "OTHER"
-}
-
 /**
  * Tries and find the Magda-readable file format from this raw format
  * @param rawFormat The format collected directly from some datasource
  */
-export function getCommonFormat(
-    rawFormat: string,
-    synonymObject: any
-): Formats {
-    let commonFormat: Formats = (<any>Formats)[
-        rawFormat.toString().toUpperCase()
-    ];
-    if (commonFormat) {
-        return commonFormat;
+export function getCommonFormat(rawFormat: string, synonymObject: any): string {
+    const format = rawFormat.toString().toUpperCase();
+    if (synonymObject[format]) {
+        return format;
     } else {
         for (let label of Object.keys(synonymObject)) {
             for (var i = 0; i < synonymObject[label].length; i++) {
                 if (
-                    synonymObject[label][i].toString().toLowerCase() ===
-                    rawFormat.toString().toLowerCase()
+                    synonymObject[label][i].toString().toUpperCase() === format
                 ) {
-                    return (
-                        (<any>Formats)[label.toString().toUpperCase()] ||
-                        new Error(
-                            "There is no " +
-                                label +
-                                " format in the Formats enum"
-                        )
-                    );
+                    return label.toUpperCase();
                 }
             }
         }
 
-        throw new Error(
-            "Couldn't find an equivelant synonym for: " +
-                rawFormat.toString().toLowerCase()
-        );
+        if (format.startsWith("WWW:")) {
+            // There are a million WWW: formats - if we haven't synonym'd them as HTML, assume they're rubbish
+            return null;
+        } else {
+            // Can't find a synonym, just return the actual format.
+            return rawFormat.toUpperCase();
+        }
     }
 }
 
 export interface SelectedFormat {
-    format: Formats;
+    format: string;
     correctConfidenceLevel: number;
 }
