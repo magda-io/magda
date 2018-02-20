@@ -25,6 +25,7 @@
 * Added preview map support for geojson data type
 * Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
 * Map previewer will zoom to dataset (except KML data)
+* Add Google Analytics Tag Manager Code / VWO code to `<head>`
 * Map previewer will pick data distribution with best support for a dataset
 * Map previewer will communicate with TerriaJs via `postMessage` rather than url
 * Default map for map previewer has been changed to `Positron (Light)`
