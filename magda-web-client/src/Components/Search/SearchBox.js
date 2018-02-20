@@ -13,7 +13,7 @@ import search from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
 import queryString from 'query-string';
-import Particles from '../../UI/Particles';
+// import Particles from '../../UI/Particles';
 
 
 class SearchBox extends Component {

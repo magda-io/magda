@@ -44,11 +44,11 @@ export default class FeedbackForm extends React.Component {
 
       return (
            <div className='feedback-form'>
-                <Button className='feedback-button' onClick={()=>this.setState({isOpen: true})}><img src={feedback}/>Give feedback</Button>
+                <Button className='feedback-button' onClick={()=>this.setState({isOpen: true})}><img alt='feedback' src={feedback}/>Give feedback</Button>
               {this.state.isOpen && (<div className='feedback-form-inner'>
                    <div className='feedback-form-header'>
                        {preamble}
-                       <Button className='close-btn' onClick={()=>{this.setState({isOpen: false})}} title='close feedback'><img src={close}/></Button>
+                       <Button className='close-btn' onClick={()=>{this.setState({isOpen: false})}} title='close feedback'><img alt='close' src={close}/></Button>
                    </div>
                    <form>
                        <Input label="Name" value={this.state.name} onChange={this.changeValue.bind(this, 'name')}/>
