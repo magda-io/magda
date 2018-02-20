@@ -55,8 +55,8 @@ export default class FeedbackForm extends React.Component {
                        <Input label="Email" value={this.state.email} onChange={this.changeValue.bind(this, 'email')}/>
                        <Input label="Feedback" value={this.state.feedback} onChange={this.changeValue.bind(this, 'feedback')} />
                        <div className='feedback-form-footer'>
-                        <Button className='send-btn' onSubmit={this.onSubmit}>Send</Button>
                         <Button variant="flat" onClick={this.onCancel}>Cancel</Button>
+                        <Button className='send-btn' onSubmit={this.onSubmit}>Send</Button>
                       </div>
                    </form>
                </div>)}
