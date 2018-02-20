@@ -26,6 +26,9 @@
   .badge{
     display: block;
   }
+  .badge:first-letter{
+    text-transform: uppercase;
+  }
 }
 
 .temporal-aspect-viewer{

@@ -5,6 +5,7 @@ import MarkdownViewer from '../../UI/MarkdownViewer';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import renderDistribution from '../../Components/Distribution';
+import uniq from 'lodash.uniq';
 import './RecordDetails.css';
 
 class DatasetDetails extends Component{
@@ -40,13 +41,7 @@ class DatasetDetails extends Component{
             <div className='record-details__sidebar mui-col-sm-4'>
                 <div className='tags'>
                   <h5>Tags</h5>
-                  {dataset.tags && dataset.tags.reduce((acc,cur)=>{
-                      const stdStr = cur.toLowerCase().trim().replace(/^[\u00C0-\u1FFF\u2C00-\uD7FF\w]|\s[\u00C0-\u1FFF\u2C00-\uD7FF\w]/g, function(letter) {
-                        return letter.toUpperCase();
-                      });
-                      if(acc.indexOf(stdStr)==-1) acc.push(stdStr);
-                      return acc;
-                  },[]).map(t=><span className='badge'><Link key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link></span>)}
+                  {dataset.tags && uniq(dataset.tags.map(item=>item.toLowerCase())).map(t=><span className='badge'><Link key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link></span>)}
                 </div>
             </div>
             </div>
