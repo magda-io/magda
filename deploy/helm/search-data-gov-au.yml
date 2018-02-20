@@ -39,6 +39,8 @@ elasticsearch:
             requests:
                 cpu: 800m
                 memory: 6000Mi
+feedback-api:
+  gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
 gateway:
     loadBalancerIP: "35.189.8.102"
     auth:

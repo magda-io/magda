@@ -16,6 +16,7 @@
         "magda-discussions-api/",
         "magda-discussions-db/",
         "magda-elastic-search/",
+        "magda-feedback-api/",
         "magda-gateway/",
         "magda-indexer/",
         "magda-int-test/",
