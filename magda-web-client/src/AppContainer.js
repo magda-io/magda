@@ -10,7 +10,8 @@ import ProjectDetails from './Components/Project/ProjectDetails';
 import CreateProject from './Components/Project/CreateProject';
 import PublishersViewer from './Components/Publisher/PublishersViewer';
 import PublisherDetails from './Components/Publisher/PublisherDetails';
-import Banner from './UI/Banner';
+import Banner from './UI/Banner'
+import FeedbackForm from './UI/FeedbackForm';
 import Home from './Components/Home';
 import RouteNotFound from './Components/RouteNotFound';
 import Search from './Components/Search/Search';
@@ -86,6 +87,7 @@ class AppContainer extends React.Component {
       <ReactDocumentTitle title={config.appName}>
       <div>
         <Banner/>
+        <FeedbackForm />
         <Container className='app-container'>
              <table width="100%" className='nav-table'>
                <tbody>

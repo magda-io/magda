@@ -4,14 +4,26 @@
   background: $banner-background;
   color:$banner-text;
   padding: 8px 0;
+  position: relative;
   a{
     color: $banner-text;
     border-bottom: solid 1px $banner-text;
+    &:hover, &:focus{
+      background: $banner-text;
+      color: $banner-background;
+    }
   }
-  button{
+  .close-btn{
     background: transparent;
     color: $banner-text;
     border: none;
     box-shadow: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  img{
+    height: 24px;
+    width: 24px;
   }
 }
