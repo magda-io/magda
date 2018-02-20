@@ -35,7 +35,7 @@ const createIssueUrl = url.format(parsedCreateIssueUrl);
 var app = express();
 app.use(require("body-parser").json());
 
-app.post('/', function(req, res, next) {
+app.post('/v0', function(req, res, next) {
     var parameters = req.body;
 
     request({
