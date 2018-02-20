@@ -29,4 +29,5 @@ tags:
   sleuther-broken-link: false
   sleuther-linked-data-rating: false
   sleuther-visualization: false
+  sleuther-format: false
   web-server: false

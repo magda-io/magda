@@ -14,7 +14,7 @@ export function getPreviewDataUrl(distribution: ParsedDistribution){
     if((!distribution.linkStatusAvailable || (distribution.linkStatusAvailable && distribution.linkActive)) && (distribution.downloadURL || distribution.accessURL)){
       // try to get preview data
       const format  = distribution.format.toLowerCase();
-      const geoFormat = ["csv-geo-au" , "wfs" , "wms" , "czml" , "kml"];
+      const geoFormat = ["csv-geo-au" , "wfs" , "wms" , "czml" , "kml", "geojson"];
       const normaFormat = ['csv', 'xml', 'json', 'txt', 'html', 'rss' ];
       const impossibleFormat = ['zip' ];
       if(geoFormat.indexOf(format) !== -1){

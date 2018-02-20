@@ -384,6 +384,21 @@ class ElasticSearchIndexer(
       Unit
     }
 
+  def delete(identifiers: Seq[String]): Future[Unit] = {
+    setupFuture.flatMap { client =>
+      client.execute(bulk(identifiers.map(identifier =>
+        ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))))
+    }.map { response =>
+      logger.info("Deleted {} datasets", response.successes.length)
+      
+      response.failures.foreach{failure =>
+        logger.warning("Failed to delete: {}", failure.failureMessage)
+      }
+
+      Unit
+    }
+  }
+
   private def createSnapshot(client: TcpClient, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
     logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
 
