@@ -135,7 +135,7 @@ class DataPreviewMap extends Component {
                         width="100%"
                         height="600px"
                         frameBorder="0"
-                        src={(config.previewMapUrl + "#mode=preview")}
+                        src={(config.previewMapUrl + "#mode=preview&hideExplorerPanel=1")}
                         ref={f=>this.iframeRef=f}
                     />
                 </div>
