@@ -19,6 +19,7 @@ tags:
   discussions-api: false
   discussions-db: false
   elasticsearch: false
+  feedback: false
   gateway: false
   indexer: false
   preview-map: false

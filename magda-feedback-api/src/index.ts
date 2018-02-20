@@ -18,46 +18,64 @@ const argv = yargs
     })
     .option("issuesUrl", {
         describe: "The GitHub issues URL in which to create feedback issues, such as https://api.github.com/repos/TerriaJS/Magda-Feedback/issues",
+        type: "string"
+    })
+    .option("trustProxy", {
+        describe: "The value of the NodeJS 'trustProxy' variable, described at https://expressjs.com/en/guide/behind-proxies.html.",
         type: "string",
-        demand: true
+        default: "loopback, linklocal, uniquelocal"
     })
     .option("accessToken", {
-        describe: "The access token to use to interact with the GitHub API.",
-        type: "string",
-        demand: true
+        describe: "The access token to use to interact with the GitHub API. This can also be specified using the GITHUB_ACCESS_TOKEN environment variable.",
+        type: "string"
     }).argv;
 
-const parsedCreateIssueUrl = url.parse(argv.issuesUrl, true);
-parsedCreateIssueUrl.query.access_token = argv.accessToken;
-const createIssueUrl = url.format(parsedCreateIssueUrl);
+const accessToken = argv.accessToken || process.env.GITHUB_ACCESS_TOKEN;
+const postToGitHub = accessToken && accessToken.length > 0 && argv.issuesUrl && argv.issuesUrl.length > 0;
+
+let gitHubPostUrl = "";
+if (postToGitHub) {
+    const parsedCreateIssueUrl = url.parse(argv.issuesUrl, true);
+    parsedCreateIssueUrl.query.access_token = accessToken;
+    gitHubPostUrl = url.format(parsedCreateIssueUrl);
+} else {
+    console.warn('GitHub issuesUrl and accessToken were not supplied, feedback will only be printed to the console.');
+}
 
 // Create a new Express application.
 var app = express();
+app.set('trust proxy', argv.trustProxy);
 app.use(require("body-parser").json());
 
 app.post('/v0', function(req, res, next) {
     var parameters = req.body;
 
-    request({
-        url: createIssueUrl,
-        method: 'POST',
-        headers: {
-            'User-Agent': argv.userAgent,
-            'Accept': 'application/vnd.github.v3+json'
-        },
-        body: JSON.stringify({
-            title: parameters.title ? parameters.title : 'User Feedback',
-            body: formatBody(req, parameters)
-        })
-    }, function(error, response, body) {
-        res.set('Content-Type', 'application/json');
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-            res.status(response.statusCode).send(JSON.stringify({result: 'FAILED'}));
-        } else {
-            res.status(200).send(JSON.stringify({result: 'SUCCESS'}));
-        }
+    const body = JSON.stringify({
+        title: parameters.title ? parameters.title : 'User Feedback',
+        body: formatBody(req, parameters)
     });
 
+    if (postToGitHub) {
+        request({
+            url: gitHubPostUrl,
+            method: 'POST',
+            headers: {
+                'User-Agent': argv.userAgent,
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: body
+        }, function(error, response, body) {
+            res.set('Content-Type', 'application/json');
+            if (response.statusCode < 200 || response.statusCode >= 300) {
+                res.status(response.statusCode).send(JSON.stringify({result: 'FAILED'}));
+            } else {
+                res.status(200).send(JSON.stringify({result: 'SUCCESS'}));
+            }
+        });
+    } else {
+        console.log(body);
+        res.status(200).send(JSON.stringify({result: 'SUCCESS'}));
+    }
 });
 
 app.listen(argv.listenPort);
