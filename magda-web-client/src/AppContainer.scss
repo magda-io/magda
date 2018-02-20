@@ -8,10 +8,15 @@
 
   .nav-bar-right{
     float: right;
+    a{
+      display: inline-block;
+      margin-right: 10px;
+      border-bottom: 0;
+    }
   }
 
 
-  td, .account-navbar{
+  .account-navbar{
     display: inline-block;
     a{
       color: $body;

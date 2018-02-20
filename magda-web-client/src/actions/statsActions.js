@@ -34,17 +34,14 @@ export function fetchDatasetCount(){
       fetch(url)
       .then(response=>{
         if (response.status !== 200) {
-          dispatch(fetchDatasetCountError({title: response.status, detail: response.statusText}));
+          throw(new Error(response.statusText));
         }
         else {
           return response.json()
         }
       }).then(result=>{
-          if(result && !result.error){
-            return dispatch(receiveDatasetCount(result.totalCount));
-          }
-          return dispatch(fetchDatasetCountError({title: "Error", detail: "Dataset count unavailable at the moment"}));
+          return dispatch(receiveDatasetCount(result.totalCount));
       })
-      .catch(error => dispatch(fetchDatasetCountError({title: "Error", detail: "Dataset count unavailable at the moment"})));
+      .catch(error => dispatch(fetchDatasetCountError({title: error.name, detail: error.message})));
   }
 }

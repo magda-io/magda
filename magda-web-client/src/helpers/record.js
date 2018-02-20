@@ -1,12 +1,12 @@
 // @flow
 import getDateString from './getDateString';
-import type {Error } from '../types';
+import type {FetchError } from '../types';
 // dataset query:
 //aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
 
 export type RecordAction = {
   json?: Object,
-  error?: Error,
+  error?: FetchError,
   type?: string
 }
 
@@ -125,7 +125,7 @@ export type ParsedDataset = {
   temporalCoverage: ? TemporalCoverage,
   publisher: Publisher,
   source: string,
-  error: ?Error
+  error: ?FetchError
 }
 
 

@@ -9,10 +9,11 @@ import React, { Component } from 'react';
 import {fetchRegionMapping} from '../../actions/regionMappingActions';
 import Form from 'muicss/lib/react/form';
 import Input from 'muicss/lib/react/input';
-import search from "../../assets/search.svg";
+import search from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
 import queryString from 'query-string';
+import Particles from '../../UI/Particles';
 
 
 class SearchBox extends Component {
@@ -29,7 +30,9 @@ class SearchBox extends Component {
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
     this.state={
-      searchText: undefined
+      searchText: undefined,
+      width: 0,
+      height: 0
     }
   }
 
@@ -114,10 +117,22 @@ class SearchBox extends Component {
     this.updateSearchText('');
   }
 
+  componentDidMount(){
+    if(this.state.height !== this.container.offsetHeight || this.state.width !== this.container.offsetWidth){
+      this.setState({
+        width: this.container.offsetWidth,
+        height: this.container.offsetHeight
+      })
+    }
+  }
+
 
   render() {
     return (
         <Form className='searchBox'>
+          <div className='searchBox-background' ref={(container)=> this.container = container}>
+          <div className='searchBox-background-overlay'></div>
+            <Particles width={this.state.width} height={this.state.height}/></div>
           <table width='100%'>
             <tbody>
             <tr>
