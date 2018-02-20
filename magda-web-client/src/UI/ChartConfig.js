@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+//import PropTypes from 'prop-types';
 import './ChartConfig.css'
 import Option from 'muicss/lib/react/option';
 import Select from 'muicss/lib/react/select';
