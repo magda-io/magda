@@ -118,21 +118,18 @@ class SearchBox extends Component {
   }
 
   componentDidMount(){
-    if(this.state.height !== this.container.offsetHeight || this.state.width !== this.container.offsetWidth){
-      this.setState({
-        width: this.container.offsetWidth,
-        height: this.container.offsetHeight
-      })
-    }
+    // if(this.state.height !== this.container.offsetHeight || this.state.width !== this.container.offsetWidth){
+    //   this.setState({
+    //     width: this.container.offsetWidth,
+    //     height: this.container.offsetHeight
+    //   })
+    // }
   }
 
 
   render() {
     return (
         <Form className='searchBox'>
-          <div className='searchBox-background' ref={(container)=> this.container = container}>
-          <div className='searchBox-background-overlay'></div>
-            <Particles width={this.state.width} height={this.state.height}/></div>
           <table width='100%'>
             <tbody>
             <tr>
