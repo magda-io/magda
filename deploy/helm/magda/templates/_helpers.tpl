@@ -19,6 +19,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-{{ .Chart.Name }}:{{ .Values.image.tag | default .Values.global.image.tag }}"
 {{- end -}}
 
+{{- define "postgres" -}}
+"{{ .Values.image.repository | default .Values.global.image.repository }}/magda-postgres:{{ .Values.image.tag | default .Values.global.image.tag }}"
+{{- end -}}
+
 {{- define "magda.postgres-env" }}
         {{- if .Values.limits }}
         - name: MEMORY_LIMIT

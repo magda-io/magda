@@ -20,7 +20,7 @@ spec:
       - name: authorization-db
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-        image: {{ template "dockerimage" . }}
+        image: {{ template "postgres" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         ports:
         - containerPort: 5432

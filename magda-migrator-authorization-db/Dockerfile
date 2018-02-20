@@ -1,2 +1,2 @@
-FROM data61/magda-db-migrator:0.0.33-0
+FROM data61/magda-db-migrator
 COPY component/sql/* /flyway/sql/auth/
