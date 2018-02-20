@@ -1,11 +1,11 @@
 import sleuther from "@magda/sleuther-framework/dist/index";
 import onRecordFound from "./onRecordFound";
-import summarizeAspectDef from "./formatAspectDef";
+import formatAspectDef from "./formatAspectDef";
 import commonYargs from "@magda/sleuther-framework/dist/commonYargs";
 
-const ID = "sleuther-summarizer";
+const ID = "sleuther-format";
 
-const argv = commonYargs(ID, 6114, "http://localhost:6114");
+const argv = commonYargs(ID, 6115, "http://localhost:6115");
 
 function sleuthLayerer() {
     return sleuther({
@@ -13,9 +13,9 @@ function sleuthLayerer() {
         id: ID,
         aspects: ["dataset-distributions"],
         optionalAspects: [],
-        async: true,
-        writeAspectDefs: [summarizeAspectDef],
-        onRecordFound: (record, registry) => onRecordFound(record, registry)
+        async: false,
+        writeAspectDefs: [formatAspectDef],
+        onRecordFound
     });
 }
 

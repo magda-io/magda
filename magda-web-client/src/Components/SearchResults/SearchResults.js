@@ -22,7 +22,7 @@ class SearchResults extends Component {
         <ul className='mui-list--unstyled'>
         {
           this.props.searchResults.map((result, i)=>
-            <li key={result.identifier} className='search-results__result'>
+            <li key={i} className='search-results__result'>
               <DatasetSummary dataset={result}/>
             </li>
           )

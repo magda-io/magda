@@ -20,14 +20,28 @@ export function receiveFormats(generalQuery: string, json: Object): FacetAction 
   }
 }
 
+export function requestFormatsFailed(error: Object):FacetAction{
+  return {
+    type: actionTypes.FACET_REQUEST_FORMATS_FAILED,
+    error
+  }
+}
+
 export function fetchFormatSearchResults(generalQuery: string):Object{
   return (dispatch: Function)=>{
     dispatch(requestFormats(generalQuery))
     let url : string = config.searchApiUrl + `facets/format/options?generalQuery=${encodeURIComponent(generalQuery)}&start=0&limit=10000`
     return fetch(url)
-    .then(response => response.json())
-    .then((json: FacetSearchJson) =>
-      dispatch(receiveFormats(generalQuery, json))
-    )
+    .then(response => {
+      if (response.status === 200) {
+        return response.json()
+
+      }
+      throw(new Error(response.statusText));
+    })
+    .then((json: FacetSearchJson) =>{
+        return dispatch(receiveFormats(generalQuery, json));
+    })
+    .catch((error) => dispatch(requestFormatsFailed({title: error.name, detail: error.message})));
   }
 }

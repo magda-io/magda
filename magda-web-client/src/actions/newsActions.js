@@ -3,6 +3,7 @@ import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
 import type { Action } from '../types';
 import parser from 'rss-parser'
+import type {Error } from '../types';
 
 
 export function requestNews():Action {
@@ -18,7 +19,7 @@ export function receiveNews(news: Object): Action {
   }
 }
 
-export function requestNewsError(error: object): Action {
+export function requestNewsError(error: Error): Action {
   return {
     type: actionTypes.REQUEST_NEWS_ERROR,
     error,
@@ -36,20 +37,20 @@ export function fetchNewsfromRss(){
       const url = config.rssUrl;
       fetch(url)
       .then(response=>{
-        if (response.status !== 200) {
-          return dispatch(requestNewsError({title: response.status, detail: response.statusText}));
+        if (response.status === 200) {
+          return response.text();
         }
-        else {
-          return response.text()
-        }
+        throw(new Error(response.statusText));
       }).then(text=>{
         parser.parseString(text, (err, result)=>{
           if(err){
-            dispatch(requestNewsError());
+            console.warn(err);
+            dispatch(requestNewsError({title: 'error', detail: 'can not get news'}));
           } else {
             dispatch(receiveNews(result.feed.entries))
           }
         })
-      });
+      })
+      .catch(error => dispatch(requestNewsError({title: error.name, detail: error.message})))
   }
 }

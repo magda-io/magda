@@ -15,7 +15,6 @@ import RouteNotFound from './Components/RouteNotFound';
 import Search from './Components/Search/Search';
 import RecordHandler from './Components/RecordHandler';
 import { staticPageRegister } from './content/register';
-
 import Feedback from './Components/Feedback';
 import Contact from './Components/Contact';
 import Account from './Components/Account/Account';

@@ -5,8 +5,7 @@ import {
     //should
 } from "chai";
 
-import { Formats } from "../../format-engine/formats";
-let synonymObject = require("../../format-engine/synonyms.json");
+let synonymObject = require("../../../synonyms.json");
 import * as fs from "fs";
 
 import getDcatMeasureResult from "../../format-engine/measures/dcatFormatMeasure";
@@ -58,7 +57,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 synonymObject
             );
 
-            expect(ret.formats[0].format).to.eql(Formats.MSWORD);
+            expect(ret.formats[0].format).to.eql("DOCX");
         });
 
         it("returns a html page when supplied with a htm", function() {
@@ -71,7 +70,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 synonymObject
             );
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0].format).to.eql("HTML");
         });
     });
 
@@ -86,7 +85,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 synonymObject
             );
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0].format).to.eql("HTML");
         });
 
         it("returns a doc when supplied with a doc", function() {
@@ -99,7 +98,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 synonymObject
             );
 
-            expect(ret.formats[0].format).to.eql(Formats.DOCX);
+            expect(ret.formats[0].format).to.eql("DOCX");
         });
 
         it("returns a html page when supplied with a htm", function() {
@@ -112,7 +111,7 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 synonymObject
             );
 
-            expect(ret.formats[0].format).to.eql(Formats.HTML);
+            expect(ret.formats[0].format).to.eql("HTML");
         });
     });
 
@@ -137,9 +136,27 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 synonymObject
             );
 
-            expect(testPDF.formats[0].format).to.eql(Formats.PDF) &&
-                expect(testDOCX.formats[0].format).to.eql(Formats.DOCX) &&
-                expect(testTXT.formats[0].format).to.eql(Formats.TXT);
+            expect(testPDF.formats[0].format).to.eql("PDF") &&
+                expect(testDOCX.formats[0].format).to.eql("DOCX") &&
+                expect(testTXT.formats[0].format).to.eql("TXT");
+        });
+
+        it("Classes CSW WWW: formats in synonyms as HTML", () => {
+            const testWWW: MeasureResult = getDcatMeasureResult(
+                getRecordStubForDcatFormatMeasure("WWW:LINK-1"),
+                synonymObject
+            );
+
+            expect(testWWW.formats[0].format).to.equal("HTML");
+        });
+
+        it("doesn't return CSW WWW: formats unless that aren't synonym'd", () => {
+            const testWWW: MeasureResult = getDcatMeasureResult(
+                getRecordStubForDcatFormatMeasure("WWW:DOWNLOAD"),
+                synonymObject
+            );
+
+            expect(testWWW.formats[0].format).to.equal(null);
         });
 
         it("successfully separates &", function() {
@@ -160,12 +177,12 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 synonymObject
             );
 
-            expect(testPDF.formats[0].format).to.eql(Formats.PDF) &&
-                expect(testPDF.formats[1].format).to.eql(Formats.DOCX) &&
-                expect(testDOCX.formats[0].format).to.eql(Formats.DOCX) &&
-                expect(testDOCX.formats[1].format).to.eql(Formats.PDF) &&
-                expect(testTXT.formats[0].format).to.eql(Formats.TXT) &&
-                expect(testTXT.formats[1].format).to.eql(Formats.HTML);
+            expect(testPDF.formats[0].format).to.eql("PDF") &&
+                expect(testPDF.formats[1].format).to.eql("DOCX") &&
+                expect(testDOCX.formats[0].format).to.eql("DOCX") &&
+                expect(testDOCX.formats[1].format).to.eql("PDF") &&
+                expect(testTXT.formats[0].format).to.eql("TXT") &&
+                expect(testTXT.formats[1].format).to.eql("HTML");
         });
 
         it("successfully chooses () formats", function() {
@@ -188,11 +205,11 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 synonymObject
             );
 
-            expect(testPDF.formats[0].format).to.eql(Formats.DOCX) &&
+            expect(testPDF.formats[0].format).to.eql("DOCX") &&
                 expect(testPDF.formats.length).to.equal(1) &&
-                expect(testDOCX.formats[0].format).to.eql(Formats.PDF) &&
+                expect(testDOCX.formats[0].format).to.eql("PDF") &&
                 expect(testDOCX.formats.length).to.equal(1) &&
-                expect(testTXT.formats[0].format).to.eql(Formats.HTML) &&
+                expect(testTXT.formats[0].format).to.eql("HTML") &&
                 expect(testTXT.formats.length).to.equal(1);
         });
     });

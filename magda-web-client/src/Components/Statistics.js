@@ -1,4 +1,3 @@
-// @flow
 import React from 'react';
 import './Statistics.css';
 
@@ -18,7 +17,7 @@ function renderStats(error, loading, value){
 }
 
 
-export default function Statistics(props: {stats: Stats}){
+export default function Statistics(props){
   const stats= props.stats;
   return (
     <div className='white-box statistics'>

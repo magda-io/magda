@@ -8,7 +8,7 @@ var path = require('path');
 
 module.exports = function(devMode, hot) {
     var config = {
-        entry: './index.js',
+        entry: ['babel-polyfill', './index.js'],
         output: {
             path: path.resolve(__dirname, '..', 'wwwroot', 'build'),
             filename: 'TerriaMap.js',
@@ -33,7 +33,7 @@ module.exports = function(devMode, hot) {
                     loader: 'babel-loader',
                     query: {
                         sourceMap: false, // generated sourcemaps are currently bad, see https://phabricator.babeljs.io/T7257
-                        presets: ['es2015', 'react'],
+                        presets: ['env', 'react'],
                         plugins: [
                             'jsx-control-statements'
                         ]

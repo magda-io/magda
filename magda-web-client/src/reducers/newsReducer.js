@@ -1,5 +1,5 @@
 // @flow
-import type { Error } from '../types';
+import type { FetchError } from '../types';
 
 const initialData = {
   news: [],
@@ -16,7 +16,7 @@ type newsState = {
 type newsAction = {
   type: string,
   news?: Array<Object>,
-  error: Error
+  error: FetchError
 }
 
 const newsReducer = (state: newsState = initialData, action: newsAction) => {

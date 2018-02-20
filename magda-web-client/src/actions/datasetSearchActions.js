@@ -3,7 +3,7 @@ import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type { Error } from '../types';
+import type { FetchError } from '../types';
 import type {DataSearchJson, FacetAction, SearchAction} from '../helpers/datasetSearch';
 
 
@@ -22,7 +22,7 @@ export function receiveResults(apiQuery: string, json: DataSearchJson): SearchAc
   }
 }
 
-export function transferFailed(error: Error): SearchAction {
+export function transferFailed(error: FetchError): SearchAction {
   return {
     type: actionTypes.FETCH_ERROR,
     error
@@ -46,14 +46,12 @@ export function fetchSearchResults(query: string): Store {
       if (response.status === 200) {
           return response.json();
       }
-      return dispatch(transferFailed({title: response.status, detail: response.statusText}))
+      throw(new Error(response.statusText));
     })
     .then((json: DataSearchJson) =>{
-        if(!json.error){
-            return dispatch(receiveResults(query, json));
-        }
-      }
-    )
+      return dispatch(receiveResults(query, json));
+      })
+    .catch(error => dispatch(transferFailed({title: error.name, detail: error.message})))
   }
 }
 

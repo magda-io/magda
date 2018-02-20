@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import renderDistribution from '../../Components/Distribution';
 import './RecordDetails.css';
-import Button from 'muicss/lib/react/button';
 
 class DatasetDetails extends Component{
   state={
@@ -29,7 +28,7 @@ class DatasetDetails extends Component{
                     <MarkdownViewer markdown={source} truncate={false}/>
                   </div>
                   <div className='dataset-details-source'>
-                      <h3 className='clearfix'><span className='section-heading'>Data and APIs</span><Button onClick={()=>this.setState({showPreview: !this.state.showPreview})}>{this.state.showPreview ? 'close preview' : 'show preview'}</Button></h3>
+                      <h3 className='clearfix'><span className='section-heading'>Data and APIs</span></h3>
                       <div className='clearfix'>{dataset.distributions.map(s=> renderDistribution(s, datasetId, this.state.showPreview))}</div>
                   </div>
                   <div className='dataset-details-temporal-coverage'>
@@ -47,7 +46,7 @@ class DatasetDetails extends Component{
                       });
                       if(acc.indexOf(stdStr)==-1) acc.push(stdStr);
                       return acc;
-                  },[]).map(t=><Link className='badge' key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link>)}
+                  },[]).map(t=><span className='badge'><Link key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link></span>)}
                 </div>
             </div>
             </div>
