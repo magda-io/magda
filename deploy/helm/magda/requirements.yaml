@@ -72,6 +72,11 @@ dependencies:
       - all
       - session-db
       - combined-db
+  - name: sleuther-format
+    version: 0.1.0
+    tags:
+      - all
+      - sleuther-format
   - name: sleuther-broken-link
     version: 0.1.0
     tags:

@@ -61,43 +61,16 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
         - name: CLIENT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: cloudsql-db-credentials
-              key: password
+              name: db-passwords
+              key: {{ .Chart.Name }}-client
         {{- end }}
 {{- end -}}
 
 {{- define "magda.postgres-env" -}}
+        {{- template "magda.postgres-migrator-env" . }}
         {{- if .Values.limits }}
         - name: MEMORY_LIMIT
           value: {{ .Values.limits.memory }}
-        {{- end }}
-        - name: CLIENT_USERNAME
-          value: {{- if .Values.global.useCloudSql }} proxyuser {{- else }} client {{- end }}
-        {{- if .Values.global.noDbAuth }}
-        - name: CLIENT_PASSWORD
-          value: password
-        {{- else if .Values.global.useCloudSql }}
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: cloudsql-db-credentials
-              key: password
-        - name: CLIENT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: cloudsql-db-credentials
-              key: password
-        {{- else }}
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: {{ .Chart.Name }}
-        - name: CLIENT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: {{ .Chart.Name }}-client
         {{- end }}
         {{- if .Values.waleBackup }}
         - name: BACKUP

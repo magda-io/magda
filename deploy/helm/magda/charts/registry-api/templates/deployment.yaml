@@ -27,7 +27,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: registry-datastore-client
+              key: registry-db-client
 {{- end }}
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
