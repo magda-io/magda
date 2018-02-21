@@ -9,7 +9,6 @@ import Textarea from 'muicss/lib/react/textarea';
 import feedback from "../assets/feedback.svg";
 import close from "../assets/close.svg";
 import success from "../assets/success.svg";
-import {config} from '../config';
 import Notification from '../UI/Notification';
 
 
@@ -50,8 +49,6 @@ class FeedbackForm extends React.Component {
       [key]: event.target.value
     })
   }
-
-
 
   onDismissNotification(){
     this.props.resetFeedback();

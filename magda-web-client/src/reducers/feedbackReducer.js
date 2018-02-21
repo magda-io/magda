@@ -7,6 +7,17 @@ const initialData = {
   sendFeedbackFailed: false,
 }
 
+type newsState = {
+  isSendingFeedback: boolean,
+  sendFeedbackSuccess: boolean,
+  sendFeedbackFailed: boolean,
+}
+
+type newsAction = {
+  type: string,
+  error: FetchError
+}
+
 const feedbackReducer = (state: newsState = initialData, action: newsAction) => {
   switch (action.type) {
     case 'SEND_FEEDBACKS':
