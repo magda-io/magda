@@ -10,6 +10,7 @@ export default class FeedbackForm extends React.Component {
     super(props);
     this.state = {
       isOpen: false,
+      isSendingFeedback: false,
       name: '',
       email: '',
       feedback: ''
@@ -20,12 +21,15 @@ export default class FeedbackForm extends React.Component {
   }
 
   onSubmit(){
-    debugger
+    this.setState({
+      isSendingFeedback: true
+    })
   }
 
   onCancel(){
     this.setState({
       isOpen: false,
+      isSendingFeedback: false,
       name: '',
       email: '',
       feedback: ''
@@ -50,15 +54,15 @@ export default class FeedbackForm extends React.Component {
                        {preamble}
                        <Button className='close-btn' onClick={()=>{this.setState({isOpen: false})}} title='close feedback'><img alt='close' src={close}/></Button>
                    </div>
-                   <form>
+                   <div className='feedback-form-body'>
                        <Input label="Name" value={this.state.name} onChange={this.changeValue.bind(this, 'name')}/>
                        <Input label="Email" value={this.state.email} onChange={this.changeValue.bind(this, 'email')}/>
                        <Input label="Feedback" value={this.state.feedback} onChange={this.changeValue.bind(this, 'feedback')} />
                        <div className='feedback-form-footer'>
-                        <Button variant="flat" onClick={this.onCancel}>Cancel</Button>
-                        <Button className='send-btn' onSubmit={this.onSubmit}>Send</Button>
+                        <Button variant="flat" disabled={this.state.isSendingFeedback} onClick={this.onCancel}>Cancel</Button>
+                        <Button className='send-btn' disabled={this.state.isSendingFeedback} onClick={this.onSubmit}>{this.state.isSendingFeedback ? 'Sending...' : 'Send' }</Button>
                       </div>
-                   </form>
+                   </div>
                </div>)}
            </div>
       );
