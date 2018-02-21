@@ -1,5 +1,5 @@
 // @flow
-import type { FacetAction, RegionMappingState } from '../types';
+import type { FacetAction, RegionMappingState } from '../helpers/datasetSearch';
 
 const initialData = {
   isFetching: false,

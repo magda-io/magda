@@ -2,8 +2,8 @@ import React from "react";
 import fbLogo from "./fb-logo.svg";
 import googleLogo from "./google-logo.svg";
 import "./Login.css";
-
 import { config } from "../../config";
+import Input from 'muicss/lib/react/input';
 const { baseUrl } = config;
 
 export default function Login(props) {
@@ -16,7 +16,7 @@ export default function Login(props) {
     `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
       oauthRedirect
     )}`;
-  
+
   return (
     <div className="row login__row">
       {props.signInError &&
@@ -62,9 +62,8 @@ export default function Login(props) {
               <div className="input-group-addon">
                 <span className="glyphicon glyphicon-user" />
               </div>
-              <input
+              <Input
                 type="text"
-                className="form-control"
                 placeholder="Username"
                 name="username"
               />
@@ -73,15 +72,14 @@ export default function Login(props) {
               <div className="input-group-addon">
                 <span className="glyphicon glyphicon-lock" />
               </div>
-              <input
+              <Input
                 type="password"
                 name="password"
-                className="form-control"
                 placeholder="Password"
               />
             </div>
             <div className="pull-right">
-              <input type="submit" className="btn btn-primary" />
+              <input type="submit" className="mui-btn mui-btn--primary" />
             </div>
           </form>
         </div>}

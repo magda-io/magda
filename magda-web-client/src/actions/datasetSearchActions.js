@@ -3,7 +3,9 @@ import fetch from 'isomorphic-fetch'
 import parseQuery from '../helpers/parseQuery'
 import {config} from '../config'
 import {actionTypes} from '../constants/ActionTypes';
-import type {DataSearchJson, FacetAction, SearchAction } from '../types';
+import type { FetchError } from '../types';
+import type {DataSearchJson, FacetAction, SearchAction} from '../helpers/datasetSearch';
+
 
 export function requestResults(apiQuery: string ): SearchAction{
   return {
@@ -20,7 +22,7 @@ export function receiveResults(apiQuery: string, json: DataSearchJson): SearchAc
   }
 }
 
-export function transferFailed(error: object): SearchAction{
+export function transferFailed(error: FetchError): SearchAction {
   return {
     type: actionTypes.FETCH_ERROR,
     error
@@ -44,14 +46,12 @@ export function fetchSearchResults(query: string): Store {
       if (response.status === 200) {
           return response.json();
       }
-      return dispatch(transferFailed({title: response.status, detail: response.statusText}))
+      throw(new Error(response.statusText));
     })
     .then((json: DataSearchJson) =>{
-        if(!json.error){
-            return dispatch(receiveResults(query, json));
-        }
-      }
-    )
+      return dispatch(receiveResults(query, json));
+      })
+    .catch(error => dispatch(transferFailed({title: error.name, detail: error.message})))
   }
 }
 
@@ -77,19 +77,13 @@ export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
   }
 }
 
-export function addPublisher(publisher: string): FacetAction{
+export function updatePublishers(publishers: Array<Object>): FacetAction{
   return {
-    type: actionTypes.ADD_PUBLISHER,
-    item: publisher
+    type: actionTypes.UPDATE_PUBLISHERS,
+    items: publishers
   }
 }
 
-export function removePublisher(publisher: string): FacetAction{
-  return {
-    type: actionTypes.REMOVE_PUBLISHER,
-    item: publisher
-  }
-}
 
 export function resetPublisher(): FacetAction{
   return {
@@ -97,19 +91,13 @@ export function resetPublisher(): FacetAction{
   }
 }
 
-export function addFormat(format: string): FacetAction {
+export function updateFormats(formats: Array<Object>): FacetAction {
   return {
-    type: actionTypes.ADD_FORMAT,
-    item: format
+    type: actionTypes.UPDATE_FORMATS,
+    items: formats
   }
 }
 
-export function removeFormat(format: string): FacetAction{
-  return {
-    type: actionTypes.REMOVE_FORMAT,
-    item: format
-  }
-}
 
 export function resetFormat(): FacetAction{
   return {

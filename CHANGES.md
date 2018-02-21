@@ -26,6 +26,8 @@
 * Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
 * Map preview will zoom to dataset (except KML data)
 * Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
+* Add Google Analytics Tag Manager Code / VWO code to `<head>`
+* Added `feedback-api` microservice to collect feedback and create GitHub issues from it.
 
 ## 0.0.32
 

@@ -1,4 +1,6 @@
 // @flow
+import type {FetchError} from '../types';
+
 const initialData = {
   previewData: null,
   isFetching: false,
@@ -16,7 +18,7 @@ type previewDataState = {
 type previewDataAction = {
   type: string,
   previewData?: ?Object,
-  error: object,
+  error: FetchError,
   url?: string
 }
 

@@ -1,22 +1,8 @@
-// @flow
 import React from 'react';
-type rssNews = {
-  content: string,
-  contentSnippet: string,
-  'dc:creator': string,
-  guid: string,
-  link: string,
-  pubDate: string,
-  title: string
-}
+import getDateString from '../helpers/getDateString';
+import './News.css'
 
-type props = {
-  isFetching: Boolean,
-  newsItems: Array<rssNews>,
-  error: object
-}
-
-function renderContent(props: props){
+function renderContent(props){
   if(props.error){
     return <div className='error'><h3>{props.error.title}</h3>{props.error.detail}</div>
   }
@@ -27,23 +13,18 @@ function renderContent(props: props){
             </div>)
   }
   return (
-    <ul className='list-unstyled list-group'>{props.newsItems.map(n=>renderNews(n))}</ul>
+    <ul className='mui-list--unstyled list-group'>{props.newsItems.slice(0, 3).map(n=>renderNews(n))}</ul>
   )
 }
 
-function renderNews(news: rssNews){
-  return (<li className='list-group-item' key={news.link + news.title}>
+function renderNews(news){
+  return (<li className='news' key={news.link + news.title}>
+            <div className='pub-date'>{getDateString(news.pubDate)}</div>
             <h3 className='list-group-item-heading'><a href={news.link} target="_blank" rel="noopener noreferrer">{news.title}</a></h3>
             <div className='news-body list-group-item-text'>{news.contentSnippet}</div>
           </li>)
 }
 
-export default function News(props: props){
-  return (
-    <div className='news'>
-      <div className='inner'>
-          {renderContent(props)}
-      </div>
-  </div>
-  )
+export default function News(props){
+  return <div>{renderContent(props)}</div>
 }

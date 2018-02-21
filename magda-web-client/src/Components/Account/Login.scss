@@ -1,16 +1,9 @@
 .login {
-  &__row {
-    margin-bottom: 1em;
-  }
+
 
   &__providers {
     list-style: none;
     padding: 0;
-  }
-
-  &__provider {
-    display: block;
-    height: 3em;
   }
 
   &__logo {
@@ -28,13 +21,5 @@
   &__email-icon {
     color: #c0392b;
     font-size: 1.7em;
-  }
-
-  &__form {
-    margin-top: 1em;
-  }
-
-  &__input-group {
-    margin: 0.5em 0;
   }
 }

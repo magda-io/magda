@@ -1,4 +1,3 @@
-// @flow
 import React from 'react';
 import { connect } from 'react-redux';
 import ProgressBar from '../UI/ProgressBar';
@@ -8,10 +7,7 @@ import { fetchDatasetFromRegistry, fetchDistributionFromRegistry } from '../acti
 import Tabs from '../UI/Tabs';
 import {config} from '../config';
 import ErrorHandler from './ErrorHandler';
-import CustomIcons from '../UI/CustomIcons';
 import RouteNotFound from './RouteNotFound';
-import type {StateRecord } from '../types';
-import type { ParsedDataset, ParsedDistribution } from '../helpers/record';
 import {
   Route,
   Link,
@@ -25,19 +21,7 @@ import DistributionDetails from './Dataset/DistributionDetails';
 import DistributionPreview from './Dataset/DistributionPreview';
 
 class RecordHandler extends React.Component {
-  props: {
-    distributionFetcherror: object,
-    datasetFetcherror: object,
-    children: React$Element<any>,
-    fetchDataset: Function,
-    fetchDistribution: Function,
-    dataset: ParsedDataset,
-    distribution: ParsedDistribution,
-    params: {
-      datasetId: string,
-      distributionId? : string
-    }
-  }
+
   componentWillMount(){
     this.props.fetchDataset(this.props.match.params.datasetId);
     if(this.props.match.params.distributionId){
@@ -53,7 +37,7 @@ class RecordHandler extends React.Component {
       }
   }
 
-  renderBreadCrumbs(dataset: ParsedDataset, distribution? :ParsedDistribution){
+  renderBreadCrumbs(dataset, distribution){
     return (
     <ul className='breadcrumb'>
       <li className='breadcrumb-item'><Link to='/'>Home</Link></li>
@@ -64,8 +48,7 @@ class RecordHandler extends React.Component {
 
   renderByState(){
     const publisherName = this.props.dataset.publisher.name;
-    const publisherLogo = (this.props.dataset.publisher && this.props.dataset.publisher['aspects']['organization-details']) ? this.props.dataset.publisher['aspects']['organization-details']['imageUrl'] : '';
-    const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
+    // const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
     const distributionIdAsUrl = this.props.match.params.distributionId ? encodeURIComponent(this.props.match.params.distributionId) : '';
     if(this.props.match.params.distributionId){
       if(this.props.distributionIsFetching){
@@ -84,9 +67,6 @@ class RecordHandler extends React.Component {
            <div className='container'>
              {this.renderBreadCrumbs(this.props.dataset, this.props.distribution)}
                <div className='media'>
-                 <div className='media-left'>
-                   <CustomIcons imageUrl={publisherLogo} name={publisherName}/>
-                 </div>
                  <div className='media-body'>
                    <h1>{this.props.distribution.title}</h1>
                    <div className='publisher'>{publisherName}</div>
@@ -95,7 +75,7 @@ class RecordHandler extends React.Component {
                </div>
              </div>
 
-             <Tabs list={tabList} baseUrl={baseUrlDistribution}/>
+             <Tabs list={tabList} baseUrl={baseUrlDistribution} onTabChange={(tab)=>{console.log(tab)}}/>
              <div className='tab-content'>
                <Switch>
                  <Route path='/dataset/:datasetId/distribution/:distributionId/details' component={DistributionDetails} />
@@ -115,11 +95,11 @@ class RecordHandler extends React.Component {
          if(this.props.datasetFetchError){
            return <ErrorHandler error={this.props.datasetFetchError}/>;
          }
-         const datasetTabs = [
-           {id: 'details', name: 'Details', isActive: true},
-           {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
-           {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
-         ];
+         // const datasetTabs = [
+         //   {id: 'details', name: 'Details', isActive: true},
+         //   {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
+         //   {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
+         // ];
 
          const baseUrlDataset = `/dataset/${encodeURIComponent(this.props.match.params.datasetId)}`;
 
@@ -127,9 +107,6 @@ class RecordHandler extends React.Component {
            <div>
                <div className='container media'>
                  {this.renderBreadCrumbs(this.props.dataset)}
-                 <div className='media-left'>
-                   <CustomIcons imageUrl={publisherLogo} name={publisherName}/>
-                 </div>
                   <div className='media-body'>
                      <h1>{this.props.dataset.title}</h1>
                      <div className='publisher'>{publisherName}</div>
@@ -137,7 +114,6 @@ class RecordHandler extends React.Component {
                  </div>
                </div>
 
-               <Tabs list={datasetTabs} baseUrl={baseUrlDataset}/>
                <div className='tab-content'>
                  <Switch>
                    <Route path='/dataset/:datasetId/details' component={DatasetDetails} />
@@ -165,7 +141,7 @@ class RecordHandler extends React.Component {
   }
 }
 
-function mapStateToProps(state: {record: StateRecord}) {
+function mapStateToProps(state) {
   const record = state.record;
   const dataset =record.dataset;
   const distribution =record.distribution;
@@ -179,7 +155,7 @@ function mapStateToProps(state: {record: StateRecord}) {
   };
 }
 
-const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const  mapDispatchToProps = (dispatch) => {
   return bindActionCreators({
     fetchDataset: fetchDatasetFromRegistry,
     fetchDistribution: fetchDistributionFromRegistry

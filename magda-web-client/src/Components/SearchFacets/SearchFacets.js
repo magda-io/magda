@@ -7,23 +7,34 @@ class SearchFacets extends Component {
     super(props);
     this.state = {openFacet : null};
     this.toggleFacet = this.toggleFacet.bind(this);
-    this.closeFacet = this.closeFacet.bind(this);
+    this.closeFacetWithKeyBoard = this.closeFacetWithKeyBoard.bind(this);
   }
 
   componentWillMount(){
     const that = this;
-    window.addEventListener('click', that.closeFacet)
+    window.addEventListener('click', that.closeFacetWithKeyBoard);
   }
 
-  closeFacet(){
-    this.setState({
-      openFacet: null
-    })
+  closeFacetWithKeyBoard(event){
+    if(event.keyCode){
+      if(event.keyCode === 27){
+        this.setState({
+          openFacet: null
+        })
+      } else {
+        return false
+      }
+    } else{
+      this.setState({
+        openFacet: null
+      })
+    }
+
   }
 
   componentWillUnmount(){
     const that = this;
-    window.removeEventListener('click', that.closeFacet)
+    window.removeEventListener('click', that.closeFacetWithKeyBoard);
   }
 
 
@@ -33,18 +44,27 @@ class SearchFacets extends Component {
     })
   }
 
+  closeFacet(facet){
+    if(this.state.openFacet === facet){
+      this.setState({
+        openFacet: null
+      })
+    }
+    return false
+  }
+
   render() {
     return (
-      <div className='clearfix search-facets'>
+      <div className='search-facets clearfix'>
         {config.facets.map(c=>
-          <div className='col-sm-3 search-facet' key={c.id} onClick={(ev)=>ev.stopPropagation()}>
+          <div className='search-facet' key={c.id} onClick={(ev)=>ev.stopPropagation()}>
             <c.component
                        updateQuery={this.props.updateQuery}
                        location={this.props.location}
-                       component={'facet'}
                        title={c.id}
                        isOpen={this.state.openFacet === c.id}
-                       toggleFacet={this.toggleFacet.bind(this, c.id)}/>
+                       toggleFacet={this.toggleFacet.bind(this, c.id)}
+                       closeFacet={this.closeFacet.bind(this, c.id)}/>
           </div>
         )}
       </div>

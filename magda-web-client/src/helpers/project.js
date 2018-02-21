@@ -1,4 +1,6 @@
 // @flow
+import type {FetchError } from '../types';
+
 export type ProjectProps = {
   description: ?string,
   name: ?string,
@@ -27,7 +29,7 @@ export type RawProjects = {
   records: Array<RawProject>
 }
 export type ParsedProject ={
-  id: string,
+  id: ?string,
   name: string,
   description: string,
   members: Array<string>,
@@ -37,7 +39,7 @@ export type ParsedProject ={
 
 export type ProjectAction = {
   json?: Object,
-  error?: ?number,
+  error?: FetchError,
   type: string,
   project?: RawProject,
   projects?: RawProjects,

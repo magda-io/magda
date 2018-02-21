@@ -52,6 +52,8 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: session-secret
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
 {{- if .Values.auth.facebookClientId }}
         - name: FACEBOOK_CLIENT_SECRET
           valueFrom:

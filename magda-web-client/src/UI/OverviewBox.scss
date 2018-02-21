@@ -1,16 +1,5 @@
 @import '../variables';
 .overview-box {
-  .markdown *{
-    display: none;
-    &:first-child, &:nth-child(2){
-      display: block;
-    }
-  }
-  &.is-expanded{
-    .markdown *{
-      display: block;
-    }
-  }
 }
 .overview-toggle{
     margin: 10px auto 0 auto;

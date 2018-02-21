@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="38px" height="38px" viewBox="0 0 38 38" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.2 (47327) - http://www.bohemiancoding.com/sketch -->
+    <title>icon/search-48</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="icon/search-48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(-6.000000, -6.000000)">
+        <g>
+            <g id="Group-2-Copy">
+                <rect id="Rectangle-Copy-7" x="0" y="0" width="48" height="48"></rect>
+            </g>
+            <circle id="Oval-2" stroke="#FFFFFF" stroke-width="3.5" cx="21" cy="21" r="13"></circle>
+            <path d="M42,42 L36,36" id="Line-2" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"></path>
+        </g>
+    </g>
+</svg>

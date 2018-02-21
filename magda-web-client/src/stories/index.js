@@ -3,7 +3,7 @@ import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import { linkTo } from '@storybook/addon-links';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter } from 'react-router-dom';
 
 import CustomIcons, {iconTypes} from '../UI/CustomIcons';
 import DataPreviewGoogleViewer from '../UI/DataPreviewGoogleViewer';
@@ -23,6 +23,9 @@ import TemporalAspectViewer from '../UI/TemporalAspectViewer';
 import ToggleList from '../UI/ToggleList';
 import Tabs from '../UI/Tabs';
 import ContactForm from '../UI/ContactForm';
+import MonthPicker from '../UI/MonthPicker';
+// doc
+import ApiViewer from './ApiViewer';
 
 
 const exampleData = {
@@ -62,11 +65,11 @@ storiesOf('Shared UI', module)
     .addDecorator(story => (
         <MemoryRouter initialEntries={['/']}>{story()}</MemoryRouter>
     ))
-    .add('DropDown', ()=><DropDown options={[{id: 0, value: 'a'},{id: 1, value: 'b'}, {id: 2, value: 'c'} ]} select={action()}/>)
+    .add('DropDown', ()=><DropDown options={[{id: 0, value: 'a'},{id: 1, value: 'b'}, {id: 2, value: 'c'} ]} select={action()} activeOption={'default option'}/>)
     .add('ToggleList', ()=><ToggleList list={[{id: 0, title: 'item a'},{id: 1, title: 'item b'}, {id: 2, title: 'item c'} ]} select={action()} renderFunction={(item)=><div>{item.title}</div>} getKey={item => item.id} defaultLength={2}/>)
-    .add('Markdown', ()=><MarkdownViewer markdown={exampleMarkdown} updateContentLength={action()}/>)
+    .add('Markdown', ()=><MarkdownViewer markdown={exampleMarkdown}}/>)
     .add('ProgressBar', ()=><ProgressBar />)
-    .add('Tabs', ()=><Tabs list={[{id: 'a', name: 'A', isActive: true}, {id: 'b', name: 'B', isActive: true}, {id: 'c', name: 'C', isActive: true}]}/>)
+    .add('Tabs', ()=><Tabs onTabChange={action()} baseUrl={""} list={[{id: 'a', name: 'A', isActive: true}, {id: 'b', name: 'B', isActive: true}, {id: 'c', name: 'C', isActive: true}]}/>)
 
 storiesOf('Quality Indicator', module)
     .add('quality = 1.0', ()=> <QualityIndicator quality={1.0}/>)
@@ -95,7 +98,7 @@ storiesOf('Aspect Viewer', module)
     .add('Temporal Aspect Viewer', ()=><TemporalAspectViewer data={{intervals: [{start: '2017-12-25', end: '2017-12-25'}]}} />)
 
 storiesOf('Contact Form', module)
-    .add('Generic contact from', ()=><Contact/>)
+    .add('Generic contact from', ()=><ContactForm/>)
 
 iconTypes.map(iconname =>
   storiesOf('Icons', module)
@@ -108,3 +111,13 @@ storiesOf('Dataset preview', module)
     .add('DataPreviewTable', ()=><DataPreviewTable data={exampleData}/>)
     .add('DataPreviewTextBox', ()=><DataPreviewTextBox data={{data: 'some text'}}/>)
     .add('DataPreviewVega', ()=><DataPreviewVega data={exampleData} logAction={action()}/>);
+
+
+storiesOf('API viewer', module)
+    .add('formats viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/format/options?generalQuery=*&facetQuery=*&limit=268&orderedBy=hitCount" type='table'/> )
+    .add('publishers viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/search/facets/publisher/options?generalQuery=*&facetQuery=*&limit=562&orderedBy=hitCount%22" type='table'/> )
+    .add('dataset search result viewer', ()=><ApiViewer url="http://search.data.gov.au/api/v0/search/datasets?query=water&start=0&limit=1" type='json'/>)
+    .add('dataset detail viewer', () => <ApiViewer url="http://search.data.gov.au/api/v0/registry/records/19432f89-dc3a-4ef3-b943-5326ef1dbecc?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=link-status" type='json'/> )
+
+storiesOf('MonthPicker', module)
+    .add('pick a month', () => <MonthPicker year={2018} month={12} selectYear={action()} selectMonth={action()}/>)

@@ -12,7 +12,7 @@ class AccountNavbar extends React.Component {
 
   render() {
     return (
-      <ul className="nav navbar-nav navbar-account">
+      <ul className="mui-list--unstyled account-navbar">
         {this.props.user
           ? [
               <li key='user'>
@@ -42,7 +42,7 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) => {
+const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     {
       requestSignOut

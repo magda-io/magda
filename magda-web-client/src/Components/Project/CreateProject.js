@@ -1,4 +1,3 @@
-// @flow
 import './CreateProject.css';
 import React, { Component } from 'react';
 import ReactDocumentTitle from 'react-document-title';
@@ -11,6 +10,9 @@ import { validateFields, resetProjectFields } from '../../actions/projectActions
 import { fetchDatasetFromRegistry } from '../../actions/recordActions';
 import Notification from '../../UI/Notification';
 import { Link } from 'react-router-dom';
+import Button from 'muicss/lib/react/button';
+import Input from 'muicss/lib/react/input';
+
 import {
   Redirect,
 } from 'react-router-dom';
@@ -21,7 +23,7 @@ class CreateProject extends Component {
     state: {
       project: Object
     }
-    constructor(props: {location: Location}) {
+    constructor(props) {
       super(props);
 
       // use immutable here for easy manipulation
@@ -70,7 +72,7 @@ class CreateProject extends Component {
 
     }
 
-    handleChange(event: MouseEvent, id: string){
+    handleChange(event: MouseEvent, id){
       const value = event.target.value && event.target.value;
 
       if(id === 'name'){
@@ -108,7 +110,7 @@ class CreateProject extends Component {
           <h2>Datasets</h2>
             <div>
               <h3><Link className={`${this.datasetActive() ? 'dataset-active' : 'dataset-non-active'}`} to={`/dataset/${encodeURIComponent(this.props.dataset.identifier)}`}>{this.props.dataset.title}</Link></h3>
-              <button onClick={()=>this.toggleDataset()} className='btn btn-primary'>{this.datasetActive() ? 'Remove' : 'Add'}</button>
+              <Button onClick={()=>this.toggleDataset()}>{this.datasetActive() ? 'Remove' : 'Add'}</Button>
             </div>
       </div>
     }
@@ -128,15 +130,15 @@ class CreateProject extends Component {
                     <label className='input-group'>
                       Project title * :
                       {this.props.fieldErrors.name && <div className='field-error'>{this.props.fieldErrors.name}</div>}
-                      <input type='text' name='name' className={`form-control ${this.props.fieldErrors.name ? 'form-error' : ''}`} value={this.state.project.get('name')} onChange={(e: MouseEvent)=>this.handleChange(e, 'name')}/>
+                      <Input type='text' name='name' className={`${this.props.fieldErrors.name ? 'form-error' : ''}`} value={this.state.project.get('name')} onChange={(e: MouseEvent)=>this.handleChange(e, 'name')}/>
                     </label>
                     <label className='input-group'>
                       Project description * :
                       {this.props.fieldErrors.description && <div className='field-error'>{this.props.fieldErrors.description}</div>}
-                      <input type='text' name='description' className={`form-control ${this.props.fieldErrors.description ? 'form-error' : ''}`} value={this.state.project.get('description')} onChange={(e: MouseEvent)=>this.handleChange(e, 'description')}/>
+                      <Input type='text' name='description' className={`${this.props.fieldErrors.description ? 'form-error' : ''}`} value={this.state.project.get('description')} onChange={(e: MouseEvent)=>this.handleChange(e, 'description')}/>
                     </label>
 
-                    <input type='submit' value='Submit' className='btn btn-primary'  onClick={(e: MouseEvent)=>this.handleSubmit(e)}/>
+                    <Button onClick={e=>this.handleSubmit(e)}>Submit</Button>
                   </form>
                </div>
                <div className='col-sm-4'>
@@ -159,7 +161,7 @@ class CreateProject extends Component {
    }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>)=>{
+const mapDispatchToProps = (dispatch)=>{
   return bindActionCreators({
     validateFields: validateFields,
     resetFields: resetProjectFields,

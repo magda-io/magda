@@ -1,5 +1,3 @@
-// @flow
-
 import './SearchBox.css';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -9,18 +7,16 @@ import debounce from 'lodash.debounce';
 import defined from '../../helpers/defined';
 import React, { Component } from 'react';
 import {fetchRegionMapping} from '../../actions/regionMappingActions';
-
+import Form from 'muicss/lib/react/form';
+import Input from 'muicss/lib/react/input';
+import search from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from 'prop-types';
-
 import queryString from 'query-string';
+import Particles from '../../UI/Particles';
 
 
 class SearchBox extends Component {
-  state : {
-    searchText: ?string
-  }
-
   constructor(props) {
     super(props);
     const self: any = this;
@@ -34,7 +30,9 @@ class SearchBox extends Component {
     // it needs to be undefined here, so the default value should be from the url
     // once this value is set, the value should always be from the user input
     this.state={
-      searchText: undefined
+      searchText: undefined,
+      width: 0,
+      height: 0
     }
   }
 
@@ -119,25 +117,47 @@ class SearchBox extends Component {
     this.updateSearchText('');
   }
 
+  componentDidMount(){
+    if(this.state.height !== this.container.offsetHeight || this.state.width !== this.container.offsetWidth){
+      this.setState({
+        width: this.container.offsetWidth,
+        height: this.container.offsetHeight
+      })
+    }
+  }
+
 
   render() {
     return (
-        <form className='search-box'>
-          <label htmlFor="search" className='search-box__input'>
-          <span className='sr-only'>{'Search ' + config.appName}</span>
-          <input
-            type='text'
-            name='search'
-            id="search"
-            className='form-control search-box__form-control'
-            placeholder={'Search ' + config.appName}
-            value={this.getSearchBoxValue()}
-            onChange={this.onSearchTextChange}
-            onKeyPress={this.handleSearchFieldEnterKeyPress}
-          />
-          </label>
-          <button onClick={this.onClickSearch} type='button' className='btn search-box__icon'><i className='fa fa-search' aria-hidden='true'></i><span className='sr-only'>submit search</span></button>
-        </form>
+        <Form className='searchBox'>
+          <div className='searchBox-background' ref={(container)=> this.container = container}>
+          <div className='searchBox-background-overlay'></div>
+            <Particles width={this.state.width} height={this.state.height}/></div>
+          <table width='100%'>
+            <tbody>
+            <tr>
+              <td>
+                <label htmlFor="search">
+                  <span className='sr-only'>{'search ' + config.appName}</span>
+                    <Input
+                      type='text'
+                      name='search'
+                      id="search"
+                      placeholder='search for open data'
+                      value={this.getSearchBoxValue()}
+                      onChange={this.onSearchTextChange}
+                      onKeyPress={this.handleSearchFieldEnterKeyPress}
+                      autoComplete='off'
+                    />
+                </label>
+              </td>
+              <td width='30px'>
+                <button onClick={this.onClickSearch} className='search-btn' type='button'><img src={search} alt="search button"/><span className='sr-only'>submit search</span></button>
+              </td>
+              </tr>
+              </tbody>
+          </table>
+        </Form>
     );
   }
 }
@@ -155,7 +175,7 @@ const mapStateToProps = (state, ownProps)=> {
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) =>
+const mapDispatchToProps = (dispatch) =>
    bindActionCreators({
     fetchRegionMapping: fetchRegionMapping,
   }, dispatch);
