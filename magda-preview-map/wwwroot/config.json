@@ -34,8 +34,6 @@
         supportEmail: "data@pmc.gov.au",
         // You probably shouldn't change this.
         proj4ServiceBaseUrl: "proj4def/",
-        // Or this
-        feedbackUrl: "feedback",
 
         // Default mobile viewer mode when loading the map for the first time on mobile platforms.
         // Options are: "3DTerrain", "3DSmooth", "2D"

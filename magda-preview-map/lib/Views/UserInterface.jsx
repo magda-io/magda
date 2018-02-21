@@ -2,12 +2,16 @@ import React from 'react';
 
 import version from '../../version';
 
-import StandardUserInterface from 'terriajs/lib/ReactViews/StandardUserInterface/StandardUserInterface.jsx';
-import MenuItem from 'terriajs/lib/ReactViews/StandardUserInterface/customizable/MenuItem';
-import RelatedMaps from './RelatedMaps';
-import { Menu, Nav, ExperimentalMenu } from 'terriajs/lib/ReactViews/StandardUserInterface/customizable/Groups';
-import SplitPoint from 'terriajs/lib/ReactViews/SplitPoint';
-import MeasureTool from 'terriajs/lib/ReactViews/Map/Navigation/MeasureTool';
+import MapColumn from 'terriajs/lib/ReactViews/StandardUserInterface/MapColumn.jsx';
+import ExplorerWindow from 'terriajs/lib/ReactViews/ExplorerWindow/ExplorerWindow.jsx';
+import FeatureInfoPanel from 'terriajs/lib/ReactViews/FeatureInfo/FeatureInfoPanel.jsx';
+import MapInteractionWindow from 'terriajs/lib/ReactViews/Notification/MapInteractionWindow.jsx';
+import ExperimentalFeatures from 'terriajs/lib/ReactViews/Map/ExperimentalFeatures.jsx';
+import Notification from 'terriajs/lib/ReactViews/Notification/Notification.jsx';
+import ObserveModelMixin from 'terriajs/lib/ReactViews/ObserveModelMixin';
+import ProgressBar from 'terriajs/lib/ReactViews/Map/ProgressBar.jsx';
+import processCustomElements from 'terriajs/lib/ReactViews/StandardUserInterface/processCustomElements';
+import Styles from 'terriajs/lib/ReactViews/StandardUserInterface/standard-user-interface.scss';
 
 import './global.scss';
 
@@ -23,20 +27,38 @@ function isBrowserSupportedAV() {
 }
 
 export default function UserInterface(props) {
+    const customElements = processCustomElements(
+        props.viewState.useSmallScreenInterface
+    );
+    const terria = props.terria;
+    const allBaseMaps = props.allBaseMaps;
     return (
-        <StandardUserInterface {... props} version={version}>
-            <Menu>
-                <RelatedMaps viewState={props.viewState} />
-                <MenuItem caption="About" href="about.html" key="about-link"/>
-            </Menu>
-            <Nav>
-                <MeasureTool terria={props.viewState.terria} key="measure-tool"/>
-            </Nav>
-            <ExperimentalMenu>
-                <If condition={isBrowserSupportedAV()}>
-                    <SplitPoint loadComponent={loadAugmentedVirtuality} viewState={props.viewState} terria={props.viewState.terria} experimentalWarning={true}/>
-                </If>
-            </ExperimentalMenu>
-        </StandardUserInterface>
+        <div className={Styles.uiRoot} >
+                <div className={Styles.ui}>
+                    <section className={Styles.map} style={{top:"0px"}}>
+                        <ProgressBar terria={terria}/>
+                        <MapColumn terria={terria} viewState={props.viewState} />
+                        <main>
+                            <ExplorerWindow terria={terria} viewState={props.viewState}/>
+                            <If condition={props.terria.configParameters.experimentalFeatures && !props.viewState.hideMapUi()}>
+                                <ExperimentalFeatures terria={terria}
+                                                        viewState={props.viewState}
+                                                        experimentalItems={customElements.experimentalMenu}
+                                />
+                            </If>
+                        </main>
+                    </section>
+                </div>
+
+                <Notification viewState={props.viewState}/>
+                <MapInteractionWindow terria={terria} viewState={props.viewState}/>
+
+                <div className={Styles.featureInfo}>
+                    <FeatureInfoPanel terria={terria}
+                                      viewState={props.viewState}
+                    />
+                </div>
+            </div>
+
     );
 }
