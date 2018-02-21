@@ -15,8 +15,6 @@ import {
   Redirect
 } from 'react-router-dom';
 import DatasetDetails from './Dataset/DatasetDetails';
-import DatasetDiscussion from './Dataset/DatasetDiscussion';
-import DatasetPublisher from './Dataset/DatasetPublisher';
 import DistributionDetails from './Dataset/DistributionDetails';
 import DistributionPreview from './Dataset/DistributionPreview';
 
