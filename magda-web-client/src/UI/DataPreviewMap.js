@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import './DataPreviewMap.css';
+import DataPreviewMapOpenInNationalMapButton from './DataPreviewMapOpenInNationalMapButton';
 import { config } from '../config';
 
 const defaultDataSourcePreference = ['GeoJSON','WFS','WMS','csv-geo-au','KML'];
@@ -128,14 +129,24 @@ class DataPreviewMap extends Component {
         return (
             <div className="data-preview-map">
                 <h3>Map Preview</h3>
-                    <iframe 
-                        title={this.state.selectedDistribution.title}
-                        width="100%"
-                        height="420px"
-                        frameBorder="0"
-                        src={(config.previewMapUrl + "#mode=preview&hideExplorerPanel=1&clean")}
-                        ref={f=>this.iframeRef=f}
-                    />
+                    <div style={{position:"relative"}}>
+                        <DataPreviewMapOpenInNationalMapButton 
+                            distribution={this.state.selectedDistribution}
+                            style={{
+                                position: "absolute",
+                                right: "10px",
+                                top: "10px"
+                            }}
+                        />
+                        <iframe 
+                            title={this.state.selectedDistribution.title}
+                            width="100%"
+                            height="420px"
+                            frameBorder="0"
+                            src={(config.previewMapUrl + "#mode=preview&hideExplorerPanel=1&clean")}
+                            ref={f=>this.iframeRef=f}
+                        />
+                    </div>
             </div>
         );
     }
