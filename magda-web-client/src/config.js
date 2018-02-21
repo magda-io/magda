@@ -13,13 +13,13 @@ const serverConfig: {
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
+    feedbackApiBaseUrl? :string
 } = window.magda_server_config || {};
 
 const registryApiUrl =
   serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 const previewMapUrl = serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
-
 export const config = {
   appName: "data.gov.au",
   about: "<p><span style='color:#F55860;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
@@ -32,6 +32,7 @@ export const config = {
   discussionsApiUrl:
     serverConfig.discussionsApiBaseUrl ||
     fallbackApiHost + "api/v0/discussions/",
+  feedbackUrl: serverConfig.feedbackApiBaseUrl || fallbackApiHost + "api/v0/feedback",
   previewMapUrl: previewMapUrl,
   proxyUrl: proxyUrl,
   rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",

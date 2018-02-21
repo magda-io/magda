@@ -3,10 +3,11 @@
 .feedback-form-inner {
   background: #fff;
   border-radius: 5px;
-  border: 2px solid $banner-background;
+  border: 2px solid $success;
   position: fixed;
   right: 4px;
   bottom: 24px;
+  max-width: 400px;
 }
 
 .feedback-form{
@@ -20,16 +21,17 @@
     border-top: 1px solid rgba(0,0,0,.26);
   }
   .mui-textfield>input:focus, .mui-textfield>textarea:focus{
-    border-color: $banner-background;
+    border-color: $success;
   }
   .mui-textfield>input:focus~label, .mui-textfield>textarea:focus~label{
-    color: $banner-background;
+    color: $success;
   }
   .close-btn {
     line-height: 0;
     padding: 0;
-    margin-left: 8px;
+    margin: 0 0 0 8px;
     height: 24px;
+    float: right;
     img{
       height: 20px;
       width: 20px;
@@ -38,7 +40,7 @@
 
   .feedback-form-header{
     padding: 8px 16px;
-    color: $banner-background;
+    color: $success;
   }
 
   .feedback-form-footer{
@@ -50,7 +52,7 @@
   }
 
   .feedback-button{
-    background: $banner-background;
+    background: $success;
     color: $banner-text;
     border-radius: 30px;
     padding-left: 40px;

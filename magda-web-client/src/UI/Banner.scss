@@ -1,7 +1,7 @@
 @import '../variables';
 .banner {
   text-align: center;
-  background: $banner-background;
+  background: $success;
   color:$banner-text;
   padding: 8px 0;
   position: relative;
@@ -11,7 +11,7 @@
     border-bottom: solid 1px $banner-text;
     &:hover, &:focus{
       background: $banner-text;
-      color: $banner-background;
+      color: $success;
     }
   }
   .close-btn{
