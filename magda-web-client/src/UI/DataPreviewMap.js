@@ -4,7 +4,7 @@ import './DataPreviewMap.css';
 import DataPreviewMapOpenInNationalMapButton from './DataPreviewMapOpenInNationalMapButton';
 import { config } from '../config';
 
-const defaultDataSourcePreference = ['GeoJSON','WFS','WMS','csv-geo-au','KML'];
+export const defaultDataSourcePreference = ['GeoJSON','WFS','WMS','csv-geo-au','KML'];
 
 class DataPreviewMap extends Component {
 

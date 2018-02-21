@@ -6,20 +6,13 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
 
     constructor(props){
         super(props);
-        this.state = {
-            isInitLoading : true,
-            isMapPreviewAvailable : false,
-            selectedDistribution : null
-        }
-        this.onPostMessageReceived = this.onPostMessageReceived.bind(this);
-        this.winRef = null;
+        this.state = {}
     }
-    
-    componentWillUnmount(){
-        if(this.winRef){
-            this.winRef.removeEventListener("message", this.onPostMessageReceived);
-            this.winRef = null;
-        }
+
+    determinCatelogItemType(){
+        let format = this.props.distribution.format.toLowerCase();
+        if(format === "csv-csv-geo-au") format = 'csv';
+        return format
     }
 
     createCatalogItemFromDistribution(){
@@ -29,38 +22,19 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
                     "catalog": [
                         {
                             "name": this.props.distribution.title,
-                            "type": "magda-item",
-                            "url": "http://magda-dev.terria.io/",
-                            "distributionId": this.state.selectedDistribution.identifier,
+                            "type": this.determinCatelogItemType(),
+                            "url": this.props.distribution.downloadURL,
                             "isEnabled": true,
                             "zoomOnEnable": true
                         }
-                    ],
-                    "baseMapName": "Positron (Light)"
+                    ]
                 }
             ]
         };
     }
 
     onButtonClick(){
-        if(!this.props.distribution) alert("");
-        console.log(this.props.distribution);
-        const newWinRef = window.open("https://nationalmap.gov.au/","National Map Australia");
-        if(!newWinRef) {
-            alert("The popup is blocked by popup blocker. Please chaneg your browser settings and try again.");
-            return;
-        }
-        if(this.winRef){
-            this.winRef.removeEventListener("message", this.onPostMessageReceived);
-        }
-        this.winRef=newWinRef;
-        this.winRef.addEventListener("message", this.onPostMessageReceived);
-
-    }
-
-    onPostMessageReceived(e){
-        if(this.winRef !== e.source || e.data !== 'ready') return;
-        this.winRef.postMessage(this.createCatalogItemFromDistribution(),"*");
+        window.open("https://nationalmap.gov.au/#start=" + encodeURIComponent(JSON.stringify(this.createCatalogItemFromDistribution())) ,"National Map Australia");
     }
 
     render(){
