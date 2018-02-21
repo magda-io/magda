@@ -52,6 +52,9 @@ class FeedbackForm extends React.Component {
 
   onDismissNotification(){
     this.props.resetFeedback();
+    this.setState({
+      isOpen: false,
+    })
   }
 
   renderByState(){
