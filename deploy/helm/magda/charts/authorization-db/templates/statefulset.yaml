@@ -1,4 +1,4 @@
-{{- if not .Values.global.useCombinedDb }}
+{{- if and (not .Values.global.useCombinedDb) (not .Values.global.useCloudSql) }}
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:

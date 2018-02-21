@@ -17,7 +17,7 @@ spec:
       - name: authorization-db-migrator
         image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-migrator-authorization-db:{{ .Values.image.tag | default .Values.global.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
-        env: 
+        env:
         - name: DB_HOST
           value: authorization-db
-        {{- template "magda.postgres-env" . }}
+        {{- template "magda.postgres-migrator-env" . }}

@@ -20,4 +20,4 @@ spec:
         env: 
         - name: DB_HOST
           value: discussions-db
-        {{- template "magda.postgres-env" . }}
+        {{- template "magda.postgres-migrator-env" . }}
