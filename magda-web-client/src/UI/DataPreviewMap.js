@@ -128,18 +128,14 @@ class DataPreviewMap extends Component {
         return (
             <div className="data-preview-map">
                 <h3>Map Preview</h3>
-                <div className='mui-row'>
-                <div className='mui-col-sm-12'>
                     <iframe 
                         title={this.state.selectedDistribution.title}
                         width="100%"
-                        height="600px"
+                        height="420px"
                         frameBorder="0"
-                        src={(config.previewMapUrl + "#mode=preview&hideExplorerPanel=1")}
+                        src={(config.previewMapUrl + "#mode=preview&hideExplorerPanel=1&clean")}
                         ref={f=>this.iframeRef=f}
                     />
-                </div>
-                </div>
             </div>
         );
     }
