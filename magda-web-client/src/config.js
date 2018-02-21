@@ -105,7 +105,6 @@ export const config = {
         ["About data.gov.au", "page/about"],
         ["Blog", "https://blog.data.gov.au/"]
       ]
-    },
-    { category: "Feedback", links: [["Feedback", "http://preview.data.gov.au/feedback.html"]] }
+    }
   ]
 };

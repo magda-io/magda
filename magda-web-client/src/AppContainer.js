@@ -113,7 +113,7 @@ class AppContainer extends React.Component {
             <Container>
               <ul className='mui-list--unstyled'>
                 {footerNavs.map(item =>
-                  <li key={item.category} className='mui-col-md-2 mui-col-sm-4'>
+                  <li key={item.category} className='mui-col-md-2 mui-col-sm-3'>
                     <span className='nav-title'>{item.category}</span>
                     <ul className='mui-list--unstyled'>
                       {item.links.map(link =>
