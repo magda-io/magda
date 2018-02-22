@@ -24,5 +24,8 @@
     "admin": {
         "to": "http://localhost:6112/v0",
         "auth": true
+    },
+    "feedback": {
+        "to": "http://localhost:6116/v0"
     }
 }

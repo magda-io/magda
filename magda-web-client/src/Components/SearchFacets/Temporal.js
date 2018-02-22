@@ -48,6 +48,7 @@ class Temporal extends Component {
                     onResetFacet={this.onResetTemporalFacet}
                     toggleFacet={this.props.toggleFacet}
                     isOpen={this.props.isOpen}
+                    temporalRange = {this.props.temporalRange}
       />
     );
   }
@@ -58,6 +59,7 @@ function mapStateToProps(state) {
   return {
     activeDateFrom: datasetSearch.activeDateFrom,
     activeDateTo: datasetSearch.activeDateTo,
+    temporalRange: datasetSearch.temporalRange
   }
 }
 

@@ -21,13 +21,11 @@ trait Indices {
   def typeForFacet(facetType: FacetType) = facetType match {
     case Format    => Indices.FormatsIndexType
     case Publisher => Indices.PublisherIndexType
-    case Year      => throw new RuntimeException("No type for year")
   }
 
 }
 
 object DefaultIndices extends Indices {}
-
 
 object Indices {
   sealed trait Index {

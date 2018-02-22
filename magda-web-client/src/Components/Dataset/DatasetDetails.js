@@ -6,8 +6,6 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import renderDistribution from '../../Components/Distribution';
 import uniq from 'lodash.uniq';
-import reduce from 'lodash.reduce';
-import concat from 'lodash.concat';
 import './RecordDetails.css';
 
 const tagSeperatorRegex = /[,|;|/||]/g;
