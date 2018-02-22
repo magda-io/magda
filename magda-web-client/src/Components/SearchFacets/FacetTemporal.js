@@ -105,7 +105,7 @@ class FacetTemporal extends Component {
              <div className='clearfix facet-temporal facet-body'>
               {this.renderDatePicker()}
               <div className='facet-footer'>
-                  <Button variant="flat" onClick={this.props.onResetFacet}> Clear </Button>
+                  <Button variant="flat" disabled={this.state.applyButtonDisabled} onClick={this.props.onResetFacet}> Clear </Button>
                   <Button disabled={this.state.applyButtonDisabled} variant="flat" onClick={this.onApplyFilter}> Apply </Button>
               </div>
              </div>
