@@ -62,12 +62,19 @@ You'll need to run this in each new shell.
 
 Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at https://github.com/kubernetes/helm/blob/master/docs/install.md.
 
+In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
+
+```bash
+helm init
+```
+
 ### Install a local kube registry
 
 This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
 
 ```bash
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm repo update
 helm install --name docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
 helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
 ```

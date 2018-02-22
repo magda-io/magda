@@ -1,11 +1,17 @@
-@import '../variables';
+@import "../variables";
 
-.statistics{
-  li{
-    color: $magda-blue;
-  }
-  strong{
-    display: block;
-    font-size: 4rem;
-  }
+.statistics {
+    color: #333333;
+    font-size: 24px;
+    line-height: 28px;
+    .lable {
+        opacity: 0.5;
+    }
+    .stats {
+        font-size: 62px;
+        font-weight: 500;
+        line-height: 74px;
+        color: #333;
+        display: block;
+    }
 }

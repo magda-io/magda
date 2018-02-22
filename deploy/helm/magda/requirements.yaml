@@ -35,6 +35,11 @@ dependencies:
     tags:
       - all
       - elasticsearch
+  - name: feedback-api
+    version: 0.1.0
+    tags:
+      - all
+      - feedback-api
   - name: gateway
     version: 0.1.0
     tags:

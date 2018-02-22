@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: feedback-api
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  template:
+    metadata:
+      labels:
+        service: feedback-api
+    spec:
+      containers:
+      - name: feedback-api
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        command: [
+            "node",
+            "/usr/src/app/component/dist/index.js",
+            "--listenPort", "80",
+{{- if .Values.gitHubIssuesUrl }}
+            "--issuesUrl", {{ .Values.gitHubIssuesUrl | quote }}
+{{- end }}
+        ]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NODE_ENV
+          value: production
+{{- if .Values.gitHubIssuesUrl }}
+        - name: GITHUB_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: access-tokens
+              key: github-for-feedback
+              optional: true
+{{- end }}

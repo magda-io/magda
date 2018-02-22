@@ -1,108 +1,70 @@
-@import './variables';
+@import "./variables";
 
-.appContainer__nav{
-    background: $magda-grey;
-}
-
-.navbar-header{
-    background: transparent;
-}
-
-.navbar-nav{
-    float: right;
-    a{
-        color: rgb(51, 51, 51);
+.app-container {
+    .nav-table {
+        padding: 24px 0;
     }
-}
 
-.search-heading{
-  font-weight: normal;
-  margin-bottom: 30px;
-  margin-top: 10px;
-  font-size: 2rem;
-}
-
-
-.mobile-nav{
-  .navbar-brand{
-    height: auto;
-  }
-  img{
-    height: 40px;
-  }
-  .navbar-toggle{
-    background: $magda-blue;
-    color: #fff;
-    &:hover{
-      background: lighten($magda-blue, 10%);
+    .nav-bar-right {
+        float: right;
+        a {
+            display: inline-block;
+            margin-right: 10px;
+            border-bottom: 0;
+        }
     }
-  }
-  .navbar-collapse{
-    width: 100%;
-    margin-bottom: 5px;
-    li{
-      margin-bottom: 1px;
-      background: #fff;
-      border-radius: 3px;
-    }
-  }
-}
 
-
-@media(min-width: 768px){
-    .decorator{
-        padding: 15px 0;
-    }
-}
-
-
-.navbar-account.navbar-nav{
-        &>li{
-            &>a{
-                text-decoration: underline;
-                padding-left: 5px;
-                padding-right: 5px;
+    .account-navbar {
+        display: inline-block;
+        a {
+            color: $body;
+            text-decoration: none;
+            border-bottom: 0;
+            transition: background-color 0.1s ease-in-out,
+                border-color 0.1s ease-in-out;
+            margin-right: 16px;
+            display: inline-block;
+            &:hover,
+            &:focus {
+                color: #fff;
             }
         }
-}
-
-.appContainer__suggestion{
-    padding: 15px;
-    color: #fff;
-    background: $magda-blue;
-    font-weight: 800;
-    a{
-        color: #fff;
-        text-decoration: underline;
     }
-
-    a:hover, a:focus{
-      color: $magda-grey;
+    .logo a {
+        color: $body;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 22px;
+        text-transform: uppercase;
+        .highlight {
+            color: $main;
+        }
     }
 }
 
-.footer{
+.footer {
     background-color: $magda-dark-blue;
     color: #fff;
     padding: 50px 0;
-    a{
+    a {
         color: #fff;
-        text-decoration: underline;
         font-size: 0.9rem;
     }
-    .nav > li > a{
+    .nav > li > a {
         padding: 10px 0px;
-        &:hover{
-            background: transparent;
+        &:hover,
+        &:focus {
+            background: $magda;
+            color: #fff;
         }
     }
-    .nav-title{
+    .nav-title {
         text-transform: uppercase;
     }
-    .copyright{
-      text-align: right;
-      img{
-        height: 40px;
-      }
+    .copyright {
+        text-align: right;
+        img {
+            height: 40px;
+        }
     }
 }
