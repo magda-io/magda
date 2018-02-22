@@ -13,6 +13,7 @@
   position: relative;
   box-shadow: 1px 1px 1px 1px rgba(73,73,73,0.25);
   margin-bottom: 32px;
+  background: #fff;
   @media (min-width: 768px) {
     padding: 50px 135px;
 
@@ -43,6 +44,7 @@
     }
     img{
       width: 40px;
+      height: auto;
     }
   }
 
