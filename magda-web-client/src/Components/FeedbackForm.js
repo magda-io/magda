@@ -54,6 +54,9 @@ class FeedbackForm extends React.Component {
     this.props.resetFeedback();
     this.setState({
       isOpen: false,
+      name: '',
+      email: '',
+      feedback: ''
     })
   }
 
