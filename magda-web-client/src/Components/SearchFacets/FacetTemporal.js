@@ -27,8 +27,8 @@ class FacetTemporal extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-    const dateFrom = defined(nextProps.activeDates[0]) ? new Date(nextProps.activeDates[0]) : nextProps.temporalOptions[0];
-    const dateTo = defined(nextProps.activeDates[1]) ? new Date(nextProps.activeDates[1]) : nextProps.temporalOptions[1];
+    const dateFrom = defined(nextProps.activeDates[0]) ? new Date(nextProps.activeDates[0]) : new Date(nextProps.temporalRange[0]);
+    const dateTo = defined(nextProps.activeDates[1]) ? new Date(nextProps.activeDates[1]) : new Date(nextProps.temporalRange[1]);
     this.setState({
       startYear: dateFrom.getUTCFullYear(),
       startMonth: dateFrom.getUTCMonth(),
@@ -85,10 +85,19 @@ class FacetTemporal extends Component {
   }
 
   renderDatePicker(){
+    const temporalRangeStart = new Date(this.props.temporalRange[0]);
+    const temporalRangeEnd = new Date(this.props.temporalRange[1]);
+
+    const yearLower = temporalRangeStart.getUTCFullYear();
+    const monthLower = temporalRangeStart.getUTCMonth();
+
+    const yearUpper = temporalRangeEnd.getUTCFullYear();
+    const monthUpper = temporalRangeEnd.getUTCMonth();
+
     return (<div className='facet-temporal-month-picker'>
-              <MonthPicker onInvalidInput = {this.toggleDisableApplyButton} showingDefault = {!this.props.hasQuery} year={this.state.startYear} month={this.state.startMonth} yearLower={1994} yearUpper={this.state.endYear} monthLower = {4} monthUpper = {this.state.endMonth} selectYear={this.selectStartYear} selectMonth={this.selectStartMonth}/>
+              <MonthPicker onInvalidInput = {this.toggleDisableApplyButton} showingDefault = {!this.props.hasQuery} year={this.state.startYear} month={this.state.startMonth} yearLower={yearLower} yearUpper={this.state.endYear} monthLower = {monthLower} monthUpper = {this.state.endMonth} selectYear={this.selectStartYear} selectMonth={this.selectStartMonth}/>
               <div className='facet-temporal-range-icon'><img src = {range} alt='date range'/></div>
-              <MonthPicker onInvalidInput = {this.toggleDisableApplyButton} showingDefault = {!this.props.hasQuery} year={this.state.endYear} month={this.state.endMonth} yearLower={this.state.startYear} yearUpper={2018} monthLower = {this.state.startMonth} monthUpper = {2} selectYear={this.selectEndYear} selectMonth={this.selectEndMonth}/>
+              <MonthPicker onInvalidInput = {this.toggleDisableApplyButton} showingDefault = {!this.props.hasQuery} year={this.state.endYear} month={this.state.endMonth} yearLower={this.state.startYear} yearUpper={yearUpper} monthLower = {this.state.startMonth} monthUpper = {monthUpper} selectYear={this.selectEndYear} selectMonth={this.selectEndMonth}/>
             </div>)
   }
 

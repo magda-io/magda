@@ -26,7 +26,7 @@ const initialData = {
   freeText: '',
   publisherOptions: [],
   formatOptions: [],
-  temporalOptions: [new Date('1994-01'), new Date()],
+  temporalRange: [new Date('1994-01'), new Date()],
   apiQuery: '',
   strategy: 'match-all',
   error: null
@@ -39,7 +39,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
         isFetching: true,
         error: null,
         apiQuery: action.apiQuery && action.apiQuery,
-        temporalOptions: initialData.temporalOptions,
+        temporalRange: initialData.temporalRange,
         publisherOptions: initialData.publisherOptions,
         formatOptions: initialData.formatOptions,
         activePublishers: initialData.activePublishers,
@@ -79,7 +79,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       let query : Query = data && data.query && data.query;
       let datasets : Array<Dataset> = data && data.dataSets && data.dataSets;
       let hitCount : number = data && data.hitCount && data.hitCount;
-      let temporalOptions : Array<Object> = (data && data.temporal) ? [new Date(data.temporal.start.date), new Date(data.temporal.end.date)]: initialData.temporalOptions;
+      let temporalRange : Array<Object> = (data && data.temporal) ? [new Date(data.temporal.start.date), new Date(data.temporal.end.date)]: initialData.temporalRange;
 
       let publisherOptions :Array<FacetOption> = (data && data.facets && data.facets[0]) ? data.facets[0].options: initialData.publisherOptions;
       let formatOptions :Array<FacetOption> = (data && data.facets && data.facets[2]) ? data.facets[2].options: initialData.formatOptions;
@@ -100,7 +100,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
         hitCount,
         publisherOptions,
         formatOptions,
-        temporalOptions,
+        temporalRange,
         freeText,
         activePublishers,
         activeRegion,
