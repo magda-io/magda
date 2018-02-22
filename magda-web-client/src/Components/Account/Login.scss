@@ -1,9 +1,10 @@
 .login {
-
-
   &__providers {
     list-style: none;
     padding: 0;
+    a{
+      border-bottom: 0;
+    }
   }
 
   &__logo {
@@ -22,4 +23,6 @@
     color: #c0392b;
     font-size: 1.7em;
   }
+
+
 }
