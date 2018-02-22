@@ -82,7 +82,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       let temporalRange : Array<Object> = (data && data.temporal) ? [new Date(data.temporal.start.date), new Date(data.temporal.end.date)]: initialData.temporalRange;
 
       let publisherOptions :Array<FacetOption> = (data && data.facets && data.facets[0]) ? data.facets[0].options: initialData.publisherOptions;
-      let formatOptions :Array<FacetOption> = (data && data.facets && data.facets[2]) ? data.facets[2].options: initialData.formatOptions;
+      let formatOptions :Array<FacetOption> = (data && data.facets && data.facets[1]) ? data.facets[1].options: initialData.formatOptions;
 
       let freeText: string = data.query.freeText;
       let activePublishers: Array<FacetOption> = findMatchingObjs(query.publishers, publisherOptions);
