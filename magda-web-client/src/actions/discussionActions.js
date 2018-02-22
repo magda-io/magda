@@ -2,7 +2,7 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import type {Dispatch, GetState } from "../types";
+import type { Dispatch, GetState } from "../types";
 
 // export function fetchDiscussionForType(type, id): Action {
 //   return (dispatch: Function, getState: Function) => {
@@ -63,109 +63,141 @@ import type {Dispatch, GetState } from "../types";
 // }
 
 export function fetchMessages(typeName: string, typeId: string) {
-  return (dispatch: Dispatch, getState: ()=>Object) => {
-    const startState = getState();
-    const {
-      discussions: { [typeName + "|" + typeId]: existingDiscussion = {} } = {}
-    } = startState;
+    return (dispatch: Dispatch, getState: () => Object) => {
+        const startState = getState();
+        const {
+            discussions: {
+                [typeName + "|" + typeId]: existingDiscussion = {}
+            } = {}
+        } = startState;
 
-    if (existingDiscussion.loading) {
-      return false;
-    }
-
-    dispatch(requestMessages(typeName, typeId));
-
-    return fetch(
-      config.discussionsApiUrl +
-        `linked/${typeName}/${typeId}/messages`
-    )
-      .then(response => {
-        if (response.status === 200) {
-          return response.json();
-        } else {
-          throw new Error(
-            `Error when fetching messages for discussion ${typeName}/${typeId}: ${response.status}`
-          );
+        if (existingDiscussion.loading) {
+            return false;
         }
-      })
-      .then(messages => dispatch(receiveMessages(typeName, typeId, messages)))
-      .catch(error => dispatch(receiveMessagesError(typeName, typeId, error)));
-  };
+
+        dispatch(requestMessages(typeName, typeId));
+
+        return fetch(
+            config.discussionsApiUrl + `linked/${typeName}/${typeId}/messages`
+        )
+            .then(response => {
+                if (response.status === 200) {
+                    return response.json();
+                } else {
+                    throw new Error(
+                        `Error when fetching messages for discussion ${typeName}/${typeId}: ${
+                            response.status
+                        }`
+                    );
+                }
+            })
+            .then(messages =>
+                dispatch(receiveMessages(typeName, typeId, messages))
+            )
+            .catch(error =>
+                dispatch(receiveMessagesError(typeName, typeId, error))
+            );
+    };
 }
 
 export function requestMessages(typeName: string, typeId: string) {
-  return {
-    type: actionTypes.REQUEST_MESSAGES,
-    typeName,
-    typeId
-  };
+    return {
+        type: actionTypes.REQUEST_MESSAGES,
+        typeName,
+        typeId
+    };
 }
 
-export function receiveMessages(typeName: string, typeId: string, messages: string){
-  return {
-    type: actionTypes.RECEIVE_MESSAGES,
-    typeName,
-    typeId,
-    messages
-  };
+export function receiveMessages(
+    typeName: string,
+    typeId: string,
+    messages: string
+) {
+    return {
+        type: actionTypes.RECEIVE_MESSAGES,
+        typeName,
+        typeId,
+        messages
+    };
 }
 
-export function receiveMessagesError(typeName: string , typeId: string, error: string) {
-  return {
-    type: actionTypes.RECEIVE_MESSAGES_ERROR,
-    typeName,
-    typeId,
-    error
-  };
+export function receiveMessagesError(
+    typeName: string,
+    typeId: string,
+    error: string
+) {
+    return {
+        type: actionTypes.RECEIVE_MESSAGES_ERROR,
+        typeName,
+        typeId,
+        error
+    };
 }
 
-export function sendNewMessage(typeName: string, typeId: string, message: string, user: Object) {
-  return (dispatch: Dispatch, getState: GetState) => {
-    dispatch(sendMessage(typeName, typeId, message, user));
+export function sendNewMessage(
+    typeName: string,
+    typeId: string,
+    message: string,
+    user: Object
+) {
+    return (dispatch: Dispatch, getState: GetState) => {
+        dispatch(sendMessage(typeName, typeId, message, user));
 
-    return fetch(
-      config.discussionsApiUrl +
-        `linked/${typeName}/${typeId}/messages`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(message)
-      }
-    )
-      .then(response => {
-        if (response.status === 201) {
-          return response.json();
-        } else {
-          throw new Error(
-            `Error when sending message ${JSON.stringify(
-              message
-            )} for ${typeName} ${typeId}: ${response.status}`
-          );
-        }
-      })
-      .then(messages => dispatch(receiveMessages(typeName, typeId, messages)))
-      .catch(error => dispatch(sendMessageError(typeName, typeId, error)));
-  };
+        return fetch(
+            config.discussionsApiUrl + `linked/${typeName}/${typeId}/messages`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(message)
+            }
+        )
+            .then(response => {
+                if (response.status === 201) {
+                    return response.json();
+                } else {
+                    throw new Error(
+                        `Error when sending message ${JSON.stringify(
+                            message
+                        )} for ${typeName} ${typeId}: ${response.status}`
+                    );
+                }
+            })
+            .then(messages =>
+                dispatch(receiveMessages(typeName, typeId, messages))
+            )
+            .catch(error =>
+                dispatch(sendMessageError(typeName, typeId, error))
+            );
+    };
 }
 
-export function sendMessage(typeName: string, typeId: string, message: string, user: Object) {
-  return {
-    type: actionTypes.SEND_MESSAGE,
-    typeName,
-    typeId,
-    message,
-    user
-  };
+export function sendMessage(
+    typeName: string,
+    typeId: string,
+    message: string,
+    user: Object
+) {
+    return {
+        type: actionTypes.SEND_MESSAGE,
+        typeName,
+        typeId,
+        message,
+        user
+    };
 }
 
-export function sendMessageError(typeName: string, typeId: string, error: string) {
-  return {
-    type: actionTypes.SEND_MESSAGE_ERROR,
-    typeName,
-    typeId,
-    error
-  };
+export function sendMessageError(
+    typeName: string,
+    typeId: string,
+    error: string
+) {
+    return {
+        type: actionTypes.SEND_MESSAGE_ERROR,
+        typeName,
+        typeId,
+        error
+    };
 }

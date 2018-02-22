@@ -13,9 +13,11 @@
             "items": [
                 {
                     "name": "Soil and Landscape Grid",
-                    "description": "[Home Page](http://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-GIS.html)  [Licence](http://creativecommons.org/licenses/by/2.5/au/)",
+                    "description":
+                        "[Home Page](http://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-GIS.html)  [Licence](http://creativecommons.org/licenses/by/2.5/au/)",
                     "dataCustodian": "[CSIRO](http://www.sa.gov.au/)",
-                    "url": "http://www.asris.csiro.au/arcgis/rest/services/TERN",
+                    "url":
+                        "http://www.asris.csiro.au/arcgis/rest/services/TERN",
                     "type": "esri-mapServer-group"
                 }
             ]

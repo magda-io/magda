@@ -1,8 +1,8 @@
-const fse = require('fs-extra');
-const path = require('path');
+const fse = require("fs-extra");
+const path = require("path");
 
 function isScalaPackage(packagePath) {
-    return fse.existsSync(path.resolve(packagePath, 'build.sbt'));
+    return fse.existsSync(path.resolve(packagePath, "build.sbt"));
 }
 
 module.exports = isScalaPackage;

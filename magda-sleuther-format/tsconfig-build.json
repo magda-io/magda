@@ -5,8 +5,5 @@
         "outDir": "dist",
         "baseUrl": "."
     },
-    "include": [
-        "src",
-        "src/format-engine/synonyms.json"
-    ]
+    "include": ["src", "src/format-engine/synonyms.json"]
 }
