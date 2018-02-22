@@ -34,7 +34,7 @@ kubectl create secret storage-account-credentials --from-file=[YOUR-SERVICE-ACCO
 
 7. Install MAGDA:
 ```bash
-helm install --name magda deploy/helm/magda --f <path to your config file>
+helm install --name magda deploy/helm/magda -f <path to your config file>
 ```
 8. Create crawling jobs (until we get the admin interface up to scratch)
 ```bash
