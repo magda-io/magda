@@ -30,8 +30,8 @@ class FeedbackForm extends React.Component {
   onSubmit(){
     this.props.fetchFeedback(JSON.stringify({
           name: this.state.name,
-          email: this.state.name,
-          feedback: this.state.feedback
+          email: this.state.email,
+          comment: this.state.feedback
       }))
   }
 
