@@ -79,7 +79,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       let query : Query = data && data.query && data.query;
       let datasets : Array<Dataset> = data && data.dataSets && data.dataSets;
       let hitCount : number = data && data.hitCount && data.hitCount;
-      let temporalOptions : Array<Object> = (data && data.temporal) ? [new Date(data.temporal.start), new Date(data.temporal.end)]: initialData.temporalOptions;
+      let temporalOptions : Array<Object> = (data && data.temporal) ? [new Date(data.temporal.start.date), new Date(data.temporal.end.date)]: initialData.temporalOptions;
 
       let publisherOptions :Array<FacetOption> = (data && data.facets && data.facets[0]) ? data.facets[0].options: initialData.publisherOptions;
       let formatOptions :Array<FacetOption> = (data && data.facets && data.facets[2]) ? data.facets[2].options: initialData.formatOptions;
