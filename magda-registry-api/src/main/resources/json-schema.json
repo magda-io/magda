@@ -13,10 +13,21 @@
             "minimum": 0
         },
         "positiveIntegerDefault0": {
-            "allOf": [ { "$ref": "#/definitions/positiveInteger" }, { "default": 0 } ]
+            "allOf": [
+                { "$ref": "#/definitions/positiveInteger" },
+                { "default": 0 }
+            ]
         },
         "simpleTypes": {
-            "enum": [ "array", "boolean", "integer", "null", "number", "object", "string" ]
+            "enum": [
+                "array",
+                "boolean",
+                "integer",
+                "null",
+                "number",
+                "object",
+                "string"
+            ]
         },
         "stringArray": {
             "type": "array",
@@ -68,17 +79,11 @@
             "format": "regex"
         },
         "additionalItems": {
-            "anyOf": [
-                { "type": "boolean" },
-                { "$ref": "#" }
-            ],
+            "anyOf": [{ "type": "boolean" }, { "$ref": "#" }],
             "default": {}
         },
         "items": {
-            "anyOf": [
-                { "$ref": "#" },
-                { "$ref": "#/definitions/schemaArray" }
-            ],
+            "anyOf": [{ "$ref": "#" }, { "$ref": "#/definitions/schemaArray" }],
             "default": {}
         },
         "maxItems": { "$ref": "#/definitions/positiveInteger" },
@@ -91,10 +96,7 @@
         "minProperties": { "$ref": "#/definitions/positiveIntegerDefault0" },
         "required": { "$ref": "#/definitions/stringArray" },
         "additionalProperties": {
-            "anyOf": [
-                { "type": "boolean" },
-                { "$ref": "#" }
-            ],
+            "anyOf": [{ "type": "boolean" }, { "$ref": "#" }],
             "default": {}
         },
         "definitions": {
@@ -143,8 +145,8 @@
         "not": { "$ref": "#" }
     },
     "dependencies": {
-        "exclusiveMaximum": [ "maximum" ],
-        "exclusiveMinimum": [ "minimum" ]
+        "exclusiveMaximum": ["maximum"],
+        "exclusiveMinimum": ["minimum"]
     },
     "default": {}
 }

@@ -1,7 +1,7 @@
 {
     "port": 6110,
 
-    "allowProxyFor" : [
+    "allowProxyFor": [
         "nicta.com.au",
         "gov.au",
         "csiro.au",

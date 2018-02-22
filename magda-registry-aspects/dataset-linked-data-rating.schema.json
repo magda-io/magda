@@ -1,12 +1,13 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "title": "Aspect describing the linked data quality of the dataset out of 5 stars as per https://www.w3.org/DesignIssues/LinkedData.html",
-  "type": "object",
-  "properties": {
-    "stars": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 5
+    "$schema": "http://json-schema.org/schema#",
+    "title":
+        "Aspect describing the linked data quality of the dataset out of 5 stars as per https://www.w3.org/DesignIssues/LinkedData.html",
+    "type": "object",
+    "properties": {
+        "stars": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+        }
     }
-  }
 }
