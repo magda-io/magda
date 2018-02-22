@@ -26,6 +26,7 @@ const initialData = {
   freeText: '',
   publisherOptions: [],
   formatOptions: [],
+  temporalOptions: [new Date('1994-01'), new Date()],
   apiQuery: '',
   strategy: 'match-all',
   error: null
@@ -38,6 +39,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
         isFetching: true,
         error: null,
         apiQuery: action.apiQuery && action.apiQuery,
+        temporalOptions: initialData.temporalOptions,
         publisherOptions: initialData.publisherOptions,
         formatOptions: initialData.formatOptions,
         activePublishers: initialData.activePublishers,
@@ -77,16 +79,15 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
       let query : Query = data && data.query && data.query;
       let datasets : Array<Dataset> = data && data.dataSets && data.dataSets;
       let hitCount : number = data && data.hitCount && data.hitCount;
+      let temporalOptions : Array<Object> = (data && data.temporal) ? [new Date(data.temporal.start), new Date(data.temporal.end)]: initialData.temporalOptions;
 
-      let publisherOptions :Array<FacetOption> = (data && data.facets) ? data.facets[0].options: []
-      let formatOptions :Array<FacetOption> = (data && data.facets) ? data.facets[2].options: []
+      let publisherOptions :Array<FacetOption> = (data && data.facets && data.facets[0]) ? data.facets[0].options: initialData.publisherOptions;
+      let formatOptions :Array<FacetOption> = (data && data.facets && data.facets[2]) ? data.facets[2].options: initialData.formatOptions;
 
       let freeText: string = data.query.freeText;
-
       let activePublishers: Array<FacetOption> = findMatchingObjs(query.publishers, publisherOptions);
       let activeDateFrom : ?string = query.dateFrom ? query.dateFrom: initialData.activeDateFrom;
       let activeDateTo : ?string = query.dateTo ? query.dateTo : initialData.activeDateTo;
-
       let activeFormats: Array<FacetOption> = findMatchingObjs(query.formats, formatOptions);;
 
       let activeRegion: Region = query.regions[0] || initialData.activeRegion;
@@ -99,6 +100,7 @@ const datasetSearchReducer = (state: SearchState= initialData, action: SearchAct
         hitCount,
         publisherOptions,
         formatOptions,
+        temporalOptions,
         freeText,
         activePublishers,
         activeRegion,

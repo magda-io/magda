@@ -27,9 +27,8 @@ class FacetTemporal extends Component {
   }
 
   componentWillReceiveProps(nextProps){
-    const dateFrom = defined(this.props.activeDates[0]) ? new Date(this.props.activeDates[0]) : new Date('1994-05-17');
-    const dateTo = defined(this.props.activeDates[1]) ? new Date(this.props.activeDates[1]) : new Date('2018-03-17');
-
+    const dateFrom = defined(nextProps.activeDates[0]) ? new Date(nextProps.activeDates[0]) : nextProps.temporalOptions[0];
+    const dateTo = defined(nextProps.activeDates[1]) ? new Date(nextProps.activeDates[1]) : nextProps.temporalOptions[1];
     this.setState({
       startYear: dateFrom.getUTCFullYear(),
       startMonth: dateFrom.getUTCMonth(),
