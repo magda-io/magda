@@ -1,7 +1,7 @@
 @import '../../variables';
 
 @mixin text() {
-  color: $body;
+  color: #fff;
   font-family: $font-base;
   font-size: 48px;
   font-weight: 300;
@@ -11,7 +11,8 @@
 
 .searchBox{
   position: relative;
-  box-shadow: 1px 1px 1px 1px rgba(73,73,73,0.25);
+  background-color: #F55860;
+  color: #fff;
   margin-bottom: 32px;
   @media (min-width: 768px) {
     padding: 50px 135px;
@@ -44,6 +45,9 @@
     img{
       width: 40px;
     }
+    img svg{
+        fill: #fff;
+    }
   }
 
   input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
@@ -60,7 +64,7 @@
   }
 
   .mui-textfield {
-    	border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+      border-bottom: 2px solid #fff;
       padding-bottom: 5px;
   }
 }

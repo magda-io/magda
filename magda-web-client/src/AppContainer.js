@@ -25,6 +25,7 @@ import SignInRedirect from './Components/Account/SignInRedirect';
 import { requestWhoAmI } from './actions/userManagementActions';
 import Container from 'muicss/lib/react/container';
 import d61logo from './data61-logo.png';
+import dgalogo from './dga.png';
 
 import {
   Route,
@@ -92,7 +93,7 @@ class AppContainer extends React.Component {
              <table width="100%" className='nav-table'>
                <tbody>
                  <tr style={{verticalAlign: 'middle'}}>
-                   <td className="logo"><Link to='/'>{config.appName}</Link></td>
+                   <td className="logo"><Link to='/'><img src={dgalogo} alt='dga-logo' /></Link></td>
                    <td className="nav-bar-right">
                      {headerNavs.map(nav =>
                          <Link key={nav[1]} to={`/${encodeURI(nav[1])}`}>{nav[0]}</Link>
