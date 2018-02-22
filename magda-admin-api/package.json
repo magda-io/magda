@@ -7,9 +7,12 @@
         "watch": "tsc -p tsconfig-build.json --watch",
         "start": "node dist/index.js",
         "dev": "run-typescript-in-nodemon src/index.ts",
-        "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-        "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-        "test": "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
+        "docker-build-local":
+            "create-docker-context-for-node-component --build --push --tag auto --local",
+        "docker-build-prod":
+            "create-docker-context-for-node-component --build --push --tag auto",
+        "test":
+            "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
     },
     "dependencies": {
         "@magda/typescript-common": "^0.0.33-0",

@@ -1,11 +1,11 @@
 {
-  "name": "@magda/int-test",
-  "version": "0.0.33-0",
-  "description": "Integration tests",
-  "scripts": {
-    "build": "npm run compile",
-    "test": "cd .. && sbt intTest/test",
-    "compile": "cd .. && sbt intTest/compile"
-  },
-  "license": "Apache-2.0"
+    "name": "@magda/int-test",
+    "version": "0.0.33-0",
+    "description": "Integration tests",
+    "scripts": {
+        "build": "npm run compile",
+        "test": "cd .. && sbt intTest/test",
+        "compile": "cd .. && sbt intTest/compile"
+    },
+    "license": "Apache-2.0"
 }
