@@ -22,9 +22,7 @@ tags:
     sleuther-linked-data-rating: true
     sleuther-visualization: true
     web-server: true
-
-cloud-sql-proxy:
-  instanceConnectionName: terriajs:australia-southeast1:magda-prod
+    feedback-api: true
 
 elasticsearch:
     production: true
@@ -159,3 +157,9 @@ indexer:
 #    useGcsSnapshots: true
 #    gcsSnapshotBucket: "magda-es-snapshots"
 #    gcsSnapshotServiceAccount: "_default"
+feedback-api:
+    gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
+    replicas: 2
+cloud-sql-proxy:
+    replicas: 2
+    instanceConnectionName: terriajs:australia-southeast1:magda-prod
