@@ -7,7 +7,7 @@ metadata:
     component: elasticsearch
     role: client
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas | default 1 }}
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}

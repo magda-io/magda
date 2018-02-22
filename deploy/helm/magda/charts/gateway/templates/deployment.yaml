@@ -77,7 +77,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: session-store-client
+              key: session-db-client
 {{- end }}
       volumes:
         - name: routes

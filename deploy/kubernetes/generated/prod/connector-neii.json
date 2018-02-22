@@ -2,19 +2,18 @@
     "apiVersion": "batch/v1",
     "kind": "Job",
     "metadata": {
-        "name": "connector-act-government"
+        "name": "connector-neii"
     },
     "spec": {
         "template": {
             "metadata": {
-                "name": "connector-act-government"
+                "name": "connector-neii"
             },
             "spec": {
                 "containers": [
                     {
-                        "name": "connector-act-government",
-                        "image":
-                            "data61/magda-project-open-data-connector:0.0.33-0",
+                        "name": "connector-neii",
+                        "image": "data61/magda-csw-connector:0.0.33-0",
                         "command": [
                             "node",
                             "/usr/src/app/component/dist/index.js",
@@ -65,7 +64,7 @@
                             "name": "connector-config",
                             "items": [
                                 {
-                                    "key": "act-government.json",
+                                    "key": "neii.json",
                                     "path": "connector.json"
                                 }
                             ]
