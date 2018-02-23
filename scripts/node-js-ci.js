@@ -3,6 +3,8 @@
 const path = require("path");
 const fse = require("fs-extra");
 const childProcess = require("child_process");
+const glob = require("glob");
+const _ = require("lodash");
 
 const lernaJson = require("../lerna.json");
 
@@ -21,9 +23,15 @@ const lernaJson = require("../lerna.json");
 //     }
 //   )
 // );
-const webPackages = ["@magda/web-client", "@magda/preview-map"];
+const webPackages = [
+    "@magda/web-client",
+    "@magda/preview-map",
+    "@magda/web-admin",
+    "@magda/web-server"
+];
 
-const jsPackages = lernaJson.packages
+const jsPackages = _(lernaJson.packages)
+    .flatMap(package => glob.sync(package))
     .filter(function(packagePath) {
         return !fse.existsSync(path.resolve(packagePath, "build.sbt"));
     })
@@ -31,7 +39,8 @@ const jsPackages = lernaJson.packages
         const packageJson = require(path.resolve(packagePath, "package.json"));
         return packageJson.name;
     })
-    .filter(packageName => webPackages.indexOf(packageName) === -1);
+    .filter(packageName => webPackages.indexOf(packageName) === -1)
+    .value();
 
 const commands = ["bootstrap", "run build", "run test"];
 
