@@ -19,7 +19,7 @@
         "build-changed-scala": "bash -c \"sbt deployLocalOnChange\"",
         "build-changed":
             "npm run build-changed-ts && npm run build-changed-scala",
-        "prettier": "prettier --write '**/*.json' '!**/regions/**'",
+        "prettier": "prettier --write '**/*.js'",
         "precommit": "pretty-quick --staged"
     },
     "dependencies": {
