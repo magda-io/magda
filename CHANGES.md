@@ -28,6 +28,10 @@
 * Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
 * Add Google Analytics Tag Manager Code / VWO code to `<head>`
 * Added `feedback-api` microservice to collect feedback and create GitHub issues from it.
+* Separated database migrations from database images to facilitate use of managed SQL services - they now live in `magda-migrator-xx` directories and run as jobs on helm upgrade/install
+* Added configuration for Google Cloud SQL
+* Normalised DB names - now everything is magda-xx-db
+* Made docker build scripts automatically adjust `FROM` statements to add `localhost:5000/` and the correct version tag where necessary
 
 ## 0.0.32
 
