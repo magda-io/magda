@@ -34,7 +34,7 @@ const initialData = {
     freeText: "",
     publisherOptions: [],
     formatOptions: [],
-    temporalRange: [new Date("1994-01"), new Date()],
+    temporalRange: null,
     apiQuery: "",
     strategy: "match-all",
     error: null
@@ -73,6 +73,7 @@ const datasetSearchReducer = (
                 apiQuery: ""
             });
         case "RECEIVE_RESULTS":
+          debugger
             const defaultJson = {
                 query: {
                     quotes: [],
@@ -92,7 +93,7 @@ const datasetSearchReducer = (
                 data && data.dataSets && data.dataSets;
             let hitCount: number = data && data.hitCount && data.hitCount;
             let temporalRange: Array<Object> =
-                data && data.temporal
+                data && (data.temporal.start && data.temporal.end)
                     ? [
                           new Date(data.temporal.start.date),
                           new Date(data.temporal.end.date)
