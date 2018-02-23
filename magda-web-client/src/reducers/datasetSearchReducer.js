@@ -73,7 +73,6 @@ const datasetSearchReducer = (
                 apiQuery: ""
             });
         case "RECEIVE_RESULTS":
-          debugger
             const defaultJson = {
                 query: {
                     quotes: [],
