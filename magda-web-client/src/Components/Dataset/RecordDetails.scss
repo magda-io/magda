@@ -18,9 +18,28 @@
   color: $magda-dark-grey;
 }
 
-.publisher, .updated-date{
-  color: #888;
+.publisher-basic-info-row{
+    .publisher {
+        color: #CC3139;
+        font-size: 18px;
+        line-height: 22px;
+    }
+    
+    .updated-date {
+        color: #494949;
+        font-size: 18px;
+        line-height: 22px;
+    }
+
+    .separator {
+        opacity: 0.25;
+        color: #494949;
+        font-size: 18px;
+        line-height: 22px;
+    }
 }
+
+
 
 .tags{
   .badge{
@@ -36,4 +55,11 @@
 
 .tab-content{
   margin-bottom: 24px;
+}
+
+.dataset-details-overview {
+    margin-top: 20px;
+    opacity: 0.75;
+    font-size: 16px;
+    line-height: 23px;
 }

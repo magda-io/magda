@@ -19,10 +19,9 @@ class DatasetDetails extends Component{
     const source = `This dataset was originally found on [${this.props.dataset.source}](${dataset.landingPage})`
     return <div className='dataset-details container'>
               <div className='mui-row'>
-                <div className='dataset-details__body mui-col-sm-8'>
+                <div className='dataset-details__body mui-col-sm-12'>
                   <div className='dataset-details-overview'>
-                    <h3 className='section-heading'>Overview</h3>
-                    <OverviewBox content={dataset.description} truncate ={false}/>
+                    <OverviewBox content={dataset.description} truncate ={true}/>
                   </div>
                   <div className='dataset-details-source'>
                     <h3 className='section-heading'>Source</h3>
@@ -37,14 +36,8 @@ class DatasetDetails extends Component{
                       <TemporalAspectViewer data={dataset.temporalCoverage}/>
                   </div>
               </div>
+            </div>
 
-            <div className='record-details__sidebar mui-col-sm-4'>
-                <div className='tags'>
-                  <h5>Tags</h5>
-                  {dataset.tags && uniq(dataset.tags).map(t=><span className='badge' key={t} ><Link to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link></span>)}
-                </div>
-            </div>
-            </div>
         </div>
       }
 }

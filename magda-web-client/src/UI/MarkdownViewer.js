@@ -9,7 +9,7 @@ class MarkdownViewer extends React.Component  {
  render(){
    let html = markdownToHtml(this.props.markdown);
    if(this.props.truncate === true){
-       html = truncate(html, 150);
+       html = truncate(html, this.props.truncateLength ? this.props.truncateLength : 150);
    }
    let markdown = {__html: html};
    return(
