@@ -1,8 +1,17 @@
 @import "./variables";
 
-.app-container {
-    .nav-table {
-        padding: 24px 0;
+.app-container{
+  min-height: 1000px;
+  .nav-table{
+    padding: 24px 0;
+  }
+
+  .nav-bar-right{
+    float: right;
+    a{
+      display: inline-block;
+      margin-right: 10px;
+      border-bottom: 0;
     }
 
     .nav-bar-right {

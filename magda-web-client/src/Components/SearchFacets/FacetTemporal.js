@@ -29,6 +29,7 @@ class FacetTemporal extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
+      if(nextProps.temporalRange){
         const dateFrom = defined(nextProps.activeDates[0])
             ? new Date(nextProps.activeDates[0])
             : new Date(nextProps.temporalRange[0]);
@@ -42,6 +43,7 @@ class FacetTemporal extends Component {
             endMonth: dateTo.getUTCMonth(),
             applyButtonDisabled: !this.props.hasQuery
         });
+      }
     }
 
     onClearDates() {
@@ -140,6 +142,7 @@ class FacetTemporal extends Component {
     }
 
     render() {
+      if(this.props.temporalRange){
         return (
             <div className="facet-wrapper">
                 <FacetHeader
@@ -175,6 +178,8 @@ class FacetTemporal extends Component {
                 )}
             </div>
         );
+      }
+      return null
     }
 }
 
