@@ -10,6 +10,8 @@ import ProjectDetails from "./Components/Project/ProjectDetails";
 import CreateProject from "./Components/Project/CreateProject";
 import PublishersViewer from "./Components/Publisher/PublishersViewer";
 import PublisherDetails from "./Components/Publisher/PublisherDetails";
+import Banner from "./UI/Banner";
+import FeedbackForm from "./Components/FeedbackForm";
 import Home from "./Components/Home";
 import RouteNotFound from "./Components/RouteNotFound";
 import Search from "./Components/Search/Search";
@@ -101,6 +103,8 @@ class AppContainer extends React.Component {
         return (
             <ReactDocumentTitle title={config.appName}>
                 <div>
+                    <Banner />
+                    <FeedbackForm />
                     <Container className="app-container">
                         <table width="100%" className="nav-table">
                             <tbody>
@@ -136,7 +140,7 @@ class AppContainer extends React.Component {
                                 {footerNavs.map(item => (
                                     <li
                                         key={item.category}
-                                        className="mui-col-md-2 mui-col-sm-4"
+                                        className="mui-col-md-2 mui-col-sm-3"
                                     >
                                         <span className="nav-title">
                                             {item.category}

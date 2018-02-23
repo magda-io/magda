@@ -5,6 +5,7 @@ import MarkdownViewer from "../../UI/MarkdownViewer";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import renderDistribution from "../../Components/Distribution";
+import uniq from "lodash.uniq";
 import "./RecordDetails.css";
 
 class DatasetDetails extends Component {
@@ -66,10 +67,9 @@ class DatasetDetails extends Component {
                         <div className="tags">
                             <h5>Tags</h5>
                             {dataset.tags &&
-                                dataset.tags.map(t => (
-                                    <span className="badge">
+                                uniq(dataset.tags).map(t => (
+                                    <span className="badge" key={t}>
                                         <Link
-                                            key={t}
                                             to={`/search?q=${encodeURIComponent(
                                                 t
                                             )}`}

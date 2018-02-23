@@ -2,6 +2,9 @@
     &__providers {
         list-style: none;
         padding: 0;
+        a {
+            border-bottom: 0;
+        }
     }
 
     &__logo {

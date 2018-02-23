@@ -12,7 +12,8 @@ const serverConfig: {
     discussionsApiBaseUrl?: string,
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
-    searchApiBaseUrl?: string
+    searchApiBaseUrl?: string,
+    feedbackApiBaseUrl?: string
 } =
     window.magda_server_config || {};
 
@@ -21,7 +22,6 @@ const registryApiUrl =
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
-
 export const config = {
     appName: "data.gov.au",
     about:
@@ -36,6 +36,8 @@ export const config = {
     discussionsApiUrl:
         serverConfig.discussionsApiBaseUrl ||
         fallbackApiHost + "api/v0/discussions/",
+    feedbackUrl:
+        serverConfig.feedbackApiBaseUrl || fallbackApiHost + "api/v0/feedback",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
@@ -109,10 +111,6 @@ export const config = {
                 ["About data.gov.au", "page/about"],
                 ["Blog", "https://blog.data.gov.au/"]
             ]
-        },
-        {
-            category: "Feedback",
-            links: [["Feedback", "http://preview.data.gov.au/feedback.html"]]
         }
     ]
 };

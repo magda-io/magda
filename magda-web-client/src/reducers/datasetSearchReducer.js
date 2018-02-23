@@ -34,6 +34,7 @@ const initialData = {
     freeText: "",
     publisherOptions: [],
     formatOptions: [],
+    temporalRange: [new Date("1994-01"), new Date()],
     apiQuery: "",
     strategy: "match-all",
     error: null
@@ -49,6 +50,7 @@ const datasetSearchReducer = (
                 isFetching: true,
                 error: null,
                 apiQuery: action.apiQuery && action.apiQuery,
+                temporalRange: initialData.temporalRange,
                 publisherOptions: initialData.publisherOptions,
                 formatOptions: initialData.formatOptions,
                 activePublishers: initialData.activePublishers,
@@ -89,14 +91,24 @@ const datasetSearchReducer = (
             let datasets: Array<Dataset> =
                 data && data.dataSets && data.dataSets;
             let hitCount: number = data && data.hitCount && data.hitCount;
+            let temporalRange: Array<Object> =
+                data && data.temporal
+                    ? [
+                          new Date(data.temporal.start.date),
+                          new Date(data.temporal.end.date)
+                      ]
+                    : initialData.temporalRange;
 
             let publisherOptions: Array<FacetOption> =
-                data && data.facets ? data.facets[0].options : [];
+                data && data.facets && data.facets[0]
+                    ? data.facets[0].options
+                    : initialData.publisherOptions;
             let formatOptions: Array<FacetOption> =
-                data && data.facets ? data.facets[2].options : [];
+                data && data.facets && data.facets[1]
+                    ? data.facets[1].options
+                    : initialData.formatOptions;
 
             let freeText: string = data.query.freeText;
-
             let activePublishers: Array<FacetOption> = findMatchingObjs(
                 query.publishers,
                 publisherOptions
@@ -107,7 +119,6 @@ const datasetSearchReducer = (
             let activeDateTo: ?string = query.dateTo
                 ? query.dateTo
                 : initialData.activeDateTo;
-
             let activeFormats: Array<FacetOption> = findMatchingObjs(
                 query.formats,
                 formatOptions
@@ -124,6 +135,7 @@ const datasetSearchReducer = (
                 hitCount,
                 publisherOptions,
                 formatOptions,
+                temporalRange,
                 freeText,
                 activePublishers,
                 activeRegion,
