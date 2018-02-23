@@ -15,6 +15,10 @@ export default class ChartConfig extends Component {
       </Select>)
   }
 
+  onChange(id){
+
+  }
+
   render(){
     return (<div className='chart-config'>
               <div className='chart-type'>{this.renderTypeSelect(VEGAMARK, 'chartType', 'Chart type')}</div>
