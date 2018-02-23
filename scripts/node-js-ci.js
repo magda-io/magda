@@ -31,12 +31,13 @@ const webPackages = [
 ];
 
 const jsPackages = _(lernaJson.packages)
+    .map(package => package + "/package.json")
     .flatMap(package => glob.sync(package))
     .filter(function(packagePath) {
         return !fse.existsSync(path.resolve(packagePath, "build.sbt"));
     })
     .map(packagePath => {
-        const packageJson = require(path.resolve(packagePath, "package.json"));
+        const packageJson = require(path.resolve(packagePath));
         return packageJson.name;
     })
     .filter(packageName => webPackages.indexOf(packageName) === -1)
