@@ -15,8 +15,6 @@ import {
   Redirect
 } from 'react-router-dom';
 import DatasetDetails from './Dataset/DatasetDetails';
-import DatasetDiscussion from './Dataset/DatasetDiscussion';
-import DatasetPublisher from './Dataset/DatasetPublisher';
 import DistributionDetails from './Dataset/DistributionDetails';
 import DistributionPreview from './Dataset/DistributionPreview';
 
@@ -117,8 +115,6 @@ class RecordHandler extends React.Component {
                <div className='tab-content'>
                  <Switch>
                    <Route path='/dataset/:datasetId/details' component={DatasetDetails} />
-                   <Route path='/dataset/:datasetId/discussion' component={DatasetDiscussion} />
-                   <Route path='/dataset/:datasetId/publisher' component={DatasetPublisher} />
                    <Redirect exact from='/dataset/:datasetId' to={`${baseUrlDataset}/details`} />
                  </Switch>
                </div>

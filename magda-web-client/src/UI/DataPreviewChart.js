@@ -75,7 +75,7 @@ class DataPreviewChart extends Component {
 
   }
 
-  render(){
+  renderByState(){
     if(this.props.data){
       return (
         <Tabs onChange={this.onChange} defaultSelectedIndex={0}>
@@ -90,6 +90,13 @@ class DataPreviewChart extends Component {
     } else {
       return <div>No preview available</div>
     }
+  }
+
+  render(){
+    return (<div className="data-preview-chart">
+      <h3>Data Preview</h3>
+      {this.renderByState()}
+    </div>)
   }
 }
 

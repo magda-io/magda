@@ -42,6 +42,8 @@ elasticsearch:
       limits:
         cpu: 1000m
         memory: 1500Mi
+feedback-api:
+  gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
 indexer:
   resources:
     requests:

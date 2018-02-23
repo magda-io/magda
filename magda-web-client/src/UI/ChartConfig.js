@@ -10,7 +10,7 @@ const DATATYPE = ['quantitative', 'temporal', 'ordinal', 'nominal'];
 
 export default class ChartConfig extends Component {
   renderTypeSelect(options,id, label){
-      return (<Select name="input" label={label} defaultValue={this.props[id]}>
+      return (<Select name="input" label={label} defaultValue={this.props[id]} onChange = {this.onChange.bind(this, id)}>
           {options.map(o=><Option key={o} value={o} label={o}/>)}
       </Select>)
   }
@@ -18,9 +18,9 @@ export default class ChartConfig extends Component {
   render(){
     return (<div className='chart-config'>
               <div className='chart-type'>{this.renderTypeSelect(VEGAMARK, 'chartType', 'Chart type')}</div>
-              <div className='chart-title'><Input label="Chart title" /></div>
-              <div className='y-axis'><Input label="Y axis" /></div>
-              <div className='x-axis'><Input label="X axis" /></div>
+              <div className='chart-title'><Input onChange = {this.onChange.bind(this, 'title')} label="Chart title" /></div>
+              <div className='y-axis'><Input label="Y axis" onChange = {this.onChange.bind(this, 'xAxis')}/></div>
+              <div className='x-axis'><Input label="X axis" onChange = {this.onChange.bind(this, 'yAxis')}/></div>
               <div className='linear'>{this.renderTypeSelect(DATATYPE, 'yScale', 'Chart scale')}</div>
             </div>)
   }

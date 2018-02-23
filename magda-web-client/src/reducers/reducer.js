@@ -18,6 +18,7 @@ import featuredPublishers from './featuredPublishersReducer';
 import news from './newsReducer';
 import stats from './statsReducer';
 import discussions from "./discussionReducer";
+import feedback from "./feedbackReducer";
 
 import previewData from "./previewDataReducer";
 
@@ -39,6 +40,7 @@ const reducer = combineReducers({
   stats,
   discussions,
   previewData,
+  feedback
 });
 
 export default reducer;

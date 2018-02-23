@@ -39,8 +39,7 @@ const previewDataReducer = (state: previewDataState = initialData, action: previ
     case 'RECEIVE_PREVIEW_DATA':
       return Object.assign({}, state, {
         isFetching: false,
-        previewData: Object.assign({}, state.previewData,
-          action.previewData
+        previewData: Object.assign({}, action.previewData,
         ),
         error: null
       })

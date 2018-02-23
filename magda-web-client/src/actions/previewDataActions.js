@@ -62,9 +62,8 @@ export function fetchPreviewData(distribution){
         return false;
       }
 
-
       const url = distribution.downloadURL;
-      const format = distribution.format;
+      const format = distribution.format.toLowerCase();
 
       dispatch(requestPreviewData(url));
 
