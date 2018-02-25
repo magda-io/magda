@@ -27,6 +27,7 @@ import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.api.model.RegionSearchResult
 import au.csiro.data61.magda.api.model.SearchResult
+import au.csiro.data61.magda.model.Temporal.{ PeriodOfTime, ApiDate }
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.SearchQueryer
@@ -47,6 +48,12 @@ import org.elasticsearch.index.query.MultiMatchQueryBuilder
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import org.elasticsearch.search.aggregations.bucket.global.GlobalAggregator
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
+import java.time.ZoneOffset
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.Instant
+import org.elasticsearch.search.aggregations.metrics.min.InternalMin
+import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -122,11 +129,23 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
     val aggs = response.aggregations
 
+    def getDateAggResult(agg: SingleValue) = {
+      val minDateEpoch = agg.value().toLong
+      if (minDateEpoch == Long.MaxValue || minDateEpoch == Long.MinValue) {
+        None
+      } else {
+        Some(ApiDate(Some(OffsetDateTime.parse(agg.getValueAsString)), ""))
+      }
+    }
+
     new SearchResult(
       strategy = Some(strategy),
       query = query,
       hitCount = response.getHits.totalHits().toInt,
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
+      temporal = Some(PeriodOfTime(
+        start = getDateAggResult(aggs.getAs[SingleValue]("minDate")), //        end = ApiDate.parse(aggs.getAs[InternalAggregation]("maxDate").getProperty("value").toString, None, false))
+        end = getDateAggResult(aggs.getAs[SingleValue]("maxDate")))),
       facets = Some(FacetType.all.map { facetType =>
         val definition = facetDefForType(facetType)
 
@@ -224,11 +243,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(searchDef: SearchDefinition, query: Query, strategy: SearchStrategy, facetSize: Int) = {
-    val aggregations: List[AggregationDefinition] =
+    val facetAggregations: List[AggregationDefinition] =
       FacetType.all.flatMap(facetType =>
         aggsForFacetType(query, facetType, strategy, idealFacetSize(facetType, query, facetSize))).toList
 
-    searchDef.aggregations(aggregations)
+    val minDateAgg = minAggregation("minDate").field("temporal.start.date")
+    val maxDateAgg = maxAggregation("maxDate").field("temporal.end.date")
+
+    searchDef.aggregations(facetAggregations ++ List(minDateAgg, maxDateAgg))
   }
 
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */

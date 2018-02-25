@@ -48,6 +48,7 @@ import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.util.SetExtractor
 import au.csiro.data61.magda.test.util.Generators
+import scala.reflect.internal.util.Statistics.View
 
 class FacetSpec extends BaseSearchApiSpec {
 
@@ -470,163 +471,48 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("year") {
-      describe("should generate non-overlapping facets") {
-        checkFacetsBoth(facetSizeGen = Gen.choose(2, 20)) { (dataSets, facetSize) ⇒
-          val result = responseAs[SearchResult]
-          val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-          val options = yearFacet.options
-
-          val allFacetPairings = for {
-            facet1 ← options
-            facet2 ← options.filterNot(_ == facet1)
-          } yield ((facet1.lowerBound.get, facet1.upperBound.get), (facet2.lowerBound.get, facet2.upperBound.get))
-
-          whenever(!allFacetPairings.isEmpty) {
-            allFacetPairings.foreach { pair ⇒
-              val optionValues = options.map(_.value)
-              val dataSetYears = dataSets.map(_.temporal.getOrElse("(no temporal)"))
-              withClue(s"for options $optionValues and dataSet years $dataSetYears") {
-                overlaps(pair) should be(false)
-              }
-            }
-          }
+      it("with no query") {
+        checkFacetsNoQuery() { (dataSets, facetSize) =>
+          checkDataSetResult(dataSets, responseAs[SearchResult])
         }
       }
 
-      describe("should be consistent with grouping all the facet results by temporal coverage year") {
-        def getDataSetYears(dataSets: List[DataSet]) = dataSets.map(_.temporal.map(temporal ⇒ temporal.start.flatMap(_.date.map(_.getYear)) + "-" + temporal.end.flatMap(_.date.map(_.getYear))).getOrElse("(no temporal)"))
+      it("with a query") {
+        val queryGen = for {
+          dateFrom <- dateFromGen
+          dateTo <- dateToGen
+          result <- Gen.oneOf(Query(dateFrom = Some(dateFrom)), Query(dateTo = Some(dateTo)), Query(dateFrom = Some(dateFrom), dateTo = Some(dateTo)))
+        } yield result
 
-        it("with no query") {
-          checkFacetsNoQuery() { (dataSets, facetSize) ⇒
-            val result = responseAs[SearchResult]
-            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
+        checkFacetsWithQuery(dataSets => textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
+          val filteredDataSets = filterDataSetsForDateRange(dataSets, query.dateFrom, query.dateTo)
 
-            whenever(!yearFacet.options.isEmpty) {
-              yearFacet.options.foreach { option ⇒
-                val matchingDataSets = filterDataSetsForYearRange(dataSets, option.lowerBound.get, option.upperBound.get)
-
-                withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
-                  matchingDataSets.size shouldEqual option.hitCount
-                }
-              }
-            }
-          }
-        }
-
-        describe("with a query") {
-          it("for matched facet options") {
-            val queryGen = for {
-              dateFrom <- dateFromGen
-              dateTo <- dateToGen
-              result <- Gen.oneOf(Query(dateFrom = Some(dateFrom)), Query(dateTo = Some(dateTo)), Query(dateFrom = Some(dateFrom), dateTo = Some(dateTo)))
-            } yield result
-
-            checkFacetsWithQuery(dataSets => textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
-              val outerResult = responseAs[SearchResult]
-              val yearFacet = outerResult.facets.get.find(_.id.equals(Year.id)).get
-
-              val matched = yearFacet.options.filter(_.matched)
-
-              whenever(!matched.isEmpty && outerResult.strategy.get == MatchAll) {
-                matched.foreach { option ⇒
-                  val facetDataSets = filterDataSetsForYearRange(dataSets, option.lowerBound.get, option.upperBound.get)
-
-                  withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
-                    facetDataSets.size shouldEqual option.hitCount
-                  }
-                }
-              }
-            }
-          }
-
-          it("for unmatched facet options") {
-            def yearQueryGen(x: List[DataSet]) = {
-              Gen.option(Gen.alphaNumChar).flatMap(char =>
-                Query(freeText = char.map(_.toString), quotes = Set[String](), publishers = Set[FilterValue[String]](), regions = Set[FilterValue[Region]](), formats = Set[FilterValue[String]]()))
-            }
-
-            checkFacetsWithQuery(dataSets => textQueryGen(yearQueryGen(dataSets))) { (dataSets, facetSize, query, allDataSets, routes) ⇒
-              val outerResult = responseAs[SearchResult]
-              val yearFacet = outerResult.facets.get.find(_.id.equals(Year.id)).get
-
-              searchWithoutFacetFilter(query, Year, routes, outerResult, allDataSets) { (innerResult, innerDataSets) =>
-                val unmatched = yearFacet.options.filter(!_.matched)
-
-                whenever(!unmatched.isEmpty) {
-                  unmatched.foreach { option ⇒
-                    val facetDataSets = filterDataSetsForYearRange(innerDataSets, option.lowerBound.get, option.upperBound.get)
-
-                    withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
-                      facetDataSets.size shouldEqual option.hitCount
-                    }
-                  }
-                }
-              }
-            }
-          }
+          checkDataSetResult(filteredDataSets, responseAs[SearchResult])
         }
       }
 
-      describe("with no query") {
-        it("should generate even facets") {
-          checkFacetsNoQuery() { (dataSets, facetSize) ⇒
-            val result = responseAs[SearchResult]
-            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-            whenever(!yearFacet.options.isEmpty) {
-              yearFacet.options.foreach { option ⇒
-                val upperBound = option.upperBound.get.toInt
-                val lowerBound = option.lowerBound.get.toInt
-                val size = upperBound - lowerBound + 1
-
-                option.value should equal(
-                  if (lowerBound == upperBound) lowerBound.toString
-                  else s"$lowerBound - " + s"$upperBound")
-                YearFacetDefinition.YEAR_BIN_SIZES should contain(size)
-                if (facetSize > 1) withClue(s"[$lowerBound-$upperBound with size $size]") {
-                  lowerBound % size shouldEqual 0
-                }
-              }
+      def checkDataSetResult(dataSets: List[DataSet], result: SearchResult) = {
+        dataSets match {
+          case Nil =>
+            result.temporal.flatMap(_.end) shouldEqual None
+            result.temporal.flatMap(_.start) shouldEqual None
+          case dataSets =>
+            val expectedMax = dataSets.map(dataSet => dataSet.temporal.flatMap(_.end).flatMap(_.date)).flatten match {
+              case Seq() => None
+              case dates => Some(dates.max)
             }
-          }
-        }
-
-        it("should only have gaps where there are no results") {
-          checkFacetsNoQuery() { (dataSets, facetSize) ⇒
-            val result = responseAs[SearchResult]
-            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-            whenever(facetSize > 1 && yearFacet.options.size > 1) {
-              yearFacet.options.reverse.sliding(2).foreach {
-                case Seq(before, after) ⇒
-                  val gap = after.lowerBound.get - before.upperBound.get
-                  if (gap != 1) {
-                    val options = yearFacet.options.map(_.value)
-                    withClue(s"For facets ${options}") {
-                      filterDataSetsForYearRange(dataSets, before.upperBound.get + 1, after.lowerBound.get - 1).size should equal(0)
-                    }
-                  }
-              }
+            val expectedMin = dataSets.map(dataSet => dataSet.temporal.flatMap(_.start).flatMap(_.date)).flatten match {
+              case Seq() => None
+              case dates => Some(dates.min)
             }
-          }
+
+            result.temporal.flatMap(_.end).flatMap(_.date).map(_.toEpochSecond()) shouldEqual expectedMax.map(_.toEpochSecond)
+            result.temporal.flatMap(_.start).flatMap(_.date).map(_.toEpochSecond()) shouldEqual expectedMin.map(_.toEpochSecond)
         }
       }
-
-      def filterDataSetsForYearRange(dataSets: List[DataSet], lowerBound: Int, upperBound: Int) = dataSets
-        .filter { dataSet ⇒
-          val start = dataSet.temporal.flatMap(_.start).flatMap(_.date)
-          val end = dataSet.temporal.flatMap(_.end).flatMap(_.date)
-
-          (start.orElse(end), end.orElse(start)) match {
-            case (Some(dataSetStart), Some(dataSetEnd)) ⇒
-              dataSetStart.getYear <= upperBound && dataSetEnd.getYear >= lowerBound
-            case _ ⇒ false
-          }
-        }
 
       def filterDataSetsForDateRange(dataSets: List[DataSet], lowerBound: Option[FilterValue[OffsetDateTime]], upperBound: Option[FilterValue[OffsetDateTime]]) = dataSets
-        .filter { dataSet ⇒
+        .filter { dataSet =>
           (lowerBound, upperBound) match {
             case (Some(Unspecified()), Some(Unspecified())) | (Some(Unspecified()), None) | (None, Some(Unspecified())) =>
               dataSet.temporal.map(temporal => temporal.start.isEmpty && temporal.end.isEmpty).getOrElse(true)
@@ -643,14 +529,6 @@ class FacetSpec extends BaseSearchApiSpec {
               !(start.isAfter(upper) || end.isBefore(lower))
           }
         }
-
-      def overlaps(tuple: ((Int, Int), (Int, Int))) = {
-        val ((lowerBound1, upperBound1), (lowerBound2, upperBound2)) = tuple
-        (lowerBound1 <= lowerBound2 && upperBound1 > lowerBound2) || (upperBound1 >= upperBound2 && lowerBound1 < upperBound2)
-      }
-
-      def formatYears(dataSet: DataSet) = s"${dataSet.temporal.flatMap(_.start.flatMap(_.date.map(_.getYear))).getOrElse("n/a")}-${dataSet.temporal.flatMap(_.end.flatMap(_.date.map(_.getYear))).getOrElse("n/a")}"
-
     }
   }
 }
