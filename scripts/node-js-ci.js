@@ -23,11 +23,15 @@ const lernaJson = require("../lerna.json");
 //     }
 //   )
 // );
-const webPackages = [
+const excludePackages = [
     "@magda/web-client",
     "@magda/preview-map",
     "@magda/web-admin",
-    "@magda/web-server"
+    "@magda/web-server",
+    "@magda/int-test",
+    "@magda/search-api",
+    "@magda/indexer",
+    "@magda/registry-api"
 ];
 
 const jsPackages = _(lernaJson.packages)
@@ -40,7 +44,7 @@ const jsPackages = _(lernaJson.packages)
         const packageJson = require(path.resolve(packagePath));
         return packageJson.name;
     })
-    .filter(packageName => webPackages.indexOf(packageName) === -1)
+    .filter(packageName => excludePackages.indexOf(packageName) === -1)
     .value();
 
 const commands = ["bootstrap", "run build", "run test"];
