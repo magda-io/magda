@@ -36,6 +36,8 @@
 * Added configuration for Google Cloud SQL
 * Normalised DB names - now everything is magda-xx-db
 * Made docker build scripts automatically adjust `FROM` statements to add `localhost:5000/` and the correct version tag where necessary
+* Changes on feedback form: Added (*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
+* Changes on feedback form: the distance between right border of the feedback form and browser window should be the same as the bottom border.
 
 ## 0.0.32
 
