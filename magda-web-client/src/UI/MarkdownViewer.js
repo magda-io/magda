@@ -30,7 +30,7 @@ const md = new MarkdownIt({
 const htmlRegex = /^\s*<[^>]+>/;
 
 
-function markdownToHtml(markdownString, allowUnsafeHtml, options) {
+export function markdownToHtml(markdownString, allowUnsafeHtml, options) {
     if (!defined(markdownString) || markdownString.length === 0) {
         return markdownString;
     }
@@ -48,4 +48,15 @@ function markdownToHtml(markdownString, allowUnsafeHtml, options) {
     } else {
         return DOMPurify.sanitize(unsafeHtml, options);
     }
+}
+
+/**
+ * Tell whether content provided will be truncated or not.
+ * It's useful when you need to tell whether a toggel button should be shown or not
+ */
+export function willBeTruncated(markdownString, truncateLength, allowUnsafeHtml, options){
+    const OrigHtml = markdownToHtml(markdownString);
+    const TruncatedHtml = truncate(html, truncateLength);
+    if(OrigHtml === TruncatedHtml) return false;
+    return true;
 }
