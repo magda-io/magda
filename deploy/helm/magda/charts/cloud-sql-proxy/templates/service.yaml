@@ -8,10 +8,8 @@ spec:
   - name: postgres
     port: 5432
     targetPort: 5432
-{{- if .Values.global.exposeNodePorts }}
     nodePort: 30543
   type: NodePort
-{{- end }}
   selector:
     service: cloud-sql-proxy
 {{- end }}
