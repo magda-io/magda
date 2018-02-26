@@ -1,12 +1,12 @@
-@import '../../variables';
+@import "../../variables";
 
-.search{
-	.sub-heading{
-		color: $body;
-		font-size: 16px;
-		font-weight: 500;
-		line-height: 19px;
-		text-transform: uppercase;
-		margin-bottom: 24px;
-		}
+.search {
+    .sub-heading {
+        color: $body;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 19px;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+    }
 }

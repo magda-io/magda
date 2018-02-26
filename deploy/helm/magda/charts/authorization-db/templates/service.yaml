@@ -8,4 +8,4 @@ spec:
     port: 5432
     targetPort: 5432
   selector:
-    service: {{- if .Values.global.useCombinedDb }} "combined-db" {{- else }} "authorization-db" {{- end }}
+    service: {{- if .Values.global.useCloudSql }} "cloud-sql-proxy" {{- else if .Values.global.useCombinedDb }} "combined-db" {{- else }} "authorization-db" {{- end }}

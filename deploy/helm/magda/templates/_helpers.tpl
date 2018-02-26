@@ -19,28 +19,58 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-{{ .Chart.Name }}:{{ .Values.image.tag | default .Values.global.image.tag }}"
 {{- end -}}
 
-{{- define "magda.postgres-env" }}
-        {{- if .Values.limits }}
-        - name: MEMORY_LIMIT
-          value: {{ .Values.limits.memory }}
+{{- define "postgres" -}}
+"{{ .Values.image.repository | default .Values.global.image.repository }}/magda-postgres:{{ .Values.image.tag | default .Values.global.image.tag }}"
+{{- end -}}
+
+{{- define "magda.postgres-client-env" -}}
+        - name: CLIENT_USERNAME
+          value: {{- if .Values.global.useCloudSql }} proxyuser {{- else }} client {{- end }}
+        - name: CLIENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: password
+{{- end -}}
+
+{{- define "magda.postgres-migrator-env" }}
+        - name: PGUSER
+          value: postgres
+        {{- if .Values.global.noDbAuth }}
+        - name: PGPASSWORD
+          value: password
+        {{- else if .Values.global.useCloudSql }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: password
+        {{- else }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: {{ .Chart.Name }}
         {{- end }}
         - name: CLIENT_USERNAME
           value: client
         {{- if .Values.global.noDbAuth }}
         - name: CLIENT_PASSWORD
           value: password
-        {{- end }}
-        {{- if not .Values.global.noDbAuth }}
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: {{ .Chart.Name }}
+        {{- else }}
         - name: CLIENT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
               key: {{ .Chart.Name }}-client
+        {{- end }}
+{{- end -}}
+
+{{- define "magda.postgres-env" -}}
+        {{- template "magda.postgres-migrator-env" . }}
+        {{- if .Values.limits }}
+        - name: MEMORY_LIMIT
+          value: {{ .Values.limits.memory }}
         {{- end }}
         {{- if .Values.waleBackup }}
         - name: BACKUP
