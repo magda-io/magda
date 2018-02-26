@@ -29,6 +29,7 @@
 * Add Google Analytics Tag Manager Code / VWO code to `<head>`
 * Added `feedback-api` microservice to collect feedback and create GitHub issues from it.
 * Changes on feedback form: Added (*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
+* Changes on feedback form: the distance between right border of the feedback form and browser window should be the same as the bottom border.
 
 ## 0.0.32
 
