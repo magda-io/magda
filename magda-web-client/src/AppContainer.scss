@@ -1,71 +1,81 @@
-@import './variables';
+@import "./variables";
 
-
-.app-container{
-  min-height: 1000px;
-  .nav-table{
-    padding: 24px 0;
-  }
-
-  .nav-bar-right{
-    float: right;
-    a{
-      display: inline-block;
-      margin-right: 10px;
-      border-bottom: 0;
+.app-container {
+    min-height: 1000px;
+    .nav-table {
+        padding: 24px 0;
     }
-  }
 
+    .nav-bar-right {
+        float: right;
+        a {
+            display: inline-block;
+            margin-right: 10px;
+            border-bottom: 0;
+        }
 
-  .account-navbar{
-    display: inline-block;
-    a{
-      color: $body;
-      text-decoration: none;
-      border-bottom: 0;
-      transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
-      margin-right: 16px;
-      display: inline-block;
-      &:hover, &:focus{
-        color: #fff;
-      }
-    }
-  }
-  .logo a{
-    color: $body;
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 22px;
-    text-transform: uppercase;
-    .highlight{
-      color: $main;
-    }
-  }
-}
+        .nav-bar-right {
+            float: right;
+            a {
+                display: inline-block;
+                margin-right: 10px;
+                border-bottom: 0;
+            }
+        }
 
-.footer{
-    background-color: $magda-dark-blue;
-    color: #fff;
-    padding: 50px 0;
-    margin-top: 24px;
-    a{
-        color: #fff;
-        font-size: 0.9rem;
-    }
-    .nav > li > a{
-        padding: 10px 0px;
-        &:hover, &:focus{
-            background: $magda;
-            color: #fff;
+        .account-navbar {
+            display: inline-block;
+            a {
+                color: $body;
+                text-decoration: none;
+                border-bottom: 0;
+                transition: background-color 0.1s ease-in-out,
+                    border-color 0.1s ease-in-out;
+                margin-right: 16px;
+                display: inline-block;
+                &:hover,
+                &:focus {
+                    color: #fff;
+                }
+            }
+        }
+        .logo a {
+            color: $body;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 22px;
+            text-transform: uppercase;
+            .highlight {
+                color: $main;
+            }
         }
     }
-    .nav-title{
-        text-transform: uppercase;
-    }
-    .copyright{
-      text-align: right;
-      img{
-        height: 40px;
-      }
+
+    .footer {
+        background-color: $magda-dark-blue;
+        color: #fff;
+        padding: 50px 0;
+        margin-top: 24px;
+        a {
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .nav > li > a {
+            padding: 10px 0px;
+            &:hover,
+            &:focus {
+                background: $magda;
+                color: #fff;
+            }
+        }
+        .nav-title {
+            text-transform: uppercase;
+        }
+        .copyright {
+            text-align: right;
+            img {
+                height: 40px;
+            }
+        }
     }
 }
