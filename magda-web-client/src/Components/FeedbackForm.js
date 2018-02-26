@@ -10,6 +10,7 @@ import feedback from "../assets/feedback.svg";
 import close from "../assets/close.svg";
 import success from "../assets/success.svg";
 import Notification from "../UI/Notification";
+import ReactTooltip from 'react-tooltip'
 
 class FeedbackForm extends React.Component {
     constructor(props) {
@@ -18,28 +19,40 @@ class FeedbackForm extends React.Component {
             isOpen: false,
             name: "",
             email: "",
-            feedback: "",
-            errorMessage: null
+            feedback: ""
         };
+        this.state.validationErrorMessage = this.checkRequiredFields(this.state);
+
         this.onCancel = this.onCancel.bind(this);
         this.changeValue = this.changeValue.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
         this.onDismissNotification = this.onDismissNotification.bind(this);
     }
 
+    /**
+     * Make sure different wording will be used depends on no. of the field items
+     */
+    createFieldListString(fields) {
+        if(!fields || !fields.length) return null;
+        if(fields.length === 1) return `${fields[0]} field is`;
+        const lastField = fields.pop();
+        return fields.join(", ") + ` & ${lastField} fields are`; 
+    }
+
+    checkRequiredFields(state){
+        const requiredFields = [];
+        if(state.email.trim()==='') requiredFields.push(`Email`);
+        if(state.feedback.trim()==='') requiredFields.push(`Feedback`);
+        if(requiredFields.length) return this.createFieldListString(requiredFields) + " mandatory.";
+        return null;
+    }
+
     onSubmit() {
-        if(this.state.email.trim()==='') {
-            this.setState({
-                errorMessage : "`Email` field is mandatory."
-            });
-            return;
-        }
-        if(this.state.feedback.trim()==='') {
-            this.setState({
-                errorMessage : "`Feedback` field is mandatory."
-            });
-            return;
-        }
+        /**
+         * It seems once the button is disabled, mouse related events won't trigger anymore --- this will break the tooltip.
+         * Instead of having button disabled, we will check here to make sure feedback is only sent when no validation error.
+         */
+        if(this.state.validationErrorMessage) return;
         this.props.fetchFeedback(
             JSON.stringify({
                 name: this.state.name,
@@ -59,8 +72,14 @@ class FeedbackForm extends React.Component {
     }
 
     changeValue(key, event) {
-        this.setState({
+        let curState = {
+            ...this.state,
             [key]: event.target.value
+        };
+
+        this.setState({
+            [key]: event.target.value,
+            validationErrorMessage: this.checkRequiredFields(curState)
         });
     }
 
@@ -110,9 +129,6 @@ class FeedbackForm extends React.Component {
         }
         return (
             <div className="feedback-form-inner">
-                {this.state.errorMessage ? (
-                    <Notification content={{title: 'Error:', detail: this.state.errorMessage}} type='error' onDismiss={()=>this.onDismissErrorNotification()}/>
-                ) : null}
                 <div className="feedback-form-header">
                     {`Have feedback on this website? We're all ears`}
                     <Button
@@ -149,15 +165,33 @@ class FeedbackForm extends React.Component {
                         >
                             Cancel
                         </Button>
-                        <Button
-                            className="send-btn"
-                            disabled={this.props.isSendingFeedback}
-                            onClick={this.onSubmit}
-                        >
-                            {this.props.isSendingFeedback
-                                ? "Sending..."
-                                : "Send"}
-                        </Button>
+                        {this.state.validationErrorMessage ? (
+                            <Button
+                                className="send-btn"
+                                disabled={this.props.isSendingFeedback}
+                                onClick={this.onSubmit}
+                                data-tip={this.state.validationErrorMessage}
+                                data-place="top"
+                            >
+                                {this.props.isSendingFeedback
+                                    ? "Sending..."
+                                    : "Send"}
+                            </Button>
+                        ) : (
+                            <Button
+                                className="send-btn"
+                                disabled={this.props.isSendingFeedback}
+                                onClick={this.onSubmit}
+                            >
+                                {this.props.isSendingFeedback
+                                    ? "Sending..."
+                                    : "Send"}
+                            </Button>
+                        )}
+
+                        {this.state.validationErrorMessage ? (
+                            <ReactTooltip />
+                        ) : null }
                     </div>
                 </div>
             </div>
