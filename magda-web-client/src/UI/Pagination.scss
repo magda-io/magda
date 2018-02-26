@@ -1,36 +1,37 @@
-.pagination{
-  margin: 48px 0;
-  .pagination-list{
-    list-style: none;
-    display: flex;
-    color: #CC3139;
-    padding-left: 0;
-    justify-content: center;
-    margin-bottom: 24px;
-    button{
-      height: 24px;
-      min-width: 24px;
-      border-radius: 2px;
-      line-height: 1;
-      padding: 0px;
-      margin: 12px;
-      color: #CC3139;
-      font-weight: 400;
-      &.current{
-        background-color: #CC3139;
-        color: #fff;
-      }
+.pagination {
+    margin: 48px 0;
+    .pagination-list {
+        list-style: none;
+        display: flex;
+        color: #cc3139;
+        padding-left: 0;
+        justify-content: center;
+        margin-bottom: 24px;
+        button {
+            height: 24px;
+            min-width: 24px;
+            border-radius: 2px;
+            line-height: 1;
+            padding: 0px;
+            margin: 12px;
+            color: #cc3139;
+            font-weight: 400;
+            &.current {
+                background-color: #cc3139;
+                color: #fff;
+            }
+        }
     }
-  }
-  .pagination-summray{
-    opacity: 0.5;
-    font-size: 14px;
-    line-height: 16px;
-    text-align: center;
-    margin-bottom: 8px;
-  }
+    .pagination-summray {
+        opacity: 0.5;
+        font-size: 14px;
+        line-height: 16px;
+        text-align: center;
+        margin-bottom: 8px;
+    }
 
-  .pagination-list .btn-prev, .pagination-list .btn-next{
-    border: 1px solid rgba(#CC3139, 0.5);
-  }
+    .pagination-list .btn-prev,
+    .pagination-list .btn-next {
+        border: 1px solid rgba(#cc3139, 0.5);
+    }
 }
