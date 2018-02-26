@@ -28,6 +28,7 @@
 * Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
 * Add Google Analytics Tag Manager Code / VWO code to `<head>`
 * Added `feedback-api` microservice to collect feedback and create GitHub issues from it.
+* Changes on feedback form: Added (*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
 
 ## 0.0.32
 
