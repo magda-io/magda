@@ -1,28 +1,26 @@
 .login {
-  &__providers {
-    list-style: none;
-    padding: 0;
-    a{
-      border-bottom: 0;
+    &__providers {
+        list-style: none;
+        padding: 0;
+        a {
+            border-bottom: 0;
+        }
     }
-  }
 
-  &__logo {
-    height: 3em;
-    width: 3em;
-    padding: 0.5em;
-    display: inline-block;
-    vertical-align: middle;
+    &__logo {
+        height: 3em;
+        width: 3em;
+        padding: 0.5em;
+        display: inline-block;
+        vertical-align: middle;
 
-    &--email {
-      padding: 0.5em 0.7em;
+        &--email {
+            padding: 0.5em 0.7em;
+        }
     }
-  }
 
-  &__email-icon {
-    color: #c0392b;
-    font-size: 1.7em;
-  }
-
-
+    &__email-icon {
+        color: #c0392b;
+        font-size: 1.7em;
+    }
 }
