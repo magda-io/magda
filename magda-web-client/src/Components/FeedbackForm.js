@@ -18,7 +18,8 @@ class FeedbackForm extends React.Component {
             isOpen: false,
             name: "",
             email: "",
-            feedback: ""
+            feedback: "",
+            errorMessage: null
         };
         this.onCancel = this.onCancel.bind(this);
         this.changeValue = this.changeValue.bind(this);
@@ -27,6 +28,18 @@ class FeedbackForm extends React.Component {
     }
 
     onSubmit() {
+        if(this.state.email.trim()==='') {
+            this.setState({
+                errorMessage : "`Email` field is mandatory."
+            });
+            return;
+        }
+        if(this.state.feedback.trim()==='') {
+            this.setState({
+                errorMessage : "`Feedback` field is mandatory."
+            });
+            return;
+        }
         this.props.fetchFeedback(
             JSON.stringify({
                 name: this.state.name,
@@ -61,6 +74,12 @@ class FeedbackForm extends React.Component {
         });
     }
 
+    onDismissErrorNotification() {
+        this.setState({
+            errorMessage : null
+        })
+    }
+
     renderByState() {
         if (this.props.sendFeedbackSuccess === true) {
             return (
@@ -91,6 +110,9 @@ class FeedbackForm extends React.Component {
         }
         return (
             <div className="feedback-form-inner">
+                {this.state.errorMessage ? (
+                    <Notification content={{title: 'Error:', detail: this.state.errorMessage}} type='error' onDismiss={()=>this.onDismissErrorNotification()}/>
+                ) : null}
                 <div className="feedback-form-header">
                     {`Have feedback on this website? We're all ears`}
                     <Button
@@ -110,12 +132,12 @@ class FeedbackForm extends React.Component {
                         onChange={this.changeValue.bind(this, "name")}
                     />
                     <Input
-                        label="Email"
+                        label="Email (*)"
                         value={this.state.email}
                         onChange={this.changeValue.bind(this, "email")}
                     />
                     <Textarea
-                        label="Feedback"
+                        label="Feedback (*)"
                         value={this.state.feedback}
                         onChange={this.changeValue.bind(this, "feedback")}
                     />
