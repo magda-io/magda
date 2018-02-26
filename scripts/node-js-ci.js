@@ -31,7 +31,8 @@ const excludePackages = [
     "@magda/int-test",
     "@magda/search-api",
     "@magda/indexer",
-    "@magda/registry-api"
+    "@magda/registry-api",
+    "@magda/scala-common"
 ];
 
 const jsPackages = _(lernaJson.packages)

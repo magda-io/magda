@@ -31,7 +31,20 @@ matrix:
           - $HOME/.ivy2/cache
           - $HOME/.sbt
           - node_modules
-          - "*/node_modules"
+          - magda-admin-api/node_modules
+          - magda-authorization-api/node_modules
+          - magda-ckan-connector/node_modules
+          - magda-csw-connector/node_modules
+          - magda-discussions-api/node_modules
+          - magda-feedback-api/node_modules
+          - magda-gateway/node_modules
+          - magda-project-open-data-connector/node_modules
+          - magda-sleuther-broken-link/node_modules
+          - magda-sleuther-format/node_modules
+          - magda-sleuther-framework/node_modules
+          - magda-sleuther-linked-data-rating/node_modules
+          - magda-sleuther-visualization/node_modules
+          - magda-typescript-common/node_modules
       before_cache:
         # Cleanup the cached directories to avoid unnecessary cache updates
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
@@ -44,8 +57,11 @@ matrix:
       node_js: "6"
       cache:
         directories:
+          - node_modules
           - magda-web-client/node_modules
           - magda-preview-map/node_modules
+          - magda-web-admin/node_modules
+          - magda-web-server/node_modules
       script: npm install -g lerna && lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map bootstrap && lerna --scope @magda/web-client --scope @magda/preview-map run build  && lerna --scope @magda/preview-map --scope @magda/web-client run test
       env:
         global:
