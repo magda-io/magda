@@ -43,6 +43,13 @@
     color: $success;
   }
 
+  .disabled-looking-button{
+    cursor: not-allowed;
+    opacity: .6;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+  }
+
   .feedback-form-footer{
     text-align: right;
     .send-btn{

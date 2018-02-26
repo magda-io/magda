@@ -19,9 +19,9 @@ class FeedbackForm extends React.Component {
             isOpen: false,
             name: "",
             email: "",
-            feedback: ""
+            feedback: "",
+            validationErrorMessage: this.checkRequiredFields(this.state)
         };
-        this.state.validationErrorMessage = this.checkRequiredFields(this.state);
 
         this.onCancel = this.onCancel.bind(this);
         this.changeValue = this.changeValue.bind(this);
@@ -41,8 +41,8 @@ class FeedbackForm extends React.Component {
 
     checkRequiredFields(state){
         const requiredFields = [];
-        if(state.email.trim()==='') requiredFields.push(`Email`);
-        if(state.feedback.trim()==='') requiredFields.push(`Feedback`);
+        if(!state || !state.email || state.email.trim()==='') requiredFields.push(`Email`);
+        if(!state || !state.feedback || state.feedback.trim()==='') requiredFields.push(`Feedback`);
         if(requiredFields.length) return this.createFieldListString(requiredFields) + " mandatory.";
         return null;
     }
@@ -67,7 +67,8 @@ class FeedbackForm extends React.Component {
             isOpen: false,
             name: "",
             email: "",
-            feedback: ""
+            feedback: "",
+            validationErrorMessage: this.checkRequiredFields()
         });
     }
 
@@ -89,7 +90,8 @@ class FeedbackForm extends React.Component {
             isOpen: false,
             name: "",
             email: "",
-            feedback: ""
+            feedback: "",
+            validationErrorMessage: this.checkRequiredFields()
         });
     }
 
@@ -167,8 +169,8 @@ class FeedbackForm extends React.Component {
                         </Button>
                         {this.state.validationErrorMessage ? (
                             <Button
-                                className="send-btn"
-                                disabled={this.props.isSendingFeedback}
+                                className="send-btn disabled-looking-button"
+                                disabled={false}
                                 onClick={this.onSubmit}
                                 data-tip={this.state.validationErrorMessage}
                                 data-place="top"
