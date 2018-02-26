@@ -74,14 +74,14 @@ class DatasetDetails extends Component {
                         </div>
                     </div>
 
-                    <div className='record-details__sidebar mui-col-sm-4'>
-                        <div className='tags'>
+                    <div className="record-details__sidebar mui-col-sm-4">
+                        <div className="tags">
                             <h5>Tags</h5>
                             {dataset.tags && mergeTags(dataset.tags).sort((a, b) => {
                                 if (a < b) return -1;
                                 else if (a > b) return 1;
                                 else return 0;
-                            }).map(t => <span className='badge' key={t}><Link key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link></span>)}
+                            }).map(t => <span className="badge" key={t}><Link key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link></span>)}
                         </div>
                     </div>
                 </div>
