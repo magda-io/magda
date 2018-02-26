@@ -33,17 +33,17 @@ class FeedbackForm extends React.Component {
      * Make sure different wording will be used depends on no. of the field items
      */
     createFieldListString(fields) {
-        if(!fields || !fields.length) return null;
-        if(fields.length === 1) return `${fields[0]} field is`;
+        if (!fields || !fields.length) return null;
+        if (fields.length === 1) return `${fields[0]} field is`;
         const lastField = fields.pop();
-        return fields.join(", ") + ` & ${lastField} fields are`; 
+        return fields.join(", ") + ` & ${lastField} fields are`;
     }
 
-    checkRequiredFields(state){
+    checkRequiredFields(state) {
         const requiredFields = [];
-        if(!state || !state.email || state.email.trim()==='') requiredFields.push(`Email`);
-        if(!state || !state.feedback || state.feedback.trim()==='') requiredFields.push(`Feedback`);
-        if(requiredFields.length) return this.createFieldListString(requiredFields) + " mandatory.";
+        if (!state || !state.email || state.email.trim() === '') requiredFields.push(`Email`);
+        if (!state || !state.feedback || state.feedback.trim() === '') requiredFields.push(`Feedback`);
+        if (requiredFields.length) return this.createFieldListString(requiredFields) + " mandatory.";
         return null;
     }
 
@@ -52,7 +52,7 @@ class FeedbackForm extends React.Component {
          * It seems once the button is disabled, mouse related events won't trigger anymore --- this will break the tooltip.
          * Instead of having button disabled, we will check here to make sure feedback is only sent when no validation error.
          */
-        if(this.state.validationErrorMessage) return;
+        if (this.state.validationErrorMessage) return;
         this.props.fetchFeedback(
             JSON.stringify({
                 name: this.state.name,
@@ -97,7 +97,7 @@ class FeedbackForm extends React.Component {
 
     onDismissErrorNotification() {
         this.setState({
-            errorMessage : null
+            errorMessage: null
         })
     }
 
@@ -180,20 +180,20 @@ class FeedbackForm extends React.Component {
                                     : "Send"}
                             </Button>
                         ) : (
-                            <Button
-                                className="send-btn"
-                                disabled={this.props.isSendingFeedback}
-                                onClick={this.onSubmit}
-                            >
-                                {this.props.isSendingFeedback
-                                    ? "Sending..."
-                                    : "Send"}
-                            </Button>
-                        )}
+                                <Button
+                                    className="send-btn"
+                                    disabled={this.props.isSendingFeedback}
+                                    onClick={this.onSubmit}
+                                >
+                                    {this.props.isSendingFeedback
+                                        ? "Sending..."
+                                        : "Send"}
+                                </Button>
+                            )}
 
                         {this.state.validationErrorMessage ? (
                             <ReactTooltip />
-                        ) : null }
+                        ) : null}
                     </div>
                 </div>
             </div>
