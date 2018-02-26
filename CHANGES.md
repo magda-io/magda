@@ -28,8 +28,10 @@
 * Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
 * Map preview will zoom to dataset (except KML data)
 * Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
-* Add Google Analytics Tag Manager Code / VWO code to `<head>`
+* Added Google Analytics Tag Manager Code / VWO code to `<head>`
 * Added `feedback-api` microservice to collect feedback and create GitHub issues from it.
+* Duplicated tags with different cases are now merged (at frontend)
+* Tags contain possible separators (i.e. , ; | or /) are now split into shorter tags (at frontend)
 * Separated database migrations from database images to facilitate use of managed SQL services - they now live in `magda-migrator-xx` directories and run as jobs on helm upgrade/install
 * Added configuration for Google Cloud SQL
 * Normalised DB names - now everything is magda-xx-db
