@@ -34,6 +34,7 @@
 * Added configuration for Google Cloud SQL
 * Normalised DB names - now everything is magda-xx-db
 * Made docker build scripts automatically adjust `FROM` statements to add `localhost:5000/` and the correct version tag where necessary
+* Made datasets with years < 1000 AD index as being from the year 2xxx, as all that we've seen are typos so far.
 
 ## 0.0.32
 
