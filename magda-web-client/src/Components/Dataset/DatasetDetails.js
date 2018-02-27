@@ -6,19 +6,30 @@ import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import renderDistribution from "../../Components/Distribution";
 import uniq from "lodash.uniq";
+import reduce from "lodash.reduce";
 import "./RecordDetails.css";
+
+
+
+const tagSeperatorRegex = /[,|;|/||]/g;
+
+function mergeTags(tags) {
+    return uniq(reduce(tags, (acc, cur) => {
+        return acc.concat(cur.split(tagSeperatorRegex).map(item => item.toLowerCase().trim()));
+    }, []));
+}
 
 class DatasetDetails extends Component {
     state = {
         showPreview: false
-    };
+    }
     render() {
         const dataset = this.props.dataset;
         const datasetId = this.props.match.params.datasetId;
 
         const source = `This dataset was originally found on [${
             this.props.dataset.source
-        }](${dataset.landingPage})`;
+            }](${dataset.landingPage})`;
         return (
             <div className="dataset-details container">
                 <div className="mui-row">
@@ -66,18 +77,11 @@ class DatasetDetails extends Component {
                     <div className="record-details__sidebar mui-col-sm-4">
                         <div className="tags">
                             <h5>Tags</h5>
-                            {dataset.tags &&
-                                uniq(dataset.tags).map(t => (
-                                    <span className="badge" key={t}>
-                                        <Link
-                                            to={`/search?q=${encodeURIComponent(
-                                                t
-                                            )}`}
-                                        >
-                                            {t}
-                                        </Link>
-                                    </span>
-                                ))}
+                            {dataset.tags && mergeTags(dataset.tags).sort((a, b) => {
+                                if (a < b) return -1;
+                                else if (a > b) return 1;
+                                else return 0;
+                            }).map(t => <span className="badge" key={t}><Link key={t} to={`/search?q=${encodeURIComponent(t)}`}>{t}</Link></span>)}
                         </div>
                     </div>
                 </div>

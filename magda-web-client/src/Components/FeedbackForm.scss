@@ -5,7 +5,7 @@
     border-radius: 5px;
     border: 2px solid $success;
     position: fixed;
-    right: 4px;
+    right: 24px;
     bottom: 24px;
     max-width: 400px;
 }
@@ -13,7 +13,7 @@
 .feedback-form {
     z-index: 999;
     position: fixed;
-    right: 4px;
+    right: 24px;
     bottom: 24px;
 
     .feedback-form-body {
@@ -66,5 +66,10 @@
             left: 4px;
             top: -2px;
         }
+    }
+
+    .notification__inner{
+        right: 24px;
+        bottom: 24px;
     }
 }

@@ -22,10 +22,13 @@
     color: #888;
 }
 
-.tags {
-    .badge {
-        display: block;
-    }
+.tags{
+  .badge{
+    display: block;
+  }
+  .badge:first-letter{
+    text-transform: uppercase;
+  }
 }
 
 .temporal-aspect-viewer {
