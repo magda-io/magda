@@ -1,0 +1,17 @@
+.description-box{
+    .toggle-button{
+        color: #CC3139;
+        font-size: 16px;
+        line-height: 19px;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        padding-left: 0px;
+        margin-top: 10px;
+
+        img {
+            position: absolute;
+            top: -2px;
+        }
+    }
+}

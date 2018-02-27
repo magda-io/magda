@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import TemporalAspectViewer from '../../UI/TemporalAspectViewer';
-import OverviewBox from '../../UI/OverviewBox';
+import DescriptionBox from '../../UI/DescriptionBox';
 import MarkdownViewer from '../../UI/MarkdownViewer';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -21,7 +21,7 @@ class DatasetDetails extends Component{
               <div className='mui-row'>
                 <div className='dataset-details__body mui-col-sm-12'>
                   <div className='dataset-details-overview'>
-                    <OverviewBox content={dataset.description} truncate ={true}/>
+                    <DescriptionBox content={dataset.description} />
                   </div>
                   <div className='dataset-details-source'>
                     <h3 className='section-heading'>Source</h3>

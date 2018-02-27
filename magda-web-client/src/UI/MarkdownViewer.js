@@ -56,7 +56,7 @@ export function markdownToHtml(markdownString, allowUnsafeHtml, options) {
  */
 export function willBeTruncated(markdownString, truncateLength, allowUnsafeHtml, options){
     const OrigHtml = markdownToHtml(markdownString);
-    const TruncatedHtml = truncate(html, truncateLength);
+    const TruncatedHtml = truncate(OrigHtml, truncateLength);
     if(OrigHtml === TruncatedHtml) return false;
     return true;
 }
