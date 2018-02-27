@@ -1,3 +1,5 @@
+## 0.0.34
+
 ## 0.0.33
 
 * Added ability to get records from the registry by the value of their aspects.
@@ -37,7 +39,7 @@
 * Normalised DB names - now everything is magda-xx-db
 * Made docker build scripts automatically adjust `FROM` statements to add `localhost:5000/` and the correct version tag where necessary
 * Made datasets with years < 1000 AD index as being from the year 2xxx, as all that we've seen are typos so far.
-* Changes on feedback form: Added (*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
+* Changes on feedback form: Added (\*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
 * Changes on feedback form: the distance between right border of the feedback form and browser window should be the same as the bottom border.
 
 ## 0.0.32

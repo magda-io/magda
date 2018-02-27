@@ -1,24 +1,21 @@
 {
     "name": "@magda/sleuther-format",
     "description": "MAGDA Layering Sleuther",
-    "version": "0.0.33-0",
+    "version": "0.0.33",
     "scripts": {
         "build": "npm run compile",
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "start": "node dist/index.js",
         "dev": "run-typescript-in-nodemon src/index.ts",
-        "docker-build-local":
-            "create-docker-context-for-node-component --build --push --tag auto --local",
-        "docker-build-prod":
-            "create-docker-context-for-node-component --build --push --tag auto",
-        "test":
-            "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
+        "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+        "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+        "test": "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
     },
     "author": "",
     "license": "Apache-2.0",
     "devDependencies": {
-        "@magda/scripts": "^0.0.33-0",
+        "@magda/scripts": "^0.0.33",
         "@types/chai": "^4.0.2",
         "@types/ftp": "^0.3.29",
         "@types/lodash": "^4.14.88",
@@ -32,26 +29,26 @@
         "@types/urijs": "^1.15.34",
         "chai": "^4.1.0",
         "dns-proxy": "^0.5.0",
+        "jquery": "^1.12.4",
         "jsverify": "^0.8.2",
         "mocha": "^3.5.0",
         "nock": "^9.0.14",
         "sinon": "^3.0.0",
-        "typescript": "~2.5.0",
-        "jquery": "^1.12.4"
+        "typescript": "~2.5.0"
     },
     "dependencies": {
-        "@magda/registry-aspects": "^0.0.33-0",
-        "@magda/sleuther-framework": "^0.0.33-0",
-        "@magda/typescript-common": "^0.0.33-0",
+        "@magda/registry-aspects": "^0.0.33",
+        "@magda/sleuther-framework": "^0.0.33",
+        "@magda/typescript-common": "^0.0.33",
         "@types/lodash": "^4.14.88",
         "ftp": "^0.3.10",
+        "jquery": "^1.12.4",
+        "load-json-file": "^4.0.0",
         "lodash": "^4.17.4",
         "lru-cache": "4.0.2",
-        "request": "^2.79.0",
-        "urijs": "^1.18.12",
         "mime-types": "^1.0.0",
-        "jquery": "^1.12.4",
-        "load-json-file": "^4.0.0"
+        "request": "^2.79.0",
+        "urijs": "^1.18.12"
     },
     "config": {
         "registryUrl": "http://localhost:6101/v0",
