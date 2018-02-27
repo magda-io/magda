@@ -1,5 +1,7 @@
 ## 0.0.34
 
+* Added +x permissions to docker image scripts that didn't have them.
+
 ## 0.0.33
 
 * Added ability to get records from the registry by the value of their aspects.
