@@ -13,30 +13,21 @@
             margin-right: 10px;
             border-bottom: 0;
         }
+    }
 
-        .nav-bar-right {
-            float: right;
-            a {
-                display: inline-block;
-                margin-right: 10px;
-                border-bottom: 0;
-            }
-        }
-
-        .account-navbar {
+    .account-navbar {
+        display: inline-block;
+        a {
+            color: $body;
+            text-decoration: none;
+            border-bottom: 0;
+            transition: background-color 0.1s ease-in-out,
+                border-color 0.1s ease-in-out;
+            margin-right: 16px;
             display: inline-block;
-            a {
-                color: $body;
-                text-decoration: none;
-                border-bottom: 0;
-                transition: background-color 0.1s ease-in-out,
-                    border-color 0.1s ease-in-out;
-                margin-right: 16px;
-                display: inline-block;
-                &:hover,
-                &:focus {
-                    color: #fff;
-                }
+            &:hover,
+            &:focus {
+                color: #fff;
             }
         }
     }
