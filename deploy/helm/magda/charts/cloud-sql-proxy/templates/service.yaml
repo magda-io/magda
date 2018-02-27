@@ -1,0 +1,15 @@
+{{- if and .Values.global.exposeNodePorts .Values.global.useCloudSql }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-sql-proxy
+spec:
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    nodePort: 30543
+  type: NodePort
+  selector:
+    service: cloud-sql-proxy
+{{- end }}

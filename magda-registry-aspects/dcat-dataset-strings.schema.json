@@ -1,79 +1,84 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "title": "DCAT Dataset properties as strings",
-  "description": "The [DCAT Dataset](https://www.w3.org/TR/vocab-dcat/#class-dataset) properties represented as strings.  This aspect is intended to be quite permissive of arbitrary property values, even those that may be difficult or impossible to interpret.",
-  "type": "object",
-  "properties": {
-    "title": {
-      "title": "A name given to the dataset.",
-      "type": "string"
-    },
-    "description": {
-      "title": "Free-text account of the dataset.",
-      "type": "string"
-    },
-    "issued": {
-      "title": "Date of formal issuance (e.g., publication) of the dataset.",
-      "type": "string",
-      "format": "date-time"
-    },
-    "modified": {
-      "title": "Most recent date on which the dataset was changed, updated or modified.",
-      "type": "string",
-      "format": "date-time"
-    },
-    "languages": {
-      "title": "The language(s) of this dataset.",
-      "type": "array",
-      "items": {
-          "type": "string"
-      }
-    },
-    "publisher": {
-      "title": "An entity responsible for making the dataset available.",
-      "type": "string"
-    },
-    "accrualPeriodicity": {
-      "title": "The frequency at which the dataset is published.",
-      "type": "string"
-    },
-    "spatial": {
-      "title": "Spatial coverage of the dataset.",
-      "type": "string"
-    },
-    "temporal": {
-      "title": "The temporal period that the dataset covers.",
-      "type": "object",
-      "properties": {
-          "start": {
-              "title": "The state date of the temporal period.",
-              "type": "string"
-          },
-          "end": {
-              "title": "The end date of the temporal period.",
-              "type": "string"
-          }
-      }
-    },
-    "themes": {
-      "title": "The main category of the dataset. A dataset can have multiple themes.",
-      "type": "array",
-      "items": {
-          "type": "string"
-      }
-    },
-    "keywords": {
-      "title": "Keywords or tag describing the dataset.",
-      "type": "string"
-    },
-    "contactPoint": {
-      "title": "Free-text account of who to contact about this dataset.",
-      "type": "string"
-    },
-    "landingPage": {
-      "title": "A Web page that can be navigated to in a Web browser to gain access to the dataset, its distributions and/or additional information. This should only be a MAGDA landing page if MAGDA is the official source of this dataset.",
-      "type": "string",
-      "format": "uri"
+    "$schema": "http://json-schema.org/schema#",
+    "title": "DCAT Dataset properties as strings",
+    "description":
+        "The [DCAT Dataset](https://www.w3.org/TR/vocab-dcat/#class-dataset) properties represented as strings.  This aspect is intended to be quite permissive of arbitrary property values, even those that may be difficult or impossible to interpret.",
+    "type": "object",
+    "properties": {
+        "title": {
+            "title": "A name given to the dataset.",
+            "type": "string"
+        },
+        "description": {
+            "title": "Free-text account of the dataset.",
+            "type": "string"
+        },
+        "issued": {
+            "title":
+                "Date of formal issuance (e.g., publication) of the dataset.",
+            "type": "string",
+            "format": "date-time"
+        },
+        "modified": {
+            "title":
+                "Most recent date on which the dataset was changed, updated or modified.",
+            "type": "string",
+            "format": "date-time"
+        },
+        "languages": {
+            "title": "The language(s) of this dataset.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "publisher": {
+            "title": "An entity responsible for making the dataset available.",
+            "type": "string"
+        },
+        "accrualPeriodicity": {
+            "title": "The frequency at which the dataset is published.",
+            "type": "string"
+        },
+        "spatial": {
+            "title": "Spatial coverage of the dataset.",
+            "type": "string"
+        },
+        "temporal": {
+            "title": "The temporal period that the dataset covers.",
+            "type": "object",
+            "properties": {
+                "start": {
+                    "title": "The state date of the temporal period.",
+                    "type": "string"
+                },
+                "end": {
+                    "title": "The end date of the temporal period.",
+                    "type": "string"
+                }
+            }
+        },
+        "themes": {
+            "title":
+                "The main category of the dataset. A dataset can have multiple themes.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "keywords": {
+            "title": "Keywords or tag describing the dataset.",
+            "type": "string"
+        },
+        "contactPoint": {
+            "title": "Free-text account of who to contact about this dataset.",
+            "type": "string"
+        },
+        "landingPage": {
+            "title":
+                "A Web page that can be navigated to in a Web browser to gain access to the dataset, its distributions and/or additional information. This should only be a MAGDA landing page if MAGDA is the official source of this dataset.",
+            "type": "string",
+            "format": "uri"
+        }
     }
-  }
 }

@@ -1,82 +1,83 @@
-@import 'variables';
-html{
-  font-size: 16px;
+@import "variables";
+html {
+    font-size: 16px;
 }
 body {
-  margin: 0;
-  padding: 0;
-  font-family: $font-base;
-  font-weight: 400;
-  color: $body;
-  font-size: 1rem;
+    margin: 0;
+    padding: 0;
+    font-family: $font-base;
+    font-weight: 400;
+    color: $body;
+    font-size: 1rem;
 }
-.sr-only{
-  position: absolute;
-   width: 1px;
-   height: 1px;
-   padding: 0;
-   margin: -1px;
-   overflow: hidden;
-   clip: rect(0,0,0,0);
-   border: 0;
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
 @keyframes hideMessage {
-  0%   { opacity: 1; }
-  90%   { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-.mui-btn{
-  font-weight: 400;
-  text-transform: none;
-}
-
-div{
-  box-sizing: border-box;
-}
-
-.breadcrumb{
-  margin-left: 0;
-  padding-left: 0;
-  .breadcrumb-item{
-    display: inline-block;
-    padding-right: 16px;
-  }
-}
-
-.mui-tabs__bar{
-  a, a:hover, a:focus{
-    border-bottom: 0;
-    color: #fff;
-  }
-  &>li.mui--is-active{
-    border-bottom: 2px solid $main;
-    &>a{
-      &:hover, &:focus{
-        color: #fff;
-      }
-      color: $main;
+    0% {
+        opacity: 1;
     }
-  }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
-a{
-  -webkit-appearance: none;
-  position: relative;
-  background: transparent;
-  text-decoration: none;
-  border: none;
-  border-bottom: solid 1px $magda;
-  transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
-  cursor: pointer;
-  color: $body;
-  &:hover, &:focus{
-    text-decoration: none;
-  }
+.mui-btn {
+    font-weight: 400;
+    text-transform: none;
+}
 
-  &:hover{
-    color: #ffffff;
-    background-color: $magda;
-  }
+div {
+    box-sizing: border-box;
+}
+
+.breadcrumb {
+    margin-left: 0;
+    padding-left: 0;
+    .breadcrumb-item {
+        display: inline-block;
+        padding-right: 16px;
+    }
+}
+
+a {
+    -webkit-appearance: none;
+    position: relative;
+    background: transparent;
+    text-decoration: none;
+    border: none;
+    border-bottom: solid 1px $magda;
+    transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+    cursor: pointer;
+    color: $body;
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+    &:hover {
+        color: #ffffff;
+        background-color: $magda;
+    }
+}
+
+.mui-tabs__bar > li > a {
+    border-bottom: 0px;
+    &:hover {
+        color: #fff;
+    }
+}
+
+.mui-tabs__bar a.mui--is-active {
+    border-bottom: 2px solid $magda !important;
 }

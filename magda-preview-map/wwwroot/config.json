@@ -1,16 +1,16 @@
 {
     /* Names of init files (in wwwroot/init), without the .json extension, to load by default */
-    initializationUrls: [
-        "terria"
-    ],
+    initializationUrls: ["terria"],
     parameters: {
-        bingMapsKey: "AkaOmRFtjAb71cXgLwAGtLbj2RpkPKtVqAIroFQsocfurCBILxIeAWPkil7hhRy_",
+        bingMapsKey:
+            "AkaOmRFtjAb71cXgLwAGtLbj2RpkPKtVqAIroFQsocfurCBILxIeAWPkil7hhRy_",
         googleUrlShortenerKey: null,
         googleAnalyticsKey: null,
         googleAnalyticsOptions: null,
         /* Text that appears at the bottom of the map */
         disclaimer: {
-            text: "Disclaimer: This map must not be used for navigation or precise spatial analysis",
+            text:
+                "Disclaimer: This map must not be used for navigation or precise spatial analysis",
             url: ""
         },
         /*
@@ -43,4 +43,3 @@
         "experimentalFeatures": true
     }
 }
-

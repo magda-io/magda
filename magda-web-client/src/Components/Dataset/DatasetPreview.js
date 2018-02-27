@@ -6,22 +6,22 @@ import PropTypes from 'prop-types';
 import './DatasetPreview.css'
 
 export default class DatasetPreview extends Component {
-  getDistributionForChart(distributions){
-    if(!distributions || distributions.length === 0){
-      return null;
+    getDistributionForChart(distributions) {
+        if (!distributions || distributions.length === 0) {
+            return null;
+        }
+        return distributions.find(d => defined(d.chartFields));
     }
-    return distributions.find(d=>defined(d.chartFields));
-  }
-  render(){
-    const distributions = this.props.dataset.distributions;
+    render() {
+        const distributions = this.props.dataset.distributions;
 
-    return (<div className='dataset-preview container'>
-                  <DataPreviewChart distribution={this.getDistributionForChart(distributions)}/>
-                  <DataPreviewMap dataset={this.props.dataset}/>
-            </div>)
-  }
+        return (<div className='dataset-preview container'>
+            <DataPreviewChart distribution={this.getDistributionForChart(distributions)} />
+            <DataPreviewMap dataset={this.props.dataset} />
+        </div>)
+    }
 }
 
 DatasetPreview.propTypes = {
-  dataset: PropTypes.object
+    dataset: PropTypes.object
 };

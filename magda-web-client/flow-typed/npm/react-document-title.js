@@ -1,3 +1,3 @@
-declare module 'react-document-title' {
-  declare module.exports: any;
+declare module "react-document-title" {
+    declare module.exports: any;
 }
