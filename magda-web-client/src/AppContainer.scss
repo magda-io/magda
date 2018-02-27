@@ -39,43 +39,44 @@
                 }
             }
         }
-        .logo a {
-            color: $body;
-            font-size: 18px;
-            font-weight: 500;
-            line-height: 22px;
-            text-transform: uppercase;
-            .highlight {
-                color: $main;
-            }
-        }
     }
 
-    .footer {
-        background-color: $magda-dark-blue;
+    .logo a {
+        color: $body;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 22px;
+        text-transform: uppercase;
+        .highlight {
+            color: $main;
+        }
+    }
+}
+
+.footer {
+    background-color: $magda-dark-blue;
+    color: #fff;
+    padding: 50px 0;
+    margin-top: 24px;
+    a {
         color: #fff;
-        padding: 50px 0;
-        margin-top: 24px;
-        a {
+        font-size: 0.9rem;
+    }
+    .nav > li > a {
+        padding: 10px 0px;
+        &:hover,
+        &:focus {
+            background: $magda;
             color: #fff;
-            font-size: 0.9rem;
         }
-        .nav > li > a {
-            padding: 10px 0px;
-            &:hover,
-            &:focus {
-                background: $magda;
-                color: #fff;
-            }
-        }
-        .nav-title {
-            text-transform: uppercase;
-        }
-        .copyright {
-            text-align: right;
-            img {
-                height: 40px;
-            }
+    }
+    .nav-title {
+        text-transform: uppercase;
+    }
+    .copyright {
+        text-align: right;
+        img {
+            height: 40px;
         }
     }
 }
