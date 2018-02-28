@@ -1,5 +1,7 @@
 ## 0.0.34
 
+* Added support to search for regions in the location filter by a short name and configured STE state regions to allow searching by acronym
+
 ## 0.0.33
 
 * Added ability to get records from the registry by the value of their aspects.
