@@ -29,13 +29,11 @@ spec:
         ]
         livenessProbe:
           httpGet:
-            path: /healthz
+            path: /v0/healthz
             port: 80
-            httpHeaders:
-            - name: X-Custom-Header
-              value: Awesome
-          initialDelaySeconds: 3
-          periodSeconds: 3
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 10
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
