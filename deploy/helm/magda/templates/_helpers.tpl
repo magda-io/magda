@@ -152,3 +152,12 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
               key: elasticsearch
 {{- end }}
 {{- end }}
+
+{{- define "magda.postgresLivenessProbe" }}
+        livenessProbe:
+          exec:
+            command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432" ]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 1
+{{- end}}
