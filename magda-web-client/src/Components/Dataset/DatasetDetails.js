@@ -13,6 +13,7 @@ class DatasetDetails extends Component {
         showPreview: false
     };
     render() {
+
         const dataset = this.props.dataset;
         const datasetId = this.props.match.params.datasetId;
 
@@ -31,14 +32,8 @@ class DatasetDetails extends Component {
                             <StarRating stars={dataset.linkedDataRating} />
                         </div>
                         <TagsBox tags={dataset.tags}/>
-                        <div className="dataset-details-source">
-                            <h3 className="section-heading">Source</h3>
-                            <MarkdownViewer
-                                markdown={source}
-                                truncate={false}
-                            />
-                        </div>
-                        <div className="dataset-details-source">
+                        
+                        <div className="dataset-details-links">
                             <h3 className="clearfix">
                                 <span className="section-heading">
                                     Data and APIs
@@ -54,7 +49,15 @@ class DatasetDetails extends Component {
                                 )}
                             </div>
                         </div>
-                        <div className="dataset-details-temporal-coverage">
+                        <div className="dataset-details-source">
+                            <h3 className="section-heading">Data Source</h3>
+                            <MarkdownViewer
+                                markdown={source}
+                                truncate={false}
+                            />
+                            <a className="landing-page" href="dataset.landingPage">{dataset.landingPage}</a>
+                        </div>
+                        <div className="dataset-details-temporal-coverage" style={{display:"none"}}>
                             <h3 className="section-heading">
                                 Temporal coverage
                             </h3>

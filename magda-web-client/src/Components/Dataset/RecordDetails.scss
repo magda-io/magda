@@ -75,3 +75,27 @@
         top:5px;
     }
 }
+
+.dataset-details-source{
+    
+    font-size: 16px;
+    line-height: 19px;
+
+    .section-heading {
+        color: #494949;
+        font-size: 24px;
+        line-height: 28px;
+        margin-bottom: 20px;
+        margin-top: 40px;
+    }
+    a{
+        border-bottom: none;
+    }
+    .markdown a{
+        
+        font-weight: 500;
+    }
+    .landing-page{
+        color: #CC3139;
+    }
+}

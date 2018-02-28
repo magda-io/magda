@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.2 (47327) - http://www.bohemiancoding.com/sketch -->
+    <title>icon/options-24</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="03_01_Dataset-page" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(-1252.000000, -1905.000000)">
+        <g id="Group" transform="translate(1104.000000, 1893.000000)">
+            <g id="button/options" transform="translate(136.000000, 0.000000)">
+                <g id="icon/external-24" transform="translate(8.000000, 8.000000)">
+                    <g>
+                        <rect id="Rectangle-Copy-7" x="0" y="0" width="24" height="24"></rect>
+                        <polyline id="Rectangle-2" stroke="#4D5766" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="16 16 16 19 5 19 5 8 8 8"></polyline>
+                        <rect id="Rectangle-2-Copy" stroke="#4D5766" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x="8" y="5" width="11" height="11"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
