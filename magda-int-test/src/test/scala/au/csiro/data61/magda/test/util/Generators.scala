@@ -148,6 +148,7 @@ object Generators {
     name <- Gen.uuid.map(_.toString)
     idProperty <- nonEmptyTextGen
     nameProperty <- nonEmptyTextGen
+    shortNameProperty <- noneBiasedOption(nonEmptyTextGen)
     includeIdInName <- arbitrary[Boolean]
     order <- Gen.posNum[Int]
   } yield RegionSource(
@@ -155,6 +156,7 @@ object Generators {
     url = new URL("http://example.com"),
     idProperty = idProperty,
     nameProperty = nameProperty,
+    shortNameProperty = shortNameProperty,
     includeIdInName = includeIdInName,
     disabled = false,
     order = order)
