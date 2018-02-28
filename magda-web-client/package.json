@@ -61,6 +61,7 @@
     "lodash.maxby": "^4.6.0",
     "lodash.min": "^4.0.1",
     "lodash.minby": "^4.6.0",
+    "lodash.reduce": "^4.6.0",
     "lodash.uniq": "^4.5.0",
     "markdown-it": "^8.4.0",
     "markdown-with-front-matter-loader": "^0.1.0",

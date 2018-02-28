@@ -125,6 +125,7 @@ export type ParsedDataset = {
   temporalCoverage: ? TemporalCoverage,
   publisher: Publisher,
   source: string,
+  linkedDataRating: number,
   error: ?FetchError
 }
 
@@ -243,6 +244,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
 
   const source: string = aspects['source'] ? aspects['source']['name'] : defaultDatasetAspects['source']['name'];
 
+  const linkedDataRating: number = aspects['dataset-linked-data-rating'] ? aspects['dataset-linked-data-rating']['stars'] : 0;
+
   const distributions = distribution['distributions'].map(d=> {
       const distributionAspects = Object.assign({}, defaultDistributionAspect, d['aspects']);
       const info = distributionAspects['dcat-distribution-strings'];
@@ -276,6 +279,6 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
       }
   });
   return {
-      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher, error
+      identifier, title, issuedDate, updatedDate, landingPage, tags, description, distributions, source, temporalCoverage, publisher, error, linkedDataRating
   }
 };
