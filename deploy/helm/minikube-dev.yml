@@ -6,7 +6,7 @@ global:
   image:
     repository: "localhost:5000/data61"
     tag: "latest"
-  noDbAuth: false
+  noDbAuth: true
   useCloudSql: false
   useCombinedDb: true
 gateway:

@@ -70,7 +70,10 @@ spec:
               key: google-client-secret
               optional: true
 {{- end }}
-{{- if not .Values.global.noDbAuth }}
+{{- if .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+{{- else }}
         - name: PGUSER
           value: client
         - name: PGPASSWORD

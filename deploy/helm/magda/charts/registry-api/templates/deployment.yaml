@@ -20,7 +20,10 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- if not .Values.global.noDbAuth }}
+{{- if .Values.global.noDbAuth }}
+        - name: POSTGRES_USER
+          value: client
+{{- else }}
         - name: POSTGRES_USER
           value: client
         - name: POSTGRES_PASSWORD
