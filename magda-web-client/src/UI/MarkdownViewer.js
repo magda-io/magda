@@ -1,24 +1,22 @@
-import React from 'react';
-import MarkdownIt from 'markdown-it';
-import './MarkdownViewer.css';
-import defined from '../helpers/defined';
-import truncate from 'html-truncate';
-var DOMPurify = require('dompurify/dist/purify');
+import React from "react";
+import MarkdownIt from "markdown-it";
+import "./MarkdownViewer.css";
+import defined from "../helpers/defined";
+import truncate from "html-truncate";
+var DOMPurify = require("dompurify/dist/purify");
 
-class MarkdownViewer extends React.Component  {
- render(){
-   let html = markdownToHtml(this.props.markdown);
-   if(this.props.truncate === true){
-       html = truncate(html, 150);
-   }
-   let markdown = {__html: html};
-   return(
-      <div className='markdown' dangerouslySetInnerHTML={markdown}/>
-   )
- }
+class MarkdownViewer extends React.Component {
+    render() {
+        let html = markdownToHtml(this.props.markdown);
+        if (this.props.truncate === true) {
+            html = truncate(html, 150);
+        }
+        let markdown = { __html: html };
+        return <div className="markdown" dangerouslySetInnerHTML={markdown} />;
+    }
 }
 
-MarkdownViewer.defaultProps = {markdown: ''};
+MarkdownViewer.defaultProps = { markdown: "" };
 
 export default MarkdownViewer;
 
@@ -28,7 +26,6 @@ const md = new MarkdownIt({
 });
 
 const htmlRegex = /^\s*<[^>]+>/;
-
 
 function markdownToHtml(markdownString, allowUnsafeHtml, options) {
     if (!defined(markdownString) || markdownString.length === 0) {

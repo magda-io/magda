@@ -1,16 +1,19 @@
-'use strict';
+"use strict";
 
 /*global require*/
-var knockout = require('terriajs-cesium/Source/ThirdParty/knockout');
-var loadView = require('terriajs/lib/Core/loadView');
-var URI = require('urijs');
+var knockout = require("terriajs-cesium/Source/ThirdParty/knockout");
+var loadView = require("terriajs/lib/Core/loadView");
+var URI = require("urijs");
 
 function PreviewLinkViewModel(options) {
     this.terria = options.terria;
 
-    this.isShown = window.location && window.location.href && new URI(window.location.href).hash().length === 0;
+    this.isShown =
+        window.location &&
+        window.location.href &&
+        new URI(window.location.href).hash().length === 0;
 
-    knockout.track(this, ['isShown']);
+    knockout.track(this, ["isShown"]);
 }
 
 PreviewLinkViewModel.prototype.hide = function(container) {
@@ -19,7 +22,11 @@ PreviewLinkViewModel.prototype.hide = function(container) {
 
 PreviewLinkViewModel.create = function(options) {
     var viewModel = new PreviewLinkViewModel(options);
-    loadView(require('../Views/PreviewLink.html'), options.container, viewModel);
+    loadView(
+        require("../Views/PreviewLink.html"),
+        options.container,
+        viewModel
+    );
     return viewModel;
 };
 

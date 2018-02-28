@@ -1,26 +1,26 @@
 // @flow
-import type {FetchError} from '../types';
+import type { FetchError } from "../types";
 
 const initialData = {
-  previewData: null,
-  isFetching: false,
-  error: null,
-  url: ''
-}
+    previewData: null,
+    isFetching: false,
+    error: null,
+    url: ""
+};
 
 type previewDataState = {
-  isFetching: boolean,
-  error: ?number,
-  previewData: ?Object,
-  url: string
-}
+    isFetching: boolean,
+    error: ?number,
+    previewData: ?Object,
+    url: string
+};
 
 type previewDataAction = {
-  type: string,
-  previewData?: ?Object,
-  error: FetchError,
-  url?: string
-}
+    type: string,
+    previewData?: ?Object,
+    error: FetchError,
+    url?: string
+};
 
 const previewDataReducer = (state: previewDataState = initialData, action: previewDataAction) => {
   switch (action.type) {
@@ -46,8 +46,8 @@ const previewDataReducer = (state: previewDataState = initialData, action: previ
     case 'RESET_PREVIEW_DATA':
       return Object.assign({}, state, initialData)
 
-    default:
-      return state
-  }
+        default:
+            return state;
+    }
 };
 export default previewDataReducer;

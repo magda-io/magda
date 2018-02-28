@@ -1,5 +1,5 @@
-const fse = require('fs-extra');
-const klawSync = require('klaw-sync');
+const fse = require("fs-extra");
+const klawSync = require("klaw-sync");
 
 function findLastModifiedFile(path) {
     if (!fse.existsSync(path)) {
@@ -23,7 +23,9 @@ function findLastModifiedFile(path) {
     });
 
     return files.reduce((previous, current) => {
-        return !previous || current.stats.mtime > previous.stats.mtime ? current : previous;
+        return !previous || current.stats.mtime > previous.stats.mtime
+            ? current
+            : previous;
     }, undefined);
 }
 

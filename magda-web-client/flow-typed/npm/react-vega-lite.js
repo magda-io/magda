@@ -1,3 +1,3 @@
-declare module 'react-vega-lite' {
-  declare module.exports: any;
+declare module "react-vega-lite" {
+    declare module.exports: any;
 }
