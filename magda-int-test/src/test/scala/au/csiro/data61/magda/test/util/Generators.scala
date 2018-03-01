@@ -204,6 +204,7 @@ object Generators {
     regionSource <- regionSourceGen.flatMap(Gen.oneOf(_))
     id <- Gen.uuid.map(_.toString)
     name <- textGen
+    shortName <- textGen
     geometry <- thisGeometryGen
     order <- Gen.posNum[Int]
   } yield (regionSource, JsObject(
@@ -212,7 +213,8 @@ object Generators {
     "order" -> JsNumber(order),
     "properties" -> JsObject(
       regionSource.idProperty -> JsString(id),
-      regionSource.nameProperty -> JsString(name))))
+      regionSource.nameProperty -> JsString(name),
+      regionSource.shortNameProperty.map(_ -> JsString(shortName)).toSeq: _* )))
 
   def pointGen(thisCoordGen: Gen[Coordinate] = coordGen()) = thisCoordGen.map(Point.apply)
   def multiPointGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = listSizeBetween(1, max, thisCoordGen).map(MultiPoint.apply)
