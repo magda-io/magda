@@ -77,7 +77,6 @@ export function fetchPreviewData(distribution){
             header: true,
             skipEmptyLines: true,
             complete: function(data) {
-              data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
               data.meta.chartFields = distribution.chartFields;
               dispatch(receivePreviewData({[distribution.identifier]: data}))
             },
@@ -93,9 +92,7 @@ export function fetchPreviewData(distribution){
             header: true,
             skipEmptyLines: true,
             complete: function(data) {
-              data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
               data.meta.chartFields = distribution.chartFields;
-
               dispatch(receivePreviewData({[distribution.identifier]: data}))
             },
             error: (error)=>{dispatch(requestPreviewDataError(error))}

@@ -72,16 +72,14 @@ class DataPreviewVis extends Component {
   }
 
   renderTable(previewData){
-    if(previewData.meta.type === 'tabular'){
-      return <DataPreviewTable data={previewData}/>
-    }
+    return <DataPreviewTable data={previewData}/>
   }
 
   renderByState(){
     const previewData = this.props.data[this.props.distribution.identifier];
     if(previewData){
       return (
-        <Tabs onChange={this.onChange} defaultSelectedIndex={0}>
+        <Tabs onChange={this.onChange} defaultSelectedIndex={defined(previewData.meta.chartFields)}>
           <Tab value="table" label="Table" onActive={this.onActive}>{this.renderTable(previewData)}</Tab>
           <Tab value="chart" label="Chart" >{this.renderChart(previewData)}</Tab>
         </Tabs>
