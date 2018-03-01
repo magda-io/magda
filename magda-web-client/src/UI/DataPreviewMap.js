@@ -122,6 +122,7 @@ class DataPreviewMap extends Component {
 
         if(!this.state.isMapPreviewAvailable) return (
             <div className="data-preview-map">
+                <h3>Map Preview</h3>
                 No map preview available
             </div>
         );

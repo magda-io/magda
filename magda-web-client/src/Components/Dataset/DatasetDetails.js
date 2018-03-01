@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import TemporalAspectViewer from "../../UI/TemporalAspectViewer";
+import DatasetPreview from "./DatasetPreview";
 import DescriptionBox from "../../UI/DescriptionBox";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import StarRating from "../../UI/StarRating";
@@ -33,10 +34,13 @@ class DatasetDetails extends Component {
                             <StarRating stars={dataset.linkedDataRating} />
                         </div>
                         <TagsBox tags={dataset.tags}/>
-                        
+                        <div className='dataset-preview'>
+                            <DatasetPreview dataset={dataset} />
+                        </div>
                         
                     </div>
                 </div>
+                
                 <div className="mui-row">
                     <div className="mui-col-sm-12">
                         <div className="dataset-details-files-apis">
