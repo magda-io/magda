@@ -8,8 +8,10 @@ import {fetchPreviewData} from '../actions/previewDataActions';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import VegaLite from 'react-vega-lite';
+import DataPreviewTable from './DataPreviewTable';
+import './DataPreviewVis.css';
 
-class DataPreviewChart extends Component {
+class DataPreviewVis extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -18,7 +20,7 @@ class DataPreviewChart extends Component {
       Yaxis: '',
       xAxis: '',
       xScale: 'temporal',
-      yScale: 'quantitative'
+      yScale: 'quantitative',
     }
   }
 
@@ -35,16 +37,14 @@ class DataPreviewChart extends Component {
   }
 
   onChange(i, value, tab, ev) {
-    console.log(arguments);
+
   }
 
   onActive(tab) {
-    console.log(arguments);
   }
 
-  renderChart(){
-    const previewData = this.props.data[this.props.distribution.identifier];
-    if(defined(previewData)){
+  renderChart(previewData){
+    if(defined(previewData.meta.chartFields)){
       const spec = {
         "height": 200,
         "description": this.state.title,
@@ -71,16 +71,17 @@ class DataPreviewChart extends Component {
 
   }
 
-  renderTable(){
-
+  renderTable(previewData){
+    return <DataPreviewTable data={previewData}/>
   }
 
-  render(){
-    if(this.props.data){
+  renderByState(){
+    const previewData = this.props.data[this.props.distribution.identifier];
+    if(previewData){
       return (
-        <Tabs onChange={this.onChange} defaultSelectedIndex={0}>
-          <Tab value="pane-1" label="Chart" onActive={this.onActive}>{this.renderChart()}</Tab>
-          <Tab value="pane-2" label="Table">{this.renderTable()}</Tab>
+        <Tabs onChange={this.onChange} defaultSelectedIndex={defined(previewData.meta.chartFields)}>
+          <Tab value="table" label="Table" onActive={this.onActive}>{this.renderTable(previewData)}</Tab>
+          <Tab value="chart" label="Chart" >{this.renderChart(previewData)}</Tab>
         </Tabs>
       )
     } else if(this.props.isFetching){
@@ -90,6 +91,13 @@ class DataPreviewChart extends Component {
     } else {
       return <div>No preview available</div>
     }
+  }
+
+  render(){
+    return (<div className="data-preview-vis">
+      <h3>Data Preview</h3>
+      {(this.props.data && this.props.distribution.identifier) && this.renderByState()}
+    </div>)
   }
 }
 
@@ -111,4 +119,4 @@ const  mapDispatchToProps = (dispatch: Dispatch<*>) => {
   }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(DataPreviewChart);
+export default connect(mapStateToProps, mapDispatchToProps)(DataPreviewVis);

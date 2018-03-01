@@ -65,7 +65,7 @@ export function fetchPreviewData(distribution) {
         }
 
         const url = distribution.downloadURL;
-        const format = distribution.format;
+        const format = distribution.format.toLowerCase();
 
         dispatch(requestPreviewData(url));
 
@@ -79,9 +79,6 @@ export function fetchPreviewData(distribution) {
                         header: true,
                         skipEmptyLines: true,
                         complete: function(data) {
-                            data.meta.type = distribution.isTimeSeries
-                                ? "chart"
-                                : "tabular";
                             data.meta.chartFields = distribution.chartFields;
                             dispatch(
                                 receivePreviewData({
@@ -103,11 +100,7 @@ export function fetchPreviewData(distribution) {
                         header: true,
                         skipEmptyLines: true,
                         complete: function(data) {
-                            data.meta.type = distribution.isTimeSeries
-                                ? "chart"
-                                : "tabular";
                             data.meta.chartFields = distribution.chartFields;
-
                             dispatch(
                                 receivePreviewData({
                                     [distribution.identifier]: data
