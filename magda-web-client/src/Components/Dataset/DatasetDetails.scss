@@ -1,20 +1,15 @@
 @import "../../variables";
 
 .dataset-details{
-    .section-heading {
-        color: #494949;
-        font-size: 24px;
-        line-height: 28px;
-        margin-bottom: 20px;
-        margin-top: 40px;
-    }
-    margin-bottom: 40px;
+  h3{
+      color: #494949;
+      font-size: 24px;
+      line-height: 28px;
+      padding-bottom: 20px;
+      padding-top: 20px;
+  }
 }
 
-.section-heading {
-    font-weight: 400;
-    color: $magda-dark-grey;
-}
 
 .publisher-basic-info-row {
     .publisher {
@@ -38,7 +33,7 @@
 }
 
 .dataset-details-source{
-    
+
     font-size: 16px;
     line-height: 19px;
 
@@ -46,7 +41,7 @@
         border-bottom: none;
     }
     .markdown a{
-        
+
         font-weight: 500;
     }
     .landing-page{
