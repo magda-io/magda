@@ -41,14 +41,7 @@ class DescriptionBox extends Component {
         </div>
     }
 }
-/**
- * 
-                <Button onClick={() => this.onToggleButtonClick()}>
-                    <span className='sr-only'>{this.isExpanded ? 'show less' : 'show more'}</span>
-                    <img src={downArrowIcon} />
-                    <i className={`fa fa-chevron-${this.isExpanded ? 'up' : 'down'}`} aria-hidden='true'></i>
-                </Button>
- */
+
 DescriptionBox.PropTypes = {
     isAutoTruncate: PropTypes.bool,
     truncateLength: PropTypes.number,

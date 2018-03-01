@@ -105,14 +105,18 @@ class RecordHandler extends React.Component {
 
                 return (
                     <div className="mui-row">
-                        <div className="mui-col-sm-9">
+                        <div className="mui-col-sm-12">
                             <div className='container media'>
-                                <div className='media-body'>
-                                    <h1>{this.props.dataset.title}</h1>
-                                    <div className="publisher-basic-info-row">
-                                        <span className='publisher'>{publisherName}</span>
-                                        <span className="separator">/</span>
-                                        <span className='updated-date'>Updated {this.props.dataset.updatedDate}</span>
+                                <div className="mui-row">
+                                    <div className="mui-col-sm-9">
+                                        <div className='media-body'>
+                                            <h1>{this.props.dataset.title}</h1>
+                                            <div className="publisher-basic-info-row">
+                                                <span className='publisher'>{publisherName}</span>
+                                                <span className="separator">/</span>
+                                                <span className='updated-date'>Updated {this.props.dataset.updatedDate}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
