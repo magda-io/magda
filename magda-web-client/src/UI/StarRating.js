@@ -10,7 +10,7 @@ function StarRating(props) {
     return (
         <span className="star-rating-box">
             {stars.map((icon, i) => (
-                <span>
+                <span key={i}>
                     <img key={i} src={icon} alt="star rating" />
                     &nbsp;
                 </span>

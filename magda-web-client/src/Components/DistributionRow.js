@@ -23,23 +23,17 @@ class DistributionRow extends Component {
 
     render() {
         const { datasetId, distribution } = this.props;
-        const linkIconClassName = distribution.linkActive ? "link" : "unlink"; // Colour link icon red if link is broken
-        const linkIconTitle = distribution.linkActive
-            ? "Download link working"
-            : "Download link may be broken";
+        const distributionLink = `/dataset/${encodeURIComponent(datasetId)}/distribution/${encodeURIComponent(distribution.identifier)}`;
+
         return (
             <div className="distribution-row mui-row">
                 <div className="mui-col-sm-1">
-                    <img className="format-icon" src={formatIcon} />
+                    <img className="format-icon" src={formatIcon} alt="format icon" />
                 </div>
                 <div className="mui-col-sm-8">
                     <div className="distribution-row-link">
                         <Link
-                            to={`/dataset/${encodeURIComponent(
-                                datasetId
-                            )}/distribution/${encodeURIComponent(
-                                distribution.identifier
-                            )}`}
+                            to={distributionLink}
                         >
                             {distribution.title}({distribution.format})
                         </Link>
@@ -55,12 +49,16 @@ class DistributionRow extends Component {
                     </div>
                 </div>
                 <div className="mui-col-sm-3 button-area">
-                    <Button className="download-button">
-                        <img src={downloadIcon} />
+                    <Button className="download-button" onClick={()=>{
+                        window.location=`${distribution.downloadURL}`;
+                    }}>
+                        <img src={downloadIcon} alt="download"  />
                         <span className="button-text">Download</span>
                     </Button>
-                    <Button className="new-tab-button">
-                        <img src={newTabIcon} />
+                    <Button className="new-tab-button" onClick={()=>{
+                        window.open(distributionLink,distribution.title);
+                    }}>
+                        <img src={newTabIcon} alt="new tab" />
                     </Button>
                 </div>
             </div>
