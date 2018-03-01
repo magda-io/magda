@@ -76,19 +76,22 @@ class DataPreviewVis extends Component {
   }
 
   renderByState(){
-    const previewData = this.props.data[this.props.distribution.identifier];
-    if(previewData){
-      return (
-        <Tabs onChange={this.onChange} defaultSelectedIndex={defined(previewData.meta.chartFields)}>
-          <Tab value="table" label="Table" onActive={this.onActive}>{this.renderTable(previewData)}</Tab>
-          <Tab value="chart" label="Chart" >{this.renderChart(previewData)}</Tab>
-        </Tabs>
-      )
-    } else if(this.props.isFetching){
-      return <div>Preview is loading</div>
-    }else if(this.props.error){
-      return <div>Preview errored</div>
-    } else {
+    if(this.props.data && this.props.distribution && this.props.distribution.identifier){
+      const previewData = this.props.data[this.props.distribution.identifier];
+      if(previewData){
+        return (
+          <Tabs onChange={this.onChange} defaultSelectedIndex={defined(previewData.meta.chartFields)}>
+            <Tab value="table" label="Table" onActive={this.onActive}>{this.renderTable(previewData)}</Tab>
+            <Tab value="chart" label="Chart" >{this.renderChart(previewData)}</Tab>
+          </Tabs>
+        )
+      } else if(this.props.isFetching){
+        return <div>Preview is loading</div>
+      }else if(this.props.error){
+        return <div>Preview errored</div>
+      }
+    }
+     else {
       return <div>No preview available</div>
     }
   }
@@ -96,7 +99,7 @@ class DataPreviewVis extends Component {
   render(){
     return (<div className="data-preview-vis">
       <h3>Data Preview</h3>
-      {(this.props.data && this.props.distribution.identifier) && this.renderByState()}
+      {this.renderByState()}
     </div>)
   }
 }
