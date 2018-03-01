@@ -211,9 +211,9 @@ object Generators {
     "type" -> JsString("Feature"),
     "geometry" -> GeometryFormat.write(geometry),
     "order" -> JsNumber(order),
-    "properties" -> JsObject(
+    "properties" -> JsObject(Seq(
       regionSource.idProperty -> JsString(id),
-      regionSource.nameProperty -> JsString(name),
+      regionSource.nameProperty -> JsString(name)) ++
       regionSource.shortNameProperty.map(_ -> JsString(shortName)).toSeq: _* )))
 
   def pointGen(thisCoordGen: Gen[Coordinate] = coordGen()) = thisCoordGen.map(Point.apply)
