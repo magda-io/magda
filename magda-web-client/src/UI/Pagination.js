@@ -20,7 +20,7 @@ class Pagination extends Component {
     renderPrevButton(currentIndex) {
         return (
             <Button
-                onClick={this.onClick.bind(this, currentIndex + 1)}
+                onClick={this.onClick.bind(this, currentIndex - 1)}
                 className="btn-prev"
             >
                 {" "}
@@ -32,7 +32,7 @@ class Pagination extends Component {
     renderNextButton(currentIndex) {
         return (
             <Button
-                onClick={this.onClick.bind(this, currentIndex - 1)}
+                onClick={this.onClick.bind(this, currentIndex + 1)}
                 className="btn-next"
             >
                 {" "}
