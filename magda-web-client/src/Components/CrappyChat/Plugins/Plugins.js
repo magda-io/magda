@@ -1,6 +1,6 @@
 //import UserMention from './UserMention/UserMention';
-import DataSetMention from './DataSetMention/DataSetMention';
-import createMentionPlugin from 'draft-js-mention-plugin';
+import DataSetMention from "./DataSetMention/DataSetMention";
+import createMentionPlugin from "draft-js-mention-plugin";
 
 // function userMentionPlugin() {
 //   return createMentionPlugin({
@@ -12,18 +12,18 @@ import createMentionPlugin from 'draft-js-mention-plugin';
 // }
 
 function dataSetMentionPlugin() {
-  return createMentionPlugin({
-    mentionComponent: DataSetMention,
-    mentionTrigger: '#',
-    mentionRegExp: '[\\w\\s]{0,20}',
-    entityMutability: 'IMMUTABLE'
-  });
+    return createMentionPlugin({
+        mentionComponent: DataSetMention,
+        mentionTrigger: "#",
+        mentionRegExp: "[\\w\\s]{0,20}",
+        entityMutability: "IMMUTABLE"
+    });
 }
 
 function plugins() {
-  return {
-    // userMentions: userMentionPlugin(),
-    dataSetMentions: dataSetMentionPlugin()
-  };
+    return {
+        // userMentions: userMentionPlugin(),
+        dataSetMentions: dataSetMentionPlugin()
+    };
 }
 export default plugins;

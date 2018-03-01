@@ -1,13 +1,13 @@
 global:
     useCombinedDb: false
+    useCloudSql: true
     externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
-        tag: "0.0.32"
+        tag: "0.0.33"
 tags:
     all: false
 
-    admin-api: true
     authorization-api: true
     authorization-db: true
     elasticsearch: true
@@ -15,16 +15,19 @@ tags:
     indexer: true
     preview-map: true
     registry-api: true
-    registry-datastore: true
+    registry-db: true
     search-api: true
-    session-store: true
+    session-db: true
     sleuther-broken-link: true
     sleuther-linked-data-rating: true
+    sleuther-visualization: true
     web-server: true
+    feedback-api: true
 
 elasticsearch:
     production: true
     client:
+        replicas: 2
         heapSize: 900m
         pluginsInstall: "repository-gcs"
         resources:
@@ -38,11 +41,12 @@ elasticsearch:
         resources:
             requests:
                 cpu: 800m
-                memory: 6000Mi
-feedback-api:
-  gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
+                memory: 5000Mi
 gateway:
     loadBalancerIP: "35.189.8.102"
+    autoscaler:
+        minReplicas: 2
+        maxReplicas: 4
     auth:
         facebookClientId: "173073926555600"
         googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
@@ -56,6 +60,7 @@ indexer:
             cpu: 200m
             memory: 200Mi
 preview-map:
+    replicas: 2
     resources:
         requests:
             cpu: 250m
@@ -65,7 +70,7 @@ registry-api:
     requests:
         cpu: 500m
         memory: 1000Mi
-registry-datastore:
+registry-db:
     resources:
         requests:
             cpu: 900m
@@ -93,18 +98,20 @@ authorization-db:
         googleApplicationCreds:
             secretName: storage-account-credentials
             fileName: TerriaJS-5e042b649f8a.json
-session-store:
+session-db:
     data:
         storageClass: "fast-ssd"
     resources:
         requests:
             cpu: 250m
             memory: 500Mi
-auth-api:
+authorization-api:
+    replicas: 2
     requests:
         cpu: 100m
         memory: 200Mi
 search-api:
+    replicas: 2
     requests:
         cpu: 250m
         memory: 200Mi
@@ -112,6 +119,9 @@ search-api:
         cpu: 1000m
         memory: 1000m
 web-server:
+    autoscaler:
+        minReplicas: 2
+        maxReplicas: 4
     resources:
         requests:
             cpu: 250m
@@ -148,3 +158,9 @@ indexer:
 #    useGcsSnapshots: true
 #    gcsSnapshotBucket: "magda-es-snapshots"
 #    gcsSnapshotServiceAccount: "_default"
+feedback-api:
+    gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
+    replicas: 2
+cloud-sql-proxy:
+    replicas: 2
+    instanceConnectionName: terriajs:australia-southeast1:magda-prod

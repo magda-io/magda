@@ -1,3 +1,3 @@
-declare module 'traverse' {
-  declare module.exports: any;
+declare module "traverse" {
+    declare module.exports: any;
 }
