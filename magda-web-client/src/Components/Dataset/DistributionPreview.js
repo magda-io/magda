@@ -1,13 +1,7 @@
 import React, { Component } from "react";
-import DataPreviewTable from "../../UI/DataPreviewTable";
-import DataPreviewTextBox from "../../UI/DataPreviewTextBox";
 import DataPreviewGoogleViewer from "../../UI/DataPreviewGoogleViewer";
-import DataPreviewJson from "../../UI/DataPreviewJson";
-import DataPreviewVis from "../../UI/DataPreviewVis";
-import type { PreviewData } from "../../helpers/previewData";
 import { fetchPreviewData } from "../../actions/previewDataActions";
 import ProgressBar from "../../UI/ProgressBar";
-import News from "../../UI/News";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
