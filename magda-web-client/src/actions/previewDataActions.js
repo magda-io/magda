@@ -1,7 +1,6 @@
 import {config} from '../config'
 import fetch from 'isomorphic-fetch'
 import {actionTypes} from '../constants/ActionTypes';
-import {getPreviewDataUrl} from '../helpers/previewData';
 import type {PreviewData} from '../helpers/previewData';
 
 
@@ -59,48 +58,35 @@ function loadRssParser(){
 
 export function fetchPreviewData(distribution){
   return (dispatch: Function, getState: Function)=>{
-      const prop = getPreviewDataUrl(distribution);
-      // check if we need to fetch
-
-      if(!prop){
-        return dispatch(requestPreviewDataError("No preview available because the url to access the data is broken"));
-      }
-
-      if(getState().previewData.isFetching && prop.url === getState().previewData.url){
+      if(getState().previewData.isFetching && distribution.downloadURL === getState().previewData.url){
         return false;
       }
 
-      const url = prop.url;
-      const format = prop.format;
+
+      const url = distribution.downloadURL;
+      const format = distribution.format;
 
       dispatch(requestPreviewData(url));
 
       const proxy = config.proxyUrl;
 
       switch (format) {
-        case 'geo':
-          const catalog = {"version":"0.0.05","initSources":[{
-            "catalog": [
-              {
-                "name": prop.name,
-                "type": "magda-item",
-                "url": config.baseUrl,
-                "distributionId": prop.id,
-                "isEnabled": true,
-                "zoomOnEnable": true
-              }
-            ]
-          }]}
+        case 'csv-geo-au':
+        loadPapa().then(papa=>{
+          papa.parse(proxy + "_0d/" + url, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(data) {
+              data.meta.type = distribution.isTimeSeries ? 'chart' : 'tabular';
+              data.meta.chartFields = distribution.chartFields;
+              dispatch(receivePreviewData({[distribution.identifier]: data}))
+            },
+            error: (error)=>{dispatch(requestPreviewDataError(error))}
+          });
+        })
 
-          let geoData = {
-            data: config.previewMapUrl + "#start=" + encodeURIComponent(JSON.stringify(catalog)),
-            meta: {
-              type: "geo"
-            }
-          }
-          dispatch(receivePreviewData({[distribution.identifier]: geoData}));
-          break;
-
+        break;
         case 'csv':
         loadPapa().then(papa=>{
           papa.parse(proxy + "_0d/" + url, {
