@@ -78,6 +78,14 @@ a {
     }
 }
 
-.mui-tabs__bar a.mui--is-active {
+ .mui-tabs__bar>li.mui--is-active,
+ .mui-tabs__bar a.mui--is-active {
     border-bottom: 2px solid $magda !important;
+}
+
+.mui-tabs__bar>li.mui--is-active>a, .mui-tabs__bar a.mui--is-active{
+  color: $magda;
+  &:hover{
+    color: #fff;
+  }
 }

@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 class DistributionPreview extends Component {
   render(){
     return (<div className='dataset-preview container'>
+              render dataset distribution preview
             </div>)
   }
 }
