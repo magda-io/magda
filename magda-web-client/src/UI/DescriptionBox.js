@@ -21,7 +21,7 @@ class DescriptionBox extends Component {
     }
 
     render() {
-        const shouldShowToggleButton = this.props.isAutoTruncate ? willBeTruncated(this.props.content) : false;
+        const shouldShowToggleButton = this.props.isAutoTruncate ? willBeTruncated(this.props.content, this.props.truncateLength) : false;
         return <div className={`description-box white-box overview-box ${this.state.isExpanded ? 'is-expanded' : ''}`}>
             <MarkdownViewer markdown={this.props.content} truncate={!this.state.isExpanded && this.props.isAutoTruncate} truncateLength={this.props.truncateLength} />
             {shouldShowToggleButton ? (

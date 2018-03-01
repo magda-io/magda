@@ -62,6 +62,6 @@ export function willBeTruncated(
 ) {
     const OrigHtml = markdownToHtml(markdownString);
     const TruncatedHtml = truncate(OrigHtml, truncateLength);
-    if (OrigHtml === TruncatedHtml) return false;
+    if (OrigHtml.trim() === TruncatedHtml.trim()) return false;
     return true;
 }
