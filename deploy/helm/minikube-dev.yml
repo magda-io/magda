@@ -7,8 +7,8 @@ global:
     repository: "localhost:5000/data61"
     tag: "latest"
   noDbAuth: false
-  useCloudSql: true
-  useCombinedDb: false
+  useCloudSql: false
+  useCombinedDb: true
 gateway:
   auth:
     facebookClientId: "173073926555600"
