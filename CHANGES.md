@@ -2,6 +2,7 @@
 * Map previewer will pick data distribution with best support for a dataset
 * Map previewer will communicate with TerriaJs via `postMessage` rather than url
 * Default map for map previewer has been changed to `Positron (Light)`
+* Implement new dataset page design. Brought back Map previewer & Charter previewer.
 
 
 ## 0.0.33
