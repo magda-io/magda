@@ -32,7 +32,7 @@ class DescriptionBox extends Component {
                     </button>
                 ) : (
                     <button className="toggle-button" onClick={(e)=>this.onToggleButtonClick(e)}>
-                        <span>Show All Description</span>
+                        <span>Show Full Description</span>
                         <img src={downArrowIcon} alt="downArrow" />
                     </button>
                 )
