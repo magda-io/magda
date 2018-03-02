@@ -1,5 +1,7 @@
 ## 0.0.34
 
+* Fixed bug where navigation buttons were reversed in the new search results page.
+
 ## 0.0.33
 
 * Added ability to get records from the registry by the value of their aspects.
