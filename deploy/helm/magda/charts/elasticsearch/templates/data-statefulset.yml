@@ -39,6 +39,11 @@ spec:
             add:
               - IPC_LOCK
         image: {{ template "dockerimage" . }}
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 300
+          periodSeconds: 60
         resources:
 {{ toYaml .Values.data.resources | indent 10 }}
         env:
@@ -64,11 +69,11 @@ spec:
           value: "-Xms{{ .Values.data.heapSize }} -Xmx{{ .Values.data.heapSize }}"
         - name: ES_PLUGINS_INSTALL
           value: {{ .Values.data.pluginsInstall | quote }}
+        - name: NETWORK_HOST
+          value: "0.0.0.0"
 {{- if not .Values.production }}
         - name: REPO
           value: /snapshots
-        - name: NETWORK_HOST
-          value: 0.0.0.0
 {{- end }}
         {{- template "magda.elasticSearchXpackEnv" . }}
         ports:
