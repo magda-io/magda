@@ -18,7 +18,7 @@ class DataPreviewVis extends Component {
     this.state = {
       chartType: 'line',
       chartTitle: '',
-      Yaxis: '',
+      yAxis: '',
       xAxis: '',
       xScale: 'temporal',
       yScale: 'quantitative',
@@ -57,8 +57,8 @@ class DataPreviewVis extends Component {
         "description": this.state.chartTitle,
         "mark": this.state.chartType,
         "encoding": {
-          "x": {"field": previewData.meta.chartFields.time[0], "type": this.state.xScale},
-          "y": {"field": previewData.meta.chartFields.numeric[0], "type": this.state.yScale}
+          "x": {"field": defined(this.state.xAxis) || previewData.meta.chartFields.time[0], "type": this.state.xScale},
+          "y": {"field": defined(this.state.yAxis) || previewData.meta.chartFields.numeric[0], "type": this.state.yScale}
         }
       }
 
@@ -69,15 +69,19 @@ class DataPreviewVis extends Component {
       return (<div className='mui-row'>
                 <div className='mui-col-sm-6'><h4 className='data-preview-vis_chart-title'>{this.state.chartTitle}</h4><VegaLite className='data-preview-vis_chart' spec={spec} data={data}/></div>
                 <div className='mui-col-sm-6'><ChartConfig
-                                                           chartType={this.state.chartType}
-                                                           chartTitle={this.state.chartTitle}
-                                                           xScale={this.state.xScale}
-                                                           yScale={this.state.yScale}
-                                                           onChange={this.updateChartConfig}/></div>
+                                                           chartType={spec.mark}
+                                                           chartTitle={spec.description}
+                                                           xScale={spec.encoding.x.type}
+                                                           yScale={spec.encoding.y.type}
+                                                           xAxis = {spec.encoding.x.field}
+                                                           yAxis = {spec.encoding.x.field}
+                                                           yAxisOptions = {previewData.meta.chartFields.numeric}
+                                                           xAxisOptions = {previewData.meta.chartFields.time}
+                                                           onChange={this.updateChartConfig}
+                                                           /></div>
               </div>)
     }
     return <div>no chart here</div>
-
   }
 
   renderTable(previewData){
