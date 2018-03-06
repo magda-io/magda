@@ -1,5 +1,6 @@
 ## 0.0.34
 
+* Fixed bug where navigation buttons were reversed in the new search results page.
 * Added support to search for regions in the location filter by a short name and configured STE state regions to allow searching by acronym
 * Made a click on the "Go back" link on the banner tag the user with a `noPreview` cookie for VWO to pick up on.
 * Added request logging to `magda-web-server`.
