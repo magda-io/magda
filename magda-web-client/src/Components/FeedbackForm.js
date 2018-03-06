@@ -182,6 +182,11 @@ class FeedbackForm extends React.Component {
                         </Button>
 
                         <ReactTooltip />
+                        <div className="privacy-link">
+                            <a href="/page/privacy-policy" target="_blank">
+                                Privacy Policy
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
