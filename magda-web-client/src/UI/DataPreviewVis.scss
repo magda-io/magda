@@ -1,13 +1,14 @@
 .data-preview-vis{
   margin-bottom: 36px;
-  .data-preview-vis_chart-title{
-    text-align: center;
-    height: 21px;
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
   .data-preview-vis_chart{
     margin-left: -16px;
+    margin-top: 16px;
+  }
+  .data-preview-vis_file-name{
+    font-size: 16px;
+    line-height: 19px;
+  }
+  .mui-tabs__bar{
+    margin-bottom: 40px;
   }
 }

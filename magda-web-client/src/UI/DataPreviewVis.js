@@ -18,10 +18,11 @@ class DataPreviewVis extends Component {
     this.state = {
       chartType: 'line',
       chartTitle: '',
-      yAxis: '',
-      xAxis: '',
+      yAxis: null,
+      xAxis: null,
       xScale: 'temporal',
       yScale: 'quantitative',
+      chartWidth: ''
     }
   }
 
@@ -37,6 +38,17 @@ class DataPreviewVis extends Component {
       }
   }
 
+  componentDidUpdate(prevProps, prevState){
+    if(this.chartContainer){
+      const width = this.chartContainer.getBoundingClientRect().width - 48;
+      if(prevState.chartWidth !== width){
+        this.setState({
+          chartWidth : width
+        })
+      }
+    }
+  }
+
   onChange(i, value, tab, ev) {
 
   }
@@ -50,15 +62,18 @@ class DataPreviewVis extends Component {
     });
   }
 
+
+
   renderChart(previewData){
     if(defined(previewData.meta.chartFields)){
       const spec = {
-        "height": 200,
+        "height": 263,
+        'width': this.state.chartWidth,
         "description": this.state.chartTitle,
         "mark": this.state.chartType,
         "encoding": {
-          "x": {"field": defined(this.state.xAxis) || previewData.meta.chartFields.time[0], "type": this.state.xScale},
-          "y": {"field": defined(this.state.yAxis) || previewData.meta.chartFields.numeric[0], "type": this.state.yScale}
+          "x": {"field": defined(this.state.xAxis) ?  this.state.xAxis : previewData.meta.chartFields.time[0], "type": this.state.xScale},
+          "y": {"field": defined(this.state.yAxis) ? this.state.yAxis : previewData.meta.chartFields.numeric[0], "type": this.state.yScale}
         }
       }
 
@@ -66,8 +81,10 @@ class DataPreviewVis extends Component {
         values: previewData.data
       }
 
+      const fileName = this.props.distribution.downloadURL.split('/').pop().split('#')[0].split('?')[0]
+
       return (<div className='mui-row'>
-                <div className='mui-col-sm-6'><h4 className='data-preview-vis_chart-title'>{this.state.chartTitle}</h4><VegaLite className='data-preview-vis_chart' spec={spec} data={data}/></div>
+                <div className='mui-col-sm-6'><div className='data-preview-vis_file-name' ref={(chartContainer) => { this.chartContainer = chartContainer; }}>{fileName}</div><VegaLite className='data-preview-vis_chart' spec={spec} data={data}/></div>
                 <div className='mui-col-sm-6'><ChartConfig
                                                            chartType={spec.mark}
                                                            chartTitle={spec.description}
