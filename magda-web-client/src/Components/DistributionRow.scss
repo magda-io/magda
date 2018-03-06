@@ -8,7 +8,6 @@
         height:32px;
     }
     .distribution-row-link {
-        opacity: 0.75;
         color: #000000;
         font-size: 20px;
         line-height: 24px;
@@ -17,7 +16,6 @@
         }
         a:hover {
             background-color: #fff;
-            opacity: 0.75;
             color: #000000;
         }
         margin-bottom: 8px;
@@ -36,11 +34,10 @@
     .download-button {
         padding-left: 13px;
         padding-right: 15px;
-        padding-top: 5px;
+        padding-top: 2px;
         padding-bottom: 33px;
         vertical-align: middle;
         .button-text {
-            font-weight: normal;
             margin-left: 35px;
         }
         img {

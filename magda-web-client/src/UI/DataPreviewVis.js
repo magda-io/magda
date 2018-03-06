@@ -91,9 +91,7 @@ class DataPreviewVis extends Component {
         return <div>Preview errored</div>
       }
     }
-     else {
-      return <div>No preview available</div>
-    }
+    return <div>No data preview available</div>;
   }
 
   render(){
