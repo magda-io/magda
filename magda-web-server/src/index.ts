@@ -2,6 +2,7 @@ import * as express from "express";
 import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
+import * as morgan from "morgan";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
@@ -71,6 +72,8 @@ const argv = yargs
     }).argv;
 
 var app = express();
+
+app.use(morgan('combined'));
 
 const magda = path.join(__dirname, "..", "node_modules", "@magda");
 
