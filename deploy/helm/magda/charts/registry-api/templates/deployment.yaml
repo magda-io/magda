@@ -44,6 +44,13 @@ spec:
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}",
             "-Dauthorization.skip={{ .Values.skipAuthorization | default false }}"
         ]
+        livenessProbe:
+          httpGet:
+            path: "/v0/ping"
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
         ports:
         - containerPort: 80
         resources:
