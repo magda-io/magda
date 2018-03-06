@@ -1,3 +1,13 @@
 .data-preview-vis{
   margin-bottom: 36px;
+  .data-preview-vis_chart-title{
+    text-align: center;
+    height: 44px;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .data-preview-vis_chart{
+    margin-left: -16px;
+  }
 }

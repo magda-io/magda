@@ -15,14 +15,14 @@ export default class ChartConfig extends Component {
       </Select>)
   }
 
-  onChange(id){
-
+  onChange(id, evt){
+    this.props.onChange(id, evt.target.value);
   }
 
   render(){
     return (<div className='chart-config'>
               <div className='chart-type'>{this.renderTypeSelect(VEGAMARK, 'chartType', 'Chart type')}</div>
-              <div className='chart-title'><Input onChange = {this.onChange.bind(this, 'title')} label="Chart title" /></div>
+              <div className='chart-title'><Input onChange = {this.onChange.bind(this, 'chartTitle')} label="Chart title" /></div>
               <div className='y-axis'><Input label="Y axis" onChange = {this.onChange.bind(this, 'xAxis')}/></div>
               <div className='x-axis'><Input label="X axis" onChange = {this.onChange.bind(this, 'yAxis')}/></div>
               <div className='linear'>{this.renderTypeSelect(DATATYPE, 'yScale', 'Chart scale')}</div>

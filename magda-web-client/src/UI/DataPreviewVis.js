@@ -14,6 +14,7 @@ import './DataPreviewVis.css';
 class DataPreviewVis extends Component {
   constructor(props) {
     super(props);
+    this.updateChartConfig = this.updateChartConfig.bind(this);
     this.state = {
       chartType: 'line',
       chartTitle: '',
@@ -43,11 +44,17 @@ class DataPreviewVis extends Component {
   onActive(tab) {
   }
 
+  updateChartConfig(id, value){
+    this.setState({
+      [id] : value
+    });
+  }
+
   renderChart(previewData){
     if(defined(previewData.meta.chartFields)){
       const spec = {
         "height": 200,
-        "description": this.state.title,
+        "description": this.state.chartTitle,
         "mark": this.state.chartType,
         "encoding": {
           "x": {"field": previewData.meta.chartFields.time[0], "type": this.state.xScale},
@@ -60,11 +67,13 @@ class DataPreviewVis extends Component {
       }
 
       return (<div className='mui-row'>
-                <div className='mui-col-sm-6'><VegaLite spec={spec} data={data}/></div>
-                <div className='mui-col-sm-6'><ChartConfig chartType={this.state.chartType}
+                <div className='mui-col-sm-6'><h4 className='data-preview-vis_chart-title'>{this.state.chartTitle}</h4><VegaLite className='data-preview-vis_chart' spec={spec} data={data}/></div>
+                <div className='mui-col-sm-6'><ChartConfig
+                                                           chartType={this.state.chartType}
                                                            chartTitle={this.state.chartTitle}
                                                            xScale={this.state.xScale}
-                                                           yScale={this.state.yScale}/></div>
+                                                           yScale={this.state.yScale}
+                                                           onChange={this.updateChartConfig}/></div>
               </div>)
     }
     return <div>no chart here</div>
