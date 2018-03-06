@@ -107,8 +107,27 @@ class DataPreviewMap extends Component {
     onIframeMessageReceived(e){
         if(this.state.isInitLoading || !this.state.isMapPreviewAvailable || !this.iframeRef) return;
         const iframeWindow = this.iframeRef.contentWindow;
-        if(iframeWindow !== e.source || e.data !== 'ready') return;
-        iframeWindow.postMessage(this.createCatalogItemFromDistribution(),"*");
+        if(iframeWindow !== e.source) return;
+        if(e.data === "ready") {
+            iframeWindow.postMessage(this.createCatalogItemFromDistribution(),"*");
+            if(this.props.onLoadingStart){
+                try{
+                    this.props.onLoadingStart();
+                }catch(e){
+                    console.log(e);
+                }
+            }
+            return;
+        }else if(e.data === "loading complete"){
+            if(this.props.onLoadingEnd){
+                try{
+                    this.props.onLoadingEnd();
+                }catch(e){
+                    console.log(e);
+                }
+            }
+            return;
+        }
     }
 
     render(){
@@ -155,7 +174,9 @@ class DataPreviewMap extends Component {
 
 DataPreviewMap.propTypes = {
     dataset: PropTypes.object,
-    dataSourcePreference: PropTypes.arrayOf(PropTypes.string)
+    dataSourcePreference: PropTypes.arrayOf(PropTypes.string),
+    onLoadingStart: PropTypes.func,
+    onLoadingEnd: PropTypes.func
 };
 
 export default DataPreviewMap;

@@ -3,6 +3,7 @@
 * Map previewer will communicate with TerriaJs via `postMessage` rather than url
 * Default map for map previewer has been changed to `Positron (Light)`
 * Implement new dataset page design. Brought back Map previewer & Charter previewer.
+* Added `onLoadingStart` & `onLoadingEnd` event handlers to the `DataPreviewMap` component of `magda-web-client` module.
 * Made a click on the "Go back" link on the banner tag the user with a `noPreview` cookie for VWO to pick up on.
 
 ## 0.0.33
