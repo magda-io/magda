@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import DataPreviewVis from '../../UI/DataPreviewVis';
-import DataPreviewMap from '../../UI/DataPreviewMap';
-import PropTypes from 'prop-types';
-import './DatasetPreview.css'
+import React, { Component } from "react";
+import DataPreviewVis from "../../UI/DataPreviewVis";
+import DataPreviewMap from "../../UI/DataPreviewMap";
+import PropTypes from "prop-types";
+import "./DatasetPreview.css";
 
 export default class DatasetPreview extends Component {
     getDistributionForVis(distributions) {
@@ -14,10 +14,14 @@ export default class DatasetPreview extends Component {
     render() {
         const distributions = this.props.dataset.distributions;
 
-        return (<div className='dataset-preview container'>
-            <DataPreviewVis distribution={this.getDistributionForVis(distributions)} />
-            <DataPreviewMap dataset={this.props.dataset} />
-        </div>)
+        return (
+            <div className="dataset-preview container">
+                <DataPreviewVis
+                    distribution={this.getDistributionForVis(distributions)}
+                />
+                <DataPreviewMap dataset={this.props.dataset} />
+            </div>
+        );
     }
 }
 

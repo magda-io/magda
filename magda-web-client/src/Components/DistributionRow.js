@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import type { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
-import Button from 'muicss/lib/react/button';
+import Button from "muicss/lib/react/button";
 import "./DistributionRow.css";
 import formatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
@@ -23,18 +23,22 @@ class DistributionRow extends Component {
 
     render() {
         const { datasetId, distribution } = this.props;
-        const distributionLink = `/dataset/${encodeURIComponent(datasetId)}/distribution/${encodeURIComponent(distribution.identifier)}`;
+        const distributionLink = `/dataset/${encodeURIComponent(
+            datasetId
+        )}/distribution/${encodeURIComponent(distribution.identifier)}`;
 
         return (
             <div className="distribution-row mui-row">
                 <div className="mui-col-sm-1">
-                    <img className="format-icon" src={formatIcon} alt="format icon" />
+                    <img
+                        className="format-icon"
+                        src={formatIcon}
+                        alt="format icon"
+                    />
                 </div>
                 <div className="mui-col-sm-8">
                     <div className="distribution-row-link">
-                        <Link
-                            to={distributionLink}
-                        >
+                        <Link to={distributionLink}>
                             {distribution.title}({distribution.format})
                         </Link>
                     </div>
@@ -44,20 +48,26 @@ class DistributionRow extends Component {
                             (typeof distribution.license === "string"
                                 ? distribution.license
                                 : distribution.license.name
-                                  ? distribution.license.name
-                                  : "")}
+                                    ? distribution.license.name
+                                    : "")}
                     </div>
                 </div>
                 <div className="mui-col-sm-3 button-area">
-                    <Button className="download-button" onClick={()=>{
-                        window.location=`${distribution.downloadURL}`;
-                    }}>
-                        <img src={downloadIcon} alt="download"  />
+                    <Button
+                        className="download-button"
+                        onClick={() => {
+                            window.location = `${distribution.downloadURL}`;
+                        }}
+                    >
+                        <img src={downloadIcon} alt="download" />
                         <span className="button-text">Download</span>
                     </Button>
-                    <Button className="new-tab-button" onClick={()=>{
-                        window.open(distributionLink,distribution.title);
-                    }}>
+                    <Button
+                        className="new-tab-button"
+                        onClick={() => {
+                            window.open(distributionLink, distribution.title);
+                        }}
+                    >
                         <img src={newTabIcon} alt="new tab" />
                     </Button>
                 </div>

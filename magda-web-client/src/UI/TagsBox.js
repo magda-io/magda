@@ -39,8 +39,15 @@ function TagsBox(props) {
                                             else if (a > b) return 1;
                                             else return 0;
                                         })
-                                        .map((t,idx) => (
-                                            <li key={t} className={idx?"other-tag":"first-tag"}>
+                                        .map((t, idx) => (
+                                            <li
+                                                key={t}
+                                                className={
+                                                    idx
+                                                        ? "other-tag"
+                                                        : "first-tag"
+                                                }
+                                            >
                                                 <Link
                                                     key={t}
                                                     to={`/search?q=${encodeURIComponent(

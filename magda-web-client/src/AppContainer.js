@@ -111,7 +111,9 @@ class AppContainer extends React.Component {
                             <tbody>
                                 <tr style={{ verticalAlign: "middle" }}>
                                     <td className="logo">
-                                        <Link to="/"><img src={dgalogo} alt='dga-logo' /></Link>
+                                        <Link to="/">
+                                            <img src={dgalogo} alt="dga-logo" />
+                                        </Link>
                                     </td>
                                     <td className="nav-bar-right">
                                         {headerNavs.map(nav => (
