@@ -3,6 +3,7 @@ import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
 import * as morgan from "morgan";
+import * as helmet from "helmet";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
@@ -73,7 +74,39 @@ const argv = yargs
 
 var app = express();
 
-app.use(morgan('combined'));
+app.use(
+    helmet({
+        hsts: {
+            maxAge: 31536000,
+            includeSubdomains: true,
+            preload: true
+        }
+    })
+);
+
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            scriptSrc: [
+                "'self'",
+                "'unsafe-eval'", // for vega until we banish it into an iframe
+                "'unsafe-inline'", // for VWO until... we get rid of that? :(
+                "data:", // ditto
+                "browser-update.org",
+                "dev.visualwebsiteoptimizer.com",
+                "platform.twitter.com",
+                "www.googletagmanager.com",
+                "www.google-analytics.com",
+                "rum-static.pingdom.net"
+            ],
+            objectSrc: ["'none'"],
+            sandbox: ["allow-scripts", "allow-same-origin"]
+        } as helmet.IHelmetContentSecurityPolicyDirectives,
+        browserSniff: false
+    })
+);
+
+app.use(morgan("combined"));
 
 const magda = path.join(__dirname, "..", "node_modules", "@magda");
 
@@ -137,7 +170,7 @@ app.get("/server-config.js", function(req, res) {
                     .toString()
         )
     };
-    res.type("json");
+    res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
 });
 
