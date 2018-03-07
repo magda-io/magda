@@ -106,6 +106,8 @@ class DataPreviewVis extends Component {
   }
 
   renderByState(){
+    if(this.props.error) return (<div>Preview errored!</div>);
+    if(this.props.isFetching) return (<div>Preview is loading...</div>);
     if(this.props.data && this.props.distribution && this.props.distribution.identifier){
       const previewData = this.props.data[this.props.distribution.identifier];
       if(previewData){
@@ -114,11 +116,7 @@ class DataPreviewVis extends Component {
             <Tab value="table" label="Table" onActive={this.onActive}>{this.renderTable(previewData)}</Tab>
             <Tab value="chart" label="Chart" >{this.renderChart(previewData)}</Tab>
           </Tabs>
-        )
-      } else if(this.props.isFetching){
-        return <div>Preview is loading</div>
-      }else if(this.props.error){
-        return <div>Preview errored</div>
+        );
       }
     }
     return <div>No data preview available</div>;
