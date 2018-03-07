@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-//import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import './ChartConfig.css'
 import Option from 'muicss/lib/react/option';
 import Select from 'muicss/lib/react/select';
@@ -39,5 +39,13 @@ export default class ChartConfig extends Component {
 }
 
 ChartConfig.propTypes = {
-
+    chartTitle : PropTypes.string,
+    chartType : PropTypes.oneOf(Object.keys(VEGAMARK)),
+    onChange: PropTypes.func,
+    xAxis: PropTypes.string,
+    xAxisOptions: PropTypes.arrayOf(PropTypes.string),
+    xScale: PropTypes.oneOf(DATATYPE),
+    yAxis: PropTypes.string,
+    yAxisOptions: PropTypes.arrayOf(PropTypes.string),
+    yScale: PropTypes.oneOf(DATATYPE)
 };
