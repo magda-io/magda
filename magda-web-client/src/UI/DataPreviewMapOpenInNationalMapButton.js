@@ -9,10 +9,10 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
         this.state = {}
     }
 
-    determinCatelogItemType(){
+    determineCatalogItemType(){
         let format = this.props.distribution.format.toLowerCase();
         if(format === "csv-csv-geo-au") format = 'csv';
-        return format
+        return format;
     }
 
     createCatalogItemFromDistribution(){
@@ -22,7 +22,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
                     "catalog": [
                         {
                             "name": this.props.distribution.title,
-                            "type": this.determinCatelogItemType(),
+                            "type": this.determineCatalogItemType(),
                             "url": this.props.distribution.downloadURL,
                             "isEnabled": true,
                             "zoomOnEnable": true
