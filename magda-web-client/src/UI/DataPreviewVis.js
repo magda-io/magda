@@ -49,13 +49,6 @@ class DataPreviewVis extends Component {
     }
   }
 
-  onChange(i, value, tab, ev) {
-
-  }
-
-  onActive(tab) {
-  }
-
   updateChartConfig(id, value){
     this.setState({
       [id] : value
@@ -112,9 +105,9 @@ class DataPreviewVis extends Component {
       const previewData = this.props.data[this.props.distribution.identifier];
       if(previewData){
         return (
-          <Tabs onChange={this.onChange} defaultSelectedIndex={defined(previewData.meta.chartFields)}>
-            <Tab value="table" label="Table" onActive={this.onActive}>{this.renderTable(previewData)}</Tab>
-            <Tab value="chart" label="Chart" >{this.renderChart(previewData)}</Tab>
+          <Tabs defaultSelectedIndex={defined(previewData.meta.chartFields)}>
+            <Tab value="table" label="Table">{this.renderTable(previewData)}</Tab>
+            <Tab value="chart" label="Chart">{this.renderChart(previewData)}</Tab>
           </Tabs>
         );
       }
