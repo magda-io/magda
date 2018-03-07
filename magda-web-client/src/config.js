@@ -92,6 +92,14 @@ export const config = {
         {
             category: "Developers",
             links: [["Powered by Magda", "https://github.com/TerriaJS/magda/"]]
+        },
+        {
+            category: "About",
+            links: [
+                ["About data.gov.au", "page/about"],
+                ["Blog", "https://blog.data.gov.au/"],
+                ["Privacy Policy", "page/privacy-policy"]
+            ]
         }
     ],
     months: [
