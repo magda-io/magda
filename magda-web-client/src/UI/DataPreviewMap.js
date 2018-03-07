@@ -93,10 +93,10 @@ class DataPreviewMap extends Component {
         let selectedDis = null, perferenceOrder = -1;
         distributions.filter(item=>(item.linkStatusAvailable && item.linkActive)||!item.linkStatusAvailable).forEach(dis => {
             const format = dis.format.toLowerCase();
-            const disPerORder = dataSourcePreference.indexOf(format);
-            if(disPerORder === -1) return;
-            if(perferenceOrder === -1 || disPerORder<perferenceOrder) {
-                perferenceOrder = disPerORder;
+            const distributionPerferenceOrder = dataSourcePreference.indexOf(format);
+            if(distributionPerferenceOrder === -1) return;
+            if(perferenceOrder === -1 || distributionPerferenceOrder<perferenceOrder) {
+                perferenceOrder = distributionPerferenceOrder;
                 selectedDis = dis;
                 return;
             }
