@@ -60,7 +60,7 @@ const CategoryDetermineConfigItems = [
         category: "presentation"
     },
     {
-        regex: /xlsx|xsl/,
+        regex: /xlsx|xls/,
         category: "spreadsheet"
     },
     {
@@ -82,17 +82,24 @@ class DistributionRow extends Component {
         };
     }
 
-    determineFormatIcon() {
-        let format = this.props.distribution.format;
-        if (!format) return defaultFormatIcon;
-        format = format.trim().toLowerCase();
+    determineCategoryFromString(str){
         let matchedCategory = "default";
+        if(!str || typeof str !== "string") return matchedCategory;
+        str = str.trim().toLowerCase();
         for (let i = 0; i < CategoryDetermineConfigItems.length; i++) {
             let config = CategoryDetermineConfigItems[i];
-            if (format.match(config.regex)) {
+            if (str.match(config.regex)) {
                 matchedCategory = config.category;
                 break;
             }
+        }
+        return matchedCategory;
+    }
+
+    determineFormatIcon() {
+        let matchedCategory = this.determineCategoryFromString(this.props.distribution.format);
+        if(this.props.distribution.downloadURL && matchedCategory === "default") {
+            matchedCategory = this.determineCategoryFromString(this.props.distribution.downloadURL);
         }
         return formatIcons[matchedCategory];
     }
