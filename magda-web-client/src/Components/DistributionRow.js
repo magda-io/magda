@@ -82,9 +82,9 @@ class DistributionRow extends Component {
         };
     }
 
-    determineCategoryFromString(str){
+    determineCategoryFromString(str) {
         let matchedCategory = "default";
-        if(!str || typeof str !== "string") return matchedCategory;
+        if (!str || typeof str !== "string") return matchedCategory;
         str = str.trim().toLowerCase();
         for (let i = 0; i < CategoryDetermineConfigItems.length; i++) {
             let config = CategoryDetermineConfigItems[i];
@@ -97,9 +97,16 @@ class DistributionRow extends Component {
     }
 
     determineFormatIcon() {
-        let matchedCategory = this.determineCategoryFromString(this.props.distribution.format);
-        if(this.props.distribution.downloadURL && matchedCategory === "default") {
-            matchedCategory = this.determineCategoryFromString(this.props.distribution.downloadURL);
+        let matchedCategory = this.determineCategoryFromString(
+            this.props.distribution.format
+        );
+        if (
+            this.props.distribution.downloadURL &&
+            matchedCategory === "default"
+        ) {
+            matchedCategory = this.determineCategoryFromString(
+                this.props.distribution.downloadURL
+            );
         }
         return formatIcons[matchedCategory];
     }
