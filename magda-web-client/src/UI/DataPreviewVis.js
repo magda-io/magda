@@ -125,7 +125,7 @@ class DataPreviewVis extends Component {
                 </div>
             );
         }
-        return <div>no chart here</div>;
+        return <div>Chart preview is not available</div>;
     }
 
     renderTable(previewData) {
@@ -143,7 +143,11 @@ class DataPreviewVis extends Component {
             const previewData = this.props.data[
                 this.props.distribution.identifier
             ];
-            if (previewData) {
+            if (
+                previewData &&
+                previewData.meta &&
+                (previewData.meta.chartFields || previewData.meta.fields)
+            ) {
                 return (
                     <Tabs
                         defaultSelectedIndex={defined(

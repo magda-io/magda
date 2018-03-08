@@ -3,6 +3,7 @@ import ReactTable from "react-table";
 import "./ReactTable.css";
 
 function DataPreviewTable(props) {
+    if(!props.data.meta.fields) return (<div>Data grid preview is not available</div>);
     const columns = props.data.meta.fields
         .filter(f => f.length > 0)
         .map(item => ({
