@@ -19,6 +19,7 @@ import news from "./newsReducer";
 import stats from "./statsReducer";
 import discussions from "./discussionReducer";
 import feedback from "./feedbackReducer";
+import topNotification from "./topNotificationReducer";
 
 import previewData from "./previewDataReducer";
 
@@ -40,7 +41,8 @@ const reducer = combineReducers({
     stats,
     discussions,
     previewData,
-    feedback
+    feedback,
+    topNotification
 });
 
 export default reducer;

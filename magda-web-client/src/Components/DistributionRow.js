@@ -1,8 +1,10 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import type { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
 import Button from "muicss/lib/react/button";
+import { showTopNotification } from "../actions/topNotificationAction";
 import "./DistributionRow.css";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
@@ -146,7 +148,17 @@ class DistributionRow extends Component {
                     <Button
                         className="download-button"
                         onClick={() => {
-                            window.location = `${distribution.downloadURL}`;
+                            if (!distribution.downloadURL) {
+                                this.props.dispatch(
+                                    showTopNotification(
+                                        "Download link is not available for this data source!",
+                                        "Error:",
+                                        "error"
+                                    )
+                                );
+                                return;
+                            }
+                            window.location = distribution.downloadURL;
                         }}
                     >
                         <img src={downloadIcon} alt="download" />
@@ -176,4 +188,4 @@ DistributionRow.defaultProps = {
     distribution: null
 };
 
-export default DistributionRow;
+export default connect()(DistributionRow);
