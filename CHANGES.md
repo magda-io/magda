@@ -1,6 +1,10 @@
 ## 0.0.34
 
 * Added +x permissions to docker image scripts that didn't have them.
+* Fixed bug where navigation buttons were reversed in the new search results page.
+* Added support to search for regions in the location filter by a short name and configured STE state regions to allow searching by acronym
+* Made a click on the "Go back" link on the banner tag the user with a `noPreview` cookie for VWO to pick up on.
+* Added request logging to `magda-web-server`.
 
 ## 0.0.33
 
@@ -40,8 +44,8 @@
 * Added configuration for Google Cloud SQL
 * Normalised DB names - now everything is magda-xx-db
 * Made docker build scripts automatically adjust `FROM` statements to add `localhost:5000/` and the correct version tag where necessary
+* Changes on feedback form: Added (*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
 * Made datasets with years < 1000 AD index as being from the year 2xxx, as all that we've seen are typos so far.
-* Changes on feedback form: Added (\*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
 * Changes on feedback form: the distance between right border of the feedback form and browser window should be the same as the bottom border.
 
 ## 0.0.32
