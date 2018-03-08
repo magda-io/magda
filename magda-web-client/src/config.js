@@ -37,7 +37,8 @@ export const config = {
         serverConfig.discussionsApiBaseUrl ||
         fallbackApiHost + "api/v0/discussions/",
     feedbackUrl:
-        serverConfig.feedbackApiBaseUrl || fallbackApiHost + "api/v0/feedback",
+        serverConfig.feedbackApiBaseUrl ||
+        fallbackApiHost + "api/v0/feedback/user",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
