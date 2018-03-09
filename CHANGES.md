@@ -9,6 +9,7 @@
 * Added `onLoadingStart` & `onLoadingEnd` event handlers to the `DataPreviewMap` component of `magda-web-client` module.
 * Made a click on the "Go back" link on the banner tag the user with a `noPreview` cookie for VWO to pick up on.
 * Added request logging to `magda-web-server`.
+* Added default Cache-Control header to GET requests that go through the gateway.
 
 ## 0.0.33
 
