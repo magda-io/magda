@@ -1,25 +1,29 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "title": "Aspect describing the quality rating of a dataset as determined by a number of different sleuthers out of 100, along with the weight that they carry.",
-  "type": "object",
-  "properties": {
-    "additionalProperties": { "type": "object", "$ref": "#/definitions/rating" }
-  },
-  "definitions": {
-    "rating": {
-      "type": "object",
-      "properties": {
-        "score": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1
-        },
-        "weighting": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1
+    "$schema": "http://json-schema.org/schema#",
+    "title":
+        "Aspect describing the quality rating of a dataset as determined by a number of different sleuthers out of 100, along with the weight that they carry.",
+    "type": "object",
+    "properties": {
+        "additionalProperties": {
+            "type": "object",
+            "$ref": "#/definitions/rating"
         }
-      }
+    },
+    "definitions": {
+        "rating": {
+            "type": "object",
+            "properties": {
+                "score": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "weighting": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            }
+        }
     }
-  }
 }

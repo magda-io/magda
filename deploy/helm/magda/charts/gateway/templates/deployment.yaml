@@ -20,7 +20,7 @@ spec:
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
             "--externalUrl", {{ .Values.global.externalUrl | quote }},
-            "--dbHost", "session-store",
+            "--dbHost", "session-db",
             "--dbPort", "5432",
 {{- if .Values.auth.facebookClientId }}
             "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
@@ -77,7 +77,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: session-store-client
+              key: session-db-client
 {{- end }}
       volumes:
         - name: routes

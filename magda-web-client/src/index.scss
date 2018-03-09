@@ -1,76 +1,90 @@
-@import 'variables';
-html{
-  font-size: 16px;
+@import "variables";
+html {
+    font-size: 16px;
 }
 body {
-  margin: 0;
-  padding: 0;
-  font-family: $font-base;
-  font-weight: 400;
-  color: $body;
-  font-size: 1rem;
+    margin: 0;
+    padding: 0;
+    font-family: $font-base;
+    font-weight: 400;
+    color: $body;
+    font-size: 1rem;
 }
-.sr-only{
-  position: absolute;
-   width: 1px;
-   height: 1px;
-   padding: 0;
-   margin: -1px;
-   overflow: hidden;
-   clip: rect(0,0,0,0);
-   border: 0;
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
 @keyframes hideMessage {
-  0%   { opacity: 1; }
-  90%   { opacity: 1; }
-  100% { opacity: 0; }
+    0% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
-.mui-btn{
-  font-weight: 400;
-  text-transform: none;
+.mui-btn {
+    font-weight: 400;
+    text-transform: none;
 }
 
-div{
-  box-sizing: border-box;
+div {
+    box-sizing: border-box;
 }
 
-.breadcrumb{
-  margin-left: 0;
-  padding-left: 0;
-  .breadcrumb-item{
-    display: inline-block;
-    padding-right: 16px;
-  }
+.breadcrumb {
+    margin-left: 0;
+    padding-left: 0;
+    .breadcrumb-item {
+        display: inline-block;
+        padding-right: 16px;
+    }
 }
 
-a{
-  -webkit-appearance: none;
-  position: relative;
-  background: transparent;
-  text-decoration: none;
-  border: none;
-  border-bottom: solid 1px $magda;
-  transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
-  cursor: pointer;
-  color: $body;
-  &:hover, &:focus{
+a {
+    -webkit-appearance: none;
+    position: relative;
+    background: transparent;
     text-decoration: none;
-  }
-  &:hover{
-    color: #ffffff;
-    background-color: $magda;
-  }
+    border: none;
+    border-bottom: solid 1px $magda;
+    transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+    cursor: pointer;
+    color: $body;
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+    &:hover {
+        color: #ffffff;
+        background-color: $magda;
+    }
 }
 
-.mui-tabs__bar>li>a{
-  border-bottom: 0px;
-  &:hover{
-    color: #fff;
-  }
+.mui-tabs__bar > li > a {
+    border-bottom: 0px;
+    margin-right: 16px;
+    &:hover {
+        color: $magda;
+        background: transparent;
+    }
 }
 
-.mui-tabs__bar a.mui--is-active{
-  border-bottom: 2px solid $magda !important;
+ .mui-tabs__bar>li.mui--is-active{
+   border-bottom: 0;
+ }
+
+.mui-tabs__bar>li.mui--is-active>a, .mui-tabs__bar a.mui--is-active{
+  color: $magda;
+  border-bottom: 2px solid $magda;
 }

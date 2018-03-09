@@ -1,38 +1,40 @@
-@import '../../variables';
+@import "../../variables";
 
-.facet-header{
-  display: flex;
+.facet-header {
+    display: flex;
 
-  &.not-empty{
-    button{
-      background: #494949;
-      color: #fff;
+    &.not-empty {
+        button {
+            background: #494949;
+            color: #fff;
+        }
     }
-  }
 
-  .btn-remove{
-    padding: 4px;
-  }
-  button{
-    border: 1px solid rgba(73,73,73,0.05);
-    border-radius: 2px;
-    background-color: #F7F8FA;
-    font-size: 14px;
-    text-align: center;
-    padding: 0 16px;
-    text-transform: capitalize;
-    .facet-icon{
-      padding: 4px 6px 4px 0;
-      height: 24px;
-      width: 24px;
+    .btn-remove {
+        padding: 4px;
     }
-    span{
-      font-size: 14px;
-      vertical-align: top;
+    button {
+        border: 1px solid rgba(73, 73, 73, 0.05);
+        border-radius: 2px;
+        background-color: #f7f8fa;
+        font-size: 14px;
+        text-align: center;
+        padding: 0 16px;
+        text-transform: capitalize;
+        .facet-icon {
+            padding: 4px 6px 4px 0;
+            height: 24px;
+            width: 24px;
+        }
+        span {
+            font-size: 14px;
+            vertical-align: top;
+        }
+        &:hover,
+        &:active,
+        &.is-open {
+            background: #494949;
+            color: #fff;
+        }
     }
-    &:hover, &:active, &.is-open{
-      background: #494949;
-      color: #fff;
-    }
-  }
 }

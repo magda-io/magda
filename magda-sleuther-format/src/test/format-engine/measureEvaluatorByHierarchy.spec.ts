@@ -10,7 +10,6 @@ import { expect } from "chai";
 //import ProbeResult from "../../format-engine/measures/ProbeResult";
 //import MeasureAspect from "../../format-engine/measures/aspects/MeasureAspect";
 
-
 import getDcatProcessedData from "../../format-engine/measures/processed-functions/dcatProcessedFns";
 import getDownloadProcessedData from "../../format-engine/measures/processed-functions/downloadProcessedFns";
 import getExtensionProcessedData from "../../format-engine/measures/processed-functions/extensionProcessedFns";
@@ -108,13 +107,13 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                 distribution: null
             };
 
-            if(combination[2] >= 1) {
+            if (combination[2] >= 1) {
                 expectedResult.format.format = "PDF";
                 expectedResult.absConfidenceLevel = 90;
-            } else if(combination[1] >= 1) {
+            } else if (combination[1] >= 1) {
                 expectedResult.format.format = "XLSX";
-                expectedResult.absConfidenceLevel = 70
-            } else if(combination[0] >= 1) {
+                expectedResult.absConfidenceLevel = 70;
+            } else if (combination[0] >= 1) {
                 expectedResult.format.format = "DOCX";
                 expectedResult.absConfidenceLevel = 33;
             } else {

@@ -12,6 +12,7 @@ case class RegionSource(
   url: URL,
   idProperty: String,
   nameProperty: String,
+  shortNameProperty: Option[String],
   includeIdInName: Boolean,
   disabled: Boolean,
   order: Int)
@@ -36,6 +37,7 @@ class RegionSources(config: Config) {
           url = new URL(regionSourceConfig.getString("url")),
           idProperty = regionSourceConfig.getString("idField"),
           nameProperty = regionSourceConfig.getString("nameField"),
+          shortNameProperty = if (regionSourceConfig.hasPath("shortNameField")) Some(regionSourceConfig.getString("shortNameField")) else None,
           includeIdInName = if (regionSourceConfig.hasPath("includeIdInName")) regionSourceConfig.getBoolean("includeIdInName") else false,
           disabled = regionSourceConfig.hasPath("disabled") && regionSourceConfig.getBoolean("disabled"),
           order = regionSourceConfig.getInt("order"))

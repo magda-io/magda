@@ -125,9 +125,9 @@ object Registry {
   @ApiModel(description = "Asynchronously acknowledges receipt of a web hook notification.")
   case class WebHookAcknowledgement(
     @(ApiModelProperty @field)(value = "True if the web hook was received successfully and the listener is ready for further notifications.  False if the web hook was not received and the same notification should be repeated.", required = true) succeeded: Boolean,
-    
+
     @(ApiModelProperty @field)(value = "The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.", required = true) lastEventIdReceived: Option[Long] = None,
-    
+
     @(ApiModelProperty @field)(value = "Should the webhook be active or inactive?", required = false) active: Option[Boolean] = None)
 
   @ApiModel(description = "The response to an asynchronous web hook acknowledgement.")
@@ -257,7 +257,17 @@ object Registry {
     }
 
     private def tryParseDate(dateString: Option[String])(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] = {
-      dateString.flatMap(s => DateParser.parseDateDefault(s, false))
+      val YEAR_100 = OffsetDateTime.of(100, 1, 1, 0, 0, 0, 0, defaultOffset)
+      val YEAR_1000 = OffsetDateTime.of(1000, 1, 1, 0, 0, 0, 0, defaultOffset)
+
+      dateString
+        .flatMap(s => DateParser.parseDateDefault(s, false))
+        .map {
+          //FIXME: Remove this hackiness when we get a proper temporal sleuther
+          case date if date.isBefore(YEAR_100)  => date.withYear(date.getYear + 2000)
+          case date if date.isBefore(YEAR_1000) => date.withYear(Integer.parseInt(date.getYear.toString() + "0"))
+          case date                             => date
+        }
     }
   }
 

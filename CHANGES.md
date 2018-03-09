@@ -1,3 +1,15 @@
+## 0.0.34
+
+* Fixed bug where navigation buttons were reversed in the new search results page.
+* Added support to search for regions in the location filter by a short name and configured STE state regions to allow searching by acronym
+* Map previewer will pick data distribution with best support for a dataset
+* Map previewer will communicate with TerriaJs via `postMessage` rather than url
+* Default map for map previewer has been changed to `Positron (Light)`
+* Implement new dataset page design. Brought back Map previewer & Charter previewer.
+* Added `onLoadingStart` & `onLoadingEnd` event handlers to the `DataPreviewMap` component of `magda-web-client` module.
+* Made a click on the "Go back" link on the banner tag the user with a `noPreview` cookie for VWO to pick up on.
+* Added request logging to `magda-web-server`.
+
 ## 0.0.33
 
 * Added ability to get records from the registry by the value of their aspects.
@@ -5,7 +17,9 @@
 * Stopped the registry api from timing out and returning an error code when trimming by source tag / id - now returns 202 if it takes too long.
 * Added route for `/pages/*` requests so that `magda-web-server` won't response `Cannot GET /page/*`
 * Added format sleuther
-* Set `kubernetes-client` (required by magda-admin-api) version to `3.17.2` to sovle the travis build issue* Added ability to get records from the registry by the value of their aspects.* Added ability to get records from the registry by the value of their aspects.* Added access control layer to Authorization APIs: All `private` APIs (uri starts with /private/) can only be accessed by Admin users.
+* Set `kubernetes-client` (required by magda-admin-api) version to `3.17.2` to solve the travis build issue.
+* Added ability to get records from the registry by the value of their aspects.
+* Added access control layer to Authorization APIs: All `private` APIs (uri starts with /private/) can only be accessed by Admin users.
 * Auth API will return `401` status code for un-authorized users and `403` if the APIs require `admin` level access
 * Added test cases for ApiClient class
 * Added test cased for Authorization APIs
@@ -24,10 +38,19 @@
 * Updated `building-and-running.md`
 * Added preview map support for geojson data type
 * Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
-* Map preview will zoom to dataset (except KML data)
+* Map previewer will zoom to dataset (except KML data)
 * Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
-* Add Google Analytics Tag Manager Code / VWO code to `<head>`
+* Added Google Analytics Tag Manager Code / VWO code to `<head>`
 * Added `feedback-api` microservice to collect feedback and create GitHub issues from it.
+* Duplicated tags with different cases are now merged (at frontend)
+* Tags contain possible separators (i.e. , ; | or /) are now split into shorter tags (at frontend)
+* Separated database migrations from database images to facilitate use of managed SQL services - they now live in `magda-migrator-xx` directories and run as jobs on helm upgrade/install
+* Added configuration for Google Cloud SQL
+* Normalised DB names - now everything is magda-xx-db
+* Made docker build scripts automatically adjust `FROM` statements to add `localhost:5000/` and the correct version tag where necessary
+* Made datasets with years < 1000 AD index as being from the year 2xxx, as all that we've seen are typos so far.
+* Changes on feedback form: Added (\*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
+* Changes on feedback form: the distance between right border of the feedback form and browser window should be the same as the bottom border.
 
 ## 0.0.32
 

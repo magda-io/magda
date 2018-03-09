@@ -1,60 +1,29 @@
 {
-    "lerna": "2.5.1",
-    "packages": [
-        "deploy/",
-        "magda-admin-api/",
-        "magda-authorization-api/",
-        "magda-authorization-db/",
-        "magda-sleuther-framework/",
-        "magda-sleuther-linked-data-rating/",
-        "magda-sleuther-format/",
-        "magda-sleuther-broken-link/",
-        "magda-sleuther-visualization/",
-        "magda-ckan-connector/",
-        "magda-combined-db/",
-        "magda-csw-connector/",
-        "magda-discussions-api/",
-        "magda-discussions-db/",
-        "magda-elastic-search/",
-        "magda-feedback-api/",
-        "magda-gateway/",
-        "magda-indexer/",
-        "magda-int-test/",
-        "magda-postgres/",
-        "magda-preview-map/",
-        "magda-project-open-data-connector/",
-        "magda-registry-api/",
-        "magda-registry-aspects/",
-        "magda-registry-datastore/",
-        "magda-scala-common/",
-        "magda-search-api/",
-        "magda-session-store/",
-        "magda-typescript-common/",
-        "magda-web-client/",
-        "magda-web-admin/",
-        "magda-web-server/",
-        "scripts/"
-    ],
-    "version": "0.0.33-0",
-    "hoist": [
-        "tsmonad",
-        "urijs",
-        "@types/urijs",
-        "express",
-        "pretty-quick",
-        "prettier",
-        "@types/express",
-        "@types/supertest"
-    ],
-    "concurrency": "1",
-    "commands": {
-        "docker-build-prod": {
-            "ignore": [
-                "magda-authorization-db",
-                "magda-discussions-db",
-                "magda-authorization-api",
-                "magda-discussions-api"
-            ]
-        }
+  "lerna": "2.5.1",
+  "packages": [
+    "deploy/",
+    "magda-*",
+    "scripts/"
+  ],
+  "version": "0.0.34-0",
+  "hoist": [
+    "tsmonad",
+    "urijs",
+    "@types/urijs",
+    "express",
+    "@types/express",
+    "@types/supertest",
+    "pretty-quick",
+    "prettier"
+  ],
+  "commands": {
+    "docker-build-prod": {
+      "ignore": [
+        "magda-authorization-db",
+        "magda-discussions-db",
+        "magda-authorization-api",
+        "magda-discussions-api"
+      ]
     }
+  }
 }

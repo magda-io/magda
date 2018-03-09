@@ -1,15 +1,14 @@
-@import '../variables';
+@import "../variables";
 .mui-tabs__bar {
-  a.mui--is-active {
-  border-bottom: 2px solid #2196F3;
-
-  }
-  li > a{
-    cursor: pointer;
-  }
-  a{
-    &:focus{
-      text-decoration: none;
+    a.mui--is-active {
+        border-bottom: 2px solid #2196f3;
     }
-  }
+    li > a {
+        cursor: pointer;
+    }
+    a {
+        &:focus {
+            text-decoration: none;
+        }
+    }
 }
