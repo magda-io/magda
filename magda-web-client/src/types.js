@@ -25,3 +25,8 @@ export type Stats = {
 
 export type Dispatch = () => Function;
 export type GetState = () => Object;
+
+export type Action = {
+    type: string,
+    payload: ?object
+};

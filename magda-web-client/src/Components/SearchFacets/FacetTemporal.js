@@ -29,21 +29,21 @@ class FacetTemporal extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-      if(nextProps.temporalRange){
-        const dateFrom = defined(nextProps.activeDates[0])
-            ? new Date(nextProps.activeDates[0])
-            : new Date(nextProps.temporalRange[0]);
-        const dateTo = defined(nextProps.activeDates[1])
-            ? new Date(nextProps.activeDates[1])
-            : new Date(nextProps.temporalRange[1]);
-        this.setState({
-            startYear: dateFrom.getUTCFullYear(),
-            startMonth: dateFrom.getUTCMonth(),
-            endYear: dateTo.getUTCFullYear(),
-            endMonth: dateTo.getUTCMonth(),
-            applyButtonDisabled: !this.props.hasQuery
-        });
-      }
+        if (nextProps.temporalRange) {
+            const dateFrom = defined(nextProps.activeDates[0])
+                ? new Date(nextProps.activeDates[0])
+                : new Date(nextProps.temporalRange[0]);
+            const dateTo = defined(nextProps.activeDates[1])
+                ? new Date(nextProps.activeDates[1])
+                : new Date(nextProps.temporalRange[1]);
+            this.setState({
+                startYear: dateFrom.getUTCFullYear(),
+                startMonth: dateFrom.getUTCMonth(),
+                endYear: dateTo.getUTCFullYear(),
+                endMonth: dateTo.getUTCMonth(),
+                applyButtonDisabled: !this.props.hasQuery
+            });
+        }
     }
 
     onClearDates() {
@@ -142,44 +142,44 @@ class FacetTemporal extends Component {
     }
 
     render() {
-      if(this.props.temporalRange){
-        return (
-            <div className="facet-wrapper">
-                <FacetHeader
-                    onResetFacet={this.props.onResetFacet}
-                    title={this.props.title}
-                    id={this.props.id}
-                    activeOptions={this.props.activeDates}
-                    hasQuery={this.props.hasQuery}
-                    onClick={this.props.toggleFacet}
-                />
-                {this.props.isOpen && (
-                    <div className="clearfix facet-temporal facet-body">
-                        {this.renderDatePicker()}
-                        <div className="facet-footer">
-                            <Button
-                                variant="flat"
-                                disabled={this.state.applyButtonDisabled}
-                                onClick={this.props.onResetFacet}
-                            >
-                                {" "}
-                                Clear{" "}
-                            </Button>
-                            <Button
-                                disabled={this.state.applyButtonDisabled}
-                                variant="flat"
-                                onClick={this.onApplyFilter}
-                            >
-                                {" "}
-                                Apply{" "}
-                            </Button>
+        if (this.props.temporalRange) {
+            return (
+                <div className="facet-wrapper">
+                    <FacetHeader
+                        onResetFacet={this.props.onResetFacet}
+                        title={this.props.title}
+                        id={this.props.id}
+                        activeOptions={this.props.activeDates}
+                        hasQuery={this.props.hasQuery}
+                        onClick={this.props.toggleFacet}
+                    />
+                    {this.props.isOpen && (
+                        <div className="clearfix facet-temporal facet-body">
+                            {this.renderDatePicker()}
+                            <div className="facet-footer">
+                                <Button
+                                    variant="flat"
+                                    disabled={this.state.applyButtonDisabled}
+                                    onClick={this.props.onResetFacet}
+                                >
+                                    {" "}
+                                    Clear{" "}
+                                </Button>
+                                <Button
+                                    disabled={this.state.applyButtonDisabled}
+                                    variant="flat"
+                                    onClick={this.onApplyFilter}
+                                >
+                                    {" "}
+                                    Apply{" "}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
-        );
-      }
-      return null
+                    )}
+                </div>
+            );
+        }
+        return null;
     }
 }
 

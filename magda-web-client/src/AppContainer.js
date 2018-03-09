@@ -25,6 +25,9 @@ import SignInRedirect from "./Components/Account/SignInRedirect";
 import { requestWhoAmI } from "./actions/userManagementActions";
 import Container from "muicss/lib/react/container";
 import d61logo from "./data61-logo.png";
+import dgalogo from "./dga.png";
+import Notification from "./UI/Notification";
+import { hideTopNotification } from "./actions/topNotificationAction";
 
 import { Route, Link, Switch } from "react-router-dom";
 
@@ -110,7 +113,9 @@ class AppContainer extends React.Component {
                             <tbody>
                                 <tr style={{ verticalAlign: "middle" }}>
                                     <td className="logo">
-                                        <Link to="/">{config.appName}</Link>
+                                        <Link to="/">
+                                            <img src={dgalogo} alt="dga-logo" />
+                                        </Link>
                                     </td>
                                     <td className="nav-bar-right">
                                         {headerNavs.map(nav => (
@@ -162,19 +167,45 @@ class AppContainer extends React.Component {
                             </div>
                         </Container>
                     </footer>
+                    {this.props.topNotification.visible ? (
+                        <Notification
+                            content={{
+                                title: this.props.topNotification.title,
+                                detail: this.props.topNotification.message
+                            }}
+                            type={this.props.topNotification.type}
+                            onDismiss={() => {
+                                this.props.hideTopNotification();
+                                if (
+                                    !this.props.topNotification.onDismiss ||
+                                    typeof this.props.topNotification
+                                        .onDismiss !== "function"
+                                )
+                                    return;
+                                this.props.topNotification.onDismiss();
+                            }}
+                        />
+                    ) : null}
                 </div>
             </ReactDocumentTitle>
         );
     }
 }
 
+const mapStateToProps = state => {
+    return {
+        topNotification: state.topNotification
+    };
+};
+
 const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
-            requestWhoAmI: requestWhoAmI
+            requestWhoAmI: requestWhoAmI,
+            hideTopNotification
         },
         dispatch
     );
 };
 
-export default connect(null, mapDispatchToProps)(AppContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);
