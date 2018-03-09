@@ -9,7 +9,7 @@ import React, { Component } from "react";
 import { fetchRegionMapping } from "../../actions/regionMappingActions";
 import Form from "muicss/lib/react/form";
 import Input from "muicss/lib/react/input";
-import search from "../../assets/search-dark.svg";
+import search from "../../assets/search-white.svg";
 // eslint-disable-next-line
 import PropTypes from "prop-types";
 import queryString from "query-string";
@@ -155,7 +155,7 @@ class SearchBox extends Component {
                                     />
                                 </label>
                             </td>
-                            <td width="30px">
+                            <td className="search-btn-box">
                                 <button
                                     onClick={this.onClickSearch}
                                     className="search-btn"

@@ -92,7 +92,10 @@ const datasetSearchReducer = (
                 data && data.dataSets && data.dataSets;
             let hitCount: number = data && data.hitCount && data.hitCount;
             let temporalRange: Array<Object> =
-                (data && data.temporal && data.temporal.start && data.temporal.end)
+                data &&
+                data.temporal &&
+                data.temporal.start &&
+                data.temporal.end
                     ? [
                           new Date(data.temporal.start.date),
                           new Date(data.temporal.end.date)

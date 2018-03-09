@@ -3,32 +3,16 @@
     margin-bottom: 10px;
 }
 
-.dataset-details__body {
-    margin-bottom: 40px;
-}
-
 .dataset-discussion {
     padding-top: 20px;
     padding-bottom: 20px;
 }
 
-.section-heading {
-    font-weight: 400;
-    color: $magda-dark-grey;
-}
 
-.publisher,
-.updated-date {
-    color: #888;
-}
-
-.tags{
-  .badge{
-    display: block;
-  }
-  .badge:first-letter{
-    text-transform: uppercase;
-  }
+.tags {
+    .badge {
+        display: block;
+    }
 }
 
 .temporal-aspect-viewer {
@@ -40,3 +24,4 @@
 .tab-content {
     margin-bottom: 24px;
 }
+

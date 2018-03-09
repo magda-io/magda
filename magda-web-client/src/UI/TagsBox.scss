@@ -1,0 +1,45 @@
+.tags-box {
+    table {
+        border-collapse: collapse;
+    }
+    .heading {
+        color: #494949;
+        font-size: 16px;
+        line-height: 19px;
+        vertical-align: top;
+        width: 50px;
+    }
+    ul {
+        padding: 0px;
+        margin: 0px;
+        list-style-type: none;
+    }
+    li {
+        display: inline;
+    }
+    li:first-child {
+        list-style-type: none;
+    }
+    a:first-letter {
+        text-transform: uppercase;
+    }
+    a {
+        display: inline-block;
+        border-bottom: none;
+    }
+    li,
+    a {
+        color: #cc3139;
+        font-family: Helvetica;
+        font-size: 16px;
+        line-height: 19px;
+    }
+    .other-tag:before {
+        content: "·";
+        margin-right: 10px;
+        margin-left: 10px;
+        font-size: 16px;
+        vertical-align: middle;
+        line-height: 19px;
+    }
+}
