@@ -1,0 +1,28 @@
+@import "../../variables";
+
+.search-suggestion-box {
+    position: absolute;
+    z-index: 2;
+    color: $body;
+    .search-suggestion-box-position-adjust {
+        height: 5px;
+    }
+    .search-suggestion-box-body {
+        border: 1px solid black;
+        background: #fff;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-bottom: 10px;
+        button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin: 0px;
+            padding-left: 0px;
+            font-size: small;
+        }
+    }
+    h5 {
+        font-size: smaller;
+    }
+}

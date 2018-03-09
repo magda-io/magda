@@ -15,6 +15,7 @@ import searchDark from "../../assets/search-dark.svg";
 import PropTypes from "prop-types";
 import queryString from "query-string";
 // import Particles from '../../UI/Particles';
+import SearchSuggestionBox from "./SearchSuggestionBox";
 
 class SearchBox extends Component {
     constructor(props) {
@@ -134,32 +135,47 @@ class SearchBox extends Component {
     render() {
         return (
             <Form className="searchBox">
-                    <label htmlFor="search">
-                        <span className="sr-only">
-                            {"Search " + config.appName}
-                        </span>
-                        <Input
-                            type="text"
-                            name="search"
-                            id="search"
-                            placeholder="Search for open data"
-                            value={this.getSearchBoxValue()}
-                            onChange={this.onSearchTextChange}
-                            onKeyPress={
-                                this.handleSearchFieldEnterKeyPress
-                            }
-                            autoComplete="off"
-                        />
-                    </label>
-                    <button
-                        onClick={this.onClickSearch}
-                        className="search-btn"
-                        type="button">
-                        <img src={this.props.theme === 'light' ? search : searchDark} alt="search button" />
-                        <span className="sr-only">
-                            submit search
-                        </span>
-                    </button>
+                <table width="100%">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <label htmlFor="search">
+                                    <span className="sr-only">
+                                        {"search " + config.appName}
+                                    </span>
+                                    <div style={{ position: "relative" }}>
+                                        <Input
+                                            type="text"
+                                            name="search"
+                                            id="search"
+                                            placeholder="search for open data"
+                                            value={this.getSearchBoxValue()}
+                                            onChange={this.onSearchTextChange}
+                                            onKeyPress={
+                                                this
+                                                    .handleSearchFieldEnterKeyPress
+                                            }
+                                            autoComplete="off"
+                                        />
+                                        <SearchSuggestionBox />
+                                    </div>
+                                </label>
+                            </td>
+                            <td className="search-btn-box">
+                                <button
+                                    onClick={this.onClickSearch}
+                                    className="search-btn"
+                                    type="button"
+                                >
+                                    <img src={search} alt="search button" />
+                                    <span className="sr-only">
+                                        submit search
+                                    </span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </Form>
         );
     }
