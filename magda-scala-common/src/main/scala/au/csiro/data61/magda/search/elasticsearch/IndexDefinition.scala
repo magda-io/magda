@@ -129,6 +129,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               field("regionType", KeywordType),
               field("regionId", KeywordType),
               magdaTextField("regionName"),
+              magdaTextField("regionShortName"),
               field("boundingBox", GeoShapeType),
               field("geometry", GeoShapeType),
               field("order", IntegerType)))
@@ -165,6 +166,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           } else {
             properties.fields(regionSource.nameProperty)
           }
+          val shortName = regionSource.shortNameProperty.map(shortNameProp => properties.fields(shortNameProp).convertTo[String])
 
           val geometryOpt = jsonRegion.fields("geometry") match {
             case (jsGeometry: JsObject) =>
@@ -207,6 +209,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 "regionType" -> JsString(regionSource.name),
                 "regionId" -> JsString(id),
                 "regionName" -> name,
+                "regionShortName" -> shortName.map(JsString(_)).getOrElse(JsNull),
                 "boundingBox" -> createEnvelope(geometry).toJson(EsBoundingBoxFormat),
                 "geometry" -> geometry.toJson,
                 "order" -> JsNumber(regionSource.order)).toJson))

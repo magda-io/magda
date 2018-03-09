@@ -1,3 +1,15 @@
 .chart-config{
-  
+  .chart-config_icon-select{
+    button{
+      background: transparent;
+      border: 0;
+      box-shadow: 0;
+      margin-right: 2px;
+      border: 1px solid rgba(0,0,0,0);
+      padding: 4px;
+      &.isActive, &:hover{
+        border: 1px solid rgba(0,0,0,.26);
+      }
+    }
+  }
 }

@@ -1,31 +1,30 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import './DataPreviewMapOpenInNationalMapButton.css';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import "./DataPreviewMapOpenInNationalMapButton.css";
 
 class DataPreviewMapOpenInNationalMapButton extends Component {
-
-    constructor(props){
+    constructor(props) {
         super(props);
-        this.state = {}
+        this.state = {};
     }
 
-    determinCatelogItemType(){
+    determineCatalogItemType() {
         let format = this.props.distribution.format.toLowerCase();
-        if(format === "csv-csv-geo-au") format = 'csv';
-        return format
+        if (format === "csv-csv-geo-au") format = "csv";
+        return format;
     }
 
-    createCatalogItemFromDistribution(){
+    createCatalogItemFromDistribution() {
         return {
-            "initSources": [
+            initSources: [
                 {
-                    "catalog": [
+                    catalog: [
                         {
-                            "name": this.props.distribution.title,
-                            "type": this.determinCatelogItemType(),
-                            "url": this.props.distribution.downloadURL,
-                            "isEnabled": true,
-                            "zoomOnEnable": true
+                            name: this.props.distribution.title,
+                            type: this.determineCatalogItemType(),
+                            url: this.props.distribution.downloadURL,
+                            isEnabled: true,
+                            zoomOnEnable: true
                         }
                     ]
                 }
@@ -33,17 +32,28 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
         };
     }
 
-    onButtonClick(){
-        window.open("https://nationalmap.gov.au/#start=" + encodeURIComponent(JSON.stringify(this.createCatalogItemFromDistribution())) ,"National Map Australia");
+    onButtonClick() {
+        window.open(
+            "https://nationalmap.gov.au/#start=" +
+                encodeURIComponent(
+                    JSON.stringify(this.createCatalogItemFromDistribution())
+                ),
+            "National Map Australia"
+        );
     }
 
-    render(){
+    render() {
         return (
             <div style={this.props.style}>
-                <button className="open-in-national-map-button" onClick={()=>this.onButtonClick()}>
-                    <div className="rectangle-2"></div>
-                    <div className="rectangle-1"></div>
-                    <div className="open-national-map-button-text">Open In National Map</div>
+                <button
+                    className="open-in-national-map-button"
+                    onClick={() => this.onButtonClick()}
+                >
+                    <div className="rectangle-2" />
+                    <div className="rectangle-1" />
+                    <div className="open-national-map-button-text">
+                        Open In National Map
+                    </div>
                 </button>
             </div>
         );

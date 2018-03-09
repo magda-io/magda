@@ -15,7 +15,6 @@ class DatasetDetails extends Component {
         showPreview: false
     };
     render() {
-
         const dataset = this.props.dataset;
         const datasetId = this.props.match.params.datasetId;
 
@@ -33,45 +32,56 @@ class DatasetDetails extends Component {
                             <span>Data Quality: &nbsp;&nbsp;</span>
                             <StarRating stars={dataset.linkedDataRating} />
                         </div>
-                        <TagsBox tags={dataset.tags}/>
-                        <div className='dataset-preview'>
+                        <TagsBox tags={dataset.tags} />
+                        <div className="dataset-preview">
                             <DatasetPreview dataset={dataset} />
                         </div>
-                        
                     </div>
                 </div>
-                
+
                 <div className="mui-row">
                     <div className="mui-col-sm-12">
                         <div className="dataset-details-files-apis">
-                                <h3 className="clearfix">
-                                    <span className="section-heading">
-                                        Files and APIs
-                                    </span>
-                                </h3>
-                                <div className="clearfix">
-                                    {dataset.distributions.map(s =>
-                                        <DistributionRow key={s.identifier} distribution={s} datasetId={datasetId} />
-                                    )}
-                                </div>
-                            </div>
-                            <div className="dataset-details-source">
-                                <h3 className="section-heading">Data Source</h3>
-                                <MarkdownViewer
-                                    markdown={source}
-                                    truncate={false}
-                                />
-                                <a className="landing-page" href="dataset.landingPage">{dataset.landingPage}</a>
-                            </div>
-                            <div className="dataset-details-temporal-coverage" style={{display:"none"}}>
-                                <h3 className="section-heading">
-                                    Temporal coverage
-                                </h3>
-                                <TemporalAspectViewer
-                                    data={dataset.temporalCoverage}
-                                />
+                            <h3 className="clearfix">
+                                <span className="section-heading">
+                                    Files and APIs
+                                </span>
+                            </h3>
+                            <div className="clearfix">
+                                {dataset.distributions.map(s => (
+                                    <DistributionRow
+                                        key={s.identifier}
+                                        distribution={s}
+                                        datasetId={datasetId}
+                                    />
+                                ))}
                             </div>
                         </div>
+                        <div className="dataset-details-source">
+                            <h3 className="section-heading">Data Source</h3>
+                            <MarkdownViewer
+                                markdown={source}
+                                truncate={false}
+                            />
+                            <a
+                                className="landing-page"
+                                href="dataset.landingPage"
+                            >
+                                {dataset.landingPage}
+                            </a>
+                        </div>
+                        <div
+                            className="dataset-details-temporal-coverage"
+                            style={{ display: "none" }}
+                        >
+                            <h3 className="section-heading">
+                                Temporal coverage
+                            </h3>
+                            <TemporalAspectViewer
+                                data={dataset.temporalCoverage}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         );

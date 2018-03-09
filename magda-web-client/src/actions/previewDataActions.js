@@ -13,7 +13,6 @@ export function requestPreviewData(url: string) {
 export function receivePreviewData(data: PreviewData) {
     return {
         type: actionTypes.RECEIVE_PREVIEW_DATA,
-        fetchPreviewData,
         previewData: data
     };
 }

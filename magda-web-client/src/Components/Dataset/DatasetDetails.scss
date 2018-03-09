@@ -1,15 +1,14 @@
 @import "../../variables";
 
-.dataset-details{
-  h3{
-      color: #494949;
-      font-size: 24px;
-      line-height: 28px;
-      padding-bottom: 20px;
-      padding-top: 20px;
-  }
+.dataset-details {
+    h3 {
+        color: #494949;
+        font-size: 24px;
+        line-height: 28px;
+        padding-bottom: 20px;
+        padding-top: 20px;
+    }
 }
-
 
 .publisher-basic-info-row {
     .publisher {
@@ -32,28 +31,28 @@
     }
 }
 
-.dataset-details-source{
-
+.dataset-details-source {
     font-size: 16px;
     line-height: 19px;
 
-    a{
+    a {
         border-bottom: none;
     }
-    .markdown a{
-
+    .markdown a {
         font-weight: 500;
     }
-    .landing-page{
-        color: #CC3139;
+    .landing-page {
+        color: #cc3139;
     }
 }
 
 .dataset-details-overview {
     margin-top: 20px;
-    opacity: 0.75;
     font-size: 16px;
     line-height: 23px;
+    .markdown {
+        opacity: 0.75;
+    }
 }
 
 .quality-rating-box {
@@ -67,10 +66,10 @@
     }
     .star-rating-box {
         position: absolute;
-        top:5px;
+        top: 5px;
     }
 }
 
-.dataset-details-files-apis{
+.dataset-details-files-apis {
     margin-top: 50px;
 }

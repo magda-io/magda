@@ -5,14 +5,12 @@ import ProgressBar from "../../UI/ProgressBar";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
-
-
 class DistributionPreview extends Component {
-  componentWillMount() {
+    componentWillMount() {
         this.props.fetchPreviewData(this.props.distribution);
-  }
+    }
 
-  componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(nextProps) {
         if (
             nextProps.distribution.downloadURL &&
             nextProps.distribution.downloadURL !==
@@ -20,18 +18,17 @@ class DistributionPreview extends Component {
         ) {
             this.props.fetchPreviewData(this.props.distribution);
         }
-  }
+    }
 
-  visualisable() {
-       return !this.props.isFetching && !this.props.error && this.props.data;
-   }
+    visualisable() {
+        return !this.props.isFetching && !this.props.error && this.props.data;
+    }
 
-  renderByState(previewData) {
-      return <DataPreviewGoogleViewer data={previewData} />;
-  }
+    renderByState(previewData) {
+        return <DataPreviewGoogleViewer data={previewData} />;
+    }
 
-
-  render() {
+    render() {
         const url = this.props.url;
         return (
             <div className="data-previewer">
@@ -54,12 +51,12 @@ class DistributionPreview extends Component {
 }
 
 function mapStateToProps(state) {
-  const distribution =state.record.distribution;
-  const previewData = state.previewData;
-  const data = previewData.previewData;
-  const isFetching = previewData.isFetching;
-  const error = previewData.error;
-  const url = previewData.url;
+    const distribution = state.record.distribution;
+    const previewData = state.previewData;
+    const data = previewData.previewData;
+    const isFetching = previewData.isFetching;
+    const error = previewData.error;
+    const url = previewData.url;
     return {
         distribution,
         data,
@@ -78,5 +75,6 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-
-export default connect(mapStateToProps, mapDispatchToProps)(DistributionPreview);
+export default connect(mapStateToProps, mapDispatchToProps)(
+    DistributionPreview
+);
