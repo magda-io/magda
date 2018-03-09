@@ -1,15 +1,9 @@
 import * as express from "express";
-const httpProxy = require("http-proxy");
+import createBaseProxy from "./createBaseProxy";
 
-export default function createGenericProxy(target: {}): express.Router {
+export default function createGenericProxy(target: string): express.Router {
     const webRouter = express.Router();
-    const proxy = httpProxy.createProxyServer({ prependUrl: false });
-
-    proxy.on("error", function(err: any, req: any, res: any) {
-        console.error(err);
-
-        res.status(500).send("Something went wrong.");
-    });
+    const proxy = createBaseProxy();
 
     webRouter.get("*", (req: express.Request, res: express.Response) => {
         proxy.web(req, res, { target });

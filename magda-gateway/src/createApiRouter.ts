@@ -1,10 +1,10 @@
 import * as express from "express";
 import { Router } from "express";
 import * as _ from "lodash";
-const httpProxy = require("http-proxy");
 
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 
+import createBaseProxy from "./createBaseProxy";
 import Authenticator from "./Authenticator";
 
 export interface ProxyTarget {
@@ -22,35 +22,20 @@ export interface ApiRouterOptions {
 }
 
 export default function createApiRouter(options: ApiRouterOptions): Router {
-    var proxy = httpProxy.createProxyServer({ prependUrl: false });
+    var proxy = createBaseProxy();
 
     const authenticator = options.authenticator;
     const jwtSecret = options.jwtSecret;
 
     const router: Router = express.Router();
 
-    proxy.on("proxyReq", function(
-        proxyReq: any,
-        req: any,
-        res: Response,
-        options: any
-    ) {
+    proxy.on("proxyReq", (proxyReq, req: any, res, options) => {
         if (jwtSecret && req.user) {
             proxyReq.setHeader(
                 "X-Magda-Session",
                 buildJwt(jwtSecret, req.user.id)
             );
         }
-    });
-
-    proxy.on("error", function(err: any, req: any, res: any) {
-        res.writeHead(500, {
-            "Content-Type": "text/plain"
-        });
-
-        console.error(err);
-
-        res.end("Something went wrong.");
     });
 
     function proxyRoute(
