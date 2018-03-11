@@ -26,6 +26,7 @@ var WebMapServiceCatalogItem = require("terriajs/lib/Models/WebMapServiceCatalog
 var WebFeatureServiceCatalogGroup = require("terriajs/lib/Models/WebFeatureServiceCatalogGroup");
 var WebFeatureServiceCatalogItem = require("terriajs/lib/Models/WebFeatureServiceCatalogItem");
 var when = require("terriajs-cesium/Source/ThirdParty/when");
+var knockout = require('terriajs-cesium/Source/ThirdParty/knockout');
 
 /**
  * A {@link CatalogItem} that queries a MAGDA server for a dataset or distribution, and then accesses
@@ -473,6 +474,21 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
         if (defined(options.zoomOnEnable)) {
             newItem.zoomOnEnable = options.zoomOnEnable;
         }
+
+        knockout.getObservable(newItem, "isLoading").subscribe(function(value) {
+            try{
+                if(value === true) return;
+                if (window.parent !== window) {
+                    window.parent.postMessage("loading complete", "*");
+                }
+            
+                if (window.opener) {
+                    window.opener.postMessage("loading complete", "*");
+                }
+            }catch(e){
+                console.log(e);
+            }
+        });
 
         return newItem;
     });

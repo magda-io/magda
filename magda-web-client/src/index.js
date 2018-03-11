@@ -35,8 +35,10 @@ class GAListener extends React.Component {
     }
 
     sendPageView(location) {
-        window.ga("set", "location", location.pathname);
-        window.ga("send", "pageview");
+        if (window.ga) {
+            window.ga("set", "location", location.pathname);
+            window.ga("send", "pageview");
+        }
     }
 
     render() {

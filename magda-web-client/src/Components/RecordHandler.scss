@@ -1,0 +1,17 @@
+.media-body{
+    h1 {
+        font-size: 28px;
+        line-height: 42px;
+    }
+
+    .publisher-basic-info-row {
+        display: table;
+        width: 100%;
+        padding-top: 10px;
+        span.separator {
+            width: 37px;
+            display: inline-block;
+            text-align: center;
+        }
+    }
+}

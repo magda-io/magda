@@ -73,11 +73,18 @@ a {
 
 .mui-tabs__bar > li > a {
     border-bottom: 0px;
+    margin-right: 16px;
     &:hover {
-        color: #fff;
+        color: $magda;
+        background: transparent;
     }
 }
 
-.mui-tabs__bar a.mui--is-active {
-    border-bottom: 2px solid $magda !important;
+ .mui-tabs__bar>li.mui--is-active{
+   border-bottom: 0;
+ }
+
+.mui-tabs__bar>li.mui--is-active>a, .mui-tabs__bar a.mui--is-active{
+  color: $magda;
+  border-bottom: 2px solid $magda;
 }
