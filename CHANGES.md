@@ -1,5 +1,6 @@
 ## 0.0.34
 
+* Added +x permissions to docker image scripts that didn't have them.
 * Fixed bug where navigation buttons were reversed in the new search results page.
 * Added support to search for regions in the location filter by a short name and configured STE state regions to allow searching by acronym
 * Map previewer will pick data distribution with best support for a dataset
