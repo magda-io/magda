@@ -16,6 +16,13 @@ spec:
       - name: preview-map
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+        livenessProbe:
+          httpGet:
+            path: ""
+            port: 6110
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
         env:
         - name: NODE_ENV
           value: production

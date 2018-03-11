@@ -19,6 +19,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const router: Router = express.Router();
 
+    router.get("/healthz", (req, res) =>
+        database
+            .checkConnection()
+            .then(() => {
+                res.status(200).send("OK");
+            })
+            .catch(() => {
+                res.status(500).send("Error");
+            })
+    );
+
     router.get("/discussions/:discussionId/messages", (req, res) =>
         getMessages(req.params.discussionId, res)
     );

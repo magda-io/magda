@@ -24,6 +24,13 @@ spec:
             "--issuesUrl", {{ .Values.gitHubIssuesUrl | quote }}
 {{- end }}
         ]
+        livenessProbe:
+          httpGet:
+            path: /v0/healthz
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:

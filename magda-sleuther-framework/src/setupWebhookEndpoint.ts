@@ -18,6 +18,10 @@ export default function setupWebhookEndpoint(
     const server = options.express();
     server.use(require("body-parser").json({ limit: "50mb" }));
 
+    server.get("/healthz", (request, response) => {
+        response.status(200).send("OK");
+    });
+
     server.post(
         "/hook",
         (request: express.Request, response: express.Response) => {
