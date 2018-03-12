@@ -164,14 +164,16 @@ class DataPreviewVis extends Component {
                 );
             }
         }
-        return <div>No data preview available</div>;
+        return null; //-- requested by Tash: hide the section if no data available
     }
 
     render() {
+        const bodyRenderResult = this.renderByState();
+        if(!bodyRenderResult) return null;
         return (
             <div className="data-preview-vis">
                 <h3>Data Preview</h3>
-                {this.renderByState()}
+                {bodyRenderResult}
             </div>
         );
     }

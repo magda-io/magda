@@ -121,27 +121,32 @@ class DistributionRow extends Component {
 
         return (
             <div className="distribution-row mui-row">
-                <div className="mui-col-sm-1">
-                    <img
-                        className="format-icon"
-                        src={this.determineFormatIcon()}
-                        alt="format icon"
-                    />
-                </div>
-                <div className="mui-col-sm-8">
-                    <div className="distribution-row-link">
-                        <Link to={distributionLink}>
-                            {distribution.title}({distribution.format})
-                        </Link>
-                    </div>
+                <div className="mui-col-sm-9">
+                    <div className="mui-row">
+                        <div className="mui-col-sm-1">
+                            <img
+                                className="format-icon"
+                                src={this.determineFormatIcon()}
+                                alt="format icon"
+                            />
+                        </div>
 
-                    <div className="distribution-row-link-license">
-                        {distribution.license &&
-                            (typeof distribution.license === "string"
-                                ? distribution.license
-                                : distribution.license.name
-                                  ? distribution.license.name
-                                  : "")}
+                        <div className="mui-col-sm-11">
+                            <div className="distribution-row-link">
+                                <Link to={distributionLink}>
+                                    {distribution.title}({distribution.format})
+                                </Link>
+                            </div>
+
+                            <div className="distribution-row-link-license">
+                                {distribution.license &&
+                                    (typeof distribution.license === "string"
+                                        ? distribution.license
+                                        : distribution.license.name
+                                          ? distribution.license.name
+                                          : "")}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="mui-col-sm-3 button-area">
