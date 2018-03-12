@@ -1,7 +1,9 @@
 import * as httpProxy from "http-proxy";
 
 export default function createBaseProxy(): httpProxy {
-    const proxy = httpProxy.createProxyServer({ prependPath: false });
+    const proxy = httpProxy.createProxyServer({
+        prependUrl: false
+    } as httpProxy.ServerOptions);
 
     proxy.on("error", function(err: any, req: any, res: any) {
         res.writeHead(500, {
