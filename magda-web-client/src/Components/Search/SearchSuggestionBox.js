@@ -18,8 +18,7 @@ class SearchSuggestionBox extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            recentSearches: this.retrieveLocalData("recentSearches"),
-            savedSearches: this.retrieveLocalData("savedSearches")
+            recentSearches: this.retrieveLocalData("recentSearches")
         };
         this.createSearchDataFromProps(this.props);
     }
@@ -137,12 +136,9 @@ class SearchSuggestionBox extends Component {
         this.props.history.push(`./search?${qStr}`);
     }
 
-    filterRecentSearches(){
-        
-    }
-
     render() {
         //--- filter recent search items by use input
+        if(!this.props.isSearchInputFocus) return null;
         if(!this.props.searchText) return null;
         const inputText = this.props.searchText.trim().toLowerCase();
         if(!inputText) return null;
@@ -176,40 +172,7 @@ class SearchSuggestionBox extends Component {
         );
     }
 }
-/*
 
-<h5>Recent Searches</h5>
-                    <button className="mui-btn mui-btn--flat" onClick={this.onSearchItemClick}>
-                        Water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat" onClick={(e)=>{
-                        e.preventDefault();
-                    }}>
-                        Water in Sydney
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-                    <h5>Saved Searches</h5>
-                    <button className="mui-btn mui-btn--flat">
-                        Flooding water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water in Sydney
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-    */
 SearchSuggestionBox.PropTypes = {
     searchText : PropTypes.string
 };
@@ -219,12 +182,13 @@ SearchSuggestionBox.defaultProps = {
 };
 
 const SearchSuggestionBoxWithRouter = withRouter(
-    ({ history, location, datasetSearch, searchText }) => (
+    ({ history, location, datasetSearch, searchText, isSearchInputFocus }) => (
         <SearchSuggestionBox
             history={history}
             location={location}
             datasetSearch={datasetSearch}
             searchText={searchText}
+            isSearchInputFocus={isSearchInputFocus}
         />
     )
 );

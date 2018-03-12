@@ -35,7 +35,8 @@ class SearchBox extends Component {
         this.state = {
             searchText: undefined,
             width: 0,
-            height: 0
+            height: 0,
+            isFocus: false
         };
     }
 
@@ -155,9 +156,11 @@ class SearchBox extends Component {
                                                 this
                                                     .handleSearchFieldEnterKeyPress
                                             }
+                                            onFocus={()=>this.setState({isFocus:true})}
+                                            onBlur={()=>this.setState({isFocus:false})}
                                             autoComplete="off"
                                         />
-                                        <SearchSuggestionBox searchText={this.getSearchBoxValue()}/>
+                                        <SearchSuggestionBox searchText={this.getSearchBoxValue()} isSearchInputFocus={this.state.isFocus} />
                                     </div>
                                 </label>
                             </td>
