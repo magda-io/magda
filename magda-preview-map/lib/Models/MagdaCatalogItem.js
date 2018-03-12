@@ -534,7 +534,9 @@ MagdaCatalogItem.prototype._load = function() {
             if (defined(that.distributionId)) {
                 var distributionUri = baseUri
                     .clone()
-                    .segment(`records/${that.distributionId}`)
+                    .segment(
+                        `records/${encodeURIComponent(that.distributionId)}`
+                    )
                     .addQuery({ aspect: "dcat-distribution-strings" });
                 var distributionUrl = proxyCatalogItemUrl(
                     that,
@@ -554,7 +556,7 @@ MagdaCatalogItem.prototype._load = function() {
             } else if (defined(that.datasetId)) {
                 var datasetUri = baseUri
                     .clone()
-                    .segment(`records/${that.datasetId}`)
+                    .segment(`records/${encodeURIComponent(that.datasetId)}`)
                     .addQuery({
                         aspect: "dataset-distributions",
                         dereference: true
