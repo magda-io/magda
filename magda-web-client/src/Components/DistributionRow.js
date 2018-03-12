@@ -125,7 +125,7 @@ class DistributionRow extends Component {
                     <div className="mui-row">
                         <div className="mui-col-sm-1">
                             <img
-                                className="format-icon"
+                                className="format-icon hidden-sm"
                                 src={this.determineFormatIcon()}
                                 alt="format icon"
                             />
