@@ -14,10 +14,21 @@ type searchDataType = {
     data: object
 };
 
+/** 
+ * when no user input, the first `maxDefaultListItemNumber` items will be returned
+*/
+const maxDefaultListItemNumber = 10;
+
+/**
+ * Max no.of items will be saved locally
+ */
+const maxSavedItemNumber = 50;
+
 class SearchSuggestionBox extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            isMouseOver: false,
             recentSearches: this.retrieveLocalData("recentSearches")
         };
         this.createSearchDataFromProps(this.props);
@@ -41,7 +52,7 @@ class SearchSuggestionBox extends Component {
         }
     }
 
-    insertItemIntoLocalData(key, searchData: searchDataType, limit = 50) {
+    insertItemIntoLocalData(key, searchData: searchDataType, limit = maxSavedItemNumber) {
         if (!window.localStorage) return [];
         let items = this.retrieveLocalData(key);
         items = items.filter(item => {
@@ -134,26 +145,49 @@ class SearchSuggestionBox extends Component {
         e.preventDefault();
         const qStr = queryString.stringify(item.data);
         this.props.history.push(`./search?${qStr}`);
+        this.setState({
+            isMouseOver:false
+        });
     }
 
-    render() {
-        //--- filter recent search items by use input
-        if(!this.props.isSearchInputFocus) return null;
-        if(!this.props.searchText) return null;
-        const inputText = this.props.searchText.trim().toLowerCase();
-        if(!inputText) return null;
+    onMouseOver(){
+        this.setState({
+            isMouseOver : true
+        });
+    }
 
-        const filteredRecentSearches = this.state.recentSearches.filter(item=>{
+    onMouseOut(){
+        this.setState({
+            isMouseOver : false
+        });
+    }
+
+    getFilteredResult(){
+        const recentSearches = this.state.recentSearches;
+        if(!recentSearches || !recentSearches.length) return [];
+
+        if(!this.props.searchText) return recentSearches.slice(0,maxDefaultListItemNumber);
+        const inputText = this.props.searchText.trim().toLowerCase();
+        if(!inputText) return recentSearches.slice(0,maxDefaultListItemNumber);
+
+        const filteredRecentSearches = recentSearches.filter(item=>{
             if(item.data.q && item.data.q.toLowerCase().indexOf(inputText)!== -1) return true;
             return false;
         });
 
+        return filteredRecentSearches;
+    }
+
+    render() {
+        if(!this.props.isSearchInputFocus && !this.state.isMouseOver) return null;
+        //--- filter recent search items by use input
+        const filteredRecentSearches = this.getFilteredResult();
         if(!filteredRecentSearches || !filteredRecentSearches.length) return null;
 
         return (
-            <div className="search-suggestion-box">
+            <div className="search-suggestion-box" >
                 <div className="search-suggestion-box-position-adjust" />
-                <div className="search-suggestion-box-body">
+                <div className="search-suggestion-box-body" onMouseOver={()=>this.onMouseOver()} onMouseOut={()=>this.onMouseOut()}>
                     <h5>Recent Searches</h5>
                     {filteredRecentSearches.map((item, idx) => (
                         <button
