@@ -88,3 +88,9 @@ a {
   color: $magda;
   border-bottom: 2px solid $magda;
 }
+
+.hidden-sm{
+  @media (max-width: $medium) {
+      display: none!important;
+  }
+}

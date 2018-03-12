@@ -17,7 +17,8 @@
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid rgba(73,73,73,0.15);
-    @media (min-width: 768px) {
+
+    @media (min-width: $medium) {
         padding: 50px 135px;
         background-color: #f55860;
         color: #fff;
