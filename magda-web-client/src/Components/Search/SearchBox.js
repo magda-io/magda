@@ -157,7 +157,7 @@ class SearchBox extends Component {
                                             }
                                             autoComplete="off"
                                         />
-                                        <SearchSuggestionBox />
+                                        <SearchSuggestionBox searchText={this.getSearchBoxValue()}/>
                                     </div>
                                 </label>
                             </td>

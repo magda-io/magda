@@ -2,10 +2,17 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
-import uniqWith from "lodash.uniqwith";
 import isEqual from "lodash.isequal";
 import queryString from "query-string";
+import getDateString from "../../helpers/getDateString";
+import MarkdownViewer from "../../UI/MarkdownViewer";
 import "./SearchSuggestionBox.css";
+
+type searchDataType = {
+    name: ?string,
+    regionName: ?string,
+    data: object
+};
 
 class SearchSuggestionBox extends Component {
     constructor(props) {
@@ -14,11 +21,10 @@ class SearchSuggestionBox extends Component {
             recentSearches: this.retrieveLocalData("recentSearches"),
             savedSearches: this.retrieveLocalData("savedSearches")
         };
-        this.onSearchItemClick = this.onSearchItemClick.bind(this);
         this.createSearchDataFromProps(this.props);
     }
 
-    retrieveLocalData(key) {
+    retrieveLocalData(key): searchDataType {
         if (!window.localStorage) return [];
         if (!key || typeof key !== "string")
             throw new Error("Invalid key parameter!");
@@ -36,19 +42,14 @@ class SearchSuggestionBox extends Component {
         }
     }
 
-    insertItemIntoLocalData(key, data, limit = 0) {
+    insertItemIntoLocalData(key, searchData: searchDataType, limit = 50) {
         if (!window.localStorage) return [];
         let items = this.retrieveLocalData(key);
-        items
-            .filter(item => { // --- remove similar search before insert
-                let c = { ...item };
-                let dataC = { ...data };
-                delete c["__regionName"];
-                delete dataC["__regionName"];
-                return !isEqual(c, dataC);
-            })
-            .push(data);
-        if (limit && limit >= 1) items = items.slice(0, limit - 1);
+        items = items.filter(item => {
+            return !isEqual(item.data, searchData.data);
+        });
+        items.unshift(searchData);
+        if (limit && limit >= 1) items = items.slice(0, limit);
         try {
             window.localStorage.setItem(key, JSON.stringify(items));
             return items;
@@ -62,77 +63,114 @@ class SearchSuggestionBox extends Component {
         }
     }
 
-    createSearchDataFromProps(props) {
+    createSearchDataFromProps(props): searchDataType {
         if (!props.location || !props.location.search) return null;
         const data = queryString.parse(props.location.search);
         if (!Object.keys(data).length) return null;
+        const searchData = { data };
         if (data.regionId) {
             if (
                 props.datasetSearch &&
                 props.datasetSearch.activeRegion &&
                 props.datasetSearch.activeRegion.regionName
             )
-                data["__regionName"] =
+                searchData["regionName"] =
                     props.datasetSearch.activeRegion.regionName;
-            else data["__regionName"] = "";
+            else return null; //--- Only save searches when region name is available
         }
-        return data;
+        return searchData;
+    }
+
+    createSearchOptionListTextFromArray(arr, lastSeparator = "or") {
+        if(!arr) return null;
+        if(typeof arr === "string") return `*${arr}*`;
+        if (!arr.length) return null;
+        const formatedItems = arr.map((item, idx) => `*${item}*`);
+        if (formatedItems.length <= 1) return formatedItems[0];
+        const lastItem = formatedItems.pop();
+        let resultStr = formatedItems.join(", ");
+        resultStr = `${resultStr} ${lastSeparator} ${lastItem}`;
+        return resultStr;
+    }
+
+    createSearchItemLabelText(searchData: searchDataType) {
+        const data = searchData.data;
+        const filters = [];
+        if (data.regionId) filters.push(`in *${searchData.regionName}*`);
+        if (data.format && data.format.length)
+            filters.push(
+                "in " +
+                    this.createSearchOptionListTextFromArray(data.format) +
+                    " format"
+            );
+        if (data.publisher)
+            filters.push(
+                "from publisher " +
+                    this.createSearchOptionListTextFromArray(data.publisher)
+            );
+        if (data.dateFrom)
+            filters.push("from *" + getDateString(data.dateFrom) + "*");
+        if (data.dateFrom)
+            filters.push("to *" + getDateString(data.dateFrom) + "*");
+        const qStr = data.q ? data.q.trim() : "";
+        return qStr ? qStr + " " + filters.join("; ") : filters.join("; ");
+    }
+
+    saveRecentSearch(newProps) {
+        const searchData = this.createSearchDataFromProps(newProps);
+        if (!searchData) return;
+        const recentSearches = this.insertItemIntoLocalData(
+            "recentSearches",
+            searchData
+        );
+
+        this.setState({ recentSearches });
     }
 
     componentWillReceiveProps(newProps) {
-        this.createSearchDataFromProps(newProps);
+        this.saveRecentSearch(newProps);
     }
 
-    onSearchItemClick(e) {
+    onSearchItemClick(e, item: searchDataType) {
         e.preventDefault();
-        this.props.history.push(
-            "./search?q=city&dateFrom=1840-07-31T14%3A00%3A00.000Z&dateTo=2016-06-30T14%3A00%3A00.000Z&publisher=City%20of%20Adelaide&publisher=City%20of%20Hobart&regionId=4&regionType=STE"
-        );
+        const qStr = queryString.stringify(item.data);
+        this.props.history.push(`./search?${qStr}`);
+    }
+
+    filterRecentSearches(){
+        
     }
 
     render() {
+        //--- filter recent search items by use input
+        if(!this.props.searchText) return null;
+        const inputText = this.props.searchText.trim().toLowerCase();
+        if(!inputText) return null;
+
+        const filteredRecentSearches = this.state.recentSearches.filter(item=>{
+            if(item.data.q && item.data.q.toLowerCase().indexOf(inputText)!== -1) return true;
+            return false;
+        });
+
+        if(!filteredRecentSearches || !filteredRecentSearches.length) return null;
+
         return (
             <div className="search-suggestion-box">
                 <div className="search-suggestion-box-position-adjust" />
                 <div className="search-suggestion-box-body">
                     <h5>Recent Searches</h5>
-                    <button
-                        className="mui-btn mui-btn--flat"
-                        onClick={this.onSearchItemClick}
-                    >
-                        Water quality in Parramatta
-                    </button>
-                    <button
-                        className="mui-btn mui-btn--flat"
-                        onClick={e => {
-                            e.preventDefault();
-                            debugger;
-                        }}
-                    >
-                        Water in Sydney
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-                    <h5>Saved Searches</h5>
-                    <button className="mui-btn mui-btn--flat">
-                        Flooding water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water in Sydney
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
-                    <button className="mui-btn mui-btn--flat">
-                        Water quality in Parramatta
-                    </button>
+                    {filteredRecentSearches.map((item, idx) => (
+                        <button
+                            key={idx}
+                            className="mui-btn mui-btn--flat"
+                            onClick={e => this.onSearchItemClick(e, item)}
+                        >
+                            <MarkdownViewer
+                                markdown={this.createSearchItemLabelText(item)}
+                                truncate={false}
+                            />
+                        </button>
+                    ))}
                 </div>
             </div>
         );
@@ -146,7 +184,6 @@ class SearchSuggestionBox extends Component {
                     </button>
                     <button className="mui-btn mui-btn--flat" onClick={(e)=>{
                         e.preventDefault();
-                        debugger;
                     }}>
                         Water in Sydney
                     </button>
@@ -173,16 +210,21 @@ class SearchSuggestionBox extends Component {
                         Water quality in Parramatta
                     </button>
     */
-SearchSuggestionBox.PropTypes = {};
+SearchSuggestionBox.PropTypes = {
+    searchText : PropTypes.string
+};
 
-SearchSuggestionBox.defaultProps = {};
+SearchSuggestionBox.defaultProps = {
+    searchText : null
+};
 
 const SearchSuggestionBoxWithRouter = withRouter(
-    ({ history, location, datasetSearch }) => (
+    ({ history, location, datasetSearch, searchText }) => (
         <SearchSuggestionBox
             history={history}
             location={location}
             datasetSearch={datasetSearch}
+            searchText={searchText}
         />
     )
 );
