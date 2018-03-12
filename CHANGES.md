@@ -15,6 +15,7 @@
 * Added default Cache-Control header to GET requests that go through the gateway.
 * Fixed build process to produce minified release version of TerriaMap instead of dev version.
 * Added robots.txt
+* Minor visual adjustment based on Tash's feedback
 
 ## 0.0.33
 

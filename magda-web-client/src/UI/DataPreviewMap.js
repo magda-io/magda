@@ -77,7 +77,7 @@ class DataPreviewMap extends Component {
                         {
                             name: this.state.selectedDistribution.title,
                             type: "magda-item",
-                            url: "/",
+                            url: "http://magda-dev.terria.io/",
                             distributionId: this.state.selectedDistribution
                                 .identifier,
                             isEnabled: true,
@@ -168,13 +168,7 @@ class DataPreviewMap extends Component {
                 </div>
             );
 
-        if (!this.state.isMapPreviewAvailable)
-            return (
-                <div className="data-preview-map">
-                    <h3>Map Preview</h3>
-                    No map preview available
-                </div>
-            );
+        if (!this.state.isMapPreviewAvailable) return null; //-- requested by Tash: hide the section if no data available
 
         return (
             <div className="data-preview-map">

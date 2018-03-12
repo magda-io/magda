@@ -8,10 +8,13 @@
         position: relative;
         padding-left: 0px;
         margin-top: 10px;
-
+    
         img {
             position: absolute;
             top: -2px;
         }
+    }
+    .toggle-button:focus{
+        outline: none;
     }
 }
