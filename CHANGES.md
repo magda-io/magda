@@ -1,3 +1,5 @@
+## 0.0.35
+
 ## 0.0.34
 
 * Added +x permissions to docker image scripts that didn't have them.
