@@ -133,43 +133,32 @@ class SearchBox extends Component {
     render() {
         return (
             <Form className="searchBox">
-                <table width="100%">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <label htmlFor="search">
-                                    <span className="sr-only">
-                                        {"search " + config.appName}
-                                    </span>
-                                    <Input
-                                        type="text"
-                                        name="search"
-                                        id="search"
-                                        placeholder="search for open data"
-                                        value={this.getSearchBoxValue()}
-                                        onChange={this.onSearchTextChange}
-                                        onKeyPress={
-                                            this.handleSearchFieldEnterKeyPress
-                                        }
-                                        autoComplete="off"
-                                    />
-                                </label>
-                            </td>
-                            <td className="search-btn-box">
-                                <button
-                                    onClick={this.onClickSearch}
-                                    className="search-btn"
-                                    type="button"
-                                >
-                                    <img src={search} alt="search button" />
-                                    <span className="sr-only">
-                                        submit search
-                                    </span>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <label htmlFor="search">
+                        <span className="sr-only">
+                            {"search " + config.appName}
+                        </span>
+                        <Input
+                            type="text"
+                            name="search"
+                            id="search"
+                            placeholder="search for open data"
+                            value={this.getSearchBoxValue()}
+                            onChange={this.onSearchTextChange}
+                            onKeyPress={
+                                this.handleSearchFieldEnterKeyPress
+                            }
+                            autoComplete="off"
+                        />
+                    </label>
+                    <button
+                        onClick={this.onClickSearch}
+                        className="search-btn"
+                        type="button">
+                        <img src={search} alt="search button" />
+                        <span className="sr-only">
+                            submit search
+                        </span>
+                    </button>
             </Form>
         );
     }

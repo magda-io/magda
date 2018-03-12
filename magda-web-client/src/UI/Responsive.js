@@ -4,7 +4,7 @@ import { config } from "../config.js";
 
 export function ExtraSmall(props) {
     return (
-        <MediaQuery maxWidth={config.breakpoints.small - 1}>
+        <MediaQuery maxWidth={config.breakpoints.small}>
             {props.children}
         </MediaQuery>
     );
@@ -12,7 +12,7 @@ export function ExtraSmall(props) {
 
 export function Small(props) {
     return (
-        <MediaQuery minWidth={config.breakpoints.small}>
+        <MediaQuery maxWidth={config.breakpoints.medium - 1}>
             {props.children}
         </MediaQuery>
     );

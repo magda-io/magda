@@ -66,6 +66,46 @@
     }
 }
 
+
+.mobile-header{
+  .mobile-header-inner{
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(73,73,73,0.15);
+
+    .mobile-logo{
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 22px;
+      text-transform: uppercase;
+      padding: 16px 16px 16px 0;
+      a{
+        border-bottom: 0;
+      }
+    }
+
+    .mobile-toggle{
+      padding: 10px 0;
+    }
+  }
+
+  .mobile-nav{
+    height: 0;
+    overflow-y: hidden;
+    transition: height 0.55s;
+    &.isOpen{
+      height: 170px;
+    }
+  }
+  .account-navbar a, a {
+      display: block;
+      line-height: 40px;
+  }
+  .account-navbar, {
+    display: block;
+  }
+}
+
 .footer {
     background-color: $magda-dark-blue;
     color: #fff;
@@ -94,4 +134,3 @@
         }
     }
 }
-

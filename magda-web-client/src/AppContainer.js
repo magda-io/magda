@@ -28,6 +28,8 @@ import d61logo from "./data61-logo.png";
 import dgalogo from "./dga.png";
 import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
+import {Medium, Small} from './UI/Responsive';
+import mobileMenu from "./assets/mobile-menu.svg";
 
 import { Route, Link, Switch } from "react-router-dom";
 
@@ -36,7 +38,8 @@ import "./AppContainer.css";
 class AppContainer extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { isOpen: false };
+        this.toggleMenu = this.toggleMenu.bind(this);
+        this.state = { isMobileMenuOpen: false };
     }
 
     componentWillMount() {
@@ -56,7 +59,7 @@ class AppContainer extends React.Component {
 
     toggleMenu() {
         this.setState({
-            isOpen: !this.state.isOpen
+            isMobileMenuOpen: !this.state.isMobileMenuOpen
         });
     }
 
@@ -100,6 +103,21 @@ class AppContainer extends React.Component {
         );
     }
 
+    renderHeaderNav(headerNavs){
+      return (<div>
+      {headerNavs.map(nav => (
+          <Link
+              key={nav[1]}
+              to={`/${encodeURI(nav[1])}`}
+          >
+              {nav[0]}
+          </Link>
+      ))}
+      {config.disableAuthenticationFeatures || (
+          <AccountNavbar />
+      )}</div>)
+    }
+
     render() {
         const headerNavs = config.headerNavigation;
         const footerNavs = config.footerNavigation;
@@ -109,30 +127,33 @@ class AppContainer extends React.Component {
                     <Banner />
                     <FeedbackForm />
                     <Container className="app-container">
-                        <table width="100%" className="nav-table">
-                            <tbody>
-                                <tr style={{ verticalAlign: "middle" }}>
-                                    <td className="logo">
-                                        <Link to="/">
-                                            <img src={dgalogo} alt="dga-logo" />
-                                        </Link>
-                                    </td>
-                                    <td className="nav-bar-right">
-                                        {headerNavs.map(nav => (
-                                            <Link
-                                                key={nav[1]}
-                                                to={`/${encodeURI(nav[1])}`}
-                                            >
-                                                {nav[0]}
-                                            </Link>
-                                        ))}
-                                        {config.disableAuthenticationFeatures || (
-                                            <AccountNavbar />
-                                        )}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <Small>
+                          <div className='mobile-header'>
+                              <div className='mobile-header-inner'>
+                                <div className='mobile-logo'><Link to="/">{config.appName}</Link></div>
+                                <button className='mui-btn mobile-toggle' onClick={this.toggleMenu}><img src={mobileMenu} alt='open menu'></img></button>
+                              </div>
+                              <div className={`${this.state.isMobileMenuOpen ? 'isOpen' : ''} mobile-nav`}>
+                                {this.renderHeaderNav(headerNavs)}
+                              </div>
+                          </div>
+                        </Small>
+                        <Medium>
+                          <table width="100%" className="nav-table">
+                              <tbody>
+                                  <tr style={{ verticalAlign: "middle" }}>
+                                      <td className="logo">
+                                          <Link to="/">
+                                              <img src={dgalogo} alt="dga-logo" />
+                                          </Link>
+                                      </td>
+                                      <td className="nav-bar-right">
+                                          {this.renderHeaderNav(headerNavs)}
+                                      </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                        </Medium>
 
                         <SearchBox location={this.props.location} />
 
