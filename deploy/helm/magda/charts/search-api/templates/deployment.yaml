@@ -26,7 +26,7 @@ spec:
           httpGet:
             path: "/v0/datasets"
             port: 80
-          initialDelaySeconds: 10
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 10
         {{- if not .Values.global.noDbAuth }}

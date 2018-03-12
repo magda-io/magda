@@ -48,7 +48,7 @@ spec:
           httpGet:
             path: "/v0/ping"
             port: 80
-          initialDelaySeconds: 10
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 10
         ports:
