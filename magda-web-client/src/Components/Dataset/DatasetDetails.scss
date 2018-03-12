@@ -43,6 +43,9 @@
     }
     .landing-page {
         color: #cc3139;
+        &:hover{
+          color: #fff;
+        }
     }
 }
 
