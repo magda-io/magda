@@ -9,7 +9,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import VegaLite from "react-vega-lite";
 import DataPreviewTable from "./DataPreviewTable";
-import {Medium, Small} from './Responsive';
+import {Medium} from './Responsive';
 import "./DataPreviewVis.css";
 
 class DataPreviewVis extends Component {
