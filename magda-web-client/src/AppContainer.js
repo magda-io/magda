@@ -131,7 +131,7 @@ class AppContainer extends React.Component {
                           <div className='mobile-header'>
                               <div className='mobile-header-inner'>
                                 <div className='mobile-logo'><Link to="/">{config.appName}</Link></div>
-                                <button className='mui-btn mobile-toggle' onClick={this.toggleMenu}><img src={mobileMenu} alt='open menu'></img></button>
+                                <button className='mobile-toggle' onClick={this.toggleMenu}><img src={mobileMenu} alt='open menu'></img></button>
                               </div>
                               <div className={`${this.state.isMobileMenuOpen ? 'isOpen' : ''} mobile-nav`}>
                                 {this.renderHeaderNav(headerNavs)}
