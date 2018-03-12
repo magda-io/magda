@@ -155,7 +155,8 @@ class AppContainer extends React.Component {
                           </table>
                         </Medium>
 
-                        <SearchBox location={this.props.location} />
+                        <Small><SearchBox location={this.props.location} theme='dark'/></Small>
+                        <Medium><SearchBox location={this.props.location} theme='light'/></Medium>
 
                         {this.renderBody()}
                     </Container>

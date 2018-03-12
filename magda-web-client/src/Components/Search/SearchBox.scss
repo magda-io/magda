@@ -24,6 +24,10 @@
         border-bottom: 0;
 
     }
+
+    label{
+      width: calc(100% - 100px);
+    }
     input,
     input:focus {
         @include text();

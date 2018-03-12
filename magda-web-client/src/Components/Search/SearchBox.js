@@ -10,6 +10,7 @@ import { fetchRegionMapping } from "../../actions/regionMappingActions";
 import Form from "muicss/lib/react/form";
 import Input from "muicss/lib/react/input";
 import search from "../../assets/search-white.svg";
+import searchDark from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from "prop-types";
 import queryString from "query-string";
@@ -135,13 +136,13 @@ class SearchBox extends Component {
             <Form className="searchBox">
                     <label htmlFor="search">
                         <span className="sr-only">
-                            {"search " + config.appName}
+                            {"Search " + config.appName}
                         </span>
                         <Input
                             type="text"
                             name="search"
                             id="search"
-                            placeholder="search for open data"
+                            placeholder="Search for open data"
                             value={this.getSearchBoxValue()}
                             onChange={this.onSearchTextChange}
                             onKeyPress={
@@ -154,7 +155,7 @@ class SearchBox extends Component {
                         onClick={this.onClickSearch}
                         className="search-btn"
                         type="button">
-                        <img src={search} alt="search button" />
+                        <img src={this.props.theme === 'light' ? search : searchDark} alt="search button" />
                         <span className="sr-only">
                             submit search
                         </span>
