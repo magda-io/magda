@@ -1,5 +1,6 @@
 ## 0.0.34
 
+* Added +x permissions to docker image scripts that didn't have them.
 * Fixed bug where navigation buttons were reversed in the new search results page.
 * Added support to search for regions in the location filter by a short name and configured STE state regions to allow searching by acronym
 * Map previewer will pick data distribution with best support for a dataset
@@ -9,6 +10,11 @@
 * Added `onLoadingStart` & `onLoadingEnd` event handlers to the `DataPreviewMap` component of `magda-web-client` module.
 * Made a click on the "Go back" link on the banner tag the user with a `noPreview` cookie for VWO to pick up on.
 * Added request logging to `magda-web-server`.
+* Added liveness probes to all helm services.
+* Added a CSP and HSTS to magda web.
+* Added default Cache-Control header to GET requests that go through the gateway.
+* Fixed build process to produce minified release version of TerriaMap instead of dev version.
+* Added robots.txt
 * Minor visual adjustment based on Tash's feedback
 
 ## 0.0.33

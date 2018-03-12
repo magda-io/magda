@@ -23,6 +23,12 @@ export default class Database {
         this.pool = createPool(options);
     }
 
+    checkConnection(): Promise<Maybe<Discussion>> {
+        return this.pool
+            .query("SELECT * FROM discussions LIMIT 1")
+            .then(res => arrayToMaybe(res.rows));
+    }
+
     getDiscussion(discussionId: string): Promise<Maybe<Discussion>> {
         return this.pool
             .query('SELECT * FROM discussions WHERE "id" = $1', [discussionId])

@@ -24,6 +24,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         ports:
         - containerPort: 5432
+        {{- template "magda.postgresLivenessProbe" . }}
         env:
         - name: PGDATA
           value: /var/pv/data

@@ -7,8 +7,12 @@
         "watch": "tsc -p tsconfig-build.json --watch",
         "start": "node dist/index.js",
         "dev": "run-typescript-in-nodemon src/index.ts",
-        "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-        "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+        "docker-build-local":
+            "create-docker-context-for-node-component --build --push --tag auto --local",
+        "docker-build-prod":
+            "create-docker-context-for-node-component --build --push --tag auto",
+        "test":
+            "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register,tsx:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
     },
     "dependencies": {
         "body-parser": "^1.13.2",
@@ -32,7 +36,7 @@
         "@types/nock": "^8.2.1",
         "@types/node": "^8.0.14",
         "@types/request": "^2.47.0",
-        "@types/sinon": "^2.3.3",
+        "@types/sinon": "^2.3.7",
         "@types/supertest": "^2.0.3",
         "@types/yargs": "^8.0.2",
         "chai": "^4.1.2",
@@ -40,7 +44,7 @@
         "mocha": "^3.5.0",
         "nock": "^9.0.14",
         "request-debug": "^0.2.0",
-        "sinon": "^3.2.1",
+        "sinon": "^3.3.0",
         "supertest": "^3.0.0",
         "typescript": "~2.4.0"
     },
