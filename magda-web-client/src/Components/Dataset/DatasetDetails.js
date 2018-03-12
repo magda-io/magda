@@ -65,7 +65,7 @@ class DatasetDetails extends Component {
                             />
                             <a
                                 className="landing-page"
-                                href="dataset.landingPage"
+                                href={dataset.landingPage}
                             >
                                 {dataset.landingPage}
                             </a>
