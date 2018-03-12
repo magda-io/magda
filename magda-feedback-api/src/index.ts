@@ -56,6 +56,11 @@ const app = buildFeedbackRouter({
     gitHubPostUrl,
     userAgent: argv.userAgent
 });
+
+app.get("/v0/healthz", function(req, res, next) {
+    res.status(200).send("OK");
+});
+
 app.listen(argv.listenPort);
 
 console.log("Feedback API started on port " + argv.listenPort);

@@ -179,9 +179,10 @@ class RecordHandler extends React.Component {
                                                     {
                                                         this.props.dataset
                                                             .issuedDate
-                                                    },&nbsp;
+                                                    }&nbsp;
                                                 </span>
                                                 <span className="updated-date hidden-sm">
+
                                                     Updated{" "}
                                                     {
                                                         this.props.dataset

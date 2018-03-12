@@ -62,7 +62,7 @@ kubectl get pods
 ### Publish to prod
 - [ ] Connect to the prod cluster
 ```bash
-kubectl config use-context <dev-cluster-name>
+kubectl config use-context <prod-cluster-name>
 ```
 
 - [ ] Helm upgrade prod
@@ -75,6 +75,12 @@ helm upgrade magda -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 kubectl delete pods es-data-0
 # wait until es-data-0 comes back up (kubectl get pods)
 kubectl delete pods es-data-1
+```
+
+- [ ] Look at the logs on magda-registry and the webhooks table of the database to make sure it's processing webhooks again
+```
+kubectl logs -f <registry-api-pod-name>
+kubectl port-forward <cloud-sql-proxy-pod-name> 5432:5432
 ```
 
 - [ ] Do a smoke test on prod to make sure everything works ok. If it works go to the next step, otherwise:

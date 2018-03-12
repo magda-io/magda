@@ -25,6 +25,17 @@ spec:
             add:
               - IPC_LOCK
         image: {{ template "dockerimage" . }}
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 300
+          periodSeconds: 60
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: http
+          initialDelaySeconds: 20
+          timeoutSeconds: 5
         resources:
 {{ toYaml .Values.client.resources | indent 10 }}
         env:
@@ -48,6 +59,8 @@ spec:
           value: "-Xms{{ .Values.client.heapSize }} -Xmx{{ .Values.client.heapSize }}"
         - name: "ES_PLUGINS_INSTALL"
           value: {{ .Values.client.pluginsInstall | quote }}
+        - name: NETWORK_HOST
+          value: "0.0.0.0"
         {{- template "magda.elasticSearchXpackEnv" . }}
         ports:
         - containerPort: 9200

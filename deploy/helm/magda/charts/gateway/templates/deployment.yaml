@@ -37,6 +37,13 @@ spec:
         volumeMounts:
           - name: routes
             mountPath: /etc/routes
+        livenessProbe:
+          httpGet:
+            path: /auth
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
@@ -70,7 +77,10 @@ spec:
               key: google-client-secret
               optional: true
 {{- end }}
-{{- if not .Values.global.noDbAuth }}
+{{- if .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+{{- else }}
         - name: PGUSER
           value: client
         - name: PGPASSWORD

@@ -23,6 +23,15 @@ export default function buildApiRouter(options: Options) {
 
     const k8sApi = new K8SApi(options.kubernetesApiType, options.namespace);
 
+    router.get("/healthz", (req, res) => {
+        k8sApi
+            .getJobs()
+            .then(() => {
+                res.status(200).send("OK");
+            })
+            .catch(() => res.status(500).send("Error"));
+    });
+
     router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
 
     router.get("/connectors", (req, res) => {

@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import emptyStarIcon from "../assets/emptyStar.svg";
+import "./StarRating.css";
 import starIcon from "../assets/star.svg";
 
 function StarRating(props) {
@@ -10,7 +11,12 @@ function StarRating(props) {
     return (
         <span className="star-rating-box">
             {stars.map((icon, i) => (
-                <span key={i}>
+                <span
+                    key={i}
+                    className={
+                        icon === starIcon ? "full-star-icon" : "empty-star-icon"
+                    }
+                >
                     <img key={i} src={icon} alt="star rating" />
                     &nbsp;
                 </span>
