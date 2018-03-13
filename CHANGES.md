@@ -1,8 +1,6 @@
-## 0.0.36
+## 0.0.35
 
 * Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
-
-## 0.0.35
 
 ## 0.0.34
 
