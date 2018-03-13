@@ -11,7 +11,7 @@ import Tabs from "../UI/Tabs";
 import { config } from "../config";
 import ErrorHandler from "./ErrorHandler";
 import RouteNotFound from "./RouteNotFound";
-import { Route, Link, Switch, Redirect } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import DatasetDetails from "./Dataset/DatasetDetails";
 import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
@@ -112,6 +112,10 @@ class RecordHandler extends React.Component {
                                     <Redirect
                                         from="/dataset/:datasetId/distribution/:distributionId"
                                         to={`${baseUrlDistribution}/details?q=${searchText}`}
+                                    />
+                                    <Redirect
+                                        from="/dataset/:datasetId/distribution/:distributionId/preview"
+                                        to={`${baseUrlDistribution}/preview?q=${searchText}`}
                                     />
                                 </Switch>
                             </div>
