@@ -33,6 +33,9 @@
         font-family: Helvetica;
         font-size: 16px;
         line-height: 19px;
+        &:hover, &:focus{
+          color: #fff;
+        }
     }
     .other-tag:before {
         content: "·";

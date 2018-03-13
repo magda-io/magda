@@ -9,7 +9,7 @@ import "./DistributionRow.css";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/newtab.svg";
-
+import {Medium} from '../UI/Responsive';
 const formatIcons = {
     default: defaultFormatIcon
 };
@@ -123,6 +123,7 @@ class DistributionRow extends Component {
             <div className="distribution-row mui-row">
                 <div className="mui-col-sm-9">
                     <div className="mui-row">
+                        <Medium>
                         <div className="mui-col-sm-1">
                             <img
                                 className="format-icon"
@@ -130,8 +131,9 @@ class DistributionRow extends Component {
                                 alt="format icon"
                             />
                         </div>
+                        </Medium>
 
-                        <div className="mui-col-sm-11">
+                        <div className="mui-col-md-11">
                             <div className="distribution-row-link">
                                 <Link to={distributionLink}>
                                     {distribution.title}({distribution.format})
@@ -149,7 +151,7 @@ class DistributionRow extends Component {
                         </div>
                     </div>
                 </div>
-                <div className="mui-col-sm-3 button-area">
+                <div className="mui-col-md-3 button-area">
                     <Button
                         className="download-button"
                         onClick={() => {
