@@ -137,7 +137,7 @@ class Pagination extends Component {
                 <div className="pagination-summray">
                     {" "}
                     {startIndex} - {startIndex + config.resultsPerPage} of{" "}
-                    {this.props.maxPage} results
+                    {this.props.totalItems} results
                 </div>
             </div>
         );
