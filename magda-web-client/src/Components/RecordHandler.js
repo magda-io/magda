@@ -95,6 +95,7 @@ class RecordHandler extends React.Component {
                             <Tabs
                                 list={tabList}
                                 baseUrl={baseUrlDistribution}
+                                params={`q=${searchText}`}
                                 onTabChange={tab => {
                                     console.log(tab);
                                 }}
@@ -112,10 +113,6 @@ class RecordHandler extends React.Component {
                                     <Redirect
                                         from="/dataset/:datasetId/distribution/:distributionId"
                                         to={`${baseUrlDistribution}/details?q=${searchText}`}
-                                    />
-                                    <Redirect
-                                        from="/dataset/:datasetId/distribution/:distributionId/preview"
-                                        to={`${baseUrlDistribution}/preview?q=${searchText}`}
                                     />
                                 </Switch>
                             </div>
