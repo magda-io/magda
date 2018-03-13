@@ -117,7 +117,7 @@ class DistributionRow extends Component {
         const { datasetId, distribution } = this.props;
         const distributionLink = `/dataset/${encodeURIComponent(
             datasetId
-        )}/distribution/${encodeURIComponent(distribution.identifier)}`;
+        )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${this.props.searchText}`;
 
         return (
             <div className="distribution-row mui-row">
