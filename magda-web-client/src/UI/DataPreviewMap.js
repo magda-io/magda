@@ -77,7 +77,7 @@ class DataPreviewMap extends Component {
                         {
                             name: this.state.selectedDistribution.title,
                             type: "magda-item",
-                            url: "http://magda-dev.terria.io/",
+                            url: "/",
                             distributionId: this.state.selectedDistribution
                                 .identifier,
                             isEnabled: true,
