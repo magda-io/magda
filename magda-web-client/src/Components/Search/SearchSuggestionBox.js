@@ -17,12 +17,12 @@ type searchDataType = {
 /** 
  * when no user input, the first `maxDefaultListItemNumber` items will be returned
 */
-const maxDefaultListItemNumber = 10;
+const maxDefaultListItemNumber = 5;
 
 /**
  * Max no.of items will be saved locally
  */
-const maxSavedItemNumber = 50;
+const maxSavedItemNumber = 5;
 
 class SearchSuggestionBox extends Component {
     constructor(props) {
@@ -180,8 +180,7 @@ class SearchSuggestionBox extends Component {
 
     render() {
         if(!this.props.isSearchInputFocus && !this.state.isMouseOver) return null;
-        //--- filter recent search items by use input
-        const filteredRecentSearches = this.getFilteredResult();
+        const filteredRecentSearches = this.state.recentSearches; //--- disabled the filter function for now
         if(!filteredRecentSearches || !filteredRecentSearches.length) return null;
 
         return (
