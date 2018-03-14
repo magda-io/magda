@@ -6,6 +6,11 @@ import Temporal from "./Components/SearchFacets/Temporal";
 
 const fallbackApiHost = "http://magda-dev.terria.io/";
 
+const homePageConfig :{
+    baseUrl: string,
+    backgroundImageUrls : Array<string>
+} = window.magda_client_homepage_config || {};
+
 const serverConfig: {
     authApiBaseUrl?: string,
     baseUrl?: string,
@@ -23,6 +28,7 @@ const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
 export const config = {
+    homePageConfig: homePageConfig,
     appName: "data.gov.au",
     about:
         "<p><span style='color:#F55860;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
