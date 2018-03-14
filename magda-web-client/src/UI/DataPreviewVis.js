@@ -9,6 +9,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import VegaLite from "react-vega-lite";
 import DataPreviewTable from "./DataPreviewTable";
+import {Medium} from './Responsive';
 import "./DataPreviewVis.css";
 
 class DataPreviewVis extends Component {
@@ -109,6 +110,7 @@ class DataPreviewVis extends Component {
                             data={data}
                         />
                     </div>
+                  <Medium>
                     <div className="mui-col-sm-6">
                         <ChartConfig
                             chartType={spec.mark}
@@ -122,6 +124,7 @@ class DataPreviewVis extends Component {
                             onChange={this.updateChartConfig}
                         />
                     </div>
+                    </Medium>
                 </div>
             );
         }

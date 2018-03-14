@@ -1,6 +1,7 @@
 ## 0.0.35
 
 * Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
+* Fixed preview map data loading issue: replaced dev site url
 
 ## 0.0.34
 

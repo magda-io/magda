@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import "./DataPreviewMap.css";
 import DataPreviewMapOpenInNationalMapButton from "./DataPreviewMapOpenInNationalMapButton";
 import { config } from "../config";
+import {Medium, Small} from './Responsive';
 
 export const defaultDataSourcePreference = [
     "GeoJSON",
@@ -77,7 +78,7 @@ class DataPreviewMap extends Component {
                         {
                             name: this.state.selectedDistribution.title,
                             type: "magda-item",
-                            url: "http://magda-dev.terria.io/",
+                            url: "/",
                             distributionId: this.state.selectedDistribution
                                 .identifier,
                             isEnabled: true,
@@ -182,17 +183,32 @@ class DataPreviewMap extends Component {
                             top: "10px"
                         }}
                     />
-                    <iframe
-                        title={this.state.selectedDistribution.title}
-                        width="100%"
-                        height="420px"
-                        frameBorder="0"
-                        src={
-                            config.previewMapUrl +
-                            "#mode=preview&hideExplorerPanel=1&clean"
-                        }
-                        ref={f => (this.iframeRef = f)}
-                    />
+                    <Medium>
+                      <iframe
+                          title={this.state.selectedDistribution.title}
+                          width="100%"
+                          height="420px"
+                          frameBorder="0"
+                          src={
+                              config.previewMapUrl +
+                              "#mode=preview&hideExplorerPanel=1&clean"
+                          }
+                          ref={f => (this.iframeRef = f)}
+                      />
+                    </Medium>
+                    <Small>
+                      <iframe
+                          title={this.state.selectedDistribution.title}
+                          width="100%"
+                          height="200px"
+                          frameBorder="0"
+                          src={
+                              config.previewMapUrl +
+                              "#mode=preview&hideExplorerPanel=1&clean"
+                          }
+                          ref={f => (this.iframeRef = f)}
+                      />
+                    </Small>
                 </div>
             </div>
         );

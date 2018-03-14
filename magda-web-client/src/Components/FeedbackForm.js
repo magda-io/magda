@@ -167,33 +167,18 @@ class FeedbackForm extends React.Component {
                         >
                             Cancel
                         </Button>
-                        {this.state.validationErrorMessage ? (
-                            <Button
-                                className="send-btn disabled-looking-button"
-                                disabled={false}
-                                onClick={this.onSubmit}
-                                data-tip={this.state.validationErrorMessage}
-                                data-place="top"
-                            >
-                                {this.props.isSendingFeedback
-                                    ? "Sending..."
-                                    : "Send"}
-                            </Button>
-                        ) : (
-                                <Button
-                                    className="send-btn"
-                                    disabled={this.props.isSendingFeedback}
-                                    onClick={this.onSubmit}
-                                >
-                                    {this.props.isSendingFeedback
-                                        ? "Sending..."
-                                        : "Send"}
-                                </Button>
-                            )}
+                        <Button
+                            className="send-btn disabled-looking-button"
+                            onClick={this.onSubmit}
+                            data-tip={this.state.validationErrorMessage}
+                            data-place="top"
+                        >
+                            {this.props.isSendingFeedback
+                                ? "Sending..."
+                                : "Send"}
+                        </Button>
 
-                        {this.state.validationErrorMessage ? (
-                            <ReactTooltip />
-                        ) : null}
+                        <ReactTooltip/>
                     </div>
                 </div>
             </div>
