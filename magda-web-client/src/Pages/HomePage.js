@@ -46,7 +46,6 @@ const HomePage = withRouter(({ location }) => {
                 <TagLine />
                 <Lozenge />
                 <Stories />
-                <Home location={location} />
             </Container>
         </div>
     );
