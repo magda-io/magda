@@ -11,16 +11,17 @@ spec:
       labels:
         service: combined-db
     spec:
-      terminationGracePeriodSeconds: 60
+      terminationGracePeriodSeconds: 10
       containers:
       - name: combined-db
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "postgres" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        imagePullPolicy: IfNotPresent #{{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         ports:
         - containerPort: 5432
         {{- template "magda.postgresLivenessProbe" . }}
+        {{- template "magda.postgresLifecycle" . }}
         env:
         - name: PGDATA
           value: /var/pv/data

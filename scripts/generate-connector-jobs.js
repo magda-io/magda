@@ -73,11 +73,11 @@ files.forEach(function(connectorConfigFile) {
                         imagePullPolicy: prod ? "IfNotPresent" : "Always",
                         resources: {
                             requests: {
-                                cpu: prod ? "500m" : "100m",
-                                memory: prod ? "500Mi" : "100Mi"
+                                cpu: prod ? "500m" : "500m",
+                                memory: prod ? "500Mi" : "500Mi"
                             },
                             limits: {
-                                cpu: prod ? "1000m" : "200m"
+                                cpu: prod ? "1000m" : "500m"
                             }
                         },
                         volumeMounts: [

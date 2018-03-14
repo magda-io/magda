@@ -18,6 +18,8 @@ combined-db:
     requests:
       cpu: 400m
       memory: 1500Mi
+    limits:
+      cpu: 1500m
   waleBackup:
     method: WAL
     gsPrefix: "gs://magda-postgres-backups-asia/dev"
@@ -25,6 +27,8 @@ combined-db:
     googleApplicationCreds:
       secretName: storage-account-credentials
       fileName: TerriaJS-5e042b649f8a.json
+  data:
+    storage: 250Gi
 elasticsearch:
   data:
     heapSize: 500m

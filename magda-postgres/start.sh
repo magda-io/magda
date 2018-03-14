@@ -55,7 +55,7 @@ if [[ ! -z "${BACKUP}" ]]; then
 
             local CURRENT_TIME=$(date +"%H:%M")
             if [ "$CURRENT_TIME" == "$BACKUP_EXECUTION_TIME" ] || [ $FIRST_RUN == true ]; then
-                /usr/local/bin/wal-e backup-push "$PGDATA"
+                /usr/local/bin/wal-e backup-push --pool-size 1 "$PGDATA"
                 /usr/local/bin/wal-e delete --confirm retain 30
                 FIRST_RUN=false
             fi
@@ -67,6 +67,6 @@ fi
 
 # Why this elaborate way of running the command? It lets us use the same string of PGARGS for running pg_ctl (above) as it does for postgres (below).
 # Without it we get all these issues with exec expecting an array of strings vs pg_ctl -o expecting one big string.
-COMMAND="gosu ${PGUSER:-postgres} $* $PGARGS"
+COMMAND="$* $PGARGS"
 echo "Running command $COMMAND"
 exec echo "$COMMAND" | bash
