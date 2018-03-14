@@ -7,6 +7,10 @@ import Home from "../Components/Home";
 import { config } from "../config.js";
 import "./HomePage.css";
 
+import TagLine from "./HomePageComponents/TagLine";
+import Lozenge from "./HomePageComponents/TagLine";
+import Stories from "./HomePageComponents/Stories";
+
 const getBgImg=()=>{
     if(!config.homePageConfig || !config.homePageConfig.backgroundImageUrls) return null;
     const backgroundImageUrls = config.homePageConfig.backgroundImageUrls;
@@ -29,7 +33,7 @@ const getBgImg=()=>{
     let sizes;
     if(imgInfoItems.length<=1) sizes = `${imgInfoItems[0].width}px`;
     else sizes = imgInfoItems.slice(1).filter(item=>item.width).map(item=>`(min-width: ${item.width}px) ${item.width}px`).join(", ")+`, ${imgInfoItems[0].width}px`;
-    return <img alt="background image" className="homepage-background-img" src={imgInfoItems[0].url} sizes={sizes} srcSet={srcset} />;
+    return <img alt="background" className="homepage-background-img" src={imgInfoItems[0].url} sizes={sizes} srcSet={srcset} />;
 };
 
 const HomePage = withRouter(({ location }) => {
@@ -39,6 +43,9 @@ const HomePage = withRouter(({ location }) => {
             <Container className="app-container">
                 <Header/>
                 <SearchBox />
+                <TagLine />
+                <Lozenge />
+                <Stories />
                 <Home location={location} />
             </Container>
         </div>
