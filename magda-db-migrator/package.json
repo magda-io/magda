@@ -1,6 +1,6 @@
 {
     "name": "@magda/db-migrator",
-    "version": "0.0.35-0",
+    "version": "0.0.36-0",
     "description": "A base Docker image for PostgreSQL with Flyway for schema migrations.",
     "scripts": {
         "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
@@ -16,6 +16,6 @@
         }
     },
     "devDependencies": {
-        "@magda/scripts": "^0.0.35-0"
+        "@magda/scripts": "^0.0.36-0"
     }
 }

@@ -15,7 +15,7 @@ spec:
       labels:
         service: authorization-db
     spec:
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 60
       containers:
       - name: authorization-db
         resources:

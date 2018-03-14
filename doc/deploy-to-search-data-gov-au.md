@@ -8,6 +8,11 @@ git status
 
 - [ ] `git pull`
 
+- [ ] Check this out into a release branch
+```
+git checkout -b 0.0.x
+```
+
 - [ ] Put new heading in CHANGES for the next version.
 
 - [ ] At the root, run `lerna bootstrap`
@@ -53,6 +58,14 @@ kubectl delete pods es-data-0
 kubectl get pods
 ```
 
+- [ ] Generate jobs files, deploy them and make sure they run ok
+```bash
+cd deploy
+npm run generate-connector-jobs-dev
+kubectl apply -f kubernetes/generated/prod
+cd ..
+```
+
 - [ ] Do a smoke test on dev to make sure everything works ok. If it works go to the next step, otherwise:
     - Fix it
     - Rebuild the affected images
@@ -83,6 +96,16 @@ kubectl logs -f <registry-api-pod-name>
 kubectl port-forward <cloud-sql-proxy-pod-name> 5432:5432
 ```
 
+- [ ] Generate/deploy new cron jobs
+```bash
+cd deploy
+npm run generate-connector-jobs-prod
+mkdir kubernetes/generated/prod/cron
+mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
+kubectl apply -f kubernetes/generated/prod/cron
+cd ..
+```
+
 - [ ] Do a smoke test on prod to make sure everything works ok. If it works go to the next step, otherwise:
     - Fix it
     - Rebuild the affected images
@@ -91,13 +114,29 @@ kubectl port-forward <cloud-sql-proxy-pod-name> 5432:5432
     - Do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
 
 ### Publish new version to git
-- [ ] Push the new release version to master and the new release tag- [ 
+- [ ] Push the new release tag and branch
 ```bash
-git push origin master
+git push origin <version>
 git push origin v<version>
 ```
 
+- [ ] Merge the release branch into master
+```bash
+git checkout master
+git pull
+git merge <version>
+git push origin master
+```
+
+- [ ] Delete the last release branch in github
+
 ### Create new pre-release version, publish to dev and push to git
+- [ ] Checkout master
+```bash
+git checkout master
+git pull
+```
+
 - [ ] Use lerna to create a new pre-patch version
 ```
 lerna publish --force-publish --skip-npm
@@ -128,7 +167,7 @@ kubectl get pods
 
 - [ ] Do a smoke test again to make sure dev is ok
 
-- [ ] Push the new prepatch version to master
+- [ ] Push the new prepatch version to master - if someone's merged something to master in the meantime just merge, this is a prepatch so its ok.
 ```bash
 git push origin master
 ```

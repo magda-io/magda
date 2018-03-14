@@ -77,8 +77,7 @@ files.forEach(function(connectorConfigFile) {
                                 memory: prod ? "500Mi" : "100Mi"
                             },
                             limits: {
-                                cpu: prod ? "1000m" : "200m",
-                                memory: prod ? "1000Mi" : "200Mi"
+                                cpu: prod ? "1000m" : "200m"
                             }
                         },
                         volumeMounts: [
