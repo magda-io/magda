@@ -3,11 +3,8 @@ import React from "react";
 import { config } from "./config.js";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import SearchBox from "./Components/Search/SearchBox";
-import HeaderHome from "./Components/Header/HeaderHome";
-import HeaderHomeMobile from "./Components/Header/HeaderHomeMobile";
-import HeaderOthers from "./Components/Header/HeaderOthers";
-import HeaderOthersMobile from "./Components/Header/HeaderOthersMobile";
+import Header from "./Components/Header/Header";
+import SearchBox from "./Components/SearchBox/SearchBox";
 import ProjectsViewer from "./Components/Project/ProjectsViewer";
 import ProjectDetails from "./Components/Project/ProjectDetails";
 import CreateProject from "./Components/Project/CreateProject";
@@ -30,14 +27,12 @@ import Container from "muicss/lib/react/container";
 import d61logo from "./data61-logo.png";
 import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
-import { Medium, Small } from "./UI/Responsive";
 
 import { Route, Link, Switch } from "react-router-dom";
 
 import "./AppContainer.css";
 
 class AppContainer extends React.Component {
-
     componentWillMount() {
         this.props.requestWhoAmI();
     }
@@ -101,32 +96,8 @@ class AppContainer extends React.Component {
                     <Banner />
                     <FeedbackForm />
                     <Container className="app-container">
-                        <Small>
-                            <Switch>
-                                <Route exact path="/" component={HeaderHomeMobile} />
-                                <Route path="/*" component={HeaderOthersMobile} />
-                            </Switch>
-                        </Small>
-                        <Medium>
-                            <Switch>
-                                <Route exact path="/" component={HeaderHome} />
-                                <Route path="/*" component={HeaderOthers} />
-                            </Switch>
-                        </Medium>
-
-                        <Small>
-                            <SearchBox
-                                location={this.props.location}
-                                theme="dark"
-                            />
-                        </Small>
-                        <Medium>
-                            <SearchBox
-                                location={this.props.location}
-                                theme="light"
-                            />
-                        </Medium>
-
+                        <Header/>
+                        <SearchBox />
                         {this.renderBody()}
                     </Container>
 
