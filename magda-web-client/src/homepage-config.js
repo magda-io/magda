@@ -14,6 +14,12 @@ window.magda_client_homepage_config = {
         "twenty-2160w.jpg",
         "twenty-2880w.jpg"
     ],
+    "tagLineText": "An easy way to find, access and reuse public data",
+    "Lozenge": {
+        "icon":"camara.svg",
+        "text":"Explore QLD road data",
+        "url":"https://search.data.gov.au/search?q=QLD%20road%20data"
+    },
     "stories":[
         "story1.md",
         "story2.md",
