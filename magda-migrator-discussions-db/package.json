@@ -1,6 +1,6 @@
 {
     "name": "@magda/migrator-discussions-db",
-    "version": "0.0.35-0",
+    "version": "0.0.35",
     "description": "Magda auth's PostgreSQL database.",
     "scripts": {
         "dev": "echo \"No dev mode available, use helm instead.\"",
@@ -16,7 +16,7 @@
         }
     },
     "devDependencies": {
-        "@magda/db-migrator": "^0.0.35-0",
-        "@magda/scripts": "^0.0.35-0"
+        "@magda/db-migrator": "^0.0.35",
+        "@magda/scripts": "^0.0.35"
     }
 }

@@ -11,7 +11,7 @@ spec:
       labels:
         service: combined-db
     spec:
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 60
       containers:
       - name: combined-db
         resources:
