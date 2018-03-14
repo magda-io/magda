@@ -4,7 +4,10 @@ import { config } from "./config.js";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import SearchBox from "./Components/Search/SearchBox";
-import AccountNavbar from "./Components/Account/AccountNavbar";
+import HeaderHome from "./Components/Header/HeaderHome";
+import HeaderHomeMobile from "./Components/Header/HeaderHomeMobile";
+import HeaderOthers from "./Components/Header/HeaderOthers";
+import HeaderOthersMobile from "./Components/Header/HeaderOthersMobile";
 import ProjectsViewer from "./Components/Project/ProjectsViewer";
 import ProjectDetails from "./Components/Project/ProjectDetails";
 import CreateProject from "./Components/Project/CreateProject";
@@ -25,22 +28,15 @@ import SignInRedirect from "./Components/Account/SignInRedirect";
 import { requestWhoAmI } from "./actions/userManagementActions";
 import Container from "muicss/lib/react/container";
 import d61logo from "./data61-logo.png";
-import dgalogo from "./dga.png";
 import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
-import {Medium, Small} from './UI/Responsive';
-import mobileMenu from "./assets/mobile-menu.svg";
+import { Medium, Small } from "./UI/Responsive";
 
 import { Route, Link, Switch } from "react-router-dom";
 
 import "./AppContainer.css";
 
 class AppContainer extends React.Component {
-    constructor(props) {
-        super(props);
-        this.toggleMenu = this.toggleMenu.bind(this);
-        this.state = { isMobileMenuOpen: false };
-    }
 
     componentWillMount() {
         this.props.requestWhoAmI();
@@ -55,12 +51,6 @@ class AppContainer extends React.Component {
                 {link[0]}
             </a>
         );
-    }
-
-    toggleMenu() {
-        this.setState({
-            isMobileMenuOpen: !this.state.isMobileMenuOpen
-        });
     }
 
     renderBody() {
@@ -103,23 +93,7 @@ class AppContainer extends React.Component {
         );
     }
 
-    renderHeaderNav(headerNavs){
-      return (<div>
-      {headerNavs.map(nav => (
-          <Link
-              key={nav[1]}
-              to={`/${encodeURI(nav[1])}`}
-          >
-              {nav[0]}
-          </Link>
-      ))}
-      {config.disableAuthenticationFeatures || (
-          <AccountNavbar />
-      )}</div>)
-    }
-
     render() {
-        const headerNavs = config.headerNavigation;
         const footerNavs = config.footerNavigation;
         return (
             <ReactDocumentTitle title={config.appName}>
@@ -128,35 +102,30 @@ class AppContainer extends React.Component {
                     <FeedbackForm />
                     <Container className="app-container">
                         <Small>
-                          <div className='mobile-header'>
-                              <div className='mobile-header-inner'>
-                                <div className='mobile-logo'><Link to="/">{config.appName}</Link></div>
-                                <button className='mobile-toggle' onClick={this.toggleMenu}><img src={mobileMenu} alt='open menu'></img></button>
-                              </div>
-                              <div className={`${this.state.isMobileMenuOpen ? 'isOpen' : ''} mobile-nav`}>
-                                {this.renderHeaderNav(headerNavs)}
-                              </div>
-                          </div>
+                            <Switch>
+                                <Route exact path="/" component={HeaderHomeMobile} />
+                                <Route path="/*" component={HeaderOthersMobile} />
+                            </Switch>
                         </Small>
                         <Medium>
-                          <table width="100%" className="nav-table">
-                              <tbody>
-                                  <tr style={{ verticalAlign: "middle" }}>
-                                      <td className="logo">
-                                          <Link to="/">
-                                              <img src={dgalogo} alt="dga-logo" />
-                                          </Link>
-                                      </td>
-                                      <td className="nav-bar-right">
-                                          {this.renderHeaderNav(headerNavs)}
-                                      </td>
-                                  </tr>
-                              </tbody>
-                          </table>
+                            <Switch>
+                                <Route exact path="/" component={HeaderHome} />
+                                <Route path="/*" component={HeaderOthers} />
+                            </Switch>
                         </Medium>
 
-                        <Small><SearchBox location={this.props.location} theme='dark'/></Small>
-                        <Medium><SearchBox location={this.props.location} theme='light'/></Medium>
+                        <Small>
+                            <SearchBox
+                                location={this.props.location}
+                                theme="dark"
+                            />
+                        </Small>
+                        <Medium>
+                            <SearchBox
+                                location={this.props.location}
+                                theme="light"
+                            />
+                        </Medium>
 
                         {this.renderBody()}
                     </Container>
