@@ -2,6 +2,7 @@
 
 * Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
 * Map Previewer will select WMS data source by default (if available) for better big data handling
+* Hided `Projects` on header
 
 ## 0.0.35
 
