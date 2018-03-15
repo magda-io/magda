@@ -3,7 +3,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.35-0"
+    tag: "0.0.36-0"
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:
@@ -13,17 +13,13 @@ gateway:
     requests:
       cpu: 50m
       memory: 100Mi
-    limits:
-      cpu: 200m
-      memory: 250Mi
 combined-db:
   resources:
     requests:
       cpu: 400m
-      memory: 1000Mi
-    limits:
-      cpu: 1000m
       memory: 1500Mi
+    limits:
+      cpu: 1500m
   waleBackup:
     method: WAL
     gsPrefix: "gs://magda-postgres-backups-asia/dev"
@@ -31,6 +27,8 @@ combined-db:
     googleApplicationCreds:
       secretName: storage-account-credentials
       fileName: TerriaJS-5e042b649f8a.json
+  data:
+    storage: 250Gi
 elasticsearch:
   data:
     heapSize: 500m
@@ -39,9 +37,6 @@ elasticsearch:
       requests:
         cpu: 400m
         memory: 1000Mi
-      limits:
-        cpu: 1000m
-        memory: 1500Mi
 feedback-api:
   gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
 indexer:
@@ -49,94 +44,58 @@ indexer:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 1000Mi
 preview-map:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 registry-api:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 1000Mi
 search-api:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 1000Mi
 web-server:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 sleuther-linked-data-rating:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 sleuther-broken-link:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 sleuther-visualization:
   resources:
     requests:
       cpu: 200m
       memory: 200Mi
-    limits:
-      cpu: 200m
-      memory: 500Mi
 sleuther-format:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 300Mi
 admin-api:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 authorization-api:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 discussions-api:
   resources:
     requests:
       cpu: 0
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi

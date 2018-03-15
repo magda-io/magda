@@ -19,10 +19,12 @@ import "./RecordHandler.css";
 
 class RecordHandler extends React.Component {
     componentWillMount() {
-        this.props.fetchDataset(this.props.match.params.datasetId);
+        this.props.fetchDataset(
+            decodeURIComponent(this.props.match.params.datasetId)
+        );
         if (this.props.match.params.distributionId) {
             this.props.fetchDistribution(
-                this.props.match.params.distributionId
+                decodeURIComponent(this.props.match.params.distributionId)
             );
         }
     }
@@ -31,14 +33,18 @@ class RecordHandler extends React.Component {
             nextProps.match.params.datasetId !==
             this.props.match.params.datasetId
         ) {
-            nextProps.fetchDataset(nextProps.match.params.datasetId);
+            nextProps.fetchDataset(
+                decodeURIComponent(nextProps.match.params.datasetId)
+            );
         }
         if (
             nextProps.match.params.distributionId &&
             nextProps.match.params.distributionId !==
                 this.props.match.params.distributionId
         ) {
-            nextProps.fetchDistribution(nextProps.match.params.distributionId);
+            nextProps.fetchDistribution(
+                decodeURIComponent(nextProps.match.params.distributionId)
+            );
         }
     }
 
@@ -71,9 +77,7 @@ class RecordHandler extends React.Component {
     renderByState() {
         const publisherName = this.props.dataset.publisher.name;
         // const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
-        const distributionIdAsUrl = this.props.match.params.distributionId
-            ? encodeURIComponent(this.props.match.params.distributionId)
-            : "";
+
         if (this.props.match.params.distributionId) {
             if (this.props.distributionIsFetching) {
                 return <ProgressBar />;
@@ -89,9 +93,12 @@ class RecordHandler extends React.Component {
                     { id: "details", name: "Details", isActive: true },
                     { id: "preview", name: "Preview", isActive: true }
                 ];
+
                 const baseUrlDistribution = `/dataset/${encodeURIComponent(
-                    this.props.match.params.datasetId
-                )}/distribution/${distributionIdAsUrl}`;
+                    this.props.dataset.identifier
+                )}/distribution/${encodeURIComponent(
+                    this.props.distribution.identifier
+                )}`;
                 return (
                     <div className="mui-row">
                         <div className="mui-col-sm-8">
@@ -156,7 +163,7 @@ class RecordHandler extends React.Component {
                 // ];
 
                 const baseUrlDataset = `/dataset/${encodeURIComponent(
-                    this.props.match.params.datasetId
+                    this.props.dataset.identifier
                 )}`;
 
                 return (
@@ -171,17 +178,18 @@ class RecordHandler extends React.Component {
                                                 <span className="publisher">
                                                     {publisherName}
                                                 </span>
-                                                <span className="separator">
+                                                <span className="separator hidden-sm">
                                                     /
                                                 </span>
-                                                <span className="updated-date">
+                                                <span className="updated-date hidden-sm">
                                                     Created{" "}
                                                     {
                                                         this.props.dataset
                                                             .issuedDate
                                                     }&nbsp;
                                                 </span>
-                                                <span className="updated-date">
+                                                <span className="updated-date hidden-sm">
+
                                                     Updated{" "}
                                                     {
                                                         this.props.dataset
