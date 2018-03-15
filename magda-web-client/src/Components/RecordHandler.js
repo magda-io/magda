@@ -94,10 +94,10 @@ class RecordHandler extends React.Component {
                     { id: "preview", name: "Preview", isActive: true }
                 ];
 
-                const baseUrlDistribution = `/dataset/${encodeURIComponent(
-                    this.props.dataset.identifier
-                )}/distribution/${encodeURIComponent(
-                    this.props.distribution.identifier
+                const baseUrlDistribution = `/dataset/${encodeURI(
+                    this.props.match.params.datasetId
+                )}/distribution/${encodeURI(
+                    this.props.match.params.distributionId
                 )}`;
                 return (
                     <div className="mui-row">
@@ -162,8 +162,8 @@ class RecordHandler extends React.Component {
                 //   {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
                 // ];
 
-                const baseUrlDataset = `/dataset/${encodeURIComponent(
-                    this.props.dataset.identifier
+                const baseUrlDataset = `/dataset/${encodeURI(
+                    this.props.match.params.datasetId
                 )}`;
 
                 return (
@@ -189,7 +189,6 @@ class RecordHandler extends React.Component {
                                                     }&nbsp;
                                                 </span>
                                                 <span className="updated-date hidden-sm">
-
                                                     Updated{" "}
                                                     {
                                                         this.props.dataset
