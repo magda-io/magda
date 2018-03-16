@@ -1,3 +1,7 @@
+## 0.0.37
+
+* Added Download button/link click tracking via Google Analytics
+
 ## 0.0.36
 
 * Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
