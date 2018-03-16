@@ -1,5 +1,6 @@
 ## 0.0.37
 
+* Hid `Projects` on header
 * Added recent searches function
 
 ## 0.0.36
