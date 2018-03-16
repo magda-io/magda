@@ -56,7 +56,7 @@
         "lodash.debounce": "^4.0.8",
         "lodash.find": "^4.6.0",
         "lodash.findindex": "^4.6.0",
-        "lodash.isequal": "^4.4.0",
+        "lodash.isequal": "^4.5.0",
         "lodash.max": "^4.0.1",
         "lodash.maxby": "^4.6.0",
         "lodash.min": "^4.0.1",

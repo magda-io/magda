@@ -1,6 +1,8 @@
 ## 0.0.37
 
 * Added Download button/link click tracking via Google Analytics
+* Hid `Projects` on header
+* Added recent searches function
 
 ## 0.0.36
 
