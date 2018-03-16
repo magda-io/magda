@@ -4,7 +4,7 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "http://magda-dev.terria.io/";
+const fallbackApiHost = "https://magda-dev.terria.io/";
 
 const serverConfig: {
     authApiBaseUrl?: string,
