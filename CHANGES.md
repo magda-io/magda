@@ -1,3 +1,7 @@
+## 0.0.37
+
+* Add CircleCI configuration to automatically build and deploy the public web interface
+
 ## 0.0.36
 
 * Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
@@ -5,7 +9,6 @@
 
 ## 0.0.35
 
-* Add CircleCI configuration to automatically build and deploy the public web interface
 * Fixed preview map data loading issue: replaced dev site url
 * Fixed `third-party.js` url in homepage
 
