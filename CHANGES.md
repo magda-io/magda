@@ -1,6 +1,7 @@
 ## 0.0.37
 
 * Added Download button/link click tracking via Google Analytics
+* Add CircleCI configuration to automatically build and deploy the public web interface
 * Hid `Projects` on header
 * Added recent searches function
 
