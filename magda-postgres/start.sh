@@ -55,7 +55,7 @@ if [[ ! -z "${BACKUP}" ]]; then
 
             local CURRENT_TIME=$(date +"%H:%M")
             if [ "$CURRENT_TIME" == "$BACKUP_EXECUTION_TIME" ] || [ $FIRST_RUN == true ]; then
-                /usr/local/bin/wal-e backup-push --pool-size 1 "$PGDATA"
+                /usr/local/bin/wal-e backup-push --pool-size 1 --cluster-read-rate-limit 10000000 "$PGDATA"
                 /usr/local/bin/wal-e delete --confirm retain 30
                 FIRST_RUN=false
             fi
