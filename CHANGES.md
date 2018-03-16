@@ -1,6 +1,8 @@
 ## 0.0.37
 
 * Add CircleCI configuration to automatically build and deploy the public web interface
+* Hid `Projects` on header
+* Added recent searches function
 
 ## 0.0.36
 

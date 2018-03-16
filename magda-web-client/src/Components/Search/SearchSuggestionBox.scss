@@ -1,0 +1,39 @@
+@import "../../variables";
+
+.search-suggestion-box {
+    left: 0px;
+    right: 0px;
+    position: absolute;
+    z-index: 2;
+    color: $body;
+    .search-suggestion-box-position-adjust {
+        height: 5px;
+    }
+    .search-suggestion-box-body {
+        border: 3px solid #ecf0f1;
+        background: #fff;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-bottom: 10px;
+        button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin: 0px;
+            padding-left: 0px;
+            font-size: small;
+            height: auto;
+        }
+    }
+    h5 {
+        font-size: smaller;
+    }
+    .markdown{
+        padding: 2px;
+        white-space: initial;
+        line-height: 20px;
+        em{
+            font-weight: 500;
+        }
+    }
+}

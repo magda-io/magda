@@ -83,7 +83,7 @@ export const config = {
         ["Publishers", "publishers"],
         ...(serverConfig.disableAuthenticationFeatures
             ? []
-            : [["Projects", "projects"]])
+            : [])
     ],
     footerNavigation: [
         {
