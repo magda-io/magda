@@ -1,0 +1,10 @@
+@import "../../variables";
+
+.searchBox-region-home {
+    position: relative;
+    margin-bottom: 32px;
+    @media (min-width: $medium) {
+        padding: 60px 120px 70px;
+        background-color: rgba(#fff, 0.8);
+    }
+}

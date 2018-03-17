@@ -1,0 +1,9 @@
+@import "../../variables";
+
+.searchBox-region-others {
+    position: relative;
+    margin-bottom: 32px;
+    @media (min-width: $medium) {
+        padding: 60px 120px 70px;
+    }
+}

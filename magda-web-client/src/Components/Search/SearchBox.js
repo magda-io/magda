@@ -18,15 +18,14 @@ import queryString from "query-string";
 class SearchBox extends Component {
     constructor(props) {
         super(props);
-        const self: any = this;
-        self.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
+        this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
             this
         );
-        self.updateQuery = this.updateQuery.bind(this);
-        self.updateSearchText = this.updateSearchText.bind(this);
-        self.onClickSearch = this.onClickSearch.bind(this);
-        self.onSearchTextChange = this.onSearchTextChange.bind(this);
-        self.getSearchBoxValue = this.getSearchBoxValue.bind(this);
+        this.updateQuery = this.updateQuery.bind(this);
+        this.updateSearchText = this.updateSearchText.bind(this);
+        this.onClickSearch = this.onClickSearch.bind(this);
+        this.onSearchTextChange = this.onSearchTextChange.bind(this);
+        this.getSearchBoxValue = this.getSearchBoxValue.bind(this);
 
         // it needs to be undefined here, so the default value should be from the url
         // once this value is set, the value should always be from the user input
@@ -133,32 +132,32 @@ class SearchBox extends Component {
     render() {
         return (
             <Form className="searchBox">
-                    <label htmlFor="search">
-                        <span className="sr-only">
-                            {"Search " + config.appName}
-                        </span>
-                        <Input
-                            type="text"
-                            name="search"
-                            id="search"
-                            placeholder="Search for open data"
-                            value={this.getSearchBoxValue()}
-                            onChange={this.onSearchTextChange}
-                            onKeyPress={
-                                this.handleSearchFieldEnterKeyPress
-                            }
-                            autoComplete="off"
-                        />
-                    </label>
-                    <button
-                        onClick={this.onClickSearch}
-                        className="search-btn"
-                        type="button">
-                        <img src={searchDark} alt="search button" />
-                        <span className="sr-only">
-                            submit search
-                        </span>
-                    </button>
+                <label htmlFor="search">
+                    <span className="sr-only">
+                        {"Search " + config.appName}
+                    </span>
+                    <Input
+                        type="text"
+                        name="search"
+                        id="search"
+                        placeholder="Search for open data"
+                        value={this.getSearchBoxValue()}
+                        onChange={this.onSearchTextChange}
+                        onKeyPress={this.handleSearchFieldEnterKeyPress}
+                        autoComplete="off"
+                    />
+                </label>
+                <button
+                    onClick={this.onClickSearch}
+                    className="search-btn"
+                    type="button"
+                >
+                    <img
+                        src={this.props.theme === "light" ? search : searchDark}
+                        alt="search button"
+                    />
+                    <span className="sr-only">submit search</span>
+                </button>
             </Form>
         );
     }

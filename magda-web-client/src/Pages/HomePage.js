@@ -2,7 +2,7 @@ import React from "react";
 import Container from "muicss/lib/react/container";
 import { withRouter } from "react-router-dom";
 import Header from "../Components/Header/Header";
-import SearchBox from "../Components/SearchBox/SearchBox";
+import SearchBoxHome from "../Components/SearchBox/SearchBoxHome";
 import { config } from "../config.js";
 import "./HomePage.css";
 
@@ -60,14 +60,14 @@ const getTagLine = ()=>{
 }
 
 const HomePage = withRouter(({ location }) => {
-  
+
     return (
         <div className="homepage-app-container">
             {getBgImg()}
             <Container className="app-container">
                 <Header/>
                 <Small><TagLine taglineText = {getTagLine().mobile}/></Small>
-                <SearchBox />
+                <SearchBoxHome />
                 <Medium><TagLine taglineText = {getTagLine().desktop}/></Medium>
                 <Lozenge />
                 <Stories />

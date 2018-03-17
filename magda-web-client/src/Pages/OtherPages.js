@@ -18,7 +18,8 @@ import { staticPageRegister } from "../content/register";
 import RouteNotFound from "../Components/RouteNotFound";
 
 import Header from "../Components/Header/Header";
-import SearchBox from "../Components/SearchBox/SearchBox";
+import SearchBoxOthers from "../Components/SearchBox/SearchBoxOthers";
+import "./OtherPages.css";
 
 const renderBody = () => {
     return (
@@ -59,7 +60,8 @@ const OtherPages = (props) => {
     return (
         <Container className="app-container">
             <Header/>
-            <SearchBox />
+            <div className="searchBox-strip"/>
+            <SearchBoxOthers />
             {renderBody()}
         </Container>
     );
