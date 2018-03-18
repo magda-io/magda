@@ -1,5 +1,6 @@
 ## 0.0.37
 
+* Use params q= 'xxx' to persist the search text in search page, dataset page and distribution pages
 * Add CircleCI configuration to automatically build and deploy the public web interface
 * Hid `Projects` on header
 * Added recent searches function
