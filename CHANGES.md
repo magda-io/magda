@@ -1,6 +1,18 @@
+## 0.0.37
+
+* Add CircleCI configuration to automatically build and deploy the public web interface
+* Hid `Projects` on header
+* Added recent searches function
+
+## 0.0.36
+
+* Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
+* Map Previewer will select WMS data source by default (if available) for better big data handling
+
 ## 0.0.35
 
-* fixed preview map data loading issue: replaced dev site url
+* Fixed preview map data loading issue: replaced dev site url
+* Fixed `third-party.js` url in homepage
 
 ## 0.0.34
 

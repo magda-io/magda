@@ -100,7 +100,7 @@ app.use(
                 "rum-static.pingdom.net"
             ],
             objectSrc: ["'none'"],
-            sandbox: ["allow-scripts", "allow-same-origin"],
+            sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"],
             reportUri: argv.baseUrl + "api/v0/feedback/csp"
         } as helmet.IHelmetContentSecurityPolicyDirectives,
         browserSniff: false

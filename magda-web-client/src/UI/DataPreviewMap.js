@@ -6,9 +6,9 @@ import { config } from "../config";
 import {Medium, Small} from './Responsive';
 
 export const defaultDataSourcePreference = [
+    "WMS",
     "GeoJSON",
     "WFS",
-    "WMS",
     "csv-geo-au",
     "KML"
 ];
