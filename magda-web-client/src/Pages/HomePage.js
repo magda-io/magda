@@ -10,12 +10,16 @@ import TagLine from "./HomePageComponents/TagLine";
 import Lozenge from "./HomePageComponents/TagLine";
 import Stories from "./HomePageComponents/Stories";
 
+import MediaQuery from "react-responsive";
+
 const getBgImg=()=>{
+    let imageMap = new Object();
     if(!config.homePageConfig || !config.homePageConfig.backgroundImageUrls) return null;
     const backgroundImageUrls = config.homePageConfig.backgroundImageUrls;
     if(!backgroundImageUrls.length) return null;
     const baseUrl = config.homePageConfig.baseUrl ? config.homePageConfig.baseUrl : "";
-    const imgInfoItems = backgroundImageUrls.map(item=>{
+
+    backgroundImageUrls.forEach(item=>{
         let width;
         try{
             width = parseInt(item.replace(/[^\d]/g,""),10);
@@ -23,16 +27,17 @@ const getBgImg=()=>{
         }catch(e){
             width=0;
         }
-        return {
-            url : baseUrl+item,
-            width
-        }
+
+        imageMap = Object.assign(imageMap, {[width]: baseUrl+item});
     });
-    const srcset = imgInfoItems.filter(item=>item.width).map(item=>`${item.url} ${item.width}w`).join(", ");
-    let sizes;
-    if(imgInfoItems.length<=1) sizes = `${imgInfoItems[0].width}px`;
-    else sizes = imgInfoItems.slice(1).filter(item=>item.width).map(item=>`(min-width: ${item.width}px) ${item.width}px`).join(", ")+`, ${imgInfoItems[0].width}px`;
-    return <img alt="background" className="homepage-background-img" src={imgInfoItems[0].url} sizes={sizes} srcSet={srcset} />;
+
+    const screenSizes = Object.keys(imageMap);
+    return (<div>{screenSizes.map((size, i) => <MediaQuery
+                  key={size}
+                  minWidth={size + 'px'}
+                  maxWidth={i === screenSizes.length - 1 ? null : screenSizes[i+1] + 'px'}>
+                  <img className='homepage-background-img' src={imageMap[size]}/>
+                 </MediaQuery>)}</div>);
 };
 
 const HomePage = withRouter(({ location }) => {
