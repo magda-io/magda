@@ -52,6 +52,7 @@
         "html-truncate": "^1.2.2",
         "immutable": "^3.8.1",
         "isomorphic-fetch": "^2.2.1",
+        "js-yaml": "^3.11.0",
         "leaflet": "^0.7.7",
         "leaflet-mapbox-vector-tile": "TerriaJS/Leaflet.MapboxVectorTile",
         "lodash.debounce": "^4.0.8",
@@ -98,8 +99,7 @@
         "traverse": "^0.6.6",
         "uuid": "^3.0.1",
         "vega": "^3.0.0-rc2",
-        "vega-lite": "^2.0.0-beta.8",
-        "yaml-front-matter": "^4.0.0"
+        "vega-lite": "^2.0.0-beta.8"
     },
     "proxy": {
         "/server-config.js": {
