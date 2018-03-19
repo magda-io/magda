@@ -15,7 +15,7 @@ jobs:
 #                   && sudo apt-get install sbt
       - run:
           name: install npm/lerna/eslint dev tools
-          command: 'sudo npm install -g npm@latest'
+          command: 'sudo npm install -g npm@latest lerna'
       - restore_cache:
           key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
       - run:
