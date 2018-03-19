@@ -165,6 +165,17 @@ class DistributionRow extends Component {
                                 );
                                 return;
                             }
+
+                            // google analytics download tracking
+                            const resource_url = encodeURIComponent(distribution.downloadURL);
+                            if (resource_url && window.ga) {
+                                window.ga('send', {
+                                    hitType: 'event',
+                                    eventCategory: 'Resource',
+                                    eventAction: 'Download',
+                                    eventLabel: resource_url
+                                })
+                            }
                             window.location = distribution.downloadURL;
                         }}
                     >
