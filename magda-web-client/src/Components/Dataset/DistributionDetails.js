@@ -17,7 +17,7 @@ class DistributionDetails extends Component {
             ? <span>This dataset can be downloaded from: <br/>
                 <a onClick={(distribution) => {
                     // google analytics download tracking
-                    var resource_url = encodeURIComponent(distribution.downloadURL);
+                    const resource_url = encodeURIComponent(distribution.downloadURL);
                     if (resource_url && window.ga) {
                         window.ga('send', {
                             hitType: 'event',
