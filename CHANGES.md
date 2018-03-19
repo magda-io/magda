@@ -1,5 +1,6 @@
-## 0.0.37
+## 0.0.38
 
+* Added Rollbar exception reporting for client side javascript
 * Added Download button/link click tracking via Google Analytics
 * Add CircleCI configuration to automatically build and deploy the public web interface
 * Hid `Projects` on header
