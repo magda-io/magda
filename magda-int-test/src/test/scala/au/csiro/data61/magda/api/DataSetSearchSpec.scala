@@ -144,7 +144,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               response.dataSets.isEmpty should be(false)
 
               response.dataSets.exists(_.identifier == sourceDataSet.identifier)
-
+              
               response.dataSets.foreach { dataSet =>
                 withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
                   MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
@@ -187,7 +187,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             val (_, dataSets, routes) = indexTuple
             val (textQuery, query) = queryTuple
 
-            Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}&limit=${dataSets.length}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=${textQuery}&limit=${dataSets.length}") ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
               whenever(response.strategy.get == MatchAll) {
@@ -521,7 +521,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     }
 
     def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
-      Get(s"/v0/datasets?query=${encodeForUrl(query)}&limit=${dataSets.length}") ~> routes ~> check {
+      Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
 
@@ -587,8 +587,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         output.map(_.map(_.toLowerCase)) should equal(input.map(_.map(_.toLowerCase)))
       }
 
-      caseInsensitiveMatch("freeText", outputQuery.freeText, inputQuery.freeText)
-      caseInsensitiveMatch("quotes", outputQuery.quotes, inputQuery.quotes)
+      caseInsensitiveMatch("freeText", Seq(outputQuery.freeText), Seq(inputQuery.freeText))
       caseInsensitiveMatchFv("formats", outputQuery.formats, inputQuery.formats)
       caseInsensitiveMatchFv("publishers", outputQuery.publishers, inputQuery.publishers)
       outputQuery.dateFrom should equal(inputQuery.dateFrom)
@@ -627,11 +626,11 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         whenever(textQuery.trim.equals(textQuery) && !textQuery.contains("  ") &&
           !textQuery.toLowerCase.contains("or") && !textQuery.toLowerCase.contains("and")) {
 
-          Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+          Get(s"/v0/datasets?${textQuery}") ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
             if (textQuery.equals("")) {
-              response.query should equal(Query(freeText = Some("*")))
+              response.query should equal(Query(freeText = "*"))
             } else {
               queryEquals(response.query, query)
             }
@@ -646,7 +645,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
-        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+        Get(s"/v0/datasets?${textQuery}") ~> routes ~> check {
           status shouldBe OK
           val response = responseAs[SearchResult]
 
@@ -687,73 +686,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               }
           }
         }
-      }
-    }
-
-    it("should correctly escape control characters") {
-      try {
-        val controlChars = "+ - = && || ! ( ) { } [ ] ^ ~ ? : \\ / and or > <".split(" ")
-
-        def controlCharGen(string: String): Gen[String] = {
-          if (string.isEmpty) Gen.const("") else
-            (for {
-              whatToDo <- Gen.listOfN(string.length, Gen.chooseNum(0, 5))
-            } yield string.zip(whatToDo).map {
-              case (char, charWhatToDo) => charWhatToDo match {
-                case 0 => Gen.oneOf(controlChars)
-                case _ => Gen.const(char.toString)
-              }
-            }.reduce((accGen, currentGen) =>
-              accGen.flatMap { acc =>
-                currentGen.map { current =>
-                  acc + current
-                }
-              })).flatMap(a => a)
-        }
-
-        def hasBadWords(string: String) =
-          !Seq("and", "or").exists(reservedWord => string.toLowerCase.contains(reservedWord.toLowerCase))
-
-        def controlCharQueryGen() = for {
-          freeText <- Generators.textGen.flatMap(controlCharGen).suchThat(x => !hasBadWords(x))
-          quote <- Generators.smallSet(Generators.textGen.flatMap(controlCharGen).suchThat(!hasBadWords(_)))
-        } yield Query(freeText = Some(freeText), quotes = quote)
-        //        query.freeText.exists(!_.isEmpty()) && ().flatMap { query =>
-        //          val freeTextGen = query.freeText match {
-        //            case Some(freeTextInner) => controlCharGen(freeTextInner).map(Some.apply)
-        //            case None                => Gen.const(None)
-        //          }
-        //          val quotesGen = query.quotes
-        //            .filterNot(quote => quote.isEmpty())
-        //            .map(controlCharGen)
-        //            .foldRight(Gen.const(Set.empty[String]))((i, acc) => acc.flatMap(set => i.map(set + _)))
-        //
-        //          for {
-        //            freeText <- freeTextGen
-        //            quotes <- quotesGen
-        //          } yield (query.copy(
-        //            freeText = freeText,
-        //            quotes = quotes))
-        //        }
-
-        forAll(emptyIndexGen, textQueryGen(controlCharQueryGen)) {
-          case (indexTuple, queryTuple) ⇒
-            val (textQuery, query) = queryTuple
-            val (_, _, routes) = indexTuple
-
-            whenever(!textQuery.contains("  ") && !query.equals(Query())) {
-              Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
-                status shouldBe OK
-
-                val response = responseAs[SearchResult]
-                queryEquals(response.query, query)
-              }
-            }
-        }
-      } catch {
-        case e: Throwable =>
-          e.printStackTrace()
-          throw e
       }
     }
 

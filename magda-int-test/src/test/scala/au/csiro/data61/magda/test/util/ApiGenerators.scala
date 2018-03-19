@@ -152,28 +152,28 @@ object ApiGenerators {
       createCount(input.map(_.map(textCount).getOrElse(0)))
     }
 
-    val freeTextCount = iterableTextCount(query.freeText)
-    val quoteCount = iterableTextCount(query.quotes)
+    val freeTextCount = iterableTextCount(Some(query.freeText))
     val publisherCount = iterableTextCountFv(query.publishers)
     val dateFromCount = query.dateFrom.map(_ => 1).getOrElse(0)
     val dateToCount = query.dateTo.map(_ => 1).getOrElse(0)
     val formatsCount = iterableTextCountFv(query.formats)
     val regionsCount = query.regions.size
 
-    (freeTextCount + quoteCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
+    (freeTextCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
   }
 
   def queryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
-    freeText <- Generators.noneBiasedOption(queryTextGen(dataSets))
+    rawText <- probablyEmptySet(queryTextGen(dataSets))
     quotes <- probablyEmptySet(quoteTextGen(dataSets))
+    textList = rawText ++ quotes
+    shuffledTextList <- Gen.pick(textList.size, textList)
     publishers <- probablyEmptySet(publisherQueryGen(dataSets))
     dateFrom <- Generators.noneBiasedOption(dateToGen)
     dateTo <- Generators.noneBiasedOption(dateFromGen)
     formats <- probablyEmptySet(formatQueryGen(dataSets))
     regions <- probablyEmptySet(regionQueryGen)
   } yield Query(
-    freeText = freeText,
-    quotes = quotes,
+    freeText = shuffledTextList.mkString(""),
     publishers = publishers,
     dateFrom = dateFrom,
     dateTo = dateTo,
@@ -183,31 +183,43 @@ object ApiGenerators {
   def exactQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = queryGen(dataSets)
   def unspecificQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
     freeText <- queryTextGen(dataSets)
-  } yield Query(
-    freeText = Some(freeText)))
+  } yield Query(freeText = freeText))
     .suchThat(queryIsSmallEnough)
 
   def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>
-    val textListComponents = (Seq(query.freeText).flatten ++
-      query.quotes.map(""""""" + _ + """"""")).toSet
+    val text = "query=" + query.freeText
 
     val publishers = query.publishers.filter(containsNoFilterWord)
     val formats = query.formats.filter(containsNoFilterWord)
 
-    val facetList = publishers.map(publisher => s"by $publisher") ++
-      Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
-      Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
-      formats.map(format => s"as $format") ++
-      query.regions.map(region => s"in ${region.map(_.queryRegion)}")
+    val facetList =
+      Set(text)
+    publishers.map(publisher => s"publisher=$publisher") ++
+      query.dateFrom.map(dateFrom => s"dateFrom=$dateFrom").toSeq ++
+      query.dateTo.map(dateTo => s"dateTo=$dateTo").toSeq ++
+      formats.map(format => s"format=$format") ++
+      query.regions.map(region => s"region=${region.map(_.queryRegion)}")
+
+    println(facetList)
 
     val textQuery = for {
-      textList <- Gen.pick(textListComponents.size, textListComponents)
       randomFacetList <- Gen.pick(facetList.size, facetList)
-      rawQuery = (textList ++ randomFacetList).mkString(" ")
-      query <- randomCaseGen(rawQuery)
+      rawQuery = randomFacetList.mkString("&")
+      randomCaseQuery <- randomCaseGen(rawQuery)
+      query = randomCaseQuery
+        .replaceAll("(?i)query=", "query=")
+        .replaceAll("(?i)publisher=", "publisher=")
+        .replaceAll("(?i)dateFrom=", "dateFrom=")
+        .replaceAll("(?i)dateTo=", "dateTo=")
+        .replaceAll("(?i)format=", "format=")
+        .replaceAll("(?i)region=", "region=")
     } yield query
 
-    textQuery.flatMap((_, query.copy(publishers = publishers, formats = formats)))
+    textQuery.flatMap { x =>
+      println(x)
+      (x, query.copy(publishers = publishers, formats = formats))
+    }
+
   }
 
   def containsNoFilterWord(word: FilterValue[String]): Boolean = {

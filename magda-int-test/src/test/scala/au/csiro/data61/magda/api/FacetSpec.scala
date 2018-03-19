@@ -235,7 +235,7 @@ class FacetSpec extends BaseSearchApiSpec {
             def exactGen(dataSets: List[DataSet]) = for {
               baseQuery <- specificGen(dataSets)
               uuid <- Gen.uuid
-              query = baseQuery.copy(quotes = Set(uuid.toString))
+              query = baseQuery.copy(freeText = (""""""" + uuid.toString + """"""""))
             } yield query
 
             checkFacetsWithQuery(dataSets => textQueryGen(exactGen(dataSets)), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
@@ -422,7 +422,7 @@ class FacetSpec extends BaseSearchApiSpec {
             facetSize <- Gen.posNum[Int]
             actualPublishers <- Gen.someOf(dataSets.flatMap(_.publisher))
             uuid <- Gen.uuid
-            query = Query(quotes = Set(uuid.toString), publishers = actualPublishers.flatMap(_.name).map(x => Specified(x)).toSet)
+            query = Query(freeText = """"""" + uuid.toString + """"""", publishers = actualPublishers.flatMap(_.name).map(x => Specified(x)).toSet)
             textQuery <- textQueryGen(query)
           } yield (tuple, facetSize, textQuery, actualPublishers)
 
