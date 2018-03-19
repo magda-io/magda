@@ -167,7 +167,7 @@ class DistributionRow extends Component {
                             }
 
                             // google analytics download tracking
-                            var resource_url = encodeURIComponent(distribution.downloadURL);
+                            const resource_url = encodeURIComponent(distribution.downloadURL);
                             if (resource_url && window.ga) {
                                 window.ga('send', {
                                     hitType: 'event',
