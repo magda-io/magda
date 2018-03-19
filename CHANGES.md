@@ -4,6 +4,7 @@
 * Add CircleCI configuration to automatically build and deploy the public web interface
 * Hid `Projects` on header
 * Added recent searches function
+* Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
 
 ## 0.0.36
 
