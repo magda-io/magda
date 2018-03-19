@@ -8,13 +8,15 @@
 window.magda_client_homepage_config = {
     "baseUrl": "https://s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/development/",
     "backgroundImageUrls":[
-        "twenty-1440w.jpg", //--- the first one will be used as default image
+        "twenty-1440w.jpg",
         "twenty-720w.jpg",
+        "twenty-0w.jpg",
         "twenty-1080w.jpg",
         "twenty-2160w.jpg",
         "twenty-2880w.jpg"
     ],
-    "tagLineText": "An easy way to find, access and reuse public data",
+    "tagLineTextDesktop": "An easy way to find, access and reuse public data",
+    "tagLineTextMobile":"Find, share, and reuse open government data",
     "Lozenge": {
         "icon":"camara.svg",
         "text":"Explore QLD road data",
