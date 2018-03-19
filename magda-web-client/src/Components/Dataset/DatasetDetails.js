@@ -7,6 +7,7 @@ import StarRating from "../../UI/StarRating";
 import TagsBox from "../../UI/TagsBox";
 import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
+import queryString from "query-string";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
 
@@ -17,7 +18,8 @@ class DatasetDetails extends Component {
     render() {
         const dataset = this.props.dataset;
         const datasetId = this.props.match.params.datasetId;
-
+        const searchText =
+            queryString.parse(this.props.location.search).q || "";
         const source = `This dataset was originally found on [${
             this.props.dataset.source
         }](${dataset.landingPage})`;
@@ -53,6 +55,7 @@ class DatasetDetails extends Component {
                                         key={s.identifier}
                                         distribution={s}
                                         datasetId={datasetId}
+                                        searchText={searchText}
                                     />
                                 ))}
                             </div>
