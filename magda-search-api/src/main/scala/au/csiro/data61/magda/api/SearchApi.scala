@@ -20,10 +20,10 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
         pathPrefix("facets") {
           path(Segment / "options") { facetId ⇒
             (get & parameters(
-              "facetQuery" ? "*",
+              'facetQuery?,
               "start" ? 0,
               "limit" ? 10,
-              "generalQuery" ? "*",
+              'generalQuery?,
               'publisher*,
               'dateFrom?,
               'dateTo?,
@@ -40,7 +40,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
         } ~
           pathPrefix("datasets") {
             (get & parameters(
-              "query" ? "*",
+              'query?,
               "start" ? 0,
               "limit" ? 10,
               "facetSize" ? 10,
@@ -66,7 +66,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
           } ~
           path("region-types") { get { getFromResource("regionMapping.json") } } ~
           path("regions") {
-            (get & parameters("query" ? "*", "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+            (get & parameters('query?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
               complete(searchQueryer.searchRegions(query, start, limit))
             }
           }

@@ -22,7 +22,7 @@ case class SearchResult(
   strategy: Option[SearchStrategy] = None)
 
 case class RegionSearchResult(
-  query: String,
+  query: Option[String],
   hitCount: Long,
   regions: List[Region])
 

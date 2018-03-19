@@ -152,7 +152,7 @@ object ApiGenerators {
       createCount(input.map(_.map(textCount).getOrElse(0)))
     }
 
-    val freeTextCount = iterableTextCount(Some(query.freeText))
+    val freeTextCount = iterableTextCount(query.freeText)
     val quoteCount = iterableTextCount(query.quotes)
     val publisherCount = iterableTextCountFv(query.publishers)
     val dateFromCount = query.dateFrom.map(_ => 1).getOrElse(0)
@@ -172,7 +172,7 @@ object ApiGenerators {
     formats <- probablyEmptySet(formatQueryGen(dataSets))
     regions <- probablyEmptySet(regionQueryGen)
   } yield Query(
-    freeText = freeText.getOrElse(""),
+    freeText = freeText,
     quotes = quotes,
     publishers = publishers,
     dateFrom = dateFrom,
@@ -183,13 +183,13 @@ object ApiGenerators {
   def exactQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = queryGen(dataSets)
   def unspecificQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
     freeText <- queryTextGen(dataSets)
-  } yield Query(freeText = freeText))
+  } yield Query(freeText = Some(freeText)))
     .suchThat(queryIsSmallEnough)
 
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
 
   def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>
-    val textListComponents = (Seq(query.freeText).flatten ++
+    val textListComponents = (query.freeText.toSeq ++
       query.quotes.map(""""""" + _ + """"""")).toSet
 
     val publishers = query.publishers.filter(containsNoFilterWord)
@@ -204,8 +204,9 @@ object ApiGenerators {
 
     val textQuery = for {
       textList <- Gen.pick(textListComponents.size, textListComponents)
-      randomFacetList <- Gen.pick(facetList.size, facetList)
-      rawQuery = randomFacetList.mkString("&")
+      allList = Set(s"query=${encodeForUrl(textList.mkString(" "))}") ++ facetList
+      randomList <- Gen.pick(allList.size, allList)
+      rawQuery = randomList.mkString("&")
       randomCaseQuery <- randomCaseGen(rawQuery)
       query = randomCaseQuery
         .replaceAll("(?i)query=", "query=")

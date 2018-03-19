@@ -29,7 +29,7 @@ object FilterValue {
   }
 }
 case class Query(
-  freeText: String = "*",
+  freeText: Option[String] = None,
   quotes: Set[String] = Set(),
   publishers: Set[FilterValue[String]] = Set(),
   dateFrom: Option[FilterValue[OffsetDateTime]] = None,
@@ -40,9 +40,13 @@ case class Query(
 object Query {
   val quoteRegex = """"(.*)"""".r
 
-  def fromQueryParams(freeText: String, publishers: Iterable[String], dateFrom: Option[String], dateTo: Option[String], regions: Iterable[String], formats: Iterable[String])(implicit config: Config): Query = {
-    val quotes = for (m <- quoteRegex.findAllIn(freeText).matchData; e <- m.subgroups) yield e
-    val freeTextWithNoQuotes = quoteRegex.replaceAllIn(freeText, "")
+  def fromQueryParams(freeText: Option[String], publishers: Iterable[String], dateFrom: Option[String], dateTo: Option[String], regions: Iterable[String], formats: Iterable[String])(implicit config: Config): Query = {
+    val quotes = freeText.toSeq.flatMap(text =>
+      for (m <- quoteRegex.findAllIn(text).matchData; e <- m.subgroups) yield e)
+    val freeTextWithNoQuotes = freeText.map(text => quoteRegex.replaceAllIn(text, "").trim).flatMap {
+      case "" => None
+      case x  => Some(x)
+    }
 
     Query(
       freeText = freeTextWithNoQuotes,
@@ -57,12 +61,12 @@ object Query {
   private def regionValueFromString(input: String)(implicit config: Config): Option[FilterValue[Region]] = {
     filterValueFromString(Some(input)).map(_.map(string => string.toLowerCase.split(":") match {
       case Array(regionType, regionId) => Some(Region(QueryRegion(regionType, regionId)))
-      case _ => None
+      case _                           => None
     })) match {
       case Some(Specified(Some(x))) => Some(Specified(x))
-      case Some(Specified(None)) => None
-      case Some(Unspecified()) => Some(Unspecified())
-      case None => None
+      case Some(Specified(None))    => None
+      case Some(Unspecified())      => Some(Unspecified())
+      case None                     => None
     }
   }
 
@@ -85,7 +89,7 @@ object Query {
   private def filterValueFromString(inputOption: Option[String])(implicit config: Config): Option[FilterValue[String]] =
     inputOption.flatMap(input => if (input.trim.isEmpty)
       None
-    else if (input == config.getString("strings.unspecifiedWord"))
+    else if (input.equalsIgnoreCase(config.getString("strings.unspecifiedWord")))
       Some(Unspecified())
     else
       Some(Specified(input)))

@@ -144,7 +144,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               response.dataSets.isEmpty should be(false)
 
               response.dataSets.exists(_.identifier == sourceDataSet.identifier)
-              
+
               response.dataSets.foreach { dataSet =>
                 withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
                   MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
@@ -521,6 +521,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     }
 
     def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
+      println(query)
       Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
@@ -587,7 +588,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         output.map(_.map(_.toLowerCase)) should equal(input.map(_.map(_.toLowerCase)))
       }
 
-      caseInsensitiveMatch("freeText", Seq(outputQuery.freeText), Seq(inputQuery.freeText))
+      outputQuery.freeText.getOrElse("").toLowerCase shouldEqual inputQuery.freeText.getOrElse("").toLowerCase
       caseInsensitiveMatchFv("formats", outputQuery.formats, inputQuery.formats)
       caseInsensitiveMatchFv("publishers", outputQuery.publishers, inputQuery.publishers)
       outputQuery.dateFrom should equal(inputQuery.dateFrom)
@@ -629,11 +630,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
           Get(s"/v0/datasets?${textQuery}") ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
-            if (textQuery.equals("")) {
-              response.query should equal(Query(freeText = "*"))
-            } else {
-              queryEquals(response.query, query)
-            }
+
+            println(textQuery)
+            queryEquals(response.query, query)
           }
         }
       }

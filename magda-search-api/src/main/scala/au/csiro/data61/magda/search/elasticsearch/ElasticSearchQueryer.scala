@@ -318,45 +318,43 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
-      query.freeText.trim match {
-        case "" => None
-        case text =>
-          val innerQuery = strategy match {
-            case MatchAll => text
-            case MatchPart =>
-              query.quotes match {
-                case Seq()  => text
-                case quotes => (Seq(text) ++ quotes).mkString(" ")
-              }
-          }
+      query.freeText flatMap { text =>
+        val innerQuery = strategy match {
+          case MatchAll => text
+          case MatchPart =>
+            query.quotes match {
+              case Seq()  => text
+              case quotes => (Seq(text) ++ quotes).mkString(" ")
+            }
+        }
 
-          val queryDef = multiMatchQuery(innerQuery)
-            .matchType(MultiMatchQueryBuilder.Type.CROSS_FIELDS)
-            .operator(operator)
+        val queryDef = multiMatchQuery(innerQuery)
+          .matchType(MultiMatchQueryBuilder.Type.CROSS_FIELDS)
+          .operator(operator)
 
-          // For some reason to make english analysis work properly you need to specifically hit the english fields.
-          val fields = DATASETS_LANGUAGE_FIELDS
+        // For some reason to make english analysis work properly you need to specifically hit the english fields.
+        val fields = DATASETS_LANGUAGE_FIELDS
 
-          def foldFields(fields: Seq[Any]) = fields.foldRight(queryDef) {
-            case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
-            case (field: String, queryDef)                     => queryDef.field(field, 1)
-          }
+        def foldFields(fields: Seq[Any]) = fields.foldRight(queryDef) {
+          case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
+          case (field: String, queryDef)                     => queryDef.field(field, 1)
+        }
 
-          // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
-          // other analysis does. So we do this silliness
-          val distributionsEnglishQueries = nestedQuery("distributions")
-            .query(
-              queryDef
-                // If this was AND then a single distribution would have to match the entire query, this way you can
-                // have multiple dists partially match
-                .fields("distributions.title", "distributions.description", "distributions.title.english", "distributions.description.english")
-                .operator("or"))
-            .scoreMode(ScoreMode.Max)
+        // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
+        // other analysis does. So we do this silliness
+        val distributionsEnglishQueries = nestedQuery("distributions")
+          .query(
+            queryDef
+              // If this was AND then a single distribution would have to match the entire query, this way you can
+              // have multiple dists partially match
+              .fields("distributions.title", "distributions.description", "distributions.title.english", "distributions.description.english")
+              .operator("or"))
+          .scoreMode(ScoreMode.Max)
 
-          val queryString = new SimpleStringQueryDefinition(innerQuery).defaultOperator(operator)
-          val queries = Seq(foldFields(DATASETS_LANGUAGE_FIELDS ++ NON_LANGUAGE_FIELDS).field("*.english", 1.2f), distributionsEnglishQueries, queryString)
+        val queryString = new SimpleStringQueryDefinition(innerQuery).defaultOperator(operator)
+        val queries = Seq(foldFields(DATASETS_LANGUAGE_FIELDS ++ NON_LANGUAGE_FIELDS).field("*.english", 1.2f), distributionsEnglishQueries, queryString)
 
-          Some(dismax(queries).tieBreaker(0.3))
+        Some(dismax(queries).tieBreaker(0.3))
       },
       setToOption(query.quotes) { quotes =>
         // Theoretically we should be able to just put the quotes inside the simplequerystring above but it doesn't work
@@ -373,13 +371,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategyToCombiner(strategy)(clauses.flatten)
   }
 
-  override def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {
+  override def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
       client.execute(ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)))
-        .query(new SimpleStringQueryDefinition(facetQuery)
+        .query(new SimpleStringQueryDefinition(facetQuery.getOrElse("*"))
           .defaultOperator("or")
           .analyzeWildcard(true)
           .field("_all")
@@ -426,11 +424,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
   }
 
-  override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
+  override def searchRegions(query: Option[String], start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client.execute(
         ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
-          query { boolQuery().should(matchPhrasePrefixQuery("regionShortName", query).boost(2), matchPhrasePrefixQuery("regionName", query)) }
+          query { boolQuery().should(matchPhrasePrefixQuery("regionShortName", query.getOrElse("*")).boost(2), matchPhrasePrefixQuery("regionName", query.getOrElse("*"))) }
           start start.toInt
           limit limit
           sortBy (
