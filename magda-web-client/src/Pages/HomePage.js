@@ -7,8 +7,9 @@ import { config } from "../config.js";
 import "./HomePage.css";
 
 import TagLine from "./HomePageComponents/TagLine";
-import Lozenge from "./HomePageComponents/TagLine";
+import Lozenge from "./HomePageComponents/Lozenge";
 import Stories from "./HomePageComponents/Stories";
+import {Small, Medium} from '../UI/Responsive';
 
 import MediaQuery from "react-responsive";
 
@@ -50,14 +51,24 @@ const getBgImg=()=>{
                  </MediaQuery>)}</div>);
 };
 
+const getTagLine = ()=>{
+  const homePageConfig = config.homePageConfig;
+  return {
+            desktop: config && homePageConfig.tagLineTextDesktop ? homePageConfig.tagLineTextDesktop : '',
+            mobile: config && homePageConfig.tagLineTextMobile ? homePageConfig.tagLineTextMobile : ''
+          }
+}
+
 const HomePage = withRouter(({ location }) => {
+  
     return (
         <div className="homepage-app-container">
             {getBgImg()}
             <Container className="app-container">
                 <Header/>
+                <Small><TagLine taglineText = {getTagLine().mobile}/></Small>
                 <SearchBox />
-                <TagLine />
+                <Medium><TagLine taglineText = {getTagLine().desktop}/></Medium>
                 <Lozenge />
                 <Stories />
             </Container>
