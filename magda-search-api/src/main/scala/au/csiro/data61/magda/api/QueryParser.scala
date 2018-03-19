@@ -56,8 +56,14 @@ object Query {
 
   private def regionValueFromString(input: String)(implicit config: Config): Option[FilterValue[Region]] = {
     filterValueFromString(Some(input)).map(_.map(string => string.toLowerCase.split(":") match {
-      case Array(regionType, regionId) => Region(QueryRegion(regionType, regionId))
-    }))
+      case Array(regionType, regionId) => Some(Region(QueryRegion(regionType, regionId)))
+      case _ => None
+    })) match {
+      case Some(Specified(Some(x))) => Some(Specified(x))
+      case Some(Specified(None)) => None
+      case Some(Unspecified()) => Some(Unspecified())
+      case None => None
+    }
   }
 
   private def dateFilterValueFromString(input: Option[String])(implicit config: Config): Option[FilterValue[OffsetDateTime]] = {

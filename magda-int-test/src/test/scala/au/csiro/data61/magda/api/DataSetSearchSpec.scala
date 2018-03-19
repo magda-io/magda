@@ -187,7 +187,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             val (_, dataSets, routes) = indexTuple
             val (textQuery, query) = queryTuple
 
-            Get(s"/v0/datasets?query=${textQuery}&limit=${dataSets.length}") ~> routes ~> check {
+            Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
               whenever(response.strategy.get == MatchAll) {
