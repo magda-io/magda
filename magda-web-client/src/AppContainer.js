@@ -30,6 +30,7 @@ import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 import {Medium, Small} from './UI/Responsive';
 import mobileMenu from "./assets/mobile-menu.svg";
+import DatasetQuality from "./Components/Dataset/DatasetQuality";
 
 import { Route, Link, Switch } from "react-router-dom";
 
@@ -86,6 +87,7 @@ class AppContainer extends React.Component {
                 <Route exact path="/projects/new" component={CreateProject} />
                 <Route path="/projects/:projectId" component={ProjectDetails} />
                 <Route exact path="/publishers" component={PublishersViewer} />
+                <Route path = "/dataset-quality" component = {DatasetQuality} />
                 <Route
                     path="/publishers/:publisherId"
                     component={PublisherDetails}
