@@ -1,6 +1,14 @@
 {
     "devDependencies": {
         "@types/lodash": "^4.14.74",
+        "babel-eslint": "^8.2.2",
+        "eslint": "^4.19.0",
+        "eslint-config-react-app": "^2.1.0",
+        "eslint-plugin-flowtype": "^2.46.1",
+        "eslint-plugin-import": "^2.9.0",
+        "eslint-plugin-jsx-a11y": "^5.1.1",
+        "eslint-plugin-prettier": "^2.6.0",
+        "eslint-plugin-react": "^7.7.0",
         "glob": "^7.1.2",
         "husky": "^0.14.3",
         "lerna": "^2.5.1",
@@ -10,19 +18,15 @@
     },
     "scripts": {
         "build": "lerna run build --stream --concurrency=1",
-        "docker-build-local":
-            "lerna run docker-build-local --stream --concurrency=1",
-        "docker-build-prod":
-            "lerna run docker-build-prod --stream --concurrency=1",
+        "docker-build-local": "lerna run docker-build-local --stream --concurrency=1",
+        "docker-build-prod": "lerna run docker-build-prod --stream --concurrency=1",
         "create-all-tsconfigs": "node ./scripts/create-all-tsconfigs.js",
         "node-ci": "node ./scripts/node-js-ci.js",
         "lerna": "lerna",
         "build-changed-ts": "node ./scripts/build-changed.js",
         "build-changed-scala": "bash -c \"sbt deployLocalOnChange\"",
-        "build-changed":
-            "npm run build-changed-ts && npm run build-changed-scala",
-        "prettier":
-            "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
+        "build-changed": "npm run build-changed-ts && npm run build-changed-scala",
+        "prettier": "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
         "precommit": "pretty-quick --staged"
     },
     "dependencies": {

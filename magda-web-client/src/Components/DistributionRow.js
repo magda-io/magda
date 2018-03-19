@@ -9,7 +9,7 @@ import "./DistributionRow.css";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/newtab.svg";
-import {Medium} from '../UI/Responsive';
+import { Medium } from "../UI/Responsive";
 const formatIcons = {
     default: defaultFormatIcon
 };
@@ -124,13 +124,13 @@ class DistributionRow extends Component {
                 <div className="mui-col-sm-9">
                     <div className="mui-row">
                         <Medium>
-                        <div className="mui-col-sm-1">
-                            <img
-                                className="format-icon"
-                                src={this.determineFormatIcon()}
-                                alt="format icon"
-                            />
-                        </div>
+                            <div className="mui-col-sm-1">
+                                <img
+                                    className="format-icon"
+                                    src={this.determineFormatIcon()}
+                                    alt="format icon"
+                                />
+                            </div>
                         </Medium>
 
                         <div className="mui-col-md-11">
@@ -145,8 +145,8 @@ class DistributionRow extends Component {
                                     (typeof distribution.license === "string"
                                         ? distribution.license
                                         : distribution.license.name
-                                          ? distribution.license.name
-                                          : "")}
+                                            ? distribution.license.name
+                                            : "")}
                             </div>
                         </div>
                     </div>
@@ -167,14 +167,16 @@ class DistributionRow extends Component {
                             }
 
                             // google analytics download tracking
-                            const resource_url = encodeURIComponent(distribution.downloadURL);
+                            const resource_url = encodeURIComponent(
+                                distribution.downloadURL
+                            );
                             if (resource_url && window.ga) {
-                                window.ga('send', {
-                                    hitType: 'event',
-                                    eventCategory: 'Resource',
-                                    eventAction: 'Download',
+                                window.ga("send", {
+                                    hitType: "event",
+                                    eventCategory: "Resource",
+                                    eventAction: "Download",
                                     eventLabel: resource_url
-                                })
+                                });
                             }
                             window.location = distribution.downloadURL;
                         }}

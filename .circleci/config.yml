@@ -15,23 +15,20 @@ jobs:
 #                   && sudo apt-get install sbt
       - run:
           name: install npm/lerna/eslint dev tools
-          command: 'sudo npm install -g npm@latest lerna eslint eslint-plugin-import eslint-plugin-flowtype eslint-plugin-jsx-a11y eslint-plugin-react eslint-config-react-app babel-eslint'
+          command: 'sudo npm install -g npm@latest'
       - restore_cache:
-          key: v1-dependency-cache-{{ checksum "magda-web-client/package.json" }}
+          key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
       - run:
           name: lerna-bootstrap
           command: lerna bootstrap
       - save_cache:
-          key: v1-dependency-cache-{{ checksum "magda-web-client/package.json" }}
+          key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
           paths:
             - ./node_modules
             - ./magda-web-client/node_modules
       - run:
-          name: set_api_url
-          command: sed -i.bak 's/http:\/\/magda-dev.terria.io/https:\/\/magda-dev.terria.io/g' magda-web-client/src/config.js
-      - run:
           name: eslint
-          command: eslint magda-web-client/src/
+          command: ./node_modules/.bin/eslint magda-web-client/src/
       - run:
           name: npm build
           command: cd magda-web-client && npm run build
