@@ -1,5 +1,6 @@
 ## 0.0.35
 
+* responsive background image for homepage
 * fixed preview map data loading issue: replaced dev site url
 
 ## 0.0.34

@@ -9,7 +9,6 @@ import React, { Component } from "react";
 import { fetchRegionMapping } from "../../actions/regionMappingActions";
 import Form from "muicss/lib/react/form";
 import Input from "muicss/lib/react/input";
-import search from "../../assets/search-white.svg";
 import searchDark from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from "prop-types";
@@ -155,7 +154,7 @@ class SearchBox extends Component {
                         onClick={this.onClickSearch}
                         className="search-btn"
                         type="button">
-                        <img src={this.props.theme === 'light' ? search : searchDark} alt="search button" />
+                        <img src={searchDark} alt="search button" />
                         <span className="sr-only">
                             submit search
                         </span>
