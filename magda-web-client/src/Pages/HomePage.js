@@ -13,7 +13,7 @@ import Stories from "./HomePageComponents/Stories";
 import MediaQuery from "react-responsive";
 
 const getBgImg=()=>{
-    let imageMap = new Object();
+    let imageMap = {};
     if(!config.homePageConfig || !config.homePageConfig.backgroundImageUrls) return null;
     const backgroundImageUrls = config.homePageConfig.backgroundImageUrls;
     if(!backgroundImageUrls.length) return null;
@@ -32,11 +32,21 @@ const getBgImg=()=>{
     });
 
     const screenSizes = Object.keys(imageMap);
+
+    function getBackgroundImage(imageUrl){
+      return {
+              backgroundImage: 'url(' + imageUrl + ')',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: 'cover',
+             }
+    }
     return (<div>{screenSizes.map((size, i) => <MediaQuery
                   key={size}
                   minWidth={size + 'px'}
                   maxWidth={i === screenSizes.length - 1 ? null : screenSizes[i+1] + 'px'}>
-                  <img className='homepage-background-img' src={imageMap[size]}/>
+                  <div className='homepage-background-img'
+                       style={getBackgroundImage(imageMap[size])}/>
                  </MediaQuery>)}</div>);
 };
 

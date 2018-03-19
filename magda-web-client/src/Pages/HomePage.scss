@@ -2,11 +2,12 @@
 .homepage-app-container{
     .app-container{
         position: relative;
+        min-height: 100vh;
     }
     .homepage-background-img{
         position: absolute;
         width: 100vw;
         height: 100vh;
-
+        z-index: -1;
     }
 }
