@@ -5,7 +5,9 @@
 * Add CircleCI configuration to automatically build and deploy the public web interface
 * Hid `Projects` on header
 * Added recent searches function
-* Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
+* Set `node-sass` (required by magda-web-client) version to `4.8.3` to solve lerna bootstrap 404 error.
+* Upgrade public web interface (but not preview map) to React 16
+
 ## 0.0.36
 
 * Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
