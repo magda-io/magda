@@ -11,6 +11,10 @@
       border-bottom: none;
       background: transparent;
       padding: 8px 0;
+      img{
+        height: 100%;
+        width: auto;
+      }
     }
     .header-nav {
       display: flex;

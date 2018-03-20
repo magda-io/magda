@@ -1,7 +1,7 @@
 import React from "react";
 import { Medium, Small } from "../../UI/Responsive";
 import { Link } from "react-router-dom";
-import govtLogo from "../../assets/au-govt-logo.png";
+import govtLogo from "../../assets/au-govt-logo.svg";
 import HeaderNav from "./HeaderNav";
 import HeaderMobile from "./HeaderMobile";
 import "./Header.css";
