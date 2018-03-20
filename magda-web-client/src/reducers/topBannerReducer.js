@@ -2,13 +2,13 @@ import type { Action } from "../types";
 import { actionTypes } from "../constants/ActionTypes";
 
 const initialData = {
-    isShown:true
+    isShown: true
 };
 
 const topBanner = (state = initialData, action: Action) => {
     switch (action.type) {
         case actionTypes.CLOSE_TOP_BANNER:
-            return {...state, isShown: false};
+            return { ...state, isShown: false };
         default:
             return state;
     }

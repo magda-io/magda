@@ -4,13 +4,13 @@
         position: relative;
         min-height: 100vh;
     }
-    .homepage-dga-logo{
-      text-align: center;
-      margin-top: 16px;
-      height: auto;
-      img{
-        width: 131px;
-      }
+    .homepage-dga-logo {
+        text-align: center;
+        margin-top: 16px;
+        height: auto;
+        img {
+            width: 131px;
+        }
     }
     .homepage-background-img {
         position: absolute;
@@ -21,17 +21,17 @@
     .homepage-tagline {
         width: 100%;
         text-align: center;
-        .homepage-tagline-inner{
-          color: #fff;
-          font-size: 33px;
-          line-height: 43px;
-          border-radius: 10px;
-          padding: 8px;
-          display: inline-block;
-          @media (min-width: $medium) {
-              margin-bottom: 160px;
-              background: rgba(79, 79, 79, 0.5);
-          }
+        .homepage-tagline-inner {
+            color: #fff;
+            font-size: 33px;
+            line-height: 43px;
+            border-radius: 10px;
+            padding: 8px;
+            display: inline-block;
+            @media (min-width: $medium) {
+                margin-bottom: 160px;
+                background: rgba(79, 79, 79, 0.5);
+            }
         }
     }
 

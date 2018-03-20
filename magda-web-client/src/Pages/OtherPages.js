@@ -55,14 +55,12 @@ const renderBody = () => {
     );
 };
 
-const OtherPages = (props) => {
+const OtherPages = props => {
     return (
-        <div className='other-page'>
-          <Header/>
-          <SearchBoxSwitcher location={props.location} theme='none-home'/>
-          <Container className="app-container">
-              {renderBody()}
-          </Container>
+        <div className="other-page">
+            <Header />
+            <SearchBoxSwitcher location={props.location} theme="none-home" />
+            <Container className="app-container">{renderBody()}</Container>
         </div>
     );
 };

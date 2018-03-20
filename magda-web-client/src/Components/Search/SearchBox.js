@@ -133,32 +133,29 @@ class SearchBox extends Component {
     render() {
         return (
             <Form className="searchBox">
-                    <label htmlFor="search">
-                        <span className="sr-only">
-                            {"Search " + config.appName}
-                        </span>
-                        <Input
-                            type="text"
-                            name="search"
-                            id="search"
-                            placeholder="Search for open data"
-                            value={this.getSearchBoxValue()}
-                            onChange={this.onSearchTextChange}
-                            onKeyPress={
-                                this.handleSearchFieldEnterKeyPress
-                            }
-                            autoComplete="off"
-                        />
-                    </label>
-                    <button
-                        onClick={this.onClickSearch}
-                        className="search-btn"
-                        type="button">
-                        <img src={searchGrey} alt="search button" />
-                        <span className="sr-only">
-                            submit search
-                        </span>
-                    </button>
+                <label htmlFor="search">
+                    <span className="sr-only">
+                        {"Search " + config.appName}
+                    </span>
+                    <Input
+                        type="text"
+                        name="search"
+                        id="search"
+                        placeholder="Search for open data"
+                        value={this.getSearchBoxValue()}
+                        onChange={this.onSearchTextChange}
+                        onKeyPress={this.handleSearchFieldEnterKeyPress}
+                        autoComplete="off"
+                    />
+                </label>
+                <button
+                    onClick={this.onClickSearch}
+                    className="search-btn"
+                    type="button"
+                >
+                    <img src={searchGrey} alt="search button" />
+                    <span className="sr-only">submit search</span>
+                </button>
             </Form>
         );
     }

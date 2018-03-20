@@ -9,14 +9,16 @@ import "./Header.css";
 const Header = props => {
     return (
         <div className="top-header-container">
-            <Small><HeaderMobile/></Small>
+            <Small>
+                <HeaderMobile />
+            </Small>
             <Medium>
-            <div className="desktop-nav mui-container">
-                <Link to="/" className='logo'>
-                    <img src={govtLogo} alt="Coat of Arms" />
-                </Link>
-                <HeaderNav/>
-            </div>
+                <div className="desktop-nav mui-container">
+                    <Link to="/" className="logo">
+                        <img src={govtLogo} alt="Coat of Arms" />
+                    </Link>
+                    <HeaderNav />
+                </div>
             </Medium>
         </div>
     );

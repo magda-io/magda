@@ -15,16 +15,17 @@ class AccountNavbar extends React.Component {
             <div className="account-navbar">
                 {this.props.user ? (
                     [
-                            <span><Link to={`/account`}>
+                        <span>
+                            <Link to={`/account`}>
                                 {this.props.user.displayName}
                             </Link>
                             <a href="" onClick={this.signOut.bind(this)}>
                                 Sign Out
                             </a>
-                            </span>
+                        </span>
                     ]
                 ) : (
-                        <Link to={`/account`}>Sign in</Link>
+                    <Link to={`/account`}>Sign in</Link>
                 )}
             </div>
         );

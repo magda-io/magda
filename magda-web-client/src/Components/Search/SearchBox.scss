@@ -1,22 +1,22 @@
 @import "../../variables";
 
 @mixin text() {
-  border-bottom: 0;
-  @media (min-width: $medium) {
-    font-family: $font-base;
-    font-size: 33px;
-    font-weight: 300;
-    height: 57px;
-    border-bottom: 1px solid rgba(73,73,73,0.15);
-  }
+    border-bottom: 0;
+    @media (min-width: $medium) {
+        font-family: $font-base;
+        font-size: 33px;
+        font-weight: 300;
+        height: 57px;
+        border-bottom: 1px solid rgba(73, 73, 73, 0.15);
+    }
 }
 
-.searchBox-switcher{
-    &.none-home{
-      background: rgba(245, 245, 245, 0.8);
-      .searchBox{
-        background-color: transparent;
-      }
+.searchBox-switcher {
+    &.none-home {
+        background: rgba(245, 245, 245, 0.8);
+        .searchBox {
+            background-color: transparent;
+        }
     }
 }
 
@@ -27,7 +27,7 @@
     box-sizing: border-box;
     display: flex;
     justify-content: space-between;
-    border: 1px solid rgba(73,73,73,0.15);
+    border: 1px solid rgba(73, 73, 73, 0.15);
     background-color: rgba(#fff, 0.8);
     box-shadow: 0;
     @media (min-width: $medium) {
@@ -36,15 +36,14 @@
         border: 0;
     }
 
-    label{
-      width: calc(100% - 100px);
+    label {
+        width: calc(100% - 100px);
     }
     input,
     input:focus {
         @include text();
         margin-bottom: 2px;
         padding: 8px;
-
     }
 
     .search-btn {
@@ -65,7 +64,7 @@
         border-bottom: 2px solid rgba(#fff, 0.2);
         img {
             width: 45px;
-            height:45px;
+            height: 45px;
         }
     }
 
