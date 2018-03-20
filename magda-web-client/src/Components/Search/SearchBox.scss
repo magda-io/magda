@@ -11,6 +11,15 @@
   }
 }
 
+.searchBox-switcher{
+    &.none-home{
+      background: rgba(245, 245, 245, 0.8);
+      .searchBox{
+        background-color: transparent;
+      }
+    }
+}
+
 .searchBox {
     position: relative;
     margin: 16px auto 32px auto;
