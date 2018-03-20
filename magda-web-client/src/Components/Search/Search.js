@@ -183,6 +183,7 @@ class Search extends Component {
                                                     this.props.location.search
                                                 ).open
                                             }
+                                            searchText={searchText}
                                         />
                                         {this.props.hitCount >
                                             config.resultsPerPage && (
@@ -198,7 +199,7 @@ class Search extends Component {
                                                         config.resultsPerPage
                                                 )}
                                                 onPageChange={this.onPageChange}
-                                                totalItems = {this.props.hitCount}
+                                                totalItems={this.props.hitCount}
                                             />
                                         )}
                                     </div>

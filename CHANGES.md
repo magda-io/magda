@@ -1,7 +1,22 @@
+## 0.0.37
+
+* Use params q= 'xxx' to persist the search text in search page, dataset page and distribution pages
+* Added Download button/link click tracking via Google Analytics
+* Add CircleCI configuration to automatically build and deploy the public web interface
+* Hid `Projects` on header
+* Added recent searches function
+* Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
+* responsive background image for homepage
+
+## 0.0.36
+
+* Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
+* Map Previewer will select WMS data source by default (if available) for better big data handling
+
 ## 0.0.35
 
-* responsive background image for homepage
-* fixed preview map data loading issue: replaced dev site url
+* Fixed preview map data loading issue: replaced dev site url
+* Fixed `third-party.js` url in homepage
 
 ## 0.0.34
 

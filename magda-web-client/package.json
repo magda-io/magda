@@ -1,7 +1,7 @@
 {
     "name": "@magda/web-client",
     "description": "The MAGDA in-browser web front end.",
-    "version": "0.0.35-0",
+    "version": "0.0.37-0",
     "license": "Apache-2.0",
     "scripts": {
         "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -21,7 +21,7 @@
         "watch": "react-scripts build --watch"
     },
     "devDependencies": {
-        "@magda/scripts": "^0.0.35-0",
+        "@magda/scripts": "^0.0.37-0",
         "@storybook/addon-actions": "^3.3.3",
         "@storybook/addon-links": "^3.3.3",
         "@storybook/addons": "^3.3.3",
@@ -57,7 +57,7 @@
         "lodash.debounce": "^4.0.8",
         "lodash.find": "^4.6.0",
         "lodash.findindex": "^4.6.0",
-        "lodash.isequal": "^4.4.0",
+        "lodash.isequal": "^4.5.0",
         "lodash.max": "^4.0.1",
         "lodash.maxby": "^4.6.0",
         "lodash.min": "^4.0.1",
@@ -67,7 +67,7 @@
         "markdown-it": "^8.4.0",
         "markdown-with-front-matter-loader": "^0.1.0",
         "muicss": "^0.9.33",
-        "node-sass": "^4.5.0",
+        "node-sass": "v4.8.1",
         "npm-run-all": "^4.0.1",
         "openlayers": "^4.1.1",
         "papaparse": "^4.3.3",
