@@ -6,6 +6,8 @@
 * Hid `Projects` on header
 * Added recent searches function
 * Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
+* responsive background image for homepage
+
 ## 0.0.36
 
 * Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
@@ -15,6 +17,7 @@
 
 * Fixed preview map data loading issue: replaced dev site url
 * Fixed `third-party.js` url in homepage
+* fixed preview map data loading issue: replaced dev site url
 
 ## 0.0.34
 

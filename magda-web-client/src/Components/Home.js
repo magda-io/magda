@@ -9,6 +9,7 @@ import { fetchDatasetCount } from "../actions/statsActions";
 import { fetchNewsfromRss } from "../actions/newsActions";
 import DatasetSummary from "../Components/Dataset/DatasetSummary";
 import ReactDocumentTitle from "react-document-title";
+
 import "./Home.css";
 
 class Home extends React.Component {

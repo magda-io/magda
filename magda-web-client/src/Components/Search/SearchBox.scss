@@ -1,12 +1,13 @@
 @import "../../variables";
 
 @mixin text() {
-  @media (min-width: 768px) {
-    color: #fff;
+  border-bottom: 0;
+  @media (min-width: $medium) {
     font-family: $font-base;
     font-size: 48px;
     font-weight: 300;
     height: 57px;
+    border-bottom: 1px solid rgba(73,73,73,0.15);
   }
 }
 
@@ -16,14 +17,13 @@
     color: $body;
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid rgba(73,73,73,0.15);
-
+    border: 1px solid rgba(73,73,73,0.15);
+    background-color: #fff;
+    box-shadow: 0;
     @media (min-width: $medium) {
         padding: 50px 135px;
-        background-color: #f55860;
-        color: #fff;
         border-bottom: 0;
-
+        border-bottom: 1px solid rgba(73,73,73,0.15);
     }
 
     label{
@@ -32,8 +32,10 @@
     input,
     input:focus {
         @include text();
-        border-bottom: 0px;
+
         margin-bottom: 2px;
+        padding: 16px 17px;
+
     }
 
     .search-btn {
