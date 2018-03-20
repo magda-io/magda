@@ -34,6 +34,7 @@ import mobileMenu from "./assets/mobile-menu.svg";
 import { Route, Link, Switch } from "react-router-dom";
 
 import "./AppContainer.css";
+import DatasetQuality from "./Components/DatasetQuality";
 
 class AppContainer extends React.Component {
     constructor(props) {
@@ -86,6 +87,7 @@ class AppContainer extends React.Component {
                 <Route exact path="/projects/new" component={CreateProject} />
                 <Route path="/projects/:projectId" component={ProjectDetails} />
                 <Route exact path="/publishers" component={PublishersViewer} />
+                <Route exact path="/dataset-quality" component={DatasetQuality} />
                 <Route
                     path="/publishers/:publisherId"
                     component={PublisherDetails}
