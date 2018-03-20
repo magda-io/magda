@@ -31,7 +31,7 @@ jobs:
           command: ./node_modules/.bin/eslint magda-web-client/src/
       - run:
           name: npm build
-          command: cd magda-web-client && npm run build
+          command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 npm run build
 
       - store_artifacts:
           path: lerna-debug.log
@@ -62,6 +62,11 @@ jobs:
       - run: cf login -a api.system.y.cld.gov.au -o dta -s data-gov-au -u $CF_USER -p $CF_PASSWORD
       - run: cd /tmp/workspace && tree -C
       #- run: cd /tmp/workspace && cf push -f manifest.yml
+      - run: curl https://api.rollbar.com/api/1/sourcemap \
+               -F access_token=$ROLLBAR_ACCESS_TOKEN \
+               -F version=$CIRCLE_SHA1 \
+               -F minified_url=https://magda-web-client.apps.y.cld.gov.au/`jq -r '."main.js"' asset-manifest.json` \
+               -F source_map=@`jq -r '."main.js"' asset-manifest.json`.map
       - run:  cd /tmp/workspace && cf zero-downtime-push magda-web-client -f manifest.yml
 
 workflows:
