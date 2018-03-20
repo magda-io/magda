@@ -9,16 +9,10 @@ import React, { Component } from "react";
 import { fetchRegionMapping } from "../../actions/regionMappingActions";
 import Form from "muicss/lib/react/form";
 import Input from "muicss/lib/react/input";
-<<<<<<< HEAD
 import searchGrey from "../../assets/search-grey.svg";
-=======
-import search from "../../assets/search-white.svg";
->>>>>>> new-homepage
 // eslint-disable-next-line
 import PropTypes from "prop-types";
 import queryString from "query-string";
-// import Particles from '../../UI/Particles';
-import SearchSuggestionBox from "./SearchSuggestionBox";
 
 class SearchBox extends Component {
     constructor(props) {
