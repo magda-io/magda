@@ -6,6 +6,8 @@ import QualityIndicator from "../../UI/QualityIndicator";
 import "./DatasetSummary.css";
 import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
+import helpIcon from "../../assets/help-pink.svg";
+import ReactTooltip from "react-tooltip";
 
 export default class DatasetSummary extends Component {
     constructor(props) {
@@ -16,15 +18,16 @@ export default class DatasetSummary extends Component {
     renderDownloads(dataset) {
         const formats = uniq(dataset.distributions.map(dis => dis.format));
         return (
-            <div className="dataset-summary-downloads">
+            <span className="dataset-summary-downloads">
                 {formats.map((f, i) => <span key={i}>{f}</span>)}
-            </div>
+            </span>
         );
     }
 
     render() {
         const dataset = this.props.dataset;
         const publisher = dataset.publisher && dataset.publisher.name;
+        debugger;
         return (
             <div className="dataset-summary">
                 <h3>
@@ -54,16 +57,38 @@ export default class DatasetSummary extends Component {
                             Dataset Updated {getDateString(dataset.modified)}
                         </span>
                     )}
-                    {defined(dataset.quality) && (
-                        <span className="dataset-summary-quality">
-                            {" "}
-                            <QualityIndicator quality={dataset.quality} />
-                        </span>
-                    )}
                     {defined(
                         dataset.distributions &&
                             dataset.distributions.length > 0
                     ) && this.renderDownloads(dataset)}
+
+                    {defined(dataset.quality) && (
+                        <span className="dataset-summary-quality">
+                            <QualityIndicator quality={dataset.quality} />
+                            <span>
+                                <img
+                                    src={helpIcon}
+                                    alt="help"
+                                    className="dataset-summary-quality-help"
+                                    data-for={`dataset-quality-tooltip-${
+                                        dataset.identifier
+                                    }`}
+                                    data-tip={dataset.identifier}
+                                />
+                                <ReactTooltip
+                                    type="info"
+                                    id={`dataset-quality-tooltip-${
+                                        dataset.identifier
+                                    }`}
+                                    place="top"
+                                    effect="solid"
+                                    getContent={() => {
+                                        return <Link to="/pages/data-quality">{"How is data calculated?"}</Link>;
+                                    }}
+                                />
+                            </span>
+                        </span>
+                    )}
                 </div>
             </div>
         );
