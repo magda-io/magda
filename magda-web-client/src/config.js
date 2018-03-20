@@ -6,10 +6,11 @@ import Temporal from "./Components/SearchFacets/Temporal";
 
 const fallbackApiHost = "https://magda-dev.terria.io/";
 
-const homePageConfig :{
+const homePageConfig: {
     baseUrl: string,
-    backgroundImageUrls : Array<string>
-} = window.magda_client_homepage_config || {};
+    backgroundImageUrls: Array<string>
+} =
+    window.magda_client_homepage_config || {};
 
 const serverConfig: {
     authApiBaseUrl?: string,
@@ -87,9 +88,7 @@ export const config = {
     headerNavigation: [
         ["About", "page/about"],
         ["Publishers", "publishers"],
-        ...(serverConfig.disableAuthenticationFeatures
-            ? []
-            : [])
+        ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
     footerNavigation: [
         {
