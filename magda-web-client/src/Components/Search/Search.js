@@ -199,7 +199,7 @@ class Search extends Component {
                                                         config.resultsPerPage
                                                 )}
                                                 onPageChange={this.onPageChange}
-                                                totalItems = {this.props.hitCount}
+                                                totalItems={this.props.hitCount}
                                             />
                                         )}
                                     </div>

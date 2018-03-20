@@ -49,8 +49,6 @@ class RecordHandler extends React.Component {
         }
     }
 
-
-
     renderByState() {
         const publisherName = this.props.dataset.publisher.name;
         const searchText =

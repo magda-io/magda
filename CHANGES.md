@@ -5,6 +5,7 @@
 * Add CircleCI configuration to automatically build and deploy the public web interface
 * Hid `Projects` on header
 * Added recent searches function
+* Extend eslint ruleset to enforce the use of the prettier tool
 * Upgrade public web interface (but not preview map) to React 16
 * Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
 * Added `Powered by magda` footer link
