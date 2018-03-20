@@ -1,5 +1,4 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
 import { Medium, Small } from "../../UI/Responsive";
 import { Link } from "react-router-dom";
 import govtLogo from "../../assets/au-govt-logo.png";

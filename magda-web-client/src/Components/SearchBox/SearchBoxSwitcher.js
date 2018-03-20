@@ -1,5 +1,4 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
 import { Medium, Small } from "../../UI/Responsive";
 import SearchBox from "../../Components/Search/SearchBox";
 import "../../Components/Search/SearchBox.css";
