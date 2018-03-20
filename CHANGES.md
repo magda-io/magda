@@ -1,5 +1,5 @@
 ## 0.0.37
-
+* Make facets stack on mobile
 * Use params q= 'xxx' to persist the search text in search page, dataset page and distribution pages
 * Added Download button/link click tracking via Google Analytics
 * Add CircleCI configuration to automatically build and deploy the public web interface
