@@ -12,11 +12,11 @@ const Header = props => {
         <div className="top-header-container">
             <Small><HeaderMobile/></Small>
             <Medium>
-            <div className="nav">
+            <div className="desktop-nav mui-container">
                 <Link to="/">
-                    <img src={govtLogo} alt="dga-logo" />
+                    <img className='logo' src={govtLogo} alt="dga-logo" />
                 </Link>
-                <HeaderNav />
+                <HeaderNav/>
             </div>
             </Medium>
         </div>

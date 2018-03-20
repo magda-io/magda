@@ -62,17 +62,13 @@ const getTagLine = ()=>{
 }
 
 const HomePage = withRouter(({ location, isTopBannerShown }) => {
-  
+
     return (
         <div className="homepage-app-container">
             {getBgImg()}
-            <Medium>
-                <div className="homepage-header-bg" style={{
-                    top: isTopBannerShown?"37px":"0px"
-                }}></div>
-            </Medium>
+            <Header/>
             <Container className="app-container">
-                <Header/>
+
                 <Medium>
                     <div className="homepage-dga-logo">
                         <img src={dgaLogo} alt="dga logo" />

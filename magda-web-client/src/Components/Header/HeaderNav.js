@@ -7,7 +7,7 @@ const headerNavs = config.headerNavigation;
 
 const HeaderNav = props => {
     return (
-        <div>
+        <div className='header-nav'>
             {headerNavs.map(nav => (
                 <Link key={nav[1]} to={`/${encodeURI(nav[1])}`}>
                     {nav[0]}
