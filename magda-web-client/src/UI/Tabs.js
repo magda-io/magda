@@ -10,7 +10,7 @@ function Tabs(props) {
                     <li role="presentation" key={item.id}>
                         <NavLink
                             activeClassName="mui--is-active"
-                            to={`${props.baseUrl}/${item.id}`}
+                            to={`${props.baseUrl}/${item.id}?${props.params}`}
                             onClick={() => {
                                 props.onTabChange(item.id);
                             }}

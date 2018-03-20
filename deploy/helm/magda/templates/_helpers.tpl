@@ -157,7 +157,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
         livenessProbe:
           exec:
             command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432" ]
-          initialDelaySeconds: 30
+          initialDelaySeconds: 3600
           periodSeconds: 10
           timeoutSeconds: 1
 {{- end}}
+
+{{- define "magda.postgresLifecycle" }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/bash", 'pkill backup-push && gosu postgres psql -c "SELECT pg_stop_backup()"']
+{{- end }}

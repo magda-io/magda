@@ -19,7 +19,7 @@ export default class UserMentionSuggestions extends React.Component {
     }
 
     onSearchChange(value) {
-        base
+        value
             .fetch("users", {
                 context: this,
                 asArray: true

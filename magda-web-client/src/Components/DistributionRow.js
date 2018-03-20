@@ -117,7 +117,7 @@ class DistributionRow extends Component {
         const { datasetId, distribution } = this.props;
         const distributionLink = `/dataset/${encodeURIComponent(
             datasetId
-        )}/distribution/${encodeURIComponent(distribution.identifier)}`;
+        )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${this.props.searchText}`;
 
         return (
             <div className="distribution-row mui-row">
@@ -164,6 +164,17 @@ class DistributionRow extends Component {
                                     )
                                 );
                                 return;
+                            }
+
+                            // google analytics download tracking
+                            const resource_url = encodeURIComponent(distribution.downloadURL);
+                            if (resource_url && window.ga) {
+                                window.ga('send', {
+                                    hitType: 'event',
+                                    eventCategory: 'Resource',
+                                    eventAction: 'Download',
+                                    eventLabel: resource_url
+                                })
                             }
                             window.location = distribution.downloadURL;
                         }}

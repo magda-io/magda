@@ -183,6 +183,7 @@ class Search extends Component {
                                                     this.props.location.search
                                                 ).open
                                             }
+                                            searchText={searchText}
                                         />
                                         {this.props.hitCount >
                                             config.resultsPerPage && (
