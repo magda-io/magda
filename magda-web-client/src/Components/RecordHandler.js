@@ -11,10 +11,11 @@ import Tabs from "../UI/Tabs";
 import { config } from "../config";
 import ErrorHandler from "./ErrorHandler";
 import RouteNotFound from "./RouteNotFound";
-import { Route, Link, Switch, Redirect } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import DatasetDetails from "./Dataset/DatasetDetails";
 import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
+import queryString from "query-string";
 import "./RecordHandler.css";
 
 class RecordHandler extends React.Component {
@@ -48,34 +49,12 @@ class RecordHandler extends React.Component {
         }
     }
 
-    renderBreadCrumbs(dataset, distribution) {
-        return (
-            <ul className="breadcrumb">
-                <li className="breadcrumb-item">
-                    <Link to="/">Home</Link>
-                </li>
-                <li className="breadcrumb-item">
-                    {distribution ? (
-                        <Link
-                            to={`/dataset/${encodeURIComponent(
-                                dataset.identifier
-                            )}`}
-                        >
-                            {dataset.title}
-                        </Link>
-                    ) : (
-                        dataset.title
-                    )}
-                </li>
-                {distribution && (
-                    <li className="breadcrumb-item">{distribution.title}</li>
-                )}
-            </ul>
-        );
-    }
+
 
     renderByState() {
         const publisherName = this.props.dataset.publisher.name;
+        const searchText =
+            queryString.parse(this.props.location.search).q || "";
         // const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
 
         if (this.props.match.params.distributionId) {
@@ -123,6 +102,7 @@ class RecordHandler extends React.Component {
                             <Tabs
                                 list={tabList}
                                 baseUrl={baseUrlDistribution}
+                                params={`q=${searchText}`}
                                 onTabChange={tab => {
                                     console.log(tab);
                                 }}
@@ -139,7 +119,7 @@ class RecordHandler extends React.Component {
                                     />
                                     <Redirect
                                         from="/dataset/:datasetId/distribution/:distributionId"
-                                        to={`${baseUrlDistribution}/details`}
+                                        to={`${baseUrlDistribution}/details?q=${searchText}`}
                                     />
                                 </Switch>
                             </div>
@@ -156,11 +136,6 @@ class RecordHandler extends React.Component {
                         <ErrorHandler error={this.props.datasetFetchError} />
                     );
                 }
-                // const datasetTabs = [
-                //   {id: 'details', name: 'Details', isActive: true},
-                //   {id:  'discussion', name: 'Discussion', isActive: !config.disableAuthenticationFeatures},
-                //   {id: 'publisher', name: 'About ' + publisherName, isActive: publisherId},
-                // ];
 
                 const baseUrlDataset = `/dataset/${encodeURI(
                     this.props.match.params.datasetId
@@ -200,7 +175,6 @@ class RecordHandler extends React.Component {
                                     </div>
                                 </div>
                             </div>
-
                             <div className="tab-content">
                                 <Switch>
                                     <Route
@@ -210,7 +184,7 @@ class RecordHandler extends React.Component {
                                     <Redirect
                                         exact
                                         from="/dataset/:datasetId"
-                                        to={`${baseUrlDataset}/details`}
+                                        to={`${baseUrlDataset}/details?q=${searchText}`}
                                     />
                                 </Switch>
                             </div>

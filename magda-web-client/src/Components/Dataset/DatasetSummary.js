@@ -32,7 +32,7 @@ export default class DatasetSummary extends Component {
                         className="dataset-summary-title"
                         to={`/dataset/${encodeURIComponent(
                             dataset.identifier
-                        )}`}
+                        )}?q=${this.props.searchText}`}
                     >
                         {dataset.title}
                     </Link>
