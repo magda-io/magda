@@ -4,7 +4,7 @@
   border-bottom: 0;
   @media (min-width: $medium) {
     font-family: $font-base;
-    font-size: 48px;
+    font-size: 33px;
     font-weight: 300;
     height: 57px;
     border-bottom: 1px solid rgba(73,73,73,0.15);
@@ -13,17 +13,18 @@
 
 .searchBox {
     position: relative;
-    margin-bottom: 32px;
+    margin: 16px auto 32px auto;
     color: $body;
+    box-sizing: border-box;
     display: flex;
     justify-content: space-between;
     border: 1px solid rgba(73,73,73,0.15);
-    background-color: #fff;
+    background-color: rgba(#fff, 0.8);
     box-shadow: 0;
     @media (min-width: $medium) {
-        padding: 50px 135px;
-        border-bottom: 0;
-        border-bottom: 1px solid rgba(73,73,73,0.15);
+        padding: 40px 90px;
+        width: 788px;
+        border: 0;
     }
 
     label{
@@ -32,9 +33,8 @@
     input,
     input:focus {
         @include text();
-
         margin-bottom: 2px;
-        padding: 16px 17px;
+        padding: 8px;
 
     }
 

@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import Container from "muicss/lib/react/container";
 import { withRouter } from "react-router-dom";
 import Header from "../Components/Header/Header";
-import SearchBox from "../Components/SearchBox/SearchBox";
+import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
 import { config } from "../config.js";
 import "./HomePage.css";
 
@@ -62,20 +62,18 @@ const getTagLine = ()=>{
 }
 
 const HomePage = withRouter(({ location, isTopBannerShown }) => {
-
     return (
         <div className="homepage-app-container">
             {getBgImg()}
             <Header/>
             <Container className="app-container">
-
                 <Medium>
                     <div className="homepage-dga-logo">
                         <img src={dgaLogo} alt="dga logo" />
                     </div>
                 </Medium>
                 <Small><TagLine taglineText = {getTagLine().mobile}/></Small>
-                <SearchBox />
+                <SearchBoxSwitcher location={location} theme='home'/>
                 <Medium><TagLine taglineText = {getTagLine().desktop}/></Medium>
                 <Lozenge />
                 <Stories />

@@ -4,6 +4,10 @@
         position: relative;
         min-height: 100vh;
     }
+    .homepage-dga-logo{
+      text-align: center;
+      margin-top: 16px;
+    }
     .homepage-background-img {
         position: absolute;
         width: 100vw;
@@ -11,20 +15,20 @@
         z-index: -1;
     }
     .homepage-tagline {
-        @media (min-width: $medium) {
-            margin-bottom: 160px;
-            background: rgba(79, 79, 79, 0.5);
-        }
-        margin-top: 38px;
-        margin-bottom: 38px;
-        display: block;
         width: 100%;
         text-align: center;
-        color: #fff;
-        font-size: 36px;
-        line-height: 43px;
-        border-radius: 10px;
-        padding: 8px;
+        .homepage-tagline-inner{
+          color: #fff;
+          font-size: 33px;
+          line-height: 43px;
+          border-radius: 10px;
+          padding: 8px;
+          display: inline-block;
+          @media (min-width: $medium) {
+              margin-bottom: 160px;
+              background: rgba(79, 79, 79, 0.5);
+          }
+        }
     }
 
     .homepage-lozenge {

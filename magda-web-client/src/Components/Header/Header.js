@@ -13,8 +13,8 @@ const Header = props => {
             <Small><HeaderMobile/></Small>
             <Medium>
             <div className="desktop-nav mui-container">
-                <Link to="/">
-                    <img className='logo' src={govtLogo} alt="dga-logo" />
+                <Link to="/" className='logo'>
+                    <img src={govtLogo} alt="dga-logo" />
                 </Link>
                 <HeaderNav/>
             </div>

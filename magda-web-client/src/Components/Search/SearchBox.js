@@ -132,7 +132,7 @@ class SearchBox extends Component {
 
     render() {
         return (
-            <Form className="searchBox">
+            <Form className={this.props.theme + " searchBox"}>
                     <label htmlFor="search">
                         <span className="sr-only">
                             {"Search " + config.appName}

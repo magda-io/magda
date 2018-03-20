@@ -18,7 +18,7 @@ import { staticPageRegister } from "../content/register";
 import RouteNotFound from "../Components/RouteNotFound";
 
 import Header from "../Components/Header/Header";
-import SearchBox from "../Components/SearchBox/SearchBox";
+import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
 
 const renderBody = () => {
     return (
@@ -57,11 +57,13 @@ const renderBody = () => {
 
 const OtherPages = (props) => {
     return (
-        <Container className="app-container">
-            <Header/>
-            <SearchBox />
-            {renderBody()}
-        </Container>
+        <div className='other-page'>
+          <Header/>
+          <SearchBoxSwitcher location={props.location} theme='none-home'/>
+          <Container className="app-container">
+              {renderBody()}
+          </Container>
+        </div>
     );
 };
 
