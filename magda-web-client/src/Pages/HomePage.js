@@ -13,7 +13,7 @@ import Stories from "./HomePageComponents/Stories";
 import {Small, Medium} from '../UI/Responsive';
 
 import MediaQuery from "react-responsive";
-import dgaLogo from "../assets/dga-logo.png";
+import dgaLogo from "../assets/dga-logo.svg";
 
 const getBgImg=()=>{
     let imageMap = {};

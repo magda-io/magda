@@ -13,7 +13,7 @@ const Header = props => {
             <Medium>
             <div className="desktop-nav mui-container">
                 <Link to="/" className='logo'>
-                    <img src={govtLogo} alt="dga-logo" />
+                    <img src={govtLogo} alt="Coat of Arms" />
                 </Link>
                 <HeaderNav/>
             </div>
