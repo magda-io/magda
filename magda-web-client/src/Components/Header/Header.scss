@@ -1,0 +1,91 @@
+@import "../../variables";
+
+.top-header-container {
+
+    .nav-table {
+        height: 104px;
+        padding-left: 19px;
+        padding-right: 11px;
+        td {
+            vertical-align: middle;
+        }
+        td:first {
+            text-align: left;
+        }
+        td:nth-child(2) {
+            text-align: right;
+        }
+    }
+
+    .nav-bar-right {
+        a {
+            display: inline-block;
+            border-bottom: 0;
+            color: #494949;
+            font-family: Rubik;
+            font-size: 16px;
+            line-height: 40px;
+            margin-left: 40px;
+            margin-right: 0px;
+            &:hover{background-color: transparent;}
+        }
+    }
+
+    .account-navbar {
+        display: inline-block;
+        a {
+            color: $body;
+            text-decoration: none;
+            border-bottom: 0;
+            transition: background-color 0.1s ease-in-out,
+                border-color 0.1s ease-in-out;
+            margin-right: 0px;
+            display: inline-block;
+        }
+    }
+}
+
+.mobile-header{
+    .mobile-header-inner{
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(73,73,73,0.15);
+  
+      .mobile-logo{
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 22px;
+        text-transform: uppercase;
+        padding: 16px 16px 16px 0;
+        a{
+          border-bottom: 0;
+        }
+      }
+  
+      .mobile-toggle{
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        &:hover, &:focus{
+          outline: none;
+        }
+      }
+    }
+  
+    .mobile-nav{
+      height: 0;
+      overflow-y: hidden;
+      transition: height 0.55s;
+      &.isOpen{
+        height: 200px;
+        border-bottom: 1px solid rgba(73,73,73,0.15);
+      }
+    }
+    .account-navbar a, a {
+        display: block;
+        line-height: 40px;
+    }
+    .account-navbar, {
+      display: block;
+    }
+  }

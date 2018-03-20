@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from "react-redux";
 import Container from "muicss/lib/react/container";
 import { withRouter } from "react-router-dom";
 import Header from "../Components/Header/Header";
@@ -12,6 +13,7 @@ import Stories from "./HomePageComponents/Stories";
 import {Small, Medium} from '../UI/Responsive';
 
 import MediaQuery from "react-responsive";
+import dgaLogo from "../assets/dga-logo.png";
 
 const getBgImg=()=>{
     let imageMap = {};
@@ -59,13 +61,23 @@ const getTagLine = ()=>{
           }
 }
 
-const HomePage = withRouter(({ location }) => {
+const HomePage = withRouter(({ location, isTopBannerShown }) => {
   
     return (
         <div className="homepage-app-container">
             {getBgImg()}
+            <Medium>
+                <div className="homepage-header-bg" style={{
+                    top: isTopBannerShown?"37px":"0px"
+                }}></div>
+            </Medium>
             <Container className="app-container">
                 <Header/>
+                <Medium>
+                    <div className="homepage-dga-logo">
+                        <img src={dgaLogo} alt="dga logo" />
+                    </div>
+                </Medium>
                 <Small><TagLine taglineText = {getTagLine().mobile}/></Small>
                 <SearchBox />
                 <Medium><TagLine taglineText = {getTagLine().desktop}/></Medium>
@@ -76,4 +88,10 @@ const HomePage = withRouter(({ location }) => {
     );
 });
 
-export default HomePage;
+function mapStateToProps(state) {
+    return {
+        isTopBannerShown: state.topBanner.isShown
+    };
+}
+
+export default connect(mapStateToProps, null)(HomePage);

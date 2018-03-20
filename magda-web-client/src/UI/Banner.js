@@ -1,8 +1,13 @@
+import { bindActionCreators } from "redux";
+
 import React from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 import "./Banner.css";
 import close from "../assets/close-light.svg";
+import { closeTopBanner } from "../actions/topBanner";
 
-export default class Banner extends React.Component {
+class Banner extends React.Component {
     constructor(props) {
         super(props);
         this.state = { isOpen: true };
@@ -30,7 +35,10 @@ export default class Banner extends React.Component {
                     <button
                         type="button"
                         className="close-btn"
-                        onClick={() => this.setState({ isOpen: false })}
+                        onClick={() => {
+                            this.setState({ isOpen: false });
+                            this.props.closeTopBanner();
+                        }}
                     >
                         <img alt="close banner" src={close} />
                     </button>
@@ -40,3 +48,14 @@ export default class Banner extends React.Component {
         return null;
     }
 }
+
+const mapDispatchToProps = dispatch => {
+    return bindActionCreators(
+        {
+            closeTopBanner: closeTopBanner
+        },
+        dispatch
+    );
+};
+
+export default connect(null, mapDispatchToProps)(Banner);

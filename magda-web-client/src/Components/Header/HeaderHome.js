@@ -1,8 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import HeaderNav from "./HeaderNav";
-//import { config } from "../../config.js";
-import dgalogo from "../../dga.png";
+import govtLogo from "../../assets/au-govt-logo.png";
 
 const HeaderHome = props => {
     return (
@@ -10,9 +9,7 @@ const HeaderHome = props => {
             <tbody>
                 <tr style={{ verticalAlign: "middle" }}>
                     <td className="logo">
-                        <Link to="/">
-                            <img src={dgalogo} alt="dga-logo" />
-                        </Link>
+                            <img src={govtLogo} alt="au-govt-logo" />
                     </td>
                     <td className="nav-bar-right">
                         <HeaderNav />

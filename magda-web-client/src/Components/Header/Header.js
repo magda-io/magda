@@ -5,10 +5,11 @@ import HeaderHome from "./HeaderHome";
 import HeaderHomeMobile from "./HeaderHomeMobile";
 import HeaderOthers from "./HeaderOthers";
 import HeaderOthersMobile from "./HeaderOthersMobile";
+import "./Header.css";
 
 const Header = props => {
     return (
-        <div>
+        <div className="top-header-container">
             <Small>
                 <Switch>
                     <Route exact path="/" component={HeaderHomeMobile} />
