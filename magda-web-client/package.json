@@ -52,7 +52,6 @@
         "html-truncate": "^1.2.2",
         "immutable": "^3.8.1",
         "isomorphic-fetch": "^2.2.1",
-        "js-yaml": "^3.11.0",
         "leaflet": "^0.7.7",
         "leaflet-mapbox-vector-tile": "TerriaJS/Leaflet.MapboxVectorTile",
         "lodash.debounce": "^4.0.8",
