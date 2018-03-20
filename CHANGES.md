@@ -8,6 +8,7 @@
 * Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
 * Added `Powered by magda` footer link
 * Modified `API Docs` footer link to use HTTPS
+* Added Rollbar exception reporting for client side javascript
 
 ## 0.0.36
 
