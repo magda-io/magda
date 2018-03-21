@@ -6,6 +6,8 @@
 * Hid `Projects` on header
 * Added recent searches function
 * Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
+* Added dataset quality page 
+
 ## 0.0.36
 
 * Fixed a bug that stopped datasets with URL reserved characters in their id from being viewed.
