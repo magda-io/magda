@@ -8,6 +8,7 @@
 * Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
 * Added `Powered by magda` footer link
 * Modified `API Docs` footer link to use HTTPS
+* Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 
 ## 0.0.36
 
