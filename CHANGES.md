@@ -17,6 +17,7 @@
 
 * Fixed preview map data loading issue: replaced dev site url
 * Fixed `third-party.js` url in homepage
+* fixed preview map data loading issue: replaced dev site url
 
 ## 0.0.34
 
