@@ -11,6 +11,7 @@
 * Added dataset quality page 
 * Added `Powered by magda` footer link
 * Modified `API Docs` footer link to use HTTPS
+* Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
 
 ## 0.0.36

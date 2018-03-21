@@ -1,7 +1,8 @@
 {
     "files.exclude": {
         "**/node_modules": true,
-        "**/bin": true
+        "**/bin": true,
+        "magda-web-client/**/*.css": true
     },
     "eslint.enable": true
 }
