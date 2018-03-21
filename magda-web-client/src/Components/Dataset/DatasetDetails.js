@@ -10,7 +10,7 @@ import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 class DatasetDetails extends Component {
     state = {
