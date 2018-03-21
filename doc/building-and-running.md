@@ -2,7 +2,7 @@
 
 You need the following in order to build and run MAGDA:
 
-* [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Please install version 6, as version 8 includes npm 5 which currently doesn't work well with lerna.
+* [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.
 * [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 * [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 * [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.

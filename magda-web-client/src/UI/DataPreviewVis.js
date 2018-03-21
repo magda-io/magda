@@ -9,7 +9,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import VegaLite from "react-vega-lite";
 import DataPreviewTable from "./DataPreviewTable";
-import {Medium} from './Responsive';
+import { Medium } from "./Responsive";
 import "./DataPreviewVis.css";
 
 class DataPreviewVis extends Component {
@@ -110,20 +110,22 @@ class DataPreviewVis extends Component {
                             data={data}
                         />
                     </div>
-                  <Medium>
-                    <div className="mui-col-sm-6">
-                        <ChartConfig
-                            chartType={spec.mark}
-                            chartTitle={spec.description}
-                            xScale={spec.encoding.x.type}
-                            yScale={spec.encoding.y.type}
-                            xAxis={spec.encoding.x.field}
-                            yAxis={spec.encoding.x.field}
-                            yAxisOptions={previewData.meta.chartFields.numeric}
-                            xAxisOptions={previewData.meta.chartFields.time}
-                            onChange={this.updateChartConfig}
-                        />
-                    </div>
+                    <Medium>
+                        <div className="mui-col-sm-6">
+                            <ChartConfig
+                                chartType={spec.mark}
+                                chartTitle={spec.description}
+                                xScale={spec.encoding.x.type}
+                                yScale={spec.encoding.y.type}
+                                xAxis={spec.encoding.x.field}
+                                yAxis={spec.encoding.x.field}
+                                yAxisOptions={
+                                    previewData.meta.chartFields.numeric
+                                }
+                                xAxisOptions={previewData.meta.chartFields.time}
+                                onChange={this.updateChartConfig}
+                            />
+                        </div>
                     </Medium>
                 </div>
             );
@@ -172,7 +174,7 @@ class DataPreviewVis extends Component {
 
     render() {
         const bodyRenderResult = this.renderByState();
-        if(!bodyRenderResult) return null;
+        if (!bodyRenderResult) return null;
         return (
             <div className="data-preview-vis">
                 <h3>Data Preview</h3>

@@ -1,5 +1,5 @@
 import "./SearchTabs.css";
-import React, { Component } from "react";
+import React from "react";
 
 function SearchTabs(props) {
     return (
