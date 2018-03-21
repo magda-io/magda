@@ -1,10 +1,10 @@
 # Roadmap
 
-This is a _loose_ plan of what we're planning to do in Magda in the future. This is provided mainly so potential contributors can see our direction, and so those who are considering using Magda can see where it's going to go in the future. Please keep in keep in mind that this is not a promise - we could change direction at any time (and have done in the past!), so don't make any plans based on this that you can't change!
+This is a _loose_ plan of what we're planning to do in Magda in the future. This is provided mainly so potential contributors can see our direction, and so those who are considering using Magda can see where it's going to go in the future. Please keep in keep in mind that this is not a promise - we could change direction at any time (and have done in the past!), so don't make any plans based on this that you can't change! Get in touch if you want to contribute!
 
 ## Current Priorities (next 6 months)
 
-**New Design**: Converting to a new, nicer looking design site-wide.
+**New Design**: Converting to a new, nicer looking design site-wide, with a focus on usability and simplifcation.
 
 **Search Results**: Changing the search page based off analysis of how it's been used on data.gov.au and search.data.gov.au - particularly removing the query language and simplifying the way that facets are used.
 
@@ -18,7 +18,7 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 **Productionising**: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it's secure and robust.
 
-**Saved Search**: Just as with Ebay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
+**Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
 
 **API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
 
@@ -37,7 +37,7 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 We're planning to do a lot of research into what exactly data consumers find useful
 
-**Dataset Feedback/Collaboration**: Closing the loop between data users and custodians by providing a Quora-styled Q&A interface that allows users to ask questions / report problems with the data, that causes data custodians (as identified in the dataset's metadata) to be notified and invited to join the discussion with the user. Naturally this will also involve building moderation features for administrators.
+**Dataset Feedback/Collaboration**: Closing the loop between data users and custodians by providing a Quora-styled Q&A interface that allows users to ask questions / report problems with the data, that causes data custodians (as identified in the dataset's metadata) to be notified and invited to join the discussion with the user. Naturally this will also involve building moderation features for administrators and the ability to have some Q&As private.
 
 **User Management/Administration**: Currently it's possible to create an account with Magda and log in, but there's very little ability to change your details, or for administrators to ban or delete abusive accounts - these features need to be added.
 
