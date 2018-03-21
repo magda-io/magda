@@ -15,26 +15,23 @@ jobs:
 #                   && sudo apt-get install sbt
       - run:
           name: install npm/lerna/eslint dev tools
-          command: 'sudo npm install -g npm@latest lerna eslint eslint-plugin-import eslint-plugin-flowtype eslint-plugin-jsx-a11y eslint-plugin-react eslint-config-react-app babel-eslint'
+          command: 'sudo npm install -g npm@latest lerna'
       - restore_cache:
-          key: v1-dependency-cache-{{ checksum "magda-web-client/package.json" }}
+          key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
       - run:
           name: lerna-bootstrap
           command: lerna bootstrap
       - save_cache:
-          key: v1-dependency-cache-{{ checksum "magda-web-client/package.json" }}
+          key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
           paths:
             - ./node_modules
             - ./magda-web-client/node_modules
       - run:
-          name: set_api_url
-          command: sed -i.bak 's/http:\/\/magda-dev.terria.io/https:\/\/magda-dev.terria.io/g' magda-web-client/src/config.js
-      - run:
           name: eslint
-          command: eslint magda-web-client/src/
+          command: ./node_modules/.bin/eslint magda-web-client/src/
       - run:
           name: npm build
-          command: cd magda-web-client && npm run build
+          command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 npm run build
 
       - store_artifacts:
           path: lerna-debug.log
@@ -65,6 +62,11 @@ jobs:
       - run: cf login -a api.system.y.cld.gov.au -o dta -s data-gov-au -u $CF_USER -p $CF_PASSWORD
       - run: cd /tmp/workspace && tree -C
       #- run: cd /tmp/workspace && cf push -f manifest.yml
+      - run: curl https://api.rollbar.com/api/1/sourcemap \
+               -F access_token=$ROLLBAR_ACCESS_TOKEN \
+               -F version=$CIRCLE_SHA1 \
+               -F minified_url=https://magda-web-client.apps.y.cld.gov.au/`jq -r '."main.js"' asset-manifest.json` \
+               -F source_map=@`jq -r '."main.js"' asset-manifest.json`.map
       - run:  cd /tmp/workspace && cf zero-downtime-push magda-web-client -f manifest.yml
 
 workflows:

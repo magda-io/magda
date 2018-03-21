@@ -14,9 +14,9 @@ type searchDataType = {
     data: object
 };
 
-/** 
+/**
  * when no user input, the first `maxDefaultListItemNumber` items will be returned
-*/
+ */
 const maxDefaultListItemNumber = 5;
 
 /**
@@ -52,7 +52,11 @@ class SearchSuggestionBox extends Component {
         }
     }
 
-    insertItemIntoLocalData(key, searchData: searchDataType, limit = maxSavedItemNumber) {
+    insertItemIntoLocalData(
+        key,
+        searchData: searchDataType,
+        limit = maxSavedItemNumber
+    ) {
         if (!window.localStorage) return [];
         let items = this.retrieveLocalData(key);
         items = items.filter(item => {
@@ -92,8 +96,8 @@ class SearchSuggestionBox extends Component {
     }
 
     createSearchOptionListTextFromArray(arr, lastSeparator = "or") {
-        if(!arr) return null;
-        if(typeof arr === "string") return `*${arr}*`;
+        if (!arr) return null;
+        if (typeof arr === "string") return `*${arr}*`;
         if (!arr.length) return null;
         const formatedItems = arr.map((item, idx) => `*${item}*`);
         if (formatedItems.length <= 1) return formatedItems[0];
@@ -146,32 +150,38 @@ class SearchSuggestionBox extends Component {
         const qStr = queryString.stringify(item.data);
         this.props.history.push(`./search?${qStr}`);
         this.setState({
-            isMouseOver:false
+            isMouseOver: false
         });
     }
 
-    onMouseOver(){
+    onMouseOver() {
         this.setState({
-            isMouseOver : true
+            isMouseOver: true
         });
     }
 
-    onMouseOut(){
+    onMouseOut() {
         this.setState({
-            isMouseOver : false
+            isMouseOver: false
         });
     }
 
-    getFilteredResult(){
+    getFilteredResult() {
         const recentSearches = this.state.recentSearches;
-        if(!recentSearches || !recentSearches.length) return [];
+        if (!recentSearches || !recentSearches.length) return [];
 
-        if(!this.props.searchText) return recentSearches.slice(0,maxDefaultListItemNumber);
+        if (!this.props.searchText)
+            return recentSearches.slice(0, maxDefaultListItemNumber);
         const inputText = this.props.searchText.trim().toLowerCase();
-        if(!inputText) return recentSearches.slice(0,maxDefaultListItemNumber);
+        if (!inputText)
+            return recentSearches.slice(0, maxDefaultListItemNumber);
 
-        const filteredRecentSearches = recentSearches.filter(item=>{
-            if(item.data.q && item.data.q.toLowerCase().indexOf(inputText)!== -1) return true;
+        const filteredRecentSearches = recentSearches.filter(item => {
+            if (
+                item.data.q &&
+                item.data.q.toLowerCase().indexOf(inputText) !== -1
+            )
+                return true;
             return false;
         });
 
@@ -179,14 +189,20 @@ class SearchSuggestionBox extends Component {
     }
 
     render() {
-        if(!this.props.isSearchInputFocus && !this.state.isMouseOver) return null;
+        if (!this.props.isSearchInputFocus && !this.state.isMouseOver)
+            return null;
         const filteredRecentSearches = this.state.recentSearches; //--- disabled the filter function for now
-        if(!filteredRecentSearches || !filteredRecentSearches.length) return null;
+        if (!filteredRecentSearches || !filteredRecentSearches.length)
+            return null;
 
         return (
-            <div className="search-suggestion-box" >
+            <div className="search-suggestion-box">
                 <div className="search-suggestion-box-position-adjust" />
-                <div className="search-suggestion-box-body" onMouseOver={()=>this.onMouseOver()} onMouseOut={()=>this.onMouseOut()}>
+                <div
+                    className="search-suggestion-box-body"
+                    onMouseOver={() => this.onMouseOver()}
+                    onMouseOut={() => this.onMouseOut()}
+                >
                     <h5>Recent Searches</h5>
                     {filteredRecentSearches.map((item, idx) => (
                         <button
@@ -207,11 +223,11 @@ class SearchSuggestionBox extends Component {
 }
 
 SearchSuggestionBox.PropTypes = {
-    searchText : PropTypes.string
+    searchText: PropTypes.string
 };
 
 SearchSuggestionBox.defaultProps = {
-    searchText : null
+    searchText: null
 };
 
 const SearchSuggestionBoxWithRouter = withRouter(

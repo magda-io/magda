@@ -130,7 +130,9 @@ class FacetHeader extends Component {
                 }`}
             >
                 <Button
-                    className={`${this.props.isOpen ? "is-open" : ""}`}
+                    className={`btn-facet ${
+                        this.props.isOpen ? "is-open" : ""
+                    }`}
                     onMouseOver={() => this.setState({ buttonActive: true })}
                     onMouseOut={() => {
                         if (!this.props.isOpen && !this.hasFilter()) {

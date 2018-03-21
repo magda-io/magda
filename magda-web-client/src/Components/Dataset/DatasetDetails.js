@@ -10,6 +10,7 @@ import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
+import { Link } from "react-router-dom";
 
 class DatasetDetails extends Component {
     state = {
@@ -31,7 +32,9 @@ class DatasetDetails extends Component {
                             <DescriptionBox content={dataset.description} />
                         </div>
                         <div className="quality-rating-box">
-                            <span>Data Quality: &nbsp;&nbsp;</span>
+                            <Link to="/page/dataset-quality">
+                                <span>Data Quality: &nbsp;&nbsp;</span>
+                            </Link>
                             <StarRating stars={dataset.linkedDataRating} />
                         </div>
                         <TagsBox tags={dataset.tags} />
