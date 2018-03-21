@@ -8,6 +8,7 @@ import uniq from "lodash.uniq";
 import helpIcon from "../../assets/help-pink.svg";
 import ReactTooltip from "react-tooltip";
 import * as moment from "moment";
+import formatIcon from "../../assets/format-passive-dark.svg";
 
 export default class DatasetSummary extends Component {
     constructor(props) {
@@ -19,6 +20,7 @@ export default class DatasetSummary extends Component {
         const formats = uniq(dataset.distributions.map(dis => dis.format));
         return (
             <span className="dataset-summary-downloads">
+                <img key="format-icon" className="format-icon" src={formatIcon} alt="format" />
                 {formats.map((f, i) => <span key={i}>{f}</span>)}
             </span>
         );
