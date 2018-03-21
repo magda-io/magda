@@ -10,7 +10,7 @@ import feedback from "../assets/feedback.svg";
 import close from "../assets/close.svg";
 import success from "../assets/success.svg";
 import Notification from "../UI/Notification";
-import ReactTooltip from 'react-tooltip'
+import ReactTooltip from "react-tooltip";
 
 class FeedbackForm extends React.Component {
     constructor(props) {
@@ -41,9 +41,12 @@ class FeedbackForm extends React.Component {
 
     checkRequiredFields(state) {
         const requiredFields = [];
-        if (!state || !state.email || state.email.trim() === '') requiredFields.push(`Email`);
-        if (!state || !state.feedback || state.feedback.trim() === '') requiredFields.push(`Feedback`);
-        if (requiredFields.length) return this.createFieldListString(requiredFields) + " mandatory.";
+        if (!state || !state.email || state.email.trim() === "")
+            requiredFields.push(`Email`);
+        if (!state || !state.feedback || state.feedback.trim() === "")
+            requiredFields.push(`Feedback`);
+        if (requiredFields.length)
+            return this.createFieldListString(requiredFields) + " mandatory.";
         return null;
     }
 
@@ -98,7 +101,7 @@ class FeedbackForm extends React.Component {
     onDismissErrorNotification() {
         this.setState({
             errorMessage: null
-        })
+        });
     }
 
     renderByState() {
@@ -178,7 +181,7 @@ class FeedbackForm extends React.Component {
                                 : "Send"}
                         </Button>
 
-                        <ReactTooltip/>
+                        <ReactTooltip />
                     </div>
                 </div>
             </div>

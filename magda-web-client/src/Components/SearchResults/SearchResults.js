@@ -24,7 +24,10 @@ class SearchResults extends Component {
                 <ul className="mui-list--unstyled">
                     {this.props.searchResults.map((result, i) => (
                         <li key={i} className="search-results__result">
-                            <DatasetSummary dataset={result} searchText={this.props.searchText}/>
+                            <DatasetSummary
+                                dataset={result}
+                                searchText={this.props.searchText}
+                            />
                         </li>
                     ))}
                 </ul>

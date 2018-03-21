@@ -13,29 +13,46 @@ class DistributionDetails extends Component {
     }
 
     renderLinkText(distribution) {
-        const downloadText = distribution.downloadURL
-            ? <span>This dataset can be downloaded from: <br/>
-                <a onClick={(distribution) => {
-                    // google analytics download tracking
-                    const resource_url = encodeURIComponent(distribution.downloadURL);
-                    if (resource_url && window.ga) {
-                        window.ga('send', {
-                            hitType: 'event',
-                            eventCategory: 'Resource',
-                            eventAction: 'Download',
-                            eventLabel: resource_url
-                        })
-                    }
-                }} href={distribution.downloadURL}> {distribution.downloadURL}</a>
+        const downloadText = distribution.downloadURL ? (
+            <span>
+                This dataset can be downloaded from: <br />
+                <a
+                    onClick={distribution => {
+                        // google analytics download tracking
+                        const resource_url = encodeURIComponent(
+                            distribution.downloadURL
+                        );
+                        if (resource_url && window.ga) {
+                            window.ga("send", {
+                                hitType: "event",
+                                eventCategory: "Resource",
+                                eventAction: "Download",
+                                eventLabel: resource_url
+                            });
+                        }
+                    }}
+                    href={distribution.downloadURL}
+                >
+                    {" "}
+                    {distribution.downloadURL}
+                </a>
                 {this.renderLinkStatus(
                     distribution.linkStatusAvailable,
                     distribution.linkActive
-                )}</span>
-            : "";
-        const accessText = distribution.accessUrl
-            ? <span>This dataset can be accessed from: <br/> <a href={distribution.accessUrl}>{distribution.accessUrl}</a></span>
-            : "";
-        return [downloadText , accessText];
+                )}
+            </span>
+        ) : (
+            ""
+        );
+        const accessText = distribution.accessUrl ? (
+            <span>
+                This dataset can be accessed from: <br />{" "}
+                <a href={distribution.accessUrl}>{distribution.accessUrl}</a>
+            </span>
+        ) : (
+            ""
+        );
+        return [downloadText, accessText];
     }
 
     render() {

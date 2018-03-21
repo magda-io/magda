@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import ReactJsonTree from "react-json-tree";
 import ReactTable from "react-table";
 class ApiViewer extends React.Component {
