@@ -102,10 +102,7 @@ export const config = {
                     "API Docs",
                     "https://search.data.gov.au/api/v0/registry/swagger/index.html"
                 ],
-                [
-                    "Powered by Magda",
-                    "https://github.com/TerriaJS/magda/"
-                ]
+                ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
             ]
         },
         {
