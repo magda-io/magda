@@ -1,25 +1,24 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
 import { Medium, Small } from "../../UI/Responsive";
-import HeaderHome from "./HeaderHome";
-import HeaderHomeMobile from "./HeaderHomeMobile";
-import HeaderOthers from "./HeaderOthers";
-import HeaderOthersMobile from "./HeaderOthersMobile";
+import { Link } from "react-router-dom";
+import govtLogo from "../../assets/au-govt-logo.svg";
+import HeaderNav from "./HeaderNav";
+import HeaderMobile from "./HeaderMobile";
+import "./Header.css";
 
 const Header = props => {
     return (
-        <div>
+        <div className="top-header-container">
             <Small>
-                <Switch>
-                    <Route exact path="/" component={HeaderHomeMobile} />
-                    <Route path="/*" component={HeaderOthersMobile} />
-                </Switch>
+                <HeaderMobile />
             </Small>
             <Medium>
-                <Switch>
-                    <Route exact path="/" component={HeaderHome} />
-                    <Route path="/*" component={HeaderOthers} />
-                </Switch>
+                <div className="desktop-nav mui-container">
+                    <Link to="/" className="logo">
+                        <img src={govtLogo} alt="Coat of Arms" />
+                    </Link>
+                    <HeaderNav />
+                </div>
             </Medium>
         </div>
     );

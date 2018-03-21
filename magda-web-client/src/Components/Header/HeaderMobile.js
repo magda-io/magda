@@ -4,7 +4,7 @@ import HeaderNav from "./HeaderNav";
 import { config } from "../../config.js";
 import mobileMenu from "../../assets/mobile-menu.svg";
 
-class HeaderHomeMobile extends Component {
+class HeaderMobile extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -44,4 +44,4 @@ class HeaderHomeMobile extends Component {
     }
 }
 
-export default HeaderHomeMobile;
+export default HeaderMobile;
