@@ -12,7 +12,7 @@ function QualityIndicator(props) {
     return (
         <span className="quality-indicator-box">
             <span>Quality: &nbsp;&nbsp;</span>
-            <StarRating stars={rating}/>
+            <StarRating stars={rating} />
         </span>
     );
 }

@@ -30,10 +30,13 @@ export function fetchHomepageStory(idx) {
             const url = baseUrl + config.homePageConfig.stories[idx];
 
             const response = await fetch(url);
-            if(response.status !== 200) throw new Error(`Failed to load data. Status code: ${response.status}`);
+            if (response.status !== 200)
+                throw new Error(
+                    `Failed to load data. Status code: ${response.status}`
+                );
             const content = await response.text();
 
-            dispatch(receiveHomepageStory(idx,content));
+            dispatch(receiveHomepageStory(idx, content));
         } catch (e) {
             dispatch(requestHomepageStoryError(idx, e));
         }

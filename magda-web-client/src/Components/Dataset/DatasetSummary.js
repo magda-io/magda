@@ -20,7 +20,12 @@ export default class DatasetSummary extends Component {
         const formats = uniq(dataset.distributions.map(dis => dis.format));
         return (
             <span className="dataset-summary-downloads">
-                <img key="format-icon" className="format-icon" src={formatIcon} alt="format" />
+                <img
+                    key="format-icon"
+                    className="format-icon"
+                    src={formatIcon}
+                    alt="format"
+                />
                 {formats.map((f, i) => <span key={i}>{f}</span>)}
             </span>
         );
