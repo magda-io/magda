@@ -86,10 +86,7 @@ export const config = {
     footerNavigation: [
         {
             category: "Data.gov.au",
-            links: [
-                ["About", "page/about"],
-                ["Request a dataset", "/"]
-            ]
+            links: [["About", "page/about"], ["Request a dataset", "/"]]
         },
         {
             category: "Publishers",
@@ -103,17 +100,12 @@ export const config = {
             links: [
                 [
                     "API Docs",
-<<<<<<< HEAD
                     "http://search.data.gov.au/api/v0/registry/swagger/index.html"
                 ],
                 [
-                    "Architecture", "https://github.com/TerriaJS/magda/raw/master/doc/magda-basic-architecture.png"
+                    "Architecture",
+                    "https://github.com/TerriaJS/magda/raw/master/doc/magda-basic-architecture.png"
                 ]
-=======
-                    "https://search.data.gov.au/api/v0/registry/swagger/index.html"
-                ],
-                ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
->>>>>>> master
             ]
         }
     ]
