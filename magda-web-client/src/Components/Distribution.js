@@ -44,8 +44,8 @@ export default function renderDistribution(
                         (typeof distribution.license === "string"
                             ? distribution.license
                             : distribution.license.name
-                              ? distribution.license.name
-                              : "")}
+                                ? distribution.license.name
+                                : "")}
                 </div>
             </div>
             {preview && <DataPreviewer distribution={distribution} />}

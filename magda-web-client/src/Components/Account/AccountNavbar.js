@@ -12,26 +12,22 @@ class AccountNavbar extends React.Component {
 
     render() {
         return (
-            <ul className="mui-list--unstyled account-navbar">
+            <div className="account-navbar">
                 {this.props.user ? (
                     [
-                        <li key="user">
+                        <span>
                             <Link to={`/account`}>
                                 {this.props.user.displayName}
                             </Link>
-                        </li>,
-                        <li key="signout">
                             <a href="" onClick={this.signOut.bind(this)}>
                                 Sign Out
                             </a>
-                        </li>
+                        </span>
                     ]
                 ) : (
-                    <li>
-                        <Link to={`/account`}>Sign in</Link>
-                    </li>
+                    <Link to={`/account`}>Sign in</Link>
                 )}
-            </ul>
+            </div>
         );
     }
 }

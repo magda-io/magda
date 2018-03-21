@@ -7,8 +7,10 @@ import StarRating from "../../UI/StarRating";
 import TagsBox from "../../UI/TagsBox";
 import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
+import queryString from "query-string";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
+import { Link } from "react-router-dom";
 
 class DatasetDetails extends Component {
     state = {
@@ -17,7 +19,8 @@ class DatasetDetails extends Component {
     render() {
         const dataset = this.props.dataset;
         const datasetId = this.props.match.params.datasetId;
-
+        const searchText =
+            queryString.parse(this.props.location.search).q || "";
         const source = `This dataset was originally found on [${
             this.props.dataset.source
         }](${dataset.landingPage})`;
@@ -29,7 +32,9 @@ class DatasetDetails extends Component {
                             <DescriptionBox content={dataset.description} />
                         </div>
                         <div className="quality-rating-box">
-                            <span>Data Quality: &nbsp;&nbsp;</span>
+                            <Link to="/page/dataset-quality">
+                                <span>Data Quality: &nbsp;&nbsp;</span>
+                            </Link>
                             <StarRating stars={dataset.linkedDataRating} />
                         </div>
                         <TagsBox tags={dataset.tags} />
@@ -53,6 +58,7 @@ class DatasetDetails extends Component {
                                         key={s.identifier}
                                         distribution={s}
                                         datasetId={datasetId}
+                                        searchText={searchText}
                                     />
                                 ))}
                             </div>

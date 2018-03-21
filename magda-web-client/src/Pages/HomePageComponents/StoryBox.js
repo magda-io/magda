@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { fetchHomepageStory } from "../../actions/homePageStoriesActions";
-import { safeLoadFront } from "yaml-front-matter";
+import { safeLoadFront } from "yaml-front-matter/dist/yamlFront";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import { config } from "../../config";
 import "./StoryBox.css";

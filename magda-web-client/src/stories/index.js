@@ -2,7 +2,6 @@ import React from "react";
 
 import { storiesOf } from "@storybook/react";
 import { action } from "@storybook/addon-actions";
-import { linkTo } from "@storybook/addon-links";
 import { MemoryRouter } from "react-router-dom";
 
 import CustomIcons, { iconTypes } from "../UI/CustomIcons";
@@ -113,13 +112,28 @@ storiesOf("Quality Indicator", module)
 
 storiesOf("Pagination", module)
     .add("page 1", () => (
-        <Pagination currentPage={1} maxPage={100} totalItems ={100} onPageChange={action()} />
+        <Pagination
+            currentPage={1}
+            maxPage={100}
+            totalItems={100}
+            onPageChange={action()}
+        />
     ))
     .add("page 3", () => (
-        <Pagination currentPage={3} maxPage={100} totalItems ={100} onPageChange={action()} />
+        <Pagination
+            currentPage={3}
+            maxPage={100}
+            totalItems={100}
+            onPageChange={action()}
+        />
     ))
     .add("last page", () => (
-        <Pagination currentPage={100} maxPage={100} totalItems ={100} onPageChange={action()} />
+        <Pagination
+            currentPage={100}
+            maxPage={100}
+            totalItems={100}
+            onPageChange={action()}
+        />
     ));
 
 storiesOf("Notification", module)

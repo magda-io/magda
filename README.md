@@ -1,4 +1,7 @@
 # MAGDA
+
+[![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Magda is a modern platform built to power a new generation of data portals. Its goal is to improve on existing data portal and management solutions in a number of areas:
 
 - Discoverability of high-quality and relevant data (particularly through search)
@@ -14,7 +17,9 @@ Magda is a solution for any problem that involves a collection or collections of
 The project was started by CSIRO Data61 and Australia's Department of Prime Minister and Cabinet as the future of [data.gov.au](https://data.gov.au), and is currently in alpha at [search.data.gov.au](https://search.data.gov.au). As a result it's ideal for powering open data portals, particularly those that involve federating over a number of other more focused portals - for example data.gov.au is a a federal government portal that publishes its own data and makes it available alongside data from department and state portals. However, it can just as easily be run on an organisational intranet as a central private data portal - and can even be set up to include relevant open data in search results alongside private data without exposing any private data to the internet.
 
 ## Current Status
-Magda is currently being actively developed, and is still in an immature state - we've yet to fully stabilise and document our APIs or provide administration functionality outside of manually changing things via helm and kubectl. This should change very soon - currently we're developing an admin interface that will make it easy to administrate Magda without having to know Kubernetes, and we're working to make installation an extremely easy process once you already have a Kubernetes setup. If you want to jump in and give it a go feel free - we've been running some form of this in production for some time and haven't had any problems.
+Magda is currently being actively developed, and is still in an immature state - we've yet to fully stabilise and document our APIs or provide administration functionality outside of manually changing things via helm and kubectl. If you want to jump in and give it a go feel free - we've been running some form of this in production for some time and haven't had any problems.
+
+Our current roadmap is available at https://github.com/TerriaJS/magda/blob/master/doc/roadmap.md
 
 ## Architecture
 Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility - Magda can be customised by simply adding new services using any technology as docker images, and integrating them with the rest of the system via stable HTTP APIs. Using Kubernetes for orchestration means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
@@ -45,3 +50,7 @@ https://github.com/TerriaJS/magda/blob/master/doc/quickstart.md
 
 ## To build and run from source
 https://github.com/TerriaJS/magda/blob/master/doc/building-and-running.md
+
+## To get help
+Talk to us on Gitter!
+[![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
