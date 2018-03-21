@@ -157,7 +157,8 @@ class Search extends Component {
                                 !this.props.error && (
                                     <div className="sub-heading">
                                         {" "}
-                                        results ( {this.props.hitCount} )
+                                        {this.props.hitCount} DATASETS FOUND FOR
+                                        "{searchText}"
                                     </div>
                                 )}
                             {searchText.length > 0 &&
