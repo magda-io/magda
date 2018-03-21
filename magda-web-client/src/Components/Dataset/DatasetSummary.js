@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import defined from "../../helpers/defined";
-import getDateString from "../../helpers/getDateString";
 import QualityIndicator from "../../UI/QualityIndicator";
 import "./DatasetSummary.css";
 import { Link } from "react-router-dom";
@@ -87,11 +86,14 @@ export default class DatasetSummary extends Component {
                                     delayHide={1000}
                                     getContent={() => {
                                         return (
-                                            <Link to="/pages/data-quality">
+                                            <a
+                                                href="/page/dataset-quality"
+                                                target="_blank"
+                                            >
                                                 {
                                                     "How is data quality calculated? "
                                                 }
-                                            </Link>
+                                            </a>
                                         );
                                     }}
                                 />
