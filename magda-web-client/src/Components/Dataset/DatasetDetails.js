@@ -32,7 +32,9 @@ class DatasetDetails extends Component {
                             <DescriptionBox content={dataset.description} />
                         </div>
                         <div className="quality-rating-box">
-                            <Link to="/page/dataset-quality"><span>Data Quality: &nbsp;&nbsp;</span></Link>
+                            <Link to="/page/dataset-quality">
+                                <span>Data Quality: &nbsp;&nbsp;</span>
+                            </Link>
                             <StarRating stars={dataset.linkedDataRating} />
                         </div>
                         <TagsBox tags={dataset.tags} />
