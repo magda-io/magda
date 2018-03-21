@@ -27,7 +27,6 @@ export default class DatasetSummary extends Component {
     render() {
         const dataset = this.props.dataset;
         const publisher = dataset.publisher && dataset.publisher.name;
-        debugger;
         return (
             <div className="dataset-summary">
                 <h3>
@@ -76,14 +75,16 @@ export default class DatasetSummary extends Component {
                                     data-tip={dataset.identifier}
                                 />
                                 <ReactTooltip
+                                    className="dataset-summary-quality-help-tooltip"
                                     type="info"
                                     id={`dataset-quality-tooltip-${
                                         dataset.identifier
                                     }`}
                                     place="top"
                                     effect="solid"
+                                    delayHide={1000}
                                     getContent={() => {
-                                        return <Link to="/pages/data-quality">{"How is data calculated?"}</Link>;
+                                        return <Link to="/pages/data-quality">{"How is data quality calculated? "}</Link>;
                                     }}
                                 />
                             </span>
