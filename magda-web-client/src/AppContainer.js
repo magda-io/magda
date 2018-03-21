@@ -34,7 +34,6 @@ import mobileMenu from "./assets/mobile-menu.svg";
 import { Route, Link, Switch } from "react-router-dom";
 
 import "./AppContainer.css";
-import DatasetDetails from "./Components/Dataset/DatasetDetails";
 
 class AppContainer extends React.Component {
     constructor(props) {
