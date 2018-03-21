@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
 import helpIcon from "../../assets/help-pink.svg";
 import ReactTooltip from "react-tooltip";
+import * as moment from "moment";
 
 export default class DatasetSummary extends Component {
     constructor(props) {
@@ -53,7 +54,8 @@ export default class DatasetSummary extends Component {
                     {defined(dataset.modified) && (
                         <span className="dataset-summary-updated">
                             {" "}
-                            Dataset Updated {getDateString(dataset.modified)}
+                            Dataset · Updated{" "}
+                            {moment(dataset.modified).format("Do MMMM YYYY")}
                         </span>
                     )}
                     {defined(
@@ -84,7 +86,13 @@ export default class DatasetSummary extends Component {
                                     effect="solid"
                                     delayHide={1000}
                                     getContent={() => {
-                                        return <Link to="/pages/data-quality">{"How is data quality calculated? "}</Link>;
+                                        return (
+                                            <Link to="/pages/data-quality">
+                                                {
+                                                    "How is data quality calculated? "
+                                                }
+                                            </Link>
+                                        );
                                     }}
                                 />
                             </span>

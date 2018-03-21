@@ -66,6 +66,7 @@
         "lodash.uniq": "^4.5.0",
         "markdown-it": "^8.4.0",
         "markdown-with-front-matter-loader": "^0.1.0",
+        "moment": "^2.21.0",
         "muicss": "^0.9.33",
         "node-sass": "^4.5.0",
         "npm-run-all": "^4.0.1",
