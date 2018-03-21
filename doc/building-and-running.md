@@ -7,6 +7,7 @@ You need the following in order to build and run MAGDA:
 * [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 * [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
 * [Minikube](https://github.com/kubernetes/minikube) - To run a Kubernetes cluster on your local development machine. It is possible to run all of the Magda microservices directly on your local machine instead of on a Kubernetes cluster, in which case you don't, strictly speaking, need Minikube. However, you will probably want to run at least some of the services, such as the databases, on a cluster for ease of setup.
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads) We find this is the best virtual machine to use with minikube.
 * [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
 * [GNU tar](https://www.gnu.org/software/tar/) - MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
 * [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
@@ -38,6 +39,8 @@ After you [install Minikube](https://github.com/kubernetes/minikube/releases), s
 
 ```bash
 minikube config set memory 4096
+minikube config set cpus 2
+minikube config set vm-driver virtualbox
 minikube start
 ```
 
