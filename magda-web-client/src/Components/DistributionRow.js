@@ -147,8 +147,8 @@ class DistributionRow extends Component {
                                     (typeof distribution.license === "string"
                                         ? distribution.license
                                         : distribution.license.name
-                                          ? distribution.license.name
-                                          : "")}
+                                            ? distribution.license.name
+                                            : "")}
                             </div>
                         </div>
                     </div>

@@ -4,7 +4,7 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "https://magda-dev.terria.io/";
+const fallbackApiHost = "//magda-dev.terria.io/";
 
 const homePageConfig: {
     baseUrl: string,
@@ -107,8 +107,9 @@ export const config = {
             links: [
                 [
                     "API Docs",
-                    "http://search.data.gov.au/api/v0/registry/swagger/index.html"
-                ]
+                    "https://search.data.gov.au/api/v0/registry/swagger/index.html"
+                ],
+                ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
             ]
         },
         {

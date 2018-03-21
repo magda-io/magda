@@ -1,21 +1,24 @@
-## Prerequisites
+# Prerequisites
 
 You need the following in order to build and run MAGDA:
 
-* [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Please install version 6, as version 8 includes npm 5 which currently doesn't work well with lerna.
+* [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.
 * [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 * [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 * [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
 * [Minikube](https://github.com/kubernetes/minikube) - To run a Kubernetes cluster on your local development machine. It is possible to run all of the Magda microservices directly on your local machine instead of on a Kubernetes cluster, in which case you don't, strictly speaking, need Minikube. However, you will probably want to run at least some of the services, such as the databases, on a cluster for ease of setup.
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads) We find this is the best virtual machine to use with minikube.
 * [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
 * [GNU tar](https://www.gnu.org/software/tar/) - MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
 * [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
 These instructions assume you are using a Bash shell. You can easily get a Bash shell on Windows by installing the [git](https://git-scm.com/downloads) client.
 
-## Building and running components
+# Building and running components
 
-First, install `npm` dependencies and set up the links between components by running:
+First clone the magda directory and `cd` into it.
+
+Then install `npm` dependencies and set up the links between components by running:
 
 ```bash
 lerna bootstrap
@@ -24,25 +27,20 @@ lerna bootstrap
 Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
 
 ```bash
-npm run build
+lerna run build --include-filtered-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
 
-To run a built component, run the following in a component directory:
-
-```bash
-npm start
-```
-
-## Setting up Minikube
-
+## Install minikube
 As mentioned above, Minikube is optional. However, you will probably find it easier to run at least the databases (PostgreSQL and ElasticSearch) on Minikube, rather than installing them on your development machine.
 
 After you [install Minikube](https://github.com/kubernetes/minikube/releases), start it with:
 
 ```bash
 minikube config set memory 4096
+minikube config set cpus 2
+minikube config set vm-driver virtualbox
 minikube start
 ```
 
@@ -58,7 +56,7 @@ eval $(minikube docker-env)
 
 You'll need to run this in each new shell.
 
-### Setting up Helm
+## Set up Helm
 
 Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at https://github.com/kubernetes/helm/blob/master/docs/install.md.
 
@@ -68,7 +66,7 @@ In a nutshell, once you have helm installed, this is how you initialise helm and
 helm init
 ```
 
-### Install a local kube registry
+## Install a local kube registry
 
 This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
 
@@ -79,7 +77,29 @@ helm install --name docker-registry -f deploy/helm/docker-registry.yml stable/do
 helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
 ```
 
-### Crawl Data
+## Build local docker images
+
+Now you can build the docker containers locally - this might take quite a while so get a cup of tea.
+
+```bash
+lerna run docker-build-local --include-filtered-dependencies
+```
+
+## Create the necessary config maps
+
+```bash
+kubectl create configmap config --from-file deploy/kubernetes/config
+kubectl create configmap connector-config --from-file deploy/connector-config
+deploy/helm/create-auth-secrets.sh
+```
+
+## Install Magda on your minikube cluster
+
+```bash
+helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml
+```
+
+## Crawl Data
 
 ```bash
 cd deploy
@@ -88,172 +108,8 @@ npm run generate-connector-jobs-local
 kubectl create -f kubernetes/generated/local/
 ```
 
-## Running on your local machine
-
-For a quick development cycle on any component (except `combined-db` and `elastic-search`), run:
-
-```bash
-npm run dev
-```
-
-This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected. In some cases (e.g. code generation), it is necessary to run `npm run build` at least once before `npm run dev` will work. Typically it is _not_ necessary to run `npm run build` again in the course of development, though, unless you're changing something other than source code.
-
-A typical use case would be:
-
-1. Start `combined-db` in `Minikube` using `helm:`
-
-From root level of the project directory:
-
-```bash
-helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
-```
-
-2. Port forward database service port to localhost so that your local running program (outside the `Kubernetes` cluster in `minikube`) can connect to them:
-
-```bash
-# Port forward database
-# this command doesn't terminate, so run it in a separate terminal
-kubectl port-forward combined-db-0 5432:5432
-```
-
-3. Start the registry API and a connector (via `npm run dev`) by executing the following two commands in two separate terminal windows:
-
-```bash
-# these two commands don't terminate, so run them in separate terminals
-cd magda-registry-api && npm run dev
-cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/data-gov-au.json
-```
-
-See [connectors](connectors.md) for more detailed information about running connectors.
-
-4. (Optional) If later you wanted to start elastic search as well:
-
-Like `combined-db`, elastic search can only be started in `minikube` via `helm` rather than `npm run dev`.
-
-You need to upgrade previously installed `helm` chart `magda` to include `magda-elastic-search` component:
-
-```bash
-helm upgrade magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true --set tags.elasticsearch=true
-```
-
-And then, port forward `elasticsearch` so that you can run other components that may need to connect to `elasticsearch` outside the `minikube`:
-
-```bash
-# Port forward elasticsearch
-# this commands doesn't terminate, so run it in a separate terminal
-kubectl port-forward es-data-0 9300:9300
-```
-
-You can find more information regarding starting `magda` components via `helm` in `minikube` from [the `Running on Minikube` section below](#running-on-minikube)
-
-## What do I need to run?
-
-Running individual components is easy enough, but how do we get a fully working system? It is rarely necessary to run _all_ of MAGDA locally, but various components depend on other components as follows:
-
-| Component                 | Dependencies                                                                                                     |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `magda-*-connector`       | `magda-registry-api`                                                                                             |
-| `magda-*-sleuther`        | `magda-registry-api`                                                                                             |
-| `magda-authorization-api` | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
-| `magda-discussions-api`   | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
-| `magda-gateway`           | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-authorization-api`, `magda-discussions-api` |
-| `magda-indexer`           | `magda-elastic-search`                                                                                           |
-| `magda-registry-api`      | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
-| `magda-search-api`        | `magda-elastic-search`                                                                                           |
-| `magda-web-client`        | `magda-web-server`, but uses API at http://magda-dev.terria.io/api if server is not running.                     |
-| `magda-web-server`        | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail.       |
-
-### Architecture Diagram
-
-The following `Architecture Diagram` may help you to get clearer idea which components you need to run in order to look at a particular function area:
-
-![Magda Architecture Diagram](./magda-architecture.png)
-
-The following table shows the relationship between `Magda components` and `Diagram elements`:
-
-| Component                         | Diagram elements                                                                                                                                                                                                                                     |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `magda-admin-api`                 | `Admin API (NodeJS)`                                                                                                                                                                                                                                 |
-| `magda-*-connector`               | `Connectors`                                                                                                                                                                                                                                         |
-| `magda-elastic-search`            | `ES Client`, `ES Data (x2)`, `ES Master (x3)`                                                                                                                                                                                                        |
-| `magda-*-sleuther`                | `Sleuthers`                                                                                                                                                                                                                                          |
-| `magda-authorization-api`         | `Auth API (NodeJS)`                                                                                                                                                                                                                                  |
-| `magda-discussions-api`           | `Discussion API (NodeJS)`                                                                                                                                                                                                                            |
-| `magda-gateway`                   | `Gateway (x1+) (NodeJS)`                                                                                                                                                                                                                             |
-| `magda-indexer`                   | `Search Indexer (Scala)`                                                                                                                                                                                                                             |
-| `magda-registry-api`              | `Registry API (Scala)`                                                                                                                                                                                                                               |
-| `magda-search-api`                | `Search API (Scala)`                                                                                                                                                                                                                                 |
-| `magda-web-client`                | `MAGDA Web UI`                                                                                                                                                                                                                                       |
-| `magda-web-server`                | `Web Server (NodeJS)`                                                                                                                                                                                                                                |
-| `magda-preview-map`               | `Terria Server (NodeJS)`                                                                                                                                                                                                                             |
-| `magda-postgres`                  | All databases - see the migrators that set up the individual database schemas below                                                                                                                                                                  |
-| `magda-migrator-authorization-db` | `Auth DB (Postgres)`. `magda-migrator-authorization-db` is only used for production environment.                                                                                                                                                     |
-| `magda-migrator-discussions-db`   | `Discussion DB (Postgres)`. `magda-migrator-discussions-db` is only used for production environment.                                                                                                                                                 |
-| `magda-migrator-registry-db`      | `Registry DB (Postgres)`. `magda-migrator-registry-db` is only used for production environment.                                                                                                                                                      |
-| `magda-migrator-session-db`       | `Session DB (Postgres)`. `magda-migrator-session-db` is only used for production environment.                                                                                                                                                        |
-| `magda-migrator-combined-db`      | `Registry DB (Postgres)`, `Session DB (Postgres)`, `Discussion DB (Postgres)`, `Auth DB (Postgres)`. `magda-migrator-combined-db` component is only used for dev environment. Production environment will launch all DB components above separately. |
-
-# Debugging Node.js / TypeScript components
-
-Node.js / TypeScript components can easily be debugged using the [Visual Studio Code](https://code.visualstudio.com/) debugger. Set up a launch configuration like this:
-
-```javascript
-{
-    "type": "node",
-    "request": "launch",
-    "protocol": "inspector",
-    "name": "Launch CKAN Connector",
-    "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
-    "windows": {
-        "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
-    },
-    "runtimeArgs":[
-        "src/index.ts"
-    ],
-    "args":[
-        "--name", "data.gov.au", "--sourceUrl", "https://data.gov.au/"
-    ],
-    "cwd": "${workspaceRoot}/magda-ckan-connector"
-}
-```
-
-# Debugging Scala components
-
-Scala components can easily be debugged using the IntelliJ debugger. Create a debug configuration for the `App` class of whatever component you're debugging.
-
-# Running on Minikube
-
-To run all of MAGDA on Minikube, you first need to build all components:
-
-```bash
-lerna run build
-```
-
-Then, build and push Docker containers for each by running the following in the root MAGDA directory:
-
-```bash
-lerna run docker-build-local
-```
-
-If you get an error, make sure your Docker environment is set up:
-
-```bash
-eval $(minikube docker-env)
-```
-
-Next, create the configmaps defining the cluster configuration:
-
-```bash
-kubectl create configmap config --from-file deploy/kubernetes/config
-kubectl create configmap connector-config --from-file deploy/connector-config
-deploy/helm/create-auth-secrets.sh
-```
-
-To install _everything_:
-
-```bash
-helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml
-```
+# Minikube tricks
+## Running individual services on minikube
 
 If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the `all` tag to `false` and the tag for the pod you want to `true`, e.g.
 
@@ -327,3 +183,134 @@ You can use the same pattern for sleuthers - register a webhook with a url host 
 ```bash
 kubectl port-forward registry-api-79f7bf7787-5j52x 6101:80
 ```
+
+# What do I need to run?
+
+Running individual components is easy enough, but how do we get a fully working system? It is rarely necessary to run _all_ of MAGDA locally, but various components depend on other components as follows:
+
+| Component                 | Dependencies                                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `magda-*-connector`       | `magda-registry-api`                                                                                             |
+| `magda-*-sleuther`        | `magda-registry-api`                                                                                             |
+| `magda-authorization-api` | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
+| `magda-discussions-api`   | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
+| `magda-gateway`           | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-authorization-api`, `magda-discussions-api` |
+| `magda-indexer`           | `magda-elastic-search`                                                                                           |
+| `magda-registry-api`      | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
+| `magda-search-api`        | `magda-elastic-search`                                                                                           |
+| `magda-web-client`        | `magda-web-server`, but uses API at http://magda-dev.terria.io/api if server is not running.                     |
+| `magda-web-server`        | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail.       |
+
+# Architecture Diagram
+
+The following `Architecture Diagram` may help you to get clearer idea which components you need to run in order to look at a particular function area:
+
+![Magda Architecture Diagram](./magda-architecture.png)
+
+The following table shows the relationship between `Magda components` and `Diagram elements`:
+
+| Component                         | Diagram elements                                                                                                                                                                                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `magda-admin-api`                 | `Admin API (NodeJS)`                                                                                                                                                                                                                                 |
+| `magda-*-connector`               | `Connectors`                                                                                                                                                                                                                                         |
+| `magda-elastic-search`            | `ES Client`, `ES Data (x2)`, `ES Master (x3)`                                                                                                                                                                                                        |
+| `magda-*-sleuther`                | `Sleuthers`                                                                                                                                                                                                                                          |
+| `magda-authorization-api`         | `Auth API (NodeJS)`                                                                                                                                                                                                                                  |
+| `magda-discussions-api`           | `Discussion API (NodeJS)`                                                                                                                                                                                                                            |
+| `magda-gateway`                   | `Gateway (x1+) (NodeJS)`                                                                                                                                                                                                                             |
+| `magda-indexer`                   | `Search Indexer (Scala)`                                                                                                                                                                                                                             |
+| `magda-registry-api`              | `Registry API (Scala)`                                                                                                                                                                                                                               |
+| `magda-search-api`                | `Search API (Scala)`                                                                                                                                                                                                                                 |
+| `magda-web-client`                | `MAGDA Web UI`                                                                                                                                                                                                                                       |
+| `magda-web-server`                | `Web Server (NodeJS)`                                                                                                                                                                                                                                |
+| `magda-preview-map`               | `Terria Server (NodeJS)`                                                                                                                                                                                                                             |
+| `magda-postgres`                  | All databases - see the migrators that set up the individual database schemas below                                                                                                                                                                  |
+| `magda-migrator-authorization-db` | `Auth DB (Postgres)`. `magda-migrator-authorization-db` is only used for production environment.                                                                                                                                                     |
+| `magda-migrator-discussions-db`   | `Discussion DB (Postgres)`. `magda-migrator-discussions-db` is only used for production environment.                                                                                                                                                 |
+| `magda-migrator-registry-db`      | `Registry DB (Postgres)`. `magda-migrator-registry-db` is only used for production environment.                                                                                                                                                      |
+| `magda-migrator-session-db`       | `Session DB (Postgres)`. `magda-migrator-session-db` is only used for production environment.                                                                                                                                                        |
+| `magda-migrator-combined-db`      | `Registry DB (Postgres)`, `Session DB (Postgres)`, `Discussion DB (Postgres)`, `Auth DB (Postgres)`. `magda-migrator-combined-db` component is only used for dev environment. Production environment will launch all DB components above separately. |
+
+# Running on your local machine
+
+You can also avoid minikube and run magda components on your local machine - this is much, much trickier.
+
+```bash
+npm run dev
+```
+
+This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected. In some cases (e.g. code generation), it is necessary to run `npm run build` at least once before `npm run dev` will work. Typically it is _not_ necessary to run `npm run build` again in the course of development, though, unless you're changing something other than source code.
+
+A typical use case would be:
+
+1. Start `combined-db` in `Minikube` using `helm:`
+
+From root level of the project directory:
+
+```bash
+helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
+```
+
+2. Port forward database service port to localhost so that your local running program (outside the `Kubernetes` cluster in `minikube`) can connect to them:
+
+```bash
+# Port forward database
+# this command doesn't terminate, so run it in a separate terminal
+kubectl port-forward combined-db-0 5432:5432
+```
+
+3. Start the registry API and a connector (via `npm run dev`) by executing the following two commands in two separate terminal windows:
+
+```bash
+# these two commands don't terminate, so run them in separate terminals
+cd magda-registry-api && npm run dev
+cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/data-gov-au.json
+```
+
+See [connectors](connectors.md) for more detailed information about running connectors.
+
+4. (Optional) If later you wanted to start elastic search as well:
+
+Like `combined-db`, elastic search can only be started in `minikube` via `helm` rather than `npm run dev`.
+
+You need to upgrade previously installed `helm` chart `magda` to include `magda-elastic-search` component:
+
+```bash
+helm upgrade magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true --set tags.elasticsearch=true
+```
+
+And then, port forward `elasticsearch` so that you can run other components that may need to connect to `elasticsearch` outside the `minikube`:
+
+```bash
+# Port forward elasticsearch
+# this commands doesn't terminate, so run it in a separate terminal
+kubectl port-forward es-data-0 9300:9300
+```
+
+## Debugging Node.js / TypeScript components
+
+Node.js / TypeScript components can easily be debugged using the [Visual Studio Code](https://code.visualstudio.com/) debugger. Set up a launch configuration like this:
+
+```javascript
+{
+    "type": "node",
+    "request": "launch",
+    "protocol": "inspector",
+    "name": "Launch CKAN Connector",
+    "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+    "windows": {
+        "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+    },
+    "runtimeArgs":[
+        "src/index.ts"
+    ],
+    "args":[
+        "--name", "data.gov.au", "--sourceUrl", "https://data.gov.au/"
+    ],
+    "cwd": "${workspaceRoot}/magda-ckan-connector"
+}
+```
+
+## Debugging Scala components
+
+Scala components can easily be debugged using the IntelliJ debugger. Create a debug configuration for the `App` class of whatever component you're debugging.
