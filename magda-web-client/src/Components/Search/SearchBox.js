@@ -9,11 +9,10 @@ import React, { Component } from "react";
 import { fetchRegionMapping } from "../../actions/regionMappingActions";
 import Form from "muicss/lib/react/form";
 import Input from "muicss/lib/react/input";
-import searchDark from "../../assets/search-dark.svg";
+import searchGrey from "../../assets/search-grey.svg";
 // eslint-disable-next-line
 import PropTypes from "prop-types";
 import queryString from "query-string";
-// import Particles from '../../UI/Particles';
 
 class SearchBox extends Component {
     constructor(props) {
@@ -33,7 +32,8 @@ class SearchBox extends Component {
         this.state = {
             searchText: undefined,
             width: 0,
-            height: 0
+            height: 0,
+            isFocus: false
         };
     }
 
@@ -133,32 +133,29 @@ class SearchBox extends Component {
     render() {
         return (
             <Form className="searchBox">
-                    <label htmlFor="search">
-                        <span className="sr-only">
-                            {"Search " + config.appName}
-                        </span>
-                        <Input
-                            type="text"
-                            name="search"
-                            id="search"
-                            placeholder="Search for open data"
-                            value={this.getSearchBoxValue()}
-                            onChange={this.onSearchTextChange}
-                            onKeyPress={
-                                this.handleSearchFieldEnterKeyPress
-                            }
-                            autoComplete="off"
-                        />
-                    </label>
-                    <button
-                        onClick={this.onClickSearch}
-                        className="search-btn"
-                        type="button">
-                        <img src={searchDark} alt="search button" />
-                        <span className="sr-only">
-                            submit search
-                        </span>
-                    </button>
+                <label htmlFor="search">
+                    <span className="sr-only">
+                        {"Search " + config.appName}
+                    </span>
+                    <Input
+                        type="text"
+                        name="search"
+                        id="search"
+                        placeholder="Search for open data"
+                        value={this.getSearchBoxValue()}
+                        onChange={this.onSearchTextChange}
+                        onKeyPress={this.handleSearchFieldEnterKeyPress}
+                        autoComplete="off"
+                    />
+                </label>
+                <button
+                    onClick={this.onClickSearch}
+                    className="search-btn"
+                    type="button"
+                >
+                    <img src={searchGrey} alt="search button" />
+                    <span className="sr-only">submit search</span>
+                </button>
             </Form>
         );
     }

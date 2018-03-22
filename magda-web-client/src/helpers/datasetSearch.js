@@ -72,15 +72,6 @@ export type FacetAction = {
     error?: FetchError
 };
 
-export type SearchAction = {
-    type: string,
-    apiQuery?: string,
-    items?: Array<FacetOption>,
-    item?: FacetOption,
-    json?: DataSearchJson,
-    error?: FetchError
-};
-
 type Facet = {
     id: string,
     options: Array<FacetOption>
@@ -114,6 +105,15 @@ export type DataSearchJson = {
     dataSets: Array<Dataset>,
     strategy: string,
     facets: Array<Facet>
+};
+
+export type SearchAction = {
+    type: string,
+    apiQuery?: string,
+    items?: Array<FacetOption>,
+    item?: FacetOption,
+    json?: DataSearchJson,
+    error?: FetchError
 };
 
 export type FacetSearchState = {

@@ -46,7 +46,7 @@ We don't expect people outside the core team to go through the same process as c
 # Standards
 - Where practical, changes should be accompanied by unit tests. Unfortunately there's still a lot of untested code in the code base - if you're modifying untested code, try to at least write tests to test _what you've changed_.
     - The front-end is (currently) an exception to this as it's still very experimental
-- Javascript/Typescript should be formatted with [Prettier](https://github.com/prettier/prettier), Scala should be formatted with [Scalariform](https://github.com/scala-ide/scalariform).
+- Javascript/Typescript must be formatted with [Prettier](https://github.com/prettier/prettier), Scala should be formatted with [Scalariform](https://github.com/scala-ide/scalariform).
 - All contributors should be listed in CONTRIBUTORS.md - in your first PR, please make sure you've added yourself!
 - All changes should be recorded as a bullet point in CHANGES.md, as part of the PR that made those changes.
 

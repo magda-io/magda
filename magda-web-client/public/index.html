@@ -1,13 +1,34 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
     <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,900" rel="stylesheet">
-    <link href="//cdn.muicss.com/mui-0.9.33/css/mui.min.css" rel="stylesheet" type="text/css" media="screen" />
-    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap" />
-    <script>window.magda_client_build = "%NODE_ENV%"</script>
+    <link href="//cdn.muicss.com/mui-0.9.33/css/mui.min.css" rel="stylesheet" type="text/css" media="screen"/>
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap"/>
+    <script>
+        var _rollbarConfig = {
+            accessToken: "cf418960a0ae4c00a1eeec43ae7500c8",
+            enabled: ('%NODE_ENV%' === 'production'),
+            captureUncaught: true,
+            captureUnhandledRejections: true,
+            verbose: true, // This will now log to console.log, as well as Rollbar
+            hostBlackList: ['127.0.0.1','localhost','192.168.99.1','192.168.99.100','minikube.data.gov.au'], // exclude local dev
+            payload: {
+                environment: "production",
+                client: {
+                    javascript: {
+                        source_map_enabled: true, //this is now true by default
+                        code_version: '%REACT_APP_SHA1%',
+                        // Optionally have Rollbar guess which frames the error was thrown from
+                        // when the browser does not provide line and column numbers.
+                        guess_uncaught_frames: true
+                    }
+                }
+            }
+        };
+    </script>
     <script src="/assets/third-party.js"></script>
     <% if(process.env.REACT_APP_IS_STAGING == 1) {%>
     <script src="https://s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/staging/homepage-config.js"></script>
@@ -16,11 +37,12 @@
     <%}%>
     <script src="/server-config.js"></script>
     <title>Search</title>
-  </head>
-  <body>
-    <!-- Start Google Analytics Tag Manager Code-->
-    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPSGPGD" height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    <!-- End Google Analytics Tag Manager Code-->
-    <div id="root"></div>
-  </body>
+</head>
+<body>
+<!-- Start Google Analytics Tag Manager Code-->
+<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPSGPGD" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe>
+<!-- End Google Analytics Tag Manager Code-->
+<div id="root"></div>
+</body>
 </html>

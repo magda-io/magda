@@ -4,12 +4,13 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "http://magda-dev.terria.io/";
+const fallbackApiHost = "//magda-dev.terria.io/";
 
-const homePageConfig :{
+const homePageConfig: {
     baseUrl: string,
-    backgroundImageUrls : Array<string>
-} = window.magda_client_homepage_config || {};
+    backgroundImageUrls: Array<string>
+} =
+    window.magda_client_homepage_config || {};
 
 const serverConfig: {
     authApiBaseUrl?: string,
@@ -87,9 +88,7 @@ export const config = {
     headerNavigation: [
         ["About", "page/about"],
         ["Publishers", "publishers"],
-        ...(serverConfig.disableAuthenticationFeatures
-            ? []
-            : [["Projects", "projects"]])
+        ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
     footerNavigation: [
         {
@@ -108,8 +107,9 @@ export const config = {
             links: [
                 [
                     "API Docs",
-                    "http://search.data.gov.au/api/v0/registry/swagger/index.html"
-                ]
+                    "https://search.data.gov.au/api/v0/registry/swagger/index.html"
+                ],
+                ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
             ]
         },
         {
