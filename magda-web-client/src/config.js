@@ -85,13 +85,13 @@ export const config = {
     ],
     footerNavigation: [
         {
-            category: "Search",
-            links: [["Data sources", "page/data-sources"]]
+            category: "Data.gov.au",
+            links: [["About", "page/about"], ["Request a dataset", "/"]]
         },
         {
             category: "Publishers",
             links: [
-                ["Publisher index", "publishers"],
+                ["Sign in", "account"],
                 ["Open data toolkit", "https://toolkit.data.gov.au/"]
             ]
         },
@@ -103,13 +103,6 @@ export const config = {
                     "https://search.data.gov.au/api/v0/registry/swagger/index.html"
                 ],
                 ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
-            ]
-        },
-        {
-            category: "About",
-            links: [
-                ["About data.gov.au", "page/about"],
-                ["Blog", "https://blog.data.gov.au/"]
             ]
         }
     ]
