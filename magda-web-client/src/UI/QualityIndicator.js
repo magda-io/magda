@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 import "./QualityIndicator.css";
 import helpIcon from "../assets/help-24.svg";
@@ -39,9 +40,9 @@ function QualityIndicator(props) {
                 ))}
             </span>&nbsp;
             <div className="tooltip">
-                <img src={helpIcon} alt=""></img>
+                <img src={helpIcon} alt="Help Link"></img>
                     <span className="tooltiptext">
-                        Calculated using the <a href="page/dataset-quality">Open Data scale</a>
+                        Calculated using the <Link to="page/dataset-quality">Open Data scale</Link>
                     </span>
                 
             </div>
