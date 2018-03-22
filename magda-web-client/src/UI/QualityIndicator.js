@@ -1,5 +1,8 @@
 import React from "react";
 
+import "./QualityIndicator.css";
+import helpIcon from "../assets/help-24.svg";
+
 function QualityIndicator(props) {
     let rating = Math.ceil(parseFloat(props.quality).toFixed(2) * 10 / 2) - 1;
 
@@ -34,7 +37,14 @@ function QualityIndicator(props) {
                 {qualities.map((q, i) => (
                     <span key={i} style={getBarColor(i)} />
                 ))}
-            </span>
+            </span>&nbsp;
+            <div className="tooltip">
+                <img src={helpIcon} alt=""></img>
+                    <span className="tooltiptext">
+                        Calculated using the <a href="page/dataset-quality">Open Data scale</a>
+                    </span>
+                
+            </div>
         </div>
     );
 }
