@@ -15,6 +15,7 @@
 * Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
 * responsive background image for homepage
+* Hidden top `go back to old site` for mobile views
 
 ## 0.0.36
 
