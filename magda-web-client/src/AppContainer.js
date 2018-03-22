@@ -17,6 +17,7 @@ import HomePage from "./Pages/HomePage";
 import OtherPages from "./Pages/OtherPages";
 
 import { Route, Link, Switch } from "react-router-dom";
+import { Medium } from "./UI/Responsive";
 
 import "./AppContainer.css";
 
@@ -41,7 +42,9 @@ class AppContainer extends React.Component {
         return (
             <ReactDocumentTitle title={config.appName}>
                 <div>
-                    <Banner />
+                    <Medium>
+                        <Banner />
+                    </Medium>
                     <FeedbackForm />
                     <Switch>
                         <Route exact path="/" component={HomePage} />
