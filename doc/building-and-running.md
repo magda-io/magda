@@ -96,16 +96,20 @@ deploy/helm/create-auth-secrets.sh
 ## Install Magda on your minikube cluster
 
 ```bash
-helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml
+helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda  
 ```
+This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods`.
+
+Also note that by default there won't be any sleuthers running, as some of them can be very CPU intensive. You can toggle them on by specifying `--set tags.sleuther-<sleuthername>=true` when you run `helm upgrade`.
 
 ## Crawl Data
+This will crawl all the datasets locally stored on the data.gov.au CKAN instance - roughly 4000 at the time of writing. To crawl other sources, run this but with other connector-<source>-.json files.
 
 ```bash
 cd deploy
 npm run create-connector-configmap
 npm run generate-connector-jobs-local
-kubectl create -f kubernetes/generated/local/
+kubectl create -f kubernetes/generated/local/connector-data-gov-au.json
 ```
 
 # Minikube tricks
