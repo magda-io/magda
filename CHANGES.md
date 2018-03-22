@@ -13,6 +13,7 @@
 * Modified `API Docs` footer link to use HTTPS
 * Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
+* Added tooltip to search icon
 * Hid download button on dataset page when download url is not available
 * Updated footer links and layout
 
