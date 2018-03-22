@@ -100,12 +100,9 @@ export const config = {
             links: [
                 [
                     "API Docs",
-                    "http://search.data.gov.au/api/v0/registry/swagger/index.html"
+                    "https://search.data.gov.au/api/v0/registry/swagger/index.html"
                 ],
-                [
-                    "Architecture",
-                    "https://github.com/TerriaJS/magda/raw/master/doc/magda-basic-architecture.png"
-                ]
+                ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
             ]
         }
     ]
