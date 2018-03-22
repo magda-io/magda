@@ -154,38 +154,40 @@ class DistributionRow extends Component {
                     </div>
                 </div>
                 <div className="mui-col-md-3 button-area">
-                    {distribution.downloadURL ? (<Button
-                        className="download-button"
-                        onClick={() => {
-                            if (!distribution.downloadURL) {
-                                this.props.dispatch(
-                                    showTopNotification(
-                                        "Download link is not available for this data source!",
-                                        "Error:",
-                                        "error"
-                                    )
-                                );
-                                return;
-                            }
+                    {distribution.downloadURL ? (
+                        <Button
+                            className="download-button"
+                            onClick={() => {
+                                if (!distribution.downloadURL) {
+                                    this.props.dispatch(
+                                        showTopNotification(
+                                            "Download link is not available for this data source!",
+                                            "Error:",
+                                            "error"
+                                        )
+                                    );
+                                    return;
+                                }
 
-                            // google analytics download tracking
-                            const resource_url = encodeURIComponent(
-                                distribution.downloadURL
-                            );
-                            if (resource_url && window.ga) {
-                                window.ga("send", {
-                                    hitType: "event",
-                                    eventCategory: "Resource",
-                                    eventAction: "Download",
-                                    eventLabel: resource_url
-                                });
-                            }
-                            window.location = distribution.downloadURL;
-                        }}
-                    >
-                        <img src={downloadIcon} alt="download" />
-                        <span className="button-text">Download</span>
-                    </Button>):null}
+                                // google analytics download tracking
+                                const resource_url = encodeURIComponent(
+                                    distribution.downloadURL
+                                );
+                                if (resource_url && window.ga) {
+                                    window.ga("send", {
+                                        hitType: "event",
+                                        eventCategory: "Resource",
+                                        eventAction: "Download",
+                                        eventLabel: resource_url
+                                    });
+                                }
+                                window.location = distribution.downloadURL;
+                            }}
+                        >
+                            <img src={downloadIcon} alt="download" />
+                            <span className="button-text">Download</span>
+                        </Button>
+                    ) : null}
                     <Button
                         className="new-tab-button"
                         onClick={() => {
