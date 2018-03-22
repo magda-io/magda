@@ -44,7 +44,7 @@ If you don't know the dev cluster name, use `kubectl config get-contexts`. If yo
 
 - [ ] Run a helm upgrade to put dev on your new version
 ```bash
-helm upgrade magda -f deploy/helm/magda-dev.yml deploy/helm/magda
+helm upgrade magda --timeout 999999999 -f deploy/helm/magda-dev.yml deploy/helm/magda
 ```
 
 - [ ] Delete the stateful sets so they get upgraded
@@ -80,7 +80,7 @@ kubectl config use-context <prod-cluster-name>
 
 - [ ] Helm upgrade prod
 ```bash
-helm upgrade magda -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
+helm upgrade magda --timeout 999999999 -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
 
 - [ ] Delete the stateful sets one-at-a-time so they get upgraded
