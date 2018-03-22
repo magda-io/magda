@@ -154,7 +154,7 @@ class DistributionRow extends Component {
                     </div>
                 </div>
                 <div className="mui-col-md-3 button-area">
-                    <Button
+                    {distribution.downloadURL ? (<Button
                         className="download-button"
                         onClick={() => {
                             if (!distribution.downloadURL) {
@@ -185,7 +185,7 @@ class DistributionRow extends Component {
                     >
                         <img src={downloadIcon} alt="download" />
                         <span className="button-text">Download</span>
-                    </Button>
+                    </Button>):null}
                     <Button
                         className="new-tab-button"
                         onClick={() => {
