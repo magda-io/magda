@@ -15,6 +15,9 @@
 * Added Rollbar exception reporting for client side javascript
 * Added in quality indicator tooltip for dataset lists
 * Added link to Data61 from the "Developed by `data61-logo`" in footer.
+* Added tooltip to search icon
+* Hid download button on dataset page when download url is not available
+* Updated footer links and layout
 
 ## 0.0.36
 
