@@ -9,11 +9,12 @@
 * Upgrade public web interface (but not preview map) to React 16
 * Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
 * Added dataset quality page 
-* Added `Powered by magda` footer link
+* Added `Powered by Magda` footer link
 * Modified `API Docs` footer link to use HTTPS
 * Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
 * Added in quality indicator tooltip for dataset lists
+* Added link to Data61 from the "Developed by `data61-logo`" in footer.
 * Added tooltip to search icon
 * Hid download button on dataset page when download url is not available
 * Updated footer links and layout
