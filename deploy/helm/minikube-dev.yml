@@ -30,11 +30,6 @@ tags:
   discussions-db: true
   admin-api: true
 
-combined-db:
-  waleBackup:
-    method: WAL
-    hostPath: /Users/gil308/combined-db-backups
-    executionTime: 03:00
 gateway:
   auth:
     facebookClientId: "173073926555600"
