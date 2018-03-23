@@ -180,10 +180,12 @@ class SearchBox extends Component {
                                     className="search-btn"
                                     type="button"
                                 >
-                                    <img src={search} alt="search button" />
-                                    <span className="sr-only">
-                                        submit search
-                                    </span>
+                                    <img
+                                        src={search}
+                                        alt="search button"
+                                        title="Search"
+                                    />
+                                    <span className="sr-only">Search</span>
                                 </button>
                             </td>
                         </tr>
