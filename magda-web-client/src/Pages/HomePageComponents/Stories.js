@@ -28,11 +28,14 @@ class Stories extends Component {
                             </div>
                         </div>
                     ) : (
-                        <button className="homepage-stories-show-stories-button" onClick={()=>{
-                            this.setState({
-                                shouldShowStories: true
-                            });
-                        }}>
+                        <button
+                            className="homepage-stories-show-stories-button"
+                            onClick={() => {
+                                this.setState({
+                                    shouldShowStories: true
+                                });
+                            }}
+                        >
                             <div>Latest News</div>
                             <img src={downArrow} alt="more-stories-button" />
                         </button>
