@@ -66,6 +66,13 @@
             width: 45px;
             height: 45px;
         }
+        @media (max-width: $medium - 1) {
+            padding: 11px;
+            img {
+                width: 32px;
+                height: 32px;
+            }
+        }
     }
 
     .search-btn-box {
