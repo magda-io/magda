@@ -113,5 +113,8 @@
         "docker": {
             "include": "node_modules build"
         }
+    },
+    "dependencies": {
+        "lodash.flatten": "^4.4.0"
     }
 }

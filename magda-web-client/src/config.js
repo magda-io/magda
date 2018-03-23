@@ -34,8 +34,8 @@ export const config = {
     about:
         "<p><span style='color:#F55860;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl: serverConfig.baseUrl || fallbackApiHost,
-    searchApiUrl:
-        serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
+    searchApiUrl: "http://localhost/api/v0/search/",
+    //serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
     adminApiUrl:
         serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin/",
