@@ -1,18 +1,24 @@
-# Prerequisites
-
-You need the following in order to build and run MAGDA:
-
-* [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.
-* [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
-* [sbt](http://www.scala-sbt.org/) - To build the Scala components.
-* [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
-* [Minikube](https://github.com/kubernetes/minikube) - To run a Kubernetes cluster on your local development machine. It is possible to run all of the Magda microservices directly on your local machine instead of on a Kubernetes cluster, in which case you don't, strictly speaking, need Minikube. However, you will probably want to run at least some of the services, such as the databases, on a cluster for ease of setup.
-* [VirtualBox](https://www.virtualbox.org/wiki/Downloads) We find this is the best virtual machine to use with minikube.
-* [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
-* [GNU tar](https://www.gnu.org/software/tar/) - MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
-* [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
+# Building and Running
 
 These instructions assume you are using a Bash shell. You can easily get a Bash shell on Windows by installing the [git](https://git-scm.com/downloads) client.
+
+# Prerequisites
+
+You need to install following in order to build MAGDA:
+
+*   [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.
+*   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
+*   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
+*   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
+
+To push the images and run them on kubernetes, you'll need to install:
+
+*   [GNU tar](https://www.gnu.org/software/tar/) - (Mac only) MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
+*   [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
+*   [Helm](https://github.com/kubernetes/helm/blob/master/docs/install.md) to manage kubernetes deployments and config.
+*   [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
+
+You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
 # Building and running components
 
@@ -31,30 +37,6 @@ lerna run build --include-filtered-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
-
-## Install minikube
-As mentioned above, Minikube is optional. However, you will probably find it easier to run at least the databases (PostgreSQL and ElasticSearch) on Minikube, rather than installing them on your development machine.
-
-After you [install Minikube](https://github.com/kubernetes/minikube/releases), start it with:
-
-```bash
-minikube config set memory 4096
-minikube config set cpus 2
-minikube config set vm-driver virtualbox
-minikube start
-```
-
-This reserves 4 GB of RAM for Minikube and starts it up. If you're low on RAM and only intend to run the databases on Minikube, you can likely get away with a smaller number, like 2048.
-
-More detailed instructions for setting up Minikube can be found [here](https://github.com/kubernetes/minikube) if that doesn't work.
-
-To set up the environment variables necessary for Docker to interact with the Minikube VM, run:
-
-```bash
-eval $(minikube docker-env)
-```
-
-You'll need to run this in each new shell.
 
 ## Set up Helm
 
@@ -98,11 +80,13 @@ deploy/helm/create-auth-secrets.sh
 ```bash
 helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda  
 ```
+
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods`.
 
 Also note that by default there won't be any sleuthers running, as some of them can be very CPU intensive. You can toggle them on by specifying `--set tags.sleuther-<sleuthername>=true` when you run `helm upgrade`.
 
 ## Crawl Data
+
 This will crawl all the datasets locally stored on the data.gov.au CKAN instance - roughly 4000 at the time of writing. To crawl other sources, run this but with other connector-<source>-.json files.
 
 ```bash
@@ -112,8 +96,9 @@ npm run generate-connector-jobs-local
 kubectl create -f kubernetes/generated/local/connector-data-gov-au.json
 ```
 
-# Minikube tricks
-## Running individual services on minikube
+# Kubernetes tricks
+
+## Running individual services
 
 If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the `all` tag to `false` and the tag for the pod you want to `true`, e.g.
 
@@ -135,7 +120,7 @@ It's a good idea to add an entry for `minikube.data.gov.au` to your `hosts` file
 192.168.99.100	minikube.data.gov.au
 ```
 
-## Running on both minikube and locally
+## Running on both host and minikube
 
 It's also possible to run what you're working on your host, and the services your dependent on in minikube. Depending on what you're doing, this might be simple or complicated.
 
@@ -235,7 +220,7 @@ The following table shows the relationship between `Magda components` and `Diagr
 | `magda-migrator-session-db`       | `Session DB (Postgres)`. `magda-migrator-session-db` is only used for production environment.                                                                                                                                                        |
 | `magda-migrator-combined-db`      | `Registry DB (Postgres)`, `Session DB (Postgres)`, `Discussion DB (Postgres)`, `Auth DB (Postgres)`. `magda-migrator-combined-db` component is only used for dev environment. Production environment will launch all DB components above separately. |
 
-# Running on your local machine
+# Running on your host machine
 
 You can also avoid minikube and run magda components on your local machine - this is much, much trickier.
 
@@ -247,7 +232,7 @@ This will build and launch the component, and automatically stop, build, and res
 
 A typical use case would be:
 
-1. Start `combined-db` in `Minikube` using `helm:`
+1.  Start `combined-db` in `Minikube` using `helm:`
 
 From root level of the project directory:
 
@@ -255,7 +240,7 @@ From root level of the project directory:
 helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
 
-2. Port forward database service port to localhost so that your local running program (outside the `Kubernetes` cluster in `minikube`) can connect to them:
+2.  Port forward database service port to localhost so that your local running program (outside the `Kubernetes` cluster in `minikube`) can connect to them:
 
 ```bash
 # Port forward database
@@ -263,7 +248,7 @@ helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --se
 kubectl port-forward combined-db-0 5432:5432
 ```
 
-3. Start the registry API and a connector (via `npm run dev`) by executing the following two commands in two separate terminal windows:
+3.  Start the registry API and a connector (via `npm run dev`) by executing the following two commands in two separate terminal windows:
 
 ```bash
 # these two commands don't terminate, so run them in separate terminals
@@ -273,7 +258,7 @@ cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/da
 
 See [connectors](connectors.md) for more detailed information about running connectors.
 
-4. (Optional) If later you wanted to start elastic search as well:
+4.  (Optional) If later you wanted to start elastic search as well:
 
 Like `combined-db`, elastic search can only be started in `minikube` via `helm` rather than `npm run dev`.
 
