@@ -209,7 +209,9 @@ class AppContainer extends React.Component {
                             <div className="copyright">
                                 {" "}
                                 Developed by{" "}
-                                <img src={d61logo} alt="data61-logo" />
+                                <a href="https://www.data61.csiro.au/">
+                                    <img src={d61logo} alt="data61-logo" />
+                                </a>
                             </div>
                         </Container>
                     </footer>
