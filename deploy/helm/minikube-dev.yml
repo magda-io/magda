@@ -9,6 +9,32 @@ global:
   noDbAuth: true
   useCloudSql: false
   useCombinedDb: true
+
+tags:
+  all: false
+
+  combined-db: true
+  authorization-api: true
+  authorization-db: true
+  elasticsearch: true
+  gateway: true
+  indexer: true
+  preview-map: true
+  registry-api: true
+  registry-db: true
+  search-api: true
+  session-db: true
+  web-server: true
+  feedback-api: true
+  discussions-api: true
+  discussions-db: true
+  admin-api: true
+
+combined-db:
+  waleBackup:
+    method: WAL
+    hostPath: /Users/gil308/combined-db-backups
+    executionTime: 03:00
 gateway:
   auth:
     facebookClientId: "173073926555600"
@@ -24,3 +50,20 @@ registry-api:
   #   googleApplicationCreds:
   #     secretName: storage-account-credentials
   #     fileName: <fileName>
+
+sleuther-linked-data-rating:
+  resources:
+    limits:
+      cpu: 0.1
+sleuther-broken-link:
+  resources:
+    limits:
+      cpu: 0.1
+sleuther-visualization:
+  resources:
+    limits:
+      cpu: 0.1
+sleuther-format:
+  resources:
+    limits:
+      cpu: 0.1
