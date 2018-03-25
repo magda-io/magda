@@ -10,7 +10,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
 
     determineCatalogItemType() {
         let format = this.props.distribution.format.toLowerCase();
-        if (format === "csv-csv-geo-au") format = "csv";
+        if (format === "csv-geo-au") format = "csv";
         return format;
     }
 
