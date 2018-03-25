@@ -132,11 +132,27 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "Launch Web Server",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+            },
+            "args":[
+                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/index.ts",
+                //"--devProxy","http://magda-dev.terria.io/api/"
+            ],
+            "cwd": "${workspaceRoot}/magda-web-server"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Launch Auth API",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "cwd": "${workspaceRoot}/magda-authorization-api",
             "args":[
-                "src/index.ts"
+                "src/index.ts",
                 "--jwtSecret", "squirrel",
                 "--sessionSecret", "keyboard cat",
                 "--googleClientId", "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",

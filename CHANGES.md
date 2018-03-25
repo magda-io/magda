@@ -1,4 +1,5 @@
 ## 0.0.37
+
 * Make facets stack on mobile
 * Use params q= 'xxx' to persist the search text in search page, dataset page and distribution pages
 * Added Download button/link click tracking via Google Analytics
@@ -13,6 +14,8 @@
 * Modified `API Docs` footer link to use HTTPS
 * Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
+* Added IE9/10 polyfills 
+* Added a development unauthenticated API proxy for testing without CORS problems
 
 ## 0.0.36
 
