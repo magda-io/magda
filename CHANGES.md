@@ -18,6 +18,7 @@
 * Added tooltip to search icon
 * Hid download button on dataset page when download url is not available
 * Updated footer links and layout
+* Fixed an issue that prevents csv-geo-au data source to be openned in national map
 
 ## 0.0.36
 
