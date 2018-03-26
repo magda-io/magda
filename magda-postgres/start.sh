@@ -24,6 +24,9 @@ fi
 if [[ ! -z "${BACKUP}" ]]; then
     if [ ! -f "$PGDATA/recovery.done" ]; then
         wal-e backup-fetch $PGDATA LATEST
+    elif [ -f "$PGDATA/backup_label" ]; then
+        echo "Moving backup_label as we don't need to recover and it might interrupt startup"
+        mv "$PGDATA/backup_label" "$PGDATA/backup_label_$(date +%d-%m-%Y).dat"
     fi
 fi
 

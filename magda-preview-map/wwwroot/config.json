@@ -31,7 +31,7 @@
             ""
         ],
         // Shown when things go wrong.
-        supportEmail: "data@pmc.gov.au",
+        supportEmail: "data@digital.gov.au",
         // You probably shouldn't change this.
         proj4ServiceBaseUrl: "proj4def/",
 

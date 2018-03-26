@@ -1,5 +1,6 @@
 ## 0.0.37
 
+* Update email address for feedback including in map preview errors
 * Make facets stack on mobile
 * Use params q= 'xxx' to persist the search text in search page, dataset page and distribution pages
 * Added Download button/link click tracking via Google Analytics
@@ -16,6 +17,8 @@
 * Added Rollbar exception reporting for client side javascript
 * Added IE9/10 polyfills so that the upgrade-your-browser message comes up
 * Added a development unauthenticated API proxy for testing without CORS problems
+* Updated date display format on search page
+* Added Slash between created and updated date on dataset page
 * Added in quality indicator tooltip for dataset lists
 * Added link to Data61 from the "Developed by `data61-logo`" in footer.
 * Added tooltip to search icon

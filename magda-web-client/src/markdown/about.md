@@ -5,7 +5,7 @@ Data.gov.au provides an easy way to find, access and reuse public data. Our team
 
 Geospatial datasets on data.gov.au and from other spatial indexes are now available through the [National Map](http://www.nationalmap.gov.au/).
 
-We’re keen to hear how you’re using public data. Information on submitting your [public data use cases can be found in the Open Data Toolkit](https://toolkit.data.gov.au/index.php?title=Using_Data#Use_Cases). If you’re an Australian Government entity and want to share your experience with public data via our public data blog, [please get in touch with us](mailto:data@pmc.gov.au).
+We’re keen to hear how you’re using public data. Information on submitting your [public data use cases can be found in the Open Data Toolkit](https://toolkit.data.gov.au/index.php?title=Using_Data#Use_Cases). If you’re an Australian Government entity and want to share your experience with public data via our public data blog, [please get in touch with us](mailto:data@digital.gov.au).
 
 In addition to open datasets, data.gov.au now includes information about unpublished data and data available for purchase.
 

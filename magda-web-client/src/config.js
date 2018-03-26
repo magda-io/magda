@@ -105,5 +105,19 @@ export const config = {
                 ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
             ]
         }
+    ],
+    months: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
     ]
 };
