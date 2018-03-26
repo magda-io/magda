@@ -1,11 +1,27 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import browser from "browser-detect";
 import "./DataPreviewMapOpenInNationalMapButton.css";
 
 class DataPreviewMapOpenInNationalMapButton extends Component {
     constructor(props) {
         super(props);
         this.state = {};
+        this.onPopUpMessageReceived = this.onPopUpMessageReceived.bind(this);
+        this.winRef = null;
+        this.browser = browser();
+    }
+
+    componentDidMount() {
+        if (this.browser.name === "ie" && this.browser.versionNumber < 12)
+            return;
+        window.addEventListener("message", this.onPopUpMessageReceived);
+    }
+
+    componentWillUnmount() {
+        if (this.browser.name === "ie" && this.browser.versionNumber < 12)
+            return;
+        window.removeEventListener("message", this.onPopUpMessageReceived);
     }
 
     determineCatalogItemType() {
@@ -14,8 +30,8 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
         return format;
     }
 
-    createCatalogItemFromDistribution() {
-        return {
+    createCatalogItemFromDistribution(withoutBaseMap = false) {
+        const config = {
             initSources: [
                 {
                     catalog: [
@@ -30,16 +46,43 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
                 }
             ]
         };
+        if (!withoutBaseMap) {
+            //--- will not set baseMap if pass config by URL
+            config.initSources[0].baseMapName = "Positron (Light)";
+        }
+        return config;
     }
 
     onButtonClick() {
-        window.open(
-            "https://nationalmap.gov.au/#start=" +
-                encodeURIComponent(
-                    JSON.stringify(this.createCatalogItemFromDistribution())
-                ),
+        if (this.browser.name === "ie" && this.browser.versionNumber < 12) {
+            window.open(
+                "https://nationalmap.gov.au/#start=" +
+                    encodeURIComponent(
+                        JSON.stringify(
+                            this.createCatalogItemFromDistribution(true)
+                        )
+                    ),
+                "National Map Australia"
+            );
+            return;
+        }
+        const newWinRef = window.open(
+            "https://nationalmap.gov.au",
             "National Map Australia"
         );
+        if (!newWinRef) {
+            this.winRef = null;
+            alert(
+                "The popup is blocked by popup blocker. Please change your browser settings and try again."
+            );
+            return;
+        }
+        this.winRef = newWinRef;
+    }
+
+    onPopUpMessageReceived(e) {
+        if (this.winRef !== e.source || e.data !== "ready") return;
+        this.winRef.postMessage(this.createCatalogItemFromDistribution(), "*");
     }
 
     render() {
