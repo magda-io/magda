@@ -111,27 +111,41 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
           value: {{ .Values.waleBackup.swiftAuthVersion }}
         - name: SWIFT_ENDPOINT_TYPE
           value: {{ .Values.waleBackup.swiftEndpointType }}
+        {{- if .Values.waleBackup.hostPath }}
+        - name: WALE_FILE_PREFIX
+          value: "file://localhost/var/backup"
+        {{- end }}
         - name: BACKUP_EXECUTION_TIME
           value: {{ .Values.waleBackup.executionTime }}
         {{- end }}
 {{- end }}
 
-{{- define "magda.waleGoogleStorageCredentials.volumeMount" }}
+{{- define "magda.waleVolumes.volumeMount" }}
 {{- if and .Values.waleBackup }}
 {{- if .Values.waleBackup.googleApplicationCreds }}
         - name: wale-google-account-credentials
           mountPath: "/var/{{ .Values.waleBackup.googleApplicationCreds.secretName }}"
           readOnly: true
 {{- end }}
+{{- if .Values.waleBackup.hostPath }}
+        - name: wale-backup-directory
+          mountPath: /var/backup
+{{- end }}
 {{- end }}
 {{- end }}
 
-{{- define "magda.waleGoogleStorageCredentials.volume" }}
+{{- define "magda.waleVolumes.volume" }}
 {{- if and .Values.waleBackup }}
 {{- if .Values.waleBackup.googleApplicationCreds }}
         - name: wale-google-account-credentials
           secret:
             secretName: {{ .Values.waleBackup.googleApplicationCreds.secretName }}
+{{- end }}
+{{- if .Values.waleBackup.hostPath }}
+        - name: wale-backup-directory
+          hostPath:
+            path: {{ .Values.waleBackup.hostPath }}
+            type: DirectoryOrCreate
 {{- end }}
 {{- end }}
 {{- end }}

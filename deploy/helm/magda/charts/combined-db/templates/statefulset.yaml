@@ -29,9 +29,9 @@ spec:
         volumeMounts:
         - name: combined-db
           mountPath: /var/pv
-        {{- template "magda.waleGoogleStorageCredentials.volumeMount" . }}
+        {{- template "magda.waleVolumes.volumeMount" . }}
       volumes:
-      {{- template "magda.waleGoogleStorageCredentials.volume" . }}
+      {{- template "magda.waleVolumes.volume" . }}
   volumeClaimTemplates:
   - metadata:
       name: combined-db
