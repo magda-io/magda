@@ -112,5 +112,19 @@ export const config = {
                 ["Blog", "https://blog.data.gov.au/"]
             ]
         }
+    ],
+    months: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
     ]
 };
