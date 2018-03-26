@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import HeaderNav from "./HeaderNav";
 import { config } from "../../config.js";
 import mobileMenu from "../../assets/mobile-menu.svg";
+import govtLogo from "../../assets/au-govt-logo-mobile.svg";
 
 class HeaderMobile extends Component {
     constructor(props) {
@@ -22,8 +23,9 @@ class HeaderMobile extends Component {
         return (
             <div className="mobile-header">
                 <div className="mobile-header-inner">
-                    <div className="mobile-logo">
-                        <Link to="/">{config.appName}</Link>
+                    <img className="mobile-logo" src={govtLogo} height={36} alt="au Gov logo"/>
+                    <div className="mobile-title">
+                        <Link to="/"><span style={{color:"#E66369"}}>DATA</span>.GOV.AU</Link>
                     </div>
                     <button
                         className="mobile-toggle"

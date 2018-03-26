@@ -100,8 +100,8 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
                 <SearchBoxSwitcher location={location} theme="home" />
                 <Medium>
                     <TagLine taglineText={getTagLine().desktop} />
+                    <Lozenge />
                 </Medium>
-                <Lozenge />
                 <Stories />
             </Container>
         </div>

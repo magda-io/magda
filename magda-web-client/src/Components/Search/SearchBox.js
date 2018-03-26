@@ -10,6 +10,7 @@ import { fetchRegionMapping } from "../../actions/regionMappingActions";
 import Form from "muicss/lib/react/form";
 import Input from "muicss/lib/react/input";
 import searchGrey from "../../assets/search-grey.svg";
+import searchDark from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from "prop-types";
 import queryString from "query-string";
@@ -153,7 +154,10 @@ class SearchBox extends Component {
                     className="search-btn"
                     type="button"
                 >
-                    <img src={searchGrey} alt="search button" />
+                    <img
+                        src={this.props.isMobile ? searchDark : searchGrey}
+                        alt="search button"
+                    />
                     <span className="sr-only">submit search</span>
                 </button>
             </Form>
