@@ -18,6 +18,17 @@
         height: 100vh;
         z-index: -1;
     }
+
+    .homepage-background{
+      background: linear-gradient(0deg, rgba(108, 201, 205, 0.0001) 0%, #969696 100%);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+    }
+
     .homepage-tagline {
         width: 100%;
         text-align: center;
@@ -28,6 +39,8 @@
             border-radius: 10px;
             padding: 8px;
             display: inline-block;
+            font-weight: 300;
+            margin-top: 32px;
             @media (min-width: $medium) {
                 margin-bottom: 160px;
                 background: rgba(79, 79, 79, 0.5);
@@ -44,8 +57,8 @@
             font-size: 14px;
             line-height: 17px;
             background: rgba(79, 79, 79, 0.5);
-            border-radius: 13px;
-            padding: 4px 8px;
+            border-radius: 16px;
+            padding: 8px 16px;
             text-decoration: none;
             color: #fff;
             border-bottom: 0;

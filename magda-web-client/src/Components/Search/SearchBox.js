@@ -148,6 +148,9 @@ class SearchBox extends Component {
                         onKeyPress={this.handleSearchFieldEnterKeyPress}
                         autoComplete="off"
                     />
+                    <span className="search-input__highlight">
+                        {this.getSearchBoxValue()}
+                    </span>
                 </label>
                 <button
                     onClick={this.onClickSearch}

@@ -88,6 +88,9 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
         <div className="homepage-app-container">
             {getBgImg()}
             <Header />
+            <Small>
+                <div className="homepage-background" />
+            </Small>
             <Container className="app-container">
                 <Medium>
                     <div className="homepage-dga-logo">
