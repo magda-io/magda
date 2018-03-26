@@ -15,6 +15,7 @@
 * Modified `API Docs` footer link to use HTTPS
 * Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
+* Updated date display format on search page
 * Added Slash between created and updated date on dataset page
 * Added in quality indicator tooltip for dataset lists
 * Added link to Data61 from the "Developed by `data61-logo`" in footer.
