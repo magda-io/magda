@@ -25,6 +25,7 @@
 * Fixed an issue that prevents csv-geo-au data source to be openned in national map
 * responsive background image for homepage
 * Hidden top `go back to old site` for mobile views
+* New Homepage Design
 
 ## 0.0.36
 
