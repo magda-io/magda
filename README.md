@@ -1,6 +1,10 @@
 # MAGDA
 
+[![GitHub release](https://img.shields.io/github/release/TerriaJS/magda.svg)](https://github.com/TerriaJS/magda/releases)
+[![Travis](https://img.shields.io/travis/TerriaJS/magda/master.svg)](https://travis-ci.org/TerriaJS/magda)
+[![Try it out at search.data.gov.au](https://img.shields.io/badge/try%20it%20out%20at-search.data.gov.au-blue.svg)](https://search.data.gov.au)
 [![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 Magda is a modern platform built to power a new generation of data portals. Its goal is to improve on existing data portal and management solutions in a number of areas:
 
