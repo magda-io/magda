@@ -30,5 +30,15 @@
             height: 40px;
             width: auto;
         }
+
+        a {
+            /* ./index.scss defines a border-bottom, this overrides that */
+            border-bottom-style: none;
+        }
+        
+        a:hover {
+            /* ./index.scss defines a background-color, this overrides that */
+            background-color: transparent;
+        }
     }
 }

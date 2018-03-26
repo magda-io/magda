@@ -10,6 +10,7 @@ import format_active from "../../assets/format-active.svg";
 import temporal_active from "../../assets/temporal-active.svg";
 import region_active from "../../assets/region-active.svg";
 import remove_light from "../../assets/remove-light.svg";
+import { config } from "../../config";
 
 const IconList = {
     publisher_passive,
@@ -40,9 +41,9 @@ class FacetHeader extends Component {
 
     displayMonth(date) {
         return (
-            new Date(date).getUTCFullYear() +
-            "/" +
-            (+new Date(date).getUTCMonth() + 1)
+            config.months[new Date(date).getUTCMonth()] +
+            " " +
+            new Date(date).getUTCFullYear()
         );
     }
     calculateTitle() {
@@ -73,9 +74,8 @@ class FacetHeader extends Component {
             return (
                 <span>
                     {" "}
-                    from {this.displayMonth(
-                        this.props.activeOptions[0]
-                    )} to {this.displayMonth(this.props.activeOptions[1])}{" "}
+                    from {this.displayMonth(this.props.activeOptions[0])} -{" "}
+                    {this.displayMonth(this.props.activeOptions[1])}{" "}
                 </span>
             );
         } else {

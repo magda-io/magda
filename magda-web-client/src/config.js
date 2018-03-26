@@ -75,13 +75,13 @@ export const config = {
     ],
     footerNavigation: [
         {
-            category: "Search",
-            links: [["Data sources", "page/data-sources"]]
+            category: "Data.gov.au",
+            links: [["About", "page/about"], ["Request a dataset", "/"]]
         },
         {
             category: "Publishers",
             links: [
-                ["Publisher index", "publishers"],
+                ["Sign in", "account"],
                 ["Open data toolkit", "https://toolkit.data.gov.au/"]
             ]
         },
@@ -94,13 +94,20 @@ export const config = {
                 ],
                 ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
             ]
-        },
-        {
-            category: "About",
-            links: [
-                ["About data.gov.au", "page/about"],
-                ["Blog", "https://blog.data.gov.au/"]
-            ]
         }
+    ],
+    months: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
     ]
 };
