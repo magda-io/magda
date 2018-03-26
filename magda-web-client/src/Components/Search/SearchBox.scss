@@ -2,11 +2,13 @@
 
 @mixin text() {
     border-bottom: 0;
+    padding: 8px;
     @media (min-width: $medium) {
         font-family: $font-base;
         font-size: 33px;
         font-weight: 300;
         height: 57px;
+        padding: 8px 0;
         border-bottom: 1px solid rgba(73, 73, 73, 0.15);
     }
 }
@@ -46,7 +48,6 @@
     input:focus {
         @include text();
         margin-bottom: 2px;
-        padding: 8px;
     }
 
     .search-btn {
@@ -66,8 +67,8 @@
         background: none;
         border-bottom: 2px solid rgba(#fff, 0.2);
         img {
-            width: 45px;
-            height: 45px;
+          width: 32px;
+          height: 32px;
         }
         @media (max-width: $medium - 1) {
             padding: 11px;
@@ -81,6 +82,30 @@
     .search-btn-box {
         vertical-align: bottom;
         text-align: right;
+    }
+
+    .search-input__highlight{
+      z-index: 10;
+      position: absolute;
+      bottom: 50px;
+      left: 90px;
+      font-size: 33px;
+      height: 0;
+      overflow: hidden;
+      color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      max-width: 100%;
+      border-top: 2px solid #979797;
+      border-radius: 2px;
+      min-width: 3px;
+      display: none;
+      @media (min-width: $medium) {
+        display: inline;
+      }
     }
 
     input::-webkit-input-placeholder {
