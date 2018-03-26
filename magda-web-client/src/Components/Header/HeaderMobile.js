@@ -23,7 +23,12 @@ class HeaderMobile extends Component {
         return (
             <div className="mobile-header">
                 <div className="mobile-header-inner">
-                    <img className="mobile-logo" src={govtLogo} height={36} alt="au Gov logo"/>
+                    <img
+                        className="mobile-logo"
+                        src={govtLogo}
+                        height={36}
+                        alt="au Gov logo"
+                    />
                     <div className="mobile-title">
                         <Link to="/">{config.appName}</Link>
                     </div>
