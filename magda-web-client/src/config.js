@@ -61,24 +61,6 @@ export const config = {
         large: 1200
     },
     appTitle: "Australian open data search",
-    featuredDatasets: [
-        "ds-dga-19432f89-dc3a-4ef3-b943-5326ef1dbecc",
-        "ds-dga-bdcf5b09-89bc-47ec-9281-6b8e9ee147aa"
-    ],
-    exampleSearch: [
-        "Business names as CSV",
-        "Geocoded National Address File",
-        "By Australian Charities and Not-for-profits Commission",
-        "Statistics from 2013 by Australian Taxation Office",
-        "Trees in SA2:201011002",
-        "Budget from 2016 to 2017 by Department of Finance",
-        "Planning as WMS"
-    ],
-    suggestion: [
-        "Business names as CSV",
-        "Statistics  by Australian Taxation Office from 2013",
-        "Trees in SA2:201011002"
-    ],
     facets: [
         { id: "publisher", component: Publisher },
         { id: "region", component: Region },
@@ -86,6 +68,7 @@ export const config = {
         { id: "format", component: Format }
     ],
     headerNavigation: [
+        ["Datasets", "search?q=*"],
         ["About", "page/about"],
         ["Publishers", "publishers"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
