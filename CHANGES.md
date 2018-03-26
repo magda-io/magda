@@ -1,4 +1,6 @@
 ## 0.0.37
+
+* Update email address for feedback including in map preview errors
 * Make facets stack on mobile
 * Use params q= 'xxx' to persist the search text in search page, dataset page and distribution pages
 * Added Download button/link click tracking via Google Analytics

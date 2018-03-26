@@ -40,11 +40,11 @@ function QualityIndicator(props) {
                 ))}
             </span>&nbsp;
             <div className="tooltip">
-                <img src={helpIcon} alt="Help Link"></img>
-                    <span className="tooltiptext">
-                        Calculated using the <Link to="/page/dataset-quality">Open Data scale</Link>
-                    </span>
-                
+                <img src={helpIcon} alt="Help Link" />
+                <span className="tooltiptext">
+                    Calculated using the{" "}
+                    <Link to="/page/dataset-quality">Open Data scale</Link>
+                </span>
             </div>
         </div>
     );
