@@ -62,13 +62,13 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
                             this.createCatalogItemFromDistribution(true)
                         )
                     ),
-                "National Map Australia"
+                "_blank"
             );
             return;
         }
         const newWinRef = window.open(
             "https://nationalmap.gov.au",
-            "National Map Australia"
+            "_blank"
         );
         if (!newWinRef) {
             this.winRef = null;
