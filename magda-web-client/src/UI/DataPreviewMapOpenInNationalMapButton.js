@@ -73,7 +73,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
         if (!newWinRef) {
             this.winRef = null;
             alert(
-                "The popup is blocked by popup blocker. Please change your browser settings and try again."
+                "Unable to open on National Map as it was blocked by a popup blocker. Please allow this site to open popups in your browser and try again."
             );
             return;
         }
