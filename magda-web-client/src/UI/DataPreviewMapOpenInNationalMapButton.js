@@ -66,10 +66,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
             );
             return;
         }
-        const newWinRef = window.open(
-            "https://nationalmap.gov.au",
-            "_blank"
-        );
+        const newWinRef = window.open("https://nationalmap.gov.au", "_blank");
         if (!newWinRef) {
             this.winRef = null;
             alert(
