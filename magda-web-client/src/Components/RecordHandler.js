@@ -161,6 +161,9 @@ class RecordHandler extends React.Component {
                                                             .issuedDate
                                                     }&nbsp;
                                                 </span>
+                                                <span className="separator hidden-sm">
+                                                    /
+                                                </span>
                                                 <span className="updated-date hidden-sm">
                                                     Updated{" "}
                                                     {

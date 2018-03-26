@@ -1,15 +1,24 @@
-1. Install minikube https://github.com/kubernetes/minikube/releases
-2. Install helm https://github.com/kubernetes/helm/blob/master/docs/install.md
-3. Create secrets: `deploy/helm/create-auth-secrets.sh`
-4. Create connector config:
+1.  Set up a kubernetes cluster on your cloud of choice, or to run locally install [minikube](./installing-minikube.md) or a version of [docker with kubernetes](./installing-docker-k8s.md)
+2.  Install helm: https://github.com/kubernetes/helm/blob/master/docs/install.md and `helm init`
+3.  Create necessary config
+
 ```bash
-cd deploy
-npm run create-connector-configmap
+kubectl create configmap config --from-file deploy/kubernetes/config
+kubectl create configmap connector-config --from-file deploy/connector-config
+deploy/helm/create-auth-secrets.sh
 ```
-5. Find out the latest release version from https://github.com/TerriaJS/magda/releases
-6. Install MAGDA:
+
+4.  Find out the latest release version from https://github.com/TerriaJS/magda/releases
+5.  Install MAGDA:
+
 ```bash
 helm install --name magda deploy/helm/magda --set global.image.tag=<LATEST-RELEASE-GOES-HERE> --set global.noDbAuth=true
+```
+
+6.  Populate with data from data.gov.au:
+
+```bash
+kubectl create -f deploy/kubernetes/generated/local/connector-data-gov-au.json
 ```
 
 If this doesn't work for you, [file an issue](https://github.com/TerriaJS/magda/issues).
