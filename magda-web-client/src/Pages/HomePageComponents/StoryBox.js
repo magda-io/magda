@@ -22,6 +22,15 @@ class StoryBox extends Component {
         this.props.fetchHomepageStory(this.props.idx);
     }
 
+    getClickableElement(el, url) {
+        if (!url) return el;
+        return (
+            <a target="_blank" href={url} className="story-title-link">
+                {el}
+            </a>
+        );
+    }
+
     renderStoryboxBody() {
         const info = this.props.stories[this.props.idx];
         if (info.isFetching) return <div>Loading...</div>;
@@ -30,30 +39,26 @@ class StoryBox extends Component {
         const content = safeLoadFront(info.content);
         const innerBody = (
             <div className="story-box-body">
-                {content.titleImage ? (
-                    <img
-                        className="story-title-image"
-                        src={`${baseUrl}${content.titleImage}`}
-                        alt="title"
-                    />
-                ) : null}
-                {content.title ? (
-                    <h1 className="story-title">{content.title}</h1>
-                ) : null}
+                {content.titleImage
+                    ? this.getClickableElement(
+                          <img
+                              className="story-title-image"
+                              src={`${baseUrl}${content.titleImage}`}
+                              alt="title"
+                          />,
+                          content.titleUrl
+                      )
+                    : null}
+                {content.title
+                    ? this.getClickableElement(
+                          <h1 className="story-title">{content.title}</h1>,
+                          content.titleUrl
+                      )
+                    : null}
                 <MarkdownViewer markdown={content.__content} />
             </div>
         );
-        if (content.titleUrl) {
-            return (
-                <a
-                    target="_blank"
-                    href={content.titleUrl}
-                    className="story-title-link"
-                >
-                    {innerBody}
-                </a>
-            );
-        } else return innerBody;
+        return innerBody;
     }
 
     getStoryBoxClassName() {
