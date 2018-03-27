@@ -41,3 +41,8 @@
 .tooltip:hover .tooltiptext {
     visibility: visible;
 }
+
+.tooltiptext {
+    transition-delay: 1s;
+    transition: all 1s ease;
+}
