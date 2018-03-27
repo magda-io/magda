@@ -24,7 +24,8 @@
 * Added tooltip to search icon
 * Hid download button on dataset page when download url is not available
 * Updated footer links and layout
-* Fixed an issue that prevents csv-geo-au data source to be opened in national map
+* Fixed an issue that prevents csv-geo-au data source to be openned in national map
+* Updated date display format on search page
 * Open in National Map button now send config via postMessage (except IE <=11)
 
 ## 0.0.36
