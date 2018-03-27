@@ -36,6 +36,7 @@
         "babel-preset-stage-0": "^6.24.1",
         "babel-preset-stage-2": "^6.24.1",
         "babel-root-slash-import": "^1.1.0",
+        "browser-detect": "^0.2.22",
         "deep-freeze": "0.0.1",
         "dompurify": "^1.0.2",
         "draft-js": "^0.10.1",
