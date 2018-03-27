@@ -200,7 +200,7 @@ export function parseDistribution(
     const accessURL = info.accessURL || null;
     const updatedDate = info.modified
         ? getDateString(info.modified)
-        : "unknown date";
+        : null;
     const license = info.license || "License restrictions unknown";
     const description = info.description || "No description provided";
     const linkStatus = aspects["source-link-status"];
@@ -258,7 +258,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         getDateString(datasetInfo.issued) || "Unknown issued date";
     const updatedDate = datasetInfo.modified
         ? getDateString(datasetInfo.modified)
-        : "unknown date";
+        : null;
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
         : defaultPublisher;
@@ -312,7 +312,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             linkActive: linkStatus.status === "active",
             updatedDate: info.modified
                 ? getDateString(info.modified)
-                : "unknown date",
+                : null,
             isTimeSeries: visualizationInfo["timeseries"],
             chartFields
         };
