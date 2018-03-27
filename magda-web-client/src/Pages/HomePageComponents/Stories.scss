@@ -1,10 +1,35 @@
 @import "../../variables";
 
 .homepage-stories {
-    .table-container {
-        margin-left: auto;
-        margin-right: auto;
-        margin-bottom: 16px;
+    .stories-container {
+        display: flex;
+        justify-content:space-between;
+        align-items: stretch;
+    }
+    .col-3{
+      width: 32%;
+      & > div{
+        height: calc(100% - 13px);
+      }
+    }
+
+    .row-2{
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+
+
+    .col-2{
+      width: 48%;
+      & > div{
+        height: calc(100% - 13px);
+      }
+    }
+
+    .row.stories{
+      margin-bottom: 12px;
     }
     .homepage-stories-show-stories-button {
         position: fixed;

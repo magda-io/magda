@@ -58,52 +58,46 @@ class Stories extends Component {
                         transitionAppear={true}
                         transitionAppearTimeout={500}
                     >
-                        <table className="table-container">
-                            <tbody>
-                                <tr>
-                                    <td className="row-1-col-left">
+                        <div className="stories-container">
+                                    <div className="col-3">
                                         <StoryBox
                                             idx={0}
-                                            className="story-box-1"
+                                            className="stories"
                                         />
-                                    </td>
-                                    <td className="row-1-col-middle">
-                                        <StoryBox
-                                            idx={1}
-                                            className="story-box-2"
-                                        />
-                                        <StoryBox
-                                            idx={2}
-                                            className="story-box-3"
-                                        />
-                                    </td>
-                                    <td className="row-1-col-right">
+                                    </div>
+                                    <div className="col-3">
+                                        <div className="row-2">
+                                          <StoryBox
+                                              idx={1}
+                                              className="row stories"
+                                          />
+                                          <StoryBox
+                                              idx={2}
+                                              className="row stories"
+                                          />
+                                        </div>
+                                    </div>
+                                    <div className="col-3">
                                         <StoryBox
                                             idx={3}
-                                            className="story-box-4"
+                                            className="stories"
                                         />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table className="table-container">
-                            <tbody>
-                                <tr>
-                                    <td className="row-2-col-left">
-                                        <StoryBox
-                                            idx={4}
-                                            className="story-box-5"
-                                        />
-                                    </td>
-                                    <td className="row-2-col-right">
-                                        <StoryBox
-                                            idx={5}
-                                            className="story-box-6"
-                                        />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                    </div>
+                        </div>
+                        <div className="stories-container">
+                          <div className="col-2">
+                              <StoryBox
+                                  idx={4}
+                                  className="stories"
+                              />
+                          </div>
+                          <div className="col-2">
+                              <StoryBox
+                                  idx={5}
+                                  className="stories"
+                              />
+                          </div>
+                      </div>
                     </CSSTransitionGroup>
                 </Medium>
             </div>
