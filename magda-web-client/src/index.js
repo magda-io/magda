@@ -1,5 +1,6 @@
 // eslint-disable-next-line
 import "es6-shim";
+import "raf/polyfill";
 import createLogger from "redux-logger";
 import "./index.css";
 import { BrowserRouter, Route } from "react-router-dom";

@@ -75,6 +75,7 @@
         "pretty-date": "^0.2.0",
         "prop-types": "^15.5.10",
         "query-string": "^4.3.4",
+        "raf": "^3.4.0",
         "re-base": "^2.7.0",
         "react": "^16.2.0",
         "react-autosuggest": "^9.3.2",
