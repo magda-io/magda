@@ -15,6 +15,8 @@
 * Modified `API Docs` footer link to use HTTPS
 * Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
+* Added IE9/10 polyfills so that the upgrade-your-browser message comes up
+* Added a development unauthenticated API proxy for testing without CORS problems
 * Updated date display format on search page
 * Added Slash between created and updated date on dataset page
 * Added in quality indicator tooltip for dataset lists
@@ -24,6 +26,7 @@
 * Updated footer links and layout
 * Fixed an issue that prevents csv-geo-au data source to be openned in national map
 * Updated date display format on search page
+* Open in National Map button now send config via postMessage (except IE <=11)
 
 ## 0.0.36
 

@@ -210,6 +210,10 @@ class AppContainer extends React.Component {
                                 {" "}
                                 Developed by{" "}
                                 <a href="https://www.data61.csiro.au/">
+                                <a
+                                    target="_blank"
+                                    href="https://www.data61.csiro.au/"
+                                >
                                     <img src={d61logo} alt="data61-logo" />
                                 </a>
                             </div>
