@@ -20,11 +20,12 @@
 * Updated date display format on search page
 * Added Slash between created and updated date on dataset page
 * Added in quality indicator tooltip for dataset lists
-* Added link to Data61 from the "Developed by `data61-logo`" in footer.
+* Added new window link to Data61 from the "Developed by `data61-logo`" in footer.
 * Added tooltip to search icon
 * Hid download button on dataset page when download url is not available
 * Updated footer links and layout
 * Fixed an issue that prevents csv-geo-au data source to be opened in national map
+* Open in National Map button now send config via postMessage (except IE <=11)
 
 ## 0.0.36
 
