@@ -15,11 +15,7 @@
 * Modified `API Docs` footer link to use HTTPS
 * Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 * Updated date display format on search page
->>>>>>> a1ec5995790ea3089b32a882c138c46d337bd0df
 * Added Slash between created and updated date on dataset page
 * Added in quality indicator tooltip for dataset lists
 * Added new window link to Data61 from the "Developed by `data61-logo`" in footer.
@@ -27,9 +23,7 @@
 * Hid download button on dataset page when download url is not available
 * Updated footer links and layout
 * Fixed an issue that prevents csv-geo-au data source to be openned in national map
-=======
 * Updated date display format on search page
->>>>>>> 3031a4cb... Updated changes.md file
 
 ## 0.0.36
 
