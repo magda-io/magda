@@ -23,6 +23,7 @@
 * Hid download button on dataset page when download url is not available
 * Updated footer links and layout
 * Fixed an issue that prevents csv-geo-au data source to be openned in national map
+* Open in National Map button now send config via postMessage (except IE <=11)
 
 ## 0.0.36
 
