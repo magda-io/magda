@@ -21,7 +21,7 @@ window.magda_client_homepage_config = {
     Lozenge: {
         icon: "camara.svg",
         text: "Explore QLD road data",
-        url: "https://search.data.gov.au/search?q=QLD%20road%20data"
+        url: "/search?q=Queensland%20road%20data"
     },
     stories: [
         "story1.md",
