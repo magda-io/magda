@@ -104,8 +104,9 @@ app.use(
                 "www.googletagmanager.com",
                 "www.google-analytics.com",
                 "rum-static.pingdom.net",
-                "cdnjs.cloudflare.com", //rollbar and shims
-                "wzrd.in" // es7 shim
+                "cdnjs.cloudflare.com/ajax/libs/rollbar.js/", //rollbar
+                "cdnjs.cloudflare.com/ajax/libs/es5-shim/", // shim
+                "cdnjs.cloudflare.com/ajax/libs/es6-shim/" // shim
             ],
             objectSrc: ["'none'"],
             sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"],
