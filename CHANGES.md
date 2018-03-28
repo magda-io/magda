@@ -1,5 +1,6 @@
 ## 0.0.37
 
+* Make search filter lozenges wrap when too long
 * Hide created and updated dates if dates are not available
 * Update email address for feedback including in map preview errors
 * Make facets stack on mobile
