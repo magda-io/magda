@@ -14,6 +14,8 @@ import searchDark from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from "prop-types";
 import queryString from "query-string";
+import SearchSuggestionBox from "./SearchSuggestionBox";
+import { Small, Medium } from "../../UI/Responsive";
 
 class SearchBox extends Component {
     constructor(props) {
@@ -132,22 +134,45 @@ class SearchBox extends Component {
     }
 
     render() {
+        const input = (
+            <Input
+                type="text"
+                name="search"
+                id="search"
+                placeholder="Search for open data"
+                value={this.getSearchBoxValue()}
+                onChange={this.onSearchTextChange}
+                onKeyPress={this.handleSearchFieldEnterKeyPress}
+                autoComplete="off"
+                onFocus={() => this.setState({ isFocus: true })}
+                onBlur={() =>
+                    this.setState({
+                        isFocus: false
+                    })
+                }
+            />
+        );
+
+        const suggestionBox = (
+            <SearchSuggestionBox
+                searchText={this.getSearchBoxValue()}
+                isSearchInputFocus={this.state.isFocus}
+            />
+        );
+
         return (
             <Form className="searchBox">
                 <label htmlFor="search">
                     <span className="sr-only">
                         {"Search " + config.appName}
                     </span>
-                    <Input
-                        type="text"
-                        name="search"
-                        id="search"
-                        placeholder="Search for open data"
-                        value={this.getSearchBoxValue()}
-                        onChange={this.onSearchTextChange}
-                        onKeyPress={this.handleSearchFieldEnterKeyPress}
-                        autoComplete="off"
-                    />
+                    <Medium>
+                        <div style={{ position: "relative" }}>
+                            {input}
+                            {suggestionBox}
+                        </div>
+                    </Medium>
+                    <Small>{input}</Small>
                     <span className="search-input__highlight">
                         {this.getSearchBoxValue()}
                     </span>
@@ -163,6 +188,9 @@ class SearchBox extends Component {
                     />
                     <span className="sr-only">submit search</span>
                 </button>
+                <Small>
+                    {suggestionBox}
+                </Small>
             </Form>
         );
     }
