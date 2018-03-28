@@ -34,9 +34,10 @@
 *   Fixed web-server crash in in kubernete pod
 *   Removed query language from search api
 *   Stopped elasticsearch automatically creating indexes.
-*   Stopped recent searches showing "*" as a dot
+*   Stopped recent searches showing "\*" as a dot
 *   Made recent searches work from parts deeper than `/`
 *   Brought back recent search feature to new home design & implemented the new design
+*   Added the data.gov.au s3 bucket to allowed script sources
 
 ## 0.0.36
 
