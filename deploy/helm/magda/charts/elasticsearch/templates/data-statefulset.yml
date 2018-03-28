@@ -75,7 +75,6 @@ spec:
         - name: REPO
           value: /snapshots
 {{- end }}
-        {{- template "magda.elasticSearchXpackEnv" . }}
         ports:
 {{- if not .Values.production }}
         - containerPort: 9200

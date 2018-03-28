@@ -19,6 +19,9 @@ path:
 bootstrap:
   memory_lock: true
 
+action:
+  auto_create_index: false
+
 http:
   enabled: ${HTTP_ENABLE}
   compression: true
@@ -30,9 +33,3 @@ discovery:
   zen:
     ping.unicast.hosts: ${DISCOVERY_SERVICE}
     minimum_master_nodes: ${NUMBER_OF_MASTERS}
-
-xpack:
-  security:
-    enabled: ${XPACK_ENABLED}
-    authc.accept_default_password: ${ACCEPT_DEFAULT_PASSWORD}
-  ml.enabled: false
