@@ -16,43 +16,35 @@ import MediaQuery from "react-responsive";
 import dgaLogo from "../assets/dga-logo.svg";
 
 const getBgImg = () => {
-    let imageMap = {};
     if (!config.homePageConfig || !config.homePageConfig.backgroundImageUrls)
         return null;
     const backgroundImageUrls = config.homePageConfig.backgroundImageUrls;
-    if (!backgroundImageUrls.length) return null;
+
     const baseUrl = config.homePageConfig.baseUrl
         ? config.homePageConfig.baseUrl
         : "";
 
-    backgroundImageUrls.forEach(item => {
-        let width;
-        try {
-            width = parseInt(item.replace(/[^\d]/g, ""), 10);
-            if (isNaN(width)) width = 0;
-        } catch (e) {
-            width = 0;
-        }
+    const screenSizes = Object.keys(backgroundImageUrls);
 
-        imageMap = Object.assign(imageMap, { [width]: baseUrl + item });
-    });
+    const length = backgroundImageUrls[screenSizes[0]].length;
 
-    const screenSizes = Object.keys(imageMap);
+    const index = Math.floor(Math.random() * (length + 1));
 
     function getBackgroundImage(imageUrl) {
         return {
-            backgroundImage: "url(" + imageUrl + ")",
+            backgroundImage: "url(" + baseUrl + imageUrl + ")",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover"
         };
     }
+
     return (
         <div>
             {screenSizes.map((size, i) => (
                 <MediaQuery
-                    key={size}
-                    minWidth={size + "px"}
+                    key={+size}
+                    minWidth={+size + "px"}
                     maxWidth={
                         i === screenSizes.length - 1
                             ? null
@@ -61,7 +53,7 @@ const getBgImg = () => {
                 >
                     <div
                         className="homepage-background-img"
-                        style={getBackgroundImage(imageMap[size])}
+                        style={getBackgroundImage(backgroundImageUrls[size][index])}
                     />
                 </MediaQuery>
             ))}
