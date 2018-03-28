@@ -14,6 +14,7 @@ import searchDark from "../../assets/search-dark.svg";
 // eslint-disable-next-line
 import PropTypes from "prop-types";
 import queryString from "query-string";
+import SearchSuggestionBox from "./SearchSuggestionBox";
 
 class SearchBox extends Component {
     constructor(props) {
@@ -147,6 +148,16 @@ class SearchBox extends Component {
                         onChange={this.onSearchTextChange}
                         onKeyPress={this.handleSearchFieldEnterKeyPress}
                         autoComplete="off"
+                        onFocus={() => this.setState({ isFocus: true })}
+                        onBlur={() =>
+                            this.setState({
+                                isFocus: false
+                            })
+                        }
+                    />
+                    <SearchSuggestionBox
+                        searchText={this.getSearchBoxValue()}
+                        isSearchInputFocus={this.state.isFocus}
                     />
                     <span className="search-input__highlight">
                         {this.getSearchBoxValue()}
