@@ -1,6 +1,6 @@
 import React from "react";
 import getDateString from "../helpers/getDateString";
-import defined from '../helpers/defined';
+import defined from "../helpers/defined";
 import "./News.css";
 
 function renderContent(props) {
@@ -30,7 +30,9 @@ function renderContent(props) {
 function renderNews(news) {
     return (
         <li className="news" key={news.link + news.title}>
-            <div className="pub-date">{defined(news.pubDate) && getDateString(news.pubDate)}</div>
+            <div className="pub-date">
+                {defined(news.pubDate) && getDateString(news.pubDate)}
+            </div>
             <h3 className="list-group-item-heading">
                 <a href={news.link} target="_blank" rel="noopener noreferrer">
                     {news.title}
