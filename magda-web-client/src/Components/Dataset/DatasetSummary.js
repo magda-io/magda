@@ -51,7 +51,6 @@ export default class DatasetSummary extends Component {
                 <div className="dataset-summary-meta">
                     {defined(dataset.modified) && (
                         <span className="dataset-summary-updated">
-                            {" "}
                             Dataset Updated {getDateString(dataset.modified)}
                         </span>
                     )}
