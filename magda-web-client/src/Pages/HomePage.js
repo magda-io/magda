@@ -53,7 +53,9 @@ const getBgImg = () => {
                 >
                     <div
                         className="homepage-background-img"
-                        style={getBackgroundImage(backgroundImageUrls[size][index])}
+                        style={getBackgroundImage(
+                            backgroundImageUrls[size][index]
+                        )}
                     />
                 </MediaQuery>
             ))}
