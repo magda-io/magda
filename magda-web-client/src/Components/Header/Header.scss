@@ -1,0 +1,114 @@
+@import "../../variables";
+
+.top-header-container {
+    background: rgba(#ffffff, 0.5);
+    .desktop-nav {
+        width: 100%;
+        height: 90px;
+        display: flex;
+    }
+    .logo,
+    .logo:hover,
+    .logo:focus {
+        border-bottom: none;
+        background: transparent;
+        padding: 8px 0;
+        img {
+            height: 100%;
+            width: auto;
+        }
+    }
+    .header-nav {
+        display: flex;
+        flex-direction: column;
+        @media (min-width: $medium) {
+            flex-grow: 2;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        a {
+            margin-left: 0;
+            display: inline-block;
+            border-bottom: 0;
+            color: #494949;
+            font-family: Rubik;
+            font-size: 16px;
+            line-height: 40px;
+            margin-right: 32px;
+            &:hover {
+                background: transparent;
+                color: #000;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .account-navbar {
+        display: inline-block;
+        a {
+            color: $body;
+            text-decoration: none;
+            border-bottom: 0;
+            transition: background-color 0.1s ease-in-out,
+                border-color 0.1s ease-in-out;
+            margin-right: 0px;
+            display: inline-block;
+        }
+    }
+}
+
+.mobile-header {
+    background-color: #ffffff;
+    box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
+    .mobile-header-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .mobile-logo {
+            margin: 10px;
+        }
+
+        .mobile-title {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 22px;
+            text-transform: uppercase;
+            a {
+                border-bottom: 0;
+            }
+        }
+
+        .mobile-toggle {
+            background: transparent;
+            border: 0;
+            margin-top: 12px;
+            margin-right: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            &:hover,
+            &:focus {
+                outline: none;
+            }
+        }
+    }
+
+    .mobile-nav {
+        padding-left: 10px;
+        height: 0;
+        overflow-y: hidden;
+        transition: height 0.55s;
+        &.isOpen {
+            height: 200px;
+            border-top: 1px solid rgba(73, 73, 73, 0.15);
+        }
+    }
+    .account-navbar a,
+    a {
+        display: block;
+        line-height: 40px;
+    }
+    .account-navbar {
+        display: block;
+    }
+}

@@ -14,6 +14,7 @@
         "dev": "npm run start",
         "surge-build": "react-scripts build",
         "build": "npm run compile",
+        "build-staging": "env REACT_APP_IS_STAGING=1 npm run compile",
         "compile": "npm run build-css && react-scripts build",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject",
@@ -90,6 +91,7 @@
         "react-scripts": "1.1.0",
         "react-table": "^6.5.1",
         "react-tooltip": "^3.4.0",
+        "react-transition-group": "^1.2.1",
         "react-vega-lite": "^1.1.2",
         "redux": "^3.6.0",
         "redux-logger": "^2.7.4",
@@ -99,7 +101,8 @@
         "traverse": "^0.6.6",
         "uuid": "^3.0.1",
         "vega": "^3.0.0-rc2",
-        "vega-lite": "^2.0.0-beta.8"
+        "vega-lite": "^2.0.0-beta.8",
+        "yaml-front-matter": "^4.0.0"
     },
     "proxy": {
         "/server-config.js": {
