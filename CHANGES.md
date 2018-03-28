@@ -33,6 +33,7 @@
 *   Open in National Map button now send config via postMessage (except IE <=11)
 *   Fixed web-server crash in in kubernete pod
 *   Removed query language from search api
+*   Stopped elasticsearch automatically creating indexes.
 
 ## 0.0.36
 
