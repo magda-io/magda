@@ -106,7 +106,8 @@ app.use(
                 "rum-static.pingdom.net",
                 "cdnjs.cloudflare.com/ajax/libs/rollbar.js/", //rollbar
                 "cdnjs.cloudflare.com/ajax/libs/es5-shim/", // shim
-                "cdnjs.cloudflare.com/ajax/libs/es6-shim/" // shim
+                "cdnjs.cloudflare.com/ajax/libs/es6-shim/", // shim
+                "s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/"
             ],
             objectSrc: ["'none'"],
             sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"],
@@ -221,21 +222,21 @@ app.get("/admin/*", function(req, res) {
 
 if (argv.devProxy) {
     app.get("/api/*", function(req, res) {
-        console.log(argv.devProxy + req.params[0])
+        console.log(argv.devProxy + req.params[0]);
         req
             .pipe(
-                request(
-                    {
-                        url: argv.devProxy + req.params[0],
-                        qs: req.query,
-                        method: req.method
-                    }))
-                    .on('error', err => {
-                        const msg = 'Error on connecting to the webservice.';
-                        console.error(msg, err);
-                        res.status(500).send(msg);
-                    })
-                    .pipe( res );
+                request({
+                    url: argv.devProxy + req.params[0],
+                    qs: req.query,
+                    method: req.method
+                })
+            )
+            .on("error", err => {
+                const msg = "Error on connecting to the webservice.";
+                console.error(msg, err);
+                res.status(500).send(msg);
+            })
+            .pipe(res);
     });
 }
 
