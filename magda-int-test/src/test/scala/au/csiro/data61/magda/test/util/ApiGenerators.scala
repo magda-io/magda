@@ -164,7 +164,7 @@ object ApiGenerators {
   }
 
   def queryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
-    freeText <- Generators.noneBiasedOption(queryTextGen(dataSets))
+    freeText <- noneBiasedOption(queryTextGen(dataSets))
     quotes <- probablyEmptySet(quoteTextGen(dataSets))
     publishers <- probablyEmptySet(publisherQueryGen(dataSets))
     dateFrom <- Generators.noneBiasedOption(dateToGen)
@@ -183,28 +183,38 @@ object ApiGenerators {
   def exactQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = queryGen(dataSets)
   def unspecificQueryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
     freeText <- queryTextGen(dataSets)
-  } yield Query(
-    freeText = Some(freeText)))
+  } yield Query(freeText = Some(freeText)))
     .suchThat(queryIsSmallEnough)
 
+  def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
+
   def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>
-    val textListComponents = (Seq(query.freeText).flatten ++
+    val textListComponents = (query.freeText.toSeq ++
       query.quotes.map(""""""" + _ + """"""")).toSet
 
     val publishers = query.publishers.filter(containsNoFilterWord)
     val formats = query.formats.filter(containsNoFilterWord)
 
-    val facetList = publishers.map(publisher => s"by $publisher") ++
-      Seq(query.dateFrom.map(dateFrom => s"from $dateFrom")).flatten ++
-      Seq(query.dateTo.map(dateTo => s"to $dateTo")).flatten ++
-      formats.map(format => s"as $format") ++
-      query.regions.map(region => s"in ${region.map(_.queryRegion)}")
+    val facetList =
+      publishers.map(publisher => s"publisher=${encodeForUrl(publisher.toString)}") ++
+        query.dateFrom.map(dateFrom => s"dateFrom=${encodeForUrl(dateFrom.toString)}").toSeq ++
+        query.dateTo.map(dateTo => s"dateTo=${encodeForUrl(dateTo.toString)}").toSeq ++
+        formats.map(format => s"format=${encodeForUrl(format.toString)}") ++
+        query.regions.map(region => s"region=${encodeForUrl(region.map(_.queryRegion).toString)}")
 
     val textQuery = for {
       textList <- Gen.pick(textListComponents.size, textListComponents)
-      randomFacetList <- Gen.pick(facetList.size, facetList)
-      rawQuery = (textList ++ randomFacetList).mkString(" ")
-      query <- randomCaseGen(rawQuery)
+      allList = Set(s"query=${encodeForUrl(textList.mkString(" "))}") ++ facetList
+      randomList <- Gen.pick(allList.size, allList)
+      rawQuery = randomList.mkString("&")
+      randomCaseQuery <- randomCaseGen(rawQuery)
+      query = randomCaseQuery
+        .replaceAll("(?i)query=", "query=")
+        .replaceAll("(?i)publisher=", "publisher=")
+        .replaceAll("(?i)dateFrom=", "dateFrom=")
+        .replaceAll("(?i)dateTo=", "dateTo=")
+        .replaceAll("(?i)format=", "format=")
+        .replaceAll("(?i)region=", "region=")
     } yield query
 
     textQuery.flatMap((_, query.copy(publishers = publishers, formats = formats)))
