@@ -128,7 +128,8 @@ class SearchSuggestionBox extends Component {
             filters.push("from *" + getDateString(data.dateFrom) + "*");
         if (data.dateFrom)
             filters.push("to *" + getDateString(data.dateFrom) + "*");
-        const qStr = data.q ? data.q.trim() : "";
+        let qStr = data.q ? data.q.trim() : "";
+        if (qStr === "*") qStr = "\\*";
         return qStr ? qStr + " " + filters.join("; ") : filters.join("; ");
     }
 
