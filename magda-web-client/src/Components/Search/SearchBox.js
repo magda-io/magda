@@ -139,26 +139,28 @@ class SearchBox extends Component {
                     <span className="sr-only">
                         {"Search " + config.appName}
                     </span>
-                    <Input
-                        type="text"
-                        name="search"
-                        id="search"
-                        placeholder="Search for open data"
-                        value={this.getSearchBoxValue()}
-                        onChange={this.onSearchTextChange}
-                        onKeyPress={this.handleSearchFieldEnterKeyPress}
-                        autoComplete="off"
-                        onFocus={() => this.setState({ isFocus: true })}
-                        onBlur={() =>
-                            this.setState({
-                                isFocus: false
-                            })
-                        }
-                    />
-                    <SearchSuggestionBox
-                        searchText={this.getSearchBoxValue()}
-                        isSearchInputFocus={this.state.isFocus}
-                    />
+                    <div style={{ position: "relative" }}>
+                        <Input
+                            type="text"
+                            name="search"
+                            id="search"
+                            placeholder="Search for open data"
+                            value={this.getSearchBoxValue()}
+                            onChange={this.onSearchTextChange}
+                            onKeyPress={this.handleSearchFieldEnterKeyPress}
+                            autoComplete="off"
+                            onFocus={() => this.setState({ isFocus: true })}
+                            onBlur={() =>
+                                this.setState({
+                                    isFocus: false
+                                })
+                            }
+                        />
+                        <SearchSuggestionBox
+                            searchText={this.getSearchBoxValue()}
+                            isSearchInputFocus={this.state.isFocus}
+                        />
+                    </div>
                     <span className="search-input__highlight">
                         {this.getSearchBoxValue()}
                     </span>
