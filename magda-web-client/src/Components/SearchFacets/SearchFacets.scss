@@ -5,10 +5,6 @@
     margin-bottom: 32px;
     flex-direction: row;
     flex-wrap: wrap;
-    @media (min-width: $small) {
-      flex-wrap: nowrap;
-    }
-
     .search-facet {
         margin-right: 8px;
         position: relative;
