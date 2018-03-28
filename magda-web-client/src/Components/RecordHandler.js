@@ -9,6 +9,7 @@ import {
 } from "../actions/recordActions";
 import Tabs from "../UI/Tabs";
 import { config } from "../config";
+import defined from "../helpers/defined";
 import ErrorHandler from "./ErrorHandler";
 import RouteNotFound from "./RouteNotFound";
 import { Route, Switch, Redirect } from "react-router-dom";
@@ -86,13 +87,14 @@ class RecordHandler extends React.Component {
                                         <div className="publisher">
                                             {publisherName}
                                         </div>
-                                        <div className="updated-date">
+                                        {defined(this.props.distribution
+                                            .updatedDate) && <div className="updated-date">
                                             Updated{" "}
                                             {
                                                 this.props.distribution
                                                     .updatedDate
                                             }
-                                        </div>
+                                        </div>}
                                     </div>
                                 </div>
                             </div>
@@ -154,23 +156,22 @@ class RecordHandler extends React.Component {
                                                 <span className="separator hidden-sm">
                                                     /
                                                 </span>
-                                                <span className="updated-date hidden-sm">
+                                                {defined(this.props.dataset
+                                                    .issuedDate) && <span className="updated-date hidden-sm">
                                                     Created{" "}
-                                                    {
-                                                        this.props.dataset
-                                                            .issuedDate
-                                                    }&nbsp;
-                                                </span>
+                                                    {this.props.dataset.issuedDate}&nbsp;
+                                                </span>}
                                                 <span className="separator hidden-sm">
                                                     /
                                                 </span>
-                                                <span className="updated-date hidden-sm">
+                                                {defined(this.props.dataset
+                                                    .updatedDate) && <span className="updated-date hidden-sm">
                                                     Updated{" "}
                                                     {
                                                         this.props.dataset
                                                             .updatedDate
                                                     }
-                                                </span>
+                                                </span>}
                                             </div>
                                         </div>
                                     </div>

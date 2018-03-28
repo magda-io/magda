@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
     <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,900" rel="stylesheet">
     <link href="//cdn.muicss.com/mui-0.9.33/css/mui.min.css" rel="stylesheet" type="text/css" media="screen"/>
@@ -29,6 +30,20 @@
             }
         };
     </script>
+
+    <!--[if lte IE 9]>
+    <script type="text/javascript">
+        'use strict';
+        // IE9 Console Bug Fix
+        window.console = window.console || {};
+        window.console.log = window.console.log || function() {};
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.10/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.10/es5-sham.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.3/es6-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.3/es6-sham.min.js"></script>
+    <![endif]-->
+
     <script src="/assets/third-party.js"></script>
     <% if(process.env.REACT_APP_IS_STAGING == 1) {%>
     <script src="https://s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/staging/homepage-config.js"></script>

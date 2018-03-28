@@ -1,6 +1,7 @@
 ## 0.0.37
 
 * Make search filter lozenges wrap when too long
+* Hide created and updated dates if dates are not available
 * Update email address for feedback including in map preview errors
 * Make facets stack on mobile
 * Use params q= 'xxx' to persist the search text in search page, dataset page and distribution pages
@@ -16,17 +17,20 @@
 * Modified `API Docs` footer link to use HTTPS
 * Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 * Added Rollbar exception reporting for client side javascript
+* Added IE9/10 polyfills so that the upgrade-your-browser message comes up
+* Added a development unauthenticated API proxy for testing without CORS problems
 * Updated date display format on search page
 * Added Slash between created and updated date on dataset page
 * Added in quality indicator tooltip for dataset lists
-* Added link to Data61 from the "Developed by `data61-logo`" in footer.
+* Added new window link to Data61 from the "Developed by `data61-logo`" in footer.
 * Added tooltip to search icon
 * Hid download button on dataset page when download url is not available
 * Updated footer links and layout
-* Fixed an issue that prevents csv-geo-au data source to be openned in national map
+* Fixed an issue that prevents csv-geo-au data source to be opened in national map
 * responsive background image for homepage
 * Hidden top `go back to old site` for mobile views
 * New Homepage Design
+* Open in National Map button now send config via postMessage (except IE <=11)
 
 ## 0.0.36
 

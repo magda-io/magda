@@ -4,6 +4,7 @@ import * as URI from "urijs";
 import * as yargs from "yargs";
 import * as morgan from "morgan";
 import * as helmet from "helmet";
+import * as request from "request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
@@ -40,6 +41,11 @@ const argv = yargs
             "The base URL of the MAGDA Gateway, for building the base URLs of the APIs when not manually specified. Can be relative.",
         type: "string",
         default: "/"
+    })
+    .option("devProxy", {
+        describe:
+            "The URL of the MAGDA API Gateway to proxy to. Useful in development when you want to serve everything from one port for CORS reasons",
+        type: "string"
     })
     .option("apiBaseUrl", {
         describe:
@@ -97,7 +103,10 @@ app.use(
                 "platform.twitter.com",
                 "www.googletagmanager.com",
                 "www.google-analytics.com",
-                "rum-static.pingdom.net"
+                "rum-static.pingdom.net",
+                "cdnjs.cloudflare.com/ajax/libs/rollbar.js/", //rollbar
+                "cdnjs.cloudflare.com/ajax/libs/es5-shim/", // shim
+                "cdnjs.cloudflare.com/ajax/libs/es6-shim/" // shim
             ],
             objectSrc: ["'none'"],
             sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"],
@@ -209,6 +218,27 @@ app.get("/admin", function(req, res) {
 app.get("/admin/*", function(req, res) {
     res.sendFile(path.join(adminBuild, "index.html"));
 });
+
+if (argv.devProxy) {
+    app.get("/api/*", function(req, res) {
+        console.log(argv.devProxy + req.params[0])
+        req
+            .pipe(
+                request(
+                    {
+                        url: argv.devProxy + req.params[0],
+                        qs: req.query,
+                        method: req.method
+                    }))
+                    .on('error', err => {
+                        const msg = 'Error on connecting to the webservice.';
+                        console.error(msg, err);
+                        res.status(500).send(msg);
+                    })
+                    .pipe( res );
+    });
+}
+
 app.use(
     "/sitemap",
     buildSitemapRouter({

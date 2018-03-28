@@ -25,6 +25,7 @@ export default class DatasetSummary extends Component {
     render() {
         const dataset = this.props.dataset;
         const publisher = dataset.publisher && dataset.publisher.name;
+        const searchText = defined(this.props.searchText) ? this.props.searchText : '';
         return (
             <div className="dataset-summary">
                 <h3>
@@ -32,7 +33,7 @@ export default class DatasetSummary extends Component {
                         className="dataset-summary-title"
                         to={`/dataset/${encodeURIComponent(
                             dataset.identifier
-                        )}?q=${this.props.searchText}`}
+                        )}?q=${searchText}`}
                     >
                         {dataset.title}
                     </Link>
@@ -50,7 +51,6 @@ export default class DatasetSummary extends Component {
                 <div className="dataset-summary-meta">
                     {defined(dataset.modified) && (
                         <span className="dataset-summary-updated">
-                            {" "}
                             Dataset Updated {getDateString(dataset.modified)}
                         </span>
                     )}

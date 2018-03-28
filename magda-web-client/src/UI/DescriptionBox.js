@@ -61,7 +61,7 @@ class DescriptionBox extends Component {
     }
 }
 
-DescriptionBox.PropTypes = {
+DescriptionBox.propTypes = {
     isAutoTruncate: PropTypes.bool,
     truncateLength: PropTypes.number,
     content: PropTypes.string
