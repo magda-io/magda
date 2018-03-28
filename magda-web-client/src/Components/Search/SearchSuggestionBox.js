@@ -148,7 +148,7 @@ class SearchSuggestionBox extends Component {
     onSearchItemClick(e, item: searchDataType) {
         e.preventDefault();
         const qStr = queryString.stringify(item.data);
-        this.props.history.push(`./search?${qStr}`);
+        this.props.history.push(`/search?${qStr}`);
         this.setState({
             isMouseOver: false
         });
