@@ -31,6 +31,7 @@
 *   Hidden top `go back to old site` for mobile views
 *   New Homepage Design
 *   Open in National Map button now send config via postMessage (except IE <=11)
+*   Fixed web-server crash in in kubernete pod
 *   Removed query language from search api
 
 ## 0.0.36
