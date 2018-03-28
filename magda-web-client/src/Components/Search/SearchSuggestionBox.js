@@ -6,7 +6,9 @@ import isEqual from "lodash.isequal";
 import queryString from "query-string";
 import getDateString from "../../helpers/getDateString";
 import MarkdownViewer from "../../UI/MarkdownViewer";
+import { Small, Medium } from "../../UI/Responsive";
 import "./SearchSuggestionBox.css";
+import recentSearchIcon from "../../assets/updated.svg";
 
 type searchDataType = {
     name: ?string,
@@ -203,17 +205,33 @@ class SearchSuggestionBox extends Component {
                     onMouseOver={() => this.onMouseOver()}
                     onMouseOut={() => this.onMouseOut()}
                 >
-                    <h5>Recent Searches</h5>
+                    <Medium>
+                        <h5>Recent Searches</h5>
+                    </Medium>
                     {filteredRecentSearches.map((item, idx) => (
                         <button
                             key={idx}
                             className="mui-btn mui-btn--flat"
                             onClick={e => this.onSearchItemClick(e, item)}
                         >
-                            <MarkdownViewer
-                                markdown={this.createSearchItemLabelText(item)}
-                                truncate={false}
+                            <img
+                                className="recent-item-icon"
+                                src={recentSearchIcon}
+                                alt="recent search item"
                             />
+                            <Medium>
+                                <MarkdownViewer
+                                    markdown={this.createSearchItemLabelText(
+                                        item
+                                    )}
+                                    truncate={false}
+                                />
+                            </Medium>
+                            <Small>
+                                <div className="recent-item-content">
+                                    {item.data.q ? item.data.q.trim() : ""}
+                                </div>
+                            </Small>
                         </button>
                     ))}
                 </div>
