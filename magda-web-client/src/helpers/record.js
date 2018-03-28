@@ -198,9 +198,7 @@ export function parseDistribution(
     const format = info.format || "Unknown format";
     const downloadURL = info.downloadURL || null;
     const accessURL = info.accessURL || null;
-    const updatedDate = info.modified
-        ? getDateString(info.modified)
-        : null;
+    const updatedDate = info.modified ? getDateString(info.modified) : null;
     const license = info.license || "License restrictions unknown";
     const description = info.description || "No description provided";
     const linkStatus = aspects["source-link-status"];
@@ -310,9 +308,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             description: info.description || "No description provided",
             linkStatusAvailable: Boolean(linkStatus.status), // Link status is available if status is non-empty string
             linkActive: linkStatus.status === "active",
-            updatedDate: info.modified
-                ? getDateString(info.modified)
-                : null,
+            updatedDate: info.modified ? getDateString(info.modified) : null,
             isTimeSeries: visualizationInfo["timeseries"],
             chartFields
         };
