@@ -54,11 +54,6 @@ gateway:
         requests:
             cpu: 200m
             memory: 200Mi
-indexer:
-    resources:
-        requests:
-            cpu: 200m
-            memory: 200Mi
 preview-map:
     replicas: 2
     resources:
@@ -158,6 +153,10 @@ indexer:
 #    useGcsSnapshots: true
 #    gcsSnapshotBucket: "magda-es-snapshots"
 #    gcsSnapshotServiceAccount: "_default"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 200Mi
 feedback-api:
     gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
     replicas: 2

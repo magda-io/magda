@@ -29,7 +29,7 @@
 *   Fixed an issue that prevents csv-geo-au data source to be opened in national map
 *   responsive background image for homepage
 *   Hidden top `go back to old site` for mobile views
-*   New Homepage Design
+*   New Homepage Design except stories
 *   Open in National Map button now send config via postMessage (except IE <=11)
 *   Fixed web-server crash in in kubernete pod
 *   Removed query language from search api
@@ -37,7 +37,11 @@
 *   Stopped recent searches showing "\*" as a dot
 *   Made recent searches work from parts deeper than `/`
 *   Brought back recent search feature to new home design & implemented the new design
+*   Added the data.gov.au s3 bucket to allow script sources
+*   Removed API docs from footer temporarily
+*   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
+*   Added feedback uri to server config.
 *   Added eslint to travis build
 
 ## 0.0.36

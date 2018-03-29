@@ -188,9 +188,7 @@ class SearchBox extends Component {
                     />
                     <span className="sr-only">submit search</span>
                 </button>
-                <Small>
-                    {suggestionBox}
-                </Small>
+                <Small>{suggestionBox}</Small>
             </Form>
         );
     }

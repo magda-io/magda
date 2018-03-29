@@ -9,42 +9,50 @@ import "./HomePage.css";
 
 import TagLine from "./HomePageComponents/TagLine";
 import Lozenge from "./HomePageComponents/Lozenge";
-import Stories from "./HomePageComponents/Stories";
+// import Stories from "./HomePageComponents/Stories";
 import { Small, Medium } from "../UI/Responsive";
 
 import MediaQuery from "react-responsive";
 import dgaLogo from "../assets/dga-logo.svg";
 
 const getBgImg = () => {
+    let imageMap = {};
     if (!config.homePageConfig || !config.homePageConfig.backgroundImageUrls)
         return null;
     const backgroundImageUrls = config.homePageConfig.backgroundImageUrls;
-
+    if (!backgroundImageUrls.length) return null;
     const baseUrl = config.homePageConfig.baseUrl
         ? config.homePageConfig.baseUrl
         : "";
 
-    const screenSizes = Object.keys(backgroundImageUrls);
+    backgroundImageUrls.forEach(item => {
+        let width;
+        try {
+            width = parseInt(item.replace(/[^\d]/g, ""), 10);
+            if (isNaN(width)) width = 0;
+        } catch (e) {
+            width = 0;
+        }
 
-    const length = backgroundImageUrls[screenSizes[0]].length;
+        imageMap = Object.assign(imageMap, { [width]: baseUrl + item });
+    });
 
-    const index = Math.floor(Math.random() * (length + 1));
+    const screenSizes = Object.keys(imageMap);
 
     function getBackgroundImage(imageUrl) {
         return {
-            backgroundImage: "url(" + baseUrl + imageUrl + ")",
+            backgroundImage: "url(" + imageUrl + ")",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover"
         };
     }
-
     return (
         <div>
             {screenSizes.map((size, i) => (
                 <MediaQuery
-                    key={+size}
-                    minWidth={+size + "px"}
+                    key={size}
+                    minWidth={size + "px"}
                     maxWidth={
                         i === screenSizes.length - 1
                             ? null
@@ -53,9 +61,7 @@ const getBgImg = () => {
                 >
                     <div
                         className="homepage-background-img"
-                        style={getBackgroundImage(
-                            backgroundImageUrls[size][index]
-                        )}
+                        style={getBackgroundImage(imageMap[size])}
                     />
                 </MediaQuery>
             ))}
@@ -99,7 +105,7 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
                     <TagLine taglineText={getTagLine().desktop} />
                     <Lozenge />
                 </Medium>
-                <Stories />
+                {/* <Stories /> */}
             </Container>
         </div>
     );

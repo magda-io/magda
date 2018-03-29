@@ -8,7 +8,7 @@ const fallbackApiHost = "//magda-dev.terria.io/";
 
 const homePageConfig: {
     baseUrl: string,
-    backgroundImageUrls: Object
+    backgroundImageUrls: Array<string>
 } =
     window.magda_client_homepage_config || {};
 
@@ -76,7 +76,10 @@ export const config = {
     footerNavigation: [
         {
             category: "Data.gov.au",
-            links: [["About", "page/about"], ["Request a dataset", "/"]]
+            links: [
+                ["About", "page/about"],
+                ["Request a dataset", "mailto:data@digital.gov.au"]
+            ]
         },
         {
             category: "Publishers",
@@ -87,13 +90,7 @@ export const config = {
         },
         {
             category: "Developers",
-            links: [
-                [
-                    "API Docs",
-                    "https://search.data.gov.au/api/v0/registry/swagger/index.html"
-                ],
-                ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
-            ]
+            links: [["Powered by Magda", "https://github.com/TerriaJS/magda/"]]
         }
     ],
     months: [
