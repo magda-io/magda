@@ -162,6 +162,7 @@ class FacetRegion extends Component {
                     activeOptions={[this.props.activeRegion]}
                     hasQuery={this.props.hasQuery}
                     onClick={this.props.toggleFacet}
+                    isOpen={this.props.isOpen}
                 />
                 {this.props.isOpen && this.renderBox()}
             </div>
