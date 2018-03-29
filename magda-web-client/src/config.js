@@ -8,7 +8,7 @@ const fallbackApiHost = "//magda-dev.terria.io/";
 
 const homePageConfig: {
     baseUrl: string,
-    backgroundImageUrls: Object
+    backgroundImageUrls: Array<string>
 } =
     window.magda_client_homepage_config || {};
 
