@@ -179,6 +179,14 @@ app.get("/server-config.js", function(req, res) {
                     .segment("..")
                     .segment("preview-map")
                     .toString()
+        ),
+        feedbackApiBaseUrl: addTrailingSlash(
+            argv.feedbackApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("feedback")
+                    .segment("user")
+                    .toString()
         )
     };
     res.type("application/javascript");

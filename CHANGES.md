@@ -40,6 +40,8 @@
 *   Added the data.gov.au s3 bucket to allow script sources
 *   Removed API docs from footer temporarily
 *   Changed "request dataset" link in footer to a mailto link
+*   Added the data.gov.au s3 bucket to allowed script sources
+*   Added feedback uri to server config.
 
 ## 0.0.36
 
