@@ -1,13 +1,11 @@
 {
     "name": "@magda/migrator-discussions-db",
-    "version": "0.0.37-0",
+    "version": "0.0.37-RC1",
     "description": "Magda auth's PostgreSQL database.",
     "scripts": {
         "dev": "echo \"No dev mode available, use helm instead.\"",
-        "docker-build-local":
-            "create-docker-context-for-node-component --build --push --tag auto --local",
-        "docker-build-prod":
-            "create-docker-context-for-node-component --build --push --tag auto"
+        "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+        "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
     },
     "author": "",
     "license": "Apache-2.0",
@@ -18,7 +16,7 @@
         }
     },
     "devDependencies": {
-        "@magda/db-migrator": "^0.0.37-0",
-        "@magda/scripts": "^0.0.37-0"
+        "@magda/db-migrator": "^0.0.37-RC1",
+        "@magda/scripts": "^0.0.37-RC1"
     }
 }

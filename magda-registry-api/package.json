@@ -1,6 +1,6 @@
 {
     "name": "@magda/registry-api",
-    "version": "0.0.37-0",
+    "version": "0.0.37-RC1",
     "description": "The registry API.",
     "license": "Apache-2.0",
     "scripts": {
@@ -8,8 +8,7 @@
         "test": "cd .. && sbt registryApi/test",
         "compile": "cd .. && sbt registryApi/compile",
         "docker-build-local": "cd .. && sbt registryApi/dockerBuildAndPush",
-        "docker-build-prod":
-            "cd .. && sbt \"-DdockerHub=true\" registryApi/dockerBuildAndPush",
+        "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" registryApi/dockerBuildAndPush",
         "start": "cd .. && sbt registryApi/run",
         "dev": "cd .. && sbt ~registryApi/relaunch"
     },
