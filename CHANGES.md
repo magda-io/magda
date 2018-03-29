@@ -29,7 +29,7 @@
 *   Fixed an issue that prevents csv-geo-au data source to be opened in national map
 *   responsive background image for homepage
 *   Hidden top `go back to old site` for mobile views
-*   New Homepage Design
+*   New Homepage Design except stories
 *   Open in National Map button now send config via postMessage (except IE <=11)
 *   Fixed web-server crash in in kubernete pod
 *   Removed query language from search api
