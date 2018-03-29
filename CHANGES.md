@@ -1,3 +1,5 @@
+## 0.0.38
+
 ## 0.0.37
 
 *   Make search filter lozenges wrap when too long
