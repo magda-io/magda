@@ -9,7 +9,7 @@ import "./HomePage.css";
 
 import TagLine from "./HomePageComponents/TagLine";
 import Lozenge from "./HomePageComponents/Lozenge";
-import Stories from "./HomePageComponents/Stories";
+// import Stories from "./HomePageComponents/Stories";
 import { Small, Medium } from "../UI/Responsive";
 
 import MediaQuery from "react-responsive";
@@ -105,7 +105,7 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
                     <TagLine taglineText={getTagLine().desktop} />
                     <Lozenge />
                 </Medium>
-                <Stories />
+                {/* <Stories /> */}
             </Container>
         </div>
     );
