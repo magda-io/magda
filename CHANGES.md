@@ -42,6 +42,7 @@
 *   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
+*   feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
 
 ## 0.0.36
 
