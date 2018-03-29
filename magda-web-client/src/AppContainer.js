@@ -28,7 +28,7 @@ class AppContainer extends React.Component {
         this.props.requestWhoAmI();
     }
     renderLink(link) {
-        if (link[1].startsWith("mailto")) {
+        if (link[1].indexOf("mailto") === 0) {
             return <a href={link[1]}>{link[0]}</a>;
         } else if (!regex.test(link[1])) {
             return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
