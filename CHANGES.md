@@ -38,6 +38,7 @@
 *   Made recent searches work from parts deeper than `/`
 *   Brought back recent search feature to new home design & implemented the new design
 *   Added the data.gov.au s3 bucket to allowed script sources
+*   Added feedback uri to server config.
 
 ## 0.0.36
 
