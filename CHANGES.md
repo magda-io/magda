@@ -1,3 +1,5 @@
+## 0.0.38
+
 ## 0.0.37
 
 *   Make search filter lozenges wrap when too long
@@ -43,6 +45,7 @@
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:` 
+*   Added eslint to travis build
 
 ## 0.0.36
 
