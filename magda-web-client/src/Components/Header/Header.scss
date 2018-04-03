@@ -95,11 +95,16 @@
 
     .mobile-nav {
         padding-left: 10px;
-        height: 0;
+        max-height: 0;
         overflow-y: hidden;
-        transition: height 0.55s;
+        transition: max-height 0.55s;
         &.isOpen {
-            height: 200px;
+            /** Issue #726 - You can't animate from height 0 to 
+            auto using transition, we need to use a 
+            max-height greater than what is required.
+            Otherwise, we need to specify the height for 
+            the number of elements (e.g height:160px).**/
+            max-height: 250px;
             border-top: 1px solid rgba(73, 73, 73, 0.15);
         }
     }
