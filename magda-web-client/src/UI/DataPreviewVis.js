@@ -151,7 +151,8 @@ class DataPreviewVis extends Component {
             if (
                 previewData &&
                 previewData.meta &&
-                (previewData.meta.chartFields || previewData.meta.fields)
+                previewData.meta.chartFields &&
+                previewData.meta.fields
             ) {
                 return (
                     <Tabs
@@ -167,9 +168,43 @@ class DataPreviewVis extends Component {
                         </Tab>
                     </Tabs>
                 );
+            } 
+            else if (
+                previewData &&
+                previewData.meta &&
+                previewData.meta.chartFields
+            ) {
+                return (
+                    <Tabs
+                        defaultSelectedIndex={defined(
+                            previewData.meta.chartFields
+                        )}
+                    >
+                        <Tab value="chart" label="Chart">
+                            {this.renderChart(previewData)}
+                        </Tab>
+                    </Tabs>
+                );
+            } 
+            else if (
+                previewData &&
+                previewData.meta &&
+                previewData.meta.fields
+            ) {
+                return (
+                    <Tabs
+                        defaultSelectedIndex={defined(previewData.meta.fields)}
+                    >
+                        <Tab value="table" label="Table">
+                            {this.renderTable(previewData)}
+                        </Tab>
+                    </Tabs>
+                );
+            } 
+            else {
+                return null; //-- requested by Tash: hide the section if no data available
             }
         }
-        return null; //-- requested by Tash: hide the section if no data available
     }
 
     render() {
@@ -206,5 +241,4 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
         dispatch
     );
 };
-
 export default connect(mapStateToProps, mapDispatchToProps)(DataPreviewVis);
