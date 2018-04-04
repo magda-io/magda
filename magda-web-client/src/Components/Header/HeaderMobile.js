@@ -38,9 +38,13 @@ class HeaderMobile extends Component {
                         className="mobile-toggle"
                         onClick={() => this.toggleMenu()}
                     >
-                        <img 
-                            src={`${this.state.isMobileMenuOpen ? mobileMenuClosed : mobileMenu}`} 
-                            alt="open menu" 
+                        <img
+                            src={`${
+                                this.state.isMobileMenuOpen
+                                    ? mobileMenuClosed
+                                    : mobileMenu
+                            }`}
+                            alt="open menu"
                         />
                     </button>
                 </div>
