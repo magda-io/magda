@@ -43,6 +43,7 @@
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
 *   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
+*   DataPreview Table|Chart is hidden if no data is present.
 
 ## 0.0.36
 
