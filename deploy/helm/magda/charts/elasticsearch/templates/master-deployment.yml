@@ -75,7 +75,6 @@ spec:
           value: {{ .Values.client.pluginsInstall | quote }}
         - name: NETWORK_HOST
           value: "0.0.0.0"
-        {{- template "magda.elasticSearchXpackEnv" . }}
         ports:
         - containerPort: 9300
           name: transport

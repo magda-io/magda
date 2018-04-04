@@ -87,14 +87,17 @@ class RecordHandler extends React.Component {
                                         <div className="publisher">
                                             {publisherName}
                                         </div>
-                                        {defined(this.props.distribution
-                                            .updatedDate) && <div className="updated-date">
-                                            Updated{" "}
-                                            {
-                                                this.props.distribution
-                                                    .updatedDate
-                                            }
-                                        </div>}
+                                        {defined(
+                                            this.props.distribution.updatedDate
+                                        ) && (
+                                            <div className="updated-date">
+                                                Updated{" "}
+                                                {
+                                                    this.props.distribution
+                                                        .updatedDate
+                                                }
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -156,22 +159,33 @@ class RecordHandler extends React.Component {
                                                 <span className="separator hidden-sm">
                                                     /
                                                 </span>
-                                                {defined(this.props.dataset
-                                                    .issuedDate) && <span className="updated-date hidden-sm">
-                                                    Created{" "}
-                                                    {this.props.dataset.issuedDate}&nbsp;
-                                                </span>}
+                                                {defined(
+                                                    this.props.dataset
+                                                        .issuedDate
+                                                ) && (
+                                                    <span className="updated-date hidden-sm">
+                                                        Created{" "}
+                                                        {
+                                                            this.props.dataset
+                                                                .issuedDate
+                                                        }&nbsp;
+                                                    </span>
+                                                )}
                                                 <span className="separator hidden-sm">
                                                     /
                                                 </span>
-                                                {defined(this.props.dataset
-                                                    .updatedDate) && <span className="updated-date hidden-sm">
-                                                    Updated{" "}
-                                                    {
-                                                        this.props.dataset
-                                                            .updatedDate
-                                                    }
-                                                </span>}
+                                                {defined(
+                                                    this.props.dataset
+                                                        .updatedDate
+                                                ) && (
+                                                    <span className="updated-date hidden-sm">
+                                                        Updated{" "}
+                                                        {
+                                                            this.props.dataset
+                                                                .updatedDate
+                                                        }
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

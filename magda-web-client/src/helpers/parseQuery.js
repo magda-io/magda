@@ -1,6 +1,7 @@
 // @flow
 import defined from "./defined";
 import { config } from "../config";
+import flatten from "lodash.flatten";
 
 type Query = {
     q: string,
@@ -14,37 +15,46 @@ type Query = {
 };
 
 export default function(query: Query) {
-    let keyword = defined(query.q) ? query.q : "";
-    let dateFrom = defined(query.dateFrom) ? "+from+" + query.dateFrom : "";
-    let dateTo = defined(query.dateTo) ? "+to+" + query.dateTo : "";
-    let publisher = queryToString("+by", query.publisher);
-    let format = queryToString("+as", query.format);
-    let location = queryToLocation(query.regionId, query.regionType);
+    let keywords = queryToString("query", query.q);
+    let dateFroms = queryToString("dateFrom", query.dateFrom);
+    let dateTos = queryToString("dateTo", query.dateTo);
+    let publishers = queryToString("publisher", query.publisher);
+    let formats = queryToString("format", query.format);
+    let locations = queryToString(
+        "region",
+        queryToLocation(query.regionId, query.regionType)
+    );
     let startIndex = defined(query.page)
         ? (query.page - 1) * config.resultsPerPage
         : 0;
 
-    let apiQuery = `${encodeURIComponent(
-        keyword
-    )}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${
-        config.resultsPerPage
-    }`;
-    return apiQuery;
+    let queryArr = flatten([
+        keywords,
+        dateFroms,
+        dateTos,
+        publishers,
+        formats,
+        locations,
+        "start=" + startIndex,
+        "limit=" + config.resultsPerPage
+    ]);
+
+    return queryArr.join("&");
 }
 
-function queryToString(preposition, query) {
-    if (!defined(query)) return "";
-    if (Array.isArray(query)) {
-        return query
-            .map(q => `${preposition}+${encodeURIComponent(q)}`)
-            .join("+");
+function queryToString(paramName, paramValue) {
+    if (!defined(paramValue)) return [];
+
+    if (Array.isArray(paramValue)) {
+        return flatten(
+            paramValue.map(value => queryToString(paramName, value))
+        );
     } else {
-        return `${preposition}+${encodeURIComponent(query)}`;
+        return [`${paramName}=${encodeURIComponent(paramValue)}`];
     }
 }
 
 function queryToLocation(regionId, regiontype) {
-    // what if there are more than one regionId or regionType in the url?
-    if (!defined(regionId) || !defined(regiontype)) return "";
-    return `+in+${regiontype}:${regionId}`;
+    if (!defined(regionId) || !defined(regiontype)) return;
+    return `${regiontype}:${regionId}`;
 }

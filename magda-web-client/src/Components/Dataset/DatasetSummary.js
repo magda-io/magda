@@ -25,7 +25,9 @@ export default class DatasetSummary extends Component {
     render() {
         const dataset = this.props.dataset;
         const publisher = dataset.publisher && dataset.publisher.name;
-        const searchText = defined(this.props.searchText) ? this.props.searchText : '';
+        const searchText = defined(this.props.searchText)
+            ? this.props.searchText
+            : "";
         return (
             <div className="dataset-summary">
                 <h3>

@@ -21,20 +21,24 @@ import { Medium } from "./UI/Responsive";
 
 import "./AppContainer.css";
 
+const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
+
 class AppContainer extends React.Component {
     componentWillMount() {
         this.props.requestWhoAmI();
     }
     renderLink(link) {
-        const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
-        if (!regex.test(link[1])) {
+        if (link[1].indexOf("mailto") === 0) {
+            return <a href={link[1]}>{link[0]}</a>;
+        } else if (!regex.test(link[1])) {
             return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
+        } else {
+            return (
+                <a target="_blank" rel="noopener noreferrer" href={link[1]}>
+                    {link[0]}
+                </a>
+            );
         }
-        return (
-            <a target="_blank" rel="noopener noreferrer" href={link[1]}>
-                {link[0]}
-            </a>
-        );
     }
 
     render() {
