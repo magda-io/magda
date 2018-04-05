@@ -31,7 +31,7 @@
     "ga"
 );
 
-ga("create", "UA-92539508-1", "auto");
+ga("create", "UA-92539508-1", "auto", "terria");
 
 // VWO
 var _vwo_code = (function() {
