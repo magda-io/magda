@@ -1,3 +1,10 @@
+## 0.0.38
+
+*   Will Scroll to top of the page when goes from link to link
+*   Dataset page: Change icon for distribution page
+*   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
+*   DataPreview Table|Chart is hidden if no data is present.
+
 ## 0.0.37
 
 *   Make search filter lozenges wrap when too long
@@ -42,8 +49,8 @@
 *   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
-*   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
-*   DataPreview Table|Chart is hidden if no data is present.
+*   Modified search results `Quality:` text to `Open Data Quality:`
+*   Added eslint to travis build
 
 ## 0.0.36
 

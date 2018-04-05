@@ -33,7 +33,7 @@ function QualityIndicator(props) {
     return (
         <div>
             {" "}
-            Quality: {qualities[rating][0]}{" "}
+            Open Data Quality: {qualities[rating][0]}{" "}
             <span>
                 {qualities.map((q, i) => (
                     <span key={i} style={getBarColor(i)} />
