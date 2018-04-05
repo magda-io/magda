@@ -3,6 +3,7 @@
 *   Will Scroll to top of the page when goes from link to link
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
+*   Empty search won't be saved as recent search item
 
 ## 0.0.37
 
