@@ -61,6 +61,7 @@
 .mobile-header {
     background-color: #ffffff;
     box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
+
     .mobile-header-inner {
         display: flex;
         justify-content: space-between;
@@ -93,19 +94,23 @@
         }
     }
 
+    .mobile-nav-wrapper {
+        overflow: hidden;
+        position: absolute;
+        width: 100%;
+        z-index: 1;
+    }
+
     .mobile-nav {
+        background: #fff;
         padding-left: 10px;
-        max-height: 0;
         overflow-y: hidden;
-        transition: max-height 0.55s;
+        transform: translateY(-100%);
+        transition: transform 0.55s;
+        border-bottom: 1px solid rgba(73, 73, 73, 0.15);
+
         &.isOpen {
-            /** Issue #726 - You can't animate from height 0 to 
-            auto using transition, we need to use a 
-            max-height greater than what is required.
-            Otherwise, we need to specify the height for 
-            the number of elements (e.g height:160px).**/
-            max-height: 250px;
-            border-top: 1px solid rgba(73, 73, 73, 0.15);
+            transform: translateY(0);
         }
     }
     .account-navbar a,
