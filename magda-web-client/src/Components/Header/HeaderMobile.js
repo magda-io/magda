@@ -40,11 +40,16 @@ class HeaderMobile extends Component {
                     </button>
                 </div>
                 <div
-                    className={`${
-                        this.state.isMobileMenuOpen ? "isOpen" : ""
-                    } mobile-nav`}
+                    className="mobile-nav-wrapper"
+                    aria-hidden={!this.state.isMobileMenuOpen}
                 >
-                    <HeaderNav />
+                    <div
+                        className={`${
+                            this.state.isMobileMenuOpen ? "isOpen" : ""
+                        } mobile-nav`}
+                    >
+                        <HeaderNav />
+                    </div>
                 </div>
             </div>
         );
