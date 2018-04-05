@@ -2,6 +2,7 @@
 
 *   Will Scroll to top of the page when goes from link to link
 *   Dataset page: Change icon for distribution page
+*   Adjusted recent search box style
 
 ## 0.0.37
 
