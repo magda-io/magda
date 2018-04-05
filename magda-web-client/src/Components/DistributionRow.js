@@ -8,7 +8,7 @@ import { showTopNotification } from "../actions/topNotificationAction";
 import "./DistributionRow.css";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
-import newTabIcon from "../assets/newtab.svg";
+import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
 const formatIcons = {
     default: defaultFormatIcon
