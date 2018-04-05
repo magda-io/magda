@@ -32,9 +32,10 @@ class FacetHeader extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.isOpen === this.state.buttonActive) {
+        console.log(nextProps.isOpen);
+        if (this.hasFilter() !== this.state.buttonActive) {
             this.setState({
-                buttonActive: nextProps.isOpen || this.hasFilter()
+                buttonActive: this.hasFilter()
             });
         }
     }
