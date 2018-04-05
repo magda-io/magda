@@ -1,4 +1,4 @@
-import { Passport } from "passport";
+import { Authenticator } from "passport";
 import * as express from "express";
 import { Router } from "express";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -10,7 +10,7 @@ import { redirectOnSuccess, redirectOnError } from "./redirect";
 
 export interface CkanOptions {
     authorizationApi: ApiClient;
-    passport: Passport;
+    passport: Authenticator;
     externalAuthHome: string;
 }
 
