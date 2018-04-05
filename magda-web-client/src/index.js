@@ -13,6 +13,7 @@ import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
 import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
+import ScrollToTop from "./helpers/ScrollToTop";
 
 // eslint-disable-next-line
 const loggerMiddleware = createLogger();
@@ -51,7 +52,9 @@ ReactDOM.render(
     <Provider store={store}>
         <BrowserRouter>
             <GAListener>
-                <Route path="/" component={AppContainer} />
+                <ScrollToTop>
+                    <Route path="/" component={AppContainer} />
+                </ScrollToTop>
             </GAListener>
         </BrowserRouter>
     </Provider>,
