@@ -1,5 +1,7 @@
 ## 0.0.38
 
+*   Will Scroll to top of the page when goes from link to link
+
 ## 0.0.37
 
 *   Make search filter lozenges wrap when too long
