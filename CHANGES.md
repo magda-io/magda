@@ -7,6 +7,7 @@
 *   Dataset page: Change icon for distribution page
 *   Empty search won't be saved as recent search item
 *   Adjusted recent search box style
+*   Added delete button to recent search box
 
 ## 0.0.37
 
