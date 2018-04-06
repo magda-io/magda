@@ -1,5 +1,6 @@
 ## 0.0.38
 
+*   When closed, hamburger menu on mobile switches to a X
 *   Will Scroll to top of the page when goes from link to link
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
