@@ -44,15 +44,18 @@ class DistributionDetails extends Component {
         ) : (
             ""
         );
-        const accessText = distribution.accessUrl ? (
+        const accessText = distribution.accessURL ? (
             <span>
                 This dataset can be accessed from: <br />{" "}
-                <a href={distribution.accessUrl}>{distribution.accessUrl}</a>
+                <a href={distribution.accessURL}>{distribution.accessURL}</a>
             </span>
         ) : (
             ""
         );
-        return [downloadText, accessText];
+        const items = [];
+        if(downloadText) items.push(downloadText);
+        if(accessText) items.push(accessText);
+        return items;
     }
 
     render() {
