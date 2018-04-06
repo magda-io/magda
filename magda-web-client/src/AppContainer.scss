@@ -26,6 +26,9 @@
     }
     .copyright {
         text-align: right;
+        @media (max-width: $small) {
+            padding-top: 50px;
+        }
         img {
             height: 40px;
             width: auto;
@@ -35,7 +38,7 @@
             /* ./index.scss defines a border-bottom, this overrides that */
             border-bottom-style: none;
         }
-        
+
         a:hover {
             /* ./index.scss defines a background-color, this overrides that */
             background-color: transparent;

@@ -12,7 +12,10 @@
 
 .feedback-form {
     z-index: 999;
-    position: fixed;
+    text-align: right;
+    @media (min-width: $small) {
+        position: fixed;
+    }
     right: 24px;
     bottom: 24px;
 
