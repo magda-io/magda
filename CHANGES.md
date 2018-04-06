@@ -6,6 +6,7 @@
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
 *   Empty search won't be saved as recent search item
+*   Stopped filters from disappearing when search is submitted
 
 ## 0.0.37
 
