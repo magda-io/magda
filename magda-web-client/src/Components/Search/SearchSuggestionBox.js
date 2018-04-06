@@ -168,7 +168,6 @@ class SearchSuggestionBox extends Component {
     }
 
     onSearchItemClick(e, item: searchDataType) {
-        debugger;
         e.preventDefault();
         const qStr = queryString.stringify(item.data);
         this.props.history.push(`/search?${qStr}`);
