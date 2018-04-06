@@ -1,7 +1,11 @@
 ## 0.0.38
 
+*   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
+*   When closed, hamburger menu on mobile switches to a X
 *   Will Scroll to top of the page when goes from link to link
+*   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
+*   Empty search won't be saved as recent search item
 *   Adjusted recent search box style
 
 ## 0.0.37
@@ -48,7 +52,6 @@
 *   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
-*   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
 
 ## 0.0.36
