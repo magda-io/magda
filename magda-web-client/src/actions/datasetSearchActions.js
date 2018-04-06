@@ -44,7 +44,6 @@ export function resetDatasetSearch(): SearchAction {
 export function fetchSearchResults(query: string): Store {
     return (dispatch: Dispatch) => {
         let url: string = config.searchApiUrl + `datasets?${query}`;
-        dispatch(requestResults(query));
         return fetch(url)
             .then((response: Object) => {
                 if (response.status === 200) {

@@ -45,20 +45,6 @@ const datasetSearchReducer = (
     action: SearchAction
 ) => {
     switch (action.type) {
-        case "REQUEST_RESULTS":
-            return Object.assign({}, state, {
-                isFetching: true,
-                error: null,
-                apiQuery: action.apiQuery && action.apiQuery,
-                temporalRange: initialData.temporalRange,
-                publisherOptions: initialData.publisherOptions,
-                formatOptions: initialData.formatOptions,
-                activePublishers: initialData.activePublishers,
-                activeRegion: initialData.activeRegion,
-                activeDateFrom: initialData.activeDateFrom,
-                activeDateTo: initialData.activeDateTo,
-                activeFormats: initialData.activeFormats
-            });
         case "FETCH_ERROR":
             return Object.assign({}, state, {
                 isFetching: false,
