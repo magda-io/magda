@@ -136,6 +136,7 @@ class SearchSuggestionBox extends Component {
     saveRecentSearch(newProps) {
         const searchData = this.createSearchDataFromProps(newProps);
         if (!searchData) return;
+        if (!searchData.data.q || !searchData.data.q.trim()) return;
         const recentSearches = this.insertItemIntoLocalData(
             "recentSearches",
             searchData

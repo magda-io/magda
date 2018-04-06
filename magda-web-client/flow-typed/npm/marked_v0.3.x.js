@@ -165,5 +165,5 @@ type marked$Marked = {
 };
 
 declare module marked {
-    declare export default marked$Marked
+    declare export default marked$Marked;
 }
