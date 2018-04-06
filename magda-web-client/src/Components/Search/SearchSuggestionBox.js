@@ -9,6 +9,7 @@ import MarkdownViewer from "../../UI/MarkdownViewer";
 import { Small, Medium } from "../../UI/Responsive";
 import "./SearchSuggestionBox.css";
 import recentSearchIcon from "../../assets/updated.svg";
+import closeIcon from "../../assets/mobile-menu-close.svg";
 
 type searchDataType = {
     name: ?string,
@@ -66,6 +67,23 @@ class SearchSuggestionBox extends Component {
         });
         items.unshift(searchData);
         if (limit && limit >= 1) items = items.slice(0, limit);
+        try {
+            window.localStorage.setItem(key, JSON.stringify(items));
+            return items;
+        } catch (e) {
+            console.log(
+                `Failed to save search save data '${key}' to local storage: ${
+                    e.message
+                }`
+            );
+            return [];
+        }
+    }
+
+    deleteItemFromLocalData(key, idx) {
+        if (!window.localStorage) return [];
+        let items = this.retrieveLocalData(key);
+        items.splice(idx, 1);
         try {
             window.localStorage.setItem(key, JSON.stringify(items));
             return items;
@@ -150,12 +168,22 @@ class SearchSuggestionBox extends Component {
     }
 
     onSearchItemClick(e, item: searchDataType) {
+        debugger;
         e.preventDefault();
         const qStr = queryString.stringify(item.data);
         this.props.history.push(`/search?${qStr}`);
         this.setState({
             isMouseOver: false
         });
+    }
+
+    onDeleteItemClick(e, idx) {
+        e.preventDefault();
+        const recentSearches = this.deleteItemFromLocalData(
+            "recentSearches",
+            idx
+        );
+        this.setState({ recentSearches });
     }
 
     onMouseOver() {
@@ -211,30 +239,37 @@ class SearchSuggestionBox extends Component {
                         <h5>Recent Searches</h5>
                     </Medium>
                     {filteredRecentSearches.map((item, idx) => (
-                        <button
-                            key={idx}
-                            className="mui-btn mui-btn--flat"
-                            onClick={e => this.onSearchItemClick(e, item)}
-                        >
-                            <img
-                                className="recent-item-icon"
-                                src={recentSearchIcon}
-                                alt="recent search item"
-                            />
-                            <Medium>
-                                <MarkdownViewer
-                                    markdown={this.createSearchItemLabelText(
-                                        item
-                                    )}
-                                    truncate={false}
+                        <div key={idx} className="search-item-container">
+                            <button
+                                className="mui-btn mui-btn--flat search-item-main-button"
+                                onClick={e => this.onSearchItemClick(e, item)}
+                            >
+                                <img
+                                    className="recent-item-icon"
+                                    src={recentSearchIcon}
+                                    alt="recent search item"
                                 />
-                            </Medium>
-                            <Small>
-                                <div className="recent-item-content">
-                                    {item.data.q ? item.data.q.trim() : ""}
-                                </div>
-                            </Small>
-                        </button>
+                                <Medium>
+                                    <MarkdownViewer
+                                        markdown={this.createSearchItemLabelText(
+                                            item
+                                        )}
+                                        truncate={false}
+                                    />
+                                </Medium>
+                                <Small>
+                                    <div className="recent-item-content">
+                                        {item.data.q ? item.data.q.trim() : ""}
+                                    </div>
+                                </Small>
+                            </button>
+                            <button
+                                className="search-item-delete-button"
+                                onClick={e => this.onDeleteItemClick(e, idx)}
+                            >
+                                <img alt="delete search item" src={closeIcon} />
+                            </button>
+                        </div>
                     ))}
                 </div>
             </div>
