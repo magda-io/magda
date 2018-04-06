@@ -21,45 +21,9 @@ class DataPreviewMap extends Component {
             isInitLoading: true,
             isMapLoading: false,
             isMapPreviewAvailable: false,
-            selectedDistribution: null
         };
         this.onIframeMessageReceived = this.onIframeMessageReceived.bind(this);
         this.iframeRef = null;
-    }
-
-    createStateFromProps(props) {
-        this.iframeRef = null;
-
-        const { identifier } = props.dataset;
-        if (identifier === "") {
-            this.setState({
-                isInitLoading: true,
-                isMapLoading: false,
-                isMapPreviewAvailable: false,
-                selectedDistribution: null
-            });
-            return;
-        }
-        const selectedDistribution = this.determineDistribution(props);
-        if (!selectedDistribution) {
-            this.setState({
-                isInitLoading: false,
-                isMapPreviewAvailable: false,
-                selectedDistribution: null
-            });
-            return;
-        } else {
-            this.setState({
-                isInitLoading: false,
-                isMapLoading: true,
-                isMapPreviewAvailable: true,
-                selectedDistribution: selectedDistribution
-            });
-        }
-    }
-
-    componentWillMount() {
-        this.createStateFromProps(this.props);
     }
 
     componentDidMount() {
@@ -70,21 +34,16 @@ class DataPreviewMap extends Component {
         window.removeEventListener("message", this.onIframeMessageReceived);
     }
 
-    componentWillReceiveProps(props) {
-        this.createStateFromProps(props);
-    }
-
     createCatalogItemFromDistribution() {
         return {
             initSources: [
                 {
                     catalog: [
                         {
-                            name: this.state.selectedDistribution.title,
+                            name: this.props.distribution.title,
                             type: "magda-item",
                             url: "/",
-                            distributionId: this.state.selectedDistribution
-                                .identifier,
+                            distributionId: this.props.distribution.identifier,
                             isEnabled: true,
                             zoomOnEnable: true
                         }
@@ -93,41 +52,6 @@ class DataPreviewMap extends Component {
                 }
             ]
         };
-    }
-
-    determineDistribution(props) {
-        const distributions = props.dataset.distributions;
-        let dataSourcePreference = props.dataset.dataSourcePreference;
-        if (!dataSourcePreference || !dataSourcePreference.length)
-            dataSourcePreference = defaultDataSourcePreference;
-        dataSourcePreference = dataSourcePreference.map(item =>
-            item.toLowerCase()
-        );
-        if (!distributions || !distributions.length) return null;
-        let selectedDis = null,
-            perferenceOrder = -1;
-        distributions
-            .filter(
-                item =>
-                    (item.linkStatusAvailable && item.linkActive) ||
-                    !item.linkStatusAvailable
-            )
-            .forEach(dis => {
-                const format = dis.format.toLowerCase();
-                const distributionPerferenceOrder = dataSourcePreference.indexOf(
-                    format
-                );
-                if (distributionPerferenceOrder === -1) return;
-                if (
-                    perferenceOrder === -1 ||
-                    distributionPerferenceOrder < perferenceOrder
-                ) {
-                    perferenceOrder = distributionPerferenceOrder;
-                    selectedDis = dis;
-                    return;
-                }
-            });
-        return selectedDis;
     }
 
     onIframeMessageReceived(e) {
@@ -184,7 +108,7 @@ class DataPreviewMap extends Component {
             iframe = (
                 <div style={{ position: "relative" }}>
                     <DataPreviewMapOpenInNationalMapButton
-                        distribution={this.state.selectedDistribution}
+                        distribution={this.props.distribution}
                         style={{
                             position: "absolute",
                             right: "10px",
@@ -196,7 +120,7 @@ class DataPreviewMap extends Component {
                     />
                     <Medium>
                         <iframe
-                            title={this.state.selectedDistribution.title}
+                            title={this.props.distribution.title}
                             width="100%"
                             height="420px"
                             frameBorder="0"
@@ -214,7 +138,7 @@ class DataPreviewMap extends Component {
                     </Medium>
                     <Small>
                         <iframe
-                            title={this.state.selectedDistribution.title}
+                            title={this.props.distribution.title}
                             width="100%"
                             height="200px"
                             frameBorder="0"
@@ -253,8 +177,7 @@ class DataPreviewMap extends Component {
 }
 
 DataPreviewMap.propTypes = {
-    dataset: PropTypes.object,
-    dataSourcePreference: PropTypes.arrayOf(PropTypes.string),
+    distribution: PropTypes.object,
     onLoadingStart: PropTypes.func,
     onLoadingEnd: PropTypes.func
 };
