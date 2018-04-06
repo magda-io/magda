@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
-import isEqual from "lodash.isequal";
 import queryString from "query-string";
 import getDateString from "../../helpers/getDateString";
 import MarkdownViewer from "../../UI/MarkdownViewer";
@@ -62,9 +61,7 @@ class SearchSuggestionBox extends Component {
     ) {
         if (!window.localStorage) return [];
         let items = this.retrieveLocalData(key);
-        items = items.filter(item => {
-            return !isEqual(item.data, searchData.data);
-        });
+        items = items.filter(item => item.data.q !== searchData.data.q);
         items.unshift(searchData);
         if (limit && limit >= 1) items = items.slice(0, limit);
         try {
