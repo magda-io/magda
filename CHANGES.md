@@ -8,6 +8,7 @@
 *   Empty search won't be saved as recent search item
 *   Adjusted recent search box style
 *   Added delete button to recent search box
+*   Same search text with different filters will be considered as same searches
 
 ## 0.0.37
 
