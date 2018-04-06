@@ -145,16 +145,20 @@ class DistributionRow extends Component {
 
                         <div className="mui-col-md-11">
                             <div className="distribution-row-link">
-                                {
-                                    (!distribution.downloadURL && distribution.accessURL) ?
-                                    (
-                                        <div>{distribution.title}({distribution.format})</div>
-                                    ):(
-                                        <Link to={distributionLink}>
-                                            {distribution.title}({distribution.format})
-                                        </Link>
-                                    )
-                                }
+                                {!distribution.downloadURL &&
+                                distribution.accessURL ? (
+                                    <div>
+                                        {distribution.title}({
+                                            distribution.format
+                                        })
+                                    </div>
+                                ) : (
+                                    <Link to={distributionLink}>
+                                        {distribution.title}({
+                                            distribution.format
+                                        })
+                                    </Link>
+                                )}
                             </div>
 
                             <div className="distribution-row-link-license">

@@ -53,8 +53,8 @@ class DistributionDetails extends Component {
             ""
         );
         const items = [];
-        if(downloadText) items.push(downloadText);
-        if(accessText) items.push(accessText);
+        if (downloadText) items.push(downloadText);
+        if (accessText) items.push(accessText);
         return items;
     }
 
