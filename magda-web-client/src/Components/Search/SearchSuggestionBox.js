@@ -273,7 +273,7 @@ class SearchSuggestionBox extends Component {
     }
 }
 
-SearchSuggestionBox.PropTypes = {
+SearchSuggestionBox.propTypes = {
     searchText: PropTypes.string
 };
 

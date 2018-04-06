@@ -202,7 +202,7 @@ class DistributionRow extends Component {
     }
 }
 
-DistributionRow.PropTypes = {
+DistributionRow.propTypes = {
     datasetId: PropTypes.string,
     distribution: PropTypes.object
 };
