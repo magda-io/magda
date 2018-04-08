@@ -12,6 +12,16 @@ import DataPreviewTable from "./DataPreviewTable";
 import { Medium } from "./Responsive";
 import "./DataPreviewVis.css";
 
+const TabItem = (val, itm, act) => {
+    return(
+      {
+        value: val,
+        item: itm,
+        action: act
+      }
+    );
+}
+
 class DataPreviewVis extends Component {
     constructor(props) {
         super(props);
@@ -137,6 +147,23 @@ class DataPreviewVis extends Component {
         return <DataPreviewTable data={previewData} />;
     }
 
+    renderTab(previewData, tab){
+        const tabs = tab.map((item, i) =>
+            <Tab key={i} value={item.value} label={item.label}>
+                {item.action}
+            </Tab>
+        );
+
+        return (
+            <Tabs
+                defaultSelectedIndex={0}
+            >
+            {console.warn("DEBUG   : " + tabs)}
+            {tabs}
+            </Tabs>
+        );
+    }
+
     renderByState() {
         if (this.props.error) return <div>Preview errored!</div>;
         if (this.props.isFetching) return <div>Preview is loading...</div>;
@@ -154,53 +181,42 @@ class DataPreviewVis extends Component {
                 previewData.meta.chartFields &&
                 previewData.meta.fields
             ) {
+                console.warn('[DEBUG]   :  SHOW ALL TABS')
                 return (
-                    <Tabs
-                        defaultSelectedIndex={defined(
-                            previewData.meta.chartFields
-                        )}
-                    >
-                        <Tab value="table" label="Table">
-                            {this.renderTable(previewData)}
-                        </Tab>
-                        <Tab value="chart" label="Chart">
-                            {this.renderChart(previewData)}
-                        </Tab>
-                    </Tabs>
+                    this.renderTab(
+                        previewData, [
+                            TabItem('chart','Chart',this.renderChart),
+                            TabItem('table','Table',this.renderTable)
+                        ]
+                    )
                 );
-            } 
+            }
             else if (
                 previewData &&
                 previewData.meta &&
                 previewData.meta.chartFields
             ) {
                 return (
-                    <Tabs
-                        defaultSelectedIndex={defined(
-                            previewData.meta.chartFields
-                        )}
-                    >
-                        <Tab value="chart" label="Chart">
-                            {this.renderChart(previewData)}
-                        </Tab>
-                    </Tabs>
+                    this.renderTab(
+                        previewData, [
+                            TabItem('chart','Chart',this.renderChart),
+                        ]
+                    )
                 );
-            } 
+            }
             else if (
                 previewData &&
                 previewData.meta &&
                 previewData.meta.fields
             ) {
                 return (
-                    <Tabs
-                        defaultSelectedIndex={defined(previewData.meta.fields)}
-                    >
-                        <Tab value="table" label="Table">
-                            {this.renderTable(previewData)}
-                        </Tab>
-                    </Tabs>
+                    this.renderTab(
+                        previewData, [
+                            TabItem('table','Table',this.renderTable)
+                        ]
+                    )
                 );
-            } 
+            }
             else {
                 return null; //-- requested by Tash: hide the section if no data available
             }
