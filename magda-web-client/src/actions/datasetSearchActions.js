@@ -10,10 +10,14 @@ import type {
     SearchAction
 } from "../helpers/datasetSearch";
 
-export function requestResults(apiQuery: string): SearchAction {
+export function requestResults(
+    apiQuery: string,
+    json: DataSearchJson
+): SearchAction {
     return {
         type: actionTypes.REQUEST_RESULTS,
-        apiQuery
+        apiQuery,
+        json
     };
 }
 
@@ -50,6 +54,10 @@ export function fetchSearchResults(query: string): Store {
                     return response.json();
                 }
                 throw new Error(response.statusText);
+            })
+            .then((json: DataSearchJson) => {
+                dispatch(requestResults(query, json));
+                return json;
             })
             .then((json: DataSearchJson) => {
                 return dispatch(receiveResults(query, json));
