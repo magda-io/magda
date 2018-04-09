@@ -16,6 +16,10 @@
 .searchBox-switcher {
     &.none-home {
         background: rgba(245, 245, 245, 0.8);
+        margin: 10px;
+        @media (min-width: $medium) {
+            margin: 0
+        }
         .searchBox {
             background-color: transparent;
         }
