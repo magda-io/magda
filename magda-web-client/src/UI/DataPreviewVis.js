@@ -12,16 +12,6 @@ import DataPreviewTable from "./DataPreviewTable";
 import { Medium } from "./Responsive";
 import "./DataPreviewVis.css";
 
-const TabItem = (val, itm, act) => {
-    return(
-      {
-        value: val,
-        item: itm,
-        action: act
-      }
-    );
-}
-
 class DataPreviewVis extends Component {
     constructor(props) {
         super(props);
@@ -147,19 +137,20 @@ class DataPreviewVis extends Component {
         return <DataPreviewTable data={previewData} />;
     }
 
-    renderTab(previewData, tab){
-        const tabs = tab.map((item, i) =>
+    /**
+     * Return rendered <Tabs> object with tab items
+     * @param {Array} tabs - Array of tab items
+     */
+    renderTabs( tabs ){
+        const tabitems = tabs.map((item, i) =>
             <Tab key={i} value={item.value} label={item.label}>
                 {item.action}
             </Tab>
         );
 
         return (
-            <Tabs
-                defaultSelectedIndex={0}
-            >
-            {console.warn("DEBUG   : " + tabs)}
-            {tabs}
+            <Tabs defaultSelectedIndex={0}>
+                {tabitems}
             </Tabs>
         );
     }
@@ -175,47 +166,49 @@ class DataPreviewVis extends Component {
             const previewData = this.props.data[
                 this.props.distribution.identifier
             ];
+            // If previewData.meta.fields/chartFields are valid, render table and chart
             if (
                 previewData &&
                 previewData.meta &&
                 previewData.meta.chartFields &&
                 previewData.meta.fields
             ) {
-                console.warn('[DEBUG]   :  SHOW ALL TABS')
-                return (
-                    this.renderTab(
-                        previewData, [
-                            TabItem('chart','Chart',this.renderChart),
-                            TabItem('table','Table',this.renderTable)
-                        ]
-                    )
-                );
+              return (
+                this.renderTabs(
+                  [
+                    TabItem('chart', 'Chart', this.renderChart(previewData)),
+                    TabItem('table', 'Table', this.renderTable(previewData))
+                  ]
+                )
+              );
             }
+            // If previewData.meta.chartFields are valid, render chart
             else if (
                 previewData &&
                 previewData.meta &&
                 previewData.meta.chartFields
             ) {
-                return (
-                    this.renderTab(
-                        previewData, [
-                            TabItem('chart','Chart',this.renderChart),
-                        ]
-                    )
-                );
+              return (
+                this.renderTabs(
+                  [
+                    TabItem('chart', 'Chart', this.renderChart(previewData))
+                  ]
+                )
+              );
             }
+            // If previewData.meta.fields are valid, render table
             else if (
                 previewData &&
                 previewData.meta &&
                 previewData.meta.fields
             ) {
-                return (
-                    this.renderTab(
-                        previewData, [
-                            TabItem('table','Table',this.renderTable)
-                        ]
-                    )
-                );
+              return (
+                this.renderTabs(
+                  [
+                    TabItem('table', 'Table', this.renderTable(previewData))
+                  ]
+                )
+              );
             }
             else {
                 return null; //-- requested by Tash: hide the section if no data available
@@ -257,4 +250,19 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
         dispatch
     );
 };
+
+/**
+ * Encapsulate tab object
+ * @param {string} value 
+ * @param {string} item 
+ * @param {function} action 
+ */
+const TabItem = ( value, item, action ) => {
+    return {
+        value: value,
+        label: item,
+        action: action
+    };
+}
+
 export default connect(mapStateToProps, mapDispatchToProps)(DataPreviewVis);
