@@ -673,7 +673,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             sqls"""(
             |                CASE WHEN
             |                        EXISTS (
-            |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->'distributions')
+            |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->${propertyName})
             |                        )
             |                    THEN(
             |                        select jsonb_set(
