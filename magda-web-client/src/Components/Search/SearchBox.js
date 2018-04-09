@@ -176,18 +176,18 @@ class SearchBox extends Component {
                     <span className="search-input__highlight">
                         {this.getSearchBoxValue()}
                     </span>
+                    <button
+                        onClick={this.onClickSearch}
+                        className="search-btn"
+                        type="button">
+                        <img
+                            src={this.props.isMobile ? searchDark : searchGrey}
+                            alt="search button"
+                        />
+                        <span className="sr-only">submit search</span>
+                    </button>
                 </label>
-                <button
-                    onClick={this.onClickSearch}
-                    className="search-btn"
-                    type="button"
-                >
-                    <img
-                        src={this.props.isMobile ? searchDark : searchGrey}
-                        alt="search button"
-                    />
-                    <span className="sr-only">submit search</span>
-                </button>
+
                 <Small>{suggestionBox}</Small>
             </Form>
         );
