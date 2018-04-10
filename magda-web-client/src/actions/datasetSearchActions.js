@@ -11,13 +11,13 @@ import type {
 } from "../helpers/datasetSearch";
 
 export function requestResults(
-    apiQuery: string,
-    json: DataSearchJson
+    queryObject: Object,
+    apiQuery: string
 ): SearchAction {
     return {
         type: actionTypes.REQUEST_RESULTS,
-        apiQuery,
-        json
+        queryObject,
+        apiQuery
     };
 }
 
@@ -45,19 +45,16 @@ export function resetDatasetSearch(): SearchAction {
     };
 }
 
-export function fetchSearchResults(query: string): Store {
+export function fetchSearchResults(query: string, queryObject: Object): Store {
     return (dispatch: Dispatch) => {
         let url: string = config.searchApiUrl + `datasets?${query}`;
+        dispatch(requestResults(queryObject, query));
         return fetch(url)
             .then((response: Object) => {
                 if (response.status === 200) {
                     return response.json();
                 }
                 throw new Error(response.statusText);
-            })
-            .then((json: DataSearchJson) => {
-                dispatch(requestResults(query, json));
-                return json;
             })
             .then((json: DataSearchJson) => {
                 return dispatch(receiveResults(query, json));
@@ -91,7 +88,7 @@ export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
     const apiQuery = parseQuery(urlQueryObject);
     return (dispatch, getState) => {
         if (shouldFetchSearchResults(getState(), urlQueryObject.q, apiQuery)) {
-            return dispatch(fetchSearchResults(apiQuery));
+            return dispatch(fetchSearchResults(apiQuery, urlQueryObject));
         }
     };
 }

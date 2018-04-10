@@ -46,23 +46,31 @@ const datasetSearchReducer = (
 ) => {
     switch (action.type) {
         case "REQUEST_RESULTS":
+            let queryObject = action.queryObject;
+            console.log(action.apiQuery);
             return Object.assign({}, state, {
                 isFetching: true,
                 error: null,
                 apiQuery: action.apiQuery && action.apiQuery,
                 temporalRange: [
-                    new Date(action.json.temporal.start.date),
-                    new Date(action.json.temporal.end.date)
+                    new Date(queryObject.dateFrom),
+                    new Date(queryObject.dateTo)
                 ],
-                hitCount: action.json.hitCount,
-                datasets: action.json.dataSets,
-                publisherOptions: action.json.query.publishers,
-                formatOptions: action.json.query.formats,
-                activePublishers: initialData.activePublishers,
-                activeRegion: action.json.query.regions,
-                activeDateFrom: action.json.query.dateFrom,
-                activeDateTo: action.json.query.dateTo,
-                activeFormats: action.json.query.formats
+                publisherOptions: initialData.publisherOptions,
+                formatOptions: initialData.formatOptions,
+                activePublishers: queryObject.publisher
+                    ? queryObject.publisher
+                    : initialData.activePublishers,
+                activeRegions: initialData.activeRegion,
+                activeDateFrom: queryObject.dateFrom
+                    ? queryObject.dateFrom
+                    : initialData.activeDateFrom,
+                activeDateTo: queryObject.dateTo
+                    ? queryObject.activeDateTo
+                    : initialData.activeDateTo,
+                activeFormats: queryObject.format
+                    ? queryObject.format
+                    : initialData.activeFormats
             });
         case "FETCH_ERROR":
             return Object.assign({}, state, {
@@ -134,7 +142,6 @@ const datasetSearchReducer = (
 
             let activeRegion: Region =
                 query.regions[0] || initialData.activeRegion;
-
             return Object.assign({}, state, {
                 isFetching: false,
                 apiQuery: action.apiQuery && action.apiQuery,
