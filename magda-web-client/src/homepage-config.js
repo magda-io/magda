@@ -33,8 +33,8 @@ window.magda_client_homepage_config = {
     ]
 };
 
-(function(){
-    var backgroundImgs=[
+(function() {
+    var backgroundImgs = [
         [
             "twenty-1440w.jpg",
             "twenty-720w.jpg",
@@ -43,12 +43,7 @@ window.magda_client_homepage_config = {
             "twenty-2160w.jpg",
             "twenty-2880w.jpg"
         ],
-        [
-            "pool-1440w.jpg",
-            "pool-1080w.jpg",
-            "pool-720w.jpg",
-            "pool-0w.jpg"
-        ]
+        ["pool-1440w.jpg", "pool-1080w.jpg", "pool-720w.jpg", "pool-0w.jpg"]
     ];
     var lozenges = [
         {
@@ -63,7 +58,10 @@ window.magda_client_homepage_config = {
         }
     ];
 
-    var idx = (new Date()).getDate()%2; //--- image keep same for the day
-    if(backgroundImgs[idx]) window.magda_client_homepage_config.backgroundImageUrls = backgroundImgs[idx];
-    if(lozenges[idx]) window.magda_client_homepage_config.Lozenge = lozenges[idx];
+    var idx = new Date().getDate() % 2; //--- image keep same for the day
+    if (backgroundImgs[idx])
+        window.magda_client_homepage_config.backgroundImageUrls =
+            backgroundImgs[idx];
+    if (lozenges[idx])
+        window.magda_client_homepage_config.Lozenge = lozenges[idx];
 })();
