@@ -139,7 +139,9 @@ class DistributionRow extends Component {
                                 <ReactTooltip />
                                 <img
                                     className="format-icon"
-                                    src={formatIcons[this.determineFormatIcon()]}
+                                    src={
+                                        formatIcons[this.determineFormatIcon()]
+                                    }
                                     alt="format icon"
                                     data-tip={this.determineFormatIcon()}
                                     data-place="top"
