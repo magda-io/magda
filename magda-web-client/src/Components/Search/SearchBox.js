@@ -146,7 +146,7 @@ class SearchBox extends Component {
                 onChange={this.onSearchTextChange}
                 onKeyPress={this.handleSearchFieldEnterKeyPress}
                 autoComplete="off"
-                ref='searchInputField'
+                ref="searchInputField"
                 onFocus={() => this.setState({ isFocus: true })}
                 onBlur={() =>
                     this.setState({
