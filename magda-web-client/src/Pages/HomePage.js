@@ -105,7 +105,7 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
                     <TagLine taglineText={getTagLine().desktop} />
                     <Lozenge />
                 </Medium>
-                {/* <Stories /> */}
+                {/*<Stories />*/}
             </Container>
         </div>
     );
