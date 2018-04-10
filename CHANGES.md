@@ -6,6 +6,7 @@
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
 *   Empty search won't be saved as recent search item
+*   Added loading spinner for preview map.
 *   Fixed an issue that accessURL won't be displayed on distribution page.
 *   Will not show distribution page if only accessURL is available.
 *   Fixed an issue that registry excludes linking aspects when there are no links
