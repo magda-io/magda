@@ -6,6 +6,7 @@
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
 *   Empty search won't be saved as recent search item
+*   Added loading spinner for preview map.
 
 ## 0.0.37
 
