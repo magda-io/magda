@@ -28,7 +28,6 @@ class DataPreviewVis extends Component {
         };
     }
 
-
     componentWillMount() {
         if (this.props.distribution) {
             this.props.fetchPreviewData(this.props.distribution);
@@ -42,36 +41,37 @@ class DataPreviewVis extends Component {
         ) {
             this.props.fetchPreviewData(nextProps.distribution);
         }
-      this.updateDimensions();
+        this.updateDimensions();
     }
 
-    componentDidMount(){
-      window.addEventListener("resize", this.updateDimensions);
-      this.updateDimensions();
+    componentDidMount() {
+        window.addEventListener("resize", this.updateDimensions);
+        this.updateDimensions();
     }
 
     componentWillUnmount() {
         window.removeEventListener("resize", this.updateDimensions);
     }
 
-    updateDimensions(){
-      if (this.chartContainer) {
-          // 1. check screensize
-          const windowWidth = window.innerWidth;
-          let width = 400;
-          if(windowWidth > 992){
-            // big screen, use only half of the container width for chart
-            width = (this.chartContainer.getBoundingClientRect().width)/2  - 48;
-          } else{
-            width = this.chartContainer.getBoundingClientRect().width - 48;
-          }
+    updateDimensions() {
+        if (this.chartContainer) {
+            // 1. check screensize
+            const windowWidth = window.innerWidth;
+            let width = 400;
+            if (windowWidth > 992) {
+                // big screen, use only half of the container width for chart
+                width =
+                    this.chartContainer.getBoundingClientRect().width / 2 - 48;
+            } else {
+                width = this.chartContainer.getBoundingClientRect().width - 48;
+            }
 
-          if (this.state.chartWidth !== width) {
-              this.setState({
-                  chartWidth: width
-              });
-          }
-      }
+            if (this.state.chartWidth !== width) {
+                this.setState({
+                    chartWidth: width
+                });
+            }
+        }
     }
 
     updateChartConfig(id, value) {
@@ -191,7 +191,12 @@ class DataPreviewVis extends Component {
         const bodyRenderResult = this.renderByState();
         if (!bodyRenderResult) return null;
         return (
-            <div className="data-preview-vis" ref={chartContainer => {this.chartContainer = chartContainer;}}>
+            <div
+                className="data-preview-vis"
+                ref={chartContainer => {
+                    this.chartContainer = chartContainer;
+                }}
+            >
                 <h3>Data Preview</h3>
                 {bodyRenderResult}
             </div>
