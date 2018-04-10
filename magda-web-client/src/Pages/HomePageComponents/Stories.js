@@ -15,7 +15,12 @@ class Stories extends Component {
     }
 
     render() {
-        if (!config || !config.homePageConfig || !config.homePageConfig.stories || !config.homePageConfig.stories.length) {
+        if (
+            !config ||
+            !config.homePageConfig ||
+            !config.homePageConfig.stories ||
+            !config.homePageConfig.stories.length
+        ) {
             return null;
         }
         return (
