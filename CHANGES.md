@@ -12,6 +12,8 @@
 *   Handle gracefully when local storage is disabled (for recent search history widget)
 *   Fixed an issue that registry excludes linking aspects when there are no links
 *   Visual adjustments on Homepage & dataset page
+*   Changes on homepage config: different background & lozenge on different day
+*   Allow turn off homepage stories by set stories field to null 
 
 ## 0.0.37
 
