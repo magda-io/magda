@@ -179,7 +179,8 @@ class SearchBox extends Component {
                     <button
                         onClick={this.onClickSearch}
                         className="search-btn"
-                        type="button">
+                        type="button"
+                    >
                         <img
                             src={this.props.isMobile ? searchDark : searchGrey}
                             alt="search button"
