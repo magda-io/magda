@@ -9,6 +9,8 @@
 *   Adjusted recent search box style
 *   Added delete button to recent search box
 *   Same search text with different filters will be considered as same searches
+*   Fixed an issue that accessURL won't be displayed on distribution page.
+*   Will not show distribution page if only accessURL is available.
 
 ## 0.0.37
 
@@ -54,6 +56,7 @@
 *   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
+*   Modified search results `Quality:` text to `Open Data Quality:` 
 *   Added eslint to travis build
 
 ## 0.0.36

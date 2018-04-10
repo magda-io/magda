@@ -50,6 +50,10 @@ const CategoryDetermineConfigItems = [
         category: "html"
     },
     {
+        regex: /^www:/,
+        category: "html"
+    },
+    {
         regex: /jpg|gif|jpeg/,
         category: "image-raster"
     },
@@ -115,11 +119,15 @@ class DistributionRow extends Component {
 
     render() {
         const { datasetId, distribution } = this.props;
-        const distributionLink = `/dataset/${encodeURIComponent(
-            datasetId
-        )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
-            this.props.searchText
-        }`;
+        let distributionLink;
+        if (!distribution.downloadURL && distribution.accessURL)
+            distributionLink = distribution.accessURL;
+        else
+            distributionLink = `/dataset/${encodeURIComponent(
+                datasetId
+            )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
+                this.props.searchText
+            }`;
 
         return (
             <div className="distribution-row mui-row">
@@ -137,9 +145,20 @@ class DistributionRow extends Component {
 
                         <div className="mui-col-md-11">
                             <div className="distribution-row-link">
-                                <Link to={distributionLink}>
-                                    {distribution.title}({distribution.format})
-                                </Link>
+                                {!distribution.downloadURL &&
+                                distribution.accessURL ? (
+                                    <div>
+                                        {distribution.title}({
+                                            distribution.format
+                                        })
+                                    </div>
+                                ) : (
+                                    <Link to={distributionLink}>
+                                        {distribution.title}({
+                                            distribution.format
+                                        })
+                                    </Link>
+                                )}
                             </div>
 
                             <div className="distribution-row-link-license">
