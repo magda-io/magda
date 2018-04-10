@@ -8,6 +8,7 @@
 *   Empty search won't be saved as recent search item
 *   Fixed an issue that accessURL won't be displayed on distribution page.
 *   Will not show distribution page if only accessURL is available.
+*   Fixed an issue that registry excludes linking aspects when there are no links
 *   Visual adjustments on Homepage & dataset page
 
 ## 0.0.37
