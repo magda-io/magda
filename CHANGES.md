@@ -56,6 +56,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:` 
 *   Added eslint to travis build
+*   Created `ISSUE_TEMPLATE.md` file
 
 ## 0.0.36
 
