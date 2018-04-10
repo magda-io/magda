@@ -7,6 +7,9 @@
 *   Dataset page: Change icon for distribution page
 *   Empty search won't be saved as recent search item
 *   Added loading spinner for preview map.
+*   Fixed an issue that accessURL won't be displayed on distribution page.
+*   Will not show distribution page if only accessURL is available.
+*   Visual adjustments on Homepage & dataset page
 
 ## 0.0.37
 
@@ -52,6 +55,7 @@
 *   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
+*   Modified search results `Quality:` text to `Open Data Quality:` 
 *   Added eslint to travis build
 
 ## 0.0.36
