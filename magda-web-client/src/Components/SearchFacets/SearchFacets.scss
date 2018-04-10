@@ -36,12 +36,12 @@
     position: absolute;
     z-index: 1;
     padding: 0 16px;
-    max-width: 100vw;
+    max-width: calc(100vw - 30px);
     &.facet-publisher, &.facet-temporal{
-      left: 0px;
+      left: -10px;
     }
     &.facet-format, &.facet-region{
-      right: -40px;
+      right: -30px;
     }
     @media (min-width: $small) {
         &.facet-region {
