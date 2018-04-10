@@ -64,6 +64,8 @@ class SearchBox extends Component {
      * update only the search text, remove all facets
      */
     updateSearchText(text) {
+        // dismiss keyboard on mobile when new search initiates
+        this.refs.searchInputField.controlEl.blur();
         this.updateQuery({
             q: text,
             publisher: [],
@@ -144,6 +146,7 @@ class SearchBox extends Component {
                 onChange={this.onSearchTextChange}
                 onKeyPress={this.handleSearchFieldEnterKeyPress}
                 autoComplete="off"
+                ref='searchInputField'
                 onFocus={() => this.setState({ isFocus: true })}
                 onBlur={() =>
                     this.setState({
