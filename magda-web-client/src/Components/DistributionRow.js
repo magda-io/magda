@@ -10,6 +10,7 @@ import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
+import ReactTooltip from "react-tooltip";
 const formatIcons = {
     default: defaultFormatIcon
 };
@@ -114,7 +115,7 @@ class DistributionRow extends Component {
                 this.props.distribution.downloadURL
             );
         }
-        return formatIcons[matchedCategory];
+        return matchedCategory;
     }
 
     render() {
@@ -135,10 +136,13 @@ class DistributionRow extends Component {
                     <div className="mui-row">
                         <Medium>
                             <div className="mui-col-sm-1">
+                                <ReactTooltip />
                                 <img
                                     className="format-icon"
-                                    src={this.determineFormatIcon()}
+                                    src={formatIcons[this.determineFormatIcon()]}
                                     alt="format icon"
+                                    data-tip={this.determineFormatIcon()}
+                                    data-place="top"
                                 />
                             </div>
                         </Medium>
