@@ -4,6 +4,7 @@ import { Medium, Small } from "../../UI/Responsive";
 import "./Stories.css";
 import downArrow from "../../assets/downArrow-homepage-more-stories.svg";
 import { CSSTransitionGroup } from "react-transition-group";
+import { config } from "../../config";
 
 class Stories extends Component {
     constructor(props) {
@@ -14,6 +15,9 @@ class Stories extends Component {
     }
 
     render() {
+        if (!config || !config.homePageConfig || !config.homePageConfig.stories || !config.homePageConfig.stories.length) {
+            return null;
+        }
         return (
             <div className="homepage-stories">
                 <Small>
