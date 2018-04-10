@@ -9,6 +9,7 @@
 *   Added loading spinner for preview map.
 *   Fixed an issue that accessURL won't be displayed on distribution page.
 *   Will not show distribution page if only accessURL is available.
+*   Handle gracefully when local storage is disabled (for recent search history widget)
 *   Fixed an issue that registry excludes linking aspects when there are no links
 *   Visual adjustments on Homepage & dataset page
 
