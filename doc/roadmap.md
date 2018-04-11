@@ -2,13 +2,13 @@
 
 This is a _loose_ plan of what we're planning to do in Magda in the future. This is provided mainly so potential contributors can see our direction, and so those who are considering using Magda can see where it's going to go in the future. Please keep in keep in mind that this is not a promise - we could change direction at any time (and have done in the past!), so don't make any plans based on this that you can't change! Get in touch if you want to contribute!
 
-## Current Priorities (next 6 months)
+## Current Priorities Jan - June 2018
 
-~**New Design**: Converting to a new, nicer looking design site-wide, with a focus on usability and simplification.~
+✅ **New Design**: Converting to a new, nicer looking design site-wide, with a focus on usability and simplification.
 
-~**Search Results**: Changing the search page based off analysis of how it's been used on data.gov.au and search.data.gov.au - particularly removing the query language and simplifying the way that facets are used.~
+✅ **Search Results**: Changing the search page based off analysis of how it's been used on data.gov.au and search.data.gov.au - particularly removing the query language and simplifying the way that facets are used.
 
-~**Productionising**: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it's secure and robust.~
+✅ **Productionising**: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it's secure and robust.
 
 **Data Page**: Emphasising visualisation of the data via maps and charts, falling back to tables where visualisation isn't appropriate.
 
