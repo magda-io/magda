@@ -4,9 +4,11 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 ## Current Priorities (next 6 months)
 
-**New Design**: Converting to a new, nicer looking design site-wide, with a focus on usability and simplifcation.
+~**New Design**: Converting to a new, nicer looking design site-wide, with a focus on usability and simplification.~
 
-**Search Results**: Changing the search page based off analysis of how it's been used on data.gov.au and search.data.gov.au - particularly removing the query language and simplifying the way that facets are used.
+~**Search Results**: Changing the search page based off analysis of how it's been used on data.gov.au and search.data.gov.au - particularly removing the query language and simplifying the way that facets are used.~
+
+~**Productionising**: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it's secure and robust.~
 
 **Data Page**: Emphasising visualisation of the data via maps and charts, falling back to tables where visualisation isn't appropriate.
 
@@ -15,8 +17,6 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 **Data Quality**: We currently calculate "data quality" based on an average of how many links work in a dataset and the Tim Berners-Lee 5-star data quality scale, but don't really explain this very well. We're changing this so that it's strictly based on the 5 star scale (broken link = 0 stars, naturally, as it isn't accessible), and making sure we explain this whereever its present.
 
 **Format Sleuther**: Currently we trust the metadata that comes with datasets in relation to their format, but this is incredibly inconsistent. We're developing a sleuther that looks at declared format, file extensions and file contents in order to determine the file type.
-
-**Productionising**: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it's secure and robust.
 
 **Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
 
