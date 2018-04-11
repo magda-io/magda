@@ -260,9 +260,10 @@ class FacetSpec extends BaseSearchApiSpec {
         }
       }
 
+      val UNSPECIFIED = config.getString("strings.unspecifiedWord");
       def getFormats(dataSets: List[DataSet]) = dataSets.map(_.distributions.map(_.format.getOrElse(config.getString("strings.unspecifiedWord"))).groupBy(identity).mapValues(_.size))
 
-      describe("each dataset should be aggregated into a facet unless facet size was too small to accommodate it") {
+      describe("each dataset should be aggregated into a facet unless facet size was too small to accommodate it or facet value is unspecified") {
         it("without query") {
           checkFacetsNoQuery(indexGen = smallIndexGen, facetSizeGen = Gen.choose(10, 100)) { (dataSets: List[DataSet], facetSize: Int) ⇒
             val result = responseAs[SearchResult]
@@ -273,6 +274,7 @@ class FacetSpec extends BaseSearchApiSpec {
 
               withClue(s"With grouped result ${groupedResult}") {
                 groupedResult.mapValues(_.size).foreach {
+                  case (UNSPECIFIED, hitCount) => //--- skip unspecified entry
                   case (facetValue, hitCount) ⇒
                     val option = facet.options.find(_.value.equals(facetValue))
                     withClue(s" and facetValue $facetValue and option $option: ") {
@@ -298,6 +300,7 @@ class FacetSpec extends BaseSearchApiSpec {
               whenever(facetSize == Int.MaxValue && outerResult.strategy.get == MatchAll) {
                 withClue(s"With grouped results ${outerGroupedResults.mapValues(_.size)} and options ${facet.options}") {
                   outerGroupedResults.mapValues(_.size).foreach {
+                    case (UNSPECIFIED, hitCount) => //--- skip unspecified entry
                     case (facetValue, hitCount) ⇒
                       val option = facet.options.find(_.value.equals(facetValue))
                       withClue(s" and option $facetValue: ") {
@@ -323,6 +326,7 @@ class FacetSpec extends BaseSearchApiSpec {
                 whenever(facetSize == Int.MaxValue) {
                   withClue(s"With grouped results ${innerGroupedResult.mapValues(_.size)} ") {
                     innerGroupedResult.mapValues(_.size).foreach {
+                      case (UNSPECIFIED, hitCount) => //--- skip unspecified entry
                       case (facetValue, hitCount) ⇒
                         val option = facet.options.find(_.value.equals(facetValue))
                         withClue(s" and option $option: ") {
