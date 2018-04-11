@@ -56,7 +56,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:` 
 *   Added eslint to travis build
-*   Updated text for homepage articles and renamed files accordingly.
+*   Updated text for homepage articles.
 
 ## 0.0.36
 
