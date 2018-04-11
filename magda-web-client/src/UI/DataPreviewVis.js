@@ -16,6 +16,7 @@ class DataPreviewVis extends Component {
     constructor(props) {
         super(props);
         this.updateChartConfig = this.updateChartConfig.bind(this);
+        this.updateDimensions = this.updateDimensions.bind(this);
         this.state = {
             chartType: "line",
             chartTitle: "",
@@ -40,13 +41,32 @@ class DataPreviewVis extends Component {
         ) {
             this.props.fetchPreviewData(nextProps.distribution);
         }
+        this.updateDimensions();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidMount() {
+        window.addEventListener("resize", this.updateDimensions);
+        this.updateDimensions();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.updateDimensions);
+    }
+
+    updateDimensions() {
         if (this.chartContainer) {
-            const width =
-                this.chartContainer.getBoundingClientRect().width - 48;
-            if (prevState.chartWidth !== width) {
+            // 1. check screensize
+            const windowWidth = window.innerWidth;
+            let width = 400;
+            if (windowWidth > 992) {
+                // big screen, use only half of the container width for chart
+                width =
+                    this.chartContainer.getBoundingClientRect().width / 2 - 48;
+            } else {
+                width = this.chartContainer.getBoundingClientRect().width - 48;
+            }
+
+            if (this.state.chartWidth !== width) {
                 this.setState({
                     chartWidth: width
                 });
@@ -95,13 +115,8 @@ class DataPreviewVis extends Component {
 
             return (
                 <div className="mui-row">
-                    <div className="mui-col-sm-6">
-                        <div
-                            className="data-preview-vis_file-name"
-                            ref={chartContainer => {
-                                this.chartContainer = chartContainer;
-                            }}
-                        >
+                    <div className="mui-col-md-6">
+                        <div className="data-preview-vis_file-name">
                             {fileName}
                         </div>
                         <VegaLite
@@ -111,7 +126,7 @@ class DataPreviewVis extends Component {
                         />
                     </div>
                     <Medium>
-                        <div className="mui-col-sm-6">
+                        <div className="mui-col-md-6">
                             <ChartConfig
                                 chartType={spec.mark}
                                 chartTitle={spec.description}
@@ -176,7 +191,12 @@ class DataPreviewVis extends Component {
         const bodyRenderResult = this.renderByState();
         if (!bodyRenderResult) return null;
         return (
-            <div className="data-preview-vis">
+            <div
+                className="data-preview-vis"
+                ref={chartContainer => {
+                    this.chartContainer = chartContainer;
+                }}
+            >
                 <h3>Data Preview</h3>
                 {bodyRenderResult}
             </div>

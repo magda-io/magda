@@ -37,7 +37,12 @@ class SearchSuggestionBox extends Component {
     }
 
     retrieveLocalData(key): searchDataType {
-        if (!window.localStorage) return [];
+        try {
+            if (!("localStorage" in window) || !window.localStorage) return [];
+        } catch (e) {
+            /// http://crocodillon.com/blog/always-catch-localstorage-security-and-quota-exceeded-errors
+            return [];
+        }
         if (!key || typeof key !== "string")
             throw new Error("Invalid key parameter!");
         try {
