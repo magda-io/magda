@@ -22,7 +22,7 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 **API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
 
-## Near-Term Priorities (next year)
+## Near-Term Priorities June 2018 - infinity
 
 **Exposing Usage to Custodians**: Currently data custodians publish data but have very little idea of how much take-up there is. We want to make it extremely easy for them to see how much their data is being viewed/downloaded.
 
