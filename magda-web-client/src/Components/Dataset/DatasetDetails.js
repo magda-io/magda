@@ -11,6 +11,7 @@ import queryString from "query-string";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
 import { Link } from "react-router-dom";
+import { Small, Medium } from "../../UI/Responsive";
 
 class DatasetDetails extends Component {
     state = {
@@ -29,12 +30,23 @@ class DatasetDetails extends Component {
                 <div className="mui-row">
                     <div className="mui-col-sm-9">
                         <div className="dataset-details-overview">
-                            <DescriptionBox content={dataset.description} />
+                            <Small>
+                                <DescriptionBox
+                                    content={dataset.description}
+                                    truncateLength={200}
+                                />
+                            </Small>
+                            <Medium>
+                                <DescriptionBox
+                                    content={dataset.description}
+                                    truncateLength={500}
+                                />
+                            </Medium>
                         </div>
                         <div className="quality-rating-box">
                             <Link to="/page/dataset-quality">
-                                <span>Open Data Quality: &nbsp;&nbsp;</span>
-                            </Link>
+                                Open Data Quality
+                            </Link>: &nbsp;&nbsp;
                             <StarRating stars={dataset.linkedDataRating} />
                         </div>
                         <TagsBox tags={dataset.tags} />

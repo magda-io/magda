@@ -7,7 +7,7 @@
         align-items: stretch;
     }
     .col-3{
-      width: 32%;
+      width: calc(100%/3 - 8px);
       & > div{
         height: calc(100% - 13px);
       }
@@ -22,7 +22,7 @@
 
 
     .col-2{
-      width: 48%;
+      width: calc(100%/2 - 8px);
       & > div{
         height: calc(100% - 13px);
       }
@@ -61,6 +61,6 @@
 
     .animation-appear.animation-appear-active {
         margin-top: 0px;
-        transition: margin-top 0.5s linear;
+        transition: margin-top 0.65s linear;
     }
 }

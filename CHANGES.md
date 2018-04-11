@@ -6,8 +6,14 @@
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
 *   Empty search won't be saved as recent search item
+*   Added loading spinner for preview map.
 *   Fixed an issue that accessURL won't be displayed on distribution page.
 *   Will not show distribution page if only accessURL is available.
+*   Handle gracefully when local storage is disabled (for recent search history widget)
+*   Fixed an issue that registry excludes linking aspects when there are no links
+*   Visual adjustments on Homepage & dataset page
+*   Changes on homepage config: different background & lozenge on different day
+*   Allow turn off homepage stories by set stories field to null 
 *   Remove 'unspecified' item from publisher & format aggregation
 
 ## 0.0.37
@@ -56,6 +62,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:` 
 *   Added eslint to travis build
+*   Created `ISSUE_TEMPLATE.md` file
 
 ## 0.0.36
 
