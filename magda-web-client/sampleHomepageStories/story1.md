@@ -1,6 +1,6 @@
 ---
 title: Dig into an interactive tax form
-titleImage: Dig-into-an-interactive-tax-form.png
+titleImage: story1.png
 titleUrl: "http://alife-app-test.azurewebsites.net/research/forms/itr"
 ---
 

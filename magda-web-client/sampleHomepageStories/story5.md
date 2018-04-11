@@ -1,6 +1,6 @@
 ---
 title: Open Data Toolkit
-titleImage: Open-Data-Toolkit.png
+titleImage: story5.png
 titleUrl: "https://toolkit.data.gov.au/index.php?title=Main_Page"
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: "Intellectual property in Australia: a visualisation"
-titleImage: Intellectual-property-in-Australia-a-visualisation.png
+titleImage: story4.png
 titleUrl: "https://www.ipaustralia.gov.au/beta/ip-nova"
 ---
 

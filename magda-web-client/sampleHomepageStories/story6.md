@@ -1,6 +1,6 @@
 ---
 title: How do you use public data?
-titleImage: How-do-you-use-public-data.png
+titleImage: story6.png
 titleUrl: "https://data.gov.au/showcase"
 ---
 

@@ -24,11 +24,11 @@ window.magda_client_homepage_config = {
         url: "/search?q=Queensland%20road%20data"
     },
     stories: [
-        "Dig-into-an-interactive-tax-form.md",
-        "WWhat-you-need-to-know-about-using-data.md",
-        "Births-past-and-future.md",
-        "IIntellectual-property-in-Australia-a-visualisation.md",
-        "Open-Data-Toolkit.md",
-        "How-do-you-use-public-data.md"
+        "story1.md",
+        "story2.md",
+        "story3.md",
+        "story4.md",
+        "story5.md",
+        "story6.md"
     ]
 };
