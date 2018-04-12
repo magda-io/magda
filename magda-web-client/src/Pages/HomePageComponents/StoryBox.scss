@@ -34,4 +34,30 @@
         }
     }
 
+
+    @media (max-width: $medium - 1) {
+        .story-box {
+            .markdown {
+                padding: 16px;
+            }
+            h1 {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            margin-bottom: 16px;
+            padding: 0px;
+        }
+
+        .story-title-image {
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        .story-box-2 {
+            .story-title {
+                margin-top: 0px;
+            }
+        }
+    }
+
 }
