@@ -2,13 +2,13 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
-import isEqual from "lodash.isequal";
 import queryString from "query-string";
 import getDateString from "../../helpers/getDateString";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import { Small, Medium } from "../../UI/Responsive";
 import "./SearchSuggestionBox.css";
 import recentSearchIcon from "../../assets/updated.svg";
+import closeIcon from "../../assets/mobile-menu-close.svg";
 
 type searchDataType = {
     name: ?string,
@@ -37,7 +37,12 @@ class SearchSuggestionBox extends Component {
     }
 
     retrieveLocalData(key): searchDataType {
-        if (!window.localStorage) return [];
+        try {
+            if (!("localStorage" in window) || !window.localStorage) return [];
+        } catch (e) {
+            /// http://crocodillon.com/blog/always-catch-localstorage-security-and-quota-exceeded-errors
+            return [];
+        }
         if (!key || typeof key !== "string")
             throw new Error("Invalid key parameter!");
         try {
@@ -61,11 +66,26 @@ class SearchSuggestionBox extends Component {
     ) {
         if (!window.localStorage) return [];
         let items = this.retrieveLocalData(key);
-        items = items.filter(item => {
-            return !isEqual(item.data, searchData.data);
-        });
+        items = items.filter(item => item.data.q !== searchData.data.q);
         items.unshift(searchData);
         if (limit && limit >= 1) items = items.slice(0, limit);
+        try {
+            window.localStorage.setItem(key, JSON.stringify(items));
+            return items;
+        } catch (e) {
+            console.log(
+                `Failed to save search save data '${key}' to local storage: ${
+                    e.message
+                }`
+            );
+            return [];
+        }
+    }
+
+    deleteItemFromLocalData(key, idx) {
+        if (!window.localStorage) return [];
+        let items = this.retrieveLocalData(key);
+        items.splice(idx, 1);
         try {
             window.localStorage.setItem(key, JSON.stringify(items));
             return items;
@@ -136,6 +156,7 @@ class SearchSuggestionBox extends Component {
     saveRecentSearch(newProps) {
         const searchData = this.createSearchDataFromProps(newProps);
         if (!searchData) return;
+        if (!searchData.data.q || !searchData.data.q.trim()) return;
         const recentSearches = this.insertItemIntoLocalData(
             "recentSearches",
             searchData
@@ -155,6 +176,15 @@ class SearchSuggestionBox extends Component {
         this.setState({
             isMouseOver: false
         });
+    }
+
+    onDeleteItemClick(e, idx) {
+        e.preventDefault();
+        const recentSearches = this.deleteItemFromLocalData(
+            "recentSearches",
+            idx
+        );
+        this.setState({ recentSearches });
     }
 
     onMouseOver() {
@@ -210,30 +240,37 @@ class SearchSuggestionBox extends Component {
                         <h5>Recent Searches</h5>
                     </Medium>
                     {filteredRecentSearches.map((item, idx) => (
-                        <button
-                            key={idx}
-                            className="mui-btn mui-btn--flat"
-                            onClick={e => this.onSearchItemClick(e, item)}
-                        >
-                            <img
-                                className="recent-item-icon"
-                                src={recentSearchIcon}
-                                alt="recent search item"
-                            />
-                            <Medium>
-                                <MarkdownViewer
-                                    markdown={this.createSearchItemLabelText(
-                                        item
-                                    )}
-                                    truncate={false}
+                        <div key={idx} className="search-item-container">
+                            <button
+                                className="mui-btn mui-btn--flat search-item-main-button"
+                                onClick={e => this.onSearchItemClick(e, item)}
+                            >
+                                <img
+                                    className="recent-item-icon"
+                                    src={recentSearchIcon}
+                                    alt="recent search item"
                                 />
-                            </Medium>
-                            <Small>
-                                <div className="recent-item-content">
-                                    {item.data.q ? item.data.q.trim() : ""}
-                                </div>
-                            </Small>
-                        </button>
+                                <Medium>
+                                    <MarkdownViewer
+                                        markdown={this.createSearchItemLabelText(
+                                            item
+                                        )}
+                                        truncate={false}
+                                    />
+                                </Medium>
+                                <Small>
+                                    <div className="recent-item-content">
+                                        {item.data.q ? item.data.q.trim() : ""}
+                                    </div>
+                                </Small>
+                            </button>
+                            <button
+                                className="search-item-delete-button"
+                                onClick={e => this.onDeleteItemClick(e, idx)}
+                            >
+                                <img alt="delete search item" src={closeIcon} />
+                            </button>
+                        </div>
                     ))}
                 </div>
             </div>
