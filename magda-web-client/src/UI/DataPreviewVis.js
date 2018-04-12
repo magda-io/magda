@@ -156,18 +156,14 @@ class DataPreviewVis extends Component {
      * Return rendered <Tabs> object with tab items
      * @param {Array} tabs - Array of tab items
      */
-    renderTabs( tabs ){
-        const tabitems = tabs.map((item, i) =>
+    renderTabs(tabs) {
+        const tabitems = tabs.map((item, i) => (
             <Tab key={i} value={item.value} label={item.label}>
                 {item.action}
             </Tab>
-        );
+        ));
 
-        return (
-            <Tabs defaultSelectedIndex={0}>
-                {tabitems}
-            </Tabs>
-        );
+        return <Tabs defaultSelectedIndex={0}>{tabitems}</Tabs>;
     }
 
     renderByState() {
@@ -181,53 +177,17 @@ class DataPreviewVis extends Component {
             const previewData = this.props.data[
                 this.props.distribution.identifier
             ];
-            // If previewData.meta.fields/chartFields are valid, render table and chart
-            if (
-                previewData &&
-                previewData.meta &&
-                previewData.meta.chartFields &&
-                previewData.meta.fields
-            ) {
-              return (
-                this.renderTabs(
-                  [
-                    TabItem('chart', 'Chart', this.renderChart(previewData)),
-                    TabItem('table', 'Table', this.renderTable(previewData))
-                  ]
-                )
-              );
-            }
-            // If previewData.meta.chartFields are valid, render chart
-            else if (
-                previewData &&
-                previewData.meta &&
-                previewData.meta.chartFields
-            ) {
-              return (
-                this.renderTabs(
-                  [
-                    TabItem('chart', 'Chart', this.renderChart(previewData))
-                  ]
-                )
-              );
-            }
-            // If previewData.meta.fields are valid, render table
-            else if (
-                previewData &&
-                previewData.meta &&
-                previewData.meta.fields
-            ) {
-              return (
-                this.renderTabs(
-                  [
-                    TabItem('table', 'Table', this.renderTable(previewData))
-                  ]
-                )
-              );
-            }
-            else {
-                return null; //-- requested by Tash: hide the section if no data available
-            }
+            const meta = (previewData && previewData.meta) || {};
+
+            // Render chart if there's chart fields, table if fields, both if both
+            const tabs = [
+                meta.chartFields &&
+                    TabItem("chart", "Chart", this.renderChart(previewData)),
+                meta.fields &&
+                    TabItem("table", "Table", this.renderTable(previewData))
+            ].filter(x => !!x);
+
+            return tabs.length ? this.renderTabs(tabs) : null;
         }
     }
 
@@ -273,16 +233,16 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
 
 /**
  * Encapsulate tab object
- * @param {string} value 
- * @param {string} item 
- * @param {function} action 
+ * @param {string} value
+ * @param {string} item
+ * @param {function} action
  */
-const TabItem = ( value, item, action ) => {
+const TabItem = (value, item, action) => {
     return {
         value: value,
         label: item,
         action: action
     };
-}
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataPreviewVis);
