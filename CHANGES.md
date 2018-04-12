@@ -19,6 +19,7 @@
 *   Allow turn off homepage stories by set stories field to null 
 *   Added file icon hover tooltip on dataset page
 *   Updated text for homepage articles.
+*   Update Privacy/About/Data Rating pages
 
 ## 0.0.37
 
