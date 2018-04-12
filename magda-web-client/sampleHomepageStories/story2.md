@@ -1,7 +1,7 @@
 ---
 title: What you need to know about using data
 titleImage: story2.png
-titleUrl: "https://spotlessdata.com/t/data-quality/"
+titleUrl: "http://www.w3.org/TR/dwbp/#dataAccess"
 ---
 
-Learn about API use and how to filter by data quality
+Learn about how and why you should use APIs

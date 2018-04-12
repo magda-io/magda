@@ -18,6 +18,7 @@
 *   Changes on homepage config: different background & lozenge on different day
 *   Allow turn off homepage stories by set stories field to null 
 *   Added file icon hover tooltip on dataset page
+*   Updated text for homepage articles.
 
 ## 0.0.37
 
