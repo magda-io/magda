@@ -14,9 +14,24 @@ class Banner extends React.Component {
 
     goBack = event => {
         event.preventDefault();
+
         if (window.location.hostname === "search.data.gov.au") {
+            // Delete all VWO's cookies
+            const cookieNames = document.cookie.split(/=[^;]*(?:;\s*|$)/);
+            // Remove any that match the pattern
+            for (var i = 0; i < cookieNames.length; i++) {
+                if (/^_(vis|vwo).*/.test(cookieNames[i])) {
+                    console.log(cookieNames[i]);
+                    document.cookie =
+                        cookieNames[i] +
+                        "=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;domain=.data.gov.au";
+                }
+            }
+
+            // Add our cookie
             document.cookie = "noPreview=true; path=/; domain=.data.gov.au";
         }
+
         window.location = "https://data.gov.au";
     };
 
