@@ -452,6 +452,50 @@ class RecordsServiceSpec extends ApiSpec {
                     "someLinks" -> JsArray(JsString("source")))))))
         }
       }
+
+
+      it("should not excludes linking aspects when there are no links and dereference=true") { param =>
+        val jsonSchema =
+          """
+            |{
+            |    "$schema": "http://json-schema.org/hyper-schema#",
+            |    "title": "An aspect with an array of links",
+            |    "type": "object",
+            |    "properties": {
+            |        "someLinks": {
+            |            "title": "Link to other records.",
+            |            "type": "array",
+            |            "items": {
+            |                "title": "A link",
+            |                "type": "string",
+            |                "links": [
+            |                    {
+            |                        "href": "/api/v0/registry/records/{$}",
+            |                        "rel": "item"
+            |                    }
+            |                ]
+            |            }
+            |        }
+            |    }
+            |}
+          """.stripMargin
+        val aspect = AspectDefinition("withLinks", "with links", Some(JsonParser(jsonSchema).asJsObject))
+        param.asAdmin(Post("/v0/aspects", aspect)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val source = Record("source", "source", Map("withLinks" -> JsObject("someLinks" -> JsArray())));
+        param.asAdmin(Post("/v0/records", source)) ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Get("/v0/records/source?aspect=withLinks&dereference=true") ~> param.api.routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record].aspects("withLinks") shouldBe JsObject(
+            "someLinks" -> JsArray()
+          )
+        }
+      }
     }
 
     describe("querying by aspect value") {
