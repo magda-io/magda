@@ -124,7 +124,6 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
     termsAggregation(Publisher.id)
       .field("publisher.name.keyword")
       .size(limit)
-      .missing(config.getString("strings.unspecifiedWord"))
       .subAggregations(
         topHitsAggregation("topHits").size(1).sortBy(fieldSort("publisher.identifier")))
   }
@@ -170,7 +169,6 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         .field("distributions.format.keyword_lowercase")
         .size(limit)
         .includeExclude(Seq(), Seq(""))
-        .missing(config.getString("strings.unspecifiedWord"))
         .subAggregations {
           aggregation reverseNested "reverse"
         }
