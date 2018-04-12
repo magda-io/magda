@@ -129,19 +129,12 @@ class FacetSpec extends BaseSearchApiSpec {
       def filter(dataSet: DataSet, facetOption: FacetOption) = {
         val facetValue = reducer(dataSet)
 
-        def matches = facetValue.exists(_.equalsIgnoreCase(facetOption.value))
-
-        if (facetOption.value.equals(config.getString("strings.unspecifiedWord"))) {
-          facetValue.isEmpty || facetValue.forall(_.equals("")) || matches
-        } else {
-          matches
-        }
+        facetValue.exists(_.equalsIgnoreCase(facetOption.value))
       }
 
       def groupResult(dataSets: Seq[DataSet]): Map[String, Set[DataSet]] = {
         dataSets.foldRight(Map[String, Set[DataSet]]()) { (currentDataSet, aggregator) ⇒
-          val reducedRaw = reducer(currentDataSet)
-          val reduced = if (reducedRaw.isEmpty) Set(config.getString("strings.unspecifiedWord")) else reducedRaw
+          val reduced = reducer(currentDataSet)
 
           reduced.foldRight(aggregator) { (string, aggregator) ⇒
             aggregator + (string -> (aggregator.get(string) match {
@@ -260,10 +253,9 @@ class FacetSpec extends BaseSearchApiSpec {
         }
       }
 
-      val UNSPECIFIED = config.getString("strings.unspecifiedWord");
-      def getFormats(dataSets: List[DataSet]) = dataSets.map(_.distributions.map(_.format.getOrElse(config.getString("strings.unspecifiedWord"))).groupBy(identity).mapValues(_.size))
+      def getFormats(dataSets: List[DataSet]) = dataSets.map(_.distributions.flatMap(_.format)).groupBy(identity).mapValues(_.size)
 
-      describe("each dataset should be aggregated into a facet unless facet size was too small to accommodate it or facet value is unspecified") {
+      describe("each dataset should be aggregated into a facet unless facet size was too small to accommodate it") {
         it("without query") {
           checkFacetsNoQuery(indexGen = smallIndexGen, facetSizeGen = Gen.choose(10, 100)) { (dataSets: List[DataSet], facetSize: Int) ⇒
             val result = responseAs[SearchResult]
@@ -274,7 +266,6 @@ class FacetSpec extends BaseSearchApiSpec {
 
               withClue(s"With grouped result ${groupedResult}") {
                 groupedResult.mapValues(_.size).foreach {
-                  case (UNSPECIFIED, hitCount) => //--- skip unspecified entry
                   case (facetValue, hitCount) ⇒
                     val option = facet.options.find(_.value.equals(facetValue))
                     withClue(s" and facetValue $facetValue and option $option: ") {
@@ -300,7 +291,6 @@ class FacetSpec extends BaseSearchApiSpec {
               whenever(facetSize == Int.MaxValue && outerResult.strategy.get == MatchAll) {
                 withClue(s"With grouped results ${outerGroupedResults.mapValues(_.size)} and options ${facet.options}") {
                   outerGroupedResults.mapValues(_.size).foreach {
-                    case (UNSPECIFIED, hitCount) => //--- skip unspecified entry
                     case (facetValue, hitCount) ⇒
                       val option = facet.options.find(_.value.equals(facetValue))
                       withClue(s" and option $facetValue: ") {
@@ -326,7 +316,6 @@ class FacetSpec extends BaseSearchApiSpec {
                 whenever(facetSize == Int.MaxValue) {
                   withClue(s"With grouped results ${innerGroupedResult.mapValues(_.size)} ") {
                     innerGroupedResult.mapValues(_.size).foreach {
-                      case (UNSPECIFIED, hitCount) => //--- skip unspecified entry
                       case (facetValue, hitCount) ⇒
                         val option = facet.options.find(_.value.equals(facetValue))
                         withClue(s" and option $option: ") {
@@ -400,7 +389,7 @@ class FacetSpec extends BaseSearchApiSpec {
                   val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
 
                   withClue("publishers " + publisherLookup) {
-                    facet.options.filterNot(_.value == "Unspecified").foreach { x =>
+                    facet.options.foreach { x =>
                       val matchedPublishers = publisherLookup(x.value.toLowerCase)
                       matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
                     }
@@ -465,7 +454,7 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("format") {
-      def reducer(dataSet: DataSet) = dataSet.distributions.map(_.format.map(_.toLowerCase).getOrElse(config.getString("strings.unspecifiedWord"))).toSet
+      def reducer(dataSet: DataSet) = dataSet.distributions.flatMap(_.format.map(_.toLowerCase)).toSet
       def queryToInt(query: Query) = query.formats.size
 
       def filterQueryGen(dataSets: List[DataSet]) = Generators.smallSet(formatQueryGen(dataSets)).flatMap(formats => Query(formats = formats))
