@@ -14,7 +14,9 @@ class Banner extends React.Component {
 
     goBack = event => {
         event.preventDefault();
-        document.cookie = "noPreview=true; path=/";
+        if (window.location.hostname === "search.data.gov.au") {
+            document.cookie = "noPreview=true; path=/; domain=.data.gov.au";
+        }
         window.location = "https://data.gov.au";
     };
 
