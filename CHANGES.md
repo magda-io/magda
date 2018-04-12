@@ -19,6 +19,7 @@
 *   Allow turn off homepage stories by set stories field to null 
 *   Added file icon hover tooltip on dataset page
 *   Brought back mobile version home page story style to avoid being run into each other
+*   Updated text for homepage articles.
 
 ## 0.0.37
 
