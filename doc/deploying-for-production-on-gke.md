@@ -2,7 +2,10 @@ NOTE: Work in progress... this probably won't work 100% for you. But it's a star
 
 1. Connect to the cluster you want to deploy on with kubectl
 2. Install helm https://github.com/kubernetes/helm/blob/master/docs/install.md
-3. Create secrets: deploy/helm/create-auth-secrets.sh
+3. Create secrets: 
+```bash
+deploy/helm/create-auth-secrets.sh
+```
 4. Find out the latest release version from https://github.com/TerriaJS/magda/releases
 5. Copy deploy/helm/search-data.gov.au and adapt it to create your helm config. Important options:
 
