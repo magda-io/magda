@@ -21,6 +21,7 @@
 *   Added file icon hover tooltip on dataset page
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
+*   Update Privacy/About/Data Rating pages
 
 ## 0.0.37
 
