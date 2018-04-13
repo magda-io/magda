@@ -40,6 +40,12 @@
 
 @import "../variables";
 
+.spinner_container {
+    display: flex;
+    align-items: center;
+    background-color: #f7f8fa;
+}
+
 .sk-cube-grid {
     width: 40px;
     height: 40px;
@@ -60,20 +66,21 @@
     box-sizing: border-box;
     border-radius: 2px;
     float: left;
-    animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+    animation: sk-cubeGridScaleDelay 1.5s infinite ease-in-out;
 }
 
 .sk-cube-grid .sk-cube:nth-child(even) {
     background-color: white;
 }
 .sk-cube-grid .sk-cube1 {
-    animation-delay: 0.2s;
+    // Need one cube with negative animation-delay to make it work on iOS
+    animation-delay: -1.3s;
 }
 .sk-cube-grid .sk-cube2 {
     animation-delay: 0.3s;
 }
 .sk-cube-grid .sk-cube3 {
-    animation-delay: 0.4s;
+    animation-delay: 0.5s;
 }
 .sk-cube-grid .sk-cube4 {
     animation-delay: 0.1s;
