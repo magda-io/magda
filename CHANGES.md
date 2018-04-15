@@ -5,6 +5,8 @@
 *   Will Scroll to top of the page when goes from link to link
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
+*   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
+*   DataPreview Table|Chart is hidden if no data is present.
 *   Empty search won't be saved as recent search item
 *   Added loading spinner for preview map.
 *   Adjusted recent search box style
