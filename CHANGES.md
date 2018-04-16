@@ -5,9 +5,25 @@
 *   Will Scroll to top of the page when goes from link to link
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
+*   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
+*   DataPreview Table|Chart is hidden if no data is present.
 *   Empty search won't be saved as recent search item
+*   Added loading spinner for preview map.
+*   Adjusted recent search box style
+*   Added delete button to recent search box
+*   Same search text with different filters will be considered as same searches
 *   Fixed an issue that accessURL won't be displayed on distribution page.
 *   Will not show distribution page if only accessURL is available.
+*   Handle gracefully when local storage is disabled (for recent search history widget)
+*   Fixed an issue that registry excludes linking aspects when there are no links
+*   Visual adjustments on Homepage & dataset page
+*   Changes on homepage config: different background & lozenge on different day
+*   Allow turn off homepage stories by set stories field to null 
+*   Remove 'unspecified' item from publisher & format aggregation
+*   Added file icon hover tooltip on dataset page
+*   Brought back mobile version home page story style to avoid being run into each other
+*   Updated text for homepage articles.
+*   Update Privacy/About/Data Rating pages
 
 ## 0.0.37
 
@@ -55,6 +71,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:` 
 *   Added eslint to travis build
+*   Created `ISSUE_TEMPLATE.md` file
 
 ## 0.0.36
 

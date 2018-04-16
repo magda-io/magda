@@ -98,19 +98,17 @@
         overflow: hidden;
         position: absolute;
         width: 100%;
-        z-index: -1;
+        z-index: 1;
     }
 
     .mobile-nav {
         background: #fff;
         padding-left: 10px;
         overflow-y: hidden;
-        transform: translateY(-100%);
-        transition: transform 0.55s;
+        height: 0;
         border-bottom: 1px solid rgba(73, 73, 73, 0.15);
-
         &.isOpen {
-            transform: translateY(0);
+            height: auto;
         }
     }
     .account-navbar a,

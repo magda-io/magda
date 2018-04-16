@@ -1,9 +1,7 @@
 ---
 title: Dig into an interactive tax form
 titleImage: story1.png
-titleUrl: "https://www.ato.gov.au/Calculators-and-tools/GST-for-BAS/"
+titleUrl: "http://alife-app-test.azurewebsites.net/research/forms/itr"
 ---
 
-The ATO has put together a fantastic interactive tax form built on the average tax results from 2016. We spent a good part of an hour looking through the interesting findings. What can you find out about yourself in this?
-
-The ATO has put together a fantastic interactive tax form built on the average tax results from 2016. We spent a good part of an hour looking through the interesting findings. What can you find out about yourself in this?
+The Australian Tax Office has created an interactive tax form to demonstrate the changes in tax information from 2000 to 2013. We spent the good part of an hour exploring their insights. What might you learn about how tax refunds have changed over time?

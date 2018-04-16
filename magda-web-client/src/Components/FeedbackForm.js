@@ -135,7 +135,8 @@ class FeedbackForm extends React.Component {
         return (
             <div className="feedback-form-inner">
                 <div className="feedback-form-header">
-                    {`Have feedback on this website? We're all ears`}
+                    <span
+                    >{`Have feedback on this website? We're all ears`}</span>
                     <Button
                         className="close-btn"
                         onClick={() => {
@@ -170,6 +171,7 @@ class FeedbackForm extends React.Component {
                         >
                             Cancel
                         </Button>
+
                         <Button
                             className="send-btn disabled-looking-button"
                             onClick={this.onSubmit}
@@ -182,6 +184,11 @@ class FeedbackForm extends React.Component {
                         </Button>
 
                         <ReactTooltip />
+                        <div className="privacy-link">
+                            <a href="/page/privacy-policy" target="_blank">
+                                Privacy Policy
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
