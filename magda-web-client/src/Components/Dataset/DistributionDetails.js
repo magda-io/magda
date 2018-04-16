@@ -65,7 +65,7 @@ class DistributionDetails extends Component {
                 <div className="row">
                     <div className="distribution-details__body col-sm-8">
                         <div className="distribution-details-overview">
-                            <h3>Overview</h3>
+                            <h2>Overview</h2>
                             <OverviewBox content={distribution.description} />
                             {this.renderLinkText(distribution).length > 0 && (
                                 <div>
@@ -76,7 +76,7 @@ class DistributionDetails extends Component {
                             )}
                         </div>
                         <div className="distribution-details-temporal-coverage">
-                            <h3>Temporal coverage</h3>
+                            <h2>Temporal coverage</h2>
                             <TemporalAspectViewer
                                 data={distribution.temporalCoverage}
                             />

@@ -59,11 +59,7 @@ class DatasetDetails extends Component {
                 <div className="mui-row">
                     <div className="mui-col-sm-12">
                         <div className="dataset-details-files-apis">
-                            <h3 className="clearfix">
-                                <span className="section-heading">
-                                    Files and APIs
-                                </span>
-                            </h3>
+                        <h2 className="section-heading">Files and APIs</h2>
                             <div className="clearfix">
                                 {dataset.distributions.map(s => (
                                     <DistributionRow
@@ -76,7 +72,7 @@ class DatasetDetails extends Component {
                             </div>
                         </div>
                         <div className="dataset-details-source">
-                            <h3 className="section-heading">Data Source</h3>
+                            <h2 className="section-heading">Data Source</h2>
                             <MarkdownViewer
                                 markdown={source}
                                 truncate={false}
@@ -92,9 +88,9 @@ class DatasetDetails extends Component {
                             className="dataset-details-temporal-coverage"
                             style={{ display: "none" }}
                         >
-                            <h3 className="section-heading">
+                            <h2 className="section-heading">
                                 Temporal coverage
-                            </h3>
+                            </h2>
                             <TemporalAspectViewer
                                 data={dataset.temporalCoverage}
                             />
