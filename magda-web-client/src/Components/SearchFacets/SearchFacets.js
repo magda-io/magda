@@ -63,7 +63,7 @@ class SearchFacets extends Component {
 
     renderDesktop() {
         return (
-            <div className="search-facets desktop">
+            <div className="search-facets-desktop">
                 <div className="sub-heading"> Filters </div>
                 {config.facets.map(c => (
                     <div
@@ -89,7 +89,7 @@ class SearchFacets extends Component {
         return (
             <div className="search-facets-mobile">
                 <button
-                    className="filter-toggle-button"
+                    className="filter-toggle-button mui-btn"
                     onClick={this.onToggleFacetOnMobile}
                 >
                     Filter{" "}
@@ -111,6 +111,9 @@ class SearchFacets extends Component {
                             />
                         </div>
                     ))}
+                {this.state.openFacet && (
+                    <div className="mobile-facet-background" />
+                )}
             </div>
         );
     }
