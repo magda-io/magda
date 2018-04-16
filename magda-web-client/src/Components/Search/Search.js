@@ -144,9 +144,6 @@ class Search extends Component {
                     <div className="search">
                         <div className="search__search-body container">
                             {searchText.length > 0 && (
-                                <div className="sub-heading"> Filters </div>
-                            )}
-                            {searchText.length > 0 && (
                                 <SearchFacets
                                     updateQuery={this.updateQuery}
                                     location={this.props.location}
