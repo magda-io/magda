@@ -68,7 +68,6 @@
     border-radius: 2px;
     z-index: 1;
     padding: 0 16px;
-
     @media (max-width: $small) {
         position: fixed;
         left: 5px;
@@ -93,6 +92,18 @@
             left: 0;
         }
     }
+}
+@media (max-width: $small) {
+    .facet-body-buttons {
+        max-height: 200px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
 }
 
 .btn-facet-option {

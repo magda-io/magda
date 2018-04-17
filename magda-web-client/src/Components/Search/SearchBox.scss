@@ -2,7 +2,7 @@
 
 @mixin text() {
     border-bottom: 0;
-    padding: 8px;
+    padding: 0 8px;
     @media (min-width: $medium) {
         font-family: $font-base;
         font-size: 33px;
