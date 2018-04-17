@@ -18,12 +18,13 @@
 *   Fixed an issue that registry excludes linking aspects when there are no links
 *   Visual adjustments on Homepage & dataset page
 *   Changes on homepage config: different background & lozenge on different day
-*   Allow turn off homepage stories by set stories field to null 
+*   Allow turn off homepage stories by set stories field to null
 *   Remove 'unspecified' item from publisher & format aggregation
 *   Added file icon hover tooltip on dataset page
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
 *   Update Privacy/About/Data Rating pages
+*   Removed `box-shadow` style from selected search facets buttons
 
 ## 0.0.37
 
@@ -69,7 +70,7 @@
 *   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
-*   Modified search results `Quality:` text to `Open Data Quality:` 
+*   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
 *   Created `ISSUE_TEMPLATE.md` file
 
