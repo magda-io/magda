@@ -69,7 +69,7 @@ export function shouldFetchSearchResults(
     query: string
 ): boolean {
     const datasetSearch = state.datasetSearch;
-    if (!datasetSearch || !keyword || keyword.length === 0) {
+    if (!datasetSearch || (!keyword && !query)) {
         return false;
     } else if (datasetSearch.isFetching) {
         return false;

@@ -27,6 +27,7 @@
 *   Display all publishers and hide search on publishers page 
 *   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
+*   Hide the * when I click on the Dataset link in header or click through from a Publisher
 
 ## 0.0.37
 

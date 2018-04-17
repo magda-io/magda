@@ -64,6 +64,7 @@ class SearchBox extends Component {
      * update only the search text, remove all facets
      */
     updateSearchText(text) {
+        if (text === "") text = "*";
         // dismiss keyboard on mobile when new search initiates
         this.refs.searchInputField.controlEl.blur();
         this.updateQuery({

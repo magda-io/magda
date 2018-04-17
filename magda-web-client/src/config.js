@@ -68,7 +68,7 @@ export const config = {
         { id: "format", component: Format }
     ],
     headerNavigation: [
-        ["Datasets", "search?q=*"],
+        ["Datasets", "search"],
         ["About", "page/about"],
         ["Publishers", "publishers"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
