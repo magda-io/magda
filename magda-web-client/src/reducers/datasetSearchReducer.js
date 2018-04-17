@@ -11,6 +11,8 @@ import type {
 
 import findIndex from "lodash.findindex";
 import findMatchingObjs from "../helpers/findMatchingObjs";
+import queryFilterFormat from "../helpers/queryFilterFormat";
+import regionToObject from "../helpers/regionToObject";
 
 const initialData = {
     isFetching: false,
@@ -47,7 +49,9 @@ const datasetSearchReducer = (
     switch (action.type) {
         case "REQUEST_RESULTS":
             let queryObject = action.queryObject;
-            console.log(action.apiQuery);
+            let activePub = queryFilterFormat(queryObject.publisher);
+            let activeFormat = queryFilterFormat(queryObject.format);
+            let regionSelected = regionToObject(queryObject);
             return Object.assign({}, state, {
                 isFetching: true,
                 error: null,
@@ -58,19 +62,15 @@ const datasetSearchReducer = (
                 ],
                 publisherOptions: initialData.publisherOptions,
                 formatOptions: initialData.formatOptions,
-                activePublishers: queryObject.publisher
-                    ? queryObject.publisher
-                    : initialData.activePublishers,
-                activeRegions: initialData.activeRegion,
+                activePublishers: activePub,
+                activeRegions: regionSelected,
                 activeDateFrom: queryObject.dateFrom
                     ? queryObject.dateFrom
                     : initialData.activeDateFrom,
                 activeDateTo: queryObject.dateTo
                     ? queryObject.activeDateTo
                     : initialData.activeDateTo,
-                activeFormats: queryObject.format
-                    ? queryObject.format
-                    : initialData.activeFormats
+                activeFormats: activeFormat
             });
         case "FETCH_ERROR":
             return Object.assign({}, state, {
