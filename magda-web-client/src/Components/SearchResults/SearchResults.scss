@@ -1,4 +1,10 @@
 @import "../../variables";
+
+.search-results {
+    @media (max-width: $medium) {
+        padding: 0 8px;
+    }
+}
 .search-results__result {
     background: #fff;
     clear: both;

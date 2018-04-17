@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
+import downArrowDark from "../../assets/downArrowDark.svg";
+
 import "./SearchFacets.css";
 
 class SearchFacets extends Component {
@@ -92,7 +94,7 @@ class SearchFacets extends Component {
                     className="filter-toggle-button mui-btn"
                     onClick={this.onToggleFacetOnMobile}
                 >
-                    Filter{" "}
+                    Filter <img src={downArrowDark} alt="open filter" />
                 </button>
                 {this.state.showFilterOnMobile &&
                     config.facets.map(c => (

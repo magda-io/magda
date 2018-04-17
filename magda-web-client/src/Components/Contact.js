@@ -40,7 +40,7 @@ class Contact extends React.Component {
     render() {
         return (
             <ReactDocumentTitle title={config.appName + " | contact"}>
-                <div className="container contact">
+                <div className="mui-container contact">
                     <h1>
                         Get in contact with the team that runs {config.appName}
                     </h1>

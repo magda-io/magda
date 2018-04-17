@@ -50,6 +50,12 @@
     height: 50px;
     margin: 0;
     background-color: #f7f8fa;
+    img {
+        position: absolute;
+        display: block;
+        right: 0;
+        top: 13px;
+    }
 }
 
 .search-facets-mobile {
