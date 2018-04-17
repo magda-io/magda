@@ -24,6 +24,7 @@
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
 *   Update Privacy/About/Data Rating pages
+*   Display all publishers and hide search on publishers page 
 
 ## 0.0.37
 
