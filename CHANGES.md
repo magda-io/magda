@@ -24,6 +24,7 @@
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
 *   Update Privacy/About/Data Rating pages
+*   If format info is available from sleuther, format sleuther info should be used
 
 ## 0.0.37
 
