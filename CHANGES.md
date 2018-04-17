@@ -24,6 +24,7 @@
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
 *   Update Privacy/About/Data Rating pages
+*   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
 
 ## 0.0.37
