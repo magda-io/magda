@@ -10,7 +10,7 @@
         position: relative;
         width: 45%;
         @media (min-width: $small) {
-          width: auto;
+            width: auto;
         }
     }
     .mui-form {
@@ -36,18 +36,32 @@
     position: absolute;
     z-index: 1;
     padding: 0 16px;
-    max-width: 100vw;
-    &.facet-publisher, &.facet-temporal{
-      left: 0px;
+    max-width: calc(100vw - 30px);
+    &.facet-publisher,
+    &.facet-temporal {
+        left: -10px;
     }
-    &.facet-format, &.facet-region{
-      right: -40px;
+    &.facet-format,
+    &.facet-region {
+        right: -30px;
     }
     @media (min-width: $small) {
         &.facet-region {
             left: 0;
         }
     }
+}
+@media (max-width: $small) {
+    .facet-body-buttons {
+        max-height: 200px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
 }
 
 .btn-facet-option {
