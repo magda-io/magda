@@ -8,7 +8,9 @@
 }
 
 .facet-region.facet-body {
-    width: 460px;
+    @media (min-width: $medium) {
+        width: 460px;
+    }
 }
 
 .facet-option__region-type {

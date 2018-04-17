@@ -100,3 +100,9 @@ a {
 .mui-btn + .mui-btn {
     margin-left: 0;
 }
+
+.other-page .app-container {
+    @media (max-width: $medium) {
+        padding: 0;
+    }
+}
