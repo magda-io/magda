@@ -9,7 +9,7 @@
         margin-right: 8px;
         position: relative;
         width: 45%;
-        @media (min-width: $small) {
+        @media (min-width: $medium) {
             width: auto;
         }
     }
@@ -68,7 +68,7 @@
     border-radius: 2px;
     z-index: 1;
     padding: 0 16px;
-    @media (max-width: $small) {
+    @media (max-width: $medium) {
         position: fixed;
         left: 5px;
         right: 5px;
@@ -76,7 +76,7 @@
         z-index: 10;
     }
 
-    @media (min-width: $small+1) {
+    @media (min-width: $medium+1) {
         width: 460px;
         max-width: 100vw;
         position: absolute;
@@ -93,11 +93,15 @@
         }
     }
 }
-@media (max-width: $small) {
+@media (max-width: $medium) {
     .facet-body-buttons {
-        max-height: 200px;
+        max-height: calc(100vh - 200px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+    }
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 8px;
     }
 }
 
