@@ -3,12 +3,14 @@
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
 *   When closed, hamburger menu on mobile switches to a X
 *   Will Scroll to top of the page when goes from link to link
+*   Made search filter icons consistent in color when they are applied
+*   Modified search results `Quality:` text to `Open Data Quality:` 
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
 *   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
 *   DataPreview Table|Chart is hidden if no data is present.
 *   Empty search won't be saved as recent search item
-*   Added loading spinner for preview map.
+*   Added loading spinner for preview map and dataset visualisation.
 *   Adjusted recent search box style
 *   Added delete button to recent search box
 *   Same search text with different filters will be considered as same searches
@@ -29,6 +31,8 @@
 *   Removed `box-shadow` style from selected search facets buttons
 *   If format info is available from sleuther, format sleuther info should be used
 *   Enable homepage stories and updated homepage config
+*   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
+*   Created `ISSUE_TEMPLATE.md` file
 
 ## 0.0.37
 
@@ -76,7 +80,6 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
-*   Created `ISSUE_TEMPLATE.md` file
 
 ## 0.0.36
 
