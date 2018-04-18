@@ -32,6 +32,8 @@ class FacetHeader extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        // if it has filter and the button is not active
+        // then set it to active
         if (this.hasFilter() !== this.state.buttonActive) {
             this.setState({
                 buttonActive: this.hasFilter()
