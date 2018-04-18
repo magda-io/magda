@@ -28,6 +28,7 @@
 *   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
 *   If format info is available from sleuther, format sleuther info should be used
+*   Enable homepage stories and updated homepage config
 
 ## 0.0.37
 
