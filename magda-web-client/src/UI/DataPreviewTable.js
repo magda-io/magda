@@ -1,6 +1,7 @@
 import React from "react";
 import ReactTable from "react-table";
 import "./ReactTable.css";
+import { Medium, Small } from "./Responsive";
 
 function DataPreviewTable(props) {
     if (!props.data.meta.fields)
@@ -14,11 +15,26 @@ function DataPreviewTable(props) {
     return (
         <div className="clearfix">
             <div className="vis">
-                <ReactTable
-                    minRows={3}
-                    data={props.data.data}
-                    columns={columns}
-                />
+                <Medium>
+                    <ReactTable
+                        minRows={3}
+                        style={{
+                            height: "500px"
+                        }} /* No vert scroll for 10 rows */
+                        data={props.data.data}
+                        columns={columns}
+                    />
+                </Medium>
+                <Small>
+                    <ReactTable
+                        minRows={3}
+                        style={{
+                            height: "350px"
+                        }} /* No vert scroll for 5 rows */
+                        data={props.data.data}
+                        columns={columns}
+                    />
+                </Small>
             </div>
         </div>
     );
