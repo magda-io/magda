@@ -3,6 +3,8 @@
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
 *   When closed, hamburger menu on mobile switches to a X
 *   Will Scroll to top of the page when goes from link to link
+*   Made search filter icons consistent in color when they are applied
+*   Modified search results `Quality:` text to `Open Data Quality:` 
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
 *   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
@@ -28,6 +30,7 @@
 *   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
 *   If format info is available from sleuther, format sleuther info should be used
+*   Created `ISSUE_TEMPLATE.md` file
 
 ## 0.0.37
 
@@ -73,9 +76,7 @@
 *   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
-*   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
-*   Created `ISSUE_TEMPLATE.md` file
 
 ## 0.0.36
 
