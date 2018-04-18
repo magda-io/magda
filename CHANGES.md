@@ -27,6 +27,7 @@
 *   Display all publishers and hide search on publishers page 
 *   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
+*   If format info is available from sleuther, format sleuther info should be used
 
 ## 0.0.37
 

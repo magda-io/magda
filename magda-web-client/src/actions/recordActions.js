@@ -84,7 +84,7 @@ export function fetchDistributionFromRegistry(id: string): Object {
             config.registryApiUrl +
             `records/${encodeURIComponent(
                 id
-            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info`;
+            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info&optionalAspect=dataset-format`;
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {
