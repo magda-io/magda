@@ -154,6 +154,20 @@ class DataPreviewVis extends Component {
         return <DataPreviewTable data={previewData} />;
     }
 
+    /**
+     * Return rendered <Tabs> object with tab items
+     * @param {Array} tabs - Array of tab items
+     */
+    renderTabs(tabs) {
+        const tabitems = tabs.map((item, i) => (
+            <Tab key={i} value={item.value} label={item.label}>
+                {item.action}
+            </Tab>
+        ));
+
+        return <Tabs defaultSelectedIndex={0}>{tabitems}</Tabs>;
+    }
+
     renderByState() {
         if (this.props.error) return <div>Preview errored!</div>;
         if (this.props.isFetching) {
@@ -167,28 +181,18 @@ class DataPreviewVis extends Component {
             const previewData = this.props.data[
                 this.props.distribution.identifier
             ];
-            if (
-                previewData &&
-                previewData.meta &&
-                (previewData.meta.chartFields || previewData.meta.fields)
-            ) {
-                return (
-                    <Tabs
-                        defaultSelectedIndex={defined(
-                            previewData.meta.chartFields
-                        )}
-                    >
-                        <Tab value="table" label="Table">
-                            {this.renderTable(previewData)}
-                        </Tab>
-                        <Tab value="chart" label="Chart">
-                            {this.renderChart(previewData)}
-                        </Tab>
-                    </Tabs>
-                );
-            }
+            const meta = (previewData && previewData.meta) || {};
+
+            // Render chart if there's chart fields, table if fields, both if both
+            const tabs = [
+                meta.chartFields &&
+                    TabItem("chart", "Chart", this.renderChart(previewData)),
+                meta.fields &&
+                    TabItem("table", "Table", this.renderTable(previewData))
+            ].filter(x => !!x);
+
+            return tabs.length ? this.renderTabs(tabs) : null;
         }
-        return null; //-- requested by Tash: hide the section if no data available
     }
 
     render() {
@@ -229,6 +233,20 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
         },
         dispatch
     );
+};
+
+/**
+ * Encapsulate tab object
+ * @param {string} value
+ * @param {string} item
+ * @param {function} action
+ */
+const TabItem = (value, item, action) => {
+    return {
+        value: value,
+        label: item,
+        action: action
+    };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataPreviewVis);

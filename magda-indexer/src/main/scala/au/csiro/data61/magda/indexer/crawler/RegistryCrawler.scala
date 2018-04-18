@@ -28,11 +28,10 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
   def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
 
   def crawl(): Future[Unit] = {
-    lastCrawl match {
-      case Some(crawl) => crawl
-      case None =>
-        lastCrawl = Some(newCrawl())
-        lastCrawl.get
+    if (crawlInProgress) lastCrawl.get 
+    else {
+      lastCrawl = Some(newCrawl())
+      lastCrawl.get
     }
   }
 
