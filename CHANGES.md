@@ -10,7 +10,7 @@
 *   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
 *   DataPreview Table|Chart is hidden if no data is present.
 *   Empty search won't be saved as recent search item
-*   Added loading spinner for preview map.
+*   Added loading spinner for preview map and dataset visualisation.
 *   Adjusted recent search box style
 *   Added delete button to recent search box
 *   Same search text with different filters will be considered as same searches
@@ -76,6 +76,7 @@
 *   Changed "request dataset" link in footer to a mailto link
 *   Added the data.gov.au s3 bucket to allowed script sources
 *   Added feedback uri to server config.
+*   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
 
 ## 0.0.36
