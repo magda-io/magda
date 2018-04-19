@@ -161,6 +161,7 @@ class SearchBox extends Component {
             <SearchSuggestionBox
                 searchText={this.getSearchBoxValue()}
                 isSearchInputFocus={this.state.isFocus}
+                inputRef={this.searchInputFieldRef}
             />
         );
 
