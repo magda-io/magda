@@ -30,6 +30,7 @@
 *   Display all publishers and hide search on publishers page 
 *   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
+*   Hide the * when I click on the Dataset link in header or click through from a Publisher
 *   If format info is available from sleuther, format sleuther info should be used
 *   Enable homepage stories and updated homepage config
 *   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
