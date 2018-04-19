@@ -5,12 +5,12 @@ import { bindActionCreators } from "redux";
 import { fetchPublishersIfNeeded } from "../../actions/publisherActions";
 import ReactDocumentTitle from "react-document-title";
 import PublisherSummary from "./PublisherSummary";
-import Pagination from "../../UI/Pagination";
 import ErrorHandler from "../../Components/ErrorHandler";
 import getPageNumber from "../../helpers/getPageNumber";
 import ProgressBar from "../../UI/ProgressBar";
 import queryString from "query-string";
 import PropTypes from "prop-types";
+import sortBy from "lodash.sortby";
 
 import "./PublishersViewer.css";
 class PublishersViewer extends Component {
@@ -41,19 +41,11 @@ class PublishersViewer extends Component {
         } else {
             return (
                 <div className="col-sm-8">
-                    {this.props.publishers.map(p => (
-                        <PublisherSummary publisher={p} key={p.id} />
-                    ))}
-                    {this.props.hitCount > config.resultsPerPage && (
-                        <Pagination
-                            currentPage={+getPageNumber(this.props) || 1}
-                            maxPage={Math.ceil(
-                                this.props.hitCount / config.resultsPerPage
-                            )}
-                            onPageChange={this.onPageChange.bind(this)}
-                            totalItems={this.props.hitCount}
-                        />
-                    )}
+                    {sortBy(this.props.publishers, [
+                        function(o) {
+                            return o.name.toLowerCase();
+                        }
+                    ]).map(p => <PublisherSummary publisher={p} key={p.id} />)}
                 </div>
             );
         }
@@ -63,6 +55,7 @@ class PublishersViewer extends Component {
         return (
             <ReactDocumentTitle title={"Publishers | " + config.appName}>
                 <div className="container publishers-viewer">
+                    <h1>Publishers</h1>
                     <div className="row">
                         {!this.props.isFetching && this.renderContent()}
                         {this.props.isFetching && <ProgressBar />}

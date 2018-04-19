@@ -1,9 +1,7 @@
 ---
 title: Open Data Toolkit
 titleImage: story5.png
-titleUrl: "https://toolkit.data.gov.au/"
+titleUrl: "https://toolkit.data.gov.au/index.php?title=Main_Page"
 ---
 
-The ATO has put together a fantastic interactive tax form built on the average tax results from 2016. We spent a good part of an hour looking through the interesting findings. What can you find out about yourself in this?
-
-The ATO has put together a fantastic interactive tax form built on the average tax results from 2016. We spent a good part of an hour looking through the interesting findings. What can you find out about yourself in this?
+The Open Data Toolkit is an online resource to help get you started. Whether you're publishing for the first time or discovering metadata, the toolkit can point you in the right direction.

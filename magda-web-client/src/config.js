@@ -78,7 +78,8 @@ export const config = {
             category: "Data.gov.au",
             links: [
                 ["About", "page/about"],
-                ["Request a dataset", "mailto:data@digital.gov.au"]
+                ["Request a dataset", "mailto:data@digital.gov.au"],
+                ["Privacy Policy", "page/privacy-policy"]
             ]
         },
         {

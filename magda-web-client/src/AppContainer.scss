@@ -35,10 +35,17 @@
             /* ./index.scss defines a border-bottom, this overrides that */
             border-bottom-style: none;
         }
-        
+
         a:hover {
             /* ./index.scss defines a background-color, this overrides that */
             background-color: transparent;
         }
+    }
+}
+
+/* On mobile, add margin-bottom spacing to footer links */
+@media screen and (max-width: ($medium - 1)) {
+    .mui-list--unstyled > li {
+        margin-bottom: 1em;
     }
 }

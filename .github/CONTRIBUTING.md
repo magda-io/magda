@@ -22,11 +22,11 @@ Magda currently works in 2-week sprints, tracked as milestones in Github. At the
 2. Issue is added to a sprint during a sprint-planning meeting, moves to the _Backlog_ column
 3. Developer starts the issue - makes sure it's assigned to them, drags it to the _In Progress_ column
 4. Developer works on the issue, submits it as a Pull Request and drags it to the _Pull Request_ column
-5. PR is reviewed, comments fixed, approved
-6. PR is merged by reviewer when they're happy, and the branch it came from is deleted.
-7. Reviewer drags the issue into the _QA_ column if there's a UI part to it that needs to be QA'd by the designer, otherwise `GOTO 10.`
+5. PR is reviewed by another core team member, comments are fixed, approved
+6. PR is merged **by the reviewer** when they're happy, and the branch it came from is deleted.
+7. Reviewer drags the issue into the _QA_ column if there's a UI part to it that needs to be QA'd by the designer, otherwise go to step 10.
 8. `master` is deployed to dev (at the moment this is manual)
-9. Issue is QA'd by the designer - if something needs changing a comment is left on the issue `@`ing the developer and it's dragged back to _In Progress_, - `GOTO 4.`. Otherwise...
+9. Issue is QA'd by the designer - if something needs changing a comment is left on the issue `@`ing the developer and it's dragged back to _In Progress_, - go to step 4. Otherwise...
 10. Issue is dragged to the _Done_ column by the person who approved the QA.
 11. At the end of the sprint, all issues in `Done` are closed.
 

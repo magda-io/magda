@@ -59,7 +59,12 @@ const OtherPages = props => {
     return (
         <div className="other-page">
             <Header />
-            <SearchBoxSwitcher location={props.location} theme="none-home" />
+            {props.location.pathname !== "/publishers" && (
+                <SearchBoxSwitcher
+                    location={props.location}
+                    theme="none-home"
+                />
+            )}
             <Container className="app-container">{renderBody()}</Container>
         </div>
     );

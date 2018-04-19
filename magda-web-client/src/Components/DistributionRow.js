@@ -10,6 +10,7 @@ import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
+import ReactTooltip from "react-tooltip";
 const formatIcons = {
     default: defaultFormatIcon
 };
@@ -47,6 +48,10 @@ const CategoryDetermineConfigItems = [
     },
     {
         regex: /html|htm|web page|web site/,
+        category: "html"
+    },
+    {
+        regex: /^www:/,
         category: "html"
     },
     {
@@ -110,16 +115,20 @@ class DistributionRow extends Component {
                 this.props.distribution.downloadURL
             );
         }
-        return formatIcons[matchedCategory];
+        return matchedCategory;
     }
 
     render() {
         const { datasetId, distribution } = this.props;
-        const distributionLink = `/dataset/${encodeURIComponent(
-            datasetId
-        )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
-            this.props.searchText
-        }`;
+        let distributionLink;
+        if (!distribution.downloadURL && distribution.accessURL)
+            distributionLink = distribution.accessURL;
+        else
+            distributionLink = `/dataset/${encodeURIComponent(
+                datasetId
+            )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
+                this.props.searchText
+            }`;
 
         return (
             <div className="distribution-row mui-row">
@@ -127,19 +136,35 @@ class DistributionRow extends Component {
                     <div className="mui-row">
                         <Medium>
                             <div className="mui-col-sm-1">
+                                <ReactTooltip />
                                 <img
                                     className="format-icon"
-                                    src={this.determineFormatIcon()}
+                                    src={
+                                        formatIcons[this.determineFormatIcon()]
+                                    }
                                     alt="format icon"
+                                    data-tip={this.determineFormatIcon()}
+                                    data-place="top"
                                 />
                             </div>
                         </Medium>
 
                         <div className="mui-col-md-11">
                             <div className="distribution-row-link">
-                                <Link to={distributionLink}>
-                                    {distribution.title}({distribution.format})
-                                </Link>
+                                {!distribution.downloadURL &&
+                                distribution.accessURL ? (
+                                    <div>
+                                        {distribution.title}({
+                                            distribution.format
+                                        })
+                                    </div>
+                                ) : (
+                                    <Link to={distributionLink}>
+                                        {distribution.title}({
+                                            distribution.format
+                                        })
+                                    </Link>
+                                )}
                             </div>
 
                             <div className="distribution-row-link-license">
@@ -202,7 +227,7 @@ class DistributionRow extends Component {
     }
 }
 
-DistributionRow.PropTypes = {
+DistributionRow.propTypes = {
     datasetId: PropTypes.string,
     distribution: PropTypes.object
 };

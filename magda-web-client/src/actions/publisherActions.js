@@ -51,9 +51,7 @@ function fetchPublishers(start) {
         dispatch(requestPublishers());
         const url = `${
             config.registryApiUrl
-        }records?aspect=organization-details&limit=${
-            config.resultsPerPage
-        }&start=${(start - 1) * config.resultsPerPage}`;
+        }records?aspect=organization-details&limit=1000`;
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {

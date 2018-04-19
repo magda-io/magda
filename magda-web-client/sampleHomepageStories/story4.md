@@ -1,7 +1,11 @@
 ---
 title: "Intellectual property in Australia: a visualisation"
 titleImage: story4.png
-titleUrl: "https://www.ipaustralia.gov.au/about-us/news-and-community/blog/intellectual-property-ip-everyone"
+titleUrl: "https://www.ipaustralia.gov.au/beta/ip-nova"
 ---
 
-IP NOVA is a visual immersive search engine that helps users discover registered patents, trade marks, and plant breeder's rights from IP Australia's database. It is a free, open web app that makes intellectual property (IP) analysis intuitive and accessible. Search for invention and development ideas. Avoid duplicating research and development effort. Identify key trends in technology development and find collaborators in specific technology fields;
+IP NOVA is a visual immersive search engine that helps users discover registered patents, trade marks, and plant breeders rights from the Intellectual Property Australia database. It is a free, open web app that makes intellectual property analysis intuitive and accessible.
+
+<br/>
+
+It delivers visualisation and business intelligence that enables end users to quickly gather information regarding a specific keyword such as location, industry or field of work, and perform customisable analysis from both a macro and micro perspective.

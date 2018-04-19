@@ -2,11 +2,13 @@
 
 This is a _loose_ plan of what we're planning to do in Magda in the future. This is provided mainly so potential contributors can see our direction, and so those who are considering using Magda can see where it's going to go in the future. Please keep in keep in mind that this is not a promise - we could change direction at any time (and have done in the past!), so don't make any plans based on this that you can't change! Get in touch if you want to contribute!
 
-## Current Priorities (next 6 months)
+## Current Priorities Jan - June 2018
 
-**New Design**: Converting to a new, nicer looking design site-wide, with a focus on usability and simplifcation.
+✅ **New Design**: Converting to a new, nicer looking design site-wide, with a focus on usability and simplification.
 
-**Search Results**: Changing the search page based off analysis of how it's been used on data.gov.au and search.data.gov.au - particularly removing the query language and simplifying the way that facets are used.
+✅ **Search Results**: Changing the search page based off analysis of how it's been used on data.gov.au and search.data.gov.au - particularly removing the query language and simplifying the way that facets are used.
+
+✅ **Productionising**: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it's secure and robust.
 
 **Data Page**: Emphasising visualisation of the data via maps and charts, falling back to tables where visualisation isn't appropriate.
 
@@ -16,13 +18,11 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 **Format Sleuther**: Currently we trust the metadata that comes with datasets in relation to their format, but this is incredibly inconsistent. We're developing a sleuther that looks at declared format, file extensions and file contents in order to determine the file type.
 
-**Productionising**: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it's secure and robust.
-
 **Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
 
 **API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
 
-## Near-Term Priorities (next year)
+## Near-Term Priorities June 2018 - infinity
 
 **Exposing Usage to Custodians**: Currently data custodians publish data but have very little idea of how much take-up there is. We want to make it extremely easy for them to see how much their data is being viewed/downloaded.
 
