@@ -66,7 +66,7 @@ class SearchBox extends Component {
      */
     updateSearchText(text) {
         // dismiss keyboard on mobile when new search initiates
-        if(this.searchInputFieldRef) this.searchInputFieldRef.controlEl.blur();
+        if (this.searchInputFieldRef) this.searchInputFieldRef.controlEl.blur();
         this.updateQuery({
             q: text,
             publisher: [],
@@ -147,7 +147,7 @@ class SearchBox extends Component {
                 onChange={this.onSearchTextChange}
                 onKeyPress={this.handleSearchFieldEnterKeyPress}
                 autoComplete="off"
-                ref={el => this.searchInputFieldRef = el}
+                ref={el => (this.searchInputFieldRef = el)}
                 onFocus={() => this.setState({ isFocus: true })}
                 onBlur={() =>
                     this.setState({
