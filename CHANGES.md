@@ -10,6 +10,7 @@
 *   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
 *   DataPreview Table|Chart is hidden if no data is present.
 *   Empty search won't be saved as recent search item
+*   Adjust display of feedback link on mobile to be fixed in footer
 *   Stopped filters from disappearing when search is submitted
 *   Added loading spinner for preview map and dataset visualisation.
 *   Adjusted recent search box style

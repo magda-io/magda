@@ -26,6 +26,9 @@
     }
     .copyright {
         text-align: right;
+        @media (max-width: $small) {
+            padding-top: 50px;
+        }
         img {
             height: 40px;
             width: auto;
