@@ -9,6 +9,7 @@ import { Small, Medium } from "../../UI/Responsive";
 import "./SearchSuggestionBox.css";
 import recentSearchIcon from "../../assets/updated.svg";
 import closeIcon from "../../assets/mobile-menu-close.svg";
+import isEqual from "lodash.isequal";
 
 type searchDataType = {
     name: ?string,
@@ -100,7 +101,7 @@ class SearchSuggestionBox extends Component {
     }
 
     createSearchDataFromProps(props): searchDataType {
-        if (!props.location || !props.location.search) return null;
+        if (!props || !props.location || !props.location.search) return null;
         const data = queryString.parse(props.location.search);
         if (!Object.keys(data).length) return null;
         const searchData = { data };
@@ -153,20 +154,25 @@ class SearchSuggestionBox extends Component {
         return qStr ? qStr + " " + filters.join("; ") : filters.join("; ");
     }
 
-    saveRecentSearch(newProps) {
+    saveRecentSearch(newProps, prevProps) {
         const searchData = this.createSearchDataFromProps(newProps);
         if (!searchData) return;
         if (!searchData.data.q || !searchData.data.q.trim()) return;
+        const currentSearchData = this.createSearchDataFromProps(prevProps);
+        if (isEqual(currentSearchData, searchData)) return;
         const recentSearches = this.insertItemIntoLocalData(
             "recentSearches",
             searchData
         );
-
         this.setState({ recentSearches });
     }
 
+    componentDidMount() {
+        this.saveRecentSearch(this.props, null);
+    }
+
     componentWillReceiveProps(newProps) {
-        this.saveRecentSearch(newProps);
+        this.saveRecentSearch(newProps, this.props);
     }
 
     onSearchItemClick(e, item: searchDataType) {
