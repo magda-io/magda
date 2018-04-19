@@ -16,7 +16,7 @@ export default function PublisherBox(props) {
                 <Link
                     to={`/search?publisher=${encodeURIComponent(
                         publisher.name
-                    )}&q=${encodeURIComponent("*")}`}
+                    )}`}
                 >
                     View all datasets
                 </Link>
