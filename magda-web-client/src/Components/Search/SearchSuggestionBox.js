@@ -167,10 +167,6 @@ class SearchSuggestionBox extends Component {
         this.setState({ recentSearches });
     }
 
-    componentDidMount() {
-        this.saveRecentSearch(this.props, null);
-    }
-
     componentWillReceiveProps(newProps) {
         this.saveRecentSearch(newProps, this.props);
     }
