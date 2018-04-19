@@ -42,7 +42,6 @@
             padding-left: 0px;
             font-size: small;
             height: auto;
-            background: #ffffff;
             @media (max-width: $medium - 1) {
                 padding-left: 10px;
                 box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
@@ -51,7 +50,8 @@
             }
             .recent-item-icon {
                 @media (min-width: $medium) {
-                    margin-top: -1px;
+                    margin-top: 3px;
+                    margin-left: 3px;
                 }
                 @media (max-width: $medium - 1) {
                     margin-top: 6px;
@@ -64,13 +64,12 @@
         button.search-item-delete-button {
             position: absolute;
             right: 1px;
-            top: 1px;
+            top: -4px;
             width: 25px;
             height: 25px;
             padding: 0px;
             border: none;
             cursor: pointer;
-            background: #ffffff;
             @media (max-width: $medium - 1) {
                 margin-top: 16px;
                 margin-right: 5px;
@@ -84,7 +83,6 @@
         .search-item-container {
             position: relative;
             @media (max-width: $medium - 1) {
-                padding-right: 36px;
                 box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
             }
         }
