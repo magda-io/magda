@@ -19,6 +19,7 @@ type searchDataType = {
 
 const keyCodeArrowDown = 40;
 const keyCodeArrowUp = 38;
+const keyCodeEnter = 13;
 
 /**
  * when no user input, the first `maxDefaultListItemNumber` items will be returned
@@ -179,13 +180,19 @@ class SearchSuggestionBox extends Component {
         this.setupSearchInputListener(newProps);
     }
 
-    onSearchItemClick(e, item: searchDataType) {
-        e.preventDefault();
+    executeSearchItem(item: searchDataType) {
         const qStr = queryString.stringify(item.data);
         this.props.history.push(`/search?${qStr}`);
         this.setState({
-            isMouseOver: false
+            isMouseOver: false,
+            selectedItemIdx: null
         });
+        this.searchInputRef.blur();
+    }
+
+    onSearchItemClick(e, item: searchDataType) {
+        e.preventDefault();
+        this.executeSearchItem(item);
     }
 
     onDeleteItemClick(e, idx) {
@@ -232,11 +239,7 @@ class SearchSuggestionBox extends Component {
     }
 
     shouldShow() {
-        if (
-            !this.props.isSearchInputFocus &&
-            !this.state.isMouseOver &&
-            this.state.selectedItemIdx === null
-        )
+        if (!this.props.isSearchInputFocus && !this.state.isMouseOver)
             return false;
         const filteredRecentSearches = this.state.recentSearches;
         if (!filteredRecentSearches || !filteredRecentSearches.length)
@@ -265,9 +268,22 @@ class SearchSuggestionBox extends Component {
 
     onSearchInputKeyDown(e) {
         const keyCode = e.which || e.keyCode || 0;
-        if (keyCode !== keyCodeArrowDown && keyCode !== keyCodeArrowUp) return;
-        if (this.shouldShow() === false) return;
-        if (e.keyCode === keyCodeArrowUp && this.state.selectedItemIdx !== null)
+        if (
+            keyCode !== keyCodeArrowDown &&
+            keyCode !== keyCodeArrowUp &&
+            keyCode !== keyCodeEnter
+        )
+            return;
+        if (!this.shouldShow()) return;
+        if (keyCode === keyCodeEnter && this.state.selectedItemIdx !== null) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            this.executeSearchItem(
+                this.state.recentSearches[this.state.selectedItemIdx]
+            );
+            return;
+        }
+        if (keyCode === keyCodeArrowUp && this.state.selectedItemIdx !== null)
             e.preventDefault(); //--- stop cursor from moving to the beginning of the input text
         if (keyCode === keyCodeArrowDown) this.selectNextItem();
         else this.selectPrevItem();
