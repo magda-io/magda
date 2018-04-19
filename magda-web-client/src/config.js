@@ -107,5 +107,11 @@ export const config = {
         "Oct",
         "Nov",
         "Dec"
-    ]
+    ],
+    boundingBox: {
+        west: 105,
+        south: -45,
+        east: 155,
+        north: -5
+    }
 };

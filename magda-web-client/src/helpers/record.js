@@ -183,6 +183,16 @@ const defaultDistributionAspect = {
     }
 };
 
+function getFormatString(aspects) {
+    const defaultString = "Unknown format";
+    if (!aspects || typeof aspects !== "object") return defaultString;
+    const dcatAspect = aspects["dcat-distribution-strings"];
+    const formatAspect = aspects["dataset-format"];
+    if (formatAspect && formatAspect["format"]) return formatAspect["format"];
+    if (dcatAspect && dcatAspect["format"]) return dcatAspect["format"];
+    return defaultString;
+}
+
 export function parseDistribution(
     record?: RawDistribution
 ): ParsedDistribution {
@@ -195,7 +205,7 @@ export function parseDistribution(
 
     const info = aspects["dcat-distribution-strings"];
 
-    const format = info.format || "Unknown format";
+    const format = getFormatString(aspects);
     const downloadURL = info.downloadURL || null;
     const accessURL = info.accessURL || null;
     const updatedDate = info.modified ? getDateString(info.modified) : null;
@@ -300,7 +310,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             title: d["name"],
             downloadURL: info.downloadURL || null,
             accessURL: info.accessURL || null,
-            format: info.format || "Unknown format",
+            format: getFormatString(distributionAspects),
             license:
                 !info.license || info.license === "notspecified"
                     ? "License restrictions unknown"
