@@ -35,6 +35,7 @@
 *   Enable homepage stories and updated homepage config
 *   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
 *   Created `ISSUE_TEMPLATE.md` file
+*   Allow users to select recent search item by arrow keys
 *   Add 3 more government CSW services
 *   Hide feedback form from mobile view
 
