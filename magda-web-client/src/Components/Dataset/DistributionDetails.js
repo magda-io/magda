@@ -14,7 +14,7 @@ class DistributionDetails extends Component {
 
     renderLinkText(distribution) {
         const downloadText = distribution.downloadURL ? (
-            <span>
+            <span key={distribution.identifier}>
                 This dataset can be downloaded from: <br />
                 <a
                     onClick={distribution => {

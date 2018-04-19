@@ -4,6 +4,7 @@ import "./DataPreviewMap.css";
 import DataPreviewMapOpenInNationalMapButton from "./DataPreviewMapOpenInNationalMapButton";
 import { config } from "../config";
 import { Medium, Small } from "./Responsive";
+import Spinner from "../Components/Spinner";
 
 export const defaultDataSourcePreference = [
     "WMS",
@@ -18,6 +19,7 @@ class DataPreviewMap extends Component {
         super(props);
         this.state = {
             isInitLoading: true,
+            isMapLoading: false,
             isMapPreviewAvailable: false,
             selectedDistribution: null
         };
@@ -32,6 +34,7 @@ class DataPreviewMap extends Component {
         if (identifier === "") {
             this.setState({
                 isInitLoading: true,
+                isMapLoading: false,
                 isMapPreviewAvailable: false,
                 selectedDistribution: null
             });
@@ -48,6 +51,7 @@ class DataPreviewMap extends Component {
         } else {
             this.setState({
                 isInitLoading: false,
+                isMapLoading: true,
                 isMapPreviewAvailable: true,
                 selectedDistribution: selectedDistribution
             });
@@ -140,6 +144,9 @@ class DataPreviewMap extends Component {
                 this.createCatalogItemFromDistribution(),
                 "*"
             );
+            this.setState({
+                isMapLoading: true
+            });
             if (this.props.onLoadingStart) {
                 try {
                     this.props.onLoadingStart();
@@ -149,6 +156,9 @@ class DataPreviewMap extends Component {
             }
             return;
         } else if (e.data === "loading complete") {
+            this.setState({
+                isMapLoading: false
+            });
             if (this.props.onLoadingEnd) {
                 try {
                     this.props.onLoadingEnd();
@@ -161,26 +171,27 @@ class DataPreviewMap extends Component {
     }
 
     render() {
-        if (this.state.isInitLoading)
-            return (
-                <div className="data-preview-map">
-                    <h3>Map Preview</h3>
-                    Loading....
-                </div>
-            );
+        if (!this.state.isInitLoading && !this.state.isMapPreviewAvailable)
+            return null; //-- requested by Tash: hide the section if no data available
 
-        if (!this.state.isMapPreviewAvailable) return null; //-- requested by Tash: hide the section if no data available
+        // 3 states:
+        // - loading component (isInitLoading === true) -> Show spinner
+        // - loading terria (isMapLoading === true) -> Continue showing spinner and start loading map hidden
+        // - everything loaded (neither true) -> No spinner, show map
 
-        return (
-            <div className="data-preview-map">
-                <h3>Map Preview</h3>
+        let iframe = null;
+        if (!this.state.isInitLoading) {
+            iframe = (
                 <div style={{ position: "relative" }}>
                     <DataPreviewMapOpenInNationalMapButton
                         distribution={this.state.selectedDistribution}
                         style={{
                             position: "absolute",
                             right: "10px",
-                            top: "10px"
+                            top: "10px",
+                            visibility: this.state.isMapLoading
+                                ? "hidden"
+                                : "visible"
                         }}
                     />
                     <Medium>
@@ -194,6 +205,11 @@ class DataPreviewMap extends Component {
                                 "#mode=preview&hideExplorerPanel=1&clean"
                             }
                             ref={f => (this.iframeRef = f)}
+                            style={{
+                                visibility: this.state.isMapLoading
+                                    ? "hidden"
+                                    : "visible"
+                            }}
                         />
                     </Medium>
                     <Small>
@@ -207,9 +223,30 @@ class DataPreviewMap extends Component {
                                 "#mode=preview&hideExplorerPanel=1&clean"
                             }
                             ref={f => (this.iframeRef = f)}
+                            style={{
+                                visibility: this.state.isMapLoading
+                                    ? "hidden"
+                                    : "visible"
+                            }}
                         />
                     </Small>
                 </div>
+            );
+        }
+        return (
+            <div className="data-preview-map">
+                <h3>Map Preview</h3>
+                {(this.state.isInitLoading || this.state.isMapLoading) && (
+                    <div>
+                        <Medium>
+                            <Spinner width="100%" height="420px" />
+                        </Medium>
+                        <Small>
+                            <Spinner width="100%" height="200px" />
+                        </Small>
+                    </div>
+                )}
+                {iframe}
             </div>
         );
     }

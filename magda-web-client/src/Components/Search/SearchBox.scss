@@ -2,7 +2,7 @@
 
 @mixin text() {
     border-bottom: 0;
-    padding: 8px;
+    padding: 0 8px;
     @media (min-width: $medium) {
         font-family: $font-base;
         font-size: 33px;
@@ -10,12 +10,17 @@
         height: 57px;
         padding: 8px 0;
         border-bottom: 1px solid rgba(73, 73, 73, 0.15);
+        padding-right: 50px;
     }
 }
 
 .searchBox-switcher {
     &.none-home {
         background: rgba(245, 245, 245, 0.8);
+        margin: 10px;
+        @media (min-width: $medium) {
+            margin: 0
+        }
         .searchBox {
             background-color: transparent;
         }
@@ -32,25 +37,32 @@
     background-color: rgba(#fff, 0.8);
     background: #FFFFFF;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16), 0px 3px 6px rgba(0, 0, 0, 0.23);
-    border-radius: 2px;
+    border-radius: 4px;
     @media (min-width: $medium) {
         border: 1px solid rgba(73, 73, 73, 0.15);
         padding: 40px 90px;
         width: 788px;
         border: 0;
         box-shadow: none;
+        border-radius: 2px;
     }
 
     label {
-        width: calc(100% - 100px);
+        width: 100%;
+        position: relative;
     }
     input,
     input:focus {
         @include text();
         margin-bottom: 2px;
+
     }
 
     .search-btn {
+        position: absolute;
+        right: 0;
+        padding: 11px;
+        bottom: 0;
         border: 2px solid transparent;
         box-sizing: border-box;
         display: inline-block;
@@ -61,7 +73,6 @@
         outline: none;
         font-size: 0px;
         font-weight: inherit;
-        position: relative;
         overflow: visible;
         transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
         background: none;
@@ -71,7 +82,7 @@
           height: 32px;
         }
         @media (max-width: $medium - 1) {
-            padding: 11px;
+
             img {
                 width: 32px;
                 height: 32px;
@@ -87,8 +98,7 @@
     .search-input__highlight{
       z-index: 10;
       position: absolute;
-      bottom: 50px;
-      left: 90px;
+      bottom: 10px;
       font-size: 33px;
       height: 0;
       overflow: hidden;
@@ -101,7 +111,6 @@
       max-width: 100%;
       border-top: 2px solid #979797;
       border-radius: 2px;
-      min-width: 3px;
       display: none;
       @media (min-width: $medium) {
         display: inline;

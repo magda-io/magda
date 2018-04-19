@@ -152,6 +152,7 @@ class FacetTemporal extends Component {
                         activeOptions={this.props.activeDates}
                         hasQuery={this.props.hasQuery}
                         onClick={this.props.toggleFacet}
+                        isOpen={this.props.isOpen}
                     />
                     {this.props.isOpen && (
                         <div className="clearfix facet-temporal facet-body">

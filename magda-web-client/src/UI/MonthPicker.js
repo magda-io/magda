@@ -206,7 +206,7 @@ class MonthPicker extends Component {
     }
 }
 
-MonthPicker.PropTypes = {
+MonthPicker.propTypes = {
     year: PropTypes.number,
     month: PropTypes.number,
     yearUpper: PropTypes.number,
