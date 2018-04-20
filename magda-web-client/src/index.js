@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 import "es6-shim";
 import "raf/polyfill";
-import createLogger from "redux-logger";
+import logger from "redux-logger";
 import "./index.css";
 import { BrowserRouter, Route } from "react-router-dom";
 
@@ -15,14 +15,11 @@ import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 
-// eslint-disable-next-line
-const loggerMiddleware = createLogger();
-
 const store = createStore(
     reducer,
     applyMiddleware(
         thunkMiddleware, // lets us dispatch() functions
-        loggerMiddleware // neat middleware that logs actions
+        logger // neat middleware that logs actions
     )
 );
 
