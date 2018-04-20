@@ -1,7 +1,6 @@
 import onRecordFound from "../onRecordFound";
 import {} from "mocha";
 import * as sinon from "sinon";
-import { expect } from "chai";
 import * as nock from "nock";
 import jsc from "@magda/typescript-common/dist/test/jsverify";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
@@ -59,8 +58,7 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
 
     it("should give a dataset with no distributions zero stars", () => {
         const record = buildRecordWithDist();
-        registryScope.patch(/.*/).reply(201);
-        expectStarCount(record, 0);
+        expectStarCount({ record, starCount: 0 });
 
         return onRecordFound(record, registry);
     });
@@ -70,8 +68,8 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
             OKFN_LICENSES.forEach((license: string) => {
                 it(license, () => {
                     const record = buildRecordWithDist({ license });
-                    registryScope.patch(/.*/).reply(201);
-                    expectStarCount(record, 1);
+
+                    expectStarCount({ record, starCount: 1 });
 
                     return onRecordFound(record, registry);
                 });
@@ -83,8 +81,69 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                 licenseArb: openLicenseArb,
                 formatArb: jsc.constant(undefined),
                 beforeTest: (record: Record) => {
-                    registryScope.patch(/.*/).reply(201);
-                    expectStarCount(record, 1);
+                    expectStarCount({ record, starCount: 1 });
+                }
+            });
+        });
+
+        it("should give distribtuions with a broken source-link 0 stars", () => {
+            return runPropertyTest({
+                recordArb: jsc.suchthat(
+                    recordArbWithDistArbs(
+                        {
+                            license: jsc.oneof([
+                                openLicenseArb,
+                                jsc.oneof(
+                                    ZERO_STAR_LICENSES.map(lic =>
+                                        jsc.constant(lic)
+                                    )
+                                )
+                            ]),
+                            format: jsc.oneof([
+                                formatArb(0),
+                                formatArb(1),
+                                formatArb(2),
+                                formatArb(3),
+                                formatArb(4)
+                            ])
+                        },
+                        {
+                            status: jsc.constant("broken")
+                        }
+                    ),
+                    record =>
+                        record.aspects["dataset-distributions"].distributions
+                            .length > 0
+                ),
+                beforeTest: (record: Record) => {
+                    expectStarCount({ record, starCount: 0 });
+                }
+            });
+        });
+
+        it("should give distribtuions with a active source-link > 0 stars", () => {
+            return runPropertyTest({
+                recordArb: jsc.suchthat(
+                    recordArbWithDistArbs(
+                        {
+                            license: openLicenseArb,
+                            format: jsc.oneof([
+                                formatArb(1),
+                                formatArb(2),
+                                formatArb(3),
+                                formatArb(4)
+                            ])
+                        },
+                        {
+                            status: jsc.constant("active")
+                        }
+                    ),
+                    record =>
+                        record.aspects["dataset-distributions"].distributions
+                            .length > 0
+                ),
+                beforeTest: (record: Record) => {
+                    expectStarCount({ record, starCountFn: num => num > 0 });
                 }
             });
         });
@@ -93,8 +152,8 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
             ZERO_STAR_LICENSES.forEach(license => {
                 it(`${license}`, () => {
                     const record = buildRecordWithDist({ license });
-                    registryScope.patch(/.*/).reply(201);
-                    expectStarCount(record, 0);
+
+                    expectStarCount({ record, starCount: 0 });
 
                     return onRecordFound(record, registry);
                 });
@@ -111,8 +170,8 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                             format,
                             license: OKFN_LICENSES[0]
                         });
-                        registryScope.patch(/.*/).reply(201);
-                        expectStarCount(record, starCount);
+
+                        expectStarCount({ record, starCount });
 
                         return onRecordFound(record, registry);
                     });
@@ -125,50 +184,12 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                         licenseArb: openLicenseArb,
                         formatArb: formatArbForStarCount,
                         beforeTest: (record: Record) => {
-                            registryScope.patch(/.*/).reply(201);
-                            expectStarCount(record, starCount);
+                            expectStarCount({ record, starCount });
                         }
                     });
                 });
             });
         }
-    });
-
-    describe("quality rating", () => {
-        it("should match the star rating", () => {
-            let putBody: any;
-            let patchBody: any;
-
-            return runPropertyTest({
-                licenseArb: jsc.oneof([openLicenseArb, stringArb]),
-                formatArb: jsc.oneof([
-                    stringArb,
-                    formatArb(2),
-                    formatArb(3),
-                    formatArb(4)
-                ]),
-                beforeTest: (record: Record) => {
-                    registryScope
-                        .patch(/.*/, (body: any) => {
-                            patchBody = body;
-                            return true;
-                        })
-                        .reply(201);
-                    registryScope
-                        .put(/.*/, (body: any) => {
-                            putBody = body;
-                            return true;
-                        })
-                        .reply(201);
-                },
-                afterTest: () => {
-                    const quality = patchBody[0].value;
-                    expect(quality.score * 5).to.equal(putBody.stars);
-                    expect(quality.weighting).to.be.gt(0);
-                    expect(quality.weighting).to.be.lt(1);
-                }
-            });
-        });
     });
 
     describe("should always record the result of the best distribution", () => {
@@ -184,8 +205,10 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                         (record: Record) => {
                             beforeEachProperty();
 
-                            registryScope.patch(/.*/).reply(201);
-                            expectStarCount(record, highestStarCount);
+                            expectStarCount({
+                                record,
+                                starCount: highestStarCount
+                            });
 
                             return onRecordFound(record, registry)
                                 .then(() => {
@@ -244,15 +267,37 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
         );
     }
 
-    function expectStarCount(record: Record, starCount: number) {
+    type StarCountArgs = {
+        record: Record;
+        starCount?: number;
+        starCountFn?: ((num: number) => boolean);
+    };
+
+    function expectStarCount({
+        record,
+        starCount,
+        starCountFn = x => x === starCount
+    }: StarCountArgs) {
+        if (!starCount && !starCountFn) {
+            throw new Error("Must provide starCount or starCountFn");
+        }
+
         registryScope
             .put(
                 `/records/${encodeURIComponentWithApost(
                     record.id
                 )}/aspects/dataset-linked-data-rating`,
-                {
-                    stars: starCount
-                }
+                (obj: any) => starCountFn(obj.stars)
+            )
+            .reply(201);
+
+        registryScope
+            .put(
+                `/records/${encodeURIComponentWithApost(
+                    record.id
+                )}/aspects/dataset-quality-rating`,
+                (obj: any) =>
+                    starCountFn(obj["dataset-linked-data-rating"].score * 5)
             )
             .reply(201);
     }

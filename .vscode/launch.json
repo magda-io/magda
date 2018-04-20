@@ -104,7 +104,19 @@
                 "src/test/**/*.spec.ts"
             ]
         },
-
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "sleuther-linked-data-rating",
+            "program": "${workspaceRoot}/magda-sleuther-linked-data-rating/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-sleuther-linked-data-rating",
+            "args": [
+                "--compilers", "ts:@magda/scripts/node_modules/ts-node/register",
+                "--require", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
+        },
         {
             "type": "node",
             "request": "launch",

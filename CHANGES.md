@@ -40,6 +40,8 @@
 *   Add 3 more government CSW services
 *   Hide feedback form from mobile view
 *   Upgraded React and associates to v16.3
+*   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
+*   Made linked data rating sleuther take output of broken link sleuther into account
 
 ## 0.0.37
 
