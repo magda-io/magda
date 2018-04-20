@@ -34,6 +34,7 @@
 *   Enable homepage stories and updated homepage config
 *   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
 *   Created `ISSUE_TEMPLATE.md` file
+*   Useless patch request to registry API should not trigger any event creation
 
 ## 0.0.37
 
