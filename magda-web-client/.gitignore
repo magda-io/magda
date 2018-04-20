@@ -14,3 +14,6 @@ npm-debug.log
 # compiled css files
 *.css
 .out
+
+# locally generated gov.au design system files
+pancake
