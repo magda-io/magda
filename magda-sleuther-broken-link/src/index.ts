@@ -1,7 +1,6 @@
 import sleuther from "@magda/sleuther-framework/dist/index";
 import onRecordFound from "./onRecordFound";
 import brokenLinkAspectDef from "./brokenLinkAspectDef";
-import datasetQualityAspectDef from "@magda/sleuther-framework/dist/common-aspect-defs/datasetQualityAspectDef";
 import commonYargs from "@magda/sleuther-framework/dist/commonYargs";
 
 const ID = "sleuther-broken-link";
@@ -22,7 +21,7 @@ function sleuthBrokenLinks() {
         aspects: ["dataset-distributions"],
         optionalAspects: [],
         async: true,
-        writeAspectDefs: [brokenLinkAspectDef, datasetQualityAspectDef],
+        writeAspectDefs: [brokenLinkAspectDef],
         onRecordFound: (record, registry) =>
             onRecordFound(record, registry, argv.externalRetries)
     });

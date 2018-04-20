@@ -42,6 +42,7 @@
 *   Upgraded React and associates to v16.3
 *   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
 *   Made linked data rating sleuther take output of broken link sleuther into account
+*   Removed datasetQualityAspectDef from sleuther-broken-link
 
 ## 0.0.37
 
