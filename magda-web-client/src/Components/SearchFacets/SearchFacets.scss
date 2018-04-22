@@ -50,11 +50,16 @@
     height: 50px;
     margin: 0;
     background-color: #f7f8fa;
+    text-transform: uppercase;
     img {
         position: absolute;
         display: block;
-        right: 0;
+        right: 8px;
         top: 13px;
+    }
+    &:hover,
+    &:focus {
+        background-color: #f7f8fa;
     }
 }
 
