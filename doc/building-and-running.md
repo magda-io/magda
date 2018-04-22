@@ -10,6 +10,7 @@ You need to install following in order to build MAGDA:
 *   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 *   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 *   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
+*   [pancake](https://github.com/govau/pancake) - To manage design components. Once you have Node.js installed, installing pancake is as simple as `npm install -g @gov.au/pancake`.
 
 To push the images and run them on kubernetes, you'll need to install:
 
