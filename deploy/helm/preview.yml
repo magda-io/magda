@@ -3,6 +3,7 @@ global:
     maxUnavailable: 1000
   image:
     imagePullSecret: "regcred"
+  exposeNodePorts: false
 
 tags:
   all: true
@@ -16,10 +17,10 @@ gateway:
     requests:
       cpu: 50m
       memory: 100Mi
-  resources:
-    requests:
-      cpu: 50m
-      memory: 100Mi
+  autoscaler:
+    enabled: false
+  service:
+    type: ClusterIP
 combined-db:
   resources:
     requests:
