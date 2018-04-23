@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import Container from "muicss/lib/react/container";
 import { withRouter } from "react-router-dom";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
@@ -91,7 +90,7 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
             <Small>
                 <div className="homepage-background" />
             </Small>
-            <Container className="app-container">
+            <div className="container app-container">
                 <Medium>
                     <div className="homepage-dga-logo">
                         <img src={dgaLogo} alt="dga logo" />
@@ -106,7 +105,7 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
                     <Lozenge />
                 </Medium>
                 <Stories />
-            </Container>
+            </div>
         </div>
     );
 });

@@ -131,11 +131,11 @@ class DistributionRow extends Component {
             }`;
 
         return (
-            <div className="distribution-row mui-row">
-                <div className="mui-col-sm-9">
-                    <div className="mui-row">
+            <div className="distribution-row row">
+                <div className="col-sm-9">
+                    <div className="row">
                         <Medium>
-                            <div className="mui-col-sm-1">
+                            <div className="col-sm-1">
                                 <ReactTooltip />
                                 <img
                                     className="format-icon"
@@ -149,7 +149,7 @@ class DistributionRow extends Component {
                             </div>
                         </Medium>
 
-                        <div className="mui-col-md-11">
+                        <div className="col-md-11">
                             <div className="distribution-row-link">
                                 {!distribution.downloadURL &&
                                 distribution.accessURL ? (
@@ -178,7 +178,7 @@ class DistributionRow extends Component {
                         </div>
                     </div>
                 </div>
-                <div className="mui-col-md-3 button-area">
+                <div className="col-md-3 button-area">
                     {distribution.downloadURL ? (
                         <Button
                             className="download-button"
