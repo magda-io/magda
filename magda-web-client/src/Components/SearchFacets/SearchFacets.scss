@@ -71,7 +71,10 @@
         height: 45px;
     }
 }
-
+.react-autosuggest__suggestions-container::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
+}
 .facet-body {
     margin-top: 8px;
     box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.23), 0 3px 6px 0 rgba(0, 0, 0, 0.16);
@@ -79,6 +82,7 @@
     border-radius: 2px;
     z-index: 1;
     padding: 0 16px;
+
     @media (max-width: $medium) {
         position: fixed;
         left: 5px;
@@ -110,15 +114,7 @@
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
-    ::-webkit-scrollbar {
-        -webkit-appearance: none;
-        width: 8px;
-    }
-}
 
-::-webkit-scrollbar {
-    -webkit-appearance: none;
-    width: 8px;
 }
 
 .btn-facet-option {
