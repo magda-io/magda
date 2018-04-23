@@ -3,33 +3,31 @@
 .homepage-stories {
     .stories-container {
         display: flex;
-        justify-content:space-between;
+        justify-content: space-between;
         align-items: stretch;
     }
-    .col-3{
-      width: calc(100%/3 - 8px);
-      & > div{
-        height: calc(100% - 13px);
-      }
+    .col-3 {
+        width: calc(100% / 3 - 8px);
+        & > div {
+            height: calc(100% - 13px);
+        }
     }
 
-    .row-2{
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+    .row-2 {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-
-
-    .col-2{
-      width: calc(100%/2 - 8px);
-      & > div{
-        height: calc(100% - 13px);
-      }
+    .col-2 {
+        width: calc(100% / 2 - 8px);
+        & > div {
+            height: calc(100% - 13px);
+        }
     }
 
-    .row.stories{
-      margin-bottom: 12px;
+    .row.stories {
+        margin-bottom: 12px;
     }
     .homepage-stories-show-stories-button {
         position: fixed;
@@ -40,10 +38,8 @@
         background: #37434f;
         box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
             0px 3px 6px rgba(0, 0, 0, 0.23);
-        font-style: normal;
         font-weight: 500;
-        line-height: normal;
-        font-size: 14px;
+        @include AU-fontgrid(xs);
         text-align: center;
         color: #f8f9fa;
         width: 134px;

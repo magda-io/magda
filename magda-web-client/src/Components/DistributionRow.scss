@@ -5,14 +5,13 @@
     padding-top: 24px;
     padding-bottom: 24px;
 
-    .format-icon{
-        width:32px;
-        height:32px;
+    .format-icon {
+        width: 32px;
+        height: 32px;
     }
     .distribution-row-link {
         color: #000000;
-        font-size: 20px;
-        line-height: 24px;
+        @include AU-fontgrid(md);
         a {
             border-bottom: none;
         }
@@ -23,10 +22,9 @@
         margin-bottom: 8px;
     }
 
-    .distribution-row-link-license{
-        color: #CC3139;
-        font-size: 14px;
-        line-height: 17px;
+    .distribution-row-link-license {
+        color: #cc3139;
+        @include AU-fontgrid(xs);
     }
 
     button {

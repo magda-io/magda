@@ -1,11 +1,12 @@
+@import "../variables";
 .data-preview-map {
     .open-in-national-map-button {
         position: relative;
         height: 40px;
         width: 202px;
-        border: 1px solid rgba(73,73,73,0.05);
+        border: 1px solid rgba(73, 73, 73, 0.05);
         border-radius: 2px;
-        background-color: #FFFFFF;
+        background-color: #ffffff;
     }
 
     .rectangle-1 {
@@ -13,10 +14,10 @@
         box-sizing: border-box;
         height: 13px;
         width: 13px;
-        border: 2px solid #4D5766;
+        border: 2px solid #4d5766;
         top: 11px;
         left: 15px;
-        background-color: #FFFFFF;
+        background-color: #ffffff;
     }
 
     .rectangle-2 {
@@ -24,7 +25,7 @@
         box-sizing: border-box;
         height: 12px;
         width: 12px;
-        border: 2px solid #4D5766;
+        border: 2px solid #4d5766;
         top: 15px;
         left: 12px;
     }
@@ -34,12 +35,10 @@
         height: 17px;
         width: 138px;
         color: #494949;
-        font-family: Rubik;
+        font-family: $font-base;
         font-size: 14px;
         line-height: 17px;
         right: 16px;
         top: 12px;
     }
 }
-
-

@@ -5,7 +5,7 @@
     color: $banner-text;
     padding: 8px 0;
     position: relative;
-    font-size: 14px;
+    @include AU-fontgrid(xs);
     padding-right: 40px;
     a {
         color: $banner-text;
