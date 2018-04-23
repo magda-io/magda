@@ -327,6 +327,10 @@ dockerize:dockerExtensions:
 preview:
   stage: preview
   when: manual
+  only:
+    - branches
+  except:
+    - master
   dependencies: []
   cache: 
     paths: []

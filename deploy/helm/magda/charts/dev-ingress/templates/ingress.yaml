@@ -8,10 +8,10 @@ metadata:
   generation: 2
   name: dev-ingress
 spec:
-  tls:
-    - hosts:
-      - {{ .Values.hostname }}
-      secretName: tls-certificate
+  # tls:
+  #   - hosts:
+  #     - {{ .Values.hostname }}
+  #     secretName: tls-certificate
   rules:
   - host: {{ .Values.hostname }}
     http:

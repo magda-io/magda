@@ -46,6 +46,10 @@ elasticsearch:
       requests:
         cpu: 400m
         memory: 1000Mi
+  backup:
+    googleApplicationCreds:
+      secretName: storage-account-credentials
+      fileName: db-service-account-private-key.json
 feedback-api:
   gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
 indexer:
@@ -53,6 +57,12 @@ indexer:
     requests:
       cpu: 100m
       memory: 0
+  readSnapshots: true
+  makeSnapshots: true
+  elasticsearch:
+    useGcsSnapshots: true
+    gcsSnapshotBucket: "magda-es-snapshots-dev"
+    gcsSnapshotClient: "default"
 preview-map:
   resources:
     requests:
