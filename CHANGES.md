@@ -43,6 +43,7 @@
 *   Add 3 more government CSW services
 *   Hide feedback form from mobile view
 *   Upgraded React and associates to v16.3
+*   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 
 ## 0.0.37
 
