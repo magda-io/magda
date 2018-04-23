@@ -39,6 +39,7 @@
 *   Allow users to select recent search item by arrow keys
 *   Add 3 more government CSW services
 *   Hide feedback form from mobile view
+*   Upgraded React and associates to v16.3
 
 ## 0.0.37
 
