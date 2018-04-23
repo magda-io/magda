@@ -46,7 +46,7 @@
     text-align: left;
     font-weight: 500;
     line-height: 17px;
-    padding: 0 8px;
+    padding: 0 15px;
     height: 50px;
     margin: 0;
     background-color: #f7f8fa;
@@ -64,6 +64,8 @@
 }
 
 .search-facets-mobile {
+    margin: 0 -15px;
+    width: calc(100% + 30px);
     .facet-header button {
         text-align: left;
         padding: 5px 8px;
