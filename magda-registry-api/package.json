@@ -7,15 +7,21 @@
         "build": "npm run compile",
         "test": "cd .. && sbt registryApi/test",
         "compile": "cd .. && sbt registryApi/compile",
-        "docker-build-local": "cd .. && sbt registryApi/dockerBuildAndPush",
-        "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" registryApi/dockerBuildAndPush",
+        "docker-build-local": "cd .. && sbt \"-Drepository=localhost:5000\" registryApi/dockerBuildAndPush",
+        "docker-build-prod":
+            "cd .. && sbt registryApi/dockerBuildAndPush",
         "start": "cd .. && sbt registryApi/run",
         "dev": "cd .. && sbt ~registryApi/relaunch"
     },
     "config": {
         "interface": "0.0.0.0",
         "port": 6101,
-        "databaseUrl": "jdbc:postgresql://localhost:5432/postgres",
         "skipAuthorization": true
+    },
+    "magda": {
+        "language": "scala",
+        "categories": {
+            "api": true
+        }
     }
 }

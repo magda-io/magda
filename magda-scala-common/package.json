@@ -6,5 +6,11 @@
         "test": "cd .. && sbt common/test",
         "compile": "cd .. && sbt common/compile"
     },
-    "license": "Apache-2.0"
+    "license": "Apache-2.0",
+    "magda": {
+        "language": "scala",
+        "categories": {
+            "library": true
+        }
+    }
 }

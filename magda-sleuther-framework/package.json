@@ -46,5 +46,12 @@
         "docker": {
             "include": "node_modules dist"
         }
+    },
+    "magda": {
+        "language": "typescript",
+        "categories": {
+            "sleuther": true,
+            "library": true
+        }
     }
 }

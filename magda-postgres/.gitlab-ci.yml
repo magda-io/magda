@@ -1,0 +1,14 @@
+dockerize:postgres:
+  stage: dockerize
+  image: data61/magda-builder-docker:0.0.38-0
+  services:
+  - docker:dind
+  dependencies: []
+  cache:
+    paths: []
+  script:
+  - docker info
+  - lerna bootstrap --scope=@magda/postgres
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  - docker pull $CI_REGISTRY/magda-data/magda/data61/magda-postgres:latest || true
+  - lerna run docker-build-prod --scope=@magda/postgres -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_SHA --version=latest --cache-from=latest

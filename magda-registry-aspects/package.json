@@ -9,5 +9,10 @@
         "docker": {
             "include": "*"
         }
+    },
+    "magda": {
+        "categories": {
+            "library": true
+        }
     }
 }

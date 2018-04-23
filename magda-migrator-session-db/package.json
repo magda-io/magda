@@ -17,5 +17,10 @@
     "devDependencies": {
         "@magda/db-migrator": "^0.0.38-0",
         "@magda/scripts": "^0.0.38-0"
+    },
+    "magda": {
+        "categories": {
+            "migrator": true
+        }
     }
 }

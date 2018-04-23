@@ -21,8 +21,10 @@
         "awsEc2InstanceType": "t2.medium",
         "awsEc2ImageId": "ami-2a644649",
         "awsKeyName": "terria-kring",
-        "awsS3ServerConfigOverridePath": "s3://terria-apps/map/privateserverconfig-2016-08-31.json",
-        "awsS3ClientConfigOverridePath": "s3://terria-apps/map/privateclientconfig-2016-08-31.json",
+        "awsS3ServerConfigOverridePath":
+            "s3://terria-apps/map/privateserverconfig-2016-08-31.json",
+        "awsS3ClientConfigOverridePath":
+            "s3://terria-apps/map/privateclientconfig-2016-08-31.json",
         "docker": {
             "name": "data61/magda-preview-map",
             "include": "node_modules wwwroot devserverconfig.json Dockerfile"
@@ -53,7 +55,7 @@
         "json5": "^0.5.0",
         "lodash.uniq": "^4.5.0",
         "node-notifier": "^5.1.2",
-        "node-sass": "^4.0.0",
+        "node-sass": "^4.8.3",
         "prop-types": "^15.6.0",
         "raw-loader": "^0.5.1",
         "react": "^15.5.4",
@@ -79,19 +81,34 @@
         "yargs": "^8.0.1"
     },
     "scripts": {
-        "start": "bash ./node_modules/terriajs-server/run_server.sh --config-file devserverconfig.json",
+        "start":
+            "bash ./node_modules/terriajs-server/run_server.sh --config-file devserverconfig.json",
         "stop": "bash ./node_modules/terriajs-server/stop_server.sh",
         "gulp": "gulp",
-        "postinstall": "echo 'Installation with NPM successful. What to do next:\\n  npm start       # Starts the server on port 3001\\n  gulp watch      # Builds NationalMap and dependencies, and rebuilds if files change.'",
-        "hot": "webpack-dev-server --inline --config buildprocess/webpack.config.hot.js --hot --host 0.0.0.0",
-        "deploy": "rm -rf node_modules && npm install && npm run deploy-without-reinstall",
-        "deploy-without-reinstall": "gulp clean && gulp release && npm run deploy-current",
-        "deploy-current": "npm run get-deploy-overrides && gulp make-package --serverConfigOverride ./privateserverconfig.json --clientConfigOverride ./wwwroot/privateconfig.json && cd deploy/aws && ./stack create && cd ../..",
-        "get-deploy-overrides": "aws s3 --profile $npm_package_config_awsProfile cp $npm_package_config_awsS3ServerConfigOverridePath ./privateserverconfig.json && aws s3 --profile $npm_package_config_awsProfile cp $npm_package_config_awsS3ClientConfigOverridePath ./wwwroot/privateconfig.json",
-        "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-        "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+        "postinstall":
+            "echo 'Installation with NPM successful. What to do next:\\n  npm start       # Starts the server on port 3001\\n  gulp watch      # Builds NationalMap and dependencies, and rebuilds if files change.'",
+        "hot":
+            "webpack-dev-server --inline --config buildprocess/webpack.config.hot.js --hot --host 0.0.0.0",
+        "deploy":
+            "rm -rf node_modules && npm install && npm run deploy-without-reinstall",
+        "deploy-without-reinstall":
+            "gulp clean && gulp release && npm run deploy-current",
+        "deploy-current":
+            "npm run get-deploy-overrides && gulp make-package --serverConfigOverride ./privateserverconfig.json --clientConfigOverride ./wwwroot/privateconfig.json && cd deploy/aws && ./stack create && cd ../..",
+        "get-deploy-overrides":
+            "aws s3 --profile $npm_package_config_awsProfile cp $npm_package_config_awsS3ServerConfigOverridePath ./privateserverconfig.json && aws s3 --profile $npm_package_config_awsProfile cp $npm_package_config_awsS3ClientConfigOverridePath ./wwwroot/privateconfig.json",
+        "docker-build-local":
+            "create-docker-context-for-node-component --build --push --tag auto --local",
+        "docker-build-prod":
+            "create-docker-context-for-node-component --build --push --tag auto",
         "compile": "gulp release",
         "build": "npm run gulp release",
         "dev": "npm start && gulp watch"
+    },
+    "magda": {
+        "language": "javascript",
+        "categories": {
+            "map": true
+        }
     }
 }

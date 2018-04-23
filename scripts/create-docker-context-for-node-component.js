@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 const childProcess = require("child_process");
 const fse = require("fs-extra");
 const path = require("path");
@@ -17,6 +18,17 @@ const argv = yargs
                 'The tag to pass to "docker build".  This parameter is only used if --build is specified.  If the value of this parameter is `auto`, a tag name is automatically created from NPM configuration.',
             type: "string"
         },
+        repository: {
+            description:
+                "The repository to use in auto tag generation. Will default to '', i.e. dockerhub unless --local is set. Requires --tag=auto",
+            type: "string"
+        },
+        version: {
+            description:
+                "The version(s) to use in auto tag generation. Will default to the current version in package.json. Requires --tag=auto",
+            type: "string",
+            array: true
+        },
         output: {
             description:
                 "The output path and filename for the Docker context .tar file.",
@@ -33,6 +45,11 @@ const argv = yargs
                 "Push the build image to the docker registry.  This parameter is only used if --build is specified.",
             type: "boolean",
             default: false
+        },
+        cacheFromVersion: {
+            description:
+                "Version to cache from when building, using the --cache-from field in docker. Will use the same repository and name. Using this options causes the image to be pulled before build.",
+            type: "string"
         }
     })
     .help().argv;
@@ -74,6 +91,22 @@ if (env.ConEmuANSI === "ON") {
 updateDockerFile(componentSrcDir, componentDestDir);
 
 if (argv.build) {
+    const cacheFromImage =
+        argv.cacheFromVersion &&
+        getRepository() + getName() + ":" + argv.cacheFromVersion;
+
+    if (cacheFromImage) {
+        // Pull this image into the docker daemon - if it fails we don't care, we'll just go from scratch.
+        const dockerPullProcess = childProcess.spawnSync(
+            "docker",
+            [...extraParameters, "pull", cacheFromImage],
+            {
+                stdio: "inherit",
+                env: env
+            }
+        );
+    }
+
     const tarProcess = childProcess.spawn(
         tar,
         [...extraParameters, "--dereference", "-czf", "-", "*"],
@@ -84,8 +117,14 @@ if (argv.build) {
             shell: true
         }
     );
-    const tag = getTag();
-    const tagArgs = tag ? ["-t", tag] : [];
+    const tags = getTags();
+    const tagArgs = tags
+        .map(tag => ["-t", tag])
+        .reduce((soFar, tagArgs) => soFar.concat(tagArgs), []);
+
+    const cacheFromArgs = cacheFromImage
+        ? ["--cache-from", cacheFromImage]
+        : [];
 
     const dockerProcess = childProcess.spawn(
         "docker",
@@ -93,6 +132,7 @@ if (argv.build) {
             ...extraParameters,
             "build",
             ...tagArgs,
+            ...cacheFromArgs,
             "-f",
             `./component/Dockerfile`,
             "-"
@@ -107,12 +147,24 @@ if (argv.build) {
         fse.removeSync(dockerContextDir);
 
         if (code === 0 && argv.push) {
-            if (!tag) {
+            if (tags.length === 0) {
                 console.error("Can not push an image without a tag.");
                 process.exit(1);
             }
-            childProcess.spawnSync("docker", ["push", tag], {
-                stdio: "inherit"
+
+            // Stop if there's a code !== 0
+            tags.every(tag => {
+                const process = childProcess.spawnSync(
+                    "docker",
+                    ["push", tag],
+                    {
+                        stdio: "inherit"
+                    }
+                );
+
+                code = process.status;
+
+                return code === 0;
             });
         }
         process.exit(code);
@@ -149,31 +201,47 @@ if (argv.build) {
     });
 }
 
-function getVersion() {
-    return !argv.local && process.env.npm_package_version
-        ? process.env.npm_package_version
-        : "latest";
+function getVersions() {
+    return (
+        argv.version || [
+            !argv.local && process.env.npm_package_version
+                ? process.env.npm_package_version
+                : "latest"
+        ]
+    );
 }
 
-function getTag() {
-    let tag = argv.tag;
-    if (tag === "auto") {
-        const tagPrefix = argv.local ? "localhost:5000/" : "";
+function getName() {
+    return process.env.npm_package_config_docker_name
+        ? process.env.npm_package_config_docker_name
+        : process.env.npm_package_name
+            ? process.env.npm_package_name
+            : "UnnamedImage";
+}
 
-        const name = process.env.npm_package_config_docker_name
-            ? process.env.npm_package_config_docker_name
-            : process.env.npm_package_name
-              ? process.env.npm_package_name
-              : "UnnamedImage";
-        tag = tagPrefix + name + ":" + getVersion();
+function getTags() {
+    if (argv.tag === "auto") {
+        return getVersions().map(version => {
+            const tagPrefix = getRepository();
+            const name = getName();
+
+            return (tag = tagPrefix + name + ":" + version);
+        });
+    } else {
+        return argv.tag ? [argv.tag] : [];
     }
+}
 
-    return tag;
+function getRepository() {
+    return (
+        (argv.repository && argv.repository + "/") ||
+        (argv.local ? "localhost:5000/" : "")
+    );
 }
 
 function updateDockerFile(sourceDir, destDir) {
-    const tag = getVersion();
-    const repository = argv.local ? "localhost:5000/" : "";
+    const tags = getVersions();
+    const repository = getRepository();
     const dockerFileContents = fse.readFileSync(
         path.resolve(sourceDir, "Dockerfile"),
         "utf-8"
@@ -184,7 +252,7 @@ function updateDockerFile(sourceDir, destDir) {
         // Add a tag if none specified
         .replace(
             /FROM (.+\/[^:\s]+)(\s|$)/,
-            "FROM $1" + (tag ? ":" + tag : "") + "$2"
+            "FROM $1" + (tags[0] ? ":" + tags[0] : "") + "$2"
         );
 
     fse.writeFileSync(
