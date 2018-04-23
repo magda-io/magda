@@ -159,6 +159,7 @@ buildtest:map:
     - "node_modules"
     - "*/dist"
     - "*/node_modules"
+    - "magda-preview-map/wwwroot/build"
     expire_in: 60 minutes
 
 buildtest:typescript-apis:
