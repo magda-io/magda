@@ -17,7 +17,7 @@
             font-size: 24px;
         }
 
-        .story-title-image{
+        .story-title-image {
             width: 100%;
             height: auto;
         }
@@ -34,8 +34,7 @@
         }
     }
 
-
-    @media (max-width: $medium - 1) {
+    @media (max-width: $medium) {
         .story-box {
             .markdown {
                 padding: 16px;
@@ -59,5 +58,4 @@
             }
         }
     }
-
 }

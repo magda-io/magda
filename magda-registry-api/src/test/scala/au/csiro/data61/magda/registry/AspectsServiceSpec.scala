@@ -6,6 +6,7 @@ import gnieh.diffson.sprayJson._
 import spray.json._
 import au.csiro.data61.magda.model.Registry._
 import akka.http.scaladsl.server.AuthenticationFailedRejection
+import scalikejdbc._
 
 class AspectsServiceSpec extends ApiSpec {
   describe("GET") {
@@ -207,6 +208,35 @@ class AspectsServiceSpec extends ApiSpec {
         param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("baz"))))
+        }
+      }
+    }
+
+    def getLastAspectEventId(implicit session: DBSession, aspectId: String): Option[Long] = {
+      sql"""SELECT e.eventId
+          FROM events e
+          LEFT JOIN aspects a ON a.lastUpdate = e.eventId
+          WHERE a.aspectId=${aspectId}
+          ORDER BY e.eventId DESC
+          LIMIT 1""".map(rs => rs.long("eventId")).headOption().apply()
+    }
+
+    it("Only create event if patch makes difference") { param =>
+      val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("bar"))))
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+        DB readOnly { implicit session =>
+          val lastEventIdBeforePatch: Option[Long] = getLastAspectEventId(session,"testId")
+          lastEventIdBeforePatch should not be None
+          val patch = JsonPatch( //--- useless Patch change to baz and then change it back
+            Replace(Pointer.root / "jsonSchema" / "foo", JsString("baz")),
+            Replace(Pointer.root / "jsonSchema" / "foo", JsString("bar"))
+          )
+          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val lastEventIdAfterPatch: Option[Long] = getLastAspectEventId(session,"testId")
+            lastEventIdAfterPatch shouldEqual lastEventIdBeforePatch
+            responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("bar"))))
+          }
         }
       }
     }

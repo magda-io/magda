@@ -1,5 +1,8 @@
+@import "../../variables";
+
 .facet-region__preview {
     height: 270px;
+    width: 100%;
 }
 
 .facet-region__preview .map {
@@ -7,8 +10,9 @@
 }
 
 .facet-region.facet-body {
-    width: 460px;
-    max-width: calc(100vw - 30px);
+    @media (min-width: $medium) {
+        width: 460px;
+    }
 }
 
 .facet-option__region-type {

@@ -1,10 +1,11 @@
 ## 0.0.38
 
+*   Mobile search filter new look
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
 *   When closed, hamburger menu on mobile switches to a X
 *   Will Scroll to top of the page when goes from link to link
 *   Made search filter icons consistent in color when they are applied
-*   Modified search results `Quality:` text to `Open Data Quality:` 
+*   Modified search results `Quality:` text to `Open Data Quality:`
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
 *   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
@@ -28,14 +29,15 @@
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
 *   Update Privacy/About/Data Rating pages
-*   Display all publishers and hide search on publishers page 
+*   Display all publishers and hide search on publishers page
 *   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
-*   Hide the * when I click on the Dataset link in header or click through from a Publisher
+*   Hide the \* when I click on the Dataset link in header or click through from a Publisher
 *   If format info is available from sleuther, format sleuther info should be used
 *   Enable homepage stories and updated homepage config
 *   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
 *   Created `ISSUE_TEMPLATE.md` file
+*   Useless patch request to registry API should not trigger any event creation
 *   Allow users to select recent search item by arrow keys
 *   Add 3 more government CSW services
 *   Hide feedback form from mobile view
@@ -43,6 +45,7 @@
 *   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
 *   Made linked data rating sleuther take output of broken link sleuther into account
 *   Removed datasetQualityAspectDef from sleuther-broken-link
+*   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 
 ## 0.0.37
 

@@ -213,9 +213,9 @@ MonthPicker.propTypes = {
     yearLower: PropTypes.number,
     monthUpper: PropTypes.number,
     monthLower: PropTypes.number,
-    selectMonth: PropTypes.function,
-    selectYear: PropTypes.function,
-    showingDefault: PropTypes.boolean
+    selectMonth: PropTypes.func,
+    selectYear: PropTypes.func,
+    showingDefault: PropTypes.bool
 };
 
 export default MonthPicker;
