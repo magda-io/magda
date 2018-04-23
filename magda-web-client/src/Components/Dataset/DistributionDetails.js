@@ -61,7 +61,7 @@ class DistributionDetails extends Component {
     render() {
         const distribution = this.props.distribution;
         return (
-            <div className="distribution-details container">
+            <div className="distribution-details">
                 <div className="row">
                     <div className="distribution-details__body col-sm-8">
                         <div className="distribution-details-overview">

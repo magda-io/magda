@@ -143,7 +143,6 @@ class Search extends Component {
                     {this.props.isFetching && <ProgressBar />}
                     <div className="search">
                         <div className="search__search-body container">
-                            <div className="sub-heading"> Filters </div>
                             <SearchFacets
                                 updateQuery={this.updateQuery}
                                 location={this.props.location}
