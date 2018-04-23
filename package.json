@@ -17,21 +17,16 @@
         "pretty-quick": "^1.3.0"
     },
     "scripts": {
-        "install": "lerna bootstrap && lerna run postinstall",
         "build": "lerna run build --stream --concurrency=1",
-        "docker-build-local":
-            "lerna run docker-build-local --stream --concurrency=1",
-        "docker-build-prod":
-            "lerna run docker-build-prod --stream --concurrency=1",
+        "docker-build-local": "lerna run docker-build-local --stream --concurrency=1",
+        "docker-build-prod": "lerna run docker-build-prod --stream --concurrency=1",
         "create-all-tsconfigs": "node ./scripts/create-all-tsconfigs.js",
         "node-ci": "node ./scripts/node-js-ci.js",
         "lerna": "lerna",
         "build-changed-ts": "node ./scripts/build-changed.js",
         "build-changed-scala": "bash -c \"sbt deployLocalOnChange\"",
-        "build-changed":
-            "npm run build-changed-ts && npm run build-changed-scala",
-        "prettier":
-            "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
+        "build-changed": "npm run build-changed-ts && npm run build-changed-scala",
+        "prettier": "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
         "precommit": "pretty-quick --staged"
     },
     "dependencies": {
@@ -56,7 +51,12 @@
         "css": {
             "minified": true,
             "modules": false,
-            "browsers": ["last 2 versions", "ie 8", "ie 9", "ie 10"],
+            "browsers": [
+                "last 2 versions",
+                "ie 8",
+                "ie 9",
+                "ie 10"
+            ],
             "location": "pancake/css/",
             "name": "pancake.min.css"
         },
