@@ -19,7 +19,7 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "watch": "react-scripts build --watch",
-    "postinstall": "pancake"
+    "prepare": "pancake"
   },
   "devDependencies": {
     "@gov.au/core": "^2.0.0",
