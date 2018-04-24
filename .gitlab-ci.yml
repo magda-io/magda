@@ -120,6 +120,8 @@ buildtest:ui:
     - npm run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies
     - npm run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
     - npm run in-submodules -- -f categories.ui=true -- run test
+  tags:
+    - heavy
   artifacts:
     paths:
     - "*/build"
