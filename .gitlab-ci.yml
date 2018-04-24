@@ -11,6 +11,7 @@ stages:
   - dockerize
   - preview
   - deploy-dev
+  - release
   - deploy-prod
 
 cache:
@@ -324,7 +325,7 @@ dockerize:dockerExtensions:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - npm run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
-preview:
+Run As Preview:
   stage: preview
   when: manual
   only:
@@ -368,7 +369,7 @@ preview:
   # Helm upgrade
   - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait
 
-teardown-preview:
+Stop Preview:
   stage: preview
   when: manual
   dependencies: []
@@ -386,78 +387,34 @@ teardown-preview:
   - helm del --purge $CI_COMMIT_REF_SLUG
   - kubectl delete namespace $CI_COMMIT_REF_SLUG
 
+deploy-master-to-dev:
+  stage: deploy-dev
+  only:
+    - master
+  dependencies: []
+  cache: 
+    paths: []
+  image: 
+    name: dtzar/helm-kubectl
+  before_script: []
+  environment:
+    name: dev
+    url: http://magda-dev.terria.io
+  script:
+  # Kube Config
+  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
+  - export KUBECONFIG=kubectlconfig.yaml
+  - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG --timeout 1200 --wait
 
-
-# build-nodejs:
-#   stage: build
-#   script:
-#     - lerna bootstrap --scope=@magda/scripts 
-#     - npm run node-ci -- --command=build
-#   artifacts:
-#     paths:
-#     - "*/dist"
-#     expire_in: 60 minutes
-
-# # This doesn't actually have a dependency on building so just do it as part of build.
-# test-nodejs:
-#   stage: build
-#   script:
-#     - lerna bootstrap --scope=@magda/scripts 
-#     - npm run node-ci -- --command=test
-
-# build-scala:
-#   stage: build
-#   script:
-#     - sbt compile
-#   artifacts:
-#     paths:
-#     - "*/target"
-#     - "target"
-#     - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
-#     - "$CI_PROJECT_DIR/sbt-cache/boot"
-#     - "$CI_PROJECT_DIR/sbt-cache/sbtboot"
-#     - "$CI_PROJECT_DIR/sbt-cache/target"
-#     expire_in: 60 minutes
-
-
-# build-ui:
-#   stage: build
-#   script:
-#     - lerna --scope @magda/web-client bootstrap
-#     - ./node_modules/.bin/eslint magda-web-client/src/
-#     - lerna --scope @magda/web-client run build
-#   artifacts:
-#     paths:
-#     - magda-web-client/build
-#     expire_in: 60 minutes
-
-# # test-ui:
-# #   stage: test
-# #   dependencies:
-# #   - build-ui
-# #   cache:
-# #     key: build-ui-1
-# #     policy: pull
-# #     paths:
-# #     - "node_modules/"
-# #     - "*/node_modules"
-# #   stage: test
-# #   script:
-# #     - lerna --scope @magda/web-client bootstrap
-# #     - lerna --scope @magda/web-client run test
-
-# build-preview-map:
-#   stage: build
-#   script:
-#     - lerna --scope @magda/preview-map bootstrap
-#     - lerna --scope @magda/preview-map run build
-#   artifacts:
-#     paths:
-#     - magda-preview-map/build
-#     expire_in: 60 minutes
-
-# build-docker:
-#   stage: build-docker
-#   script:
-#     - lerna bootstrap
-#     - "lerna run docker-build-prod --include-filtered-dependencies -- -- --repository=registry.gitlab.com/magda-data/magda --version=$CI_COMMIT_REF_SLUG"
+release:
+  stage: release
+  only:
+    - tags
+  dependencies: []
+  cache: 
+    paths: []
+  image: 
+    name: dtzar/helm-kubectl
+  before_script: []
+  script:
+  
