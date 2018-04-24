@@ -17,7 +17,7 @@ export default function StaticPage(props) {
                     config.appName
                 }
             >
-                <div className={`container page-${id}`}>
+                <div className={`mui-container page-${id}`}>
                     <h1> {content.title && content.title} </h1>
                     <div
                         className="markdown-body"

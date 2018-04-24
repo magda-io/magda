@@ -5,7 +5,7 @@ import { config } from "../config";
 export default function Feedback(props) {
     return (
         <ReactDocumentTitle title={config.appName + " | feedback"}>
-            <div className="container feedback">
+            <div className="mui-container feedback">
                 <h1>Feedback</h1>
                 <a
                     href="http://preview.data.gov.au/feedback.html"

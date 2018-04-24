@@ -26,33 +26,38 @@ class DatasetDetails extends Component {
             this.props.dataset.source
         }](${dataset.landingPage})`;
         return (
-            <div className="dataset-details">
-                <div className="dataset-details-overview">
-                    <Small>
-                        <DescriptionBox
-                            content={dataset.description}
-                            truncateLength={200}
-                        />
-                    </Small>
-                    <Medium>
-                        <DescriptionBox
-                            content={dataset.description}
-                            truncateLength={500}
-                        />
-                    </Medium>
-                </div>
-                <div className="quality-rating-box">
-                    <Link to="/page/dataset-quality">Open Data Quality</Link>:
-                    &nbsp;&nbsp;
-                    <StarRating stars={dataset.linkedDataRating} />
-                </div>
-                <TagsBox tags={dataset.tags} />
-                <div className="dataset-preview">
-                    <DatasetPreview dataset={dataset} />
+            <div className="dataset-details container">
+                <div className="mui-row">
+                    <div className="mui-col-sm-9">
+                        <div className="dataset-details-overview">
+                            <Small>
+                                <DescriptionBox
+                                    content={dataset.description}
+                                    truncateLength={200}
+                                />
+                            </Small>
+                            <Medium>
+                                <DescriptionBox
+                                    content={dataset.description}
+                                    truncateLength={500}
+                                />
+                            </Medium>
+                        </div>
+                        <div className="quality-rating-box">
+                            <Link to="/page/dataset-quality">
+                                Open Data Quality
+                            </Link>: &nbsp;&nbsp;
+                            <StarRating stars={dataset.linkedDataRating} />
+                        </div>
+                        <TagsBox tags={dataset.tags} />
+                        <div className="dataset-preview">
+                            <DatasetPreview dataset={dataset} />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="row">
-                    <div className="col-sm-12">
+                <div className="mui-row">
+                    <div className="mui-col-sm-12">
                         <div className="dataset-details-files-apis">
                             <h2 className="clearfix">
                                 <span className="section-heading">

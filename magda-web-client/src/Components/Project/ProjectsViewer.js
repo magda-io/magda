@@ -70,7 +70,7 @@ class ProjectsViewer extends Component {
     render() {
         return (
             <ReactDocumentTitle title={"Projects | " + config.appName}>
-                <div className="container projects-viewer">
+                <div className="mui-container projects-viewer">
                     {this.props.isFetching && <ProgressBar />}
                     <div className="row">
                         <div className="col-sm-8 projects">
