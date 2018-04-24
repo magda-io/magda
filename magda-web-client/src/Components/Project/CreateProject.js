@@ -250,7 +250,7 @@ class CreateProject extends Component {
             return this.renderCreateProject();
         }
         return (
-            <div className="mui-container">
+            <div className="container">
                 {" "}
                 <Link
                     to={{

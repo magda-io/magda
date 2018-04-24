@@ -23,7 +23,7 @@ class Account extends React.Component {
 
     render() {
         return (
-            <div className="mui-container account">
+            <div className="container account">
                 {!this.props.user && (
                     <Login
                         signInError={

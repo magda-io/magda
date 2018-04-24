@@ -14,7 +14,7 @@ export default class ErrorHandler extends React.Component {
     render() {
         return (
             <ReactDocumentTitle title={"Error | " + config.appName}>
-                <div className="mui-container">
+                <div className="container">
                     <h1>{this.props.error.title}</h1>
                     {this.props.error.detail}
                 </div>

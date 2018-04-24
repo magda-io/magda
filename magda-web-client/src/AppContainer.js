@@ -45,7 +45,7 @@ class AppContainer extends React.Component {
         const footerNavs = config.footerNavigation;
         return (
             <ReactDocumentTitle title={config.appName}>
-                <div>
+                <div className="au-grid">
                     <Medium>
                         <Banner />
                     </Medium>
