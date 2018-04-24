@@ -233,12 +233,18 @@ class DataPreviewMap extends Component {
                 </div>
             );
         }
-
         return (
             <div className="data-preview-map">
                 <h3>Map Preview</h3>
                 {(this.state.isInitLoading || this.state.isMapLoading) && (
-                    <Spinner />
+                    <div>
+                        <Medium>
+                            <Spinner width="100%" height="420px" />
+                        </Medium>
+                        <Small>
+                            <Spinner width="100%" height="200px" />
+                        </Small>
+                    </div>
                 )}
                 {iframe}
             </div>

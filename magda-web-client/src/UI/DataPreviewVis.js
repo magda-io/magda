@@ -10,6 +10,8 @@ import { bindActionCreators } from "redux";
 import VegaLite from "react-vega-lite";
 import DataPreviewTable from "./DataPreviewTable";
 import { Medium } from "./Responsive";
+import Spinner from "../Components/Spinner";
+
 import "./DataPreviewVis.css";
 
 class DataPreviewVis extends Component {
@@ -114,8 +116,8 @@ class DataPreviewVis extends Component {
                 .split("?")[0];
 
             return (
-                <div className="mui-row">
-                    <div className="mui-col-md-6">
+                <div className="row">
+                    <div className="col-md-6">
                         <div className="data-preview-vis_file-name">
                             {fileName}
                         </div>
@@ -126,7 +128,7 @@ class DataPreviewVis extends Component {
                         />
                     </div>
                     <Medium>
-                        <div className="mui-col-md-6">
+                        <div className="col-md-6">
                             <ChartConfig
                                 chartType={spec.mark}
                                 chartTitle={spec.description}
@@ -168,7 +170,9 @@ class DataPreviewVis extends Component {
 
     renderByState() {
         if (this.props.error) return <div>Preview errored!</div>;
-        if (this.props.isFetching) return <div>Preview is loading...</div>;
+        if (this.props.isFetching) {
+            return <Spinner width="100%" height="420px" />;
+        }
         if (
             this.props.data &&
             this.props.distribution &&

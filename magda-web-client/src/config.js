@@ -68,7 +68,7 @@ export const config = {
         { id: "format", component: Format }
     ],
     headerNavigation: [
-        ["Datasets", "search?q=*"],
+        ["Datasets", "search"],
         ["About", "page/about"],
         ["Publishers", "publishers"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
@@ -107,5 +107,11 @@ export const config = {
         "Oct",
         "Nov",
         "Dec"
-    ]
+    ],
+    boundingBox: {
+        west: 105,
+        south: -45,
+        east: 155,
+        north: -5
+    }
 };

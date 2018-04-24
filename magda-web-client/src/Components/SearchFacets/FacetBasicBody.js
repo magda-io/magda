@@ -128,26 +128,28 @@ class FacetBasicBody extends Component {
                 </div>
                 {this.state.showOptions && (
                     <div>
-                        <ul className="mui-list--unstyled">
-                            {that.state._activeOptions
-                                .sort((a, b) => b.hitCount - a.hitCount)
-                                .map(o => (
-                                    <li key={`${o.value}-${o.hitCount}`}>
-                                        {that.renderOption(
-                                            o,
-                                            maxOptionOptionList
-                                        )}
+                        <div className="facet-body-buttons">
+                            <ul className="mui-list--unstyled">
+                                {that.state._activeOptions
+                                    .sort((a, b) => b.hitCount - a.hitCount)
+                                    .map(o => (
+                                        <li key={`${o.value}-${o.hitCount}`}>
+                                            {that.renderOption(
+                                                o,
+                                                maxOptionOptionList
+                                            )}
+                                        </li>
+                                    ))}
+                                {this.props.options.length === 0 && (
+                                    <li className="no-data">
+                                        No {this.props.title} available
                                     </li>
-                                ))}
-                            {this.props.options.length === 0 && (
-                                <li className="no-data">
-                                    No {this.props.title} available
-                                </li>
+                                )}
+                            </ul>
+                            {inactiveOptions.map(o =>
+                                this.renderOption(o, maxOptionOptionList)
                             )}
-                        </ul>
-                        {inactiveOptions.map(o =>
-                            this.renderOption(o, maxOptionOptionList)
-                        )}
+                        </div>
                         <div className="facet-footer">
                             <Button
                                 variant="flat"
