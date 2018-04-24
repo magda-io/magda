@@ -1,5 +1,6 @@
 ## 0.0.38
 
+*   Use grid system from DTA design guide
 *   Mobile search filter new look
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
 *   When closed, hamburger menu on mobile switches to a X
@@ -44,6 +45,7 @@
 *   Upgraded React and associates to v16.3
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 *   Fixed an issue that users may see an error after page 4
+*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
 
 ## 0.0.37
 
