@@ -7,7 +7,7 @@ const SearchBoxSwitcher = props => {
     return (
         <div className={"searchBox-switcher " + props.theme}>
             <Small>
-                <div className="mui-container container-mobile">
+                <div className="container container-mobile">
                     <SearchBox location={props.location} isMobile={true} />
                 </div>
             </Small>
