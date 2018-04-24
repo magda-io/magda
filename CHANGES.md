@@ -47,6 +47,7 @@
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 *   Fixed an issue that users may see an error after page 4
 *   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
+*   keep distance between search box and the first story on mobile view
 
 ## 0.0.37
 
