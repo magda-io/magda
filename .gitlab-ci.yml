@@ -341,7 +341,7 @@ Run As Preview:
   environment:
     name: preview/$CI_COMMIT_REF_NAME
     url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
-    on_stop: teardown-preview
+    on_stop: Stop Preview
   script:
   # Add PWGEN for generating passwords
   - apk add --update pwgen
