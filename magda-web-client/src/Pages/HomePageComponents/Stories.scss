@@ -1,6 +1,10 @@
 @import "../../variables";
 
 .homepage-stories {
+    @media (max-width: $medium) {
+        margin-top: 16px;
+    }
+
     .stories-container {
         display: flex;
         justify-content: space-between;
