@@ -1,43 +1,143 @@
-import React from "react";
+import React, { Component } from "react";
 import ReactTable from "react-table";
 import "./ReactTable.css";
+import { config } from "../config";
 import { Medium, Small } from "./Responsive";
+import Spinner from "../Components/Spinner";
 
-function DataPreviewTable(props) {
-    if (!props.data.meta.fields)
-        return <div>Data grid preview is not available</div>;
-    const columns = props.data.meta.fields
-        .filter(f => f.length > 0)
-        .map(item => ({
+function loadPapa() {
+    return import(/* webpackChunkName: "papa" */ "papaparse")
+        .then(papa => {
+            return papa;
+        })
+        .catch(error => {
+            throw new Error("An error occurred while loading the component");
+        });
+}
+
+export default class DataPreviewTable extends Component<
+    {
+        distribution: ParsedDistribution
+    },
+    {
+        error: Error,
+        loading: Boolean,
+        parsedResults: any
+    }
+> {
+    constructor(props) {
+        super(props);
+        this.state = {
+            error: null,
+            loading: true,
+            parsedResults: null
+        };
+    }
+
+    componentDidMount() {
+        this.fetchData(this.props.distribution.downloadURL);
+    }
+    componentWillReceiveProps(nextProps) {
+        if (
+            nextProps.distribution.downloadURL !==
+            this.props.distribution.downloadURL
+        ) {
+            this.fetchData(nextProps.distribution.downloadURL);
+        }
+        // this.updateDimensions();
+    }
+
+    fetchData(url) {
+        this.setState({
+            error: null,
+            loading: true,
+            parsedResults: null
+        });
+        return loadPapa()
+            .then(papa => {
+                return new Promise((resolve, reject) => {
+                    papa.parse(config.proxyUrl + "_0d/" + url, {
+                        download: true,
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: results => {
+                            resolve(results);
+                        },
+                        error: err => {
+                            reject(err);
+                        }
+                    });
+                });
+            })
+            .then(results => {
+                this.setState({
+                    error: null,
+                    loading: false,
+                    parsedResults: results
+                });
+            })
+            .catch(err => {
+                this.setState({
+                    error: err,
+                    loading: false,
+                    parsedResults: null
+                });
+            });
+    }
+
+    render() {
+        if (this.state.error) {
+            return (
+                <div className="error">
+                    <h3>{this.state.error.name}</h3>
+                    {this.state.error.message}
+                </div>
+            );
+        }
+        if (this.state.loading) {
+            return (
+                <div>
+                    <Medium>
+                        <Spinner width="100%" height="500px" />
+                    </Medium>
+                    <Small>
+                        <Spinner width="100%" height="350px" />
+                    </Small>
+                </div>
+            );
+        }
+        const fields = this.state.parsedResults.meta.fields;
+        if (!this.state.parsedResults.meta.fields)
+            return <div>Data grid preview is not available</div>;
+        const columns = fields.filter(f => f.length > 0).map(item => ({
             Header: item,
             accessor: item
         }));
-    return (
-        <div className="clearfix">
-            <div className="vis">
-                <Medium>
-                    <ReactTable
-                        minRows={3}
-                        style={{
-                            height: "500px"
-                        }} /* No vert scroll for 10 rows */
-                        data={props.data.data}
-                        columns={columns}
-                    />
-                </Medium>
-                <Small>
-                    <ReactTable
-                        minRows={3}
-                        style={{
-                            height: "350px"
-                        }} /* No vert scroll for 5 rows */
-                        data={props.data.data}
-                        columns={columns}
-                    />
-                </Small>
+        return (
+            <div className="clearfix">
+                <div className="vis">
+                    <Medium>
+                        <ReactTable
+                            minRows={3}
+                            style={{
+                                height: "500px"
+                            }} /* No vert scroll for 10 rows */
+                            data={this.state.parsedResults.data}
+                            columns={columns}
+                        />
+                    </Medium>
+                    <Small>
+                        <ReactTable
+                            minRows={3}
+                            style={{
+                                height: "350px"
+                            }} /* No vert scroll for 5 rows */
+                            data={this.state.parsedResults.data}
+                            columns={columns}
+                        />
+                    </Small>
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 }
-
-export default DataPreviewTable;

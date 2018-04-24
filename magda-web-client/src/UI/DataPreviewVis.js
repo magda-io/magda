@@ -3,12 +3,12 @@ import React, { Component } from "react";
 import Tabs from "muicss/lib/react/tabs";
 import Tab from "muicss/lib/react/tab";
 import ChartConfig from "./ChartConfig";
-import defined from "../helpers/defined";
 import { fetchPreviewData } from "../actions/previewDataActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import VegaLite from "react-vega-lite";
 import DataPreviewTable from "./DataPreviewTable";
+import DataPreviewVega from "./DataPreviewVega";
 import { Medium } from "./Responsive";
 import Spinner from "../Components/Spinner";
 
@@ -83,71 +83,7 @@ class DataPreviewVis extends Component {
     }
 
     renderChart(previewData) {
-        if (defined(previewData.meta.chartFields)) {
-            const spec = {
-                height: 263,
-                width: this.state.chartWidth,
-                description: this.state.chartTitle,
-                mark: this.state.chartType,
-                encoding: {
-                    x: {
-                        field: defined(this.state.xAxis)
-                            ? this.state.xAxis
-                            : previewData.meta.chartFields.time[0],
-                        type: this.state.xScale
-                    },
-                    y: {
-                        field: defined(this.state.yAxis)
-                            ? this.state.yAxis
-                            : previewData.meta.chartFields.numeric[0],
-                        type: this.state.yScale
-                    }
-                }
-            };
-
-            const data = {
-                values: previewData.data
-            };
-
-            const fileName = this.props.distribution.downloadURL
-                .split("/")
-                .pop()
-                .split("#")[0]
-                .split("?")[0];
-
-            return (
-                <div className="row">
-                    <div className="col-md-6">
-                        <div className="data-preview-vis_file-name">
-                            {fileName}
-                        </div>
-                        <VegaLite
-                            className="data-preview-vis_chart"
-                            spec={spec}
-                            data={data}
-                        />
-                    </div>
-                    <Medium>
-                        <div className="col-md-6">
-                            <ChartConfig
-                                chartType={spec.mark}
-                                chartTitle={spec.description}
-                                xScale={spec.encoding.x.type}
-                                yScale={spec.encoding.y.type}
-                                xAxis={spec.encoding.x.field}
-                                yAxis={spec.encoding.x.field}
-                                yAxisOptions={
-                                    previewData.meta.chartFields.numeric
-                                }
-                                xAxisOptions={previewData.meta.chartFields.time}
-                                onChange={this.updateChartConfig}
-                            />
-                        </div>
-                    </Medium>
-                </div>
-            );
-        }
-        return <div>Chart preview is not available</div>;
+        return <DataPreviewVega distribution={this.props.distribution} />;
     }
 
     renderTable(previewData) {

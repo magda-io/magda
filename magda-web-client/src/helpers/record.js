@@ -68,7 +68,17 @@ export type RawDistribution = {
             fields: Object,
             format: string,
             timeseries: boolean,
-            wellFormed: boolean
+            wellFormed: boolean,
+            compatiblePreviews: {
+                map?: boolean,
+                chart?: boolean,
+                table?: boolean,
+                json?: boolean,
+                html?: boolean,
+                text?: boolean,
+                rss?: boolean,
+                google?: boolean
+            }
         }
     }
 };
@@ -104,7 +114,17 @@ export type ParsedDistribution = {
     linkActive: boolean,
     linkStatusAvailable: boolean,
     isTimeSeries: boolean,
-    chartFields?: ?Object
+    chartFields?: ?Object,
+    compatiblePreviews: {
+        map?: boolean,
+        chart?: boolean,
+        table?: boolean,
+        json?: boolean,
+        html?: boolean,
+        text?: boolean,
+        rss?: boolean,
+        google?: boolean
+    }
 };
 
 // all aspects become required and must have value
@@ -179,7 +199,17 @@ const defaultDistributionAspect = {
         fields: {},
         format: null,
         timeseries: false,
-        wellFormed: false
+        wellFormed: false,
+        compatiblePreviews: {
+            map: false,
+            chart: false,
+            table: false,
+            json: false,
+            html: false,
+            text: false,
+            rss: false,
+            google: false
+        }
     }
 };
 
@@ -215,6 +245,7 @@ export function parseDistribution(
     const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
     const linkActive = linkStatus.status === "active";
     const isTimeSeries = aspects["visualization-info"]["timeseries"];
+    const compatiblePreviews = aspects["visualization-info"].compatiblePreviews;
     let chartFields = null;
 
     if (isTimeSeries) {
@@ -242,7 +273,8 @@ export function parseDistribution(
         linkStatusAvailable,
         linkActive,
         isTimeSeries,
-        chartFields
+        chartFields,
+        compatiblePreviews
     };
 }
 

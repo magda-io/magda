@@ -18,9 +18,7 @@ class DataPreviewMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            isInitLoading: true,
-            isMapLoading: false,
-            isMapPreviewAvailable: false,
+            loading: true
         };
         this.onIframeMessageReceived = this.onIframeMessageReceived.bind(this);
         this.iframeRef = null;
@@ -55,12 +53,7 @@ class DataPreviewMap extends Component {
     }
 
     onIframeMessageReceived(e) {
-        if (
-            this.state.isInitLoading ||
-            !this.state.isMapPreviewAvailable ||
-            !this.iframeRef
-        )
-            return;
+        if (!this.iframeRef) return;
         const iframeWindow = this.iframeRef.contentWindow;
         if (iframeWindow !== e.source) return;
         if (e.data === "ready") {
@@ -69,7 +62,7 @@ class DataPreviewMap extends Component {
                 "*"
             );
             this.setState({
-                isMapLoading: true
+                loading: true
             });
             if (this.props.onLoadingStart) {
                 try {
@@ -81,7 +74,7 @@ class DataPreviewMap extends Component {
             return;
         } else if (e.data === "loading complete") {
             this.setState({
-                isMapLoading: false
+                loading: false
             });
             if (this.props.onLoadingEnd) {
                 try {
@@ -95,17 +88,22 @@ class DataPreviewMap extends Component {
     }
 
     render() {
-        if (!this.state.isInitLoading && !this.state.isMapPreviewAvailable)
-            return null; //-- requested by Tash: hide the section if no data available
-
         // 3 states:
-        // - loading component (isInitLoading === true) -> Show spinner
-        // - loading terria (isMapLoading === true) -> Continue showing spinner and start loading map hidden
+        // - loading terria (isMapLoading === true) -> Show spinner and start loading map hidden
         // - everything loaded (neither true) -> No spinner, show map
-
-        let iframe = null;
-        if (!this.state.isInitLoading) {
-            iframe = (
+        return (
+            <div className="data-preview-map">
+                <h3>Map Preview</h3>
+                {this.state.loading && (
+                    <div>
+                        <Medium>
+                            <Spinner width="100%" height="420px" />
+                        </Medium>
+                        <Small>
+                            <Spinner width="100%" height="200px" />
+                        </Small>
+                    </div>
+                )}
                 <div style={{ position: "relative" }}>
                     <DataPreviewMapOpenInNationalMapButton
                         distribution={this.props.distribution}
@@ -113,9 +111,7 @@ class DataPreviewMap extends Component {
                             position: "absolute",
                             right: "10px",
                             top: "10px",
-                            visibility: this.state.isMapLoading
-                                ? "hidden"
-                                : "visible"
+                            display: this.state.loading ? "none" : "initial"
                         }}
                     />
                     <Medium>
@@ -130,9 +126,7 @@ class DataPreviewMap extends Component {
                             }
                             ref={f => (this.iframeRef = f)}
                             style={{
-                                visibility: this.state.isMapLoading
-                                    ? "hidden"
-                                    : "visible"
+                                display: this.state.loading ? "none" : "initial"
                             }}
                         />
                     </Medium>
@@ -148,29 +142,13 @@ class DataPreviewMap extends Component {
                             }
                             ref={f => (this.iframeRef = f)}
                             style={{
-                                visibility: this.state.isMapLoading
+                                visibility: this.state.loading
                                     ? "hidden"
                                     : "visible"
                             }}
                         />
                     </Small>
                 </div>
-            );
-        }
-        return (
-            <div className="data-preview-map">
-                <h3>Map Preview</h3>
-                {(this.state.isInitLoading || this.state.isMapLoading) && (
-                    <div>
-                        <Medium>
-                            <Spinner width="100%" height="420px" />
-                        </Medium>
-                        <Small>
-                            <Spinner width="100%" height="200px" />
-                        </Small>
-                    </div>
-                )}
-                {iframe}
             </div>
         );
     }
