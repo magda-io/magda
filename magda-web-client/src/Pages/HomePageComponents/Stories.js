@@ -36,7 +36,7 @@ class Stories extends Component {
                                 timeout={{ appear: 500 }}
                             >
                                 <div className="mui-row" key="stories-boxes">
-                                    <div className="col-md-12">
+                                    <div className="mui-col-md-12">
                                         <StoryBox
                                             idx={0}
                                             className="story-box-1"
