@@ -9,7 +9,6 @@ import { Small, Medium } from "../../UI/Responsive";
 import "./SearchSuggestionBox.css";
 import recentSearchIcon from "../../assets/updated.svg";
 import closeIcon from "../../assets/mobile-menu-close.svg";
-import isEqual from "lodash.isequal";
 
 type searchDataType = {
     name: ?string,
@@ -166,8 +165,6 @@ class SearchSuggestionBox extends Component {
         const searchData = this.createSearchDataFromProps(newProps);
         if (!searchData) return;
         if (!searchData.data.q || !searchData.data.q.trim()) return;
-        const currentSearchData = this.createSearchDataFromProps(prevProps);
-        if (isEqual(currentSearchData, searchData)) return;
         const recentSearches = this.insertItemIntoLocalData(
             "recentSearches",
             searchData
@@ -187,7 +184,7 @@ class SearchSuggestionBox extends Component {
             isMouseOver: false,
             selectedItemIdx: null
         });
-        this.searchInputRef.blur();
+        if(this.searchInputRef) this.searchInputRef.blur();
     }
 
     onSearchItemClick(e, item: searchDataType) {
@@ -361,7 +358,7 @@ class SearchSuggestionBox extends Component {
                                 </Medium>
                                 <Small>
                                     <div className="recent-item-content">
-                                        {item.data.q ? item.data.q.trim() : ""}
+                                        <div>{item.data.q ? item.data.q.trim() : ""}</div>
                                     </div>
                                 </Small>
                             </button>
