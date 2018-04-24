@@ -49,6 +49,7 @@
 *   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
 *   keep distance between search box and the first story on mobile view
 *   Fixed an issue search may not be added to recent search list in some cases
+*   Make small position adjustment to the recent search icon
 
 ## 0.0.37
 
