@@ -53,6 +53,7 @@
 *   Removed implied ability for magda postgres to use a backup method other than WAL (this never actually worked in practice)
 *   Replaced old `node-ci` script with `run-in-submodules`, which allows a command to be run in submodules based on matching
     the values in `package.json`.
+*   keep distance between search box and the first story on mobile view
 
 ## 0.0.37
 
