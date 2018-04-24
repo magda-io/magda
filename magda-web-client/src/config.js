@@ -68,7 +68,7 @@ export const config = {
         { id: "format", component: Format }
     ],
     headerNavigation: [
-        ["Datasets", "search?q=*"],
+        ["Datasets", "search"],
         ["About", "page/about"],
         ["Publishers", "publishers"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
@@ -78,7 +78,8 @@ export const config = {
             category: "Data.gov.au",
             links: [
                 ["About", "page/about"],
-                ["Request a dataset", "mailto:data@digital.gov.au"]
+                ["Request a dataset", "mailto:data@digital.gov.au"],
+                ["Privacy Policy", "page/privacy-policy"]
             ]
         },
         {
@@ -106,5 +107,11 @@ export const config = {
         "Oct",
         "Nov",
         "Dec"
-    ]
+    ],
+    boundingBox: {
+        west: 105,
+        south: -45,
+        east: 155,
+        north: -5
+    }
 };

@@ -10,12 +10,15 @@ import { bindActionCreators } from "redux";
 import VegaLite from "react-vega-lite";
 import DataPreviewTable from "./DataPreviewTable";
 import { Medium } from "./Responsive";
+import Spinner from "../Components/Spinner";
+
 import "./DataPreviewVis.css";
 
 class DataPreviewVis extends Component {
     constructor(props) {
         super(props);
         this.updateChartConfig = this.updateChartConfig.bind(this);
+        this.updateDimensions = this.updateDimensions.bind(this);
         this.state = {
             chartType: "line",
             chartTitle: "",
@@ -40,13 +43,32 @@ class DataPreviewVis extends Component {
         ) {
             this.props.fetchPreviewData(nextProps.distribution);
         }
+        this.updateDimensions();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidMount() {
+        window.addEventListener("resize", this.updateDimensions);
+        this.updateDimensions();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.updateDimensions);
+    }
+
+    updateDimensions() {
         if (this.chartContainer) {
-            const width =
-                this.chartContainer.getBoundingClientRect().width - 48;
-            if (prevState.chartWidth !== width) {
+            // 1. check screensize
+            const windowWidth = window.innerWidth;
+            let width = 400;
+            if (windowWidth > 992) {
+                // big screen, use only half of the container width for chart
+                width =
+                    this.chartContainer.getBoundingClientRect().width / 2 - 48;
+            } else {
+                width = this.chartContainer.getBoundingClientRect().width - 48;
+            }
+
+            if (this.state.chartWidth !== width) {
                 this.setState({
                     chartWidth: width
                 });
@@ -94,14 +116,9 @@ class DataPreviewVis extends Component {
                 .split("?")[0];
 
             return (
-                <div className="mui-row">
-                    <div className="mui-col-sm-6">
-                        <div
-                            className="data-preview-vis_file-name"
-                            ref={chartContainer => {
-                                this.chartContainer = chartContainer;
-                            }}
-                        >
+                <div className="row">
+                    <div className="col-md-6">
+                        <div className="data-preview-vis_file-name">
                             {fileName}
                         </div>
                         <VegaLite
@@ -111,7 +128,7 @@ class DataPreviewVis extends Component {
                         />
                     </div>
                     <Medium>
-                        <div className="mui-col-sm-6">
+                        <div className="col-md-6">
                             <ChartConfig
                                 chartType={spec.mark}
                                 chartTitle={spec.description}
@@ -137,9 +154,25 @@ class DataPreviewVis extends Component {
         return <DataPreviewTable data={previewData} />;
     }
 
+    /**
+     * Return rendered <Tabs> object with tab items
+     * @param {Array} tabs - Array of tab items
+     */
+    renderTabs(tabs) {
+        const tabitems = tabs.map((item, i) => (
+            <Tab key={i} value={item.value} label={item.label}>
+                {item.action}
+            </Tab>
+        ));
+
+        return <Tabs defaultSelectedIndex={0}>{tabitems}</Tabs>;
+    }
+
     renderByState() {
         if (this.props.error) return <div>Preview errored!</div>;
-        if (this.props.isFetching) return <div>Preview is loading...</div>;
+        if (this.props.isFetching) {
+            return <Spinner width="100%" height="420px" />;
+        }
         if (
             this.props.data &&
             this.props.distribution &&
@@ -148,35 +181,30 @@ class DataPreviewVis extends Component {
             const previewData = this.props.data[
                 this.props.distribution.identifier
             ];
-            if (
-                previewData &&
-                previewData.meta &&
-                (previewData.meta.chartFields || previewData.meta.fields)
-            ) {
-                return (
-                    <Tabs
-                        defaultSelectedIndex={defined(
-                            previewData.meta.chartFields
-                        )}
-                    >
-                        <Tab value="table" label="Table">
-                            {this.renderTable(previewData)}
-                        </Tab>
-                        <Tab value="chart" label="Chart">
-                            {this.renderChart(previewData)}
-                        </Tab>
-                    </Tabs>
-                );
-            }
+            const meta = (previewData && previewData.meta) || {};
+
+            // Render chart if there's chart fields, table if fields, both if both
+            const tabs = [
+                meta.chartFields &&
+                    TabItem("chart", "Chart", this.renderChart(previewData)),
+                meta.fields &&
+                    TabItem("table", "Table", this.renderTable(previewData))
+            ].filter(x => !!x);
+
+            return tabs.length ? this.renderTabs(tabs) : null;
         }
-        return null; //-- requested by Tash: hide the section if no data available
     }
 
     render() {
         const bodyRenderResult = this.renderByState();
         if (!bodyRenderResult) return null;
         return (
-            <div className="data-preview-vis">
+            <div
+                className="data-preview-vis"
+                ref={chartContainer => {
+                    this.chartContainer = chartContainer;
+                }}
+            >
                 <h3>Data Preview</h3>
                 {bodyRenderResult}
             </div>
@@ -205,6 +233,20 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
         },
         dispatch
     );
+};
+
+/**
+ * Encapsulate tab object
+ * @param {string} value
+ * @param {string} item
+ * @param {function} action
+ */
+const TabItem = (value, item, action) => {
+    return {
+        value: value,
+        label: item,
+        action: action
+    };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataPreviewVis);

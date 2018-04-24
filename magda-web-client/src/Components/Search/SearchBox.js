@@ -38,6 +38,7 @@ class SearchBox extends Component {
             height: 0,
             isFocus: false
         };
+        this.searchInputFieldRef = null;
     }
 
     debounceUpdateSearchQuery = debounce(this.updateSearchText, 3000);
@@ -64,6 +65,9 @@ class SearchBox extends Component {
      * update only the search text, remove all facets
      */
     updateSearchText(text) {
+        if (text === "") text = "*";
+        // dismiss keyboard on mobile when new search initiates
+        if (this.searchInputFieldRef) this.searchInputFieldRef.controlEl.blur();
         this.updateQuery({
             q: text,
             publisher: [],
@@ -80,6 +84,7 @@ class SearchBox extends Component {
         // when user hit enter, no need to submit the form
         if (event.charCode === 13) {
             event.preventDefault();
+            this.debounceUpdateSearchQuery(this.getSearchBoxValue());
             this.debounceUpdateSearchQuery.flush();
         }
     }
@@ -88,6 +93,7 @@ class SearchBox extends Component {
      * If the search button is clicked, we do the search immediately
      */
     onClickSearch() {
+        this.debounceUpdateSearchQuery(this.getSearchBoxValue());
         this.debounceUpdateSearchQuery.flush();
     }
 
@@ -144,6 +150,7 @@ class SearchBox extends Component {
                 onChange={this.onSearchTextChange}
                 onKeyPress={this.handleSearchFieldEnterKeyPress}
                 autoComplete="off"
+                ref={el => (this.searchInputFieldRef = el)}
                 onFocus={() => this.setState({ isFocus: true })}
                 onBlur={() =>
                     this.setState({
@@ -157,6 +164,7 @@ class SearchBox extends Component {
             <SearchSuggestionBox
                 searchText={this.getSearchBoxValue()}
                 isSearchInputFocus={this.state.isFocus}
+                inputRef={this.searchInputFieldRef}
             />
         );
 
@@ -176,18 +184,19 @@ class SearchBox extends Component {
                     <span className="search-input__highlight">
                         {this.getSearchBoxValue()}
                     </span>
+                    <button
+                        onClick={this.onClickSearch}
+                        className="search-btn"
+                        type="button"
+                    >
+                        <img
+                            src={this.props.isMobile ? searchDark : searchGrey}
+                            alt="search button"
+                        />
+                        <span className="sr-only">submit search</span>
+                    </button>
                 </label>
-                <button
-                    onClick={this.onClickSearch}
-                    className="search-btn"
-                    type="button"
-                >
-                    <img
-                        src={this.props.isMobile ? searchDark : searchGrey}
-                        alt="search button"
-                    />
-                    <span className="sr-only">submit search</span>
-                </button>
+
                 <Small>{suggestionBox}</Small>
             </Form>
         );

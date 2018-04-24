@@ -3,7 +3,6 @@
 .top-header-container {
     background: rgba(#ffffff, 0.5);
     .desktop-nav {
-        width: 100%;
         height: 90px;
         display: flex;
     }
@@ -61,6 +60,7 @@
 .mobile-header {
     background-color: #ffffff;
     box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
+
     .mobile-header-inner {
         display: flex;
         justify-content: space-between;
@@ -82,7 +82,7 @@
         .mobile-toggle {
             background: transparent;
             border: 0;
-            margin-top: 12px;
+            margin-top: 20px;
             margin-right: 16px;
             margin-bottom: 12px;
             cursor: pointer;
@@ -93,14 +93,21 @@
         }
     }
 
+    .mobile-nav-wrapper {
+        overflow: hidden;
+        position: absolute;
+        width: 100%;
+        z-index: 1;
+    }
+
     .mobile-nav {
+        background: #fff;
         padding-left: 10px;
-        height: 0;
         overflow-y: hidden;
-        transition: height 0.55s;
+        height: 0;
+        border-bottom: 1px solid rgba(73, 73, 73, 0.15);
         &.isOpen {
-            height: 200px;
-            border-top: 1px solid rgba(73, 73, 73, 0.15);
+            height: auto;
         }
     }
     .account-navbar a,

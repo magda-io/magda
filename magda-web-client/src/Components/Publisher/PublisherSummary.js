@@ -7,7 +7,7 @@ function PublisherSummary(props) {
     return (
         <div className="publisher-summray white-box media">
             <div className="media-body">
-                <h3>
+                <h2>
                     <Link
                         to={
                             "publishers/" +
@@ -16,7 +16,7 @@ function PublisherSummary(props) {
                     >
                         {props.publisher.name}
                     </Link>
-                </h3>
+                </h2>
                 <div className="publisher-description">
                     {details.description &&
                         details.description.slice(0, 200) + "..."}

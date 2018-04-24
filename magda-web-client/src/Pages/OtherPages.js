@@ -1,7 +1,5 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import Container from "muicss/lib/react/container";
-
 import Search from "../Components/Search/Search";
 import Feedback from "../Components/Feedback";
 import Contact from "../Components/Contact";
@@ -59,8 +57,13 @@ const OtherPages = props => {
     return (
         <div className="other-page">
             <Header />
-            <SearchBoxSwitcher location={props.location} theme="none-home" />
-            <Container className="app-container">{renderBody()}</Container>
+            {props.location.pathname !== "/publishers" && (
+                <SearchBoxSwitcher
+                    location={props.location}
+                    theme="none-home"
+                />
+            )}
+            <div className="container app-container">{renderBody()}</div>
         </div>
     );
 };

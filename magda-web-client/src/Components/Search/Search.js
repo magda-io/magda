@@ -142,26 +142,19 @@ class Search extends Component {
                 <div>
                     {this.props.isFetching && <ProgressBar />}
                     <div className="search">
-                        <div className="search__search-body container">
-                            {searchText.length > 0 && (
-                                <div className="sub-heading"> Filters </div>
-                            )}
-                            {searchText.length > 0 && (
-                                <SearchFacets
-                                    updateQuery={this.updateQuery}
-                                    location={this.props.location}
-                                />
-                            )}
-                            {searchText.length > 0 &&
-                                !this.props.isFetching &&
+                        <div className="search__search-body">
+                            <SearchFacets
+                                updateQuery={this.updateQuery}
+                                location={this.props.location}
+                            />
+                            {!this.props.isFetching &&
                                 !this.props.error && (
                                     <div className="sub-heading">
                                         {" "}
                                         results ( {this.props.hitCount} )
                                     </div>
                                 )}
-                            {searchText.length > 0 &&
-                                !this.props.isFetching &&
+                            {!this.props.isFetching &&
                                 !this.props.error && (
                                     <div>
                                         {!this.searchBoxEmpty() && (

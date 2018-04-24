@@ -12,7 +12,10 @@
 
 .feedback-form {
     z-index: 999;
-    position: fixed;
+    text-align: right;
+    @media (min-width: $small) {
+        position: fixed;
+    }
     right: 24px;
     bottom: 24px;
 
@@ -43,6 +46,9 @@
     .feedback-form-header {
         padding: 8px 16px;
         color: $success;
+        span {
+            line-height: 24px;
+        }
     }
 
     .feedback-form-footer {
@@ -68,8 +74,13 @@
         }
     }
 
-    .notification__inner{
+    .notification__inner {
         right: 24px;
         bottom: 24px;
+    }
+
+    .privacy-link {
+        margin-top: 10px;
+        font-size: 0.75rem;
     }
 }

@@ -7,7 +7,9 @@ const SearchBoxSwitcher = props => {
     return (
         <div className={"searchBox-switcher " + props.theme}>
             <Small>
-                <SearchBox location={props.location} isMobile={true} />
+                <div className="container container-mobile">
+                    <SearchBox location={props.location} isMobile={true} />
+                </div>
             </Small>
             <Medium>
                 <SearchBox location={props.location} isMobile={false} />

@@ -11,6 +11,7 @@ import close from "../assets/close.svg";
 import success from "../assets/success.svg";
 import Notification from "../UI/Notification";
 import ReactTooltip from "react-tooltip";
+import { Medium } from "../UI/Responsive";
 
 class FeedbackForm extends React.Component {
     constructor(props) {
@@ -135,7 +136,8 @@ class FeedbackForm extends React.Component {
         return (
             <div className="feedback-form-inner">
                 <div className="feedback-form-header">
-                    {`Have feedback on this website? We're all ears`}
+                    <span
+                    >{`Have feedback on this website? We're all ears`}</span>
                     <Button
                         className="close-btn"
                         onClick={() => {
@@ -170,6 +172,7 @@ class FeedbackForm extends React.Component {
                         >
                             Cancel
                         </Button>
+
                         <Button
                             className="send-btn disabled-looking-button"
                             onClick={this.onSubmit}
@@ -182,6 +185,11 @@ class FeedbackForm extends React.Component {
                         </Button>
 
                         <ReactTooltip />
+                        <div className="privacy-link">
+                            <a href="/page/privacy-policy" target="_blank">
+                                Privacy Policy
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -191,12 +199,14 @@ class FeedbackForm extends React.Component {
     render() {
         return (
             <div className="feedback-form">
-                <Button
-                    className="feedback-button"
-                    onClick={() => this.setState({ isOpen: true })}
-                >
-                    <img alt="feedback" src={feedback} />Give feedback
-                </Button>
+                <Medium>
+                    <Button
+                        className="feedback-button"
+                        onClick={() => this.setState({ isOpen: true })}
+                    >
+                        <img alt="feedback" src={feedback} />Give feedback
+                    </Button>
+                </Medium>
                 {this.state.isOpen && this.renderByState()}
             </div>
         );

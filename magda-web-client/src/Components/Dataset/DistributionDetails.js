@@ -14,7 +14,7 @@ class DistributionDetails extends Component {
 
     renderLinkText(distribution) {
         const downloadText = distribution.downloadURL ? (
-            <span>
+            <span key={distribution.identifier}>
                 This dataset can be downloaded from: <br />
                 <a
                     onClick={distribution => {
@@ -44,25 +44,28 @@ class DistributionDetails extends Component {
         ) : (
             ""
         );
-        const accessText = distribution.accessUrl ? (
+        const accessText = distribution.accessURL ? (
             <span>
                 This dataset can be accessed from: <br />{" "}
-                <a href={distribution.accessUrl}>{distribution.accessUrl}</a>
+                <a href={distribution.accessURL}>{distribution.accessURL}</a>
             </span>
         ) : (
             ""
         );
-        return [downloadText, accessText];
+        const items = [];
+        if (downloadText) items.push(downloadText);
+        if (accessText) items.push(accessText);
+        return items;
     }
 
     render() {
         const distribution = this.props.distribution;
         return (
-            <div className="distribution-details container">
+            <div className="distribution-details">
                 <div className="row">
                     <div className="distribution-details__body col-sm-8">
                         <div className="distribution-details-overview">
-                            <h3>Overview</h3>
+                            <h2>Overview</h2>
                             <OverviewBox content={distribution.description} />
                             {this.renderLinkText(distribution).length > 0 && (
                                 <div>
@@ -73,7 +76,7 @@ class DistributionDetails extends Component {
                             )}
                         </div>
                         <div className="distribution-details-temporal-coverage">
-                            <h3>Temporal coverage</h3>
+                            <h2>Temporal coverage</h2>
                             <TemporalAspectViewer
                                 data={distribution.temporalCoverage}
                             />

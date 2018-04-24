@@ -206,16 +206,16 @@ class MonthPicker extends Component {
     }
 }
 
-MonthPicker.PropTypes = {
+MonthPicker.propTypes = {
     year: PropTypes.number,
     month: PropTypes.number,
     yearUpper: PropTypes.number,
     yearLower: PropTypes.number,
     monthUpper: PropTypes.number,
     monthLower: PropTypes.number,
-    selectMonth: PropTypes.function,
-    selectYear: PropTypes.function,
-    showingDefault: PropTypes.boolean
+    selectMonth: PropTypes.func,
+    selectYear: PropTypes.func,
+    showingDefault: PropTypes.bool
 };
 
 export default MonthPicker;

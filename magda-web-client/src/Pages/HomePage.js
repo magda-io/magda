@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import Container from "muicss/lib/react/container";
 import { withRouter } from "react-router-dom";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
@@ -9,7 +8,7 @@ import "./HomePage.css";
 
 import TagLine from "./HomePageComponents/TagLine";
 import Lozenge from "./HomePageComponents/Lozenge";
-// import Stories from "./HomePageComponents/Stories";
+import Stories from "./HomePageComponents/Stories";
 import { Small, Medium } from "../UI/Responsive";
 
 import MediaQuery from "react-responsive";
@@ -91,7 +90,7 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
             <Small>
                 <div className="homepage-background" />
             </Small>
-            <Container className="app-container">
+            <div className="container app-container">
                 <Medium>
                     <div className="homepage-dga-logo">
                         <img src={dgaLogo} alt="dga logo" />
@@ -105,8 +104,8 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
                     <TagLine taglineText={getTagLine().desktop} />
                     <Lozenge />
                 </Medium>
-                {/* <Stories /> */}
-            </Container>
+                <Stories />
+            </div>
         </div>
     );
 });
