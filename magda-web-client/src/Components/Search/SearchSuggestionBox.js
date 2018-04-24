@@ -184,7 +184,7 @@ class SearchSuggestionBox extends Component {
             isMouseOver: false,
             selectedItemIdx: null
         });
-        if(this.searchInputRef) this.searchInputRef.blur();
+        if (this.searchInputRef) this.searchInputRef.blur();
     }
 
     onSearchItemClick(e, item: searchDataType) {
@@ -358,7 +358,7 @@ class SearchSuggestionBox extends Component {
                                 </Medium>
                                 <Small>
                                     <div className="recent-item-content">
-                                        <div>{item.data.q ? item.data.q.trim() : ""}</div>
+                                        {item.data.q ? item.data.q.trim() : ""}
                                     </div>
                                 </Small>
                             </button>
