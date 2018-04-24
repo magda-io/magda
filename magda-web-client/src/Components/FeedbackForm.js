@@ -1,6 +1,10 @@
 import React from "react";
 import Input from "muicss/lib/react/input";
-import { fetchFeedback, resetFeedback } from "../actions/feedbackActions";
+import {
+    fetchFeedback,
+    resetFeedback,
+    sendFeedbacks
+} from "../actions/feedbackActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import "./FeedbackForm.css";
@@ -56,6 +60,7 @@ class FeedbackForm extends React.Component {
          * Instead of having button disabled, we will check here to make sure feedback is only sent when no validation error.
          */
         if (this.state.validationErrorMessage) return;
+        this.props.sendFeedbacks();
         this.props.fetchFeedback(
             JSON.stringify({
                 name: this.state.name,
@@ -227,7 +232,8 @@ const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
             fetchFeedback: fetchFeedback,
-            resetFeedback: resetFeedback
+            resetFeedback: resetFeedback,
+            sendFeedbacks: sendFeedbacks
         },
         dispatch
     );
