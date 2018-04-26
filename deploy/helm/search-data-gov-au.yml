@@ -62,6 +62,8 @@ preview-map:
             memory: 200Mi
 registry-api:
     logLevel: INFO
+    livenessProbe:
+        timeoutSeconds: 3
     resources:
         requests:
             cpu: 500m
