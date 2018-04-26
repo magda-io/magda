@@ -13,7 +13,7 @@ const Tooltip = () => {
             <img src={helpIcon} alt="Help Link" />
             <span className="tooltiptext">
                 Calculated using the{" "}
-                <Link to="/page/dataset-quality">Open Data scale</Link>
+                <Link to="/page/dataset-quality">Open data quality</Link>
             </span>
         </div>
     );
