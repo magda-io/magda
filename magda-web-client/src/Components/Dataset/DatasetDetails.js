@@ -5,6 +5,7 @@ import DescriptionBox from "../../UI/DescriptionBox";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import StarRating from "../../UI/StarRating";
 import TagsBox from "../../UI/TagsBox";
+import Tooltip from "../../UI/Tooltip";
 import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
@@ -45,6 +46,7 @@ class DatasetDetails extends Component {
                     <Link to="/page/dataset-quality">Open Data Quality</Link>:
                     &nbsp;&nbsp;
                     <StarRating stars={dataset.linkedDataRating} />
+                    <Tooltip />
                 </div>
                 <TagsBox tags={dataset.tags} />
                 <div className="dataset-preview">
