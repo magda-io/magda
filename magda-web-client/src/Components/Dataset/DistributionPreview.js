@@ -24,17 +24,7 @@ class DistributionPreview extends Component {
     renderByState() {
         // Decide which visualisation to use using visualization-info
         // Compatibility is decided by backend "visualization sleuther"
-        const compatiblePreviews = {
-            // TESTING
-            map: false,
-            chart: false,
-            table: false,
-            json: true, // Continue from here
-            html: true,
-            text: true,
-            rss: true,
-            google: true
-        }; //this.props.distribution.compatiblePreviews;
+        const compatiblePreviews = this.props.distribution.compatiblePreviews;
         let DataPreviewComponent = DataPreviewNone;
         if (compatiblePreviews.map) {
             DataPreviewComponent = DataPreviewMap;
