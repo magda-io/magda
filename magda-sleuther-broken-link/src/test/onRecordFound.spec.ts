@@ -137,7 +137,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      * recorded on a by-distribution basis as link status as well as on a by-record
      * basis as a part of dataset quality.
      */
-    it("Should correctly record link statuses and quality", function() {
+    it("Should correctly record link statuses", function() {
         return jsc.assert(
             jsc.forall(recordArbWithSuccesses, ({ record, successLookup }) => {
                 beforeEachProperty();
