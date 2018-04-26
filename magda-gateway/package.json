@@ -8,9 +8,12 @@
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "start": "node dist/index.js",
-        "dev": "run-typescript-in-nodemon src/index.ts --ckanUrl https://data.gov.au",
-        "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-        "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+        "dev":
+            "run-typescript-in-nodemon src/index.ts --ckanUrl https://data.gov.au",
+        "docker-build-local":
+            "create-docker-context-for-node-component --build --push --tag auto --local",
+        "docker-build-prod":
+            "create-docker-context-for-node-component --build --push --tag auto"
     },
     "dependencies": {
         "@magda/typescript-common": "^0.0.37-RC3",
@@ -48,8 +51,8 @@
         "@types/http-proxy": "^1.16.0",
         "@types/lodash": "^4.14.74",
         "@types/node": "^8.0.14",
-        "@types/passport": "^0.3.4",
-        "@types/passport-facebook": "^2.1.6",
+        "@types/passport": "^0.4.4",
+        "@types/passport-facebook": "^2.1.8",
         "@types/passport-local": "^1.0.31",
         "@types/pg": "^6.1.41",
         "@types/urijs": "^1.15.34",
