@@ -2,8 +2,7 @@ import React from "react";
 import Input from "muicss/lib/react/input";
 import {
     fetchFeedback,
-    resetFeedback,
-    sendFeedbacks
+    resetFeedback
 } from "../actions/feedbackActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
