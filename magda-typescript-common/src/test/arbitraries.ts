@@ -253,6 +253,13 @@ export type DistStringsOverrideArbs = {
 };
 
 /**
+ * Can be passed into sourceLinkArb to override the default arbitraries.
+ */
+export type SourceLinkOverrideArbs = {
+    status?: jsc.Arbitrary<string | undefined>;
+}
+
+/**
  * Generates the content of a distribution's dcat-distribution-strings aspect.
  */
 export const distStringsArb = ({
@@ -268,19 +275,31 @@ export const distStringsArb = ({
     });
 
 /**
+ * Generates the content of source link status aspect
+ */
+export const sourceLinkArb = ({
+    status = jsc.constant('active')
+}: SourceLinkOverrideArbs) =>
+        jsc.record({
+            status: status
+    });
+
+/**
  * Generates records, allowing specific arbs to be defined for the distribution.
  */
 export const recordArbWithDistArbs = (
-    overrides: DistStringsOverrideArbs = {}
+    distStringsOverrides: DistStringsOverrideArbs = {},
+    sourceLinkOverrides: SourceLinkOverrideArbs = {}
 ) =>
     specificRecordArb({
         "dataset-distributions": jsc.record({
             distributions: jsc.array(
                 specificRecordArb({
-                    "dcat-distribution-strings": distStringsArb(overrides)
+                    "dcat-distribution-strings": distStringsArb(distStringsOverrides),
+                    "source-link-status": sourceLinkArb(sourceLinkOverrides)
                 })
             )
-        })
+        },)
     });
 
 /**
@@ -293,7 +312,7 @@ export const recordArbWithDists = (dists: object[]) =>
             distributions: jsc.tuple(
                 dists.map(dist =>
                     specificRecordArb({
-                        "dcat-distribution-strings": jsc.constant(dists)
+                        "dcat-distribution-strings": jsc.constant(dist)
                     })
                 )
             )

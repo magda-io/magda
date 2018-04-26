@@ -44,6 +44,9 @@
 *   Add 3 more government CSW services
 *   Hide feedback form from mobile view
 *   Upgraded React and associates to v16.3
+*   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
+*   Made linked data rating sleuther take output of broken link sleuther into account
+*   Removed datasetQualityAspectDef from sleuther-broken-link
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 *   Fixed an issue that users may see an error after page 4
 *   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
