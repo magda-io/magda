@@ -1,4 +1,5 @@
 @import "variables";
+@import "../pancake/sass/pancake.scss";
 html {
     font-size: 16px;
 }
@@ -81,17 +82,22 @@ a {
     }
 }
 
- .mui-tabs__bar>li.mui--is-active{
-   border-bottom: 0;
- }
-
-.mui-tabs__bar>li.mui--is-active>a, .mui-tabs__bar a.mui--is-active{
-  color: $magda;
-  border-bottom: 2px solid $magda;
+.mui-tabs__bar > li.mui--is-active {
+    border-bottom: 0;
 }
 
-.hidden-sm{
-  @media (max-width: $medium) {
-      display: none!important;
-  }
+.mui-tabs__bar > li.mui--is-active > a,
+.mui-tabs__bar a.mui--is-active {
+    color: $magda;
+    border-bottom: 2px solid $magda;
+}
+
+.hidden-sm {
+    @media (max-width: $medium) {
+        display: none !important;
+    }
+}
+
+.mui-btn + .mui-btn {
+    margin-left: 0;
 }

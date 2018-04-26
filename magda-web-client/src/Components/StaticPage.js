@@ -18,17 +18,13 @@ export default function StaticPage(props) {
                 }
             >
                 <div className={`container page-${id}`}>
-                    <div className="row">
-                        <div className="col-sm-8">
-                            <h1> {content.title && content.title} </h1>
-                            <div
-                                className="markdown-body"
-                                dangerouslySetInnerHTML={{
-                                    __html: content.__content
-                                }}
-                            />
-                        </div>
-                    </div>
+                    <h1> {content.title && content.title} </h1>
+                    <div
+                        className="markdown-body"
+                        dangerouslySetInnerHTML={{
+                            __html: content.__content
+                        }}
+                    />
                 </div>
             </ReactDocumentTitle>
         );

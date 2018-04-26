@@ -1,15 +1,18 @@
 ## 0.0.38
 
+*   Use grid system from DTA design guide
+*   Mobile search filter new look
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
 *   When closed, hamburger menu on mobile switches to a X
 *   Will Scroll to top of the page when goes from link to link
 *   Made search filter icons consistent in color when they are applied
-*   Modified search results `Quality:` text to `Open Data Quality:` 
+*   Modified search results `Quality:` text to `Open Data Quality:`
 *   Removed excess vertical whitespace from hamburger menu
 *   Dataset page: Change icon for distribution page
 *   Changed data visualisation table height for either 5 or 10 rows, vertical scroll otherwise.
 *   DataPreview Table|Chart is hidden if no data is present.
 *   Empty search won't be saved as recent search item
+*   Adjust display of feedback link on mobile to be fixed in footer
 *   Stopped filters from disappearing when search is submitted
 *   Added loading spinner for preview map and dataset visualisation.
 *   Adjusted recent search box style
@@ -27,14 +30,25 @@
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
 *   Update Privacy/About/Data Rating pages
-*   Display all publishers and hide search on publishers page 
+*   Updated SEO-friendliness of various headings (h3->h2)
+*   Display all publishers and hide search on publishers page
 *   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
+*   Hide the \* when I click on the Dataset link in header or click through from a Publisher
 *   If format info is available from sleuther, format sleuther info should be used
 *   Enable homepage stories and updated homepage config
 *   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
 *   Created `ISSUE_TEMPLATE.md` file
 *   Stopped user feedback from being duplicated
+*   Useless patch request to registry API should not trigger any event creation
+*   Allow users to select recent search item by arrow keys
+*   Add 3 more government CSW services
+*   Hide feedback form from mobile view
+*   Upgraded React and associates to v16.3
+*   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
+*   Fixed an issue that users may see an error after page 4
+*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
+*   keep distance between search box and the first story on mobile view
 
 ## 0.0.37
 

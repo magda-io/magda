@@ -16,30 +16,36 @@
 
 .searchBox-switcher {
     &.none-home {
-        background: rgba(245, 245, 245, 0.8);
-        margin: 10px;
-        @media (min-width: $medium) {
-            margin: 0
-        }
         .searchBox {
             background-color: transparent;
         }
+    }
+    .container-mobile {
+        padding: 0;
+    }
+}
+
+.home {
+    .searchBox {
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
+            0px 3px 6px rgba(0, 0, 0, 0.23);
+        border-radius: 4px;
     }
 }
 
 .searchBox {
     position: relative;
-    margin: 16px auto 32px auto;
+
     color: $body;
     box-sizing: border-box;
     display: flex;
     justify-content: space-between;
     background-color: rgba(#fff, 0.8);
-    background: #FFFFFF;
-    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16), 0px 3px 6px rgba(0, 0, 0, 0.23);
-    border-radius: 4px;
+    background: #ffffff;
+    border-radius: 0px;
+    border-bottom: 1px solid rgba(73, 73, 73, 0.15);
     @media (min-width: $medium) {
-        border: 1px solid rgba(73, 73, 73, 0.15);
+        margin: 16px auto 32px auto;
         padding: 40px 90px;
         width: 788px;
         border: 0;
@@ -55,7 +61,6 @@
     input:focus {
         @include text();
         margin-bottom: 2px;
-
     }
 
     .search-btn {
@@ -78,11 +83,10 @@
         background: none;
         border-bottom: 2px solid rgba(#fff, 0.2);
         img {
-          width: 32px;
-          height: 32px;
+            width: 32px;
+            height: 32px;
         }
         @media (max-width: $medium - 1) {
-
             img {
                 width: 32px;
                 height: 32px;
@@ -95,26 +99,26 @@
         text-align: right;
     }
 
-    .search-input__highlight{
-      z-index: 10;
-      position: absolute;
-      bottom: 10px;
-      font-size: 33px;
-      height: 0;
-      overflow: hidden;
-      color: transparent;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      max-width: 100%;
-      border-top: 2px solid #979797;
-      border-radius: 2px;
-      display: none;
-      @media (min-width: $medium) {
-        display: inline;
-      }
+    .search-input__highlight {
+        z-index: 10;
+        position: absolute;
+        bottom: 9px;
+        font-size: 33px;
+        height: 0;
+        overflow: hidden;
+        color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        max-width: 100%;
+        border-top: 2px solid #979797;
+        border-radius: 2px;
+        display: none;
+        @media (min-width: $medium) {
+            display: inline;
+        }
     }
 
     input::-webkit-input-placeholder {

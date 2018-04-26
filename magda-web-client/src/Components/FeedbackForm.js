@@ -15,6 +15,7 @@ import close from "../assets/close.svg";
 import success from "../assets/success.svg";
 import Notification from "../UI/Notification";
 import ReactTooltip from "react-tooltip";
+import { Medium } from "../UI/Responsive";
 
 class FeedbackForm extends React.Component {
     constructor(props) {
@@ -203,12 +204,14 @@ class FeedbackForm extends React.Component {
     render() {
         return (
             <div className="feedback-form">
-                <Button
-                    className="feedback-button"
-                    onClick={() => this.setState({ isOpen: true })}
-                >
-                    <img alt="feedback" src={feedback} />Give feedback
-                </Button>
+                <Medium>
+                    <Button
+                        className="feedback-button"
+                        onClick={() => this.setState({ isOpen: true })}
+                    >
+                        <img alt="feedback" src={feedback} />Give feedback
+                    </Button>
+                </Medium>
                 {this.state.isOpen && this.renderByState()}
             </div>
         );
