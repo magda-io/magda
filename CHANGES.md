@@ -51,6 +51,8 @@
 *   Fixed an issue search may not be added to recent search list in some cases
 *   Make small position adjustment to the recent search icon
 *   Moved homepage config from S3 to local
+*   Added spacing between download & new tab button on dataset page
+*   Added spacing on byline of dataset page
 
 ## 0.0.37
 
