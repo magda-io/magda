@@ -53,6 +53,7 @@
 *   Moved homepage config from S3 to local
 *   Added spacing between download & new tab button on dataset page
 *   Added spacing on byline of dataset page
+*   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
 
 ## 0.0.37
 
