@@ -57,22 +57,10 @@
         opacity: 0.75;
     }
 }
-
-.quality-rating-box {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    position: relative;
-    span {
-        color: #535353;
-        font-size: 14px;
-        line-height: 16px;
-    }
-    .star-rating-box {
-        position: absolute;
-        top: 5px;
-    }
-}
-
 .dataset-details-files-apis {
     margin-top: 50px;
+}
+
+.quality-rating-box {
+    margin: 20px 0;
 }

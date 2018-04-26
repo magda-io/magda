@@ -49,6 +49,7 @@
 *   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
 *   keep distance between search box and the first story on mobile view
 *   Moved homepage config from S3 to local
+*   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
 
 ## 0.0.37
 
