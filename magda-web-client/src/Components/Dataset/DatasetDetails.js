@@ -10,7 +10,6 @@ import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
-import { Link } from "react-router-dom";
 import { Small, Medium } from "../../UI/Responsive";
 
 class DatasetDetails extends Component {
