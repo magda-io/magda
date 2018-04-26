@@ -1,3 +1,11 @@
+## 0.0.39
+*   Added gitlab CI build config
+*   Fixed indexer's ability to make/retrieve ES backups
+*   Added ability for magda-postgres to retrieve WAL backup as "immediate" rather than catching all the way up with the WAL log.
+*   Removed implied ability for magda postgres to use a backup method other than WAL (this never actually worked in practice)
+*   Replaced old `node-ci` script with `run-in-submodules`, which allows a command to be run in submodules based on matching
+    the values in `package.json`.
+
 ## 0.0.38
 
 *   Use grid system from DTA design guide
@@ -47,12 +55,6 @@
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 *   Fixed an issue that users may see an error after page 4
 *   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
-*   Added gitlab CI build config
-*   Fixed indexer's ability to make/retrieve ES backups
-*   Added ability for magda-postgres to retrieve WAL backup as "immediate" rather than catching all the way up with the WAL log.
-*   Removed implied ability for magda postgres to use a backup method other than WAL (this never actually worked in practice)
-*   Replaced old `node-ci` script with `run-in-submodules`, which allows a command to be run in submodules based on matching
-    the values in `package.json`.
 *   keep distance between search box and the first story on mobile view
 
 ## 0.0.37
