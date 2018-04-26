@@ -1,11 +1,10 @@
 .tooltip {
     position: relative;
     display: inline-block;
-    // border-bottom: 1px dotted black;
+    margin-left: 5px;
 }
 
 .tooltip .tooltiptext {
-    //cursor: pointer;
     visibility: hidden;
     width: 258px;
     background-color: white;
@@ -45,4 +44,8 @@
 .tooltiptext {
     transition-delay: 1s;
     transition: all 1s ease;
+}
+
+.star-rating-box {
+    vertical-align: sub;
 }
