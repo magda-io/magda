@@ -133,13 +133,13 @@ class RecordHandler extends React.Component {
                         <h1>{this.props.dataset.title}</h1>
                         <div className="publisher-basic-info-row">
                             <span className="publisher">{publisherName}</span>
-                            <span className="separator hidden-sm">/</span>
+                            <span className="separator hidden-sm">&nbsp;/&nbsp;</span>
                             {defined(this.props.dataset.issuedDate) && (
                                 <span className="updated-date hidden-sm">
                                     Created {this.props.dataset.issuedDate}&nbsp;
                                 </span>
                             )}
-                            <span className="separator hidden-sm">/</span>
+                            <span className="separator hidden-sm">&nbsp;/&nbsp;</span>
                             {defined(this.props.dataset.updatedDate) && (
                                 <span className="updated-date hidden-sm">
                                     Updated {this.props.dataset.updatedDate}
