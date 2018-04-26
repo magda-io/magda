@@ -101,7 +101,9 @@ class Pagination extends Component {
                     </li>
                     <li>{this.renderDisabledButton()}</li>
                     <li>
-                        <Button onClick={this.onClick.bind(max)}>{max}</Button>
+                        <Button onClick={this.onClick.bind(this, max)}>
+                            {max}
+                        </Button>
                     </li>
                     {current < max && this.renderNextButton(current)}
                 </ul>

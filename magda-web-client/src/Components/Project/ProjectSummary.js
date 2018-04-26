@@ -6,13 +6,13 @@ function ProjectSummary(props) {
     return (
         <div className="project-summray white-box">
             <div className="project-summray__inner">
-                <h3 className="project-title">
+                <h2 className="project-title">
                     <Link
                         to={"projects/" + encodeURIComponent(props.project.id)}
                     >
                         {props.project.name}
                     </Link>
-                </h3>
+                </h2>
                 <div className={`project-status ${props.project.status}`}>
                     {props.project.status}
                 </div>
