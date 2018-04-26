@@ -50,7 +50,10 @@
 *   keep distance between search box and the first story on mobile view
 *   Fixed an issue search may not be added to recent search list in some cases
 *   Make small position adjustment to the recent search icon
+*   Added spacing between download & new tab button on dataset page
+*   Added spacing on byline of dataset page
 *   Moved homepage config from S3 to local
+*   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
 
 ## 0.0.37
 
