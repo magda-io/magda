@@ -10,6 +10,7 @@ tags:
   sleuther-broken-link: true
   sleuther-linked-data-rating: true
   sleuther-visualization: true
+  sleuther-format: true
 
 gateway:
   loadBalancerIP: "104.199.180.124"
