@@ -31,7 +31,6 @@ export function resetFeedback() {
 
 export function fetchFeedback(values) {
     return (dispatch: Function, getState: Function) => {
-        dispatch(sendFeedbacks());
         fetch(config.feedbackUrl, {
             method: "POST",
             body: values,

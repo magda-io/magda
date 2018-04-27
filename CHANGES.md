@@ -1,5 +1,9 @@
 ## 0.0.39
 
+*   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
+*   Made linked data rating sleuther take output of broken link sleuther into account
+*   Removed datasetQualityAspectDef from sleuther-broken-link
+
 ## 0.0.38
 
 *   Use grid system from DTA design guide
@@ -41,7 +45,6 @@
 *   Enable homepage stories and updated homepage config
 *   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
 *   Created `ISSUE_TEMPLATE.md` file
-*   Stopped user feedback from being duplicated
 *   Useless patch request to registry API should not trigger any event creation
 *   Allow users to select recent search item by arrow keys
 *   Add 3 more government CSW services

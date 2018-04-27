@@ -1,6 +1,6 @@
 import sleuther from "@magda/sleuther-framework/dist/index";
 import linkedDataAspectDef from "./linkedDataAspectDef";
-import datasetQualityAspectDef from "./linkedDataAspectDef";
+import datasetQualityAspectDef from "@magda/sleuther-framework/dist/common-aspect-defs/datasetQualityAspectDef";
 import onRecordFound from "./onRecordFound";
 import commonYargs from "@magda/sleuther-framework/dist/commonYargs";
 
@@ -11,8 +11,8 @@ function sleuthLinkedData() {
     sleuther({
         argv,
         id: ID,
-        aspects: ["dataset-distributions"],
-        optionalAspects: [],
+        aspects: ["dataset-distributions", "source-link-status"],
+        optionalAspects: ["dataset-format"],
         writeAspectDefs: [linkedDataAspectDef, datasetQualityAspectDef],
         onRecordFound
     }).catch(e => {
