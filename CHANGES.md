@@ -47,6 +47,7 @@
 *   Enable homepage stories and updated homepage config
 *   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
 *   Created `ISSUE_TEMPLATE.md` file
+*   Stopped user feedback from being duplicated
 *   Useless patch request to registry API should not trigger any event creation
 *   Allow users to select recent search item by arrow keys
 *   Add 3 more government CSW services

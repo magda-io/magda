@@ -178,6 +178,7 @@ class FeedbackForm extends React.Component {
                             onClick={this.onSubmit}
                             data-tip={this.state.validationErrorMessage}
                             data-place="top"
+                            disabled={this.props.isSendingFeedback}
                         >
                             {this.props.isSendingFeedback
                                 ? "Sending..."
