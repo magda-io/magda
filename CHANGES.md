@@ -1,4 +1,5 @@
 ## 0.0.39
+*   Add schema.org/Dataset microdata semantic markup
 
 ## 0.0.38
 

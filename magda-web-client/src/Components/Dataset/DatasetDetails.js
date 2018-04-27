@@ -79,6 +79,7 @@ class DatasetDetails extends Component {
                             <a
                                 className="landing-page"
                                 href={dataset.landingPage}
+                                itemProp="sameAs"
                             >
                                 {dataset.landingPage}
                             </a>
