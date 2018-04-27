@@ -3,13 +3,14 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.38-RC1"
+    tag: "0.0.38-RC2"
 
 tags:
   all: true
   sleuther-broken-link: true
   sleuther-linked-data-rating: true
   sleuther-visualization: true
+  sleuther-format: true
 
 gateway:
   loadBalancerIP: "104.199.180.124"
