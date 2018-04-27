@@ -4,7 +4,6 @@ import Tabs from "muicss/lib/react/tabs";
 import Tab from "muicss/lib/react/tab";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewVega from "./DataPreviewVega";
-import Spinner from "../Components/Spinner";
 
 import type { ParsedDistribution } from "../helpers/record";
 
@@ -21,8 +20,7 @@ class DataPreviewVis extends Component<{
             yAxis: null,
             xAxis: null,
             xScale: "temporal",
-            yScale: "quantitative",
-            chartWidth: ""
+            yScale: "quantitative"
         };
     }
 
