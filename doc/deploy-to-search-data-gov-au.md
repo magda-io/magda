@@ -44,13 +44,14 @@ If you don't know the dev cluster name, use `kubectl config get-contexts`. If yo
 
 - [ ] Run a helm upgrade to put dev on your new version
 ```bash
-helm upgrade magda --timeout 999999999 --timeout 999999999 --wait --recreate-pods -f deploy/helm/magda-dev.yml deploy/helm/magda
+helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/magda-dev.yml deploy/helm/magda
 ```
 
 - [ ] Generate jobs files, deploy them and make sure they run ok
 ```bash
 cd deploy
 npm run generate-connector-jobs-dev
+mkdir kubernetes/generated/prod/cron
 mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
 kubectl apply -f kubernetes/generated/prod/cron
 cd ..
@@ -70,14 +71,7 @@ kubectl config use-context <prod-cluster-name>
 
 - [ ] Helm upgrade prod
 ```bash
-helm upgrade magda --timeout 999999999 -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
-```
-
-- [ ] Delete the stateful sets one-at-a-time so they get upgraded
-```bash
-kubectl delete pods es-data-0
-# wait until es-data-0 comes back up (kubectl get pods)
-kubectl delete pods es-data-1
+helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
 
 - [ ] Look at the logs on magda-registry and the webhooks table of the database to make sure it's processing webhooks again
@@ -102,6 +96,7 @@ cd ..
     - Do another `lerna publish --skip-npm --force-publish`, bumping the RC number by 1.
     - Rebuild/push the affected images
     - Restart the process starting from the dev deploy
+    - Pull the fix back into master using `git pull origin <version branch> -Xours`
     - Do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
 
 ### Publish new version to git
@@ -119,8 +114,6 @@ git merge <version>
 git push origin master
 ```
 
-- [ ] Delete the last release branch in github
-
 ### Create new pre-release version, publish to dev and push to git
 - [ ] Checkout master
 ```bash
@@ -133,45 +126,23 @@ git pull
 lerna publish --force-publish --skip-npm
 ```
 
-- [ ] Use a text editor to do a find-and-replace-in-project for the old version to make sure that there's not extra references to the old version number lying around - we want to automate this whereever possible but it happens. If anything needed changing, use `git commit --amend` to make it part of the last commit.
+- See "Publish to dev" for publishing instructions
 
-- [ ] Build docker images for everything that needs it (no need for `lerna run build`)
+### Push the latest RC of last version as a release
+- [ ] Check out last version's branch
 ```bash
-lerna run docker-build-prod --include-filtered-dependencies
+git checkout <last version number>
 ```
 
-- [ ] Run a helm upgrade to put dev on the new prepatch version
-```bash
-helm upgrade magda -f deploy/helm/magda-dev.yml deploy/helm/magda
-```
-
-- [ ] Delete the stateful sets so they get upgraded
-```bash
-kubectl delete pods combined-db-0
-kubectl delete pods es-data-0
-```
-
-- [ ] Wait until all the pods are running again
-```bash
-kubectl get pods
-```
-
-- [ ] Do a smoke test again to make sure dev is ok
-
-- [ ] Push the new prepatch version to master - if someone's merged something to master in the meantime just merge, this is a prepatch so its ok.
-```bash
-git push origin master
-```
-
-### When everything has been fine for a few days
 - [ ] Set the version number as an actual release version (no "-RCx") and push it to docker and github
 
 ```bash
 git checkout <version branch>
 lerna publish --skip-npm --force-publish
-git push origin <version branch>
 git push origin v<version>
 lerna run build && lerna run docker-build-prod
 ```
 
-- [ ] Set the latest tag as "release" in github.
+- [ ] Set that latest tag as a "release" in github.
+
+- [ ] Delete the version branch in github
