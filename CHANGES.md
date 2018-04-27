@@ -54,6 +54,7 @@
 *   Added spacing between download & new tab button on dataset page
 *   Added spacing on byline of dataset page
 *   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
+*   Fix placement and color of search box on desktop and mobile
 
 ## 0.0.37
 
