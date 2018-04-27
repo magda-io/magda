@@ -1,4 +1,4 @@
-FROM data61/magda-builder-docker
+FROM data61/magda-builder-docker:latest
 
 # A few problems with compiling Java from source:
 #  1. Oracle.  Licensing prevents us from redistributing the official JDK.

@@ -56,7 +56,7 @@ matrix:
         - npm run in-submodules -- -f categories.api=true -f language=typescript -- run build
         - npm run in-submodules -- -f categories.api=true -f language=typescript -- run test 
         - npm run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
-        - npm run in-submodules -- -f categories.connector=true -- run build 
+        - npm run in-submodules -- -f categories.connector=true -- run build  --include-filtered-dependencies
         - npm run in-submodules -- -f categories.connector=true -- run test 
         - npm run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
         - npm run in-submodules -- -f categories.sleuther=true -- run test

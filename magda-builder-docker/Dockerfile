@@ -1,4 +1,4 @@
-FROM data61/magda-builder-nodejs
+FROM data61/magda-builder-nodejs:latest
 
 RUN apk add --no-cache \
 		ca-certificates
