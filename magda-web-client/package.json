@@ -1,7 +1,7 @@
 {
     "name": "@magda/web-client",
     "description": "The MAGDA in-browser web front end.",
-    "version": "0.0.37-RC3",
+    "version": "0.0.37",
     "license": "Apache-2.0",
     "scripts": {
         "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -21,7 +21,7 @@
         "watch": "react-scripts build --watch"
     },
     "devDependencies": {
-        "@magda/scripts": "^0.0.37-RC3",
+        "@magda/scripts": "^0.0.37",
         "@storybook/addon-actions": "^3.3.3",
         "@storybook/addon-links": "^3.3.3",
         "@storybook/addons": "^3.3.3",
@@ -53,6 +53,7 @@
         "html-truncate": "^1.2.2",
         "immutable": "^3.8.1",
         "isomorphic-fetch": "^2.2.1",
+        "js-cookie": "^2.2.0",
         "leaflet": "^0.7.7",
         "leaflet-mapbox-vector-tile": "TerriaJS/Leaflet.MapboxVectorTile",
         "lodash.debounce": "^4.0.8",
@@ -103,8 +104,7 @@
         "uuid": "^3.0.1",
         "vega": "^3.0.0-rc2",
         "vega-lite": "^2.0.0-beta.8",
-        "yaml-front-matter": "^4.0.0",
-        "js-cookie": "^2.2.0"
+        "yaml-front-matter": "^4.0.0"
     },
     "proxy": {
         "/server-config.js": {
