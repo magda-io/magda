@@ -44,25 +44,15 @@ If you don't know the dev cluster name, use `kubectl config get-contexts`. If yo
 
 - [ ] Run a helm upgrade to put dev on your new version
 ```bash
-helm upgrade magda --timeout 999999999 -f deploy/helm/magda-dev.yml deploy/helm/magda
-```
-
-- [ ] Delete the stateful sets so they get upgraded
-```bash
-kubectl delete pods combined-db-0
-kubectl delete pods es-data-0
-```
-
-- [ ] Wait until all the pods are running again
-```bash
-kubectl get pods
+helm upgrade magda --timeout 999999999 --timeout 999999999 --wait --recreate-pods -f deploy/helm/magda-dev.yml deploy/helm/magda
 ```
 
 - [ ] Generate jobs files, deploy them and make sure they run ok
 ```bash
 cd deploy
 npm run generate-connector-jobs-dev
-kubectl apply -f kubernetes/generated/prod
+mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
+kubectl apply -f kubernetes/generated/prod/cron
 cd ..
 ```
 
