@@ -3,7 +3,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.38-0"
+    tag: "0.0.38-RC1"
 
 tags:
   all: true
