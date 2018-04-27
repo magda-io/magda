@@ -54,6 +54,7 @@
 *   Added spacing on byline of dataset page
 *   Moved homepage config from S3 to local
 *   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
+*   Fix placement and color of search box on desktop and mobile
 
 ## 0.0.37
 
