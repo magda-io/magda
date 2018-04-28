@@ -49,7 +49,6 @@ class DataPreviewVis extends Component<{
     renderByState() {
         const distribution = this.props.distribution;
         if (distribution && distribution.identifier) {
-            console.log(distribution);
             // Render chart if there's chart fields, table if fields, both if both
             const tabs = [
                 distribution.compatiblePreviews.chart &&
