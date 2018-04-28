@@ -27,7 +27,7 @@ class DistributionPreview extends Component {
         const compatiblePreviews = this.props.distribution.compatiblePreviews;
         let DataPreviewComponent = DataPreviewNone;
         if (compatiblePreviews.map) {
-            DataPreviewComponent = DataPreviewMap;
+            return <DataPreviewMap distributions={[this.props.distribution]} />;
         } else if (compatiblePreviews.chart) {
             DataPreviewComponent = DataPreviewVega;
         } else if (compatiblePreviews.table) {
