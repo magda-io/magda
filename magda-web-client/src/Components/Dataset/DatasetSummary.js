@@ -34,7 +34,7 @@ export default class DatasetSummary extends Component {
             : "";
         return (
             <div className="dataset-summary">
-                <h3>
+                <h2>
                     <Link
                         className="dataset-summary-title"
                         to={`/dataset/${encodeURIComponent(
@@ -43,7 +43,7 @@ export default class DatasetSummary extends Component {
                     >
                         {dataset.title}
                     </Link>
-                </h3>
+                </h2>
                 {publisher && (
                     <div className="dataset-summary-publisher">{publisher}</div>
                 )}

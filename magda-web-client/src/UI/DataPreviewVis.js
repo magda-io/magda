@@ -116,8 +116,8 @@ class DataPreviewVis extends Component {
                 .split("?")[0];
 
             return (
-                <div className="mui-row">
-                    <div className="mui-col-md-6">
+                <div className="row">
+                    <div className="col-md-6">
                         <div className="data-preview-vis_file-name">
                             {fileName}
                         </div>
@@ -128,7 +128,7 @@ class DataPreviewVis extends Component {
                         />
                     </div>
                     <Medium>
-                        <div className="mui-col-md-6">
+                        <div className="col-md-6">
                             <ChartConfig
                                 chartType={spec.mark}
                                 chartTitle={spec.description}

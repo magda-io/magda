@@ -1,13 +1,17 @@
 @import "../../variables";
 
 .homepage-stories {
+    @media (max-width: $medium) {
+        margin-top: 16px;
+    }
+
     .stories-container {
         display: flex;
         justify-content: space-between;
         align-items: stretch;
     }
     .col-3 {
-        width: calc(100% / 3 - 8px);
+        width: calc(100% / 3 - 20px);
         & > div {
             height: calc(100% - 13px);
         }

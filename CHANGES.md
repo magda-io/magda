@@ -1,5 +1,8 @@
+## 0.0.39
+
 ## 0.0.38
 
+*   Use grid system from DTA design guide
 *   Mobile search filter new look
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
 *   When closed, hamburger menu on mobile switches to a X
@@ -29,6 +32,7 @@
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
 *   Update Privacy/About/Data Rating pages
+*   Updated SEO-friendliness of various headings (h3->h2)
 *   Display all publishers and hide search on publishers page
 *   Added `margin-bottom` spacing for footer links on mobile.
 *   Removed `box-shadow` style from selected search facets buttons
@@ -37,12 +41,16 @@
 *   Enable homepage stories and updated homepage config
 *   Upgraded TerriaJs to 5.7.0 to fix the issue with previewing certain datasets
 *   Created `ISSUE_TEMPLATE.md` file
+*   Stopped user feedback from being duplicated
 *   Useless patch request to registry API should not trigger any event creation
 *   Allow users to select recent search item by arrow keys
 *   Add 3 more government CSW services
 *   Hide feedback form from mobile view
 *   Upgraded React and associates to v16.3
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
+*   Fixed an issue that users may see an error after page 4
+*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
+*   keep distance between search box and the first story on mobile view
 
 ## 0.0.37
 

@@ -78,7 +78,7 @@ class RecordHandler extends React.Component {
                     this.props.match.params.distributionId
                 )}`;
                 return (
-                    <div className="mui-container">
+                    <div className="container">
                         <h1>{this.props.distribution.title}</h1>
                         <div className="publisher">{publisherName}</div>
                         {defined(this.props.distribution.updatedDate) && (
@@ -129,7 +129,7 @@ class RecordHandler extends React.Component {
                 )}`;
 
                 return (
-                    <div className="mui-container">
+                    <div>
                         <h1>{this.props.dataset.title}</h1>
                         <div className="publisher-basic-info-row">
                             <span className="publisher">{publisherName}</span>
@@ -145,20 +145,19 @@ class RecordHandler extends React.Component {
                                     Updated {this.props.dataset.updatedDate}
                                 </span>
                             )}
-
-                            <div className="tab-content">
-                                <Switch>
-                                    <Route
-                                        path="/dataset/:datasetId/details"
-                                        component={DatasetDetails}
-                                    />
-                                    <Redirect
-                                        exact
-                                        from="/dataset/:datasetId"
-                                        to={`${baseUrlDataset}/details?q=${searchText}`}
-                                    />
-                                </Switch>
-                            </div>
+                        </div>
+                        <div className="tab-content">
+                            <Switch>
+                                <Route
+                                    path="/dataset/:datasetId/details"
+                                    component={DatasetDetails}
+                                />
+                                <Redirect
+                                    exact
+                                    from="/dataset/:datasetId"
+                                    to={`${baseUrlDataset}/details?q=${searchText}`}
+                                />
+                            </Switch>
                         </div>
                     </div>
                 );
