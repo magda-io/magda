@@ -1,4 +1,5 @@
 ## 0.0.39
+*   Removed `border-bottom` property for `Open Data Quality:` from DatasetSummary/Details page
 
 ## 0.0.38
 
