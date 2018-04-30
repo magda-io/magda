@@ -47,7 +47,7 @@
 
     .dataset-summary-downloads {
         span {
-            color: #cc3139;
+            color: $AU-color-foreground-action;
             @include AU-fontgrid(xs);
             display: inline-block;
             padding-right: 5px;

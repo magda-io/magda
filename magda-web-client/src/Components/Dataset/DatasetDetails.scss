@@ -2,7 +2,7 @@
 
 .dataset-details {
     h3 {
-        color: #494949;
+        color: $body;
         @include AU-fontgrid(lg, heading);
         padding-bottom: 20px;
         padding-top: 20px;
@@ -12,15 +12,15 @@
 .publisher-basic-info-row {
     @include AU-fontgrid(sm);
     .publisher {
-        color: #cc3139;
+        color: $AU-color-foreground-action;
     }
     .updated-date {
-        color: #494949;
+        color: $body;
     }
 
     .separator {
         opacity: 0.25;
-        color: #494949;
+        color: $body;
     }
 }
 
@@ -32,7 +32,7 @@
         font-weight: 500;
     }
     .landing-page {
-        color: #cc3139;
+        color: $AU-color-foreground-action;
         &:hover {
             color: #fff;
         }

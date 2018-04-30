@@ -2,7 +2,7 @@
 
 .homepage-stories {
     .story-title-link:hover {
-        color: #494949;
+        color: $body;
         background-color: #fff;
     }
     .story-title-link {
@@ -27,7 +27,7 @@
                 font-family: $font-base;
                 font-style: normal;
                 font-weight: normal;
-                color: #494949;
+                color: $body;
             }
         }
     }

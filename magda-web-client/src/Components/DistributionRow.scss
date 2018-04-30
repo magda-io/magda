@@ -23,7 +23,7 @@
     }
 
     .distribution-row-link-license {
-        color: #cc3139;
+        color: $AU-color-foreground-action;
         @include AU-fontgrid(xs);
     }
 

@@ -1,6 +1,7 @@
+@import "../variables";
 .description-box {
     .toggle-button {
-        color: #cc3139;
+        color: $AU-color-foreground-action;
         border: none;
         cursor: pointer;
         position: relative;

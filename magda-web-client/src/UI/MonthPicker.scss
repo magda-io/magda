@@ -33,7 +33,7 @@
 
     .month-picker-prompt {
         border: 1px solid rgba(73, 73, 73, 0.05);
-        background-color: #494949;
+        background-color: $body;
         color: #ffffff;
         font-size: 12px;
         line-height: 14px;
@@ -57,7 +57,7 @@
         &:hover,
         &.is-active {
             color: $main;
-            box-shadow: inset 0 -2px 0 0 #cc3139;
+            box-shadow: inset 0 -2px 0 0 $AU-color-foreground-action;
         }
         &:hover {
             background-color: rgba(245, 88, 96, 0.1);
