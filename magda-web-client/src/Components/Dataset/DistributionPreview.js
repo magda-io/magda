@@ -1,35 +1,53 @@
 import React, { Component } from "react";
-import DataPreviewGoogleViewer from "../../UI/DataPreviewGoogleViewer";
-import { fetchPreviewData } from "../../actions/previewDataActions";
-import ProgressBar from "../../UI/ProgressBar";
 import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
+import DataPreviewMap from "../../UI/DataPreviewMap";
+import DataPreviewTable from "../../UI/DataPreviewTable";
+import DataPreviewTextBox from "../../UI/DataPreviewTextBox";
+import DataPreviewGoogleViewer from "../../UI/DataPreviewGoogleViewer";
+import DataPreviewJson from "../../UI/DataPreviewJson";
+import DataPreviewVega from "../../UI/DataPreviewVega";
+import DataPreviewNews from "../../UI/DataPreviewNews";
+import ProgressBar from "../../UI/ProgressBar";
+
+const DataPreviewHtml = ({ distribution }) => (
+    <iframe
+        title="preview"
+        width="100%"
+        height="600px"
+        src={distribution.downloadURL || distribution.accessURL}
+    />
+);
+
+const DataPreviewNone = () => "This distribution cannot be previewed";
 
 class DistributionPreview extends Component {
-    componentWillMount() {
-        this.props.fetchPreviewData(this.props.distribution);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (
-            nextProps.distribution.downloadURL &&
-            nextProps.distribution.downloadURL !==
-                this.props.distribution.downloadURL
-        ) {
-            this.props.fetchPreviewData(this.props.distribution);
+    renderByState() {
+        // Decide which visualisation to use using visualization-info
+        // Compatibility is decided by backend "visualization sleuther"
+        const compatiblePreviews = this.props.distribution.compatiblePreviews;
+        let DataPreviewComponent = DataPreviewNone;
+        if (compatiblePreviews.map) {
+            return <DataPreviewMap distributions={[this.props.distribution]} />;
+        } else if (compatiblePreviews.chart) {
+            DataPreviewComponent = DataPreviewVega;
+        } else if (compatiblePreviews.table) {
+            DataPreviewComponent = DataPreviewTable;
+        } else if (compatiblePreviews.json) {
+            DataPreviewComponent = DataPreviewJson;
+        } else if (compatiblePreviews.html) {
+            DataPreviewComponent = DataPreviewHtml;
+        } else if (compatiblePreviews.text) {
+            DataPreviewComponent = DataPreviewTextBox;
+        } else if (compatiblePreviews.rss) {
+            DataPreviewComponent = DataPreviewNews;
+        } else if (compatiblePreviews.google) {
+            DataPreviewComponent = DataPreviewGoogleViewer;
         }
-    }
-
-    visualisable() {
-        return !this.props.isFetching && !this.props.error && this.props.data;
-    }
-
-    renderByState(previewData) {
-        return <DataPreviewGoogleViewer data={previewData} />;
+        return <DataPreviewComponent distribution={this.props.distribution} />;
     }
 
     render() {
-        const url = this.props.url;
+        const url = this.props.distribution.downloadURL;
         return (
             <div className="data-previewer">
                 <h3 className="section-heading">
@@ -39,12 +57,7 @@ class DistributionPreview extends Component {
                 </h3>
                 {this.props.error && <div>{this.props.error}</div>}
                 {this.props.isFetching && <ProgressBar />}
-                {this.props.data &&
-                    this.props.distribution.identifier &&
-                    this.props.data[this.props.distribution.identifier] &&
-                    this.renderByState(
-                        this.props.data[this.props.distribution.identifier]
-                    )}
+                {this.props.distribution.identifier && this.renderByState()}
             </div>
         );
     }
@@ -52,29 +65,9 @@ class DistributionPreview extends Component {
 
 function mapStateToProps(state) {
     const distribution = state.record.distribution;
-    const previewData = state.previewData;
-    const data = previewData.previewData;
-    const isFetching = previewData.isFetching;
-    const error = previewData.error;
-    const url = previewData.url;
     return {
-        distribution,
-        data,
-        isFetching,
-        error,
-        url
+        distribution
     };
 }
 
-const mapDispatchToProps = dispatch => {
-    return bindActionCreators(
-        {
-            fetchPreviewData: fetchPreviewData
-        },
-        dispatch
-    );
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(
-    DistributionPreview
-);
+export default connect(mapStateToProps)(DistributionPreview);
