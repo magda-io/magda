@@ -128,8 +128,3 @@ h4 {
     @include AU-fontgrid(lg, heading);
     font-weight: 400;
 }
-
-h5 {
-    @include AU-fontgrid(xl heading);
-    font-weight: 400;
-}
