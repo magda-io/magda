@@ -91,9 +91,10 @@ export function recordForHighestStarCountArb(
             const dists = x.map(({ dist }) => dist);
             return recordArbWithDists(dists);
         },
-        record =>
-            record.aspects["dataset-distributions"].distributions.map(
+        record => {
+            return record.aspects["dataset-distributions"].distributions.map(
                 (dist: Record) => dist.aspects["dcat-distribution-strings"]
             )
+        }
     );
 }

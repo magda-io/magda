@@ -26,7 +26,7 @@ matrix:
         postgresql: "9.6"
       script: travis_retry sbt test
     - language: node_js
-      node_js: "6"
+      node_js: "9"
       cache:
         directories:
           - $HOME/.ivy2/cache
@@ -55,7 +55,7 @@ matrix:
         global:
           - CI=true
     - language: node_js
-      node_js: "6"
+      node_js: "9"
       cache:
         directories:
           - node_modules
@@ -66,7 +66,6 @@ matrix:
       script:
         - npm install -g lerna
         - lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map bootstrap
-        - lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map run postinstall
         - ./node_modules/.bin/eslint magda-web-client/src/
         - lerna --scope @magda/web-client --scope @magda/preview-map run build
         - lerna --scope @magda/preview-map --scope @magda/web-client run test
