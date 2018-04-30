@@ -1,5 +1,7 @@
 ## 0.0.39
 
+*   Tempoarily hid the `Sign in` footer link.
+
 ## 0.0.38
 
 *   Use grid system from DTA design guide
