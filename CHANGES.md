@@ -55,6 +55,7 @@
 *   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
 *   keep distance between search box and the first story on mobile view
 *   Fixed distribution previews
+*   Tempoarily hid the `Sign in` footer link.
 
 ## 0.0.37
 
