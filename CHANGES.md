@@ -1,4 +1,5 @@
 ## 0.0.39
+*   Apply Design System skip link/links styles
 
 *   Use colours from DTA design guide
 *   Fixed distribution previews
