@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import Tabs from "muicss/lib/react/tabs";
 import Tab from "muicss/lib/react/tab";
 import DataPreviewTable from "./DataPreviewTable";
-import DataPreviewVega from "./DataPreviewVega";
+import DataPreviewChart from "./DataPreviewChart";
 
 import type { ParsedDistribution } from "../helpers/record";
 
@@ -25,7 +25,7 @@ class DataPreviewVis extends Component<{
     }
 
     renderChart() {
-        return <DataPreviewVega distribution={this.props.distribution} />;
+        return <DataPreviewChart distribution={this.props.distribution} />;
     }
 
     renderTable() {

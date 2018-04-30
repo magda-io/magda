@@ -1,5 +1,6 @@
 // @flow
 import getDateString from "./getDateString";
+import { isSupportedFormat as isSupportedMapPreviewFormat } from "../UI/DataPreviewMap";
 import type { FetchError } from "../types";
 // dataset query:
 //aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
@@ -242,13 +243,6 @@ function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
         compatiblePreviews.chart = !!isTimeSeries;
     }
     switch (fmt) {
-        case "wms":
-        case "geojson":
-        case "wfs":
-        case "csv-geo-au":
-        case "kml":
-            compatiblePreviews.map = true;
-            break;
         case "xls":
         case "xlsx":
         case "doc":
@@ -271,6 +265,7 @@ function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
             compatiblePreviews.html = true;
             break;
         default:
+            if (isSupportedMapPreviewFormat(fmt)) compatiblePreviews.map = true;
     }
     return compatiblePreviews;
 }
@@ -328,6 +323,7 @@ export function parseDistribution(
         linkActive,
         isTimeSeries,
         chartFields,
+        visualizationInfo : aspects["visualization-info"] ? aspects["visualization-info"]: null,
         compatiblePreviews
     };
 }
@@ -411,7 +407,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             updatedDate: info.modified ? getDateString(info.modified) : null,
             isTimeSeries: visualizationInfo["timeseries"],
             chartFields,
-            compatiblePreviews
+            compatiblePreviews,
+            visualizationInfo : visualizationInfo ? visualizationInfo: null,
         };
     });
     return {
