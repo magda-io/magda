@@ -5,6 +5,8 @@ import filter from "lodash/filter";
 import indexOf from "lodash/indexOf";
 import forEach from "lodash/forEach";
 import isArray from "lodash/isArray";
+import sumBy from "lodash/sumBy";
+import concat from "lodash/concat";
 import * as d3 from "d3-collection";
 import { config } from "../config";
 import type { ParsedDistribution } from "../helpers/record";
@@ -15,8 +17,9 @@ const fetchData = function(url) {
     return new Promise((resolve, reject) => {
         Papa.parse(config.proxyUrl + "_0d/" + url, {
             download: true,
-            header: false,
+            header: true,
             skipEmptyLines: true,
+            trimHeader: true,
             complete: results => {
                 resolve(results);
             },
@@ -25,6 +28,11 @@ const fetchData = function(url) {
             }
         });
     });
+};
+
+const aggregators = {
+    "count" : v => v.length,
+    "sum" : field => v => sumBy(v, d => d[field])
 };
 
 const rollupResult2Rows = function(
@@ -69,7 +77,7 @@ class ChartDatasetEncoder {
         this.encode = null;
     }
 
-    getNumericFields() {
+    getNumericColumns() {
         return filter(this.fields, field => field.numeric);
     }
 
@@ -100,7 +108,8 @@ class ChartDatasetEncoder {
             ...field,
             idx: indexOf(headerRow, key),
             name: key,
-            label: capitalize(key.replace(/[-_]/g, " "))
+            label: capitalize(key.replace(/[-_]/g, " ")),
+            isAggr: false
         }));
         //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
         newFields = filter(newFields, item => item.idx !== -1);
@@ -113,20 +122,60 @@ class ChartDatasetEncoder {
     }
 
     preProcessData() {
-        if (!this.data || this.data.length < 2)
+        if (!this.data || this.data.length < 1)
             throw new Error("The data file loaded is empty.");
-        this.preProcessFields(this.data.shift());
-        if (this.fields.length === 1) {
+        this.preProcessFields(Object.keys(this.data[0]));
+        //--- if only one non-numeric column, add new column by count
+        if (this.fields.length === 1 && !this.fields[0].numeric) {
+            const newFieldName = "count_"+Math.random();
             this.fields.push({
                 idx: 1,
-                name: "count",
+                name: newFieldName,
                 label: "Count",
                 time: false,
-                numeric: true
+                numeric: true,
+                isAggr: true
             });
+            this.data = this.groupBy(this.data, newFieldName, aggregators.count, [this.fields[0].name]);
+        }
+        //--- At least one x-axis-able column / dimension should present
+        if(!this.getTimeColumns().length && !this.getCategoryColumns().length){
+            const newFieldName = "rows_"+Math.random();
+            this.fields.push({
+                idx: this.fields.length-1,
+                name: newFieldName,
+                label: "Rows",
+                time: false,
+                numeric: false,
+                isAggr: false
+            });
+            this.data = map(this.data, (item,key)=> item[newFieldName]=`Row ${key+1}`);
         }
     }
 
+    /**
+     * Simply aggregation function.
+     * @param {Array} data : data rows
+     * @param {String} aggrFuncName 
+     * @param {Function} aggrFunc 
+     * @param {Array} aggrfields 
+     * 
+     * Examples: 
+     *  with data: 
+     * 
+     * expenses = [{"name":"jim","amount":34,"date":"11/12/2015"},
+     *   {"name":"carl","amount":120.11,"date":"11/12/2015"},
+     *   {"name":"jim","amount":45,"date":"12/01/2015"},
+     *   {"name":"stacy","amount":12.00,"date":"01/04/2016"},
+     *   {"name":"stacy","amount":34.10,"date":"01/04/2016"},
+     *   {"name":"stacy","amount":44.80,"date":"01/05/2016"}
+     * ];
+     * 
+     *  groupBy(expenses,'Count',aggregators.count,["name","date"]);
+     *  or:
+     *  groupBy(expenses,'Sum',aggregators.sum("amount"),["name","date"]);
+     *  
+     */
     groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
         if (!data) throw new Error("`data` cannot be empty!");
         if (!aggrfields.length)
@@ -144,9 +193,19 @@ class ChartDatasetEncoder {
         this.data = result.data;
     }
 
-    getAvailableXCols() {}
+    getAvailableXCols() { //--- category / dimension axis
+        const timeCols = this.getTimeColumns();
+        const catCols = this.getCategoryColumns();
+        const avlCols = concat(timeCols, catCols);
+        return avlCols();
+    }
 
-    getAvailableYCols() {}
+    getAvailableYCols() {  //--- value / measure axis
+        const numCols = this.getNumericColumns();
+        //--- if unfortunately no numeric cols, present data by selected col's count
+        if(!numCols.length) return this.getAvailableXCols(); 
+        return numCols;
+    }
 }
 
 ChartDatasetEncoder.isValidDistributionData = function(
@@ -180,5 +239,7 @@ ChartDatasetEncoder.validateDistributionData = function(
             "Cannot locate `visualization Information` of the distribution data"
         );
 };
+
+ChartDatasetEncoder.aggregators = aggregators;
 
 export default ChartDatasetEncoder;
