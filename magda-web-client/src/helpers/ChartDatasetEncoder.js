@@ -13,6 +13,12 @@ import type { ParsedDistribution } from "../helpers/record";
 
 let Papa = null;
 
+const avlChartTypes = [
+    "bar",
+    "pie",
+    "scatter",
+    "line"
+];
 const fetchData = function(url) {
     return new Promise((resolve, reject) => {
         Papa.parse(config.proxyUrl + "_0d/" + url, {
@@ -75,6 +81,9 @@ class ChartDatasetEncoder {
         this.fields = null;
         this.data = null;
         this.encode = null;
+        this.xAxis = null;
+        this.yAxis = null;
+        this.chartType = null;
     }
 
     getNumericColumns() {
@@ -206,6 +215,41 @@ class ChartDatasetEncoder {
         if(!numCols.length) return this.getAvailableXCols(); 
         return numCols;
     }
+
+    setInitalAxis(){
+        const avlYcols = this.getAvailableYCols();
+        //-- avoid set an ID col to Y by default
+        if(avlYcols.length>1) this.setY(avlYcols[1]);
+        else this.setY(avlYcols[0]);
+        
+        const avlXcols = this.getAvailableXCols();
+        const avlTimeXcols = find(avlXcols, field => field.time);
+        const avlCatXcols = find(avlXcols, field => !field.time && !field.numeric);
+        if(avlTimeXcols.length) { //--- TimeCol has higher priority
+            this.setX(avlTimeXcols[0]);
+        }else{
+            if(avlCatXcols.length>1) this.setY(avlCatXcols[1]);
+            else this.setY(avlCatXcols[0]);
+        }
+    }
+
+    setX(field){
+        this.xAxis = field;
+    }
+
+    setY(field){
+        this.yAxis = field;
+    }
+
+    setChartType(chartType){
+        if(indexOf(avlChartTypes, chartType)===-1) throw new Error("Unsupported chart type.");
+        this.chartType = chartType;
+    }
+
+    encodeDataset(){
+        if(!this.chartType || !this.xAxis || !this.yAxis) throw new Error("`Chart Type`, preferred `xAis` or `yAxis` are required.");
+        
+    }
 }
 
 ChartDatasetEncoder.isValidDistributionData = function(
@@ -241,5 +285,6 @@ ChartDatasetEncoder.validateDistributionData = function(
 };
 
 ChartDatasetEncoder.aggregators = aggregators;
+ChartDatasetEncoder.avlChartTypes = avlChartTypes;
 
 export default ChartDatasetEncoder;
