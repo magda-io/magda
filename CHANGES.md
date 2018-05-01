@@ -2,6 +2,7 @@
 
 *   Use colours from DTA design guide
 *   Fixed distribution previews
+*   Added stubbed correspondence api
 
 ## 0.0.38
 
