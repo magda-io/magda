@@ -93,6 +93,7 @@ app.use(
 app.use(
     helmet.contentSecurityPolicy({
         directives: {
+            defaultSrc: ["'self'"], //Failsafe
             scriptSrc: [
                 "'self'",
                 "'unsafe-eval'", // for vega until we banish it into an iframe
@@ -104,11 +105,10 @@ app.use(
                 "www.googletagmanager.com",
                 "www.google-analytics.com",
                 "rum-static.pingdom.net",
-                "cdnjs.cloudflare.com/ajax/libs/rollbar.js/", //rollbar
-                "cdnjs.cloudflare.com/ajax/libs/es5-shim/", // shim
-                "cdnjs.cloudflare.com/ajax/libs/es6-shim/", // shim
-                "s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/"
+                "cdnjs.cloudflare.com",
+                "s3-ap-southeast-2.amazonaws.com"
             ],
+            upgradeInsecureRequests: true,
             objectSrc: ["'none'"],
             sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"],
             reportUri: argv.baseUrl + "api/v0/feedback/csp"

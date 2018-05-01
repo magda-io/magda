@@ -2,6 +2,7 @@
 
 *   Use colours from DTA design guide
 *   Fixed distribution previews
+*   Modified helmet directives to use base URL script sources
 
 ## 0.0.38
 
