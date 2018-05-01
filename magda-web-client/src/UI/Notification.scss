@@ -30,7 +30,7 @@
     }
 
     .notification__header {
-        font-size: 16px;
+        @include AU-fontgrid(sm, heading);
         font-weight: 500;
         height: 70px;
         &.with-icon {

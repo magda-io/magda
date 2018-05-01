@@ -1,4 +1,10 @@
 ## 0.0.39
+*   Add schema.org/Dataset microdata semantic markup
+
+*   Use colours from DTA design guide
+*   Fixed distribution previews
+*   Added link to publisher page for publisher on dataset summary.
+*   Recent search will not save "*" search
 
 ## 0.0.38
 
@@ -98,6 +104,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
+*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to search.data.gov.au
 
 ## 0.0.36
 
