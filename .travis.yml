@@ -26,7 +26,7 @@ matrix:
         postgresql: "9.6"
       script: travis_retry sbt test
     - language: node_js
-      node_js: "8"
+      node_js: "6"
       cache:
         directories:
           - $HOME/.ivy2/cache
@@ -55,7 +55,7 @@ matrix:
         global:
           - CI=true
     - language: node_js
-      node_js: "8"
+      node_js: "6"
       cache:
         directories:
           - node_modules
