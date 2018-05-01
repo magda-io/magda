@@ -254,8 +254,8 @@ class ChartDatasetEncoder {
         else this.setY(avlYcols[0]);
         
         const avlXcols = this.getAvailableXCols();
-        const avlTimeXcols = find(avlXcols, field => field.time);
-        const avlCatXcols = find(avlXcols, field => field.category);
+        const avlTimeXcols = filter(avlXcols, field => field.time);
+        const avlCatXcols = filter(avlXcols, field => field.category);
         if(avlTimeXcols.length) { //--- TimeCol has higher priority
             this.setX(avlTimeXcols[0]);
         }else{
