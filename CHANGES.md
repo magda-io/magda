@@ -1,6 +1,9 @@
 ## 0.0.39
 *   Removed `border-bottom` property for `Open Data Quality:` from DatasetSummary/Details page
 
+*   Use colours from DTA design guide
+*   Fixed distribution previews
+
 ## 0.0.38
 
 *   Use grid system from DTA design guide
@@ -50,9 +53,7 @@
 *   Upgraded React and associates to v16.3
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 *   Fixed an issue that users may see an error after page 4
-*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
-*   keep distance between search box and the first story on mobile view
-*   Fixed distribution previews
+*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key    keep distance between search box and the first story on mobile view
 
 ## 0.0.37
 
@@ -100,6 +101,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
+*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to search.data.gov.au
 
 ## 0.0.36
 

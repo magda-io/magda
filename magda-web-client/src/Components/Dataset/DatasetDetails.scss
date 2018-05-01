@@ -2,43 +2,37 @@
 
 .dataset-details {
     h3 {
-        color: #494949;
-        font-size: 24px;
-        line-height: 28px;
+        color: $body;
+        @include AU-fontgrid(lg, heading);
         padding-bottom: 20px;
         padding-top: 20px;
     }
 }
 
 .publisher-basic-info-row {
+    @include AU-fontgrid(sm);
     .publisher {
-        color: #cc3139;
-        font-size: 16px;
-        line-height: 22px;
+        color: $AU-color-foreground-action;
     }
-
     .updated-date {
-        color: #494949;
-        font-size: 16px;
-        line-height: 22px;
+        color: $body;
     }
 
     .separator {
         opacity: 0.25;
-        color: #494949;
-        font-size: 16px;
-        line-height: 22px;
+        color: $body;
     }
 }
 
 .dataset-details-source {
     font-size: 16px;
     line-height: 19px;
+
     .markdown a {
         font-weight: 500;
     }
     .landing-page {
-        color: #cc3139;
+        color: $AU-color-foreground-action;
         &:hover {
             color: #fff;
         }
@@ -47,8 +41,8 @@
 
 .dataset-details-overview {
     margin-top: 20px;
-    font-size: 16px;
-    line-height: 23px;
+    line-height: 19px;
+
     .markdown {
         opacity: 0.75;
     }
@@ -60,16 +54,10 @@
     position: relative;
     span {
         color: #535353;
-        font-size: 14px;
-        line-height: 16px;
     }
     .star-rating-box {
         position: absolute;
-        top: 5px;
         margin-left: 10px;
-    }
-    a {
-        border-bottom: none;
     }
 }
 

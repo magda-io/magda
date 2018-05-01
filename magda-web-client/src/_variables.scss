@@ -1,7 +1,9 @@
-$main: #f55860;
-$body: #494949;
+@import "../pancake/sass/pancake.scss";
 
-$magda: $main;
+$main: $AU-color-foreground-action;
+$body: $AU-color-foreground-text;
+
+$magda: $AU-color-foreground-action;
 $magda-grey: #ecf0f1;
 $magda-grey-light: #f7f7f7;
 $magda-dark-grey: #888;
@@ -10,9 +12,6 @@ $magda-dark-blue: #2c3e50;
 $magda-green: #16a085;
 $magda-red: #c0392b;
 $magda-yellow: #f1c40f;
-$heading1: 1.4rem;
-$heading2: 1rem;
-$heading3: 1rem;
 $success: #145e70;
 $banner-text: #48c9f6;
 
@@ -23,3 +22,13 @@ $font-base: "Rubik", sans-serif;
 $small: 768px;
 $medium: 992px;
 $large: 1200px;
+
+$AU-color-foreground-action: #00698f !default;
+$AU-color-foreground-focus: #9263de !default;
+$AU-color-foreground-text: #313131 !default;
+$AU-color-background: #ffffff !default;
+
+$AU-colordark-foreground-action: #61daff !default;
+$AU-colordark-foreground-focus: #c390f9 !default;
+$AU-colordark-foreground-text: #ffffff !default;
+$AU-colordark-background: #135e70 !default;
