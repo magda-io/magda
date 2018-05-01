@@ -220,6 +220,7 @@ class ChartDatasetEncoder {
             Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
         const result = await fetchData(url);
         this.data = result.data;
+        this.preProcessData();
     }
 
     getAvailableXCols() { //--- category / dimension axis
