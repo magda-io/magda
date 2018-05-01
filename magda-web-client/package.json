@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.38-0",
+  "version": "0.0.39-0",
   "license": "Apache-2.0",
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -27,7 +27,7 @@
     "@gov.au/pancake": "~1",
     "@gov.au/pancake-json": "^1.0.3",
     "@gov.au/pancake-sass": "^1.2.0",
-    "@magda/scripts": "^0.0.38-0",
+    "@magda/scripts": "^0.0.39-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",
     "@storybook/addons": "^3.3.3",
@@ -59,6 +59,7 @@
     "html-truncate": "^1.2.2",
     "immutable": "^3.8.1",
     "isomorphic-fetch": "^2.2.1",
+    "js-cookie": "^2.2.0",
     "leaflet": "^0.7.7",
     "leaflet-mapbox-vector-tile": "TerriaJS/Leaflet.MapboxVectorTile",
     "lodash.debounce": "^4.0.8",
