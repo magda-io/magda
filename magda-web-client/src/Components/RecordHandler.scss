@@ -1,7 +1,8 @@
-.media-body{
+@import "../variables";
+
+.media-body {
     h1 {
-        font-size: 28px;
-        line-height: 42px;
+        @include AU-fontgrid(lg);
     }
 
     .publisher-basic-info-row {

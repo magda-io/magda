@@ -19,14 +19,18 @@
         z-index: -1;
     }
 
-    .homepage-background{
-      background: linear-gradient(0deg, rgba(108, 201, 205, 0.0001) 0%, #969696 100%);
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: -1;
+    .homepage-background {
+        background: linear-gradient(
+            0deg,
+            rgba(108, 201, 205, 0.0001) 0%,
+            #969696 100%
+        );
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
     }
 
     .homepage-tagline {
@@ -34,8 +38,7 @@
         text-align: center;
         .homepage-tagline-inner {
             color: #fff;
-            font-size: 33px;
-            line-height: 43px;
+            @include AU-fontgrid(xl);
             border-radius: 10px;
             padding: 8px;
             display: inline-block;
@@ -54,8 +57,7 @@
         margin-bottom: 32px;
         a {
             display: inline-block;
-            font-size: 14px;
-            line-height: 17px;
+            @include AU-fontgrid(xs);
             background: rgba(79, 79, 79, 0.5);
             border-radius: 16px;
             padding: 8px 16px;

@@ -4,7 +4,7 @@
     display: flex;
     &.not-empty {
         button {
-            background: #494949;
+            background: $body;
             color: #fff;
         }
     }
@@ -38,7 +38,7 @@
         &:hover,
         &:active,
         &.is-open {
-            background: #494949;
+            background: $body;
             color: #fff;
         }
     }
