@@ -3,8 +3,9 @@ import map from "lodash/map";
 import find from "lodash/find";
 import filter from "lodash/filter";
 import indexOf from "lodash/indexOf";
-import reduce from "lodash/reduce";
-import zip from "lodash/zip";
+import forEach from "lodash/forEach";
+import isArray from "lodash/isArray";
+import * as d3 from "d3-collection";
 import { config } from "../config";
 import type { ParsedDistribution } from "../helpers/record";
 
@@ -24,6 +25,39 @@ const fetchData = function(url) {
             }
         });
     });
+};
+
+const rollupResult2Rows = function(
+    r,
+    groupByFields,
+    aggrFuncName = null,
+    aggrResult = [],
+    mergedKeyObj = {}
+) {
+    if (!aggrFuncName) aggrFuncName = "value";
+    if (!isArray(r)) {
+        const finalMergedKeyObj = { ...mergedKeyObj };
+        finalMergedKeyObj[aggrFuncName] = r;
+        aggrResult.push(finalMergedKeyObj);
+        return aggrResult;
+    }
+    if (!groupByFields.length) return aggrResult;
+    const keyName = groupByFields.shift();
+    if (typeof keyName === "undefined") return aggrResult;
+    forEach(r, item => {
+        const finalMergedKeyObj = { ...mergedKeyObj };
+
+        finalMergedKeyObj[keyName] = item.key;
+        rollupResult2Rows(
+            typeof item.values !== "undefined" ? item.values : item.value,
+            groupByFields,
+            aggrFuncName,
+            aggrResult,
+            finalMergedKeyObj
+        );
+    });
+    groupByFields.push(keyName);
+    return aggrResult;
 };
 
 class ChartDatasetEncoder {
@@ -82,7 +116,7 @@ class ChartDatasetEncoder {
         if (!this.data || this.data.length < 2)
             throw new Error("The data file loaded is empty.");
         this.preProcessFields(this.data.shift());
-        if(this.fields.length===1){
+        if (this.fields.length === 1) {
             this.fields.push({
                 idx: 1,
                 name: "count",
@@ -90,14 +124,17 @@ class ChartDatasetEncoder {
                 time: false,
                 numeric: true
             });
-
         }
     }
 
-    groupBy(data, aggr:function, ...fields){
-        const calTable = reduce(data, (result, row)=>{
-            const key = fields.map(field=> data.map(item=>item[field.idx]) )
-        },{});
+    groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
+        if (!data) throw new Error("`data` cannot be empty!");
+        if (!aggrfields.length)
+            throw new Error("`aggrfields` cannot be empty array!");
+        let nest = d3.nest();
+        forEach(aggrfields, field => (nest = nest.key(d => d[field])));
+        const result = nest.rollup(v => aggrFunc(v)).entries(data);
+        return rollupResult2Rows(result, aggrfields, aggrFuncName);
     }
 
     async loadData(url) {
@@ -107,14 +144,9 @@ class ChartDatasetEncoder {
         this.data = result.data;
     }
 
-    getAvailableXCols(){
+    getAvailableXCols() {}
 
-    }
-
-    getAvailableYCols(){
-
-    }
-    
+    getAvailableYCols() {}
 }
 
 ChartDatasetEncoder.isValidDistributionData = function(
