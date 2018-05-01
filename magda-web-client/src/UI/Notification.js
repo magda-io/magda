@@ -21,7 +21,7 @@ function Notification(props) {
                     <span>{props.content.title}</span>
                     <button
                         onClick={props.onDismiss}
-                        className="au-btn close-btn"
+                        className="au-btn close-btn au-btn--secondary"
                     >
                         <img alt="close" src={close} />
                     </button>
