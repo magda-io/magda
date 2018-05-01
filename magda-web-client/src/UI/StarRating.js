@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import emptyStarIcon from "../assets/emptyStar.svg";
 import "./StarRating.css";
+
 import starIcon from "../assets/star.svg";
 
 function StarRating(props) {
@@ -18,7 +19,6 @@ function StarRating(props) {
                     }
                 >
                     <img key={i} src={icon} alt="star rating" />
-                    &nbsp;
                 </span>
             ))}
         </span>

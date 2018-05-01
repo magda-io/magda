@@ -12,6 +12,7 @@ import "./RecordDetails.css";
 import "./DatasetDetails.css";
 import { Link } from "react-router-dom";
 import { Small, Medium } from "../../UI/Responsive";
+import helpIcon from "../../assets/help-24.svg";
 
 class DatasetDetails extends Component {
     state = {
@@ -42,8 +43,18 @@ class DatasetDetails extends Component {
                     </Medium>
                 </div>
                 <div className="quality-rating-box">
-                    <Link to="/page/dataset-quality">Open Data Quality</Link>:
-                    &nbsp;&nbsp;
+                    <span>
+                        Open Data Quality
+                        <div className="tooltip">
+                            <img src={helpIcon} alt="Help Link" />
+                            <span className="tooltiptext">
+                                Calculated using the{" "}
+                                <Link to="/page/dataset-quality">
+                                    Open Data scale
+                                </Link>
+                            </span>
+                        </div>
+                    </span>:
                     <StarRating stars={dataset.linkedDataRating} />
                 </div>
                 <TagsBox tags={dataset.tags} />

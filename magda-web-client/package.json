@@ -155,6 +155,9 @@
       "modules": false,
       "location": "pancake/sass/",
       "name": "pancake.scss"
+    },
+    "react": {
+      "location": "pancake/react/"
     }
   }
 }

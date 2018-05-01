@@ -34,17 +34,13 @@
 .dataset-details-source {
     font-size: 16px;
     line-height: 19px;
-
-    a {
-        border-bottom: none;
-    }
     .markdown a {
         font-weight: 500;
     }
     .landing-page {
         color: #cc3139;
-        &:hover{
-          color: #fff;
+        &:hover {
+            color: #fff;
         }
     }
 }
@@ -70,6 +66,7 @@
     .star-rating-box {
         position: absolute;
         top: 5px;
+        margin-left: 10px;
     }
     a {
         border-bottom: none;
