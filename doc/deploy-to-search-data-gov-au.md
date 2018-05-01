@@ -96,7 +96,6 @@ cd ..
     - Do another `lerna publish --skip-npm --force-publish`, bumping the RC number by 1.
     - Rebuild/push the affected images
     - Restart the process starting from the dev deploy
-    - Pull the fix back into master using `git pull origin <version branch> -Xours`
     - Do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
 
 ### Publish new version to git
@@ -109,10 +108,10 @@ git push origin v<version>
 - [ ] Merge the release branch into master
 ```bash
 git checkout master
-git pull
-git merge <version>
+git pull origin <version branch> -s recursive -X ours`
 git push origin master
 ```
+Be careful - any conflicts will be resolved by taking masters version, which sometimes causes lerna config to get clobbered - double check!
 
 ### Create new pre-release version, publish to dev and push to git
 - [ ] Checkout master

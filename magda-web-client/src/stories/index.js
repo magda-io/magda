@@ -12,7 +12,6 @@ import DataPreviewTextBox from "../UI/DataPreviewTextBox";
 import DataPreviewChart from "../UI/DataPreviewChart";
 import DropDown from "../UI/DropDown";
 import MarkdownViewer from "../UI/MarkdownViewer";
-import News from "../UI/News";
 import Notification from "../UI/Notification";
 import OverviewBox from "../UI/OverviewBox";
 import Pagination from "../UI/Pagination";
@@ -56,12 +55,6 @@ doctam limite nisi; adpulit est lacerto, inquit.
 animum inponere quietem? Vinctae et mando vivere sustineam resilit militiam
 tacitos ille pondus clipeoque **vomit**. Qui arcem. Cum diu, misit deficeret
 texit ad quos, ferar aratro praecipue.`;
-
-const exampleNews = [
-    { link: "", title: "news 1", contentSnippet: "aaa" },
-    { link: "", title: "news 2", contentSnippet: "bbb" },
-    { link: "", title: "news 3", contentSnippet: "ccc" }
-];
 
 storiesOf("Shared UI", module)
     .addDecorator(story => (
@@ -151,13 +144,6 @@ storiesOf("Notification", module)
             onDismiss={action()}
         />
     ));
-
-storiesOf("News", module)
-    .add("News loading", () => <News isFetching={true} />)
-    .add("News loading failed", () => (
-        <News error={{ title: "404", detail: "cannot load" }} />
-    ))
-    .add("News loaded", () => <News newsItems={exampleNews} />);
 
 storiesOf("OverviewBox", module)
     .add("Long overview", () => <OverviewBox content={exampleMarkdown} />)
