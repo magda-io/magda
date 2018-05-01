@@ -1,8 +1,9 @@
 ## 0.0.39
 
+*   Use colours from DTA design guide
+
 ## 0.0.38
 
-*   Use colours from DTA design guide
 *   Use grid system from DTA design guide
 *   Mobile search filter new look
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
@@ -50,8 +51,7 @@
 *   Upgraded React and associates to v16.3
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 *   Fixed an issue that users may see an error after page 4
-*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
-*   keep distance between search box and the first story on mobile view
+*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key    keep distance between search box and the first story on mobile view
 
 ## 0.0.37
 
