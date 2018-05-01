@@ -6,6 +6,6 @@
 
 .distribution__license {
     color: $magda-green;
-    font-size: 0.9rem;
+    @include AU-fontgrid(xs);
     padding-top: 5px;
 }

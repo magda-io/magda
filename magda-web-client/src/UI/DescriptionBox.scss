@@ -1,20 +1,19 @@
-.description-box{
-    .toggle-button{
-        color: #CC3139;
-        font-size: 16px;
-        line-height: 19px;
+@import "../variables";
+.description-box {
+    .toggle-button {
+        color: $AU-color-foreground-action;
         border: none;
         cursor: pointer;
         position: relative;
         padding-left: 0px;
         margin-top: 10px;
-    
+
         img {
             position: absolute;
             top: -2px;
         }
     }
-    .toggle-button:focus{
+    .toggle-button:focus {
         outline: none;
     }
 }

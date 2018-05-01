@@ -81,6 +81,6 @@
 
     .privacy-link {
         margin-top: 10px;
-        font-size: 0.75rem;
+        @include AU-fontgrid(xs);
     }
 }
