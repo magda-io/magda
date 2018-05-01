@@ -1,7 +1,7 @@
 @import "variables";
-@import "../pancake/sass/pancake.scss";
+
 html {
-    font-size: 16px;
+    @include AU-fontgrid(sm);
 }
 body {
     margin: 0;
@@ -9,7 +9,6 @@ body {
     font-family: $font-base;
     font-weight: 400;
     color: $body;
-    font-size: 1rem;
     overflow-x: hidden;
 }
 .sr-only {
@@ -100,4 +99,32 @@ a {
 
 .mui-btn + .mui-btn {
     margin-left: 0;
+}
+
+.other-page .app-container {
+    @media (max-width: $medium) {
+        padding: 0;
+    }
+}
+
+// gold starts here
+
+h1 {
+    @include AU-fontgrid(xxxl, heading);
+    font-weight: 400;
+}
+
+h2 {
+    @include AU-fontgrid(xxl, heading);
+    font-weight: 400;
+}
+
+h3 {
+    @include AU-fontgrid(xl, heading);
+    font-weight: 400;
+}
+
+h4 {
+    @include AU-fontgrid(lg, heading);
+    font-weight: 400;
 }

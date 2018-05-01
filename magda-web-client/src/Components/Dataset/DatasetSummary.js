@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import defined from "../../helpers/defined";
 import getDateString from "../../helpers/getDateString";
-import QualityIndicator from "../../UI/QualityIndicator";
+import StarRating from "../../UI/StarRating";
 import "./DatasetSummary.css";
 import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
@@ -70,7 +70,7 @@ export default class DatasetSummary extends Component {
                     {defined(dataset.quality) && (
                         <span className="dataset-summary-quality">
                             {" "}
-                            <QualityIndicator quality={dataset.quality} />
+                            <StarRating stars={dataset.quality} />
                         </span>
                     )}
                     {defined(

@@ -14,6 +14,14 @@ export const defaultDataSourcePreference = [
     "KML"
 ];
 
+export const isSupportedFormat = function(format) {
+    return (
+        defaultDataSourcePreference
+            .map(item => item.toLowerCase())
+            .filter(item => format.trim() === item).length !== 0
+    );
+};
+
 class DataPreviewMap extends Component {
     constructor(props) {
         super(props);
@@ -30,8 +38,7 @@ class DataPreviewMap extends Component {
     createStateFromProps(props) {
         this.iframeRef = null;
 
-        const { identifier } = props.dataset;
-        if (identifier === "") {
+        if (!props.distributions || !props.distributions.length) {
             this.setState({
                 isInitLoading: true,
                 isMapLoading: false,
@@ -96,8 +103,8 @@ class DataPreviewMap extends Component {
     }
 
     determineDistribution(props) {
-        const distributions = props.dataset.distributions;
-        let dataSourcePreference = props.dataset.dataSourcePreference;
+        const distributions = props.distributions;
+        let dataSourcePreference = props.dataSourcePreference;
         if (!dataSourcePreference || !dataSourcePreference.length)
             dataSourcePreference = defaultDataSourcePreference;
         dataSourcePreference = dataSourcePreference.map(item =>
@@ -253,7 +260,7 @@ class DataPreviewMap extends Component {
 }
 
 DataPreviewMap.propTypes = {
-    dataset: PropTypes.object,
+    distributions: PropTypes.arrayOf(PropTypes.object),
     dataSourcePreference: PropTypes.arrayOf(PropTypes.string),
     onLoadingStart: PropTypes.func,
     onLoadingEnd: PropTypes.func

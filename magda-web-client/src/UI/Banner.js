@@ -1,4 +1,5 @@
 import { bindActionCreators } from "redux";
+import Cookies from "js-cookie";
 
 import React from "react";
 import { connect } from "react-redux";
@@ -14,7 +15,26 @@ class Banner extends React.Component {
 
     goBack = event => {
         event.preventDefault();
-        document.cookie = "noPreview=true; path=/";
+
+        if (window.location.hostname === "search.data.gov.au") {
+            // Delete all VWO's cookies
+            const cookieNames = Object.keys(Cookies.get());
+            cookieNames
+                .filter(name => /^_(vis|vwo).*/.test(name))
+                .forEach(name =>
+                    Cookies.remove(name, {
+                        path: "/",
+                        domain: ".data.gov.au"
+                    })
+                );
+
+            // Add our cookie
+            Cookies.set("noPreview", "true", {
+                path: "/",
+                domain: ".data.gov.au"
+            });
+        }
+
         window.location = "https://data.gov.au";
     };
 
