@@ -1,9 +1,9 @@
 import React from "react";
-import Button from "muicss/lib/react/button";
 export default function DataSetMentionEntry(props) {
     const { mention } = props;
     return (
-        <Button
+        <button
+            className="au-btn"
             onMouseDown={props.onMouseDown}
             onMouseLeave={props.onMouseLeave}
             onMouseUp={props.onMouseUp}
@@ -14,6 +14,6 @@ export default function DataSetMentionEntry(props) {
             }}
         >
             {mention.get("title")}
-        </Button>
+        </button>
     );
 }

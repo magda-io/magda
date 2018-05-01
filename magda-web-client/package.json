@@ -156,6 +156,12 @@
       "modules": false,
       "location": "pancake/sass/",
       "name": "pancake.scss"
+    },
+    "react": {
+      "location": "pancake/react/"
     }
+  },
+  "dependencies": {
+    "@gov.au/buttons": "^2.0.1"
   }
 }

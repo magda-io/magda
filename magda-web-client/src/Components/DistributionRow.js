@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import type { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
-import Button from "muicss/lib/react/button";
 import { showTopNotification } from "../actions/topNotificationAction";
 import "./DistributionRow.css";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
@@ -180,8 +179,8 @@ class DistributionRow extends Component {
                 </div>
                 <div className="col-md-3 button-area">
                     {distribution.downloadURL ? (
-                        <Button
-                            className="download-button"
+                        <button
+                            className="download-button au-btn au-btn--secondary"
                             onClick={() => {
                                 if (!distribution.downloadURL) {
                                     this.props.dispatch(
@@ -211,16 +210,16 @@ class DistributionRow extends Component {
                         >
                             <img src={downloadIcon} alt="download" />
                             <span className="button-text">Download</span>
-                        </Button>
+                        </button>
                     ) : null}
-                    <Button
-                        className="new-tab-button"
+                    <button
+                        className="au-btn au-btn--secondary new-tab-button"
                         onClick={() => {
                             window.open(distributionLink, distribution.title);
                         }}
                     >
                         <img src={newTabIcon} alt="new tab" />
-                    </Button>
+                    </button>
                 </div>
             </div>
         );
