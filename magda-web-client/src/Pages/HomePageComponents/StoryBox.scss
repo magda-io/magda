@@ -14,7 +14,7 @@
         padding: 13px;
         border-radius: 4px;
         .story-title {
-            font-size: 24px;
+            @include AU-fontgrid(lg, heading);
         }
 
         .story-title-image {
@@ -24,11 +24,9 @@
 
         .story-box-body {
             .markdown {
-                font-family: Rubik;
+                font-family: $font-base;
                 font-style: normal;
                 font-weight: normal;
-                line-height: 23px;
-                font-size: 16px;
                 color: #494949;
             }
         }

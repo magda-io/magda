@@ -4,23 +4,20 @@
     height: auto;
     clear: both;
     .dataset-summary-title {
-        font-size: 20px;
-        line-height: 29px;
+        @include AU-fontgrid(md);
         font-weight: 300;
         margin-bottom: 8px;
     }
 
     .dataset-summary-publisher {
         opacity: 0.75;
-        font-size: 14px;
-        line-height: 20px;
-        margin-bottom: 17px;
+        @include AU-fontgrid(xs);
+        margin-bottom: 5px;
     }
 
     .dataset-summary-description {
         opacity: 0.5;
-        font-size: 14px;
-        line-height: 20px;
+        @include AU-fontgrid(xs);
         margin-bottom: 8px;
         overflow: hidden;
         h1,
@@ -28,14 +25,11 @@
         h3,
         h4 {
             margin: 0 0 10px;
-            font-size: inherit;
-            line-height: inherit;
         }
     }
 
     .dataset-summary-meta {
-        font-size: 14px;
-        line-height: 16px;
+        @include AU-fontgrid(xs);
         color: rgba($body, 0.5);
         clear: both;
     }
@@ -54,8 +48,7 @@
     .dataset-summary-downloads {
         span {
             color: #cc3139;
-            font-size: 14px;
-            line-height: 16px;
+            @include AU-fontgrid(xs);
             display: inline-block;
             padding-right: 5px;
             &:after {

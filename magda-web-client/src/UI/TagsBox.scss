@@ -30,19 +30,15 @@
     li,
     a {
         color: #cc3139;
-        font-family: Helvetica;
-        font-size: 16px;
-        line-height: 19px;
         margin-right: 4px;
-        &:hover, &:focus{
-          color: #fff;
+        &:hover,
+        &:focus {
+            color: #fff;
         }
     }
     .other-tag:before {
         content: "·";
         margin-right: 10px;
-        font-size: 16px;
         vertical-align: middle;
-        line-height: 19px;
     }
 }
