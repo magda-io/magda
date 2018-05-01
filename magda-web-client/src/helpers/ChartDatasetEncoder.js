@@ -95,7 +95,7 @@ class ChartDatasetEncoder {
     }
 
     getCategoryColumns() {
-        return filter(this.fields, field => !field.time && !field.numeric);
+        return filter(this.fields, field => field.category);
     }
 
     get1stNumericColumn() {
@@ -107,7 +107,7 @@ class ChartDatasetEncoder {
     }
 
     get1stCategoryColumn() {
-        return find(this.fields, field => !field.time && !field.numeric);
+        return find(this.fields, field => field.category);
     }
 
     preProcessFields(headerRow) {
@@ -118,6 +118,7 @@ class ChartDatasetEncoder {
             idx: indexOf(headerRow, key),
             name: key,
             label: capitalize(key.replace(/[-_]/g, " ")),
+            category: !field.time && !field.numeric,
             isAggr: false
         }));
         //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
@@ -143,9 +144,26 @@ class ChartDatasetEncoder {
                 label: "Count",
                 time: false,
                 numeric: true,
-                isAggr: true
+                category: false,
+                isAggr: true,
+                isAggrDone: true
             });
             this.data = this.groupBy(this.data, newFieldName, aggregators.count, [this.fields[0].name]);
+        }
+        //--- if unfortunately no numeric cols, present data by selected col's count
+        if(!this.getNumericColumns().length){
+            const newFieldName = "count_"+Math.random();
+            this.fields.push({
+                idx: 1,
+                name: newFieldName,
+                label: "Count",
+                time: false,
+                numeric: true,
+                category: false,
+                isAggr: true,
+                isAggrDone: false
+            });
+            //--- we cann't generate coutn data here yet as we don't know user's selection
         }
         //--- At least one x-axis-able column / dimension should present
         if(!this.getTimeColumns().length && !this.getCategoryColumns().length){
@@ -156,7 +174,9 @@ class ChartDatasetEncoder {
                 label: "Rows",
                 time: false,
                 numeric: false,
-                isAggr: false
+                category: true,
+                isAggr: false,
+                isAggrDone: false
             });
             this.data = map(this.data, (item,key)=> item[newFieldName]=`Row ${key+1}`);
         }
@@ -211,8 +231,7 @@ class ChartDatasetEncoder {
 
     getAvailableYCols() {  //--- value / measure axis
         const numCols = this.getNumericColumns();
-        //--- if unfortunately no numeric cols, present data by selected col's count
-        if(!numCols.length) return this.getAvailableXCols(); 
+        //--- there will be always at leaset one Ycol as preprocessed
         return numCols;
     }
 
@@ -224,7 +243,7 @@ class ChartDatasetEncoder {
         
         const avlXcols = this.getAvailableXCols();
         const avlTimeXcols = find(avlXcols, field => field.time);
-        const avlCatXcols = find(avlXcols, field => !field.time && !field.numeric);
+        const avlCatXcols = find(avlXcols, field => field.category);
         if(avlTimeXcols.length) { //--- TimeCol has higher priority
             this.setX(avlTimeXcols[0]);
         }else{
@@ -246,9 +265,55 @@ class ChartDatasetEncoder {
         this.chartType = chartType;
     }
 
+    getFieldDataType(field){
+        if(field.numeric) return "number";
+        if(field.time) return "time";
+        return "ordinal";
+    }
+
     encodeDataset(){
-        if(!this.chartType || !this.xAxis || !this.yAxis) throw new Error("`Chart Type`, preferred `xAis` or `yAxis` are required.");
-        
+        if(!this.chartType || !this.xAxis || !this.yAxis) throw new Error("`Chart Type`, preferred `xAxis` or `yAxis` are required.");
+        let data, dimensions, encode;
+        if(this.yAxis.isAggr){ //--- we need aggregate data first
+            if(this.yAxis.isAggrDone) data = this.data;
+            else data = this.groupBy(this.data, this.yAxis.name, aggregators.count, [this.xAxis.name])
+            dimensions = [{
+                name: this.xAxis.name,
+                type: "ordinal",
+                displayName: this.xAxis.label
+            },{
+                name: this.yAxis.name,
+                type: "int",
+                displayName: this.yAxis.label
+            }];
+            encode = {
+                x : 0,
+                y : 1,
+                tooltip: [1]
+            };
+        }else{
+            let xAxisIdx = null;
+            let yAxisIdx = null;
+            let tooltipCols = [];
+            dimensions = map(this.fields, (field,idx) => {
+                if(this.yAxis===field) yAxisIdx=idx;
+                else if(this.xAxis===field) xAxisIdx=idx;
+                else tooltipCols.push(idx);
+                const dimensionDef = {
+                    name: field.name,
+                    type: this.getFieldDataType(field),
+                    displayName: field.label
+                };
+                return dimensionDef;
+            });
+            encode = {
+                x : xAxisIdx,
+                y : yAxisIdx,
+                tooltip: concat([yAxisIdx],tooltipCols)
+            };
+            data = this.data;
+        }
+        return { dimensions, encode, data};
     }
 }
 
