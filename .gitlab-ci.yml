@@ -32,12 +32,11 @@ build-builders:
   image: data61/magda-builder-docker:latest
   cache:
     paths: []
-  before_script: []
   services:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.builder=true -- run bootstrap --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.builder=true -- bootstrap --include-filtered-dependencies
     - npm run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 prebuild:
