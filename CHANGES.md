@@ -1,10 +1,12 @@
 ## 0.0.39
-*   Add schema.org/Dataset microdata semantic markup
 
+*   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
 *   Fixed distribution previews
 *   Added link to publisher page for publisher on dataset summary.
 *   Recent search will not save "*" search
+*   Reduced homepage tagline bottom margin
+*   Brought back homepage animation
 
 ## 0.0.38
 
