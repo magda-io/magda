@@ -1,4 +1,5 @@
 ## 0.0.39
+*   Add schema.org/Dataset microdata semantic markup
 
 *   Use colours from DTA design guide
 *   Fixed distribution previews
