@@ -4,7 +4,7 @@ global:
     externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
-        tag: "0.0.37-RC2"
+        tag: "0.0.38-RC2"
 tags:
     all: false
 
@@ -21,6 +21,7 @@ tags:
     sleuther-broken-link: true
     sleuther-linked-data-rating: true
     sleuther-visualization: true
+    sleuther-format: true
     web-server: true
     feedback-api: true
 

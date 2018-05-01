@@ -85,7 +85,7 @@ export const config = {
         {
             category: "Publishers",
             links: [
-                ["Sign in", "account"],
+                ["Sign in", "https://data.gov.au/user/login"],
                 ["Open data toolkit", "https://toolkit.data.gov.au/"]
             ]
         },
