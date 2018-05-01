@@ -26,11 +26,14 @@ const fetchData = function(url) {
             header: true,
             skipEmptyLines: true,
             trimHeader: true,
-            complete: results => {
+            complete: (results) => {
                 resolve(results);
             },
-            error: err => {
-                reject(err);
+            error: (err) => {
+                let e;
+                if(!err) e = new Error("Failed to retrieve or parse the file.");
+                else e = err;
+                reject(e);
             }
         });
     });
@@ -72,6 +75,14 @@ const rollupResult2Rows = function(
     });
     groupByFields.push(keyName);
     return aggrResult;
+};
+
+const defaultChartOption = {
+    legend: {
+        type: 'scroll',
+        y:"bottom",
+        orient: 'horizontal'
+    }
 };
 
 class ChartDatasetEncoder {
@@ -227,7 +238,7 @@ class ChartDatasetEncoder {
         const timeCols = this.getTimeColumns();
         const catCols = this.getCategoryColumns();
         const avlCols = concat(timeCols, catCols);
-        return avlCols();
+        return avlCols;
     }
 
     getAvailableYCols() {  //--- value / measure axis
@@ -236,7 +247,7 @@ class ChartDatasetEncoder {
         return numCols;
     }
 
-    setInitalAxis(){
+    setDefaultAxis(){
         const avlYcols = this.getAvailableYCols();
         //-- avoid set an ID col to Y by default
         if(avlYcols.length>1) this.setY(avlYcols[1]);
@@ -251,6 +262,15 @@ class ChartDatasetEncoder {
             if(avlCatXcols.length>1) this.setY(avlCatXcols[1]);
             else this.setY(avlCatXcols[0]);
         }
+    }
+
+    setDefaultChartType(){
+        this.setChartType("pie");
+    }
+
+    setDefaultParameters(){
+        this.setDefaultChartType();
+        this.setDefaultAxis();
     }
 
     setX(field){
@@ -272,9 +292,18 @@ class ChartDatasetEncoder {
         return "ordinal";
     }
 
+    getEncodeXYNames(){
+        switch(this.chartType){
+            case "pie" : return {xName: "itemName", yName: "value"};
+            case "funnel" : return {xName: "itemName", yName: "value"};
+            default : return {xName: "x", yName: "y"};
+        }
+    }
+
     encodeDataset(){
         if(!this.chartType || !this.xAxis || !this.yAxis) throw new Error("`Chart Type`, preferred `xAxis` or `yAxis` are required.");
         let data, dimensions, encode;
+        const { xName, yName} = this.getEncodeXYNames();
         if(this.yAxis.isAggr){ //--- we need aggregate data first
             if(this.yAxis.isAggrDone) data = this.data;
             else data = this.groupBy(this.data, this.yAxis.name, aggregators.count, [this.xAxis.name])
@@ -288,8 +317,8 @@ class ChartDatasetEncoder {
                 displayName: this.yAxis.label
             }];
             encode = {
-                x : 0,
-                y : 1,
+                [xName] : 0,
+                [yName] : 1,
                 tooltip: [1]
             };
         }else{
@@ -308,13 +337,32 @@ class ChartDatasetEncoder {
                 return dimensionDef;
             });
             encode = {
-                x : xAxisIdx,
-                y : yAxisIdx,
+                [xName] : xAxisIdx,
+                [yName] : yAxisIdx,
                 tooltip: concat([yAxisIdx],tooltipCols)
             };
             data = this.data;
         }
         return { dimensions, encode, data};
+    }
+
+    getChartOption(chartTitle){
+        const { data, dimensions, encode } = this.encodeDataset();
+        const option = {
+            ...defaultChartOption,
+            title: {
+                text: chartTitle
+            },
+            dataset:[{
+                source: data,
+                dimensions,
+            }],
+            series:[{
+                type: this.chartType,
+                encode
+            }]
+        };
+        return option;
     }
 }
 

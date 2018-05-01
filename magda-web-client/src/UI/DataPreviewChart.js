@@ -10,34 +10,82 @@ let ReactEcharts = null;
 class DataPreviewChart extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            error : null,
+        this.state = this.getResetState({
             isLoading: true
-        };
+        });
         this.chartDatasetEncoder = null;
+    }
+
+    getResetState(extraOptions=null){
+        const options = {
+            error : null,
+            isLoading: false,
+            avlXCols: [],
+            avlYCols: [],
+            xAxis: null,
+            yAxis: null,
+            chartType: null,
+            chartOption: null
+        };
+        if(!extraOptions) return options;
+        else return {...options, ...extraOptions}
+    }
+
+    async initChartData(){
+        try{
+            if(ChartDatasetEncoder.isValidDistributionData(this.props.distribution)){
+                this.chartDatasetEncoder = new ChartDatasetEncoder(this.props.distribution);
+                await this.chartDatasetEncoder.loadData(this.props.distribution.downloadURL);
+                this.chartDatasetEncoder.setDefaultParameters();
+                const chartOption = this.chartDatasetEncoder.getChartOption(this.props.distribution.title);
+                this.setState({
+                    error: null,
+                    isLoading: false,
+                    avlXCols: this.chartDatasetEncoder.getAvailableXCols(),
+                    avlYCols: this.chartDatasetEncoder.getAvailableYCols(),
+                    xAxis: this.chartDatasetEncoder.xAxis,
+                    yAxis: this.chartDatasetEncoder.yAxis,
+                    chartOption
+                });
+            }
+        }catch(e){
+            console.log(e);
+            throw e; //--- not capture here; only for debug
+        }
     }
 
     async componentDidMount(){
         try{
             if(!ReactEcharts) ReactEcharts = (await import("echarts-for-react")).default;
-            if(ChartDatasetEncoder.isValidDistributionData(this.props.distribution)){
-                this.chartDatasetEncoder = new ChartDatasetEncoder(this.props.distribution);
-                await this.chartDatasetEncoder.loadData();
-            }
+            await this.initChartData();
         }catch(e){
-            this.setState({
+            console.log(this.getResetState({
                 error: e
-            })
+            }));
+            this.setState(this.getResetState({
+                error: e
+            }));
         }
     }
 
     async componentDidUpdate(prevProps, prevState){
-        if(
-            ChartDatasetEncoder.isValidDistributionData(this.props.distribution) &&
-            prevProps.distribution.identifier !== this.props.distribution.identifier
-        ){
-            this.chartDatasetEncoder = new ChartDatasetEncoder(this.props.distribution);
-            await this.chartDatasetEncoder.loadData();
+        try{
+            if(
+                ChartDatasetEncoder.isValidDistributionData(this.props.distribution) &&
+                prevProps.distribution.identifier !== this.props.distribution.identifier
+            ){
+                this.setState(this.getResetState({
+                    isLoading: true
+                }));
+                await this.initChartData();
+            }
+        }catch(e){
+            console.log(this.getResetState({
+                error: e
+            }));
+            this.setState(this.getResetState({
+                error: e
+            }));
         }
     }
 
@@ -86,8 +134,11 @@ class DataPreviewChart extends Component {
     }
 
     render() {
-        if(!ReactEcharts) return null;
-        return <ReactEcharts option={this.getOption()}  />;
+        if(this.state.error) return <div>Error: {this.state.error.message}</div>;
+        if(this.state.isLoading) return <div>Loading...</div>;
+        if(!ReactEcharts) return <div>Unexpected Error: failed to load chart component.</div>;
+        console.log(this.state);
+        return <ReactEcharts option={this.state.chartOption}  />;
     }
 }
 
