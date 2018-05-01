@@ -2,6 +2,7 @@
 
 *   Use colours from DTA design guide
 *   Fixed distribution previews
+*   Added link to publisher page for publisher on dataset summary.
 
 ## 0.0.38
 
