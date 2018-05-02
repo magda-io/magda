@@ -106,9 +106,9 @@ export default class DataPreviewTable extends Component<
                 </div>
             );
         }
-        const fields = this.state.parsedResults.meta.fields;
-        if (!this.state.parsedResults.meta.fields)
+        if (!this.state.parsedResults || !this.state.parsedResults.meta || !this.state.parsedResults.meta.fields)
             return <div>Data grid preview is not available</div>;
+        const fields = this.state.parsedResults.meta.fields;
         const columns = fields.filter(f => f.length > 0).map(item => ({
             Header: item,
             accessor: item
