@@ -1,8 +1,13 @@
 ## 0.0.39
 
+*   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
 *   Fixed distribution previews
 *   Added stubbed correspondence api
+*   Added link to publisher page for publisher on dataset summary.
+*   Recent search will not save "\*" search
+*   Reduced homepage tagline bottom margin
+*   Brought back homepage animation
 
 ## 0.0.38
 
@@ -53,7 +58,8 @@
 *   Upgraded React and associates to v16.3
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 *   Fixed an issue that users may see an error after page 4
-*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key    keep distance between search box and the first story on mobile view
+*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
+*   keep distance between search box and the first story on mobile view
 
 ## 0.0.37
 
