@@ -161,6 +161,10 @@ test:registry:
 buildtest:map:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+      - node_modules/
+      - magda-preview-map/node_modules/
   dependencies:
     - prebuild
   script:
@@ -179,6 +183,10 @@ buildtest:map:
 buildtest:typescript-apis:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+    - "node_modules/"
+    - "*/node_modules"
   dependencies: 
     - prebuild
   script:
@@ -195,6 +203,10 @@ buildtest:typescript-apis:
 buildtest:sleuthers:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+    - "node_modules/"
+    - "*/node_modules"
   dependencies: 
     - prebuild
   script:
@@ -211,6 +223,10 @@ buildtest:sleuthers:
 buildtest:connectors:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+    - "node_modules/"
+    - "*/node_modules"
   dependencies: 
     - prebuild
   script:
