@@ -136,50 +136,6 @@ class DataPreviewChart extends Component {
         }
     }
 
-    getOption() {
-        return {
-            title: {
-                text: "test"
-            },
-            tooltip: {
-                show: true
-            },
-            dataset: {
-                source: [
-                    ["product", "count", "score"],
-                    ["Matcha Latte", 823, 95.8],
-                    ["Milk Tea", 235, 81.4],
-                    ["Cheese Cocoa", 1042, 91.2],
-                    ["Walnut Brownie", 988, 76.9]
-                ],
-                dimensions: [
-                    {
-                        name: "product",
-                        type: "ordinal"
-                    },
-                    {
-                        name: "count",
-                        type: "number"
-                    },
-                    {
-                        name: "score",
-                        type: "number"
-                    }
-                ]
-            },
-            series: [
-                {
-                    type: "pie",
-                    encode: {
-                        itemName: 0,
-                        value: 1,
-                        tooltip: [2]
-                    }
-                }
-            ]
-        };
-    }
-
     onChartConfigChanged(key, value) {
         this.setState({ [key]: value });
     }
