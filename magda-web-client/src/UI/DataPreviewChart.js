@@ -8,7 +8,7 @@ import ChartConfig from "./ChartConfig";
 
 let ReactEcharts = null;
 
-const defaultChartType = "pie";
+const defaultChartType = "bar";
 
 class DataPreviewChart extends Component {
     constructor(props) {

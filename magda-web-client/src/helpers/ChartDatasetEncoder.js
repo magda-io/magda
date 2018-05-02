@@ -145,7 +145,7 @@ class ChartDatasetEncoder {
     }
 
     fieldDefAdjustment(field){
-        if(this.testKeywords(field.label, ["id","code","identifier"])){
+        if(this.testKeywords(field.label, ["id","code","identifier","postcode"])){
             field.numeric = false;
             field.category = true;
             field.time = false;
@@ -163,6 +163,10 @@ class ChartDatasetEncoder {
                 field.category = true;
                 field.time = false;
             }
+        }else if(this.testKeywords(field.label, ["longitude","latitude"])){
+            field.numeric = false;
+            field.category = true;
+            field.time = false;
         }
         return field;
     }
@@ -355,7 +359,7 @@ class ChartDatasetEncoder {
 
     getFieldDataType(field){
         if(field.numeric) return "number";
-        if(field.time) return "time";
+        //if(field.time) return "time"; disable time support for now
         return "ordinal";
     }
 
@@ -421,6 +425,9 @@ class ChartDatasetEncoder {
             title: {
                 text: chartTitle
             },
+            tooltip:{
+                trigger: 'item'
+            },
             dataset:[{
                 source: data,
                 dimensions,
@@ -432,7 +439,9 @@ class ChartDatasetEncoder {
         };
         if(xName==="x"){
             option["xAxis"]={
-                type : this.xAxis.time ? "time" : "category"
+                //type : this.xAxis.time ? "time" : "category"
+                //--- disable time series support for now due to various date format issue
+                type : "category"
             };
             option["yAxis"]={
                 type : "value"
