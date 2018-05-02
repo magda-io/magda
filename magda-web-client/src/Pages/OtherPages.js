@@ -14,10 +14,10 @@ import PublishersViewer from "../Components/Publisher/PublishersViewer";
 import PublisherDetails from "../Components/Publisher/PublisherDetails";
 import { staticPageRegister } from "../content/register";
 import RouteNotFound from "../Components/RouteNotFound";
-
+import RequestDataset from "../Components/RequestDataset/RequestDataset";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
-
+import { config } from "../config";
 const renderBody = () => {
     return (
         <Switch>
@@ -35,6 +35,10 @@ const renderBody = () => {
             <Route exact path="/projects" component={ProjectsViewer} />
             <Route exact path="/projects/new" component={CreateProject} />
             <Route path="/projects/:projectId" component={ProjectDetails} />
+            {/* hide in prod */}
+            {config.enableSuggestDatasetPage && (
+                <Route exact path="/suggest" component={RequestDataset} />
+            )}
             <Route exact path="/publishers" component={PublishersViewer} />
             <Route
                 path="/publishers/:publisherId"
