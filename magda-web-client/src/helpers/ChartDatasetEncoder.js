@@ -466,7 +466,10 @@ class ChartDatasetEncoder {
                 left: "center"
             },
             tooltip: {
-                trigger: "item"
+                trigger: "item",
+                formatter: (a,b,c,d,e,f,g,h)=>{
+                    return Object.keys(a.value).map(key=>`${startCase(key)}: ${a.value[key]}`).join("<br/>");
+                }
             },
             dataset: [
                 {
@@ -477,20 +480,7 @@ class ChartDatasetEncoder {
             series: [
                 {
                     type: this.chartType,
-                    encode,
-                    color: [
-                        "#c23531",
-                        "#2f4554",
-                        "#61a0a8",
-                        "#d48265",
-                        "#91c7ae",
-                        "#749f83",
-                        "#ca8622",
-                        "#bda29a",
-                        "#6e7074",
-                        "#546570",
-                        "#c4ccd3"
-                    ]
+                    encode
                 }
             ]
         };
