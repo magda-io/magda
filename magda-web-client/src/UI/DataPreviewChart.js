@@ -8,11 +8,13 @@ import ChartConfig from "./ChartConfig";
 
 let ReactEcharts = null;
 
+const defaultChartType = "pie";
+
 class DataPreviewChart extends Component {
     constructor(props) {
         super(props);
         this.state = this.getResetState({
-            chartType: "pie",
+            chartType: defaultChartType,
             isLoading: true,
             chartTitle: this.props.distribution.title
                 ? this.props.distribution.title
@@ -58,6 +60,9 @@ class DataPreviewChart extends Component {
                     this.chartDatasetEncoder.setX(this.state.xAxis);
                     this.chartDatasetEncoder.setY(this.state.yAxis);
                 }
+                let chartType = this.state.chartType;
+                if(!chartType) chartType = defaultChartType;
+                this.chartDatasetEncoder.setChartType(chartType);
                 const chartOption = this.chartDatasetEncoder.getChartOption(
                     this.state.chartTitle
                 );
@@ -68,6 +73,7 @@ class DataPreviewChart extends Component {
                     avlYCols: this.chartDatasetEncoder.getAvailableYCols(),
                     xAxis: this.chartDatasetEncoder.xAxis,
                     yAxis: this.chartDatasetEncoder.yAxis,
+                    chartType,
                     chartOption
                 });
             }
@@ -105,6 +111,7 @@ class DataPreviewChart extends Component {
                 (prevProps.distribution.identifier !==
                     this.props.distribution.identifier ||
                     prevState.chartTitle !== this.state.chartTitle ||
+                    prevState.chartType !== this.state.chartType ||
                     prevState.xAxis !== this.state.xAxis ||
                     prevState.yAxis !== this.state.yAxis)
             ) {

@@ -25,21 +25,20 @@ export default class ChartConfig extends Component {
                 name="input"
                 label={label}
                 value={this.props[id].idx}
-                onChange={e=>{
+                onChange={e => {
                     const idx = e.target.value;
-                    const selected = find(options, item=> item.idx==idx);
-                    this.onChange(id, selected);
+                    this.onChange(id, options[idx]);
                 }}
             >
                 {options
                     ? options.map(
-                          o =>
+                          (o,idx) =>
                               typeof o === "string" ? (
                                   <Option key={o} value={o} label={o} />
                               ) : (
                                   <Option
-                                      key={o.idx}
-                                      value={o.idx}
+                                      key={idx}
+                                      value={idx}
                                       label={o.label}
                                   />
                               )
@@ -56,7 +55,7 @@ export default class ChartConfig extends Component {
                 {ChartDatasetEncoder.avlChartTypes.map(v => (
                     <button
                         className={this.props.chartType === v ? "isActive" : ""}
-                        onClick={this.props.onChange.bind(this, "chartType", v)}
+                        onClick={e => this.onChange("chartType", v)}
                         key={v}
                         title={v}
                     >
@@ -77,7 +76,9 @@ export default class ChartConfig extends Component {
                 <div className="chart-type">{this.renderIconSelect()}</div>
                 <div className="chart-title">
                     <Input
-                        onChange={e => this.onChange("chartTitle", e.target.value)}
+                        onChange={e =>
+                            this.onChange("chartTitle", e.target.value)
+                        }
                         label="Chart title"
                         placeholder="Enter a descriptive chart title"
                         value={this.props.chartTitle}
