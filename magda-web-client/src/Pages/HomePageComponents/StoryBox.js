@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
@@ -26,9 +25,9 @@ class StoryBox extends Component {
     getClickableElement(el, url) {
         if (!url) return el;
         return (
-            <Link target="_blank" to={url} className="story-title-link">
+            <a target="_blank" href={url} className="story-title-link">
                 {el}
-            </Link>
+            </a>
         );
     }
 
