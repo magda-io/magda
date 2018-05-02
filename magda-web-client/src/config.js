@@ -52,6 +52,7 @@ export const config = {
     resultsPerPage: 10,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
+    enableSuggestDatasetPage: false,
     breakpoints: {
         small: 768,
         medium: 992,
@@ -77,7 +78,7 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    ["Suggest a dataset", "mailto:data@digital.gov.au"],
                     ["Sign in", "https://data.gov.au/user/login"],
                     ["Give feedback", "feedback"]
                 ]
@@ -89,7 +90,7 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    ["Suggest a dataset", "mailto:data@digital.gov.au"],
                     ["Privacy Policy", "page/privacy-policy"]
                 ]
             },
