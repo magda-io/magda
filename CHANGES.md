@@ -1,6 +1,5 @@
 ## 0.0.39
 *   Apply Design System skip link/links styles
-
 *   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
 *   Fixed distribution previews
@@ -115,9 +114,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
-*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to search.data.gov.au
-*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an
-    redirect back to search.data.gov.au
+*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to       search.data.gov.au
 
 ## 0.0.36
 
