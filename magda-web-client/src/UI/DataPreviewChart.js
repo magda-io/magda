@@ -4,6 +4,7 @@ import defined from "../helpers/defined";
 import { Medium } from "./Responsive";
 import Spinner from "../Components/Spinner";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
+import ChartConfig from "./ChartConfig";
 
 let ReactEcharts = null;
 
@@ -14,11 +15,12 @@ class DataPreviewChart extends Component {
             isLoading: true
         });
         this.chartDatasetEncoder = null;
+        this.onChartConfigChanged = this.onChartConfigChanged.bind(this);
     }
 
-    getResetState(extraOptions=null){
+    getResetState(extraOptions = null) {
         const options = {
-            error : null,
+            error: null,
             isLoading: false,
             avlXCols: [],
             avlYCols: [],
@@ -27,17 +29,27 @@ class DataPreviewChart extends Component {
             chartType: null,
             chartOption: null
         };
-        if(!extraOptions) return options;
-        else return {...options, ...extraOptions}
+        if (!extraOptions) return options;
+        else return { ...options, ...extraOptions };
     }
 
-    async initChartData(){
-        try{
-            if(ChartDatasetEncoder.isValidDistributionData(this.props.distribution)){
-                this.chartDatasetEncoder = new ChartDatasetEncoder(this.props.distribution);
-                await this.chartDatasetEncoder.loadData(this.props.distribution.downloadURL);
+    async initChartData() {
+        try {
+            if (
+                ChartDatasetEncoder.isValidDistributionData(
+                    this.props.distribution
+                )
+            ) {
+                this.chartDatasetEncoder = new ChartDatasetEncoder(
+                    this.props.distribution
+                );
+                await this.chartDatasetEncoder.loadData(
+                    this.props.distribution.downloadURL
+                );
                 this.chartDatasetEncoder.setDefaultParameters();
-                const chartOption = this.chartDatasetEncoder.getChartOption(this.props.distribution.title);
+                const chartOption = this.chartDatasetEncoder.getChartOption(
+                    this.props.distribution.title
+                );
                 this.setState({
                     error: null,
                     isLoading: false,
@@ -48,54 +60,68 @@ class DataPreviewChart extends Component {
                     chartOption
                 });
             }
-        }catch(e){
+        } catch (e) {
             console.log(e);
             throw e; //--- not capture here; only for debug
         }
     }
 
-    async componentDidMount(){
-        try{
-            if(!ReactEcharts) ReactEcharts = (await import("echarts-for-react")).default;
+    async componentDidMount() {
+        try {
+            if (!ReactEcharts)
+                ReactEcharts = (await import("echarts-for-react")).default;
             await this.initChartData();
-        }catch(e){
-            console.log(this.getResetState({
-                error: e
-            }));
-            this.setState(this.getResetState({
-                error: e
-            }));
+        } catch (e) {
+            console.log(
+                this.getResetState({
+                    error: e
+                })
+            );
+            this.setState(
+                this.getResetState({
+                    error: e
+                })
+            );
         }
     }
 
-    async componentDidUpdate(prevProps, prevState){
-        try{
-            if(
-                ChartDatasetEncoder.isValidDistributionData(this.props.distribution) &&
-                prevProps.distribution.identifier !== this.props.distribution.identifier
-            ){
-                this.setState(this.getResetState({
-                    isLoading: true
-                }));
+    async componentDidUpdate(prevProps, prevState) {
+        try {
+            if (
+                ChartDatasetEncoder.isValidDistributionData(
+                    this.props.distribution
+                ) &&
+                prevProps.distribution.identifier !==
+                    this.props.distribution.identifier
+            ) {
+                this.setState(
+                    this.getResetState({
+                        isLoading: true
+                    })
+                );
                 await this.initChartData();
             }
-        }catch(e){
-            console.log(this.getResetState({
-                error: e
-            }));
-            this.setState(this.getResetState({
-                error: e
-            }));
+        } catch (e) {
+            console.log(
+                this.getResetState({
+                    error: e
+                })
+            );
+            this.setState(
+                this.getResetState({
+                    error: e
+                })
+            );
         }
     }
 
     getOption() {
-        return  {
+        return {
             title: {
                 text: "test"
             },
-            tooltip:{
-                show:true
+            tooltip: {
+                show: true
             },
             dataset: {
                 source: [
@@ -133,14 +159,50 @@ class DataPreviewChart extends Component {
         };
     }
 
+    onChartConfigChanged(key, value) {
+        this.setState({ [key]: value });
+    }
+
     render() {
-        if(this.state.error) return <div>Error: {this.state.error.message}</div>;
-        if(this.state.isLoading) return <div>Loading...</div>;
-        if(!ReactEcharts) return <div>Unexpected Error: failed to load chart component.</div>;
-        console.log(this.state);
-        return <ReactEcharts option={this.state.chartOption}  />;
+        if (this.state.error)
+            return <div>Error: {this.state.error.message}</div>;
+        if (this.state.isLoading) return <div>Loading...</div>;
+        if (!ReactEcharts)
+            return <div>Unexpected Error: failed to load chart component.</div>;
+
+        const fileName = this.props.distribution.downloadURL
+            .split("/")
+            .pop()
+            .split("#")[0]
+            .split("?")[0];
+
+        return (
+            <div
+                className="mui-row"
+                ref={chartWidthDiv => {
+                    this.chartWidthDiv = chartWidthDiv;
+                }}
+            >
+                <div className="mui-col-md-6">
+                    <div className="data-preview-vis_file-name">{fileName}</div>
+                    <ReactEcharts option={this.state.chartOption} />
+                </div>
+                <Medium>
+                    <div className="mui-col-md-6">
+                        <ChartConfig
+                            chartType={this.state.chartType}
+                            chartTitle={this.state.chartTitle}
+                            xAxis={this.state.yAxis}
+                            yAxis={this.state.xAxis}
+                            yAxisOptions={this.state.avlYCols}
+                            xAxisOptions={this.state.avlYCols}
+                            onChange={this.onChartConfigChanged}
+                        />
+                    </div>
+                </Medium>
+            </div>
+        );
     }
 }
-
 
 export default DataPreviewChart;

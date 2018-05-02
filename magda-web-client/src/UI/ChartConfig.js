@@ -5,39 +5,58 @@ import Option from "muicss/lib/react/option";
 import Select from "muicss/lib/react/select";
 import Input from "muicss/lib/react/input";
 import bar from "../assets/bar-chart.svg";
-import circle from "../assets/circle-chart.svg";
+import pie from "../assets/circle-chart.svg";
 import line from "../assets/line-chart.svg";
-import point from "../assets/point-chart.svg";
+import scatter from "../assets/point-chart.svg";
+import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 
-const VEGAMARK = { bar, circle, line, point };
-const DATATYPE = ["quantitative", "temporal", "ordinal", "nominal"];
+const chartIcons = {
+    bar,
+    pie,
+    line,
+    scatter
+};
 
 export default class ChartConfig extends Component {
     renderDropdownSelect(options, id, label) {
+        debugger;
         return (
             <Select
                 name="input"
                 label={label}
-                defaultValue={this.props[id]}
+                value={this.props[id]}
                 onChange={this.onChange.bind(this, id)}
             >
-                {options.map(o => <Option key={o} value={o} label={o} />)}
+                {options
+                    ? options.map(
+                          o =>
+                              typeof o === "string" ? (
+                                  <Option key={o} value={o} label={o} />
+                              ) : (
+                                  <Option
+                                      key={o.idx}
+                                      value={o}
+                                      label={o.label}
+                                  />
+                              )
+                      )
+                    : null}
             </Select>
         );
     }
 
-    renderIconSelect(options, id, label) {
+    renderIconSelect() {
         return (
             <div className="mui-textfield chart-config_icon-select">
-                <label tabIndex="-1">{label}</label>
-                {Object.keys(options).map(v => (
+                <label tabIndex="-1">Chart type</label>
+                {ChartDatasetEncoder.avlChartTypes.map(v => (
                     <button
                         className={this.props.chartType === v ? "isActive" : ""}
-                        onClick={this.props.onChange.bind(this, id, v)}
+                        onClick={this.props.onChange.bind(this, "chartType", v)}
                         key={v}
                         title={v}
                     >
-                        <img alt={v} src={VEGAMARK[v]} />
+                        <img alt={v} src={chartIcons[v]} />
                     </button>
                 ))}
             </div>
@@ -51,14 +70,13 @@ export default class ChartConfig extends Component {
     render() {
         return (
             <div className="chart-config">
-                <div className="chart-type">
-                    {this.renderIconSelect(VEGAMARK, "chartType", "Chart type")}
-                </div>
+                <div className="chart-type">{this.renderIconSelect()}</div>
                 <div className="chart-title">
                     <Input
                         onChange={this.onChange.bind(this, "chartTitle")}
                         label="Chart title"
                         placeholder="Enter a descriptive chart title"
+                        value={this.props.chartTitle}
                     />
                 </div>
                 <div className="y-axis">
@@ -75,13 +93,6 @@ export default class ChartConfig extends Component {
                         "yAxis"
                     )}
                 </div>
-                <div className="linear">
-                    {this.renderDropdownSelect(
-                        DATATYPE,
-                        "yScale",
-                        "Chart scale"
-                    )}
-                </div>
             </div>
         );
     }
@@ -89,12 +100,10 @@ export default class ChartConfig extends Component {
 
 ChartConfig.propTypes = {
     chartTitle: PropTypes.string,
-    chartType: PropTypes.oneOf(Object.keys(VEGAMARK)),
+    chartType: PropTypes.oneOf(Object.keys(ChartDatasetEncoder.avlChartTypes)),
     onChange: PropTypes.func,
-    xAxis: PropTypes.string,
-    xAxisOptions: PropTypes.arrayOf(PropTypes.string),
-    xScale: PropTypes.oneOf(DATATYPE),
+    xAxis: PropTypes.object,
+    xAxisOptions: PropTypes.arrayOf(PropTypes.object),
     yAxis: PropTypes.string,
-    yAxisOptions: PropTypes.arrayOf(PropTypes.string),
-    yScale: PropTypes.oneOf(DATATYPE)
+    yAxisOptions: PropTypes.arrayOf(PropTypes.object)
 };
