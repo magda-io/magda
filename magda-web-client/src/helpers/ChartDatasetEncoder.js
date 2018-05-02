@@ -327,11 +327,11 @@ class ChartDatasetEncoder {
         const avlXcols = this.getAvailableXCols();
         const avlTimeXcols = filter(avlXcols, field => field.time);
         const avlCatXcols = filter(avlXcols, field => field.category);
-        if(avlTimeXcols.length) { //--- TimeCol has higher priority
-            this.setX(avlTimeXcols[0]);
+        if(avlCatXcols.length){//--- CatCol has higher priority
+            if(avlCatXcols.length>1) this.setX(avlCatXcols[1]);
+            else this.setX(avlCatXcols[0]);
         }else{
-            if(avlCatXcols.length>1) this.setY(avlCatXcols[1]);
-            else this.setY(avlCatXcols[0]);
+            this.setX(avlTimeXcols[0]);
         }
     }
 
@@ -447,6 +447,9 @@ class ChartDatasetEncoder {
                 type : "value"
             };
         }
+        if(this.chartType==="pie") option.series[0].label={
+            show:false
+        };
         return option;
     }
 }

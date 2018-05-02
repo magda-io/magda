@@ -240,7 +240,7 @@ function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
     if (fmt.indexOf("csv") !== -1) {
         compatiblePreviews.table = true;
         compatiblePreviews.google = true;
-        compatiblePreviews.chart = !!isTimeSeries;
+        compatiblePreviews.chart = true;
     }
     switch (fmt) {
         case "xls":
