@@ -9,7 +9,6 @@ import pie from "../assets/circle-chart.svg";
 import line from "../assets/line-chart.svg";
 import scatter from "../assets/point-chart.svg";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
-import find from "lodash/find";
 import findIndex from "lodash/findIndex";
 
 const chartIcons = {

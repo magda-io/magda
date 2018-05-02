@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-import { config } from "../config";
-import defined from "../helpers/defined";
 import { Medium } from "./Responsive";
 import Spinner from "../Components/Spinner";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 import ChartConfig from "./ChartConfig";
+import "./DataPreviewChart.css";
 
 let ReactEcharts = null;
 
@@ -76,7 +75,7 @@ class DataPreviewChart extends Component {
                     chartType,
                     chartOption
                 });
-                if(console && console.log) console.log(chartOption);
+                if (console && console.log) console.log(chartOption);
             }
         } catch (e) {
             console.log(e);
@@ -199,16 +198,20 @@ class DataPreviewChart extends Component {
 
         return (
             <div
-                className="mui-row"
+                className="mui-row data-preview-chart"
                 ref={chartWidthDiv => {
                     this.chartWidthDiv = chartWidthDiv;
                 }}
             >
-                <div className="mui-col-md-6">
-                    <ReactEcharts option={this.state.chartOption} />
+                <div className="mui-col-md-8">
+                    <ReactEcharts
+                        className="data-preview-chart-container"
+                        style={{height: "450px"}}
+                        option={this.state.chartOption}
+                    />
                 </div>
                 <Medium>
-                    <div className="mui-col-md-6">
+                    <div className="mui-col-md-4 config-panel-container">
                         <ChartConfig
                             chartType={this.state.chartType}
                             chartTitle={this.state.chartTitle}

@@ -13,12 +13,7 @@ import type { ParsedDistribution } from "../helpers/record";
 
 let Papa = null;
 
-const avlChartTypes = [
-    "bar",
-    "pie",
-    "scatter",
-    "line"
-];
+const avlChartTypes = ["bar", "pie", "scatter", "line"];
 const fetchData = function(url) {
     return new Promise((resolve, reject) => {
         Papa.parse(config.proxyUrl + "_0d/" + url, {
@@ -26,12 +21,13 @@ const fetchData = function(url) {
             header: true,
             skipEmptyLines: true,
             trimHeader: true,
-            complete: (results) => {
+            complete: results => {
                 resolve(results);
             },
-            error: (err) => {
+            error: err => {
                 let e;
-                if(!err) e = new Error("Failed to retrieve or parse the file.");
+                if (!err)
+                    e = new Error("Failed to retrieve or parse the file.");
                 else e = err;
                 reject(e);
             }
@@ -40,8 +36,8 @@ const fetchData = function(url) {
 };
 
 const aggregators = {
-    "count" : v => v.length,
-    "sum" : field => v => sumBy(v, d => d[field])
+    count: v => v.length,
+    sum: field => v => sumBy(v, d => d[field])
 };
 
 const rollupResult2Rows = function(
@@ -79,9 +75,12 @@ const rollupResult2Rows = function(
 
 const defaultChartOption = {
     legend: {
-        type: 'scroll',
-        y:"bottom",
-        orient: 'horizontal'
+        type: "scroll",
+        y: "bottom",
+        orient: "horizontal"
+    },
+    grid:{
+        right: 10
     }
 };
 
@@ -100,7 +99,7 @@ class ChartDatasetEncoder {
         this.init(distribution);
     }
 
-    init(distribution: ParsedDistribution){
+    init(distribution: ParsedDistribution) {
         ChartDatasetEncoder.validateDistributionData(distribution);
         this.distribution = distribution;
     }
@@ -129,41 +128,48 @@ class ChartDatasetEncoder {
         return find(this.fields, field => field.category);
     }
 
-    testKeyword(str, keyword){
-        let r = new RegExp(`(^|\\W+)${keyword}(\\W+|$)`,"i");
-        if(r.test(str)) return true;
+    testKeyword(str, keyword) {
+        let r = new RegExp(`(^|\\W+)${keyword}(\\W+|$)`, "i");
+        if (r.test(str)) return true;
         return false;
     }
 
-    testKeywords(str, keywords){
-        if(!str) return false;
-        if(!keywords || !keywords.length) return false;
-        for(let i=0;i<keywords.length;i++){
-            if(this.testKeyword(str,keywords[i])) return true;
+    testKeywords(str, keywords) {
+        if (!str) return false;
+        if (!keywords || !keywords.length) return false;
+        for (let i = 0; i < keywords.length; i++) {
+            if (this.testKeyword(str, keywords[i])) return true;
         }
         return false;
     }
 
-    fieldDefAdjustment(field){
-        if(this.testKeywords(field.label, ["id","code","identifier","postcode"])){
+    fieldDefAdjustment(field) {
+        if (
+            this.testKeywords(field.label, [
+                "id",
+                "code",
+                "identifier",
+                "postcode"
+            ])
+        ) {
             field.numeric = false;
             field.category = true;
             field.time = false;
-        }else if(this.testKeywords(field.label, ["year","date"])){
+        } else if (this.testKeywords(field.label, ["year", "date"])) {
             field.numeric = false;
             field.category = false;
             field.time = true;
-        }else if(this.testKeywords(field.label, ["month","day"])){
-            if(field.numeric){
+        } else if (this.testKeywords(field.label, ["month", "day"])) {
+            if (field.numeric) {
                 field.numeric = false;
                 field.category = false;
                 field.time = true;
-            }else{
+            } else {
                 field.numeric = false;
                 field.category = true;
                 field.time = false;
             }
-        }else if(this.testKeywords(field.label, ["longitude","latitude"])){
+        } else if (this.testKeywords(field.label, ["longitude", "latitude"])) {
             field.numeric = false;
             field.category = true;
             field.time = false;
@@ -174,14 +180,16 @@ class ChartDatasetEncoder {
     preProcessFields(headerRow) {
         const disFields = this.distribution.visualizationInfo.fields;
 
-        let newFields = map(disFields, (field, key) => this.fieldDefAdjustment({
-            ...field,
-            idx: indexOf(headerRow, key),
-            name: key,
-            label: startCase(key.replace(/[-_]/g, " ")),
-            category: !field.time && !field.numeric,
-            isAggr: false
-        }));
+        let newFields = map(disFields, (field, key) =>
+            this.fieldDefAdjustment({
+                ...field,
+                idx: indexOf(headerRow, key),
+                name: key,
+                label: startCase(key.replace(/[-_]/g, " ")),
+                category: !field.time && !field.numeric,
+                isAggr: false
+            })
+        );
         //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
         newFields = filter(newFields, item => item.idx !== -1);
         if (!newFields.length)
@@ -198,7 +206,7 @@ class ChartDatasetEncoder {
         this.preProcessFields(Object.keys(this.data[0]));
         //--- if only one non-numeric column, add new column by count
         if (this.fields.length === 1 && !this.fields[0].numeric) {
-            const newFieldName = "count_"+Math.random();
+            const newFieldName = "count_" + Math.random();
             this.fields.push({
                 idx: 1,
                 name: newFieldName,
@@ -209,11 +217,16 @@ class ChartDatasetEncoder {
                 isAggr: true,
                 isAggrDone: true
             });
-            this.data = this.groupBy(this.data, newFieldName, aggregators.count, [this.fields[0].name]);
+            this.data = this.groupBy(
+                this.data,
+                newFieldName,
+                aggregators.count,
+                [this.fields[0].name]
+            );
         }
         //--- if unfortunately no numeric cols, present data by selected col's count
-        if(!this.getNumericColumns().length){
-            const newFieldName = "count_"+Math.random();
+        if (!this.getNumericColumns().length) {
+            const newFieldName = "count_" + Math.random();
             this.fields.push({
                 idx: 1,
                 name: newFieldName,
@@ -227,10 +240,13 @@ class ChartDatasetEncoder {
             //--- we cann't generate coutn data here yet as we don't know user's selection
         }
         //--- At least one x-axis-able column / dimension should present
-        if(!this.getTimeColumns().length && !this.getCategoryColumns().length){
-            const newFieldName = "rows_"+Math.random();
+        if (
+            !this.getTimeColumns().length &&
+            !this.getCategoryColumns().length
+        ) {
+            const newFieldName = "rows_" + Math.random();
             this.fields.push({
-                idx: this.fields.length-1,
+                idx: this.fields.length - 1,
                 name: newFieldName,
                 label: "Rows",
                 time: false,
@@ -239,20 +255,23 @@ class ChartDatasetEncoder {
                 isAggr: false,
                 isAggrDone: false
             });
-            this.data = map(this.data, (item,key)=> item[newFieldName]=`Row ${key+1}`);
+            this.data = map(
+                this.data,
+                (item, key) => (item[newFieldName] = `Row ${key + 1}`)
+            );
         }
     }
 
     /**
      * Simply aggregation function.
      * @param {Array} data : data rows
-     * @param {String} aggrFuncName 
-     * @param {Function} aggrFunc 
-     * @param {Array} aggrfields 
-     * 
-     * Examples: 
-     *  with data: 
-     * 
+     * @param {String} aggrFuncName
+     * @param {Function} aggrFunc
+     * @param {Array} aggrfields
+     *
+     * Examples:
+     *  with data:
+     *
      * expenses = [{"name":"jim","amount":34,"date":"11/12/2015"},
      *   {"name":"carl","amount":120.11,"date":"11/12/2015"},
      *   {"name":"jim","amount":45,"date":"12/01/2015"},
@@ -260,11 +279,11 @@ class ChartDatasetEncoder {
      *   {"name":"stacy","amount":34.10,"date":"01/04/2016"},
      *   {"name":"stacy","amount":44.80,"date":"01/05/2016"}
      * ];
-     * 
+     *
      *  groupBy(expenses,'Count',aggregators.count,["name","date"]);
      *  or:
      *  groupBy(expenses,'Sum',aggregators.sum("amount"),["name","date"]);
-     *  
+     *
      */
     groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
         if (!data) throw new Error("`data` cannot be empty!");
@@ -276,18 +295,18 @@ class ChartDatasetEncoder {
         return rollupResult2Rows(result, aggrfields, aggrFuncName);
     }
 
-    async performDataLoading(url){
-        try{
+    async performDataLoading(url) {
+        try {
             this.isDataLoading = true;
             if (!Papa)
                 Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
             const result = await fetchData(url);
             //--- detect if another loading has started
-            if(this.loadingUrl!== url) return;
+            if (this.loadingUrl !== url) return;
             this.data = result.data;
             this.preProcessData();
             this.isDataLoaded = true;
-        }catch(e){
+        } catch (e) {
             this.isDataLoading = false;
             throw e;
         }
@@ -295,8 +314,8 @@ class ChartDatasetEncoder {
 
     async loadData() {
         const url = this.distribution.downloadURL;
-        if(this.isDataLoading && url === this.loadingUrl) {
-            if(this.loadingPromise) await this.loadingPromise;
+        if (this.isDataLoading && url === this.loadingUrl) {
+            if (this.loadingPromise) await this.loadingPromise;
             return;
         }
         this.loadingUrl = url;
@@ -305,100 +324,120 @@ class ChartDatasetEncoder {
         await loadingPromise;
     }
 
-    getAvailableXCols() { //--- category / dimension axis
+    getAvailableXCols() {
+        //--- category / dimension axis
         const timeCols = this.getTimeColumns();
         const catCols = this.getCategoryColumns();
         const avlCols = concat(timeCols, catCols);
         return avlCols;
     }
 
-    getAvailableYCols() {  //--- value / measure axis
+    getAvailableYCols() {
+        //--- value / measure axis
         const numCols = this.getNumericColumns();
         //--- there will be always at leaset one Ycol as preprocessed
         return numCols;
     }
 
-    setDefaultAxis(){
+    setDefaultAxis() {
         const avlYcols = this.getAvailableYCols();
         //-- avoid set an ID col to Y by default
-        if(avlYcols.length>1) this.setY(avlYcols[1]);
+        if (avlYcols.length > 1) this.setY(avlYcols[1]);
         else this.setY(avlYcols[0]);
-        
+
         const avlXcols = this.getAvailableXCols();
         const avlTimeXcols = filter(avlXcols, field => field.time);
         const avlCatXcols = filter(avlXcols, field => field.category);
-        if(avlCatXcols.length){//--- CatCol has higher priority
-            if(avlCatXcols.length>1) this.setX(avlCatXcols[1]);
+        if (avlCatXcols.length) {
+            //--- CatCol has higher priority
+            if (avlCatXcols.length > 1) this.setX(avlCatXcols[1]);
             else this.setX(avlCatXcols[0]);
-        }else{
+        } else {
             this.setX(avlTimeXcols[0]);
         }
     }
 
-    setDefaultChartType(){
+    setDefaultChartType() {
         this.setChartType("pie");
     }
 
-    setDefaultParameters(){
+    setDefaultParameters() {
         this.setDefaultChartType();
         this.setDefaultAxis();
     }
 
-    setX(field){
+    setX(field) {
         this.xAxis = field;
     }
 
-    setY(field){
+    setY(field) {
         this.yAxis = field;
     }
 
-    setChartType(chartType){
-        if(indexOf(avlChartTypes, chartType)===-1) throw new Error("Unsupported chart type.");
+    setChartType(chartType) {
+        if (indexOf(avlChartTypes, chartType) === -1)
+            throw new Error("Unsupported chart type.");
         this.chartType = chartType;
     }
 
-    getFieldDataType(field){
-        if(field.numeric) return "number";
+    getFieldDataType(field) {
+        if (field.numeric) return "number";
         //if(field.time) return "time"; disable time support for now
         return "ordinal";
     }
 
-    getEncodeXYNames(){
-        switch(this.chartType){
-            case "pie" : return {xName: "itemName", yName: "value"};
-            case "funnel" : return {xName: "itemName", yName: "value"};
-            default : return {xName: "x", yName: "y"};
+    getEncodeXYNames() {
+        switch (this.chartType) {
+            case "pie":
+                return { xName: "itemName", yName: "value" };
+            case "funnel":
+                return { xName: "itemName", yName: "value" };
+            default:
+                return { xName: "x", yName: "y" };
         }
     }
 
-    encodeDataset(){
-        if(!this.chartType || !this.xAxis || !this.yAxis) throw new Error("`Chart Type`, preferred `xAxis` or `yAxis` are required.");
+    encodeDataset() {
+        if (!this.chartType || !this.xAxis || !this.yAxis)
+            throw new Error(
+                "`Chart Type`, preferred `xAxis` or `yAxis` are required."
+            );
         let data, dimensions, encode;
-        const { xName, yName} = this.getEncodeXYNames();
-        if(this.yAxis.isAggr){ //--- we need aggregate data first
-            if(this.yAxis.isAggrDone) data = this.data;
-            else data = this.groupBy(this.data, this.yAxis.name, aggregators.count, [this.xAxis.name])
-            dimensions = [{
-                name: this.xAxis.name,
-                type: "ordinal",
-                displayName: this.xAxis.label
-            },{
-                name: this.yAxis.name,
-                type: "int",
-                displayName: this.yAxis.label
-            }];
+        const { xName, yName } = this.getEncodeXYNames();
+        if (this.yAxis.isAggr) {
+            //--- we need aggregate data first
+            if (this.yAxis.isAggrDone) data = this.data;
+            else
+                data = this.groupBy(
+                    this.data,
+                    this.yAxis.name,
+                    aggregators.count,
+                    [this.xAxis.name]
+                );
+            dimensions = [
+                {
+                    name: this.xAxis.name,
+                    type: "ordinal",
+                    displayName: this.xAxis.label
+                },
+                {
+                    name: this.yAxis.name,
+                    type: "int",
+                    displayName: this.yAxis.label
+                }
+            ];
             encode = {
-                [xName] : 0,
-                [yName] : 1,
+                [xName]: 0,
+                [yName]: 1,
                 tooltip: [1]
             };
-        }else{
+        } else {
             let xAxisIdx = null;
             let yAxisIdx = null;
             let tooltipCols = [];
-            dimensions = map(this.fields, (field,idx) => {
-                if(this.yAxis===field) yAxisIdx=idx;
-                else if(this.xAxis===field) xAxisIdx=idx;
+            dimensions = map(this.fields, (field, idx) => {
+                if (this.yAxis === field) yAxisIdx = idx;
+                else if (this.xAxis === field) xAxisIdx = idx;
                 else tooltipCols.push(idx);
                 const dimensionDef = {
                     name: field.name,
@@ -408,48 +447,67 @@ class ChartDatasetEncoder {
                 return dimensionDef;
             });
             encode = {
-                [xName] : xAxisIdx,
-                [yName] : yAxisIdx,
-                tooltip: concat([yAxisIdx],tooltipCols)
+                [xName]: xAxisIdx,
+                [yName]: yAxisIdx,
+                tooltip: concat([yAxisIdx], tooltipCols)
             };
             data = this.data;
         }
-        return { dimensions, encode, data};
+        return { dimensions, encode, data };
     }
 
-    getChartOption(chartTitle){
+    getChartOption(chartTitle) {
         const { data, dimensions, encode } = this.encodeDataset();
         const { xName } = this.getEncodeXYNames();
         const option = {
             ...defaultChartOption,
             title: {
-                text: chartTitle
+                text: chartTitle,
+                left: "center"
             },
-            tooltip:{
-                trigger: 'item'
+            tooltip: {
+                trigger: "item"
             },
-            dataset:[{
-                source: data,
-                dimensions,
-            }],
-            series:[{
-                type: this.chartType,
-                encode
-            }]
+            dataset: [
+                {
+                    source: data,
+                    dimensions
+                }
+            ],
+            series: [
+                {
+                    type: this.chartType,
+                    encode,
+                    color: [
+                        "#c23531",
+                        "#2f4554",
+                        "#61a0a8",
+                        "#d48265",
+                        "#91c7ae",
+                        "#749f83",
+                        "#ca8622",
+                        "#bda29a",
+                        "#6e7074",
+                        "#546570",
+                        "#c4ccd3"
+                    ]
+                }
+            ]
         };
-        if(xName==="x"){
-            option["xAxis"]={
+        if (xName === "x") {
+            option["xAxis"] = {
                 //type : this.xAxis.time ? "time" : "category"
                 //--- disable time series support for now due to various date format issue
-                type : "category"
+                type: "category"
             };
-            option["yAxis"]={
-                type : "value"
+            option["yAxis"] = {
+                type: "value"
             };
         }
-        if(this.chartType==="pie") option.series[0].label={
-            show:false
-        };
+        if (this.chartType === "pie")
+            option.series[0].label = {
+                show: false
+            };
         return option;
     }
 }
