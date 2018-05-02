@@ -17,5 +17,8 @@
     },
     "devDependencies": {
         "@magda/scripts": "^0.0.39-0"
+    },
+    "dependencies": {
+        "nodemailer": "^4.6.4"
     }
 }

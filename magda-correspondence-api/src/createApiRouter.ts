@@ -1,9 +1,15 @@
 import * as express from "express";
+import * as SMTPConnection from "nodemailer/lib/smtp-connection";
 import { Router } from "express";
 import { DatasetMessage } from "./model";
 
 export interface ApiRouterOptions {
     jwtSecret: string;
+    smtpHostname: string;
+    smtpUsername?: string;
+    smtpPassword?: string;
+    smtpPort: number;
+    smtpSecure: boolean;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -42,7 +48,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }, 1000);
     }
 
-    router.post("/public/send/dataset/request", handleDatasetMessage);
+    function send(message: DatasetMessage) {
+        let connection = new SMTPConnection({
+            host: options.smtpHostname,
+            port: options.smtpPort,
+            secure: options.smtpSecure
+        });
+        connection.secure = true;
+        connection.connect().then(() => {});
+    }
+
+    router.post("/public/send/dataset/request", send);
 
     router.post(
         "/public/send/dataset/:datasetId/question",

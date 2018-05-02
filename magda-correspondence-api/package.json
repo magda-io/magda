@@ -17,6 +17,7 @@
         "body-parser": "^1.13.2",
         "express": "^4.13.1",
         "isomorphic-fetch": "^2.2.1",
+        "nodemailer": "^4.6.4",
         "yargs": "^8.0.2"
     },
     "devDependencies": {

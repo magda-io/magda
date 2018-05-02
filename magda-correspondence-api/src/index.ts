@@ -18,6 +18,20 @@ const argv = addJwtSecretFromEnvVar(
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
+        })
+        .option("smtpHostname", {
+            describe: "The SMTP server hostname",
+            type: "string"
+        })
+        .option("smtpPort", {
+            describe: "The SMTP server port",
+            default: 587,
+            type: "number"
+        })
+        .option("smtpSecure", {
+            describe: "SMTP using TLS?",
+            default: true,
+            type: "boolean"
         }).argv
 );
 
@@ -27,7 +41,10 @@ app.use(require("body-parser").json());
 app.use(
     "/v0",
     createApiRouter({
-        jwtSecret: argv.jwtSecret
+        jwtSecret: argv.jwtSecret,
+        smtpHostname: argv.smtpHostname,
+        smtpPort: argv.smtpPort,
+        smtpSecure: argv.smtpSecure
     })
 );
 
