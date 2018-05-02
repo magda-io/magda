@@ -377,6 +377,7 @@ class ChartDatasetEncoder {
 
     getChartOption(chartTitle){
         const { data, dimensions, encode } = this.encodeDataset();
+        const { xName } = this.getEncodeXYNames();
         const option = {
             ...defaultChartOption,
             title: {
@@ -391,6 +392,14 @@ class ChartDatasetEncoder {
                 encode
             }]
         };
+        if(xName==="x"){
+            option["xAxis"]={
+                type : this.xAxis.time ? "time" : "category"
+            };
+            option["yAxis"]={
+                type : "value"
+            };
+        }
         return option;
     }
 }

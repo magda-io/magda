@@ -10,6 +10,7 @@ import line from "../assets/line-chart.svg";
 import scatter from "../assets/point-chart.svg";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 import find from "lodash/find";
+import findIndex from "lodash/findIndex";
 
 const chartIcons = {
     bar,
@@ -24,7 +25,7 @@ export default class ChartConfig extends Component {
             <Select
                 name="input"
                 label={label}
-                value={this.props[id].idx}
+                value={findIndex(options,item =>item === this.props[id])}
                 onChange={e => {
                     const idx = e.target.value;
                     this.onChange(id, options[idx]);
