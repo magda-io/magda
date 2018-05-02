@@ -9,6 +9,7 @@ import pie from "../assets/circle-chart.svg";
 import line from "../assets/line-chart.svg";
 import scatter from "../assets/point-chart.svg";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
+import find from "lodash/find";
 
 const chartIcons = {
     bar,
@@ -19,13 +20,16 @@ const chartIcons = {
 
 export default class ChartConfig extends Component {
     renderDropdownSelect(options, id, label) {
-        debugger;
         return (
             <Select
                 name="input"
                 label={label}
-                value={this.props[id]}
-                onChange={this.onChange.bind(this, id)}
+                value={this.props[id].idx}
+                onChange={e=>{
+                    const idx = e.target.value;
+                    const selected = find(options, item=> item.idx==idx);
+                    this.onChange(id, selected);
+                }}
             >
                 {options
                     ? options.map(
@@ -35,7 +39,7 @@ export default class ChartConfig extends Component {
                               ) : (
                                   <Option
                                       key={o.idx}
-                                      value={o}
+                                      value={o.idx}
                                       label={o.label}
                                   />
                               )
@@ -63,8 +67,8 @@ export default class ChartConfig extends Component {
         );
     }
 
-    onChange(id, evt) {
-        this.props.onChange(id, evt.target.value);
+    onChange(id, value) {
+        this.props.onChange(id, value);
     }
 
     render() {
@@ -73,7 +77,7 @@ export default class ChartConfig extends Component {
                 <div className="chart-type">{this.renderIconSelect()}</div>
                 <div className="chart-title">
                     <Input
-                        onChange={this.onChange.bind(this, "chartTitle")}
+                        onChange={e => this.onChange("chartTitle", e.target.value)}
                         label="Chart title"
                         placeholder="Enter a descriptive chart title"
                         value={this.props.chartTitle}
@@ -100,10 +104,10 @@ export default class ChartConfig extends Component {
 
 ChartConfig.propTypes = {
     chartTitle: PropTypes.string,
-    chartType: PropTypes.oneOf(Object.keys(ChartDatasetEncoder.avlChartTypes)),
+    chartType: PropTypes.oneOf(ChartDatasetEncoder.avlChartTypes),
     onChange: PropTypes.func,
     xAxis: PropTypes.object,
     xAxisOptions: PropTypes.arrayOf(PropTypes.object),
-    yAxis: PropTypes.string,
+    yAxis: PropTypes.object,
     yAxisOptions: PropTypes.arrayOf(PropTypes.object)
 };

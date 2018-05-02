@@ -87,14 +87,22 @@ const defaultChartOption = {
 
 class ChartDatasetEncoder {
     constructor(distribution: ParsedDistribution) {
-        ChartDatasetEncoder.validateDistributionData(distribution);
-        this.distribution = distribution;
         this.fields = null;
         this.data = null;
         this.encode = null;
         this.xAxis = null;
         this.yAxis = null;
         this.chartType = null;
+        this.isDataLoaded = false;
+        this.isDataLoading = false;
+        this.loadingUrl = null;
+        this.loadingPromise = null;
+        this.init(distribution);
+    }
+
+    init(distribution: ParsedDistribution){
+        ChartDatasetEncoder.validateDistributionData(distribution);
+        this.distribution = distribution;
     }
 
     getNumericColumns() {
@@ -226,12 +234,33 @@ class ChartDatasetEncoder {
         return rollupResult2Rows(result, aggrfields, aggrFuncName);
     }
 
-    async loadData(url) {
-        if (!Papa)
-            Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
-        const result = await fetchData(url);
-        this.data = result.data;
-        this.preProcessData();
+    async performDataLoading(url){
+        try{
+            this.isDataLoading = true;
+            if (!Papa)
+                Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
+            const result = await fetchData(url);
+            //--- detect if another loading has started
+            if(this.loadingUrl!== url) return;
+            this.data = result.data;
+            this.preProcessData();
+            this.isDataLoaded = true;
+        }catch(e){
+            this.isDataLoading = false;
+            throw e;
+        }
+    }
+
+    async loadData() {
+        const url = this.distribution.downloadURL;
+        if(this.isDataLoading && url === this.loadingUrl) {
+            if(this.loadingPromise) await this.loadingPromise;
+            return;
+        }
+        this.loadingUrl = url;
+        const loadingPromise = this.performDataLoading(url);
+        this.loadingPromise = loadingPromise;
+        await loadingPromise;
     }
 
     getAvailableXCols() { //--- category / dimension axis

@@ -12,7 +12,11 @@ class DataPreviewChart extends Component {
     constructor(props) {
         super(props);
         this.state = this.getResetState({
-            isLoading: true
+            chartType: "pie",
+            isLoading: true,
+            chartTitle: this.props.distribution.title
+                ? this.props.distribution.title
+                : ""
         });
         this.chartDatasetEncoder = null;
         this.onChartConfigChanged = this.onChartConfigChanged.bind(this);
@@ -26,8 +30,7 @@ class DataPreviewChart extends Component {
             avlYCols: [],
             xAxis: null,
             yAxis: null,
-            chartType: null,
-            chartOption: null
+            chartOption: null,
         };
         if (!extraOptions) return options;
         else return { ...options, ...extraOptions };
@@ -40,15 +43,23 @@ class DataPreviewChart extends Component {
                     this.props.distribution
                 )
             ) {
-                this.chartDatasetEncoder = new ChartDatasetEncoder(
-                    this.props.distribution
-                );
-                await this.chartDatasetEncoder.loadData(
-                    this.props.distribution.downloadURL
-                );
-                this.chartDatasetEncoder.setDefaultParameters();
+                if (!this.chartDatasetEncoder)
+                    this.chartDatasetEncoder = new ChartDatasetEncoder(
+                        this.props.distribution
+                    );
+                else this.chartDatasetEncoder.init(this.props.distribution);
+                if (!this.chartDatasetEncoder.isDataLoaded)
+                    await this.chartDatasetEncoder.loadData();
+                if (!this.state.xAxis || !this.state.yAxis) {
+                    this.chartDatasetEncoder.setDefaultParameters();
+                    this.state.xAxis = this.chartDatasetEncoder.xAxis;
+                    this.state.yAxis = this.chartDatasetEncoder.yAxis;
+                } else {
+                    this.chartDatasetEncoder.setX(this.state.xAxis);
+                    this.chartDatasetEncoder.setY(this.state.yAxis);
+                }
                 const chartOption = this.chartDatasetEncoder.getChartOption(
-                    this.props.distribution.title
+                    this.state.chartTitle
                 );
                 this.setState({
                     error: null,
@@ -91,8 +102,11 @@ class DataPreviewChart extends Component {
                 ChartDatasetEncoder.isValidDistributionData(
                     this.props.distribution
                 ) &&
-                prevProps.distribution.identifier !==
-                    this.props.distribution.identifier
+                (prevProps.distribution.identifier !==
+                    this.props.distribution.identifier ||
+                    prevState.chartTitle !== this.state.chartTitle ||
+                    prevState.xAxis !== this.state.xAxis ||
+                    prevState.yAxis !== this.state.yAxis)
             ) {
                 this.setState(
                     this.getResetState({
@@ -192,8 +206,8 @@ class DataPreviewChart extends Component {
                         <ChartConfig
                             chartType={this.state.chartType}
                             chartTitle={this.state.chartTitle}
-                            xAxis={this.state.yAxis}
-                            yAxis={this.state.xAxis}
+                            xAxis={this.state.xAxis}
+                            yAxis={this.state.yAxis}
                             yAxisOptions={this.state.avlYCols}
                             xAxisOptions={this.state.avlYCols}
                             onChange={this.onChartConfigChanged}
