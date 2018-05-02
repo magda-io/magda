@@ -30,7 +30,8 @@ export default async function onRecordFound(
         .flatMap((distribution: Record) => distribution.aspects)
         .map((aspect: any) => ({
             distStrings: aspect["dcat-distribution-strings"],
-            sourceLink: aspect["source-link-status"]
+            sourceLink: aspect["source-link-status"],
+            datasetFormat: aspect["dataset-format"]
         }))
         .value();
 
@@ -45,7 +46,8 @@ export default async function onRecordFound(
         const isLicenseOpen = isOpenLicense(distribution.distStrings.license);
 
         if (isLicenseOpen) {
-            return Math.max(starsForFormat(distribution.distStrings.format), 1);
+            const format = _.get(distribution, "datasetFormat.format", distribution.distStrings.format);
+            return Math.max(starsForFormat(format), 1);
         } else {
             return 0;
         }

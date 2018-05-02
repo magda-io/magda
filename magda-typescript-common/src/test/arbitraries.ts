@@ -257,7 +257,14 @@ export type DistStringsOverrideArbs = {
  */
 export type SourceLinkOverrideArbs = {
     status?: jsc.Arbitrary<string | undefined>;
-}
+};
+
+/**
+ * Can be passed into datasetFormatArb to override the default arbitaries.
+ */
+export type DatasetFormatOverrideArbs = {
+    format?: jsc.Arbitrary<string>;
+};
 
 /**
  * Generates the content of a distribution's dcat-distribution-strings aspect.
@@ -278,10 +285,20 @@ export const distStringsArb = ({
  * Generates the content of source link status aspect
  */
 export const sourceLinkArb = ({
-    status = jsc.constant('active')
+    status = jsc.constant("active")
 }: SourceLinkOverrideArbs) =>
-        jsc.record({
-            status: status
+    jsc.record({
+        status: status
+    });
+
+/**
+ *
+ */
+export const datasetFormatArb = ({
+    format = stringArb
+}: DatasetFormatOverrideArbs) =>
+    jsc.record({
+        format
     });
 
 /**
@@ -289,17 +306,21 @@ export const sourceLinkArb = ({
  */
 export const recordArbWithDistArbs = (
     distStringsOverrides: DistStringsOverrideArbs = {},
-    sourceLinkOverrides: SourceLinkOverrideArbs = {}
+    sourceLinkOverrides: SourceLinkOverrideArbs = {},
+    datasetFormatOverrides: DatasetFormatOverrideArbs = {}
 ) =>
     specificRecordArb({
         "dataset-distributions": jsc.record({
             distributions: jsc.array(
                 specificRecordArb({
-                    "dcat-distribution-strings": distStringsArb(distStringsOverrides),
+                    "dcat-distribution-strings": distStringsArb(
+                        distStringsOverrides
+                    ),
+                    "dataset-format": datasetFormatArb(datasetFormatOverrides),
                     "source-link-status": sourceLinkArb(sourceLinkOverrides)
                 })
             )
-        },)
+        })
     });
 
 /**

@@ -7,7 +7,8 @@ import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import * as _ from "lodash";
 import {
     recordArbWithDistArbs,
-    stringArb
+    stringArb,
+    arbFlatMap
 } from "@magda/typescript-common/dist/test/arbitraries";
 import {
     openLicenseArb,
@@ -109,6 +110,15 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                         },
                         {
                             status: jsc.constant("broken")
+                        },
+                        {
+                            format: jsc.oneof([
+                                formatArb(0),
+                                formatArb(1),
+                                formatArb(2),
+                                formatArb(3),
+                                formatArb(4)
+                            ])
                         }
                     ),
                     record =>
@@ -136,6 +146,14 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                         },
                         {
                             status: jsc.constant("active")
+                        },
+                        {
+                            format: jsc.oneof([
+                                formatArb(1),
+                                formatArb(2),
+                                formatArb(3),
+                                formatArb(4)
+                            ])
                         }
                     ),
                     record =>
@@ -192,6 +210,124 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
         }
     });
 
+    it(`if there's an equivalent format in dcat-distribution-strings and dataset format, the star rating should be the same whether the dataset-format aspect is defined or undefined`, () => {
+        const recordArb = jsc.suchthat(
+            recordArbWithDistArbs(),
+            record =>
+                record.aspects["dataset-distributions"].distributions.length > 0
+        );
+
+        return jsc.assert(
+            jsc.forall(recordArb, (record: Record) => {
+                const distsWithoutFormatAspect = record.aspects[
+                    "dataset-distributions"
+                ].distributions.map((dist: any) => {
+                    const newDist = { ...dist };
+                    newDist.aspects["dataset-format"] = undefined;
+                    return newDist;
+                });
+
+                const recordWithoutFormatAspect = {
+                    ...record,
+                    id: record.id + "not"
+                };
+                recordWithoutFormatAspect.aspects[
+                    "dataset-distributions"
+                ].distributions = distsWithoutFormatAspect;
+
+                let starCount1: number, starCount2: number;
+
+                expectStarCount({
+                    record,
+                    starCountFn: num => {
+                        starCount1 = num;
+                        return true;
+                    }
+                });
+                expectStarCount({
+                    record: recordWithoutFormatAspect,
+                    starCountFn: num => {
+                        starCount2 = num;
+                        return true;
+                    }
+                });
+
+                const bothResults = Promise.all([
+                    onRecordFound(record, registry),
+                    onRecordFound(recordWithoutFormatAspect, registry)
+                ]);
+
+                return bothResults
+                    .then(() => {
+                        afterEachProperty();
+
+                        return starCount1 === starCount2;
+                    })
+                    .catch((e: Error) => {
+                        afterEachProperty();
+                        throw e;
+                    });
+            })
+        );
+    });
+
+    it(`If format is in dcat-distribution-strings, dataset-format takes precedence`, () => {
+        const starNumberArb = jsc.oneof(
+            [1, 2, 3, 4].map(x => jsc.constant(x))
+        );
+
+        const starsArb = jsc.record({
+            distStrings: starNumberArb,
+            formatAspect: starNumberArb
+        });
+
+        const everythingArb = arbFlatMap(
+            starsArb,
+            starsObj => {
+                const thisRecordArb = jsc.suchthat(
+                    recordArbWithDistArbs(
+                        {
+                            license: openLicenseArb,
+                            format: formatArb(starsObj.distStrings)
+                        },
+                        undefined,
+                        {
+                            format: formatArb(starsObj.formatAspect)
+                        }
+                    ),
+                    record =>
+                        record.aspects["dataset-distributions"].distributions
+                            .length > 0
+                );
+
+                return jsc.record({
+                    record: thisRecordArb,
+                    numbers: jsc.constant(starsObj)
+                });
+            },
+            x => x.numbers
+        );
+
+        return jsc.assert(
+            jsc.forall(everythingArb, everything => {
+                expectStarCount({
+                    record: everything.record,
+                    starCount: everything.numbers.formatAspect
+                });
+                
+                return onRecordFound(everything.record, registry)
+                    .then(() => {
+                        afterEachProperty();
+                        return true;
+                    })
+                    .catch(e => {
+                        afterEachProperty();
+                        throw e;
+                    });
+            })
+        );
+    });
+
     describe("should always record the result of the best distribution", () => {
         for (
             let highestStarCount = 0;
@@ -230,10 +366,16 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
         licenseArb = openLicenseArb,
         formatArb = stringArb,
         recordArb = jsc.suchthat(
-            recordArbWithDistArbs({
-                license: licenseArb,
-                format: formatArb
-            }),
+            recordArbWithDistArbs(
+                {
+                    license: licenseArb,
+                    format: formatArb
+                },
+                undefined,
+                {
+                    format: formatArb
+                }
+            ),
             record =>
                 record.aspects["dataset-distributions"].distributions.length > 0
         ),

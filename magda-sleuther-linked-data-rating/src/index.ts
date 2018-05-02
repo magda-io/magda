@@ -11,8 +11,8 @@ function sleuthLinkedData() {
     sleuther({
         argv,
         id: ID,
-        aspects: ["dataset-distributions", "source-link-status"],
-        optionalAspects: ["dataset-format"],
+        aspects: ["dataset-distributions"],
+        optionalAspects: ["dataset-format", "source-link-status"],
         writeAspectDefs: [linkedDataAspectDef, datasetQualityAspectDef],
         onRecordFound
     }).catch(e => {
