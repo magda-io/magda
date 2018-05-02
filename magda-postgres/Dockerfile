@@ -3,7 +3,7 @@ FROM postgres:9.6
 # Install wall-e
 RUN apt-get update && \
     apt-get install -y patch && \
-    apt-get install -y python3-pip lzop pv cairo && \
+    apt-get install -y python3-pip lzop pv libcairo2-dev && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install wal-e[aws,google,swift]
 
