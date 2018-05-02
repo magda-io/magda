@@ -32,7 +32,7 @@ class DataPreviewChart extends Component {
             avlYCols: [],
             xAxis: null,
             yAxis: null,
-            chartOption: null,
+            chartOption: null
         };
         if (!extraOptions) return options;
         else return { ...options, ...extraOptions };
@@ -61,7 +61,7 @@ class DataPreviewChart extends Component {
                     this.chartDatasetEncoder.setY(this.state.yAxis);
                 }
                 let chartType = this.state.chartType;
-                if(!chartType) chartType = defaultChartType;
+                if (!chartType) chartType = defaultChartType;
                 this.chartDatasetEncoder.setChartType(chartType);
                 const chartOption = this.chartDatasetEncoder.getChartOption(
                     this.state.chartTitle
@@ -76,6 +76,7 @@ class DataPreviewChart extends Component {
                     chartType,
                     chartOption
                 });
+                if(console && console.log) console.log(chartOption);
             }
         } catch (e) {
             console.log(e);
@@ -186,16 +187,15 @@ class DataPreviewChart extends Component {
 
     render() {
         if (this.state.error)
-            return <div>Error: {this.state.error.message}</div>;
-        if (this.state.isLoading) return <div>Loading...</div>;
+            return (
+                <div className="error">
+                    <h3>{this.state.error.name}</h3>
+                    {this.state.error.message}
+                </div>
+            );
+        if (this.state.isLoading) return <Spinner height="420px" />;
         if (!ReactEcharts)
             return <div>Unexpected Error: failed to load chart component.</div>;
-
-        const fileName = this.props.distribution.downloadURL
-            .split("/")
-            .pop()
-            .split("#")[0]
-            .split("?")[0];
 
         return (
             <div
@@ -205,7 +205,6 @@ class DataPreviewChart extends Component {
                 }}
             >
                 <div className="mui-col-md-6">
-                    <div className="data-preview-vis_file-name">{fileName}</div>
                     <ReactEcharts option={this.state.chartOption} />
                 </div>
                 <Medium>
