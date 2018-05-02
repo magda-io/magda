@@ -1,4 +1,4 @@
-import capitalize from "lodash/capitalize";
+import startCase from "lodash/startCase";
 import map from "lodash/map";
 import find from "lodash/find";
 import filter from "lodash/filter";
@@ -129,14 +129,52 @@ class ChartDatasetEncoder {
         return find(this.fields, field => field.category);
     }
 
+    testKeyword(str, keyword){
+        let r = new RegExp(`(^|\\W+)${keyword}(\\W+|$)`,"i");
+        if(r.test(str)) return true;
+        return false;
+    }
+
+    testKeywords(str, keywords){
+        if(!str) return false;
+        if(!keywords || !keywords.length) return false;
+        for(let i=0;i<keywords.length;i++){
+            if(this.testKeyword(str,keywords[i])) return true;
+        }
+        return false;
+    }
+
+    fieldDefAdjustment(field){
+        if(this.testKeywords(field.label, ["id","code","identifier"])){
+            field.numeric = false;
+            field.category = true;
+            field.time = false;
+        }else if(this.testKeywords(field.label, ["year","date"])){
+            field.numeric = false;
+            field.category = false;
+            field.time = true;
+        }else if(this.testKeywords(field.label, ["month","day"])){
+            if(field.numeric){
+                field.numeric = false;
+                field.category = false;
+                field.time = true;
+            }else{
+                field.numeric = false;
+                field.category = true;
+                field.time = false;
+            }
+        }
+        return field;
+    }
+
     preProcessFields(headerRow) {
         const disFields = this.distribution.visualizationInfo.fields;
 
-        let newFields = map(disFields, (field, key) => ({
+        let newFields = map(disFields, (field, key) => this.fieldDefAdjustment({
             ...field,
             idx: indexOf(headerRow, key),
             name: key,
-            label: capitalize(key.replace(/[-_]/g, " ")),
+            label: startCase(key.replace(/[-_]/g, " ")),
             category: !field.time && !field.numeric,
             isAggr: false
         }));

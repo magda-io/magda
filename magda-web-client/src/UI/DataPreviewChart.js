@@ -215,8 +215,8 @@ class DataPreviewChart extends Component {
                             chartTitle={this.state.chartTitle}
                             xAxis={this.state.xAxis}
                             yAxis={this.state.yAxis}
+                            xAxisOptions={this.state.avlXCols}
                             yAxisOptions={this.state.avlYCols}
-                            xAxisOptions={this.state.avlYCols}
                             onChange={this.onChartConfigChanged}
                         />
                     </div>
