@@ -372,19 +372,16 @@ class ChartDatasetEncoder {
         if (avlYcols.length > 1) this.setY(avlYcols[1]);
         else this.setY(avlYcols[0]);
 
-        const higherPriorityNames = [
-            "state",
-            "name",
-            "city",
-            "company"
-        ];
+        const higherPriorityNames = ["state", "name", "city", "company", "postcode"];
         const avlXcols = this.getAvailableXCols();
         const avlTimeXcols = filter(avlXcols, field => field.time);
         const avlCatXcols = filter(avlXcols, field => field.category);
         if (avlCatXcols.length) {
             //--- CatCol has higher priority
-            const xAxis = find(avlCatXcols, field => this.testKeywords(field.label,higherPriorityNames));
-            if(xAxis) this.setX(xAxis);
+            const xAxis = find(avlCatXcols, field =>
+                this.testKeywords(field.label, higherPriorityNames)
+            );
+            if (xAxis) this.setX(xAxis);
             else if (avlCatXcols.length > 1) this.setX(avlCatXcols[1]);
             else this.setX(avlCatXcols[0]);
         } else {
@@ -547,10 +544,14 @@ class ChartDatasetEncoder {
                 type: "value"
             };
         }
-        if (this.chartType === "pie")
+        if (this.chartType === "pie") {
             option.series[0].label = {
                 show: false
             };
+            option.grid.show = false;
+        } else if (this.chartType === "line") {
+            option.series[0].areaStyle = {};
+        }
         return option;
     }
 }
