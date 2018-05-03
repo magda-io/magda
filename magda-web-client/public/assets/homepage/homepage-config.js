@@ -6,8 +6,7 @@
  * backgroundImageUrl must contain image width as part of url /name. e.g. twenty-1440w.jpg (image width is 1440px)
  */
 window.magda_client_homepage_config = {
-    baseUrl:
-        "/assets/homepage/",
+    baseUrl: "/assets/homepage/",
     backgroundImageUrls: [
         "twenty-1440w.jpg",
         "twenty-720w.jpg",

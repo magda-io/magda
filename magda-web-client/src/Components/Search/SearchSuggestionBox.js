@@ -348,7 +348,7 @@ class SearchSuggestionBox extends Component {
                             }`}
                         >
                             <button
-                                className="mui-btn mui-btn--flat search-item-main-button"
+                                className="au-btn au-btn--tertiary search-item-main-button"
                                 onClick={e => this.onSearchItemClick(e, item)}
                             >
                                 <img
@@ -371,7 +371,7 @@ class SearchSuggestionBox extends Component {
                                 </Small>
                             </button>
                             <button
-                                className="mui-btn mui-btn--flat search-item-delete-button"
+                                className="au-btn au-btn--tertiary search-item-delete-button"
                                 onClick={e => this.onDeleteItemClick(e, idx)}
                             >
                                 <img alt="delete search item" src={closeIcon} />

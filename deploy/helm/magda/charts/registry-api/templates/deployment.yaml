@@ -44,6 +44,7 @@ spec:
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}",
             "-Dauthorization.skip={{ .Values.skipAuthorization | default false }}"
         ]
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: "/v0/ping"
