@@ -1,6 +1,7 @@
 // @flow
 import getDateString from "./getDateString";
 import type { FetchError } from "../types";
+import weightedMean from "weighted-mean";
 // dataset query:
 //aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
 
@@ -361,8 +362,15 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? aspects["source"]["name"]
         : defaultDatasetAspects["source"]["name"];
 
-    const linkedDataRating: number = aspects["dataset-linked-data-rating"]
-        ? aspects["dataset-linked-data-rating"]["stars"]
+    function calcQuality(qualityAspect) {
+        const ratings = Object.keys(qualityAspect)
+            .map(key => qualityAspect[key])
+            .map(aspectRating => [aspectRating.score, aspectRating.weighting]);
+        return weightedMean(ratings);
+    }
+
+    const linkedDataRating: number = aspects["dataset-quality-rating"]
+        ? calcQuality(aspects["dataset-quality-rating"])
         : 0;
 
     const distributions = distribution["distributions"].map(d => {

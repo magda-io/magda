@@ -17,6 +17,7 @@ import OtherPages from "./Pages/OtherPages";
 
 import { Route, Link, Switch } from "react-router-dom";
 import { Medium } from "./UI/Responsive";
+import AUskipLink from "@gov.au/skip-link";
 
 import "./AppContainer.css";
 
@@ -46,6 +47,18 @@ class AppContainer extends React.Component {
         return (
             <ReactDocumentTitle title={config.appName}>
                 <div className="au-grid">
+                    <AUskipLink
+                        links={[
+                            {
+                                link: "#content",
+                                text: "Skip to main content"
+                            },
+                            {
+                                link: "#nav",
+                                text: "Skip to main navigation"
+                            }
+                        ]}
+                    />
                     <Medium>
                         <Banner />
                     </Medium>
@@ -55,7 +68,7 @@ class AppContainer extends React.Component {
                         <Route path="/*" component={OtherPages} />
                     </Switch>
 
-                    <footer className="footer clearfix au-grid">
+                    <footer className="footer">
                         <div className="container">
                             <div className="row">
                                 <div className="col-xs-6 col-sm-6 col-md-9 col-lg-9">
