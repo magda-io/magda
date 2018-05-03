@@ -1,6 +1,5 @@
 ## 0.0.39
 *   Apply Design System skip link/links styles
-
 *   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
 *   Fixed distribution previews
@@ -61,6 +60,13 @@
 *   Fixed an issue that users may see an error after page 4
 *   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
 *   keep distance between search box and the first story on mobile view
+*   Fixed an issue search may not be added to recent search list in some cases
+*   Make small position adjustment to the recent search icon
+*   Moved homepage config from S3 to local
+*   Added spacing between download & new tab button on dataset page
+*   Added spacing on byline of dataset page
+*   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
+*   Fix placement and color of search box on desktop and mobile
 
 ## 0.0.37
 
@@ -108,7 +114,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
-*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to search.data.gov.au
+*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to       search.data.gov.au
 
 ## 0.0.36
 
