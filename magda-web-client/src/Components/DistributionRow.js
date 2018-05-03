@@ -131,7 +131,12 @@ class DistributionRow extends Component {
             }`;
 
         return (
-            <div className="distribution-row row">
+            <div
+                className="distribution-row row"
+                itemProp="distribution"
+                itemScope
+                itemType="http://schema.org/DataDownload"
+            >
                 <div className="col-sm-9">
                     <div className="row">
                         <Medium>
@@ -154,20 +159,27 @@ class DistributionRow extends Component {
                                 {!distribution.downloadURL &&
                                 distribution.accessURL ? (
                                     <div>
-                                        {distribution.title}({
-                                            distribution.format
-                                        })
+                                        <span itemProp="name">
+                                            {distribution.title}
+                                        </span>(<span itemProp="fileFormat">
+                                            {distribution.format}
+                                        </span>)
                                     </div>
                                 ) : (
                                     <Link to={distributionLink}>
-                                        {distribution.title}({
-                                            distribution.format
-                                        })
+                                        <span itemProp="name">
+                                            {distribution.title}
+                                        </span>(<span itemProp="fileFormat">
+                                            {distribution.format}
+                                        </span>)
                                     </Link>
                                 )}
                             </div>
 
-                            <div className="distribution-row-link-license">
+                            <div
+                                className="distribution-row-link-license"
+                                itemProp="license"
+                            >
                                 {distribution.license &&
                                     (typeof distribution.license === "string"
                                         ? distribution.license
@@ -210,7 +222,13 @@ class DistributionRow extends Component {
                             }}
                         >
                             <img src={downloadIcon} alt="download" />
-                            <span className="button-text">Download</span>
+                            <a
+                                className="button-text"
+                                itemProp="contentUrl"
+                                href={distribution.downloadURL}
+                            >
+                                Download
+                            </a>
                         </Button>
                     ) : null}
                     <Button

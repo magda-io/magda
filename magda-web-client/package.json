@@ -23,6 +23,10 @@
   },
   "devDependencies": {
     "@gov.au/core": "^2.0.0",
+    "@gov.au/body": "^2.0.2",
+    "@gov.au/buttons": "^2.0.1",
+    "@gov.au/skip-link": "^2.0.2",
+    "@gov.au/tags": "^2.0.1",
     "@gov.au/grid-12": "^2.0.1",
     "@gov.au/pancake": "~1",
     "@gov.au/pancake-json": "^1.0.3",
@@ -61,7 +65,7 @@
     "isomorphic-fetch": "^2.2.1",
     "js-cookie": "^2.2.0",
     "leaflet": "^0.7.7",
-    "leaflet-mapbox-vector-tile": "TerriaJS/Leaflet.MapboxVectorTile",
+    "leaflet-mapbox-vector-tile": "github:TerriaJS/Leaflet.MapboxVectorTile",
     "lodash.debounce": "^4.0.8",
     "lodash.find": "^4.6.0",
     "lodash.findindex": "^4.6.0",
@@ -112,6 +116,7 @@
     "uuid": "^3.0.1",
     "vega": "^3.0.0-rc2",
     "vega-lite": "^2.0.0-beta.8",
+    "weighted-mean": "^1.0.2",
     "yaml-front-matter": "^4.0.0"
   },
   "proxy": {
@@ -153,12 +158,15 @@
       "name": false
     },
     "sass": {
-      "modules": false,
+      "modules": true,
       "location": "pancake/sass/",
       "name": "pancake.scss"
     },
     "react": {
       "location": "pancake/react/"
     }
+  },
+  "dependencies": {
+    "@gov.au/pancake-react": "^1.1.0"
   }
 }
