@@ -7,6 +7,7 @@ import forEach from "lodash/forEach";
 import isArray from "lodash/isArray";
 import sumBy from "lodash/sumBy";
 import concat from "lodash/concat";
+import trim from "lodash/trim";
 import * as d3 from "d3-collection";
 import { config } from "../config";
 import type { ParsedDistribution } from "../helpers/record";
@@ -239,6 +240,10 @@ class ChartDatasetEncoder {
                     isAggr: false
                 });
             });
+        }
+        newFields = filter(newFields, item => trim(item.name) !== "");
+        if (!newFields.length) {
+            throw new Error("The data file contains no non-empty header.");
         }
         this.fields = newFields;
         return newFields;
