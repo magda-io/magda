@@ -17,5 +17,10 @@
     },
     "devDependencies": {
         "@magda/scripts": "^0.0.39-0"
+    },
+    "magda": {
+        "categories": {
+            "dockerExtension": true
+        }
     }
 }

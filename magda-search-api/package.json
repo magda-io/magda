@@ -7,13 +7,19 @@
         "build": "npm run compile",
         "test": "cd .. && sbt searchApi/test",
         "compile": "cd .. && sbt searchApi/compile",
-        "docker-build-local": "cd .. && sbt searchApi/dockerBuildAndPush",
-        "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" searchApi/dockerBuildAndPush",
+        "docker-build-local": "cd .. && sbt \"-Drepository=localhost:5000\" searchApi/dockerBuildAndPush",
+        "docker-build-prod": "cd .. && sbt searchApi/dockerBuildAndPush",
         "start": "cd .. && sbt searchApi/run",
         "dev": "cd .. && sbt ~searchApi/relaunch"
     },
     "config": {
         "interface": "0.0.0.0",
         "port": 6102
+    },
+    "magda": {
+        "language": "scala",
+        "categories": {
+            "api": true
+        }
     }
 }

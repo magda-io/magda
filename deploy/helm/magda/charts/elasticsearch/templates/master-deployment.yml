@@ -45,11 +45,13 @@ spec:
             add:
               - IPC_LOCK
         image: {{ template "dockerimage" . }}
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           tcpSocket:
             port: transport
           initialDelaySeconds: 300
           periodSeconds: 60
+{{- end }}
         env:
         - name: NAMESPACE
           valueFrom:

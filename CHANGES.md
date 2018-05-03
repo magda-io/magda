@@ -1,5 +1,12 @@
 ## 0.0.39
 
+*   Added gitlab CI build config
+*   Fixed indexer's ability to make/retrieve ES backups
+*   Added ability for magda-postgres to retrieve WAL backup as "immediate" rather than catching all the way up with the WAL log.
+*   Removed implied ability for magda postgres to use a backup method other than WAL (this never actually worked in practice)
+*   Replaced old `node-ci` script with `run-in-submodules`, which allows a command to be run in submodules based on matching
+    the values in `package.json`.
+
 *   Removed `border-bottom` property for `Open Data Quality:` from DatasetSummary/Details page
 *   Apply Design System skip link/links styles
 *   Add schema.org/Dataset microdata semantic markup
@@ -117,7 +124,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
-*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to       search.data.gov.au
+*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to search.data.gov.au
 
 ## 0.0.36
 

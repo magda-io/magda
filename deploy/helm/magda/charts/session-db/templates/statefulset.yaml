@@ -1,15 +1,14 @@
 {{- if and (not .Values.global.useCombinedDb) (not .Values.global.useCloudSql) }}
-apiVersion: apps/v1beta1
+apiVersion: apps/v1beta2
 kind: StatefulSet
 metadata:
   name: session-db
 spec:
   serviceName: session-db
   replicas: 1
-{{- if semverCompare "^1.7.0" (printf "%s" .Capabilities.KubeVersion) }}
-  updateStrategy:
-    type: RollingUpdate
-{{- end }}
+  selector:
+    matchLabels:
+      service: session-db
   template:
     metadata:
       labels:

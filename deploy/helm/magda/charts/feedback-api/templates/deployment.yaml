@@ -24,6 +24,7 @@ spec:
             "--issuesUrl", {{ .Values.gitHubIssuesUrl | quote }}
 {{- end }}
         ]
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: /v0/healthz
@@ -31,6 +32,7 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:

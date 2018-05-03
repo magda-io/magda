@@ -9,4 +9,3 @@ IP NOVA is a visual immersive search engine that helps users discover registered
 <br/>
 
 It delivers visualisation and business intelligence that enables end users to quickly gather information regarding a specific keyword such as location, industry or field of work, and perform customisable analysis from both a macro and micro perspective.
-
