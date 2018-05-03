@@ -1,5 +1,7 @@
 import * as express from "express";
 import * as SMTPConnection from "nodemailer/lib/smtp-connection";
+import * as pug from "pug";
+import * as path from "path";
 
 import { Router } from "express";
 import { DatasetMessage } from "./model";
@@ -49,29 +51,71 @@ export default function createApiRouter(options: ApiRouterOptions) {
     }
 
     /**
-     * Send an email to a SMTP backend, give the args provided by API
-     * @param message - Message object
+     * Send an email to a SMTP backend, give the args provided by the API
+     * @param message - Message object, contains a to, from and body
      */
     function sendMail(message: DatasetMessage) {
+        //SMTP Connection
         let connection = new SMTPConnection({
             host: options.smtpHostname,
             port: options.smtpPort,
-            secure: options.smtpSecure
+            secure: options.smtpSecure,
+            logger: true,
+            debug: false,
+            connectionTimeout: 3000
         });
 
-        let envelope = {
-            to: "127.0.0.1",
-            from: "adam@example.com"
+        //SMTP Authenticate credentials
+        const auth = {
+            user: options.smtpUsername,
+            pass: options.smtpPassword
         };
-    
+
+        //SMTP 'Header'
+        const envelope = {
+            to: "",
+            from: ""
+        };
+
+        //SMTP Template body
+        const msg = pug.compileFile(
+            path.resolve(__dirname, "templates/request.pug")
+        );
+
+        //SMTP Template context
+        const templateContext = {
+            agencyName: "",
+            agencyEmail: "",
+            dataset: "",
+            requesterName: "",
+            requesterEmail: "",
+            requesterMsg: ""
+        };
+
         connection.connect(() => {
-            connection.send(envelope, message.message, (info, err) => {
-                if (err){
-                    console.error(`SMTP Connection: ${err}`)
+            console.log(
+                `Attempting to establish SMTP connection with SMTP server...`
+            );
+            connection.login(auth, err => {
+                if (err) {
+                    console.error(`${err}`);
+                } else {
+                    console.log(
+                        `...Connection established! \n Attempting to authenticate...`
+                    );
                 }
-                console.log(`SMTP Connection: ${info}`)
-            })
-        })  
+                connection.send(envelope, msg(templateContext), (info, err) => {
+                    if (err) {
+                        console.error(`${JSON.stringify(err)}`);
+                    } else {
+                        console.log(
+                            `...Authenticatation successful! Sending mail.`
+                        );
+                        connection.quit();
+                    }
+                });
+            });
+        });
     }
 
     router.post("/public/send/dataset/request", handleDatasetMessage);
@@ -82,8 +126,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     router.post("/public/send/dataset/:datasetId/report", handleDatasetMessage);
-
-    router.post("/", sendMail);
 
     return router;
 }

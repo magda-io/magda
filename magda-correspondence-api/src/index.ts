@@ -26,12 +26,12 @@ const argv = addJwtSecretFromEnvVar(
         .option("smtpPort", {
             describe: "The SMTP server port",
             type: "number",
-            default: 587
+            default: 465
         })
         .option("smtpSecure", {
             describe: "SMTP using TLS?",
             type: "boolean",
-            default: false
+            default: true
         })
         .option("smtpUsername", {
             describe: "The username to authenticate with the SMTP server",
