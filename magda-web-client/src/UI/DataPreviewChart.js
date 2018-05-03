@@ -51,15 +51,16 @@ class DataPreviewChart extends Component {
                 else this.chartDatasetEncoder.init(this.props.distribution);
                 if (!this.chartDatasetEncoder.isDataLoaded)
                     await this.chartDatasetEncoder.loadData();
+
+                let chartType = this.state.chartType;
                 if (!this.state.xAxis || !this.state.yAxis) {
                     this.chartDatasetEncoder.setDefaultParameters();
-                    this.state.xAxis = this.chartDatasetEncoder.xAxis;
-                    this.state.yAxis = this.chartDatasetEncoder.yAxis;
+                    if(this.chartDatasetEncoder.yAxis.isAggr) chartType = "pie";
                 } else {
                     this.chartDatasetEncoder.setX(this.state.xAxis);
                     this.chartDatasetEncoder.setY(this.state.yAxis);
                 }
-                let chartType = this.state.chartType;
+                 
                 if (!chartType) chartType = defaultChartType;
                 this.chartDatasetEncoder.setChartType(chartType);
                 const chartOption = this.chartDatasetEncoder.getChartOption(
