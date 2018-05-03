@@ -12,6 +12,7 @@
         border-bottom: none;
         background: transparent;
         padding: 8px 0;
+        overflow-y: hidden;
         img {
             height: 100%;
             width: auto;
@@ -30,8 +31,7 @@
             margin-left: 0;
             display: inline-block;
             border-bottom: 0;
-            color: #494949;
-            font-family: Rubik;
+            color: $body;
             font-size: 16px;
             line-height: 40px;
             margin-right: 32px;

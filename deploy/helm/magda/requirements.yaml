@@ -95,3 +95,9 @@ dependencies:
     tags:
       - all
       - web-server
+  - name: correspondence-api
+    version: 0.1.0
+    tags:
+      - all
+      - correspondence-api
+

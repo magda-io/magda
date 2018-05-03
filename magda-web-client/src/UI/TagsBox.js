@@ -1,8 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
 import reduce from "lodash.reduce";
+import AUtags from "@gov.au/tags";
 import "./TagsBox.css";
 
 const tagSeperatorRegex = /[,|;|/||]/g;
@@ -31,34 +31,23 @@ function TagsBox(props) {
                     <tr>
                         <td className="heading">Tags: </td>
                         <td>
-                            <ul>
-                                {props.tags &&
+                            <AUtags
+                                tags={
+                                    props.tags &&
                                     mergeTags(props.tags)
                                         .sort((a, b) => {
                                             if (a < b) return -1;
                                             else if (a > b) return 1;
                                             else return 0;
                                         })
-                                        .map((t, idx) => (
-                                            <li
-                                                key={t}
-                                                className={
-                                                    idx
-                                                        ? "other-tag"
-                                                        : "first-tag"
-                                                }
-                                            >
-                                                <Link
-                                                    key={t}
-                                                    to={`/search?q=${encodeURIComponent(
-                                                        t
-                                                    )}`}
-                                                >
-                                                    {t}
-                                                </Link>
-                                            </li>
-                                        ))}
-                            </ul>
+                                        .map((t, _) => ({
+                                            link: `/search?q=${encodeURIComponent(
+                                                t
+                                            )}`,
+                                            text: t
+                                        }))
+                                }
+                            />
                         </td>
                     </tr>
                 </tbody>

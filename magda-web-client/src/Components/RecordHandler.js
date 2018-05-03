@@ -129,20 +129,36 @@ class RecordHandler extends React.Component {
                 )}`;
 
                 return (
-                    <div>
-                        <h1>{this.props.dataset.title}</h1>
+                    <div itemScope itemType="http://schema.org/Dataset">
+                        <h1 itemProp="name">{this.props.dataset.title}</h1>
                         <div className="publisher-basic-info-row">
-                            <span className="publisher">{publisherName}</span>
+                            <span
+                                itemProp="publisher"
+                                itemScope
+                                itemType="http://schema.org/Organization"
+                            >
+                                <span className="publisher" itemProp="name">
+                                    {publisherName}
+                                </span>
+                            </span>
                             <span className="separator hidden-sm">/</span>
                             {defined(this.props.dataset.issuedDate) && (
                                 <span className="updated-date hidden-sm">
-                                    Created {this.props.dataset.issuedDate}&nbsp;
+                                    Created{" "}
+                                    <span itemProp="dateCreated">
+                                        {this.props.dataset.issuedDate}
+                                    </span>&nbsp;
                                 </span>
                             )}
-                            <span className="separator hidden-sm">/</span>
+                            <span className="separator hidden-sm">
+                                &nbsp;/&nbsp;
+                            </span>
                             {defined(this.props.dataset.updatedDate) && (
                                 <span className="updated-date hidden-sm">
-                                    Updated {this.props.dataset.updatedDate}
+                                    Updated{" "}
+                                    <span itemProp="dateModified">
+                                        {this.props.dataset.updatedDate}
+                                    </span>
                                 </span>
                             )}
                         </div>

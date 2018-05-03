@@ -7,7 +7,7 @@
  */
 window.magda_client_homepage_config = {
     baseUrl:
-        "https://s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/development/",
+        "/assets/homepage/",
     backgroundImageUrls: [
         "twenty-1440w.jpg",
         "twenty-720w.jpg",

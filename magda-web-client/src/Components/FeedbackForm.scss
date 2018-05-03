@@ -79,8 +79,12 @@
         bottom: 24px;
     }
 
-    .privacy-link {
+    .privacy-link a {
         margin-top: 10px;
-        font-size: 0.75rem;
+        @include AU-fontgrid(xs);
+        color: black;
+        &:hover {
+            color:black;
+        }
     }
 }

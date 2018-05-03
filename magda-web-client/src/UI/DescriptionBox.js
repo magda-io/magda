@@ -26,6 +26,7 @@ class DescriptionBox extends Component {
             : false;
         return (
             <div
+                itemProp="description"
                 className={`description-box white-box overview-box ${
                     this.state.isExpanded ? "is-expanded" : ""
                 }`}
