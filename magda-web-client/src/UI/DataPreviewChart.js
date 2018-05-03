@@ -164,6 +164,7 @@ class DataPreviewChart extends Component {
                     <ReactEcharts
                         className="data-preview-chart-container"
                         style={{height: "450px"}}
+                        lazyUpdate={true}
                         option={this.state.chartOption}
                     />
                 </div>

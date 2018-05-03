@@ -36,9 +36,28 @@ const fetchData = function(url) {
     });
 };
 
+const stripNumberRegex = /[^\-\d.+]/g;
+const parseNumber = (str)=>{
+    let parsedResult = 0;
+    try{
+        if(typeof str === "number") return str;
+        if(typeof str !== "string") return 0;
+        const isFloat = str.indexOf(".") !== -1;
+        str = str.replace(stripNumberRegex, "");
+        if(isFloat) parsedResult = parseFloat(str);
+        else parsedResult = parseInt(str,10);
+        if(isNaN(parsedResult)) return 0;
+        return parsedResult;
+    }catch(e){
+        console.log("Failed to parse number!");
+        console.log(e);
+        return 0;
+    }
+};
+
 const aggregators = {
     count: v => v.length,
-    sum: field => v => sumBy(v, d => d[field])
+    sum: field => v => sumBy(v, d => parseNumber(d[field]))
 };
 
 const rollupResult2Rows = function(
