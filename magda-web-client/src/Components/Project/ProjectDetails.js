@@ -11,7 +11,6 @@ import ReactDocumentTitle from "react-document-title";
 import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
 // import CrappyChat from "../../Components/CrappyChat/CrappyChat";
-import Button from "muicss/lib/react/button";
 
 class ProjectDetails extends Component {
     componentWillMount() {
@@ -30,7 +29,8 @@ class ProjectDetails extends Component {
     renderToggleButton() {
         if (this.props.user && this.props.user.isAdmin) {
             return (
-                <Button
+                <button
+                    className="au-btn"
                     onClick={() =>
                         this.props.updateProjectStatus(this.props.project)
                     }
@@ -38,7 +38,7 @@ class ProjectDetails extends Component {
                     {this.props.project.status === "open"
                         ? "Close project"
                         : "Open project"}
-                </Button>
+                </button>
             );
         }
         return null;

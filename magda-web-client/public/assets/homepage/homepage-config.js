@@ -6,8 +6,7 @@
  * backgroundImageUrl must contain image width as part of url /name. e.g. twenty-1440w.jpg (image width is 1440px)
  */
 window.magda_client_homepage_config = {
-    baseUrl:
-        "https://s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/development/",
+    baseUrl: "/assets/homepage/",
     backgroundImageUrls: [
         "twenty-1440w.jpg",
         "twenty-720w.jpg",

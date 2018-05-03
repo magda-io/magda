@@ -1,8 +1,6 @@
 import React from "react";
 import Editor from "draft-js-plugins-editor";
-import Button from "muicss/lib/react/button";
 import { EditorState, ContentState, convertToRaw } from "draft-js";
-
 import pluginsFn from "./Plugins/Plugins";
 import PluginComponents from "./Plugins/PluginComponents";
 
@@ -80,7 +78,9 @@ export default class EntryBox extends React.Component {
                         userMentionsPlugin={this.plugins.userMentions}
                         dataSetMentionsPlugin={this.plugins.dataSetMentions}
                     />
-                    <Button className="entry-box__submit-button">Submit</Button>
+                    <button className="entry-box__submit-button au-btn">
+                        Submit
+                    </button>
                 </form>
             </div>
         );

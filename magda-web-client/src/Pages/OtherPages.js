@@ -63,7 +63,9 @@ const OtherPages = props => {
                     theme="none-home"
                 />
             )}
-            <div className="container app-container">{renderBody()}</div>
+            <div className="container app-container" id="content">
+                {renderBody()}
+            </div>
         </div>
     );
 };

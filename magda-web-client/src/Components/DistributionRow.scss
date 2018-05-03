@@ -32,25 +32,22 @@
         border: 1px solid rgba(73, 73, 73, 0.05);
     }
     .download-button {
-        padding-left: 11px;
-        padding-right: 13px;
-        padding-top: 2px;
-        padding-bottom: 33px;
-        vertical-align: middle;
+        padding: 5px 10px;
+
         .button-text {
             margin-left: 35px;
         }
         img {
             position: absolute;
-            top: 10px;
+            top: 12px;
         }
     }
     .new-tab-button {
         vertical-align: middle;
-        padding-top: 5px;
-        padding-bottom: 30px;
-        padding-left: 10px;
-        padding-right: 10px;
+        padding: 5px;
+        img {
+            vertical-align: top;
+        }
     }
     .button-area {
         text-align: left;
