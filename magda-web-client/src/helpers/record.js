@@ -323,7 +323,9 @@ export function parseDistribution(
         linkActive,
         isTimeSeries,
         chartFields,
-        visualizationInfo : aspects["visualization-info"] ? aspects["visualization-info"]: null,
+        visualizationInfo: aspects["visualization-info"]
+            ? aspects["visualization-info"]
+            : null,
         compatiblePreviews
     };
 }
@@ -408,7 +410,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             isTimeSeries: visualizationInfo["timeseries"],
             chartFields,
             compatiblePreviews,
-            visualizationInfo : visualizationInfo ? visualizationInfo: null,
+            visualizationInfo: visualizationInfo ? visualizationInfo : null
         };
     });
     return {

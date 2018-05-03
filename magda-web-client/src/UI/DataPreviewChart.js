@@ -55,12 +55,13 @@ class DataPreviewChart extends Component {
                 let chartType = this.state.chartType;
                 if (!this.state.xAxis || !this.state.yAxis) {
                     this.chartDatasetEncoder.setDefaultParameters();
-                    if(this.chartDatasetEncoder.yAxis.isAggr) chartType = "pie";
+                    //if(this.chartDatasetEncoder.yAxis.isAggr) chartType = "pie";
+                    // will not set to pie by default
                 } else {
                     this.chartDatasetEncoder.setX(this.state.xAxis);
                     this.chartDatasetEncoder.setY(this.state.yAxis);
                 }
-                 
+
                 if (!chartType) chartType = defaultChartType;
                 this.chartDatasetEncoder.setChartType(chartType);
                 const chartOption = this.chartDatasetEncoder.getChartOption(
@@ -163,7 +164,7 @@ class DataPreviewChart extends Component {
                 <div className="mui-col-md-8">
                     <ReactEcharts
                         className="data-preview-chart-container"
-                        style={{height: "450px"}}
+                        style={{ height: "450px" }}
                         lazyUpdate={true}
                         option={this.state.chartOption}
                     />

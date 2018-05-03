@@ -24,7 +24,7 @@ export default class ChartConfig extends Component {
             <Select
                 name="input"
                 label={label}
-                value={findIndex(options,item =>item === this.props[id])}
+                value={findIndex(options, item => item === this.props[id])}
                 onChange={e => {
                     const idx = e.target.value;
                     this.onChange(id, options[idx]);
@@ -32,7 +32,7 @@ export default class ChartConfig extends Component {
             >
                 {options
                     ? options.map(
-                          (o,idx) =>
+                          (o, idx) =>
                               typeof o === "string" ? (
                                   <Option key={o} value={o} label={o} />
                               ) : (
