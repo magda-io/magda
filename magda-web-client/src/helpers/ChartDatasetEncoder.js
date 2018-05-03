@@ -73,13 +73,28 @@ const rollupResult2Rows = function(
     return aggrResult;
 };
 
+const aggrLabelRegex = /^(count|sum)(_0\.+\d+)$/i;
+
 const defaultChartOption = {
     legend: {
         type: "scroll",
         y: "bottom",
         orient: "horizontal"
     },
-    grid:{
+    tooltip: {
+        trigger: "item",
+        formatter: (a, b, c, d, e, f, g, h) => {
+            return Object.keys(a.value)
+                .map(
+                    key =>
+                        `${startCase(key.replace(aggrLabelRegex, "$1"))}: ${
+                            a.value[key]
+                        }`
+                )
+                .join("<br/>");
+        }
+    },
+    grid: {
         right: 10
     }
 };
@@ -150,6 +165,18 @@ class ChartDatasetEncoder {
                 "code",
                 "identifier",
                 "postcode"
+            ])
+        ) {
+            field.numeric = false;
+            field.category = true;
+            field.time = false;
+        } else if (
+            this.testKeywords(field.label, [
+                "abn",
+                "acn",
+                "afsl",
+                "pcode",
+                "lic num"
             ])
         ) {
             field.numeric = false;
@@ -431,6 +458,30 @@ class ChartDatasetEncoder {
                 [yName]: 1,
                 tooltip: [1]
             };
+        } else if (this.chartType === "pie") {
+            data = this.groupBy(
+                this.data,
+                this.yAxis.name,
+                aggregators.sum(this.yAxis.name),
+                [this.xAxis.name]
+            );
+            dimensions = [
+                {
+                    name: this.xAxis.name,
+                    type: "ordinal",
+                    displayName: this.xAxis.label
+                },
+                {
+                    name: this.yAxis.name,
+                    type: "number",
+                    displayName: this.yAxis.label
+                }
+            ];
+            encode = {
+                [xName]: 0,
+                [yName]: 1,
+                tooltip: [1]
+            };
         } else {
             let xAxisIdx = null;
             let yAxisIdx = null;
@@ -464,12 +515,6 @@ class ChartDatasetEncoder {
             title: {
                 text: chartTitle,
                 left: "center"
-            },
-            tooltip: {
-                trigger: "item",
-                formatter: (a,b,c,d,e,f,g,h)=>{
-                    return Object.keys(a.value).map(key=>`${startCase(key)}: ${a.value[key]}`).join("<br/>");
-                }
             },
             dataset: [
                 {
