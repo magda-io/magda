@@ -8,6 +8,7 @@
 *   Recent search will not save "\*" search
 *   Reduced homepage tagline bottom margin
 *   Brought back homepage animation
+*   Chart is available for Non-time series CSV data files now
 
 ## 0.0.38
 
