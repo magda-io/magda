@@ -3,12 +3,11 @@ export default function DataSetMentionEntry(props) {
     const { mention } = props;
     return (
         <button
-            className="au-btn"
             onMouseDown={props.onMouseDown}
             onMouseLeave={props.onMouseLeave}
             onMouseUp={props.onMouseUp}
             role={props.role}
-            className={props.className}
+            className={props.className || "au-btn"}
             style={{
                 ...props.style
             }}
