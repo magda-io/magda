@@ -37,18 +37,18 @@ const fetchData = function(url) {
 };
 
 const stripNumberRegex = /[^\-\d.+]/g;
-const parseNumber = (str)=>{
+const parseNumber = str => {
     let parsedResult = 0;
-    try{
-        if(typeof str === "number") return str;
-        if(typeof str !== "string") return 0;
+    try {
+        if (typeof str === "number") return str;
+        if (typeof str !== "string") return 0;
         const isFloat = str.indexOf(".") !== -1;
         str = str.replace(stripNumberRegex, "");
-        if(isFloat) parsedResult = parseFloat(str);
-        else parsedResult = parseInt(str,10);
-        if(isNaN(parsedResult)) return 0;
+        if (isFloat) parsedResult = parseFloat(str);
+        else parsedResult = parseInt(str, 10);
+        if (isNaN(parsedResult)) return 0;
         return parsedResult;
-    }catch(e){
+    } catch (e) {
         console.log("Failed to parse number!");
         console.log(e);
         return 0;
@@ -184,7 +184,12 @@ class ChartDatasetEncoder {
                 "id",
                 "code",
                 "identifier",
-                "postcode"
+                "postcode",
+                "age",
+                "sex",
+                "suburb",
+                "occupation",
+                "gender"
             ])
         ) {
             field.numeric = false;
@@ -220,6 +225,10 @@ class ChartDatasetEncoder {
             field.numeric = false;
             field.category = true;
             field.time = false;
+        } else if (this.testKeywords(field.label, ["amt", "amount", "sum"])) {
+            field.numeric = true;
+            field.category = false;
+            field.time = false;
         }
         return field;
     }
@@ -231,8 +240,10 @@ class ChartDatasetEncoder {
     }
 
     preProcessFields(headerRow) {
-        let disFields = this.distribution.visualizationInfo && this.distribution.visualizationInfo.fields;
-        if(!disFields) disFields=[];
+        let disFields =
+            this.distribution.visualizationInfo &&
+            this.distribution.visualizationInfo.fields;
+        if (!disFields) disFields = [];
 
         let newFields = map(disFields, (field, key) =>
             this.fieldDefAdjustment({
@@ -248,7 +259,7 @@ class ChartDatasetEncoder {
         newFields = filter(newFields, item => item.idx !== -1);
         if (!newFields.length) {
             //--- we will not exit but make our own guess
-            newFields = map(headerRow, (headerName,idx) => {
+            newFields = map(headerRow, (headerName, idx) => {
                 return this.predictInitDataFieldType(headerName, {
                     idx,
                     name: headerName,
@@ -413,7 +424,16 @@ class ChartDatasetEncoder {
         if (avlYcols.length > 1) this.setY(avlYcols[1]);
         else this.setY(avlYcols[0]);
 
-        const higherPriorityNames = ["state", "name", "city", "company", "postcode"];
+        const higherPriorityNames = [
+            "gender",
+            "sex",
+            "occupation",
+            "state",
+            "name",
+            "city",
+            "company",
+            "postcode"
+        ];
         const avlXcols = this.getAvailableXCols();
         const avlTimeXcols = filter(avlXcols, field => field.time);
         const avlCatXcols = filter(avlXcols, field => field.category);
