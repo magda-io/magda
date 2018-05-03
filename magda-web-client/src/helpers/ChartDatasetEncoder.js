@@ -204,25 +204,42 @@ class ChartDatasetEncoder {
         return field;
     }
 
+    predictInitDataFieldType(headerName, field) {
+        //--- to do: implment more accurate prediction later
+        //--- do nothing is good enough for now as there will be adjustments later
+        return field;
+    }
+
     preProcessFields(headerRow) {
-        const disFields = this.distribution.visualizationInfo.fields;
+        let disFields = this.distribution.visualizationInfo && this.distribution.visualizationInfo.fields;
+        if(!disFields) disFields=[];
 
         let newFields = map(disFields, (field, key) =>
             this.fieldDefAdjustment({
                 ...field,
                 idx: indexOf(headerRow, key),
                 name: key,
-                label: startCase(key.replace(/[-_]/g, " ")),
+                label: startCase(key),
                 category: !field.time && !field.numeric,
                 isAggr: false
             })
         );
         //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
         newFields = filter(newFields, item => item.idx !== -1);
-        if (!newFields.length)
-            throw new Error(
-                "Data file layout does not match existing visualisation info."
-            );
+        if (!newFields.length) {
+            //--- we will not exit but make our own guess
+            newFields = map(headerRow, (headerName,idx) => {
+                return this.predictInitDataFieldType(headerName, {
+                    idx,
+                    name: headerName,
+                    label: startCase(headerName),
+                    category: true,
+                    time: false,
+                    numeric: false,
+                    isAggr: false
+                });
+            });
+        }
         this.fields = newFields;
         return newFields;
     }
@@ -579,6 +596,7 @@ ChartDatasetEncoder.validateDistributionData = function(
         throw new Error(
             "Cannot locate `downloadURL` field of the distribution data"
         );
+    /*
     if (
         !distribution.visualizationInfo ||
         !distribution.visualizationInfo.fields
@@ -586,6 +604,7 @@ ChartDatasetEncoder.validateDistributionData = function(
         throw new Error(
             "Cannot locate `visualization Information` of the distribution data"
         );
+    */ //--- we will try to work out something even no visualization info
 };
 
 ChartDatasetEncoder.aggregators = aggregators;
