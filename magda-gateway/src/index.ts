@@ -117,6 +117,7 @@ const authenticator = new Authenticator({
 
 // Create a new Express application.
 var app = express();
+app.disable("x-powered-by");
 
 const configuredCors = cors({
     origin: true,

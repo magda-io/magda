@@ -1,220 +1,128 @@
-@import 'variables';
-html{
-  font-size: 16px;
+@import "variables";
+@import "../pancake/sass/pancake.scss";
+html {
+    @include AU-fontgrid(sm);
 }
-body {
-  margin: 0;
-  padding: 0;
-  font-family: $font-base;
-  color: #333333;
-  font-size: 1rem;
-}
-
-h1{
-  margin-top: 0;
-  font-size: $heading1;
-  font-weight: 800;
+.au-body a {
+    text-decoration: none;
+    color: $body;
+    overflow-x: hidden;
 }
 
-h2{
-  font-size: $heading2;
-  font-weight: 800;
+.au-body p {
+    max-width: 100%;
 }
 
-h3{
-  font-size: $heading3;
-  font-weight: 800;
-}
-
-h4{
-  margin-top: 0;
-  font-weight: 800;
-}
-
-.navbar-header{
-  background: #fff;
-}
-
-.form-control{
-  border-radius: 2px;
-  box-shadow: none;
-}
-
-.btn-unstyled{
-  background: transparent;
-}
-
-.navbar-brand{
-  padding: 10px 0;
-  height: 80px;
-}
-
-.logo{
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.prototype-warning{
-  background-color: $magda-blue;
-  color: #fff;
-  padding: 5px;
-  text-align: center;
-  a{
-    color: $magda-dark-blue;
-    font-weight: 800;
-  }
-}
-
-
-input[type=text].form-control{
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.15)!important;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  padding: 10px 15px;
-}
-
-#content{
-  min-height: 400px;
-  margin-top: 30px;
-}
-
-.prototype-warning{
-  background-color: #3498db;
-  color: #fff;
-  padding: 5px;
-  text-align: center;
-  a{
-    color: #2c3e50;
-    font-weight: 800;
-  }
-  .prototype-warning-dismiss{
+.sr-only {
     position: absolute;
-    top: 0;
-    right: 0;
-    background: transparent;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
     border: 0;
-    padding: 6px 10px;
-  }
-}
-
-
-@media (max-width: 768px) {
-  .form-control:focus {
-    border: none;
-  }
-
-  .navbar-brand{
-    padding: 10px 15px;
-  }
-}
-
-
-.white-box{
-  background: #fff;
-  padding: 15px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  margin-bottom: 10px;
-  a{
-    @extend .dont-break-out;
-  }
-}
-
-
-.media-left{
-  img{
-    max-width: 100px;
-  }
-}
-
-.media-body{
-  h3, h1, h2{
-    margin-top: 0;
-  }
-  h1{
-    font-weight: normal;
-
-  }
-}
-
-.license{
-  font-size: 1rem;
-  color: #16A085;
-}
-
-.nav>li>a:focus, .nav>li>a:hover{
-  background: transparent;
-}
-
-a.badge{
-  background: $badge-bg;
-  margin-bottom: 5px;
-  color: #000;
-  font-weight: normal;
-  border-radius: 5px;
-  padding: 7px;
-  margin-right: 5px;
-  &:hover, &:focus{
-    background: $magda-blue;
-  }
-}
-
-.dont-break-out {
-
-  /* These are technically the same, but use both */
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-
-  -ms-word-break: break-all;
-  /* This is the dangerous one in WebKit, as it breaks things wherever */
-  word-break: break-all;
-  /* Instead use this non-standard one: */
-  word-break: break-word;
-
-  /* Adds a hyphen where the word breaks, if supported (No Blink) */
-  -ms-hyphens: auto;
-  -moz-hyphens: auto;
-  -webkit-hyphens: auto;
-  hyphens: auto;
-}
-
-.btn.active, .btn:active{
-  box-shadow: none;
-}
-
-.updated-date{
-  font-size: 0.85rem;
-  color: $magda-dark-grey;
-  margin-top: 5px;
-}
-
-
-.nav>li>a{
-  &:hover, &:focus{
-    color: $magda-dark-grey;
-  }
-}
-
-
-.field-error{
-  color: red;
-}
-
-.form-error{
-  border: 1px solid red;
-}
-
-
-.success-message{
-  color: #fff;
-  background: $magda-green;
-  border-radius: 5px;
-  padding: 12px;
-  margin-bottom: 10px;
 }
 
 @keyframes hideMessage {
-  0%   { opacity: 1; }
-  90%   { opacity: 1; }
-  100% { opacity: 0; }
+    0% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.mui-btn {
+    font-weight: 400;
+    text-transform: none;
+}
+
+div {
+    box-sizing: border-box;
+}
+
+.breadcrumb {
+    margin-left: 0;
+    padding-left: 0;
+    .breadcrumb-item {
+        display: inline-block;
+        padding-right: 16px;
+    }
+}
+
+a {
+    -webkit-appearance: none;
+    position: relative;
+    background: transparent;
+    text-decoration: none;
+    border: none;
+    border-bottom: solid 1px $magda;
+    transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+    cursor: pointer;
+    color: $body;
+    &:hover {
+        color: #ffffff;
+        background-color: $magda;
+    }
+}
+
+.mui-tabs__bar > li > a {
+    border-bottom: 0px;
+    margin-right: 16px;
+    &:hover {
+        color: $magda;
+        background: transparent;
+    }
+}
+
+.mui-tabs__bar > li.mui--is-active {
+    border-bottom: 0;
+}
+
+.mui-tabs__bar > li.mui--is-active > a,
+.mui-tabs__bar a.mui--is-active {
+    color: $magda;
+    border-bottom: 2px solid $magda;
+}
+
+.hidden-sm {
+    @media (max-width: $medium) {
+        display: none !important;
+    }
+}
+
+.mui-btn + .mui-btn {
+    margin-left: 0;
+}
+
+.other-page .app-container {
+    @media (max-width: $medium) {
+        padding: 0;
+    }
+}
+
+// gold starts here
+
+h1 {
+    @include AU-fontgrid(xxxl, heading);
+    font-weight: 400;
+}
+
+h2 {
+    @include AU-fontgrid(xxl, heading);
+    font-weight: 400;
+}
+
+h3 {
+    @include AU-fontgrid(xl, heading);
+    font-weight: 400;
+}
+
+h4 {
+    @include AU-fontgrid(lg, heading);
+    font-weight: 400;
 }

@@ -1,19 +1,21 @@
-import React from 'react';
+import React from "react";
+import Button from "muicss/lib/react/button";
+import Form from "muicss/lib/react/form";
+import Input from "muicss/lib/react/input";
+import Textarea from "muicss/lib/react/textarea";
 
 export default function Contact(props) {
-  function renderField(id, type){
-    return (<div className="form-group">
-      <label htmlFor={id}>{id}</label>
-      <input type={type} className="form-control" id={id}/>
-    </div>);
-  }
-
-  return (
-      <form>
-        {renderField('name', 'text')}
-        {renderField('email', 'email')}
-        {renderField('comment', 'textarea')}
-        <button type="submit" className="btn btn-default">Send</button>
-      </form>
-  );
+    return (
+        <Form>
+            <Input label="Name" required={true} floatingLabel={true} />
+            <Input
+                label="Email"
+                type="email"
+                floatingLabel={true}
+                required={true}
+            />
+            <Textarea label="comments" floatingLabel={true} required={true} />
+            <Button variant="raised">Submit</Button>
+        </Form>
+    );
 }

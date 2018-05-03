@@ -1,16 +1,16 @@
 {
     /* Names of init files (in wwwroot/init), without the .json extension, to load by default */
-    initializationUrls: [
-        "terria"
-    ],
+    initializationUrls: ["terria"],
     parameters: {
-        bingMapsKey: "AkaOmRFtjAb71cXgLwAGtLbj2RpkPKtVqAIroFQsocfurCBILxIeAWPkil7hhRy_",
+        bingMapsKey:
+            "AkaOmRFtjAb71cXgLwAGtLbj2RpkPKtVqAIroFQsocfurCBILxIeAWPkil7hhRy_",
         googleUrlShortenerKey: null,
         googleAnalyticsKey: null,
         googleAnalyticsOptions: null,
         /* Text that appears at the bottom of the map */
         disclaimer: {
-            text: "Disclaimer: This map must not be used for navigation or precise spatial analysis",
+            text:
+                "Disclaimer: This map must not be used for navigation or precise spatial analysis",
             url: ""
         },
         /*
@@ -31,11 +31,9 @@
             ""
         ],
         // Shown when things go wrong.
-        supportEmail: "data@pmc.gov.au",
+        supportEmail: "data@digital.gov.au",
         // You probably shouldn't change this.
         proj4ServiceBaseUrl: "proj4def/",
-        // Or this
-        feedbackUrl: "feedback",
 
         // Default mobile viewer mode when loading the map for the first time on mobile platforms.
         // Options are: "3DTerrain", "3DSmooth", "2D"
@@ -45,4 +43,3 @@
         "experimentalFeatures": true
     }
 }
-

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: search-api
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas | default 1 }}
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
@@ -22,6 +22,13 @@ spec:
             "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300"
         ]
+        livenessProbe:
+          httpGet:
+            path: "/v0/datasets"
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 10
         {{- if not .Values.global.noDbAuth }}
         env:
         - name: ELASTIC_SEARCH_PASSWORD

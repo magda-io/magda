@@ -1,3 +1,3 @@
-declare module 'xlsx' {
-  declare module.exports: any;
+declare module "xlsx" {
+    declare module.exports: any;
 }

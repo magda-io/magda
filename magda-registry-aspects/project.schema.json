@@ -10,10 +10,7 @@
         "status": {
             "title": "The current status of the project.",
             "type": "string",
-            "enum": [
-                "open",
-                "closed"
-            ]
+            "enum": ["open", "closed"]
         },
         "members": {
             "title": "The IDs of users who are members of this project.",

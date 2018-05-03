@@ -1,0 +1,84 @@
+version: 2
+jobs:
+  build_web:
+    docker:
+      #- image: circleci/openjdk:8-jdk-node-browsers
+      - image: circleci/node:9
+    steps:
+      - checkout
+#      - run:
+#          name: install sbt
+#          command: sudo apt-get install apt-transport-https
+#                   && echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+#                   && sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+#                   && sudo apt-get update
+#                   && sudo apt-get install sbt
+      - run:
+          name: install npm/lerna/eslint dev tools
+          command: 'sudo npm install -g npm@latest lerna @gov.au/pancake'
+      - restore_cache:
+          key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
+      - run:
+          name: lerna-bootstrap
+          command: lerna bootstrap
+      - save_cache:
+          key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
+          paths:
+            - ./node_modules
+            - ./magda-web-client/node_modules
+      - run:
+          name: eslint
+          command: ./node_modules/.bin/eslint magda-web-client/src/
+      - run:
+          name: npm build
+          command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 npm run build
+
+      - store_artifacts:
+          path: lerna-debug.log
+          path: magda-web-client/build
+      # Persist the specified paths into the workspace for use in downstream job.
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is taken to be the root directory of the workspace.
+          root: magda-web-client
+          # Must be relative path from root
+          paths:
+            - manifest.yml
+            - build
+  deploy_web:
+    docker:
+      - image: circleci/node:9
+    steps:
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: /tmp/workspace
+      - run: cd /tmp/workspace
+      - run: sudo apt-get install apt-transport-https
+      - run: wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
+      - run: echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+      - run: sudo apt-get update
+      - run: sudo apt-get install tree cf-cli
+      - run: cf install-plugin https://github.com/govau/autopilot/releases/download/0.0.5-venapp/autopilot-linux -f
+      - run: cf version
+      - run: cf login -a api.system.y.cld.gov.au -o dta -s data-gov-au -u $CF_USER -p $CF_PASSWORD
+      - run: cd /tmp/workspace && tree -C
+      #- run: cd /tmp/workspace && cf push -f manifest.yml
+      - run: cd /tmp/workspace/build && curl https://api.rollbar.com/api/1/sourcemap
+               -F access_token=$ROLLBAR_ACCESS_TOKEN
+               -F version=$CIRCLE_SHA1
+               -F minified_url=https://magda-web-client.apps.y.cld.gov.au/`jq -r '."main.js"' asset-manifest.json`
+               -F source_map=@`jq -r '."main.js"' asset-manifest.json`.map
+      - run:  cd /tmp/workspace && cf zero-downtime-push magda-web-client -f manifest.yml
+
+workflows:
+  version: 2
+  build_and_deploy_web:
+    jobs:
+      - build_web
+      - deploy_web:
+          requires:
+            - build_web
+          filters:
+            branches:
+              only:
+                - master
+                - circleci

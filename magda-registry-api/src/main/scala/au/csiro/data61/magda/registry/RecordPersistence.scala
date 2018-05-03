@@ -322,19 +322,30 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         case Some(aspect) => Success(aspect)
         case None         => createRecordAspect(session, recordId, aspectId, JsObject())
       }
+
+      patchedAspect <- Try {
+        aspectPatch(aspect).asJsObject
+      }
+
+      testRecordAspectPatch <- Try {
+        // Diff the old record aspect and the patched one to see whether an event should be created
+        val oldAspectJson = aspect.toJson
+        val newAspectJson = patchedAspect.toJson
+
+        JsonDiff.diff(oldAspectJson, newAspectJson, false)
+      }
+
       eventId <- Try {
-        if (aspectPatch.ops.length > 0) {
+        if (testRecordAspectPatch.ops.length > 0) {
           val event = PatchRecordAspectEvent(recordId, aspectId, aspectPatch).toJson.compactPrint
           sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordAspectEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
         }
       }
-      patchedAspect <- Try {
-        aspectPatch(aspect).asJsObject
-      }
+
       _ <- Try {
-        if (aspectPatch.ops.length > 0) {
+        if (testRecordAspectPatch.ops.length > 0) {
           val jsonString = patchedAspect.compactPrint
           sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values (${recordId}, ${aspectId}, $eventId, $jsonString::json)
                on conflict (recordId, aspectId) do update
@@ -670,10 +681,40 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
         val selection = dereferenceDetails.get(aspectId).map {
           case PropertyWithLink(propertyName, true) => {
-            sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_agg(jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
-                  (select jsonb_object_agg(aspectId, data) from RecordAspects where recordId=Records.recordId))))
-                   from Records
-                   inner join jsonb_array_elements_text(RecordAspects.data->${propertyName}) as aggregatedId on aggregatedId=Records.recordId)"""
+            sqls"""(
+            |                CASE WHEN
+            |                        EXISTS (
+            |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->${propertyName})
+            |                        )
+            |                    THEN(
+            |                        select jsonb_set(
+            |                                    RecordAspects.data,
+            |                                    ${"{\"" + propertyName + "\"}"}::text[],
+            |                                    jsonb_agg(
+            |                                        jsonb_build_object(
+            |                                            'id',
+            |                                            Records.recordId,
+            |                                            'name',
+            |                                            Records.name,
+            |                                            'aspects',
+            |                                            (
+            |                                                select jsonb_object_agg(aspectId, data)
+            |                                                from RecordAspects
+            |                                                where recordId=Records.recordId
+            |                                            )
+            |                                        )
+            |                                    )
+            |                                )
+            |                        from Records
+            |                        inner join jsonb_array_elements_text(RecordAspects.data->${propertyName}) as aggregatedId on aggregatedId=Records.recordId
+            |                    )
+            |                    ELSE(
+            |                        select data
+            |                        from RecordAspects
+            |                        where aspectId=${aspectId} and recordId=Records.recordId
+            |                    )
+            |                END
+            )""".stripMargin
           }
           case PropertyWithLink(propertyName, false) => {
             sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',

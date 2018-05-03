@@ -2,6 +2,9 @@ import * as express from "express";
 import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
+import * as morgan from "morgan";
+import * as helmet from "helmet";
+import * as request from "request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
@@ -39,6 +42,11 @@ const argv = yargs
         type: "string",
         default: "/"
     })
+    .option("devProxy", {
+        describe:
+            "The URL of the MAGDA API Gateway to proxy to. Useful in development when you want to serve everything from one port for CORS reasons",
+        type: "string"
+    })
     .option("apiBaseUrl", {
         describe:
             "The base URL of the MAGDA API Gateway.  If not specified, the URL is built from the baseUrl.",
@@ -71,6 +79,45 @@ const argv = yargs
     }).argv;
 
 var app = express();
+
+app.use(
+    helmet({
+        hsts: {
+            maxAge: 31536000,
+            includeSubdomains: true,
+            preload: true
+        }
+    })
+);
+
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            scriptSrc: [
+                "'self'",
+                "'unsafe-eval'", // for vega until we banish it into an iframe
+                "'unsafe-inline'", // for VWO until... we get rid of that? :(
+                "data:", // ditto
+                "browser-update.org",
+                "dev.visualwebsiteoptimizer.com",
+                "platform.twitter.com",
+                "www.googletagmanager.com",
+                "www.google-analytics.com",
+                "rum-static.pingdom.net",
+                "cdnjs.cloudflare.com/ajax/libs/rollbar.js/", //rollbar
+                "cdnjs.cloudflare.com/ajax/libs/es5-shim/", // shim
+                "cdnjs.cloudflare.com/ajax/libs/es6-shim/", // shim
+                "s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/"
+            ],
+            objectSrc: ["'none'"],
+            sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"],
+            reportUri: argv.baseUrl + "api/v0/feedback/csp"
+        } as helmet.IHelmetContentSecurityPolicyDirectives,
+        browserSniff: false
+    })
+);
+
+app.use(morgan("combined"));
 
 const magda = path.join(__dirname, "..", "node_modules", "@magda");
 
@@ -132,9 +179,17 @@ app.get("/server-config.js", function(req, res) {
                     .segment("..")
                     .segment("preview-map")
                     .toString()
+        ),
+        feedbackApiBaseUrl: addTrailingSlash(
+            argv.feedbackApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("feedback")
+                    .segment("user")
+                    .toString()
         )
     };
-    res.type("json");
+    res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
 });
 
@@ -172,6 +227,27 @@ app.get("/admin", function(req, res) {
 app.get("/admin/*", function(req, res) {
     res.sendFile(path.join(adminBuild, "index.html"));
 });
+
+if (argv.devProxy) {
+    app.get("/api/*", function(req, res) {
+        console.log(argv.devProxy + req.params[0]);
+        req
+            .pipe(
+                request({
+                    url: argv.devProxy + req.params[0],
+                    qs: req.query,
+                    method: req.method
+                })
+            )
+            .on("error", err => {
+                const msg = "Error on connecting to the webservice.";
+                console.error(msg, err);
+                res.status(500).send(msg);
+            })
+            .pipe(res);
+    });
+}
+
 app.use(
     "/sitemap",
     buildSitemapRouter({

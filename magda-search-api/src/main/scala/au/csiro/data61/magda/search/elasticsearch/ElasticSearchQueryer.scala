@@ -27,6 +27,7 @@ import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.api.model.RegionSearchResult
 import au.csiro.data61.magda.api.model.SearchResult
+import au.csiro.data61.magda.model.Temporal.{ PeriodOfTime, ApiDate }
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.SearchQueryer
@@ -47,6 +48,12 @@ import org.elasticsearch.index.query.MultiMatchQueryBuilder
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import org.elasticsearch.search.aggregations.bucket.global.GlobalAggregator
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
+import java.time.ZoneOffset
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.Instant
+import org.elasticsearch.search.aggregations.metrics.min.InternalMin
+import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -62,10 +69,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       System.exit(1)
       throw t
   }
-
-  val ESCAPE_REGEX = "([\\+\\-=!\\(\\)\\{\\}\\[\\]\\^\"~\\?:/\\\\]|&&|\\|\\|)".r
-  val REMOVE_REGEX = "(?i)((^|\\s)(AND|OR)(\\s|$)|[<>])".r
-  val ESCAPE_AGG_NAME_REGEX = "[\\[\\]\\.]".r
 
   val DATASETS_LANGUAGE_FIELDS = Seq(("title", 2f), ("description"), "publisher.name", ("keywords", 1.5f), "themes")
   val NON_LANGUAGE_FIELDS = Seq("identifier", "catalog", "accrualPeriodicity", "contactPoint.name")
@@ -122,11 +125,23 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
     val aggs = response.aggregations
 
+    def getDateAggResult(agg: SingleValue) = {
+      val minDateEpoch = agg.value().toLong
+      if (minDateEpoch == Long.MaxValue || minDateEpoch == Long.MinValue) {
+        None
+      } else {
+        Some(ApiDate(Some(OffsetDateTime.parse(agg.getValueAsString)), ""))
+      }
+    }
+
     new SearchResult(
       strategy = Some(strategy),
       query = query,
       hitCount = response.getHits.totalHits().toInt,
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
+      temporal = Some(PeriodOfTime(
+        start = getDateAggResult(aggs.getAs[SingleValue]("minDate")), //        end = ApiDate.parse(aggs.getAs[InternalAggregation]("maxDate").getProperty("value").toString, None, false))
+        end = getDateAggResult(aggs.getAs[SingleValue]("maxDate")))),
       facets = Some(FacetType.all.map { facetType =>
         val definition = facetDefForType(facetType)
 
@@ -224,11 +239,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(searchDef: SearchDefinition, query: Query, strategy: SearchStrategy, facetSize: Int) = {
-    val aggregations: List[AggregationDefinition] =
+    val facetAggregations: List[AggregationDefinition] =
       FacetType.all.flatMap(facetType =>
         aggsForFacetType(query, facetType, strategy, idealFacetSize(facetType, query, facetSize))).toList
 
-    searchDef.aggregations(aggregations)
+    val minDateAgg = minAggregation("minDate").field("temporal.start.date")
+    val maxDateAgg = maxAggregation("maxDate").field("temporal.end.date")
+
+    searchDef.aggregations(facetAggregations ++ List(minDateAgg, maxDateAgg))
   }
 
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
@@ -300,14 +318,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
-      query.freeText.map { rawQuery =>
+      query.freeText flatMap { text =>
         val innerQuery = strategy match {
-          case MatchAll => cleanStringForEs(rawQuery)
+          case MatchAll => text
           case MatchPart =>
-            val cleanedQuery = cleanStringForEs(rawQuery)
             query.quotes match {
-              case Seq()  => cleanedQuery
-              case quotes => (Seq(cleanedQuery) ++ quotes).mkString(" ")
+              case Seq()  => text
+              case quotes => (Seq(text) ++ quotes).mkString(" ")
             }
         }
 
@@ -337,11 +354,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         val queryString = new SimpleStringQueryDefinition(innerQuery).defaultOperator(operator)
         val queries = Seq(foldFields(DATASETS_LANGUAGE_FIELDS ++ NON_LANGUAGE_FIELDS).field("*.english", 1.2f), distributionsEnglishQueries, queryString)
 
-        dismax(queries).tieBreaker(0.3)
+        Some(dismax(queries).tieBreaker(0.3))
       },
-      setToOption(query.quotes) { seq =>
-        val quotes = seq.map(cleanStringForEs)
-
+      setToOption(query.quotes) { quotes =>
         // Theoretically we should be able to just put the quotes inside the simplequerystring above but it doesn't work
         // in some cases for some reason, so we do this instead.
         strategyToCombiner(strategy)(quotes.map { quote =>
@@ -356,23 +371,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategyToCombiner(strategy)(clauses.flatten)
   }
 
-  def cleanStringForEs(string: String): String = {
-    val cleaned = REMOVE_REGEX.replaceAllIn(ESCAPE_REGEX.replaceAllIn(string, charMatch => s"\\\\\\${charMatch.matched}"), " ")
-
-    if (cleaned.replace("\\", "").equals(string.replace("\\", ""))) {
-      cleaned
-    } else {
-      cleanStringForEs(cleaned)
-    }
-  }
-
-  override def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {
+  override def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
       client.execute(ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)))
-        .query(new SimpleStringQueryDefinition(cleanStringForEs(facetQuery))
+        .query(new SimpleStringQueryDefinition(facetQuery.getOrElse("*"))
           .defaultOperator("or")
           .analyzeWildcard(true)
           .field("_all")
@@ -419,11 +424,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
   }
 
-  override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
+  override def searchRegions(query: Option[String], start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client.execute(
         ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
-          query { matchPhrasePrefixQuery("regionName", query) }
+          query { boolQuery().should(matchPhrasePrefixQuery("regionShortName", query.getOrElse("*")).boost(2), matchPhrasePrefixQuery("regionName", query.getOrElse("*"))) }
           start start.toInt
           limit limit
           sortBy (

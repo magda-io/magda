@@ -1,0 +1,18 @@
+@import "../variables";
+
+.media-body {
+    h1 {
+        @include AU-fontgrid(lg);
+    }
+
+    .publisher-basic-info-row {
+        display: table;
+        width: 100%;
+        padding-top: 10px;
+        span.separator {
+            width: 37px;
+            display: inline-block;
+            text-align: center;
+        }
+    }
+}

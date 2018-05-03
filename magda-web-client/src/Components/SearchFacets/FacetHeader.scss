@@ -1,15 +1,45 @@
-@import '../../variables';
-.facet-header__title{
-  width: 100%;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  border-radius: 15px;
-  text-align: left;
-  background: #fff;
-  &.not-empty{
-    background: $magda-grey;
-  }
-  .caret{
-    margin-left: 3px;
-  }
+@import "../../variables";
+
+.facet-header {
+    display: flex;
+    &.not-empty {
+        button {
+            background: $body;
+            color: #fff;
+        }
+    }
+
+    .btn-remove {
+        padding: 4px;
+        display: flex;
+    }
+    @media (max-width: $medium) {
+        .btn-facet {
+            width: 100%;
+        }
+    }
+    button {
+        border: 1px solid rgba(73, 73, 73, 0.05);
+        border-radius: 2px;
+        background-color: #f7f8fa;
+        font-size: 14px;
+        text-align: center;
+        padding: 0 16px;
+        text-transform: capitalize;
+        .facet-icon {
+            padding: 4px 6px 4px 0;
+            height: 24px;
+            width: 24px;
+        }
+        span {
+            font-size: 14px;
+            vertical-align: top;
+        }
+        &:hover,
+        &:active,
+        &.is-open {
+            background: $body;
+            color: #fff;
+        }
+    }
 }

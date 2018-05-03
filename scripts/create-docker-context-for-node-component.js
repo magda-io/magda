@@ -72,6 +72,8 @@ if (env.ConEmuANSI === "ON") {
     extraParameters.push("-cur_console:i");
 }
 
+updateDockerFile(componentSrcDir, componentDestDir);
+
 if (argv.build) {
     const tarProcess = childProcess.spawn(
         tar,
@@ -83,21 +85,7 @@ if (argv.build) {
             shell: true
         }
     );
-
-    let tag = argv.tag;
-    if (tag === "auto") {
-        const tagPrefix = argv.local ? "localhost:5000/" : "";
-        const version =
-            !argv.local && process.env.npm_package_version
-                ? process.env.npm_package_version
-                : "latest";
-        const name = process.env.npm_package_config_docker_name
-            ? process.env.npm_package_config_docker_name
-            : process.env.npm_package_name
-              ? process.env.npm_package_name
-              : "UnnamedImage";
-        tag = tagPrefix + name + ":" + version;
-    }
+    const tag = getTag();
     const tagArgs = tag ? ["-t", tag] : [];
 
     const dockerProcess = childProcess.spawn(
@@ -162,6 +150,51 @@ if (argv.build) {
     });
 }
 
+function getVersion() {
+    return !argv.local && process.env.npm_package_version
+        ? process.env.npm_package_version
+        : "latest";
+}
+
+function getTag() {
+    let tag = argv.tag;
+    if (tag === "auto") {
+        const tagPrefix = argv.local ? "localhost:5000/" : "";
+
+        const name = process.env.npm_package_config_docker_name
+            ? process.env.npm_package_config_docker_name
+            : process.env.npm_package_name
+              ? process.env.npm_package_name
+              : "UnnamedImage";
+        tag = tagPrefix + name + ":" + getVersion();
+    }
+
+    return tag;
+}
+
+function updateDockerFile(sourceDir, destDir) {
+    const tag = getVersion();
+    const repository = argv.local ? "localhost:5000/" : "";
+    const dockerFileContents = fse.readFileSync(
+        path.resolve(sourceDir, "Dockerfile"),
+        "utf-8"
+    );
+    const replacedDockerFileContents = dockerFileContents
+        // Add a repository if this is a magda image
+        .replace(/FROM (.*magda-.*)(\s|$)/, "FROM " + repository + "$1$2")
+        // Add a tag if none specified
+        .replace(
+            /FROM (.+\/[^:\s]+)(\s|$)/,
+            "FROM $1" + (tag ? ":" + tag : "") + "$2"
+        );
+
+    fse.writeFileSync(
+        path.resolve(destDir, "Dockerfile"),
+        replacedDockerFileContents,
+        "utf-8"
+    );
+}
+
 function preparePackage(packageDir, destDir) {
     const packageJson = require(path.join(packageDir, "package.json"));
     const dockerIncludesFromPackageJson =
@@ -188,55 +221,57 @@ function preparePackage(packageDir, destDir) {
             .filter(include => include.length > 0);
     }
 
-    dockerIncludes.forEach(function(include) {
-        const src = path.resolve(packageDir, include);
-        const dest = path.resolve(destDir, include);
+    dockerIncludes
+        .filter(include => include !== "Dockerfile") // Filter out the dockerfile because we'll manually copy over a modified version.
+        .forEach(function(include) {
+            const src = path.resolve(packageDir, include);
+            const dest = path.resolve(destDir, include);
 
-        if (include === "node_modules") {
-            fse.ensureDirSync(dest);
+            if (include === "node_modules") {
+                fse.ensureDirSync(dest);
 
-            const env = Object.create(process.env);
-            env.NODE_ENV = "production";
+                const env = Object.create(process.env);
+                env.NODE_ENV = "production";
+    
+                // Get the list of production packages required by this package.
+                const rawYarnList = childProcess.spawnSync(
+                    "yarn",
+                    ["list", "--prod", "--json"],
+                    {
+                        encoding: "utf8",
+                        cwd: packageDir,
+                        shell: true,
+                        env
+                    }
+                ).stdout;
+    
+                const jsonYarnList = JSON.parse(rawYarnList);
+                const jsons = jsonYarnList.data.trees;
+    
+                const productionPackages = _.uniq(
+                    getPackageList(jsons, path.join(packageDir, "node_modules"), [])
+                );
+    
+                productionPackages.forEach(package => {
+                    console.log(package);
+                });
 
-            // Get the list of production packages required by this package.
-            const rawYarnList = childProcess.spawnSync(
-                "yarn",
-                ["list", "--prod", "--json"],
-                {
-                    encoding: "utf8",
-                    cwd: packageDir,
-                    shell: true,
-                    env
-                }
-            ).stdout;
+                prepareNodeModules(src, dest, productionPackages);
+                return;
+            }
 
-            const jsonYarnList = JSON.parse(rawYarnList);
-            const jsons = jsonYarnList.data.trees;
+            const type = fse.statSync(src).isFile() ? "file" : "junction";
 
-            const productionPackages = _.uniq(
-                getPackageList(jsons, path.join(packageDir, "node_modules"), [])
-            );
-
-            productionPackages.forEach(package => {
-                console.log(package);
-            });
-
-            prepareNodeModules(src, dest, productionPackages);
-            return;
-        }
-
-        const type = fse.statSync(src).isFile() ? "file" : "junction";
-
-        // On Windows we can't create symlinks to files without special permissions.
-        // So just copy the file instead.  Usually creating directory junctions is
-        // fine without special permissions, but fall back on copying in the unlikely
-        // event that fails, too.
-        try {
-            fse.ensureSymlinkSync(src, dest, type);
-        } catch (e) {
-            fse.copySync(src, dest);
-        }
-    });
+            // On Windows we can't create symlinks to files without special permissions.
+            // So just copy the file instead.  Usually creating directory junctions is
+            // fine without special permissions, but fall back on copying in the unlikely
+            // event that fails, too.
+            try {
+                fse.ensureSymlinkSync(src, dest, type);
+            } catch (e) {
+                fse.copySync(src, dest);
+            }
+        });
 }
 
 function prepareNodeModules(packageDir, destDir, productionPackages) {

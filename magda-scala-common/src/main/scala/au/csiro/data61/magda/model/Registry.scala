@@ -125,9 +125,9 @@ object Registry {
   @ApiModel(description = "Asynchronously acknowledges receipt of a web hook notification.")
   case class WebHookAcknowledgement(
     @(ApiModelProperty @field)(value = "True if the web hook was received successfully and the listener is ready for further notifications.  False if the web hook was not received and the same notification should be repeated.", required = true) succeeded: Boolean,
-    
+
     @(ApiModelProperty @field)(value = "The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.", required = true) lastEventIdReceived: Option[Long] = None,
-    
+
     @(ApiModelProperty @field)(value = "Should the webhook be active or inactive?", required = false) active: Option[Boolean] = None)
 
   @ApiModel(description = "The response to an asynchronous web hook acknowledgement.")
@@ -235,11 +235,13 @@ object Registry {
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
       val distributionRecord = distribution.convertTo[Record]
       val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
+      val datasetFormatAspect = distributionRecord.aspects.getOrElse("dataset-format", JsObject())
 
       val mediaTypeString = dcatStrings.extract[String]('mediaType.?)
       val formatString = dcatStrings.extract[String]('format.?)
       val urlString = dcatStrings.extract[String]('downloadURL.?)
       val descriptionString = dcatStrings.extract[String]('description.?)
+      val betterFormatString = datasetFormatAspect.extract[String]('format.?)
 
       Distribution(
         identifier = Some(distributionRecord.id),
@@ -253,11 +255,24 @@ object Registry {
         downloadURL = urlString,
         byteSize = dcatStrings.extract[Int]('byteSize.?).flatMap(bs => Try(bs.toInt).toOption),
         mediaType = Distribution.parseMediaType(mediaTypeString, None, None),
-        format = formatString)
+        format = betterFormatString match {
+          case Some(format) => Some(format)
+          case None => formatString
+        })
     }
 
     private def tryParseDate(dateString: Option[String])(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] = {
-      dateString.flatMap(s => DateParser.parseDateDefault(s, false))
+      val YEAR_100 = OffsetDateTime.of(100, 1, 1, 0, 0, 0, 0, defaultOffset)
+      val YEAR_1000 = OffsetDateTime.of(1000, 1, 1, 0, 0, 0, 0, defaultOffset)
+
+      dateString
+        .flatMap(s => DateParser.parseDateDefault(s, false))
+        .map {
+          //FIXME: Remove this hackiness when we get a proper temporal sleuther
+          case date if date.isBefore(YEAR_100)  => date.withYear(date.getYear + 2000)
+          case date if date.isBefore(YEAR_1000) => date.withYear(Integer.parseInt(date.getYear.toString() + "0"))
+          case date                             => date
+        }
     }
   }
 
@@ -270,6 +285,7 @@ object Registry {
     val optionalAspects = List(
       "temporal-coverage",
       "dataset-publisher",
-      "dataset-quality-rating")
+      "dataset-quality-rating",
+      "dataset-format")
   }
 }

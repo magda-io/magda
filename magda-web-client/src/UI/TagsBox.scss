@@ -1,0 +1,19 @@
+@import "../variables";
+
+.tags-box {
+    a {
+        border-bottom: none;
+        text-decoration: underline;
+        overflow-x: initial;
+    }
+    table {
+        border-collapse: collapse;
+    }
+    .heading {
+        color: $body;
+        font-size: 16px;
+        line-height: 19px;
+        vertical-align: top;
+        width: 50px;
+    }
+}

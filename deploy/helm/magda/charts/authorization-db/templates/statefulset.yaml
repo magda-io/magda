@@ -1,4 +1,4 @@
-{{- if not .Values.global.useCombinedDb }}
+{{- if and (not .Values.global.useCombinedDb) (not .Values.global.useCloudSql) }}
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
@@ -15,15 +15,16 @@ spec:
       labels:
         service: authorization-db
     spec:
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 60
       containers:
       - name: authorization-db
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-        image: {{ template "dockerimage" . }}
+        image: {{ template "postgres" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         ports:
         - containerPort: 5432
+        {{- template "magda.postgresLivenessProbe" . }}
         env:
         - name: PGDATA
           value: /var/pv/data
@@ -31,9 +32,9 @@ spec:
         volumeMounts:
         - mountPath: /var/pv
           name: auth-data
-        {{- template "magda.waleGoogleStorageCredentials.volumeMount" . }}
+        {{- template "magda.waleVolumes.volumeMount" . }}
       volumes:
-      {{- template "magda.waleGoogleStorageCredentials.volume" . }}
+      {{- template "magda.waleVolumes.volume" . }}
   volumeClaimTemplates:
   - metadata:
       name: auth-data

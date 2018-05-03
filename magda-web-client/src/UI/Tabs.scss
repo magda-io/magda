@@ -1,42 +1,14 @@
-@import '../variables';
-.tabs{
-    margin-top: 15px;
-    display: block;
-    border-bottom: 1px solid #ddd;
-    .nav-tabs{
-        border-bottom: 0;
-        padding-left: 15px;
+@import "../variables";
+.mui-tabs__bar {
+    a.mui--is-active {
+        border-bottom: 2px solid #2196f3;
     }
-
-    .active{
-        border-bottom: 3px solid $magda-blue;
-        color: #000;
+    li > a {
+        cursor: pointer;
     }
-
-    a{
-      color: $magda-dark-grey;
-      padding-left: 0;
+    a {
+        &:focus {
+            text-decoration: none;
+        }
     }
-
-    .nav-tabs>li>a{
-      padding: 10px 0;
-      margin-right: 10px;
-      &:hover, &:focus{
-        border-color: #fff;
-        color: #000;
-        border-bottom: 3px solid $magda-blue;
-      }
-    }
-}
-
-.tab-content{
-    background: $magda-grey-light;
-    min-height: 400px;
-}
-
-@media (max-width: 768px) {
-  .tabs li {
-    display: block;
-    clear: both;
-  }
 }

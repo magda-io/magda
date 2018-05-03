@@ -20,7 +20,7 @@ spec:
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
             "--externalUrl", {{ .Values.global.externalUrl | quote }},
-            "--dbHost", "session-store",
+            "--dbHost", "session-db",
             "--dbPort", "5432",
 {{- if .Values.auth.facebookClientId }}
             "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
@@ -37,6 +37,13 @@ spec:
         volumeMounts:
           - name: routes
             mountPath: /etc/routes
+        livenessProbe:
+          httpGet:
+            path: /auth
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
@@ -52,6 +59,8 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: session-secret
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
 {{- if .Values.auth.facebookClientId }}
         - name: FACEBOOK_CLIENT_SECRET
           valueFrom:
@@ -68,14 +77,17 @@ spec:
               key: google-client-secret
               optional: true
 {{- end }}
-{{- if not .Values.global.noDbAuth }}
+{{- if .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+{{- else }}
         - name: PGUSER
           value: client
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: session-store-client
+              key: session-db-client
 {{- end }}
       volumes:
         - name: routes

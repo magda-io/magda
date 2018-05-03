@@ -1,8 +1,5 @@
-import SearchResults from './SearchResults';
+import SearchResults from "./SearchResults";
 
-
-class SearchResultsOrganisations extends SearchResults {
-
-}
+class SearchResultsOrganisations extends SearchResults {}
 
 export default SearchResultsOrganisations;

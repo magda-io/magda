@@ -1,44 +1,60 @@
 // @flow
-import defined from './defined';
-import {config} from '../config';
+import defined from "./defined";
+import { config } from "../config";
+import flatten from "lodash.flatten";
 
 type Query = {
-  q: string,
-  dateFrom: string,
-  dateTo: string,
-  publisher: string | Array<string>,
-  format: string | Array<string>,
-  regionId: string,
-  regionType: string,
-  page: number
+    q: string,
+    dateFrom: string,
+    dateTo: string,
+    publisher: string | Array<string>,
+    format: string | Array<string>,
+    regionId: string,
+    regionType: string,
+    page: number
+};
 
+export default function(query: Query) {
+    let keywords = queryToString("query", query.q);
+    let dateFroms = queryToString("dateFrom", query.dateFrom);
+    let dateTos = queryToString("dateTo", query.dateTo);
+    let publishers = queryToString("publisher", query.publisher);
+    let formats = queryToString("format", query.format);
+    let locations = queryToString(
+        "region",
+        queryToLocation(query.regionId, query.regionType)
+    );
+    let startIndex = defined(query.page)
+        ? (query.page - 1) * config.resultsPerPage
+        : 0;
+
+    let queryArr = flatten([
+        keywords,
+        dateFroms,
+        dateTos,
+        publishers,
+        formats,
+        locations,
+        "start=" + startIndex,
+        "limit=" + config.resultsPerPage
+    ]);
+
+    return queryArr.join("&");
 }
 
-export default function(query:Query){
-  let keyword = defined(query.q) ? query.q : '';
-  let dateFrom = defined(query.dateFrom) ? '+from+' + query.dateFrom : '';
-  let dateTo=defined(query.dateTo) ? '+to+' + query.dateTo : '';
-  let publisher = queryToString('+by', query.publisher);
-  let format = queryToString('+as', query.format);
-  let location = queryToLocation(query.regionId, query.regionType);
-  let startIndex = defined(query.page) ? (query.page - 1)* config.resultsPerPage : 0;
+function queryToString(paramName, paramValue) {
+    if (!defined(paramValue)) return [];
 
-  let apiQuery = `${encodeURIComponent(keyword)}${publisher}${format}${dateFrom}${dateTo}${location}&start=${startIndex}&limit=${config.resultsPerPage}`;
-  return apiQuery;
+    if (Array.isArray(paramValue)) {
+        return flatten(
+            paramValue.map(value => queryToString(paramName, value))
+        );
+    } else {
+        return [`${paramName}=${encodeURIComponent(paramValue)}`];
+    }
 }
 
-function queryToString(preposition, query){
-  if(!defined(query)) return '';
-  if(Array.isArray(query)){
-    return query.map(q=>
-    `${preposition}+${encodeURIComponent(q)}`).join('+')
-  } else {
-    return `${preposition}+${encodeURIComponent(query)}`
-  }
-}
-
-function queryToLocation(regionId, regiontype){
-  // what if there are more than one regionId or regionType in the url?
-  if(!defined(regionId) || !defined(regiontype)) return '';
-  return `+in+${regiontype}:${regionId}`;
+function queryToLocation(regionId, regiontype) {
+    if (!defined(regionId) || !defined(regiontype)) return;
+    return `${regiontype}:${regionId}`;
 }
