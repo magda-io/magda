@@ -13,6 +13,7 @@
 
 ## 0.0.38
 
+*   Use button styles from DTA design guide
 *   Use grid system from DTA design guide
 *   Mobile search filter new look
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type

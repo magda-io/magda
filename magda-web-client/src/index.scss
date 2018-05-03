@@ -36,7 +36,7 @@ html {
     }
 }
 
-.mui-btn {
+.au-btn {
     font-weight: 400;
     text-transform: none;
 }
@@ -95,7 +95,7 @@ a {
     }
 }
 
-.mui-btn + .mui-btn {
+.au-btn + .au-btn {
     margin-left: 0;
 }
 
@@ -108,21 +108,21 @@ a {
 // gold starts here
 
 h1 {
-    @include AU-fontgrid(xxxl, heading);
-    font-weight: 400;
-}
-
-h2 {
-    @include AU-fontgrid(xxl, heading);
-    font-weight: 400;
-}
-
-h3 {
     @include AU-fontgrid(xl, heading);
     font-weight: 400;
 }
 
-h4 {
+h2 {
     @include AU-fontgrid(lg, heading);
+    font-weight: 400;
+}
+
+h3 {
+    @include AU-fontgrid(md, heading);
+    font-weight: 400;
+}
+
+h4 {
+    @include AU-fontgrid(sm, heading);
     font-weight: 400;
 }

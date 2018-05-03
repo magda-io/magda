@@ -31,6 +31,7 @@
     "@gov.au/pancake": "~1",
     "@gov.au/pancake-json": "^1.0.3",
     "@gov.au/pancake-sass": "^1.2.0",
+    "@gov.au/pancake-react": "^1.1.0",
     "@magda/scripts": "^0.0.39-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",
@@ -165,8 +166,5 @@
     "react": {
       "location": "pancake/react/"
     }
-  },
-  "dependencies": {
-    "@gov.au/pancake-react": "^1.1.0"
   }
 }

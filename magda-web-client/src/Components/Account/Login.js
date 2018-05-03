@@ -101,10 +101,7 @@ export default function Login(props) {
                             />
                         </div>
                         <div className="pull-right">
-                            <input
-                                type="submit"
-                                className="mui-btn mui-btn--primary"
-                            />
+                            <input type="submit" className="au-btn  " />
                         </div>
                     </form>
                 </div>
