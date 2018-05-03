@@ -24,6 +24,7 @@ class DatasetDetails extends Component {
         const source = `This dataset was originally found on [${
             this.props.dataset.source
         }](${dataset.landingPage})`;
+
         return (
             <div className="dataset-details">
                 <div className="dataset-details-overview">
