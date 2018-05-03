@@ -75,7 +75,7 @@
         bottom: 24px;
     }
 
-    .privacy-link {
+    .privacy-link a {
         margin-top: 10px;
         @include AU-fontgrid(xs);
         a {

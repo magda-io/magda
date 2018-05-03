@@ -1,16 +1,18 @@
 @import "variables";
-
+@import "../pancake/sass/pancake.scss";
 html {
     @include AU-fontgrid(sm);
 }
-body {
-    margin: 0;
-    padding: 0;
-    font-family: $font-base;
-    font-weight: 400;
+.au-body a {
+    text-decoration: none;
     color: $body;
     overflow-x: hidden;
 }
+
+.au-body p {
+    max-width: 100%;
+}
+
 .sr-only {
     position: absolute;
     width: 1px;
@@ -62,10 +64,6 @@ a {
     transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
     cursor: pointer;
     color: $body;
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
     &:hover {
         color: #ffffff;
         background-color: $magda;

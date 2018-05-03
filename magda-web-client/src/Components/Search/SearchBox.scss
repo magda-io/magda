@@ -16,6 +16,9 @@
 
 .searchBox-switcher {
     &.none-home {
+        @media (min-width: $medium) {
+            background: rgba(245, 245, 245, 0.8);
+        }
         .searchBox {
             background-color: transparent;
         }
@@ -68,6 +71,9 @@
         right: 0;
         padding: 11px;
         bottom: 0;
+        @media (min-width: $medium) {
+            bottom: 7px;
+        }
         border: 2px solid transparent;
         box-sizing: border-box;
         display: inline-block;
