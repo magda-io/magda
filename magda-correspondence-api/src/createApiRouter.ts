@@ -1,5 +1,6 @@
 import * as express from "express";
 import * as SMTPConnection from "nodemailer/lib/smtp-connection";
+
 import { Router } from "express";
 import { DatasetMessage } from "./model";
 
@@ -14,7 +15,6 @@ export interface ApiRouterOptions {
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const router: Router = express.Router();
-
     router.get("/healthz", (req, res) => res.status(200).send("OK"));
 
     function handleDatasetMessage(req: express.Request, res: express.Response) {
@@ -48,17 +48,33 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }, 1000);
     }
 
-    function send(message: DatasetMessage) {
+    /**
+     * Send an email to a SMTP backend, give the args provided by API
+     * @param message - Message object
+     */
+    function sendMail(message: DatasetMessage) {
         let connection = new SMTPConnection({
             host: options.smtpHostname,
             port: options.smtpPort,
             secure: options.smtpSecure
         });
-        connection.secure = true;
-        connection.connect().then(() => {});
+
+        let envelope = {
+            to: "127.0.0.1",
+            from: "adam@example.com"
+        };
+    
+        connection.connect(() => {
+            connection.send(envelope, message.message, (info, err) => {
+                if (err){
+                    console.error(`SMTP Connection: ${err}`)
+                }
+                console.log(`SMTP Connection: ${info}`)
+            })
+        })  
     }
 
-    router.post("/public/send/dataset/request", send);
+    router.post("/public/send/dataset/request", handleDatasetMessage);
 
     router.post(
         "/public/send/dataset/:datasetId/question",
@@ -66,6 +82,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     router.post("/public/send/dataset/:datasetId/report", handleDatasetMessage);
+
+    router.post("/", sendMail);
 
     return router;
 }

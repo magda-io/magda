@@ -25,13 +25,21 @@ const argv = addJwtSecretFromEnvVar(
         })
         .option("smtpPort", {
             describe: "The SMTP server port",
-            default: 587,
-            type: "number"
+            type: "number",
+            default: 587
         })
         .option("smtpSecure", {
             describe: "SMTP using TLS?",
-            default: true,
-            type: "boolean"
+            type: "boolean",
+            default: false
+        })
+        .option("smtpUsername", {
+            describe: "The username to authenticate with the SMTP server",
+            type: "string"
+        })
+        .option("smtpPassword", {
+            describe: "The password to authenticate with the SMTP server",
+            type: "string"
         }).argv
 );
 
@@ -44,7 +52,9 @@ app.use(
         jwtSecret: argv.jwtSecret,
         smtpHostname: argv.smtpHostname,
         smtpPort: argv.smtpPort,
-        smtpSecure: argv.smtpSecure
+        smtpSecure: argv.smtpSecure,
+        smtpUsername: argv.smtpUsername,
+        smtpPassword: argv.smtpPassword
     })
 );
 
