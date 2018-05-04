@@ -1,7 +1,6 @@
 import React from "react";
 import "./Notification.css";
 import close from "../assets/close.svg";
-import Button from "muicss/lib/react/button";
 
 function Notification(props) {
     return (
@@ -20,9 +19,12 @@ function Notification(props) {
                         />
                     )}
                     <span>{props.content.title}</span>
-                    <Button onClick={props.onDismiss} className="close-btn">
+                    <button
+                        onClick={props.onDismiss}
+                        className="au-btn close-btn au-btn--secondary"
+                    >
                         <img alt="close" src={close} />
-                    </Button>
+                    </button>
                 </div>
                 <div className="notification__body">{props.content.detail}</div>
             </div>

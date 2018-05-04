@@ -32,7 +32,7 @@
         "lodash.maxby": "^4.6.0",
         "lodash.min": "^4.0.1",
         "lodash.minby": "^4.6.0",
-        "node-sass": "^4.5.0",
+        "node-sass": "^4.8.3",
         "npm-run-all": "^4.0.1",
         "prop-types": "^15.5.10",
         "query-string": "^4.3.4",
@@ -64,5 +64,9 @@
     "dependencies": {
         "react-ace-editor": "0.0.2",
         "react-router-dom": "^4.2.2"
+    },
+    "magda": {
+        "language": "javascript",
+        "categories": {}
     }
 }

@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "./FacetHeader.css";
-import Button from "muicss/lib/react/button";
 import publisher_passive from "../../assets/publisher-passive.svg";
 import format_passive from "../../assets/format-passive.svg";
 import temporal_passive from "../../assets/temporal-passive.svg";
@@ -131,16 +130,10 @@ class FacetHeader extends Component {
                     this.hasFilter() ? "not-empty" : ""
                 }`}
             >
-                <Button
-                    className={`btn-facet ${
+                <button
+                    className={`au-btn au-btn--secondary btn-facet ${
                         this.props.isOpen ? "is-open" : ""
                     }`}
-                    onMouseOver={() => this.setState({ buttonActive: true })}
-                    onMouseOut={() => {
-                        if (!this.props.isOpen && !this.hasFilter()) {
-                            this.setState({ buttonActive: false });
-                        }
-                    }}
                     onClick={this.props.onClick}
                 >
                     <img
@@ -153,14 +146,14 @@ class FacetHeader extends Component {
                         alt={this.props.title}
                     />
                     {this.calculateTitle()}
-                </Button>
+                </button>
                 {this.props.hasQuery && (
-                    <Button
+                    <button
                         onClick={this.props.onResetFacet}
-                        className="btn-remove"
+                        className="btn-remove au-btn"
                     >
                         <img alt="remove" src={remove_light} />
-                    </Button>
+                    </button>
                 )}
             </div>
         );

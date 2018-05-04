@@ -40,7 +40,7 @@ import akka.pattern.gracefulStop
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
   case class FixtureParam(api: Api, webHookActor: ActorRef, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher, authClient: AuthApiClient)
 
-  val databaseUrl = Option(System.getenv("npm_package_config_databaseUrl")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
+  val databaseUrl = Option(System.getenv("POSTGRES_URL")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
   // Stop Flyway from producing so much spam that Travis terminates the process.
   LoggerFactory.getLogger("org.flywaydb").asInstanceOf[Logger].setLevel(Level.WARN)

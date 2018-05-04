@@ -5,6 +5,7 @@ global:
     image:
         pullPolicy: IfNotPresent
         tag: "0.0.38-RC2"
+    enableLivenessProbes: true
 tags:
     all: false
 
@@ -63,57 +64,27 @@ preview-map:
             memory: 200Mi
 registry-api:
     logLevel: INFO
-    requests:
-        cpu: 500m
-        memory: 1000Mi
-registry-db:
+    livenessProbe:
+        timeoutSeconds: 3
     resources:
         requests:
-            cpu: 900m
-            memory: 2000Mi
-    data:
-        storageClass: "fast-ssd"
-    waleBackup:
-        method: WAL
-        gsPrefix: "gs://magda-postgres-backups/prod/registry"
-        executionTime: 03:00
-        googleApplicationCreds:
-            secretName: storage-account-credentials
-            fileName: TerriaJS-5e042b649f8a.json
-authorization-db:
-    resources:
-        requests:
-            cpu: 250m
-            memory: 500Mi
-    data:
-        storageClass: "fast-ssd"
-    waleBackup:
-        method: WAL
-        gsPrefix: "gs://magda-postgres-backups/prod/authorization"
-        executionTime: 03:00
-        googleApplicationCreds:
-            secretName: storage-account-credentials
-            fileName: TerriaJS-5e042b649f8a.json
-session-db:
-    data:
-        storageClass: "fast-ssd"
-    resources:
-        requests:
-            cpu: 250m
-            memory: 500Mi
+            cpu: 500m
+            memory: 1000Mi
 authorization-api:
     replicas: 2
-    requests:
-        cpu: 100m
-        memory: 200Mi
+    resources:
+        requests:
+            cpu: 100m
+            memory: 200Mi
 search-api:
     replicas: 2
-    requests:
-        cpu: 250m
-        memory: 200Mi
-    limits:
-        cpu: 1000m
-        memory: 1000m
+    resources:
+        requests:
+            cpu: 250m
+            memory: 200Mi
+        limits:
+            cpu: 1000m
+            memory: 1000Mi
 web-server:
     autoscaler:
         minReplicas: 2
@@ -147,17 +118,25 @@ sleuther-visualization:
         limits:
             cpu: 500m
             memory: 500Mi
+sleuther-format:
+    resources:
+        requests:
+            cpu: 100m
+            memory: 200Mi
+        limits:
+            cpu: 500m
+            memory: 500Mi
 indexer:
-  elasticsearch:
-    shards: 2
-    replicas: 4
+    elasticsearch:
+        shards: 2
+        replicas: 4
 #    useGcsSnapshots: true
 #    gcsSnapshotBucket: "magda-es-snapshots"
 #    gcsSnapshotServiceAccount: "_default"
-  resources:
-    requests:
-      cpu: 200m
-      memory: 200Mi
+    resources:
+        requests:
+            cpu: 200m
+            memory: 200Mi
 feedback-api:
     gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
     replicas: 2
