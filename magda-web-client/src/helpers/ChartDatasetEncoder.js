@@ -617,7 +617,10 @@ class ChartDatasetEncoder {
             //--- if too much data, tuncate the data to avoid slowing down browser
             if (data.length > 100) {
                 const fieldName = dimensions[encode.value].name;
-                option.dataset[0].source = takeRight(sortBy(data, item=> item[fieldName]),100);
+                option.dataset[0].source = takeRight(
+                    sortBy(data, item => item[fieldName]),
+                    100
+                );
             }
         } else if (this.chartType === "line") {
             option.series[0].areaStyle = {};
