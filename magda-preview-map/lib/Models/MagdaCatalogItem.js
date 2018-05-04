@@ -384,7 +384,8 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
 
     var baseUrl = dcatJson.downloadURL;
     if (!defined(baseUrl)) {
-        return when(undefined);
+        if(dcatJson.accessURL) baseUrl = dcatJson.accessURL;
+        else return when(undefined);
     }
 
     var matchingFormats = formats.filter(function(format) {
