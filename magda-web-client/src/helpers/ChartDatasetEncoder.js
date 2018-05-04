@@ -601,10 +601,12 @@ class ChartDatasetEncoder {
             option["xAxis"] = {
                 //type : this.xAxis.time ? "time" : "category"
                 //--- disable time series support for now due to various date format issue
-                type: "category"
+                type: "category",
+                show: true
             };
             option["yAxis"] = {
-                type: "value"
+                type: "value",
+                show: true
             };
         }
         if (this.chartType === "pie") {
