@@ -8,7 +8,8 @@ import isArray from "lodash/isArray";
 import sumBy from "lodash/sumBy";
 import concat from "lodash/concat";
 import trim from "lodash/trim";
-import take from "lodash/take";
+import takeRight from "lodash/takeRight";
+import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
 import { config } from "../config";
 import type { ParsedDistribution } from "../helpers/record";
@@ -614,8 +615,9 @@ class ChartDatasetEncoder {
             option["xAxis"] = { show: false };
             option.grid.show = false;
             //--- if too much data, tuncate the data to avoid slowing down browser
-            if (option.dataset[0].source.length > 100) {
-                option.dataset[0].source = take(option.dataset[0].source, 100);
+            if (data.length > 100) {
+                const fieldName = dimensions[encode.value].name;
+                option.dataset[0].source = takeRight(sortBy(data, item=> item[fieldName]),100);
             }
         } else if (this.chartType === "line") {
             option.series[0].areaStyle = {};
