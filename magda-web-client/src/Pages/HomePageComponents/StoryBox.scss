@@ -2,7 +2,7 @@
 
 .homepage-stories {
     .story-title-link:hover {
-        color: #494949;
+        color: $body;
         background-color: #fff;
     }
     .story-title-link {
@@ -14,28 +14,25 @@
         padding: 13px;
         border-radius: 4px;
         .story-title {
-            font-size: 24px;
+            @include AU-fontgrid(lg, heading);
         }
 
-        .story-title-image{
+        .story-title-image {
             width: 100%;
             height: auto;
         }
 
         .story-box-body {
             .markdown {
-                font-family: Rubik;
+                font-family: $font-base;
                 font-style: normal;
                 font-weight: normal;
-                line-height: 23px;
-                font-size: 16px;
-                color: #494949;
+                color: $body;
             }
         }
     }
 
-
-    @media (max-width: $medium - 1) {
+    @media (max-width: $medium) {
         .story-box {
             .markdown {
                 padding: 16px;
@@ -59,5 +56,4 @@
             }
         }
     }
-
 }

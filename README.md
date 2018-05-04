@@ -58,3 +58,6 @@ https://github.com/TerriaJS/magda/blob/master/doc/building-and-running.md
 ## To get help
 Talk to us on Gitter!
 [![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+## Want to contribute?
+Great! Take a look at https://github.com/TerriaJS/magda/blob/master/.github/CONTRIBUTING.md :).

@@ -10,9 +10,13 @@ import type {
     SearchAction
 } from "../helpers/datasetSearch";
 
-export function requestResults(apiQuery: string): SearchAction {
+export function requestResults(
+    queryObject: Object,
+    apiQuery: string
+): SearchAction {
     return {
         type: actionTypes.REQUEST_RESULTS,
+        queryObject,
         apiQuery
     };
 }
@@ -41,10 +45,10 @@ export function resetDatasetSearch(): SearchAction {
     };
 }
 
-export function fetchSearchResults(query: string): Store {
+export function fetchSearchResults(query: string, queryObject: Object): Store {
     return (dispatch: Dispatch) => {
         let url: string = config.searchApiUrl + `datasets?${query}`;
-        dispatch(requestResults(query));
+        dispatch(requestResults(queryObject, query));
         return fetch(url)
             .then((response: Object) => {
                 if (response.status === 200) {
@@ -69,7 +73,7 @@ export function shouldFetchSearchResults(
     query: string
 ): boolean {
     const datasetSearch = state.datasetSearch;
-    if (!datasetSearch || !keyword || keyword.length === 0) {
+    if (!datasetSearch || (!keyword && !query)) {
         return false;
     } else if (datasetSearch.isFetching) {
         return false;
@@ -84,7 +88,7 @@ export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
     const apiQuery = parseQuery(urlQueryObject);
     return (dispatch, getState) => {
         if (shouldFetchSearchResults(getState(), urlQueryObject.q, apiQuery)) {
-            return dispatch(fetchSearchResults(apiQuery));
+            return dispatch(fetchSearchResults(apiQuery, urlQueryObject));
         }
     };
 }

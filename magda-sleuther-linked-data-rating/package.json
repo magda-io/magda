@@ -1,7 +1,7 @@
 {
     "name": "@magda/sleuther-linked-data-rating",
     "description": "MAGDA Linked Data Rating Sleuther",
-    "version": "0.0.38-0",
+    "version": "0.0.39-0",
     "scripts": {
         "build": "npm run compile",
         "compile": "tsc -p tsconfig-build.json",
@@ -15,7 +15,7 @@
     "author": "",
     "license": "Apache-2.0",
     "devDependencies": {
-        "@magda/scripts": "^0.0.38-0",
+        "@magda/scripts": "^0.0.39-0",
         "@types/chai": "^4.0.4",
         "@types/lodash": "^4.14.74",
         "@types/mocha": "^2.2.42",
@@ -30,9 +30,9 @@
         "typescript": "~2.5.0"
     },
     "dependencies": {
-        "@magda/registry-aspects": "^0.0.38-0",
-        "@magda/sleuther-framework": "^0.0.38-0",
-        "@magda/typescript-common": "^0.0.38-0",
+        "@magda/registry-aspects": "^0.0.39-0",
+        "@magda/sleuther-framework": "^0.0.39-0",
+        "@magda/typescript-common": "^0.0.39-0",
         "lodash": "^4.17.4"
     },
     "config": {
@@ -43,5 +43,11 @@
         },
         "jwtSecret": "squirrel",
         "userId": "00000000-0000-4000-8000-000000000000"
+    },
+    "magda": {
+        "language": "typescript",
+        "categories": {
+            "sleuther": true
+        }
     }
 }

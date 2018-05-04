@@ -12,7 +12,7 @@ class DatasetPublisher extends Component {
                 <Link
                     to={`/search?publisher=${encodeURIComponent(
                         publisher.name
-                    )}&q=${encodeURIComponent("*")}`}
+                    )}`}
                 >
                     View all datasets from {publisher.name}
                 </Link>

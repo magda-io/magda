@@ -6,7 +6,6 @@ import RegionMap from "./RegionMap";
 import RegionSearchBox from "./RegionSearchBox";
 import defined from "../../helpers/defined";
 import RegionSummray from "./RegionSummary";
-import Button from "muicss/lib/react/button";
 /*
 * the region (location) facet facet, extends Facet class
 */
@@ -79,7 +78,7 @@ class FacetRegion extends Component {
         let regionType = option.regionType;
         return (
             <button
-                className="btn-facet-option mui-btn btn-facet-option__location"
+                className="btn-facet-option btn-facet-option__location"
                 onClick={onClick.bind(this, option)}
                 title={option.regionName}
                 ref={b => {
@@ -120,18 +119,21 @@ class FacetRegion extends Component {
                     region={this.state._activeRegion}
                 />
                 <div className="facet-footer">
-                    <Button variant="flat" onClick={this.props.onResetFacet}>
+                    <button
+                        className="au-btn au-btn--secondary"
+                        onClick={this.props.onResetFacet}
+                    >
                         {" "}
                         Clear{" "}
-                    </Button>
-                    <Button
-                        variant="flat"
+                    </button>
+                    <button
+                        className="au-btn au-btn--secondary"
                         onClick={this.onApplyFilter}
                         disabled={this.state.applyButtonDisabled}
                     >
                         {" "}
                         Apply{" "}
-                    </Button>
+                    </button>
                 </div>
             </div>
         );
@@ -162,6 +164,7 @@ class FacetRegion extends Component {
                     activeOptions={[this.props.activeRegion]}
                     hasQuery={this.props.hasQuery}
                     onClick={this.props.toggleFacet}
+                    isOpen={this.props.isOpen}
                 />
                 {this.props.isOpen && this.renderBox()}
             </div>

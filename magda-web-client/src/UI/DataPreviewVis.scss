@@ -1,14 +1,15 @@
-.data-preview-vis{
-  margin-bottom: 36px;
-  .data-preview-vis_chart{
-    margin-left: -16px;
-    margin-top: 16px;
-  }
-  .data-preview-vis_file-name{
-    font-size: 16px;
-    line-height: 19px;
-  }
-  .mui-tabs__bar{
-    margin-bottom: 40px;
-  }
+@import "../variables";
+.data-preview-vis {
+    margin-bottom: 36px;
+    .data-preview-vis_chart {
+        margin-left: -16px;
+        margin-top: 16px;
+    }
+    .data-preview-vis_file-name {
+        @include AU-fontgrid(sm);
+        line-height: 19px;
+    }
+    .mui-tabs__bar {
+        margin-bottom: 40px;
+    }
 }

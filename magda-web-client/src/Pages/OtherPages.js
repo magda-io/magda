@@ -1,7 +1,5 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import Container from "muicss/lib/react/container";
-
 import Search from "../Components/Search/Search";
 import Feedback from "../Components/Feedback";
 import Contact from "../Components/Contact";
@@ -65,7 +63,9 @@ const OtherPages = props => {
                     theme="none-home"
                 />
             )}
-            <Container className="app-container">{renderBody()}</Container>
+            <div className="container app-container" id="content">
+                {renderBody()}
+            </div>
         </div>
     );
 };

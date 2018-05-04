@@ -2,154 +2,34 @@ import "es6-symbol/implement";
 import React, { Component } from "react";
 import Tabs from "muicss/lib/react/tabs";
 import Tab from "muicss/lib/react/tab";
-import ChartConfig from "./ChartConfig";
-import defined from "../helpers/defined";
-import { fetchPreviewData } from "../actions/previewDataActions";
-import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
-import VegaLite from "react-vega-lite";
 import DataPreviewTable from "./DataPreviewTable";
-import { Medium } from "./Responsive";
+import DataPreviewVega from "./DataPreviewVega";
+
+import type { ParsedDistribution } from "../helpers/record";
+
 import "./DataPreviewVis.css";
 
-class DataPreviewVis extends Component {
+class DataPreviewVis extends Component<{
+    distribution: ParsedDistribution
+}> {
     constructor(props) {
         super(props);
-        this.updateChartConfig = this.updateChartConfig.bind(this);
-        this.updateDimensions = this.updateDimensions.bind(this);
         this.state = {
             chartType: "line",
             chartTitle: "",
             yAxis: null,
             xAxis: null,
             xScale: "temporal",
-            yScale: "quantitative",
-            chartWidth: ""
+            yScale: "quantitative"
         };
     }
 
-    componentWillMount() {
-        if (this.props.distribution) {
-            this.props.fetchPreviewData(this.props.distribution);
-        }
+    renderChart() {
+        return <DataPreviewVega distribution={this.props.distribution} />;
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (
-            nextProps.distribution.identifier !==
-            this.props.distribution.identifier
-        ) {
-            this.props.fetchPreviewData(nextProps.distribution);
-        }
-        this.updateDimensions();
-    }
-
-    componentDidMount() {
-        window.addEventListener("resize", this.updateDimensions);
-        this.updateDimensions();
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener("resize", this.updateDimensions);
-    }
-
-    updateDimensions() {
-        if (this.chartContainer) {
-            // 1. check screensize
-            const windowWidth = window.innerWidth;
-            let width = 400;
-            if (windowWidth > 992) {
-                // big screen, use only half of the container width for chart
-                width =
-                    this.chartContainer.getBoundingClientRect().width / 2 - 48;
-            } else {
-                width = this.chartContainer.getBoundingClientRect().width - 48;
-            }
-
-            if (this.state.chartWidth !== width) {
-                this.setState({
-                    chartWidth: width
-                });
-            }
-        }
-    }
-
-    updateChartConfig(id, value) {
-        this.setState({
-            [id]: value
-        });
-    }
-
-    renderChart(previewData) {
-        if (defined(previewData.meta.chartFields)) {
-            const spec = {
-                height: 263,
-                width: this.state.chartWidth,
-                description: this.state.chartTitle,
-                mark: this.state.chartType,
-                encoding: {
-                    x: {
-                        field: defined(this.state.xAxis)
-                            ? this.state.xAxis
-                            : previewData.meta.chartFields.time[0],
-                        type: this.state.xScale
-                    },
-                    y: {
-                        field: defined(this.state.yAxis)
-                            ? this.state.yAxis
-                            : previewData.meta.chartFields.numeric[0],
-                        type: this.state.yScale
-                    }
-                }
-            };
-
-            const data = {
-                values: previewData.data
-            };
-
-            const fileName = this.props.distribution.downloadURL
-                .split("/")
-                .pop()
-                .split("#")[0]
-                .split("?")[0];
-
-            return (
-                <div className="mui-row">
-                    <div className="mui-col-md-6">
-                        <div className="data-preview-vis_file-name">
-                            {fileName}
-                        </div>
-                        <VegaLite
-                            className="data-preview-vis_chart"
-                            spec={spec}
-                            data={data}
-                        />
-                    </div>
-                    <Medium>
-                        <div className="mui-col-md-6">
-                            <ChartConfig
-                                chartType={spec.mark}
-                                chartTitle={spec.description}
-                                xScale={spec.encoding.x.type}
-                                yScale={spec.encoding.y.type}
-                                xAxis={spec.encoding.x.field}
-                                yAxis={spec.encoding.x.field}
-                                yAxisOptions={
-                                    previewData.meta.chartFields.numeric
-                                }
-                                xAxisOptions={previewData.meta.chartFields.time}
-                                onChange={this.updateChartConfig}
-                            />
-                        </div>
-                    </Medium>
-                </div>
-            );
-        }
-        return <div>Chart preview is not available</div>;
-    }
-
-    renderTable(previewData) {
-        return <DataPreviewTable data={previewData} />;
+    renderTable() {
+        return <DataPreviewTable distribution={this.props.distribution} />;
     }
 
     /**
@@ -167,24 +47,15 @@ class DataPreviewVis extends Component {
     }
 
     renderByState() {
-        if (this.props.error) return <div>Preview errored!</div>;
-        if (this.props.isFetching) return <div>Preview is loading...</div>;
-        if (
-            this.props.data &&
-            this.props.distribution &&
-            this.props.distribution.identifier
-        ) {
-            const previewData = this.props.data[
-                this.props.distribution.identifier
-            ];
-            const meta = (previewData && previewData.meta) || {};
-
+        const distribution = this.props.distribution;
+        if (distribution && distribution.identifier) {
+            console.log(distribution);
             // Render chart if there's chart fields, table if fields, both if both
             const tabs = [
-                meta.chartFields &&
-                    TabItem("chart", "Chart", this.renderChart(previewData)),
-                meta.fields &&
-                    TabItem("table", "Table", this.renderTable(previewData))
+                distribution.compatiblePreviews.chart &&
+                    TabItem("chart", "Chart", this.renderChart()),
+                distribution.compatiblePreviews.table &&
+                    TabItem("table", "Table", this.renderTable())
             ].filter(x => !!x);
 
             return tabs.length ? this.renderTabs(tabs) : null;
@@ -195,41 +66,13 @@ class DataPreviewVis extends Component {
         const bodyRenderResult = this.renderByState();
         if (!bodyRenderResult) return null;
         return (
-            <div
-                className="data-preview-vis"
-                ref={chartContainer => {
-                    this.chartContainer = chartContainer;
-                }}
-            >
+            <div className="data-preview-vis">
                 <h3>Data Preview</h3>
                 {bodyRenderResult}
             </div>
         );
     }
 }
-
-function mapStateToProps(state) {
-    const previewData = state.previewData;
-    const data = previewData.previewData;
-    const isFetching = previewData.isFetching;
-    const error = previewData.error;
-    const url = previewData.url;
-    return {
-        data,
-        isFetching,
-        error,
-        url
-    };
-}
-
-const mapDispatchToProps = (dispatch: Dispatch<*>) => {
-    return bindActionCreators(
-        {
-            fetchPreviewData: fetchPreviewData
-        },
-        dispatch
-    );
-};
 
 /**
  * Encapsulate tab object
@@ -245,4 +88,4 @@ const TabItem = (value, item, action) => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(DataPreviewVis);
+export default DataPreviewVis;

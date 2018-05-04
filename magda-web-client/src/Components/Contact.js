@@ -5,7 +5,6 @@ import FacetSearchBox from "../Components/SearchFacets/FacetSearchBox";
 import ContactForm from "../UI/ContactForm";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import Button from "muicss/lib/react/button";
 import { fetchPublisherSearchResults } from "../actions/facetPublisherSearchActions";
 
 class Contact extends React.Component {
@@ -27,9 +26,13 @@ class Contact extends React.Component {
         }
 
         return (
-            <Button onClick={onClick.bind(this, option)} title={option.value}>
+            <button
+                className="au-btn"
+                onClick={onClick.bind(this, option)}
+                title={option.value}
+            >
                 {option.value}
-            </Button>
+            </button>
         );
     }
 

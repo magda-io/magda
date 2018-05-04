@@ -12,7 +12,10 @@
 
 .feedback-form {
     z-index: 999;
-    position: fixed;
+    text-align: right;
+    @media (min-width: $small) {
+        position: fixed;
+    }
     right: 24px;
     bottom: 24px;
 
@@ -50,10 +53,6 @@
 
     .feedback-form-footer {
         text-align: right;
-        .send-btn {
-            background: #f5f5f5;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-        }
     }
 
     .feedback-button {
@@ -67,7 +66,7 @@
             width: 40px;
             position: absolute;
             left: 4px;
-            top: -2px;
+            top: 4px;
         }
     }
 
@@ -76,8 +75,15 @@
         bottom: 24px;
     }
 
-    .privacy-link {
+    .privacy-link a {
         margin-top: 10px;
-        font-size: 0.75rem;
+        @include AU-fontgrid(xs);
+        a {
+            color: $main;
+            &:hover,
+            &:focus {
+                color: #ffffff;
+            }
+        }
     }
 }

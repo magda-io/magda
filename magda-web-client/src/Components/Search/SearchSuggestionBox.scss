@@ -29,7 +29,8 @@
             padding-bottom: 10px;
         }
         @media (max-width: $medium - 1) {
-            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16), 0px 4px 4px rgba(0, 0, 0, 0.25);
+            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
+                0px 4px 4px rgba(0, 0, 0, 0.25);
             border-bottom-left-radius: 4px;
             border-bottom-right-radius: 4px;
         }
@@ -43,17 +44,17 @@
             height: auto;
             @media (max-width: $medium - 1) {
                 padding-left: 10px;
-                background: #FFFFFF;
                 box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
                 padding-top: 8px;
                 padding-bottom: 8px;
             }
-            .recent-item-icon{
+            .recent-item-icon {
                 @media (min-width: $medium) {
-                    margin-top: -1px;
+                    margin-top: 3px;
+                    margin-left: 3px;
                 }
                 @media (max-width: $medium - 1) {
-                    margin-top: 6px;
+                    margin-top: 5.5px;
                 }
                 float: left;
                 width: 25px;
@@ -63,7 +64,7 @@
         button.search-item-delete-button {
             position: absolute;
             right: 1px;
-            top: 1px;
+            top: -4px;
             width: 25px;
             height: 25px;
             padding: 0px;
@@ -73,16 +74,15 @@
                 margin-top: 16px;
                 margin-right: 5px;
             }
-            img{
+            img {
                 width: 13px;
                 height: 13px;
                 opacity: 0.5;
             }
         }
-        .search-item-container{
+        .search-item-container {
             position: relative;
             @media (max-width: $medium - 1) {
-                padding-right: 36px;
                 box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
             }
         }
@@ -101,7 +101,14 @@
             font-weight: 500;
         }
     }
-    .recent-item-content{
+    .recent-item-content {
         margin-left: 39px;
+    }
+    .selected {
+        color: rgba(0, 0, 0, 0.87);
+        background: #f2f2f2 !important;
+        button {
+            background: #f2f2f2 !important;
+        }
     }
 }

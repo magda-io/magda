@@ -9,12 +9,17 @@ import { Small, Medium } from "../../UI/Responsive";
 import "./SearchSuggestionBox.css";
 import recentSearchIcon from "../../assets/updated.svg";
 import closeIcon from "../../assets/mobile-menu-close.svg";
+import isEqual from "lodash.isequal";
 
 type searchDataType = {
     name: ?string,
     regionName: ?string,
     data: object
 };
+
+const keyCodeArrowDown = 40;
+const keyCodeArrowUp = 38;
+const keyCodeEnter = 13;
 
 /**
  * when no user input, the first `maxDefaultListItemNumber` items will be returned
@@ -31,9 +36,13 @@ class SearchSuggestionBox extends Component {
         super(props);
         this.state = {
             isMouseOver: false,
-            recentSearches: this.retrieveLocalData("recentSearches")
+            recentSearches: this.retrieveLocalData("recentSearches"),
+            selectedItemIdx: null
         };
         this.createSearchDataFromProps(this.props);
+        this.searchInputRef = null;
+        this.onSearchInputKeyDown = this.onSearchInputKeyDown.bind(this);
+        this.containerRef = null;
     }
 
     retrieveLocalData(key): searchDataType {
@@ -100,7 +109,7 @@ class SearchSuggestionBox extends Component {
     }
 
     createSearchDataFromProps(props): searchDataType {
-        if (!props.location || !props.location.search) return null;
+        if (!props || !props.location || !props.location.search) return null;
         const data = queryString.parse(props.location.search);
         if (!Object.keys(data).length) return null;
         const searchData = { data };
@@ -153,29 +162,42 @@ class SearchSuggestionBox extends Component {
         return qStr ? qStr + " " + filters.join("; ") : filters.join("; ");
     }
 
-    saveRecentSearch(newProps) {
+    saveRecentSearch(newProps, prevProps) {
         const searchData = this.createSearchDataFromProps(newProps);
         if (!searchData) return;
-        if (!searchData.data.q || !searchData.data.q.trim()) return;
+        if (
+            !searchData.data.q ||
+            !searchData.data.q.trim() ||
+            searchData.data.q.trim() === "*"
+        )
+            return;
+        const currentSearchData = this.createSearchDataFromProps(prevProps);
+        if (isEqual(currentSearchData, searchData)) return;
         const recentSearches = this.insertItemIntoLocalData(
             "recentSearches",
             searchData
         );
-
         this.setState({ recentSearches });
     }
 
     componentWillReceiveProps(newProps) {
-        this.saveRecentSearch(newProps);
+        this.saveRecentSearch(newProps, this.props);
+        this.setupSearchInputListener(newProps);
+    }
+
+    executeSearchItem(item: searchDataType) {
+        const qStr = queryString.stringify(item.data);
+        this.props.history.push(`/search?${qStr}`);
+        this.setState({
+            isMouseOver: false,
+            selectedItemIdx: null
+        });
+        this.searchInputRef.blur();
     }
 
     onSearchItemClick(e, item: searchDataType) {
         e.preventDefault();
-        const qStr = queryString.stringify(item.data);
-        this.props.history.push(`/search?${qStr}`);
-        this.setState({
-            isMouseOver: false
-        });
+        this.executeSearchItem(item);
     }
 
     onDeleteItemClick(e, idx) {
@@ -221,15 +243,92 @@ class SearchSuggestionBox extends Component {
         return filteredRecentSearches;
     }
 
-    render() {
+    shouldShow() {
         if (!this.props.isSearchInputFocus && !this.state.isMouseOver)
-            return null;
-        const filteredRecentSearches = this.state.recentSearches; //--- disabled the filter function for now
+            return false;
+        const filteredRecentSearches = this.state.recentSearches;
         if (!filteredRecentSearches || !filteredRecentSearches.length)
-            return null;
+            return false;
+        return true;
+    }
 
+    setupSearchInputListener(newProps) {
+        if (!newProps || !newProps.inputRef || !newProps.inputRef.controlEl)
+            return;
+        const newInputRef = newProps.inputRef.controlEl;
+        if (this.searchInputRef) {
+            if (this.searchInputRef === newInputRef) return;
+            this.searchInputRef.removeEventListener(
+                "keydown",
+                this.onSearchInputKeyDown
+            );
+            this.searchInputRef = null;
+        }
+        this.searchInputRef = newInputRef;
+        this.searchInputRef.addEventListener(
+            "keydown",
+            this.onSearchInputKeyDown
+        );
+    }
+
+    onSearchInputKeyDown(e) {
+        const keyCode = e.which || e.keyCode || 0;
+        if (
+            keyCode !== keyCodeArrowDown &&
+            keyCode !== keyCodeArrowUp &&
+            keyCode !== keyCodeEnter
+        )
+            return;
+        if (!this.shouldShow()) return;
+        if (keyCode === keyCodeEnter && this.state.selectedItemIdx !== null) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            this.executeSearchItem(
+                this.state.recentSearches[this.state.selectedItemIdx]
+            );
+            return;
+        }
+        if (keyCode === keyCodeArrowUp && this.state.selectedItemIdx !== null)
+            e.preventDefault(); //--- stop cursor from moving to the beginning of the input text
+        if (keyCode === keyCodeArrowDown) this.selectNextItem();
+        else this.selectPrevItem();
+    }
+
+    selectNextItem() {
+        const maxNumber = this.getSavedSearchItemsNumber();
+        if (!maxNumber) return;
+        let newIdx;
+        if (this.state.selectedItemIdx === null) newIdx = 0;
+        else newIdx = (this.state.selectedItemIdx + 1) % maxNumber;
+        this.setState({
+            selectedItemIdx: newIdx
+        });
+    }
+
+    selectPrevItem() {
+        if (this.state.selectedItemIdx === null) return;
+        let newIdx = this.state.selectedItemIdx - 1;
+        if (newIdx < 0) newIdx = null;
+        this.setState({
+            selectedItemIdx: newIdx
+        });
+    }
+
+    getSavedSearchItemsNumber() {
+        const recentSearchItems = this.state.recentSearches;
+        if (!recentSearchItems) return 0;
+        return recentSearchItems.length;
+    }
+
+    render() {
+        if (!this.shouldShow()) return null;
+        const recentSearchItems = this.state.recentSearches;
         return (
-            <div className="search-suggestion-box">
+            <div
+                className="search-suggestion-box"
+                ref={el => (this.containerRef = el)}
+                tabIndex={999}
+            >
                 <div className="search-suggestion-box-position-adjust" />
                 <div
                     className="search-suggestion-box-body"
@@ -239,10 +338,17 @@ class SearchSuggestionBox extends Component {
                     <Medium>
                         <h5>Recent Searches</h5>
                     </Medium>
-                    {filteredRecentSearches.map((item, idx) => (
-                        <div key={idx} className="search-item-container">
+                    {recentSearchItems.map((item, idx) => (
+                        <div
+                            key={idx}
+                            className={`search-item-container ${
+                                this.state.selectedItemIdx === idx
+                                    ? "selected"
+                                    : ""
+                            }`}
+                        >
                             <button
-                                className="mui-btn mui-btn--flat search-item-main-button"
+                                className="au-btn au-btn--tertiary search-item-main-button"
                                 onClick={e => this.onSearchItemClick(e, item)}
                             >
                                 <img
@@ -265,7 +371,7 @@ class SearchSuggestionBox extends Component {
                                 </Small>
                             </button>
                             <button
-                                className="search-item-delete-button"
+                                className="au-btn au-btn--tertiary search-item-delete-button"
                                 onClick={e => this.onDeleteItemClick(e, idx)}
                             >
                                 <img alt="delete search item" src={closeIcon} />
@@ -279,7 +385,12 @@ class SearchSuggestionBox extends Component {
 }
 
 SearchSuggestionBox.propTypes = {
-    searchText: PropTypes.string
+    searchText: PropTypes.string,
+    inputRef: PropTypes.object,
+    isSearchInputFocus: PropTypes.bool,
+    history: PropTypes.object,
+    location: PropTypes.object,
+    datasetSearch: PropTypes.object
 };
 
 SearchSuggestionBox.defaultProps = {
@@ -287,13 +398,21 @@ SearchSuggestionBox.defaultProps = {
 };
 
 const SearchSuggestionBoxWithRouter = withRouter(
-    ({ history, location, datasetSearch, searchText, isSearchInputFocus }) => (
+    ({
+        history,
+        location,
+        datasetSearch,
+        searchText,
+        isSearchInputFocus,
+        inputRef
+    }) => (
         <SearchSuggestionBox
             history={history}
             location={location}
             datasetSearch={datasetSearch}
             searchText={searchText}
             isSearchInputFocus={isSearchInputFocus}
+            inputRef={inputRef}
         />
     )
 );

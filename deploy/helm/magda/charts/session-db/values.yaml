@@ -1,7 +1,7 @@
-image:
+image: {}
   #repository: data61/
   #tag: latest
-  pullPolicy: Always
+  # pullPolicy: Always
 data:
   storage: 200Gi
   #storageClass: "ssd"

@@ -10,8 +10,7 @@ import {
 import ReactDocumentTitle from "react-document-title";
 import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
-import CrappyChat from "../../Components/CrappyChat/CrappyChat";
-import Button from "muicss/lib/react/button";
+// import CrappyChat from "../../Components/CrappyChat/CrappyChat";
 
 class ProjectDetails extends Component {
     componentWillMount() {
@@ -30,7 +29,8 @@ class ProjectDetails extends Component {
     renderToggleButton() {
         if (this.props.user && this.props.user.isAdmin) {
             return (
-                <Button
+                <button
+                    className="au-btn"
                     onClick={() =>
                         this.props.updateProjectStatus(this.props.project)
                     }
@@ -38,7 +38,7 @@ class ProjectDetails extends Component {
                     {this.props.project.status === "open"
                         ? "Close project"
                         : "Open project"}
-                </Button>
+                </button>
             );
         }
         return null;
@@ -68,23 +68,25 @@ class ProjectDetails extends Component {
                                 >
                                     {this.props.project.status}
                                 </div>
-                                <h3 className="section-heading">
+                                <h2 className="section-heading">
                                     {" "}
                                     Description{" "}
-                                </h3>
+                                </h2>
                                 <div className="white-box">
                                     {this.props.project.description}
                                 </div>
                                 {this.renderToggleButton()}
-                                <h3 className="section-heading">
+                                <h2 className="section-heading">
                                     {" "}
                                     Discussion{" "}
-                                </h3>
+                                </h2>
+                                {/*
                                 <CrappyChat
                                     typeName="project"
                                     typeId={this.props.project.id}
                                     location={this.props.location}
-                                />
+                                /> 
+                                */}
                             </div>
                             <div className="col-sm-4">
                                 <Link

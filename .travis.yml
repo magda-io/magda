@@ -21,6 +21,7 @@ matrix:
           # 3gb heap, unload classes we don't need, aim for < 50ms gc pauses (largely ignored), use the next-gen collector, try to free 5% of heap every gc, use < 25% of time for GC
           - SBT_OPTS="-Xms3000M -Xmx3000M -XX:+CMSClassUnloadingEnabled -XX:MaxGCPauseMillis=1000 -XX:+UseG1GC -XX:GCTimeRatio=3"
           - CI=true
+          - REACT_APP_SHA1=$TRAVIS_COMMIT
       addons:
         postgresql: "9.6"
       script: travis_retry sbt test
@@ -49,7 +50,17 @@ matrix:
         # Cleanup the cached directories to avoid unnecessary cache updates
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
         - find $HOME/.sbt        -name "*.lock"               -print -delete
-      script: npm install -g lerna && npm run node-ci
+      script: 
+        - npm install -g lerna
+        - npm run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies
+        - npm run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
+        - npm run in-submodules -- -f categories.api=true -f language=typescript -- run test 
+        - npm run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
+        - npm run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
+        - npm run in-submodules -- -f categories.connector=true -- run test 
+        - npm run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
+        - npm run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
+        - npm run in-submodules -- -f categories.sleuther=true -- run test
       env:
         global:
           - CI=true
@@ -62,7 +73,13 @@ matrix:
           - magda-preview-map/node_modules
           - magda-web-admin/node_modules
           - magda-web-server/node_modules
-      script: npm install -g lerna && lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map bootstrap && ./node_modules/.bin/eslint magda-web-client/src/ && lerna --scope @magda/web-client --scope @magda/preview-map run build  && lerna --scope @magda/preview-map --scope @magda/web-client run test
+      script:
+        - npm install -g lerna
+        - lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map bootstrap
+        - lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map run postinstall
+        - ./node_modules/.bin/eslint magda-web-client/src/
+        - lerna --scope @magda/web-client --scope @magda/preview-map run build
+        - lerna --scope @magda/preview-map --scope @magda/web-client run test
       env:
         global:
           - CI=true

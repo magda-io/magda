@@ -322,19 +322,30 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         case Some(aspect) => Success(aspect)
         case None         => createRecordAspect(session, recordId, aspectId, JsObject())
       }
+
+      patchedAspect <- Try {
+        aspectPatch(aspect).asJsObject
+      }
+
+      testRecordAspectPatch <- Try {
+        // Diff the old record aspect and the patched one to see whether an event should be created
+        val oldAspectJson = aspect.toJson
+        val newAspectJson = patchedAspect.toJson
+
+        JsonDiff.diff(oldAspectJson, newAspectJson, false)
+      }
+
       eventId <- Try {
-        if (aspectPatch.ops.length > 0) {
+        if (testRecordAspectPatch.ops.length > 0) {
           val event = PatchRecordAspectEvent(recordId, aspectId, aspectPatch).toJson.compactPrint
           sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordAspectEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
         }
       }
-      patchedAspect <- Try {
-        aspectPatch(aspect).asJsObject
-      }
+
       _ <- Try {
-        if (aspectPatch.ops.length > 0) {
+        if (testRecordAspectPatch.ops.length > 0) {
           val jsonString = patchedAspect.compactPrint
           sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values (${recordId}, ${aspectId}, $eventId, $jsonString::json)
                on conflict (recordId, aspectId) do update

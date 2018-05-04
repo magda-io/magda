@@ -78,54 +78,38 @@ class RecordHandler extends React.Component {
                     this.props.match.params.distributionId
                 )}`;
                 return (
-                    <div className="mui-row">
-                        <div className="mui-col-sm-8">
-                            <div className="container">
-                                <div className="media">
-                                    <div className="media-body">
-                                        <h1>{this.props.distribution.title}</h1>
-                                        <div className="publisher">
-                                            {publisherName}
-                                        </div>
-                                        {defined(
-                                            this.props.distribution.updatedDate
-                                        ) && (
-                                            <div className="updated-date">
-                                                Updated{" "}
-                                                {
-                                                    this.props.distribution
-                                                        .updatedDate
-                                                }
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                    <div className="container">
+                        <h1>{this.props.distribution.title}</h1>
+                        <div className="publisher">{publisherName}</div>
+                        {defined(this.props.distribution.updatedDate) && (
+                            <div className="updated-date">
+                                Updated {this.props.distribution.updatedDate}
                             </div>
+                        )}
 
-                            <Tabs
-                                list={tabList}
-                                baseUrl={baseUrlDistribution}
-                                params={`q=${searchText}`}
-                                onTabChange={tab => {
-                                    console.log(tab);
-                                }}
-                            />
-                            <div className="tab-content">
-                                <Switch>
-                                    <Route
-                                        path="/dataset/:datasetId/distribution/:distributionId/details"
-                                        component={DistributionDetails}
-                                    />
-                                    <Route
-                                        path="/dataset/:datasetId/distribution/:distributionId/preview"
-                                        component={DistributionPreview}
-                                    />
-                                    <Redirect
-                                        from="/dataset/:datasetId/distribution/:distributionId"
-                                        to={`${baseUrlDistribution}/details?q=${searchText}`}
-                                    />
-                                </Switch>
-                            </div>
+                        <Tabs
+                            list={tabList}
+                            baseUrl={baseUrlDistribution}
+                            params={`q=${searchText}`}
+                            onTabChange={tab => {
+                                console.log(tab);
+                            }}
+                        />
+                        <div className="tab-content">
+                            <Switch>
+                                <Route
+                                    path="/dataset/:datasetId/distribution/:distributionId/details"
+                                    component={DistributionDetails}
+                                />
+                                <Route
+                                    path="/dataset/:datasetId/distribution/:distributionId/preview"
+                                    component={DistributionPreview}
+                                />
+                                <Redirect
+                                    from="/dataset/:datasetId/distribution/:distributionId"
+                                    to={`${baseUrlDistribution}/details?q=${searchText}`}
+                                />
+                            </Switch>
                         </div>
                     </div>
                 );
@@ -145,65 +129,51 @@ class RecordHandler extends React.Component {
                 )}`;
 
                 return (
-                    <div className="mui-row">
-                        <div className="mui-col-sm-12">
-                            <div className="container media">
-                                <div className="mui-row">
-                                    <div className="mui-col-sm-9">
-                                        <div className="media-body">
-                                            <h1>{this.props.dataset.title}</h1>
-                                            <div className="publisher-basic-info-row">
-                                                <span className="publisher">
-                                                    {publisherName}
-                                                </span>
-                                                <span className="separator hidden-sm">
-                                                    /
-                                                </span>
-                                                {defined(
-                                                    this.props.dataset
-                                                        .issuedDate
-                                                ) && (
-                                                    <span className="updated-date hidden-sm">
-                                                        Created{" "}
-                                                        {
-                                                            this.props.dataset
-                                                                .issuedDate
-                                                        }&nbsp;
-                                                    </span>
-                                                )}
-                                                <span className="separator hidden-sm">
-                                                    /
-                                                </span>
-                                                {defined(
-                                                    this.props.dataset
-                                                        .updatedDate
-                                                ) && (
-                                                    <span className="updated-date hidden-sm">
-                                                        Updated{" "}
-                                                        {
-                                                            this.props.dataset
-                                                                .updatedDate
-                                                        }
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="tab-content">
-                                <Switch>
-                                    <Route
-                                        path="/dataset/:datasetId/details"
-                                        component={DatasetDetails}
-                                    />
-                                    <Redirect
-                                        exact
-                                        from="/dataset/:datasetId"
-                                        to={`${baseUrlDataset}/details?q=${searchText}`}
-                                    />
-                                </Switch>
-                            </div>
+                    <div itemScope itemType="http://schema.org/Dataset">
+                        <h1 itemProp="name">{this.props.dataset.title}</h1>
+                        <div className="publisher-basic-info-row">
+                            <span
+                                itemProp="publisher"
+                                itemScope
+                                itemType="http://schema.org/Organization"
+                            >
+                                <span className="publisher" itemProp="name">
+                                    {publisherName}
+                                </span>
+                            </span>
+                            <span className="separator hidden-sm">/</span>
+                            {defined(this.props.dataset.issuedDate) && (
+                                <span className="updated-date hidden-sm">
+                                    Created{" "}
+                                    <span itemProp="dateCreated">
+                                        {this.props.dataset.issuedDate}
+                                    </span>&nbsp;
+                                </span>
+                            )}
+                            <span className="separator hidden-sm">
+                                &nbsp;/&nbsp;
+                            </span>
+                            {defined(this.props.dataset.updatedDate) && (
+                                <span className="updated-date hidden-sm">
+                                    Updated{" "}
+                                    <span itemProp="dateModified">
+                                        {this.props.dataset.updatedDate}
+                                    </span>
+                                </span>
+                            )}
+                        </div>
+                        <div className="tab-content">
+                            <Switch>
+                                <Route
+                                    path="/dataset/:datasetId/details"
+                                    component={DatasetDetails}
+                                />
+                                <Redirect
+                                    exact
+                                    from="/dataset/:datasetId"
+                                    to={`${baseUrlDataset}/details?q=${searchText}`}
+                                />
+                            </Switch>
                         </div>
                     </div>
                 );

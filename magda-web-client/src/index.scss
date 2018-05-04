@@ -1,16 +1,18 @@
 @import "variables";
+@import "../pancake/sass/pancake.scss";
 html {
-    font-size: 16px;
+    @include AU-fontgrid(sm);
 }
-body {
-    margin: 0;
-    padding: 0;
-    font-family: $font-base;
-    font-weight: 400;
+.au-body a {
+    text-decoration: none;
     color: $body;
-    font-size: 1rem;
     overflow-x: hidden;
 }
+
+.au-body p {
+    max-width: 100%;
+}
+
 .sr-only {
     position: absolute;
     width: 1px;
@@ -34,7 +36,7 @@ body {
     }
 }
 
-.mui-btn {
+.au-btn {
     font-weight: 400;
     text-transform: none;
 }
@@ -62,10 +64,6 @@ a {
     transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
     cursor: pointer;
     color: $body;
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
     &:hover {
         color: #ffffff;
         background-color: $magda;
@@ -81,17 +79,50 @@ a {
     }
 }
 
- .mui-tabs__bar>li.mui--is-active{
-   border-bottom: 0;
- }
-
-.mui-tabs__bar>li.mui--is-active>a, .mui-tabs__bar a.mui--is-active{
-  color: $magda;
-  border-bottom: 2px solid $magda;
+.mui-tabs__bar > li.mui--is-active {
+    border-bottom: 0;
 }
 
-.hidden-sm{
-  @media (max-width: $medium) {
-      display: none!important;
-  }
+.mui-tabs__bar > li.mui--is-active > a,
+.mui-tabs__bar a.mui--is-active {
+    color: $magda;
+    border-bottom: 2px solid $magda;
+}
+
+.hidden-sm {
+    @media (max-width: $medium) {
+        display: none !important;
+    }
+}
+
+.au-btn + .au-btn {
+    margin-left: 0;
+}
+
+.other-page .app-container {
+    @media (max-width: $medium) {
+        padding: 0;
+    }
+}
+
+// gold starts here
+
+h1 {
+    @include AU-fontgrid(xl, heading);
+    font-weight: 400;
+}
+
+h2 {
+    @include AU-fontgrid(lg, heading);
+    font-weight: 400;
+}
+
+h3 {
+    @include AU-fontgrid(md, heading);
+    font-weight: 400;
+}
+
+h4 {
+    @include AU-fontgrid(sm, heading);
+    font-weight: 400;
 }
