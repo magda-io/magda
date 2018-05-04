@@ -9,8 +9,8 @@ You need to install following in order to build MAGDA:
 *   [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.
 *   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 *   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
-*   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `npm install -g lerna`.
-*   [pancake](https://github.com/govau/pancake) - To manage design components. Once you have Node.js installed, installing pancake is as simple as `npm install -g @gov.au/pancake`.
+*   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `yarn install -g lerna`.
+*   [pancake](https://github.com/govau/pancake) - To manage design components. Once you have Node.js installed, installing pancake is as simple as `yarn install -g @gov.au/pancake`.
 
 To push the images and run them on kubernetes, you'll need to install:
 
@@ -92,8 +92,8 @@ This will crawl all the datasets locally stored on the data.gov.au CKAN instance
 
 ```bash
 cd deploy
-npm run create-connector-configmap
-npm run generate-connector-jobs-local
+yarn run create-connector-configmap
+yarn run generate-connector-jobs-local
 kubectl create -f kubernetes/generated/local/connector-data-gov-au.json
 ```
 
@@ -226,10 +226,10 @@ The following table shows the relationship between `Magda components` and `Diagr
 You can also avoid minikube and run magda components on your local machine - this is much, much trickier.
 
 ```bash
-npm run dev
+yarn run dev
 ```
 
-This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected. In some cases (e.g. code generation), it is necessary to run `npm run build` at least once before `npm run dev` will work. Typically it is _not_ necessary to run `npm run build` again in the course of development, though, unless you're changing something other than source code.
+This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected. In some cases (e.g. code generation), it is necessary to run `yarn run build` at least once before `yarn run dev` will work. Typically it is _not_ necessary to run `yarn run build` again in the course of development, though, unless you're changing something other than source code.
 
 A typical use case would be:
 
@@ -249,19 +249,19 @@ helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --se
 kubectl port-forward combined-db-0 5432:5432
 ```
 
-3.  Start the registry API and a connector (via `npm run dev`) by executing the following two commands in two separate terminal windows:
+3.  Start the registry API and a connector (via `yarn run dev`) by executing the following two commands in two separate terminal windows:
 
 ```bash
 # these two commands don't terminate, so run them in separate terminals
-cd magda-registry-api && npm run dev
-cd magda-ckan-connector && npm run dev -- --config ../deploy/connector-config/data-gov-au.json
+cd magda-registry-api && yarn run dev
+cd magda-ckan-connector && yarn run dev -- --config ../deploy/connector-config/data-gov-au.json
 ```
 
 See [connectors](connectors.md) for more detailed information about running connectors.
 
 4.  (Optional) If later you wanted to start elastic search as well:
 
-Like `combined-db`, elastic search can only be started in `minikube` via `helm` rather than `npm run dev`.
+Like `combined-db`, elastic search can only be started in `minikube` via `helm` rather than `yarn run dev`.
 
 You need to upgrade previously installed `helm` chart `magda` to include `magda-elastic-search` component:
 

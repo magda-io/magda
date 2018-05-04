@@ -90,11 +90,11 @@
         "hot":
             "webpack-dev-server --inline --config buildprocess/webpack.config.hot.js --hot --host 0.0.0.0",
         "deploy":
-            "rm -rf node_modules && npm install && npm run deploy-without-reinstall",
+            "rm -rf node_modules && yarn install && yarn run deploy-without-reinstall",
         "deploy-without-reinstall":
-            "gulp clean && gulp release && npm run deploy-current",
+            "gulp clean && gulp release && yarn run deploy-current",
         "deploy-current":
-            "npm run get-deploy-overrides && gulp make-package --serverConfigOverride ./privateserverconfig.json --clientConfigOverride ./wwwroot/privateconfig.json && cd deploy/aws && ./stack create && cd ../..",
+            "yarn run get-deploy-overrides && gulp make-package --serverConfigOverride ./privateserverconfig.json --clientConfigOverride ./wwwroot/privateconfig.json && cd deploy/aws && ./stack create && cd ../..",
         "get-deploy-overrides":
             "aws s3 --profile $npm_package_config_awsProfile cp $npm_package_config_awsS3ServerConfigOverridePath ./privateserverconfig.json && aws s3 --profile $npm_package_config_awsProfile cp $npm_package_config_awsS3ClientConfigOverridePath ./wwwroot/privateconfig.json",
         "docker-build-local":
@@ -102,7 +102,7 @@
         "docker-build-prod":
             "create-docker-context-for-node-component --build --push --tag auto",
         "compile": "gulp release",
-        "build": "npm run gulp release",
+        "build": "yarn run gulp release",
         "dev": "npm start && gulp watch"
     },
     "magda": {

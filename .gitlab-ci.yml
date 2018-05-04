@@ -36,8 +36,8 @@ build-builders:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.builder=true -- bootstrap --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
+    - yarn run in-submodules -- -f categories.builder=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 prebuild:
   stage: prebuild
@@ -128,9 +128,9 @@ buildtest:ui:
   dependencies:
     - prebuild
   script:
-    - npm run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.ui=true -- run test
+    - yarn run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.ui=true -- run test
   tags:
     - heavy
   artifacts:
@@ -168,9 +168,9 @@ buildtest:map:
   dependencies:
     - prebuild
   script:
-    - npm run in-submodules -- -f categories.map=true -- bootstrap --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.map=true -- run build --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.map=true -- run test
+    - yarn run in-submodules -- -f categories.map=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.map=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.map=true -- run test
   artifacts:
     paths:
     - "*/build"
@@ -190,9 +190,9 @@ buildtest:typescript-apis:
   dependencies: 
     - prebuild
   script:
-    - npm run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
   artifacts:
     paths:
       - "node_modules"
@@ -210,9 +210,9 @@ buildtest:sleuthers:
   dependencies: 
     - prebuild
   script:
-    - npm run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.sleuther=true -- run test 
+    - yarn run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.sleuther=true -- run test 
   artifacts:
     paths:
       - "node_modules"
@@ -230,9 +230,9 @@ buildtest:connectors:
   dependencies: 
     - prebuild
   script:
-    - npm run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
-    - npm run in-submodules -- -f categories.connector=true -- run test 
+    - yarn run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.connector=true -- run test 
   artifacts:
     paths:
       - "node_modules"
@@ -268,9 +268,9 @@ dockerize:ui:
   dependencies:
     - buildtest:ui
   script:
-    - npm run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies 
+    - yarn run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies 
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
+    - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 dockerize:map:
   stage: dockerize
@@ -282,9 +282,9 @@ dockerize:map:
   dependencies:
     - buildtest:map
   script:
-    - npm run in-submodules -- -f categories.map=true -- bootstrap --include-filtered-dependencies 
+    - yarn run in-submodules -- -f categories.map=true -- bootstrap --include-filtered-dependencies 
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.map=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
+    - yarn run in-submodules -- -f categories.map=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 dockerize:typescript-apis:
   stage: dockerize
@@ -296,9 +296,9 @@ dockerize:typescript-apis:
   dependencies: 
     - buildtest:typescript-apis
   script:
-    - npm run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies 
+    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies 
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
+    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 dockerize:sleuthers:
   stage: dockerize
@@ -310,9 +310,9 @@ dockerize:sleuthers:
   dependencies: 
     - buildtest:sleuthers
   script:
-    - npm run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.sleuther=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
+    - yarn run in-submodules -- -f categories.sleuther=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 dockerize:connectors:
   stage: dockerize
@@ -324,9 +324,9 @@ dockerize:connectors:
   dependencies: 
     - buildtest:connectors
   script:
-    - npm run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.connector=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
+    - yarn run in-submodules -- -f categories.connector=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 dockerize:migrators:
   stage: dockerize
@@ -337,9 +337,9 @@ dockerize:migrators:
     paths: []
   dependencies: []
   script:
-    - npm run in-submodules -- -f categories.migrator=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.migrator=true -- bootstrap --include-filtered-dependencies
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
+    - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 dockerize:dockerExtensions:
   stage: dockerize
@@ -350,9 +350,9 @@ dockerize:dockerExtensions:
     paths: []
   dependencies: []
   script:
-    - npm run in-submodules -- -f categories.dockerExtension=true -- bootstrap --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.dockerExtension=true -- bootstrap --include-filtered-dependencies
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
+    - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 Run As Preview:
   stage: preview

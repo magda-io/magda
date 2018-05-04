@@ -3,7 +3,7 @@
     "description": "MAGDA Layering Sleuther",
     "version": "0.0.39-0",
     "scripts": {
-        "build": "npm run compile",
+        "build": "yarn run compile",
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "start": "node dist/index.js",

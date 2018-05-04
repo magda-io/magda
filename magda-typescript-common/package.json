@@ -4,13 +4,13 @@
     "version": "0.0.39-0",
     "license": "Apache-2.0",
     "scripts": {
-        "build": "npm run compile",
+        "build": "yarn run compile",
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "generate": "generate-registry-typescript ./src/generated/registry",
         "test":
             "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register,tsx:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\"",
-        "dev": "npm run watch"
+        "dev": "yarn run watch"
     },
     "devDependencies": {
         "@magda/registry-aspects": "^0.0.39-0",
