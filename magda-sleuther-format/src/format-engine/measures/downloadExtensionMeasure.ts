@@ -8,12 +8,16 @@ export default function getMeasureResults(
     relatedDistribution: any,
     synonymObject: any
 ): MeasureResult {
-    const { downloadURL } = relatedDistribution.aspects[
+    let { downloadURL } = relatedDistribution.aspects[
         "dcat-distribution-strings"
     ];
 
     if (!downloadURL || downloadURL === "") {
-        return null;
+        downloadURL =
+            relatedDistribution.aspects["dcat-distribution-strings"][
+                "accessURL"
+            ];
+        if (!downloadURL || downloadURL === "") return null;
     }
 
     let downloadURLString: string = downloadURL;

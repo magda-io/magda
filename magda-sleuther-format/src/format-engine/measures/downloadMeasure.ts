@@ -10,9 +10,18 @@ export default function getMeasureResult(
     relatedDistribution: any,
     synonymObject: any
 ): MeasureResult {
-    const { downloadURL } = relatedDistribution.aspects[
+    let { downloadURL } = relatedDistribution.aspects[
         "dcat-distribution-strings"
     ];
+
+    if (!downloadURL || downloadURL === "") {
+        downloadURL =
+            relatedDistribution.aspects["dcat-distribution-strings"][
+                "accessURL"
+            ];
+        if (!downloadURL || downloadURL === "") return null;
+    }
+
     const rawMime: string | false = mimeTypes.lookup(downloadURL);
 
     if (!rawMime) {
