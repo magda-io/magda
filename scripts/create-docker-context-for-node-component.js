@@ -164,8 +164,8 @@ function getTag() {
         const name = process.env.npm_package_config_docker_name
             ? process.env.npm_package_config_docker_name
             : process.env.npm_package_name
-              ? process.env.npm_package_name
-              : "UnnamedImage";
+                ? process.env.npm_package_name
+                : "UnnamedImage";
         tag = tagPrefix + name + ":" + getVersion();
     }
 
@@ -232,11 +232,11 @@ function preparePackage(packageDir, destDir) {
 
                 const env = Object.create(process.env);
                 env.NODE_ENV = "production";
-    
+
                 // Get the list of production packages required by this package.
                 const rawYarnList = childProcess.spawnSync(
                     "yarn",
-                    ["list", "--prod", "--json"],
+                    ["list", "--json"],
                     {
                         encoding: "utf8",
                         cwd: packageDir,
@@ -244,14 +244,16 @@ function preparePackage(packageDir, destDir) {
                         env
                     }
                 ).stdout;
-    
                 const jsonYarnList = JSON.parse(rawYarnList);
-                const jsons = jsonYarnList.data.trees;
-    
+
                 const productionPackages = _.uniq(
-                    getPackageList(jsons, path.join(packageDir, "node_modules"), [])
+                    getPackageList(
+                        jsonYarnList.data.trees,
+                        path.join(packageDir, "node_modules"),
+                        []
+                    )
                 );
-    
+
                 productionPackages.forEach(package => {
                     console.log(package);
                 });
@@ -276,6 +278,9 @@ function preparePackage(packageDir, destDir) {
 
 function prepareNodeModules(packageDir, destDir, productionPackages) {
     const subPackages = fse.readdirSync(packageDir);
+
+    console.log(subPackages);
+
     subPackages.forEach(function(subPackageName) {
         const src = path.join(packageDir, subPackageName);
         const dest = path.join(destDir, subPackageName);
@@ -315,45 +320,43 @@ function getPackageList(dependencies, basePath, result) {
         return result;
     }
 
-    dependencies.forEach(function(dependencyDetails) {
-        // const dependencyDetails = dependencies[dependencyName];
-        if (dependencyDetails.shadow || dependencyDetails.color === "dim") {
-            return;
-        }
-        const dependencyName = dependencyDetails.name.split("@")[0];
+    dependencies
+        .filter(dep => !dep.shadow)
+        .forEach(function(dependencyDetails) {
+            const dependencyName = dependencyDetails.name.split("@")[0];
 
-        let dependencyDir = path.join(
-            basePath,
-            dependencyName.replace(/\//g, path.sep)
-        );
-
-        // Does this directory exist?  If not, imitate node's module resolution by walking
-        // up the directory tree.
-        while (!fse.existsSync(dependencyDir)) {
-            const upOne = path.resolve(
-                dependencyDir,
-                "..",
-                "..",
-                "..",
-                "node_modules",
-                path.basename(dependencyDir)
+            let dependencyDir = path.join(
+                basePath,
+                dependencyName.replace(/\//g, path.sep)
             );
-            if (upOne === dependencyDir) {
-                break;
+
+            // Does this directory exist?  If not, imitate node's module resolution by walking
+            // up the directory tree.
+            while (!fse.existsSync(dependencyDir)) {
+                const upOne = path.resolve(
+                    dependencyDir,
+                    "..",
+                    "..",
+                    "..",
+                    "node_modules",
+                    path.basename(dependencyDir)
+                );
+                if (upOne === dependencyDir) {
+                    break;
+                }
+                dependencyDir = upOne;
             }
-            dependencyDir = upOne;
-        }
 
-        result.push(dependencyDir);
+            result.push(dependencyDir);
 
-        if (dependencyDetails.children) {
-            getPackageList(
-                dependencyDetails.children,
-                path.join(dependencyDir, "node_modules"),
-                result
-            );
-        }
-    });
+            if (dependencyDetails.children) {
+                getPackageList(
+                    dependencyDetails.children,
+                    path.join(dependencyDir, "node_modules"),
+                    result
+                );
+            }
+        });
 
     return result;
 }
