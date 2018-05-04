@@ -17,6 +17,7 @@
 *   Recent search will not save "\*" search
 *   Reduced homepage tagline bottom margin
 *   Brought back homepage animation
+*   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
 
 ## 0.0.38
 
