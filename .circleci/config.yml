@@ -15,7 +15,7 @@ jobs:
 #                   && sudo apt-get install sbt
       - run:
           name: install npm/lerna/eslint dev tools
-          command: 'sudo yarn install -g npm@latest lerna @gov.au/pancake'
+          command: 'sudo yarn global add npm@latest lerna @gov.au/pancake'
       - restore_cache:
           key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
       - run:
