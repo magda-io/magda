@@ -521,7 +521,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     }
 
     def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
-      println(query)
       Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
@@ -631,7 +630,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
             status shouldBe OK
             val response = responseAs[SearchResult]
 
-            println(textQuery)
             queryEquals(response.query, query)
           }
         }
@@ -690,21 +688,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
     it("should not fail for queries that are full of arbitrary characters") {
       forAll(emptyIndexGen, Gen.listOf(arbitrary[String]).map(_.mkString(" "))) { (indexTuple, textQuery) =>
-        val (_, _, routes) = indexTuple
-
-        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
-          status shouldBe OK
-        }
-      }
-    }
-
-    it("should not fail for arbitrary characters interspersed with control words") {
-      val controlWords = Seq("in", "by", "to", "from", "as", "and", "or")
-      val controlWordGen = Gen.oneOf(controlWords).flatMap(randomCaseGen)
-      val queryWordGen = Gen.oneOf(controlWordGen, Gen.oneOf(arbitrary[String], Gen.oneOf(".", "[", "]")))
-      val queryTextGen = Gen.listOf(queryWordGen).map(_.mkString(" "))
-
-      forAll(emptyIndexGen, queryTextGen) { (indexTuple, textQuery) =>
         val (_, _, routes) = indexTuple
 
         Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {

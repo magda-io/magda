@@ -1,6 +1,6 @@
 import React from "react";
 
-function DataPreviewGoogleViewer(props) {
+function DataPreviewGoogleViewer({ distribution }) {
     return (
         <div className="data-preview-json">
             <iframe
@@ -9,7 +9,7 @@ function DataPreviewGoogleViewer(props) {
                 height="600px"
                 scrolling="auto"
                 src={`https://docs.google.com/viewer?embedded=true&toolbar=hide&url=${
-                    props.data.data
+                    distribution.downloadURL
                 }`}
                 width="100%"
             />

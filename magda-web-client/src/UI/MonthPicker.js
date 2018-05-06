@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import Input from "muicss/lib/react/input";
-import Button from "muicss/lib/react/button";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import "./MonthPicker.css";
@@ -172,7 +171,7 @@ class MonthPicker extends Component {
                         <tr key={m}>
                             {m.map((n, j) => (
                                 <td key={n}>
-                                    <Button
+                                    <button
                                         disabled={
                                             !this.checkMonthValid(
                                                 +this.state.yearValue,
@@ -183,7 +182,7 @@ class MonthPicker extends Component {
                                             this,
                                             monthIndex(i, j)
                                         )}
-                                        className={`btn-facet-option btn-month ${
+                                        className={`au-btn btn-facet-option btn-month ${
                                             this.props.month ===
                                                 monthIndex(i, j) &&
                                             this.checkMonthValid(
@@ -195,7 +194,7 @@ class MonthPicker extends Component {
                                         }`}
                                     >
                                         {n}
-                                    </Button>
+                                    </button>
                                 </td>
                             ))}
                         </tr>

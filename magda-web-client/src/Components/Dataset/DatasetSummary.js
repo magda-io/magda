@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import defined from "../../helpers/defined";
 import getDateString from "../../helpers/getDateString";
-import QualityIndicator from "../../UI/QualityIndicator";
+import StarRating from "../../UI/StarRating";
 import "./DatasetSummary.css";
 import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
@@ -29,6 +29,8 @@ export default class DatasetSummary extends Component {
     render() {
         const dataset = this.props.dataset;
         const publisher = dataset.publisher && dataset.publisher.name;
+        const publisherIdent =
+            dataset.publisher && dataset.publisher.identifier;
         const searchText = defined(this.props.searchText)
             ? this.props.searchText
             : "";
@@ -45,7 +47,12 @@ export default class DatasetSummary extends Component {
                     </Link>
                 </h2>
                 {publisher && (
-                    <div className="dataset-summary-publisher">{publisher}</div>
+                    <Link
+                        className="dataset-summary-publisher"
+                        to={`/publishers/${publisherIdent}`}
+                    >
+                        {publisher}
+                    </Link>
                 )}
 
                 <div className="dataset-summary-description">
@@ -63,7 +70,7 @@ export default class DatasetSummary extends Component {
                     {defined(dataset.quality) && (
                         <span className="dataset-summary-quality">
                             {" "}
-                            <QualityIndicator quality={dataset.quality} />
+                            <StarRating stars={dataset.quality} />
                         </span>
                     )}
                     {defined(

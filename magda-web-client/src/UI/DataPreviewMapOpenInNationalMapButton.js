@@ -37,8 +37,9 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
                     catalog: [
                         {
                             name: this.props.distribution.title,
-                            type: this.determineCatalogItemType(),
-                            url: this.props.distribution.downloadURL,
+                            type: "magda-item",
+                            distributionId: this.props.distribution.identifier,
+                            url: "/",
                             isEnabled: true,
                             zoomOnEnable: true
                         }

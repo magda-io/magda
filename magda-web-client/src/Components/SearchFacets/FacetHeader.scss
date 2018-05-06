@@ -4,7 +4,7 @@
     display: flex;
     &.not-empty {
         button {
-            background: #494949;
+            background: $body;
             color: #fff;
         }
     }
@@ -26,6 +26,7 @@
         text-align: center;
         padding: 0 16px;
         text-transform: capitalize;
+        pointer: cursor;
         .facet-icon {
             padding: 4px 6px 4px 0;
             height: 24px;
@@ -34,11 +35,12 @@
         span {
             font-size: 14px;
             vertical-align: top;
+            line-height: 35px;
         }
         &:hover,
         &:active,
         &.is-open {
-            background: #494949;
+            background: $body;
             color: #fff;
         }
     }

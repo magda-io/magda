@@ -22,13 +22,7 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-        {{- if not .Values.global.noDbAuth }}
-        - name: ELASTIC_SEARCH_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: elasticsearch
-        {{- end }}
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: /v0/reindex/in-progress
@@ -36,6 +30,7 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 10
           timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "dockerimage" . }}
@@ -45,14 +40,15 @@ spec:
             "-Dhttp.port=80",
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
-            "-Dindexer.readSnapshots=true",
-            "-Dindexer.makeSnapshots=true",
+            "-Dindexer.readSnapshots={{ .Values.readSnapshots | default true }}",
+            "-Dindexer.makeSnapshots={{ .Values.readSnapshots | default true }}",
             "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300",
 {{- if .Values.elasticsearch.useGcsSnapshots }}
             "-DelasticSearch.snapshotRepo.type=gcs",
             "-DelasticSearch.snapshotRepo.types.gcs.bucket={{ .Values.elasticsearch.gcsSnapshotBucket }}",
-            "-DelasticSearch.snapshotRepo.types.gcs.service_account={{ .Values.elasticsearch.gcsSnapshotServiceAccount }}",
+            "-DelasticSearch.snapshotRepo.types.gcs.client={{ .Values.elasticsearch.gcsSnapshotClient }}",
+            # "-DelasticSearch.snapshotRepo.types.gcs.service_account={{ .Values.elasticsearch.gcsSnapshotServiceAccount }}",
 {{- end }}
             "-DelasticSearch.shardCount={{ .Values.elasticsearch.shards }}",
             "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}",

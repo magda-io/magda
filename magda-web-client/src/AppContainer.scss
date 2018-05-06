@@ -1,4 +1,7 @@
 @import "./variables";
+#root {
+    font-family: $font-base;
+}
 
 .app-container {
     min-height: 1000px;
@@ -11,7 +14,6 @@
     margin-top: 24px;
     a {
         color: #fff;
-        font-size: 0.9rem;
     }
     .nav > li > a {
         padding: 10px 0px;

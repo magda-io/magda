@@ -50,6 +50,7 @@ helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/mag
 - [ ] Generate jobs files, deploy them and make sure they run ok
 ```bash
 cd deploy
+npm run create-connector-configmap
 npm run generate-connector-jobs-dev
 mkdir kubernetes/generated/prod/cron
 mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
@@ -83,6 +84,7 @@ kubectl port-forward <cloud-sql-proxy-pod-name> 5432:5432
 - [ ] Generate/deploy new cron jobs
 ```bash
 cd deploy
+npm run create-connector-configmap
 npm run generate-connector-jobs-prod
 mkdir kubernetes/generated/prod/cron
 mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
