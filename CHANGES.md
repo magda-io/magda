@@ -1,4 +1,5 @@
 ## 0.0.39
+*   Change the tag type of the background link on the homepage in order to correct the page refreshing when it shouldn't
 
 ## 0.0.38
 
