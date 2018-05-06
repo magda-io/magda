@@ -1,4 +1,5 @@
 ## 0.0.39
+*   Mobile Aus Gov logo links to homepage
 
 ## 0.0.38
 
