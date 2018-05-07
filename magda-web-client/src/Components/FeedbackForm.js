@@ -3,7 +3,6 @@ import { fetchFeedback, resetFeedback } from "../actions/feedbackActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import "./FeedbackForm.css";
-import Textarea from "muicss/lib/react/textarea";
 import feedback from "../assets/feedback.svg";
 import close from "../assets/close.svg";
 import success from "../assets/success.svg";
