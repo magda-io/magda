@@ -26,6 +26,7 @@ export default function getMeasureResults(
         [".*\\.geojson$", "GEOJSON"],
         [".*?.*service=wms.*", "WMS"],
         [".*?.*service=wfs.*", "WFS"],
+        ["\\W+arcgis\\W*", "ArcGIS"],
         [".*\\.(shp|shz|dbf)(\\.zip)?$", "SHP"],
         [".*\\.(pdf)(\\.zip)?$", "PDF"],
         [".*\\.(json)(\\.zip)?$", "JSON"],

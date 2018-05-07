@@ -75,6 +75,22 @@ function filterBracketedFormats(formats: Array<string>) {
           );
 }
 
+/**
+ * Common format strings defined in synonyms.json should be processed earlier
+ * otherwise `splitWhiteSpaceFormats`, `filterBracketedFormats` will cut format string
+ * into smaller pieces that cannot be matched anymore
+ */
+function filterByKnownCommonFormatString(
+    synonymObject: any,
+    formats: Array<string>
+) {
+    return formats.map(f => {
+        const r = getCommonFormat(f, synonymObject);
+        //--- since it's only at early stage of matching we should return original string if no match
+        return r ? r : f;
+    });
+}
+
 function getFilteredBracketedFormats(formats: Array<string>) {
     return formats.filter(format => {
         return format.indexOf("(") > -1 && format.indexOf(")") > -1;
@@ -96,6 +112,7 @@ export default function getMeasureResult(
     const cleanUpAssemblyChain = [
         removeFalsy,
         foundationalCleanup,
+        filterByKnownCommonFormatString.bind(null, synonymObject),
         replaceAmpersandFormats,
         splitWhiteSpaceFormats,
         reduceMimeType,
