@@ -421,9 +421,6 @@ function getPackageList(dependencies, basePath, result) {
 }
 
 function wrapConsoleOutput(process) {
-    process.on("message", data => {
-        console.log(data.toString());
-    });
     if (process.stdout) {
         process.stdout.on("data", data => {
             console.log(data.toString());
