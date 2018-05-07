@@ -71,7 +71,7 @@ matrix:
           - magda-web-admin/node_modules
           - magda-web-server/node_modules
       script:
-        - yarn global install lerna
+        - yarn global add lerna
         - yarn install
         - ./node_modules/.bin/eslint magda-web-client/src/
         - lerna --scope @magda/web-client --scope @magda/preview-map run build

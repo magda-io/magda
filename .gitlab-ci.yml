@@ -16,7 +16,7 @@ stages:
   - deploy-prod
 
 cache:
-  key: $CI_COMMIT_REF_SLUG
+  key: $CI_COMMIT_REF_NAME
   paths:
   - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
   - "node_modules/"
