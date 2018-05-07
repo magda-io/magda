@@ -28,7 +28,7 @@ cache:
 before_script:
 - yarn config set cache-folder .yarn-cache
 - yarn install
-- cp -r /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/
+- "cp -r /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/ || :"
 
 build-builders:
   stage: build-builders
