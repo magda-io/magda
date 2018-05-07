@@ -24,8 +24,10 @@ cache:
   - "*/node_modules"
   - target
   - "*/target"
+  - ".yarn-cache"
 
 before_script:
+- yarn config set cache-folder .yarn-cache
 - yarn install
 
 build-builders:
