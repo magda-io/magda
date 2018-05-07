@@ -39,6 +39,7 @@ build-builders:
     paths:
       - "node_modules"
       - "*/node_modules"
+      - "yarn.lock"
     expire_in: 60 minutes
 
 prebuild:
@@ -60,6 +61,7 @@ prebuild:
       - "*/target"
       - "node_modules"
       - "*/node_modules"
+      - "yarn.lock"
     expire_in: 60 minutes
 
 test:search-with-index-cache:
