@@ -16,7 +16,8 @@ stages:
   - deploy-prod
 
 cache:
-  key: $CI_JOB_NAME
+  key: $CI_COMMIT_REF_SLUG
+  policy: pull
   paths:
   - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
   - "node_modules/"
@@ -25,38 +26,35 @@ cache:
   - "*/target"
 
 before_script:
-- lerna bootstrap --scope=@magda/scripts
+- yarn install
 
 build-builders:
   stage: build-builders
-  image: data61/magda-builder-docker:latest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   cache:
-    paths: []
+    policy: pull-push
   services:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - yarn run in-submodules -- -f categories.builder=true -- bootstrap --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
 prebuild:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull-push
   script:
     - cp -r /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/
     - ls $CI_PROJECT_DIR/sbt-cache/
     - echo $SBT_OPTS
     - cat /dev/null | sbt compile
-    - lerna bootstrap --scope=@magda/typescript-common 
     - lerna run generate --scope=@magda/typescript-common 
   artifacts:
     paths:
-      - "node_modules"
       - "magda-typescript-common/src/generated"
-      - "*/node_modules"
       - "target"
       - "*/target"
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
     expire_in: 60 minutes
 
 test:search-with-index-cache:
@@ -120,15 +118,9 @@ test:search-no-index-cache:
 buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  cache:
-    paths:
-      - node_modules/
-      - magda-web-client/node_modules/
-      - magda-web-server/node_modules/
   dependencies:
     - prebuild
   script:
-    - yarn run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.ui=true -- run test
   tags:
@@ -136,10 +128,7 @@ buildtest:ui:
   artifacts:
     paths:
     - "*/build"
-    - "node_modules"
     - "*/dist"
-    - magda-web-client/node_modules/
-    - magda-web-server/node_modules/
     expire_in: 60 minutes
 
 test:registry:
@@ -161,83 +150,55 @@ test:registry:
 buildtest:map:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  cache:
-    paths:
-      - node_modules/
-      - magda-preview-map/node_modules/
   dependencies:
     - prebuild
   script:
-    - yarn run in-submodules -- -f categories.map=true -- bootstrap --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.map=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.map=true -- run test
   artifacts:
     paths:
     - "*/build"
-    - "node_modules"
     - "*/dist"
-    - "*/node_modules"
     - "magda-preview-map/wwwroot/build"
     expire_in: 60 minutes
 
 buildtest:typescript-apis:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  cache:
-    paths:
-    - "node_modules/"
-    - "*/node_modules"
   dependencies: 
     - prebuild
   script:
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
   artifacts:
     paths:
-      - "node_modules"
       - "*/dist"
-      - "*/node_modules"
     expire_in: 60 minutes
 
 buildtest:sleuthers:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  cache:
-    paths:
-    - "node_modules/"
-    - "*/node_modules"
   dependencies: 
     - prebuild
   script:
-    - yarn run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.sleuther=true -- run test 
   artifacts:
     paths:
-      - "node_modules"
       - "*/dist"
-      - "*/node_modules"
     expire_in: 60 minutes
 
 buildtest:connectors:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  cache:
-    paths:
-    - "node_modules/"
-    - "*/node_modules"
   dependencies: 
     - prebuild
   script:
-    - yarn run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.connector=true -- run test 
   artifacts:
     paths:
-      - "node_modules"
       - "*/dist"
-      - "*/node_modules"
     expire_in: 60 minutes
 
 dockerize:scala:
@@ -245,10 +206,7 @@ dockerize:scala:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   before_script: []
   cache:
-    paths: 
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
-      - target
-      - "*/target"
+    policy: pull-push
   dependencies:
     - prebuild
   services:
@@ -263,12 +221,9 @@ dockerize:ui:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   services:
     - docker:dind
-  cache:
-    paths: []
   dependencies:
     - buildtest:ui
   script:
-    - yarn run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies 
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
@@ -277,12 +232,9 @@ dockerize:map:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   services:
     - docker:dind
-  cache:
-    paths: []
   dependencies:
     - buildtest:map
   script:
-    - yarn run in-submodules -- -f categories.map=true -- bootstrap --include-filtered-dependencies 
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.map=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
@@ -291,12 +243,9 @@ dockerize:typescript-apis:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   services:
     - docker:dind
-  cache:
-    paths: []
   dependencies: 
     - buildtest:typescript-apis
   script:
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies 
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
@@ -305,12 +254,9 @@ dockerize:sleuthers:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   services:
     - docker:dind
-  cache:
-    paths: []
   dependencies: 
     - buildtest:sleuthers
   script:
-    - yarn run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.sleuther=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
@@ -319,12 +265,9 @@ dockerize:connectors:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   services:
     - docker:dind
-  cache:
-    paths: []
   dependencies: 
     - buildtest:connectors
   script:
-    - yarn run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.connector=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
@@ -333,11 +276,8 @@ dockerize:migrators:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   services:
     - docker:dind
-  cache:
-    paths: []
   dependencies: []
   script:
-    - yarn run in-submodules -- -f categories.migrator=true -- bootstrap --include-filtered-dependencies
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
@@ -346,11 +286,8 @@ dockerize:dockerExtensions:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   services:
   - docker:dind
-  cache:
-    paths: []
   dependencies: []
   script:
-    - yarn run in-submodules -- -f categories.dockerExtension=true -- bootstrap --include-filtered-dependencies
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=latest --cacheFromVersion=latest
 
@@ -402,6 +339,10 @@ Run As Preview:
 Stop Preview:
   stage: preview
   when: manual
+  only:
+    - branches
+  except:
+    - master
   dependencies: []
   cache: 
     paths: []
