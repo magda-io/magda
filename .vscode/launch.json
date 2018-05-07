@@ -53,19 +53,18 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Sleuther Format Layerer",
+            "name": "Sleuther Format",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
             },
-            "runtimeArgs": [
-                "src/index.ts"
-            ],
             "args": [
+                "-r", "@magda/scripts/node_modules/tsconfig-paths/register",
+                "src/index.ts",
                 "--jwtSecret", "squirrel",
                 "--userId", "00000000-0000-4000-8000-000000000000"
             ],
-            "cwd": "${workspaceRoot}/magda-sleuther-format-layerer"
+            "cwd": "${workspaceRoot}/magda-sleuther-format"
         },
         {
             "type": "node",

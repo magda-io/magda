@@ -21,6 +21,7 @@ import getDownloadMeasureResult from "../../format-engine/measures/downloadMeasu
 //import MeasureEvalResult from "src/format-engine/MeasureEvalResult";
 import MeasureResult from "src/format-engine/measures/MeasureResult";
 import {} from "../../format-engine/formats";
+import * as sampleLauncestonDistributionData from "../sampleLauncestonDistributionData.json";
 
 describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
     before(() => {
@@ -212,6 +213,30 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
                 expect(testTXT.formats[0].format).to.eql("HTML") &&
                 expect(testTXT.formats.length).to.equal(1);
         });
+    });
+
+    describe("Should return correct format for `sampleLauncestonDistributionData.json`", function() {
+
+        const distributions:any[7] = sampleLauncestonDistributionData;
+
+        it("Should return `WMS` for distribution no. 7", () => {
+            const distribution:any = distributions[6];
+            const r: MeasureResult = getExtensionMeasureResult(
+                distribution,
+                synonymObject
+            );
+            expect(r.formats[0].format).to.equal("WMS");
+        });
+
+        it("Should return `WFS` for distribution no. 8", () => {
+            const distribution:any = distributions[7];
+            const r: MeasureResult = getExtensionMeasureResult(
+                distribution,
+                synonymObject
+            );
+            expect(r.formats[0].format).to.equal("WFS");
+        });
+
     });
 });
 
