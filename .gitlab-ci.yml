@@ -67,7 +67,8 @@ test:search-with-index-cache:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   dependencies:
     - prebuild
-  before_script: []
+  before_script:
+    - "cp -r /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   cache: 
     paths:
       - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
@@ -96,7 +97,8 @@ test:search-no-index-cache:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   dependencies:
     - prebuild
-  before_script: []
+  before_script:
+    - "cp -r /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   cache: 
     paths:
       - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
@@ -154,7 +156,8 @@ test:registry:
       - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
   services:
     - postgres:9.6
-  before_script: []
+  before_script:
+    - "cp -r /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
