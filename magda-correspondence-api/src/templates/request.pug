@@ -1,12 +1,37 @@
-<p>Hi there,</p>
-
-<p>A query has been raised in relation to a #{agencyName} data set: #{dataset}. Please log in to your profile on data.gov.au using #{agencyEmail} as soon as possible to respond to this query.</p>
-
-<p>The query is from #{requesterName}, #{requesterEmail}>:</p>
-
-<p>#{requesterMsg}></p>
-
-<p>The Australian Government has mandated that agencies have a responsibility to be transparent to any public consumer of open data <link to the mandate I just made up>. If you have questions about why you got this email or what to do, email data@digital.gov.au</p>
-
-<p>Sincerely, </br> The Digital Transformation Agency at Data.gov.au</p>
-</p>
+doctype html
+html(lang="en-au")
+head
+  style(type="text/css").
+    body {
+      margin: auto;
+      display: block;
+    }
+    .content {
+      text-align: left;
+      padding-left: 10%;
+      padding-right: 10%;
+      line-height: 24px;
+      font-size: 16px;
+    }
+    .content > img {
+      display: block;
+      margin: auto;
+    }
+body
+  img.image(src="cid:govAUCrest" alt="Australian Government coat of arms")
+  <br/>
+  p.content
+    img.image(src="cid:dataGovLogo" alt="Data gov logo")
+    |Hi there, <br/><br/>
+    |A query has been raised in relation to a 
+    strong #{agencyName} data set: #{dataset}. 
+    |Please log in to your profile on data.gov.au
+    |using #{agencyEmail} as soon as possible to respond to this query.<br/><br/>
+    |The query is from #{requesterName}, #{requesterEmail}: <br/><br/>
+    |#{requesterMsg} <br/><br/>
+    |The Australian Government has mandated that agencies have a responsibility to be transparent to any public consumer of open data 
+    strong link to the mandate I just made up. 
+    |If you have questions about why you got this email or what to do, email
+    |data@digital.gov.au <br/><br/>
+    |Sincerely, <br/> <br/>
+    |The Digital Transformation Agency at Data.gov.au

@@ -15,13 +15,22 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 6117
         })
+        .option("registryUrl", {
+            describe: "The base url for the registry",
+            type: "string",
+            default:
+                process.env.REGISTRY_URL ||
+                process.env.npm_package_config_registryUrl ||
+                "http://localhost:6101/v0"
+        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
         })
         .option("smtpHostname", {
             describe: "The SMTP server hostname",
-            type: "string"
+            type: "string",
+            default: ""
         })
         .option("smtpPort", {
             describe: "The SMTP server port",
@@ -35,21 +44,23 @@ const argv = addJwtSecretFromEnvVar(
         })
         .option("smtpUsername", {
             describe: "The username to authenticate with the SMTP server",
-            type: "string"
+            type: "string",
+            default: ""
         })
         .option("smtpPassword", {
             describe: "The password to authenticate with the SMTP server",
-            type: "string"
+            type: "string",
+            default: ""
         }).argv
 );
 
 const app = express();
 app.use(require("body-parser").json());
-
 app.use(
     "/v0",
     createApiRouter({
         jwtSecret: argv.jwtSecret,
+        registryUrl: argv.registryUrl,
         smtpHostname: argv.smtpHostname,
         smtpPort: argv.smtpPort,
         smtpSecure: argv.smtpSecure,
