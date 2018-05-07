@@ -28,6 +28,7 @@
         "@gov.au/footer": "^2.0.1",
         "@gov.au/grid-12": "^2.0.1",
         "@gov.au/link-list": "^2.0.1",
+        "@gov.au/header": "^3.0.1",
         "@gov.au/page-alerts": "^2.0.1",
         "@gov.au/pancake": "^1.2.0",
         "@gov.au/pancake-json": "^1.0.3",

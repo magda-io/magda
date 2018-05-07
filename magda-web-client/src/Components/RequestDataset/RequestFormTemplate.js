@@ -9,9 +9,8 @@ export default class RequestFormTemplate extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            textAreaValue: "",
-            nameInputValue: "",
-            emailInputvalue: ""
+            message: "",
+            senderName: "",
         };
     }
 
@@ -28,13 +27,10 @@ export default class RequestFormTemplate extends React.Component {
         const inputVal = event.target.value.trim();
         switch (inputId) {
             case "textarea-input":
-                this.setState({ textAreaValue: inputVal });
                 break;
             case "name-input":
-                this.setState({ nameInputValue: inputVal });
                 break;
             case "email-input":
-                this.setState({ emailInputvalue: inputVal });
                 break;
             default:
                 break;
