@@ -4,8 +4,12 @@
     display: flex;
     &.not-empty {
         button {
-            background: $body;
-            color: #fff;
+            &,
+            &:hover,
+            &:focus {
+                background: $body !important;
+                color: #fff !important;
+            }
         }
     }
 
@@ -36,12 +40,6 @@
             font-size: 14px;
             vertical-align: top;
             line-height: 35px;
-        }
-        &:hover,
-        &:active,
-        &.is-open {
-            background: $body;
-            color: #fff;
         }
     }
 }
