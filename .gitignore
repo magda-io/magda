@@ -33,3 +33,4 @@ node_modules/
 dist/
 
 pancake
+package-lock.json

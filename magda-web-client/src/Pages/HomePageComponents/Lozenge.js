@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { config } from "../../config.js";
 
 const Lozenge = () => {
@@ -6,9 +7,9 @@ const Lozenge = () => {
     return (
         <div className="homepage-lozenge">
             {
-                <a href={config.homePageConfig.Lozenge.url}>
+                <Link to={config.homePageConfig.Lozenge.url}>
                     {config.homePageConfig.Lozenge.text}
-                </a>
+                </Link>
             }
         </div>
     );
