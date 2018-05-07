@@ -16,13 +16,9 @@ stages:
   - deploy-prod
 
 cache:
-  key: $CI_COMMIT_REF_NAME
+  key: $CI_PROJECT_NAME
   paths:
   - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
-  - "node_modules/"
-  - "*/node_modules"
-  - target
-  - "*/target"
   - ".yarn-cache/"
 
 before_script:
@@ -213,11 +209,6 @@ buildtest:connectors:
 dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  cache:
-    policy: pull
-  before_script: []
-  cache:
-    policy: pull-push
   dependencies:
     - prebuild
   services:
