@@ -7,7 +7,7 @@
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "test":
-            "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register,tsx:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
+            "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
     },
     "author": "",
     "license": "Apache-2.0",

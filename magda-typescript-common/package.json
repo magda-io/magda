@@ -9,7 +9,7 @@
         "watch": "tsc -p tsconfig-build.json --watch",
         "generate": "generate-registry-typescript ./src/generated/registry",
         "test":
-            "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register,tsx:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+            "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
         "dev": "yarn run watch"
     },
     "devDependencies": {
