@@ -17,24 +17,22 @@ stages:
 
 cache:
   key: $CI_COMMIT_REF_SLUG
-  policy: pull
   paths:
   - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
   - "node_modules/"
   - "*/node_modules"
   - target
   - "*/target"
-  - ".yarn-cache"
+  - ".yarn-cache/"
 
 before_script:
 - yarn config set cache-folder .yarn-cache
 - yarn install
+- cp -r /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/
 
 build-builders:
   stage: build-builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
-  cache:
-    policy: pull-push
   services:
     - docker:dind
   script:
@@ -44,12 +42,7 @@ build-builders:
 prebuild:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  cache:
-    policy: pull-push
   script:
-    - cp -r /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/
-    - ls $CI_PROJECT_DIR/sbt-cache/
-    - echo $SBT_OPTS
     - cat /dev/null | sbt compile
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
@@ -62,6 +55,8 @@ prebuild:
 test:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies:
     - prebuild
   before_script: []
@@ -88,6 +83,8 @@ test:search-with-index-cache:
 test:search-no-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies:
     - prebuild
   before_script: []
@@ -120,6 +117,8 @@ test:search-no-index-cache:
 buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies:
     - prebuild
   script:
@@ -136,6 +135,8 @@ buildtest:ui:
 test:registry:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies:
     - prebuild
   services:
@@ -152,6 +153,8 @@ test:registry:
 buildtest:map:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies:
     - prebuild
   script:
@@ -167,6 +170,8 @@ buildtest:map:
 buildtest:typescript-apis:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies: 
     - prebuild
   script:
@@ -180,6 +185,8 @@ buildtest:typescript-apis:
 buildtest:sleuthers:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies: 
     - prebuild
   script:
@@ -206,6 +213,8 @@ buildtest:connectors:
 dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   before_script: []
   cache:
     policy: pull-push
@@ -214,13 +223,14 @@ dockerize:scala:
   services:
     - docker:dind
   script:
-    - cp -r /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - cat /dev/null | sbt -Drepository=$CI_REGISTRY/magda-data/magda -Dversion=$CI_COMMIT_REF_SLUG dockerBuildAndPush
 
 dockerize:ui:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   services:
     - docker:dind
   dependencies:
@@ -232,6 +242,8 @@ dockerize:ui:
 dockerize:map:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   services:
     - docker:dind
   dependencies:
@@ -243,6 +255,8 @@ dockerize:map:
 dockerize:typescript-apis:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   services:
     - docker:dind
   dependencies: 
@@ -254,6 +268,8 @@ dockerize:typescript-apis:
 dockerize:sleuthers:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   services:
     - docker:dind
   dependencies: 
@@ -265,6 +281,8 @@ dockerize:sleuthers:
 dockerize:connectors:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   services:
     - docker:dind
   dependencies: 
@@ -276,6 +294,8 @@ dockerize:connectors:
 dockerize:migrators:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   services:
     - docker:dind
   dependencies: []
@@ -286,6 +306,8 @@ dockerize:migrators:
 dockerize:dockerExtensions:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   services:
   - docker:dind
   dependencies: []
@@ -303,6 +325,7 @@ Run As Preview:
   dependencies: []
   cache: 
     paths: []
+    policy: pull
   image: 
     name: dtzar/helm-kubectl
   before_script: []
@@ -348,6 +371,7 @@ Stop Preview:
   dependencies: []
   cache: 
     paths: []
+    policy: pull
   image: 
     name: dtzar/helm-kubectl
   before_script: []
@@ -367,6 +391,7 @@ deploy-master-to-dev:
   dependencies: []
   cache: 
     paths: []
+    policy: pull
   image: 
     name: dtzar/helm-kubectl
   before_script: []
