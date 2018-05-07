@@ -1,9 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import "./ChartConfig.css";
-import Option from "muicss/lib/react/option";
-import Select from "muicss/lib/react/select";
-import Input from "muicss/lib/react/input";
 import bar from "../assets/bar-chart.svg";
 import pie from "../assets/circle-chart.svg";
 import line from "../assets/line-chart.svg";
@@ -21,30 +18,35 @@ const chartIcons = {
 export default class ChartConfig extends Component {
     renderDropdownSelect(options, id, label) {
         return (
-            <Select
-                name="input"
-                label={label}
-                value={findIndex(options, item => item === this.props[id])}
-                onChange={e => {
-                    const idx = e.target.value;
-                    this.onChange(id, options[idx]);
-                }}
-            >
-                {options
-                    ? options.map(
-                          (o, idx) =>
-                              typeof o === "string" ? (
-                                  <Option key={o} value={o} label={o} />
-                              ) : (
-                                  <Option
-                                      key={idx}
-                                      value={idx}
-                                      label={o.label}
-                                  />
-                              )
-                      )
-                    : null}
-            </Select>
+            <div>
+                <label htmlFor={label}>{label}</label>
+                <select
+                    className="au-select"
+                    name="input"
+                    label={label}
+                    id={label}
+                    value={findIndex(options, item => item === this.props[id])}
+                    onChange={e => {
+                        const idx = e.target.value;
+                        this.onChange(id, options[idx]);
+                    }}
+                >
+                    {options
+                        ? options.map(
+                              (o, idx) =>
+                                  typeof o === "string" ? (
+                                      <option key={o} value={o} label={o} />
+                                  ) : (
+                                      <option
+                                          key={idx}
+                                          value={idx}
+                                          label={o.label}
+                                      />
+                                  )
+                          )
+                        : null}
+                </select>
+            </div>
         );
     }
 
@@ -75,7 +77,12 @@ export default class ChartConfig extends Component {
             <div className="chart-config">
                 <div className="chart-type">{this.renderIconSelect()}</div>
                 <div className="chart-title">
-                    <Input
+                    <label htmlFor="chart-title">chart title</label>
+                    <input
+                        className="au-text-input"
+                        name="text-input"
+                        id="chart-title"
+                        type="text"
                         onChange={e =>
                             this.onChange("chartTitle", e.target.value)
                         }
