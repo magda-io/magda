@@ -22,11 +22,15 @@
     "prepare": "pancake"
   },
   "devDependencies": {
+    "@gov.au/buttons": "^2.0.1",
     "@gov.au/core": "^2.0.0",
     "@gov.au/grid-12": "^2.0.1",
+    "@gov.au/header": "^3.0.1",
+    "@gov.au/page-alerts": "^2.0.1",
     "@gov.au/pancake": "~1",
     "@gov.au/pancake-json": "^1.0.3",
     "@gov.au/pancake-sass": "^1.2.0",
+    "@gov.au/text-inputs": "^2.0.2",
     "@magda/scripts": "^0.0.39-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",
@@ -156,6 +160,9 @@
       "modules": false,
       "location": "pancake/sass/",
       "name": "pancake.scss"
+    },
+    "react": {
+      "location": "pancake/react/"
     }
   }
 }

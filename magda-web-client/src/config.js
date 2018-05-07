@@ -4,7 +4,7 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "//magda-dev.terria.io/";
+const fallbackApiHost = "https://magda-dev.terria.io/";
 
 const homePageConfig: {
     baseUrl: string,
@@ -55,7 +55,7 @@ export const config = {
     downloadLinksSize: 3,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
-    enableSuggestDatasetPage: false,
+    enableSuggestDatasetPage: true,
     breakpoints: {
         small: 768,
         medium: 992,
