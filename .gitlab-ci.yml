@@ -16,7 +16,7 @@ stages:
   - deploy-prod
 
 cache:
-  key: $CI_PROJECT_NAME
+  key: CI_COMMIT_REF_NAME
   policy: pull
 
 before_script:
@@ -28,8 +28,11 @@ build-builders:
   stage: build-builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   cache:
+    policy: pull
     paths:
     - ".yarn-cache/"
+    - "npm_modules"
+    - "*/npm_modules"
   services:
     - docker:dind
   script:
@@ -46,7 +49,6 @@ prebuild:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
-    key: $CI_PROJECT_NAME
     policy: pull-push
     paths:
     - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
