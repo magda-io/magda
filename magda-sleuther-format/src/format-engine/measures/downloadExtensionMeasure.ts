@@ -41,7 +41,7 @@ export default function getMeasureResults(
     ];
 
     let formatFromURL: Array<string> = urlRegexes.find(regexCombo => {
-        return downloadURLString.match(regexCombo[0]) ? true : false;
+        return downloadURLString.match(new RegExp(regexCombo[0],"i")) ? true : false;
     });
 
     if (formatFromURL && formatFromURL.length > 0) {
