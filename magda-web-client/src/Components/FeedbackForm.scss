@@ -23,14 +23,6 @@
         padding: 16px;
         border-top: 1px solid rgba(0, 0, 0, 0.26);
     }
-    .mui-textfield > input:focus,
-    .mui-textfield > textarea:focus {
-        border-color: $success;
-    }
-    .mui-textfield > input:focus ~ label,
-    .mui-textfield > textarea:focus ~ label {
-        color: $success;
-    }
     .close-btn {
         line-height: 0;
         padding: 0;
@@ -44,30 +36,15 @@
     }
 
     .feedback-form-header {
+        display: flex;
         padding: 8px 16px;
         color: $success;
-        span {
-            line-height: 24px;
-        }
+        text-align: left;
+        font-size: 14px;
     }
 
     .feedback-form-footer {
         text-align: right;
-    }
-
-    .feedback-button {
-        background: $success;
-        color: $banner-text;
-        border-radius: 30px;
-        padding-left: 40px;
-        padding-right: 8px;
-        img {
-            height: 40px;
-            width: 40px;
-            position: absolute;
-            left: 4px;
-            top: 4px;
-        }
     }
 
     .notification__inner {
@@ -77,13 +54,36 @@
 
     .privacy-link a {
         margin-top: 10px;
+        color: $main !important;
         @include AU-fontgrid(xs);
-        a {
+    }
+
+    .feedback-form-field {
+        display: flex;
+        label {
+            width: 70px;
             color: $main;
-            &:hover,
-            &:focus {
-                color: #ffffff;
-            }
+            margin-right: 10px;
         }
+        input,
+        textarea {
+            width: calc(100% - 70px);
+            margin-bottom: 10px;
+        }
+    }
+}
+
+.feedback-button {
+    background: $success;
+    color: $banner-text;
+    border-radius: 30px;
+    padding-left: 40px;
+    padding-right: 8px;
+    img {
+        height: 40px;
+        width: 40px;
+        position: absolute;
+        left: 4px;
+        top: 4px;
     }
 }

@@ -1,5 +1,4 @@
 import React from "react";
-import Input from "muicss/lib/react/input";
 import { fetchFeedback, resetFeedback } from "../actions/feedbackActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
@@ -148,24 +147,37 @@ class FeedbackForm extends React.Component {
                     </button>
                 </div>
                 <div className="feedback-form-body">
-                    <Input
-                        label="Name"
-                        value={this.state.name}
-                        onChange={this.changeValue.bind(this, "name")}
-                    />
-                    <Input
-                        label="Email (*)"
-                        value={this.state.email}
-                        onChange={this.changeValue.bind(this, "email")}
-                    />
-                    <Textarea
-                        label="Feedback (*)"
-                        value={this.state.feedback}
-                        onChange={this.changeValue.bind(this, "feedback")}
-                    />
+                    <div className="feedback-form-field">
+                        <label htmlFor="Name">Name</label>
+                        <input
+                            className="au-text-input"
+                            id="Name"
+                            value={this.state.name}
+                            onChange={this.changeValue.bind(this, "name")}
+                        />
+                    </div>
+                    <div className="feedback-form-field">
+                        <label htmlFor="Email (*)">Email (*)</label>
+                        <input
+                            className="au-text-input"
+                            id="Email (*)"
+                            value={this.state.email}
+                            onChange={this.changeValue.bind(this, "email")}
+                        />
+                    </div>
+                    <div className="feedback-form-field">
+                        <label htmlFor="Feedback (*)">Feedback (*)</label>
+                        <textarea
+                            className="au-text-input au-text-input--block"
+                            name="Feedback (*)"
+                            id="Feedback (*)"
+                            value={this.state.feedback}
+                            onChange={this.changeValue.bind(this, "feedback")}
+                        />
+                    </div>
                     <div className="feedback-form-footer">
                         <button
-                            className="au-btn"
+                            className="au-btn au-btn--tertiary send-btn disabled-looking-button"
                             disabled={this.props.isSendingFeedback}
                             onClick={this.onCancel}
                         >
@@ -173,7 +185,7 @@ class FeedbackForm extends React.Component {
                         </button>
 
                         <button
-                            className="au-btn au-btn--tertiary send-btn disabled-looking-button"
+                            className="au-btn "
                             onClick={this.onSubmit}
                             data-tip={this.state.validationErrorMessage}
                             data-place="top"
