@@ -11,10 +11,49 @@ export default class RequestFormTemplate extends React.Component {
         this.state = {
             message: "",
             senderName: "",
+            senderEmail: "",
+            emailValid: true,
+            messageValid: true,
+            nameValid: true
         };
     }
 
-    handleSubmit = () => {
+    /**
+     * performs some basic validation on the 3 inputs
+     * @param {Object} state current state
+     */
+    checkRequiredFields(state) {
+        const requiredFields = [];
+        if (!state || !state.senderEmail || state.senderEmail.trim() === "") {
+            requiredFields.push(`senderEmail`);
+            this.setState({ emailValid: false });
+        } else {
+            this.setState({ emailValid: true });
+        }
+        if (!state || !state.senderName || state.senderName.trim() === "") {
+            requiredFields.push(`senderName`);
+            this.setState({ nameValid: false });
+        } else {
+            this.setState({ nameValid: true });
+        }
+        if (!state || !state.message || state.message.trim() === "") {
+            requiredFields.push(`message`);
+            this.setState({ messageValid: false });
+        } else {
+            this.setState({ messageValid: true });
+        }
+        if (requiredFields.length) return requiredFields;
+        return null;
+    }
+
+    /**
+     * If valid this form is submitted.
+     */
+    handleSubmit = e => {
+        e.preventDefault();
+        if (this.checkRequiredFields(this.state)) {
+            return;
+        }
         this.props.handleSubmit(this.state);
     };
 
@@ -27,10 +66,13 @@ export default class RequestFormTemplate extends React.Component {
         const inputVal = event.target.value.trim();
         switch (inputId) {
             case "textarea-input":
+                this.setState({ message: inputVal });
                 break;
             case "name-input":
+                this.setState({ senderName: inputVal });
                 break;
             case "email-input":
+                this.setState({ senderEmail: inputVal });
                 break;
             default:
                 break;
@@ -47,25 +89,44 @@ export default class RequestFormTemplate extends React.Component {
                 <AUtextInput
                     as="textarea"
                     id="textarea-input"
-                    className="textarea-input"
+                    className={
+                        "textarea-input " +
+                        (this.state.messageValid
+                            ? ""
+                            : "au-text-input--invalid")
+                    }
                     onChange={this.handleInputChange}
+                    type="text"
                     placeholder={this.props.textAreaPlaceHolder}
                 />
                 <label htmlFor="name-input">Your Name</label>
                 <AUtextInput
                     id="name-input"
                     onChange={this.handleInputChange}
-                    className="suggest-page-input"
+                    type="text"
+                    className={
+                        "suggest-page-input " +
+                        (this.state.nameValid ? "" : "au-text-input--invalid")
+                    }
                     placeholder={this.props.namePlaceHolder}
                 />
                 <label htmlFor="email-input">Email</label>
                 <AUtextInput
                     id="email-input"
                     onChange={this.handleInputChange}
-                    className="suggest-page-input"
+                    className={
+                        "suggest-page-input " +
+                        (this.state.emailValid ? "" : "au-text-input--invalid")
+                    }
                     placeholder={this.props.emailPlaceHolder}
                 />
-                <AUbutton onClick={this.handleSubmit}>Send</AUbutton>
+                <AUbutton
+                    onClick={this.handleSubmit}
+                    className="submit-button"
+                    type="submit"
+                >
+                    Send
+                </AUbutton>
             </Form>
         );
     }
