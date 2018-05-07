@@ -216,11 +216,19 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
     });
 
     describe("Should return correct format for `sampleLauncestonDistributionData.json`", function() {
+        const distributions: any[7] = sampleLauncestonDistributionData;
 
-        const distributions:any[7] = sampleLauncestonDistributionData;
+        it("Should return `ESRI REST` for distribution no. 2 when get result by extension", () => {
+            const distribution: any = distributions[1];
+            const r: MeasureResult = getExtensionMeasureResult(
+                distribution,
+                synonymObject
+            );
+            expect(r.formats[0].format).to.equal("ESRI REST");
+        });
 
-        it("Should return `WMS` for distribution no. 7", () => {
-            const distribution:any = distributions[6];
+        it("Should return `WMS` for distribution no. 7 when get result by extension", () => {
+            const distribution: any = distributions[6];
             const r: MeasureResult = getExtensionMeasureResult(
                 distribution,
                 synonymObject
@@ -228,8 +236,8 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
             expect(r.formats[0].format).to.equal("WMS");
         });
 
-        it("Should return `WFS` for distribution no. 8", () => {
-            const distribution:any = distributions[7];
+        it("Should return `WFS` for distribution no. 8 when get result by extension", () => {
+            const distribution: any = distributions[7];
             const r: MeasureResult = getExtensionMeasureResult(
                 distribution,
                 synonymObject
@@ -237,6 +245,32 @@ describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
             expect(r.formats[0].format).to.equal("WFS");
         });
 
+        it("Should return `ESRI REST` for distribution no. 2 when get result by format", () => {
+            const distribution: any = distributions[1];
+            const r: MeasureResult = getDcatMeasureResult(
+                distribution,
+                synonymObject
+            );
+            expect(r.formats[0].format).to.equal("ESRI REST");
+        });
+
+        it("Should return `WMS` for distribution no. 7 when get result by format", () => {
+            const distribution: any = distributions[6];
+            const r: MeasureResult = getDcatMeasureResult(
+                distribution,
+                synonymObject
+            );
+            expect(r.formats[0].format).to.equal("WMS");
+        });
+
+        it("Should return `WFS` for distribution no. 8 when get result by format", () => {
+            const distribution: any = distributions[7];
+            const r: MeasureResult = getDcatMeasureResult(
+                distribution,
+                synonymObject
+            );
+            expect(r.formats[0].format).to.equal("WFS");
+        });
     });
 });
 

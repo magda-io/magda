@@ -10,6 +10,7 @@
         "x-msdownload",
         "WWW:DOWNLOAD-1.0-http--downloaddata"
     ],
+    "esri rest": ["esri rest"],
     "wms": [
         "OGC:WMS-1.3.0-http-get-capabilities",
         "OGC:WMS-1.3.0-http-get-map",
