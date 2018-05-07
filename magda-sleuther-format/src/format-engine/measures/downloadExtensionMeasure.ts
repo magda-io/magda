@@ -26,7 +26,7 @@ export default function getMeasureResults(
         [".*\\.geojson$", "GEOJSON"],
         [".*?.*service=wms.*", "WMS"],
         [".*?.*service=wfs.*", "WFS"],
-        ["\\W+arcgis\\W*", "ArcGIS"],
+        ["\\W+MapServer\\W*|\\W+FeatureServer\\W*", "ESRI REST"],
         [".*\\.(shp|shz|dbf)(\\.zip)?$", "SHP"],
         [".*\\.(pdf)(\\.zip)?$", "PDF"],
         [".*\\.(json)(\\.zip)?$", "JSON"],
@@ -42,7 +42,9 @@ export default function getMeasureResults(
     ];
 
     let formatFromURL: Array<string> = urlRegexes.find(regexCombo => {
-        return downloadURLString.match(new RegExp(regexCombo[0],"i")) ? true : false;
+        return downloadURLString.match(new RegExp(regexCombo[0], "i"))
+            ? true
+            : false;
     });
 
     if (formatFromURL && formatFromURL.length > 0) {
