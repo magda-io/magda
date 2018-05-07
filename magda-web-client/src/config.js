@@ -52,7 +52,7 @@ export const config = {
     resultsPerPage: 10,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
-    enableSuggestDatasetPage: true,
+    enableSuggestDatasetPage: false,
     breakpoints: {
         small: 768,
         medium: 992,
