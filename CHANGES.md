@@ -1,4 +1,6 @@
 ## 0.0.39
+
+*   Use DTA design system for Feedback form
 *   Change the tag type of the background link on the homepage in order to correct the page refreshing when it shouldn't
 
 *   Added gitlab CI build config
@@ -20,7 +22,6 @@
 *   Brought back homepage animation
 *   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
-
 
 ## 0.0.38
 
