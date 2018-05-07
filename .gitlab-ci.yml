@@ -52,6 +52,8 @@ prebuild:
     policy: pull-push
     paths:
     - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+    - "target"
+    - "*/target"
     - ".yarn-cache/"
   script:
     - cat /dev/null | sbt compile
