@@ -33,7 +33,7 @@ build-builders:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - npm run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+    - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
 
 prebuild:
   stage: prebuild
@@ -196,6 +196,8 @@ buildtest:sleuthers:
 buildtest:connectors:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies: 
     - prebuild
   script:
@@ -209,6 +211,8 @@ buildtest:connectors:
 dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  cache:
+    policy: pull
   dependencies:
     - prebuild
   services:
