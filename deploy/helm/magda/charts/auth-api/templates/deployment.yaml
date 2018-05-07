@@ -16,8 +16,6 @@ spec:
       - name: authorization-api
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
-        imagePullSecrets:
-          - name: {{ .Values.global.image.imagePullSecret }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
