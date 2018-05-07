@@ -19,7 +19,8 @@ spec:
             "--config", "/etc/config/config.json",
             "--listenPort", "80",
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
-            "--registryApiBaseUrlInternal", "http://registry-api/v0"
+            "--registryApiBaseUrlInternal", "http://registry-api/v0",
+            "--cspReportUri", {{ .Values.cspReportUri | quote }}
         ]
         livenessProbe:
           httpGet:

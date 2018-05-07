@@ -68,6 +68,7 @@ search-api:
       cpu: 0
       memory: 0
 web-server:
+  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
   resources:
     requests:
       cpu: 0

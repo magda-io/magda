@@ -115,6 +115,7 @@ search-api:
         cpu: 1000m
         memory: 1000m
 web-server:
+    cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
     autoscaler:
         minReplicas: 2
         maxReplicas: 4
