@@ -42,10 +42,8 @@
         background: #37434f;
         box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
             0px 3px 6px rgba(0, 0, 0, 0.23);
-        font-style: normal;
         font-weight: 500;
-        line-height: normal;
-        font-size: 14px;
+        @include AU-fontgrid(xs);
         text-align: center;
         color: #f8f9fa;
         width: 134px;

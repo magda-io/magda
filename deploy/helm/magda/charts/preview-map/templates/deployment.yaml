@@ -16,6 +16,7 @@ spec:
       - name: preview-map
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: ""
@@ -23,6 +24,7 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
+{{- end }}
         env:
         - name: NODE_ENV
           value: production

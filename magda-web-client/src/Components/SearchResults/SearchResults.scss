@@ -13,17 +13,11 @@
     overflow-x: hidden;
 }
 
-.search-results__count,
-.search-recomendations__count {
-    font-family: $font-base;
-    font-size: 16px;
+.search-results__count {
+    @include AU-fontgrid(sm);
     color: #2b2b2b;
     text-transform: uppercase;
     font-weight: 700;
     margin: 15px 0;
     padding: 0 15px;
-}
-
-.search-recomendations__count {
-    font-size: 14px;
 }

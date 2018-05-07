@@ -13,8 +13,11 @@ const swaggerJson = path.resolve(swaggerOutputDir, "swagger.json");
 fs.removeSync(outputDir);
 
 const sbt = spawnSync(
-    "sbt",
+    "cat",
     [
+        "/dev/null",
+        "|",
+        "sbt",
         '"registryApi/runMain au.csiro.data61.magda.registry.CommandLine ' +
             swaggerOutputDir +
             '"'
@@ -25,6 +28,7 @@ const sbt = spawnSync(
         shell: true
     }
 );
+
 if (sbt.status !== 0) {
     throw sbt.error;
 }

@@ -1,11 +1,9 @@
-addSbtPlugin("io.spray" % "sbt-revolver" % "0.8.0")
+addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.0-RC1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.3")
 
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.1.0")
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.2.4")
 
 addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.4.1")
 
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
-
-addSbtPlugin("org.clapper" % "sbt-editsource" % "0.7.0")
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")
