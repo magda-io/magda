@@ -19,9 +19,11 @@ spec:
         command: ["/cloud_sql_proxy",
                   "-instances={{ .Values.instanceConnectionName }}=tcp:0.0.0.0:5432",
                   "-credential_file=/secrets/cloudsql/credentials.json"]
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           exec:
             command: ["nc", "-z", "127.0.0.1", "5432"]
+{{- end }}
         volumeMounts:
         - name: cloudsql-instance-credentials
           mountPath: /secrets/cloudsql

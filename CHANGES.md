@@ -1,11 +1,31 @@
 ## 0.0.39
 
+*   Change the tag type of the background link on the homepage in order to correct the page refreshing when it shouldn't
+
+*   Added gitlab CI build config
+*   Fixed indexer's ability to make/retrieve ES backups
+*   Added ability for magda-postgres to retrieve WAL backup as "immediate" rather than catching all the way up with the WAL log.
+*   Removed implied ability for magda postgres to use a backup method other than WAL (this never actually worked in practice)
+*   Replaced old `node-ci` script with `run-in-submodules`, which allows a command to be run in submodules based on matching
+    the values in `package.json`.
+
+*   Removed `border-bottom` property for `Open Data Quality:` from DatasetSummary/Details page
+*   Apply Design System skip link/links styles
+*   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
 *   Fixed distribution previews
 *   Modified helmet directives to use base URL script sources
+*   Added stubbed correspondence api
+*   Added link to publisher page for publisher on dataset summary.
+*   Recent search will not save "\*" search
+*   Reduced homepage tagline bottom margin
+*   Brought back homepage animation
+*   Chart is available for Non-time series CSV data files now
+*   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
 
 ## 0.0.38
 
+*   Use button styles from DTA design guide
 *   Use grid system from DTA design guide
 *   Mobile search filter new look
 *   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
@@ -53,7 +73,15 @@
 *   Upgraded React and associates to v16.3
 *   Ensured scroll bars are shown on Chrome/Webkit except on search facet autocomplete lists
 *   Fixed an issue that users may see an error after page 4
-*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key    keep distance between search box and the first story on mobile view
+*   Fixed an issue that prevents users from searching current search text by clicking search button or pressing enter key
+*   keep distance between search box and the first story on mobile view
+*   Fixed an issue search may not be added to recent search list in some cases
+*   Make small position adjustment to the recent search icon
+*   Moved homepage config from S3 to local
+*   Added spacing between download & new tab button on dataset page
+*   Added spacing on byline of dataset page
+*   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
+*   Fix placement and color of search box on desktop and mobile
 
 ## 0.0.37
 

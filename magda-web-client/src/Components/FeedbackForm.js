@@ -4,7 +4,6 @@ import { fetchFeedback, resetFeedback } from "../actions/feedbackActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import "./FeedbackForm.css";
-import Button from "muicss/lib/react/button";
 import Textarea from "muicss/lib/react/textarea";
 import feedback from "../assets/feedback.svg";
 import close from "../assets/close.svg";
@@ -138,15 +137,15 @@ class FeedbackForm extends React.Component {
                 <div className="feedback-form-header">
                     <span
                     >{`Have feedback on this website? We're all ears`}</span>
-                    <Button
-                        className="close-btn"
+                    <button
+                        className="close-btn au-btn au-btn--secondary"
                         onClick={() => {
                             this.setState({ isOpen: false });
                         }}
                         title="close feedback"
                     >
                         <img alt="close" src={close} />
-                    </Button>
+                    </button>
                 </div>
                 <div className="feedback-form-body">
                     <Input
@@ -165,16 +164,16 @@ class FeedbackForm extends React.Component {
                         onChange={this.changeValue.bind(this, "feedback")}
                     />
                     <div className="feedback-form-footer">
-                        <Button
-                            variant="flat"
+                        <button
+                            className="au-btn"
                             disabled={this.props.isSendingFeedback}
                             onClick={this.onCancel}
                         >
                             Cancel
-                        </Button>
+                        </button>
 
-                        <Button
-                            className="send-btn disabled-looking-button"
+                        <button
+                            className="au-btn au-btn--tertiary send-btn disabled-looking-button"
                             onClick={this.onSubmit}
                             data-tip={this.state.validationErrorMessage}
                             data-place="top"
@@ -183,7 +182,7 @@ class FeedbackForm extends React.Component {
                             {this.props.isSendingFeedback
                                 ? "Sending..."
                                 : "Send"}
-                        </Button>
+                        </button>
 
                         <ReactTooltip />
                         <div className="privacy-link">
@@ -201,12 +200,12 @@ class FeedbackForm extends React.Component {
         return (
             <div className="feedback-form">
                 <Medium>
-                    <Button
-                        className="feedback-button"
+                    <button
+                        className="feedback-button au-btn"
                         onClick={() => this.setState({ isOpen: true })}
                     >
                         <img alt="feedback" src={feedback} />Give feedback
-                    </Button>
+                    </button>
                 </Medium>
                 {this.state.isOpen && this.renderByState()}
             </div>

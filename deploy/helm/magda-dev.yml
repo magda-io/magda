@@ -1,4 +1,6 @@
 global:
+  useCombinedDb: true
+  useCloudSql: false
   externalUrl: http://magda-dev.terria.io
   rollingUpdate:
     maxUnavailable: 1
@@ -45,66 +47,82 @@ elasticsearch:
       requests:
         cpu: 400m
         memory: 1000Mi
+  backup:
+    googleApplicationCreds:
+      secretName: storage-account-credentials
+      fileName: db-service-account-private-key.json
 feedback-api:
   gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
 indexer:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
+  readSnapshots: true
+  makeSnapshots: true
+  elasticsearch:
+    useGcsSnapshots: true
+    gcsSnapshotBucket: "magda-es-snapshots-dev"
+    gcsSnapshotClient: "default"
 preview-map:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
 registry-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 250m
       memory: 0
 search-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
 web-server:
   cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
 sleuther-linked-data-rating:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
 sleuther-broken-link:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
+    limits:
+      cpu: 500m
 sleuther-visualization:
   resources:
     requests:
       cpu: 200m
       memory: 200Mi
+    limits:
+      cpu: 500m
 sleuther-format:
   resources:
     requests:
       cpu: 0
       memory: 0
+    limits:
+      cpu: 500m
 admin-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
 authorization-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
 discussions-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0

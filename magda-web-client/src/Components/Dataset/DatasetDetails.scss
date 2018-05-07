@@ -25,9 +25,9 @@
 }
 
 .dataset-details-source {
-    a {
-        border-bottom: none;
-    }
+    font-size: 16px;
+    line-height: 19px;
+
     .markdown a {
         font-weight: 500;
     }
@@ -57,10 +57,14 @@
     }
     .star-rating-box {
         position: absolute;
-        top: 3px;
+        margin-left: 10px;
     }
 }
 
 .dataset-details-files-apis {
     margin-top: 50px;
+}
+
+.quality-rating-box {
+    margin: 20px 0;
 }

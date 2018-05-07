@@ -10,8 +10,10 @@
         "watch": "tsc -p tsconfig-build.json --watch",
         "start": "node dist/index.js",
         "dev": "run-typescript-in-nodemon src/index.ts",
-        "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-        "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+        "docker-build-local":
+            "create-docker-context-for-node-component --build --push --tag auto --local",
+        "docker-build-prod":
+            "create-docker-context-for-node-component --build --push --tag auto"
     },
     "author": "",
     "license": "Apache-2.0",
@@ -48,5 +50,11 @@
         },
         "jwtSecret": "squirrel",
         "userId": "00000000-0000-4000-8000-000000000000"
+    },
+    "magda": {
+        "language": "typescript",
+        "categories": {
+            "connector": true
+        }
     }
 }

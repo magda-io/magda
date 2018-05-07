@@ -27,6 +27,7 @@ spec:
             "--kubernetesApiType", "cluster",
             "--userId", {{ .Values.global.defaultAdminUserId | quote }}
         ]
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: /v0/healthz
@@ -34,6 +35,7 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 60
           timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:

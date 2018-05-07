@@ -1,11 +1,12 @@
 .tooltip {
     position: relative;
     display: inline-block;
-    // border-bottom: 1px dotted black;
+    a {
+        text-decoration: underline;
+    }
 }
 
 .tooltip .tooltiptext {
-    //cursor: pointer;
     visibility: hidden;
     width: 258px;
     background-color: white;
@@ -21,7 +22,7 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-.tooltip img{
+.tooltip img {
     margin: 0;
     vertical-align: middle;
     display: inline-block;
