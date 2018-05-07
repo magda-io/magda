@@ -38,7 +38,7 @@ const argv = addJwtSecretFromEnvVar(
             default: 465
         })
         .option("smtpSecure", {
-            describe: "SMTP using TLS?",
+            describe: "If the SMTP server should use SSL/TLS",
             type: "boolean",
             default: true
         })

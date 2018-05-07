@@ -1,9 +1,9 @@
 import * as nodemailer from "nodemailer";
 import * as pug from "pug";
 import * as path from "path";
+import * as html2text from "html-to-text";
 
 import { ApiRouterOptions } from "./createApiRouter";
-import { DatasetMessage } from "./model";
 
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
@@ -14,35 +14,33 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
  * @param msg - to, from, message contents
  * @param postData - form posted data, used to fetch recordID
  */
-export function sendMail(
-    options: ApiRouterOptions,
-    msg: DatasetMessage,
-    postData: any
-) {
+export function sendMail(options: ApiRouterOptions, request: any) {
     const opts = resolveConnectionOptions(options);
 
     getRecordAsPromise(
         options,
-        encodeURIComponent(postData.params.datasetId || "")
+        encodeURIComponent(request.body.datasetId || "")
     )
         .then(result => {
             let templateContext = {
                 agencyName: result.aspects["dcat-dataset-strings"].contactPoint,
                 agencyEmail: "agency.email@example.com",
                 dataset: result.name,
-                requesterName: msg.senderName,
-                requesterEmail: msg.senderEmail,
-                requesterMsg: msg.message
+                requesterName: request.body.senderName,
+                requesterEmail: request.body.senderEmail,
+                requesterMsg: request.body.message
             };
 
             //Mail configuration
             const postmaster = {
                 to: "",
-                replyTo: msg.senderEmail,
+                replyTo: request.body.senderEmail,
                 from: "",
                 subject: "",
-                text: "",
-                html: resolveTemplate(templateContext, postData),
+                text: html2text.fromString(
+                    resolveTemplate(templateContext, request)
+                ),
+                html: resolveTemplate(templateContext, request),
                 attachments: [
                     {
                         filename: "AU-Govt-Logo.jpg",
