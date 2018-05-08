@@ -161,7 +161,7 @@ class DataPreviewChart extends Component {
                     this.chartWidthDiv = chartWidthDiv;
                 }}
             >
-                <div className="mui-col-md-8">
+                <div className="col-md-8">
                     <ReactEcharts
                         className="data-preview-chart-container"
                         style={{ height: "450px" }}
@@ -170,7 +170,7 @@ class DataPreviewChart extends Component {
                     />
                 </div>
                 <Medium>
-                    <div className="mui-col-md-4 config-panel-container">
+                    <div className="col-md-4 config-panel-container">
                         <ChartConfig
                             chartType={this.state.chartType}
                             chartTitle={this.state.chartTitle}

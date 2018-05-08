@@ -76,6 +76,11 @@ const argv = yargs
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
+    })
+    .option("cspReportUri", {
+        describe:
+            "The URI to send Content Security Policy violation reports to.",
+        type: "string"
     }).argv;
 
 var app = express();
@@ -90,29 +95,31 @@ app.use(
     })
 );
 
+const cspDirectives = {
+    scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // for VWO until... we get rid of that? :(
+        "data:", // ditto
+        "browser-update.org",
+        "dev.visualwebsiteoptimizer.com",
+        "platform.twitter.com",
+        "www.googletagmanager.com",
+        "www.google-analytics.com",
+        "rum-static.pingdom.net",
+        "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.3.9/rollbar.min.js",
+        "https://tagmanager.google.com/debug"
+    ],
+    objectSrc: ["'none'"],
+    sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"]
+} as helmet.IHelmetContentSecurityPolicyDirectives;
+
+if (argv.cspReportUri) {
+    cspDirectives.reportUri = argv.cspReportUri;
+}
+
 app.use(
     helmet.contentSecurityPolicy({
-        directives: {
-            scriptSrc: [
-                "'self'",
-                "'unsafe-eval'", // for vega until we banish it into an iframe
-                "'unsafe-inline'", // for VWO until... we get rid of that? :(
-                "data:", // ditto
-                "browser-update.org",
-                "dev.visualwebsiteoptimizer.com",
-                "platform.twitter.com",
-                "www.googletagmanager.com",
-                "www.google-analytics.com",
-                "rum-static.pingdom.net",
-                "cdnjs.cloudflare.com/ajax/libs/rollbar.js/", //rollbar
-                "cdnjs.cloudflare.com/ajax/libs/es5-shim/", // shim
-                "cdnjs.cloudflare.com/ajax/libs/es6-shim/", // shim
-                "s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/"
-            ],
-            objectSrc: ["'none'"],
-            sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"],
-            reportUri: argv.baseUrl + "api/v0/feedback/csp"
-        } as helmet.IHelmetContentSecurityPolicyDirectives,
+        directives: cspDirectives,
         browserSniff: false
     })
 );

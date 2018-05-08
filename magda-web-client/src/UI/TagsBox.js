@@ -26,32 +26,22 @@ function mergeTags(tags) {
 function TagsBox(props) {
     return (
         <div className="tags-box">
-            <table width="100%">
-                <tbody>
-                    <tr>
-                        <td className="heading">Tags: </td>
-                        <td>
-                            <AUtags
-                                tags={
-                                    props.tags &&
-                                    mergeTags(props.tags)
-                                        .sort((a, b) => {
-                                            if (a < b) return -1;
-                                            else if (a > b) return 1;
-                                            else return 0;
-                                        })
-                                        .map((t, _) => ({
-                                            link: `/search?q=${encodeURIComponent(
-                                                t
-                                            )}`,
-                                            text: t
-                                        }))
-                                }
-                            />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div className="heading">Tags: </div>
+            <AUtags
+                tags={
+                    props.tags &&
+                    mergeTags(props.tags)
+                        .sort((a, b) => {
+                            if (a < b) return -1;
+                            else if (a > b) return 1;
+                            else return 0;
+                        })
+                        .map((t, _) => ({
+                            link: `/search?q=${encodeURIComponent(t)}`,
+                            text: t
+                        }))
+                }
+            />
         </div>
     );
 }

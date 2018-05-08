@@ -6,11 +6,7 @@ import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
-import brokenLinkAspectDef, {
-    BrokenLinkAspect,
-    RetrieveResult
-} from "./brokenLinkAspectDef";
-import datasetQualityAspectDef from "@magda/sleuther-framework/dist/common-aspect-defs/datasetQualityAspectDef";
+import { BrokenLinkAspect, RetrieveResult } from "./brokenLinkAspectDef";
 import FTPHandler from "./FtpHandler";
 import parseUriSafe from "./parseUriSafe";
 
@@ -104,28 +100,7 @@ export default async function onRecordFound(
         })
     );
 
-    const numberWorking = bestResultPerDistribution.reduce(
-        (soFar: number, result: BrokenLinkSleuthingResult) =>
-            soFar +
-            (!result.aspect || result.aspect.status === "active" ? 1 : 0),
-        0
-    );
-
-    const qualityOp = {
-        op: "add",
-        path: "/" + brokenLinkAspectDef.id,
-        value: {
-            score: numberWorking / bestResultPerDistribution.length,
-            weighting: 1
-        }
-    };
-
-    // Record a single quality aspect for the dataset.
-    const qualityPromise = registry
-        .patchRecordAspect(record.id, datasetQualityAspectDef.id, [qualityOp])
-        .then(result => unionToThrowable(result));
-
-    await Promise.all([brokenLinksAspectPromise, qualityPromise]);
+    await brokenLinksAspectPromise;
 }
 
 function recordBrokenLinkAspect(
