@@ -2,7 +2,6 @@ image: registry.gitlab.com/magda-data/magda/data61/magda-builder:$CI_COMMIT_REF_
 
 variables:
   CI: "true"
-  SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache"
   DOCKER_DRIVER: overlay2
 
 stages:
@@ -83,7 +82,7 @@ buildtest:search-with-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
-      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache
+      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   retry: 2
   tags:
     - heavy
@@ -127,7 +126,7 @@ buildtest:search-no-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
-      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache
+      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   retry: 2
   tags:
     - heavy
