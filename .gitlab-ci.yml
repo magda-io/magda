@@ -2,7 +2,7 @@ image: registry.gitlab.com/magda-data/magda/data61/magda-builder:$CI_COMMIT_REF_
 
 variables:
   CI: "true"
-  SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy"
+  SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache"
   DOCKER_DRIVER: overlay2
 
 stages:
@@ -52,7 +52,7 @@ prebuild:
     key: $CI_JOB_NAME
     policy: pull-push
     paths:
-    - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+    - "$CI_PROJECT_DIR/sbt-cache"
     - "target"
     - "*/target"
   before_script:
@@ -62,10 +62,7 @@ prebuild:
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
       - "magda-typescript-common/src/generated"
-      - "target"
-      - "*/target"
       - "node_modules"
       - "*/node_modules"
       - "yarn.lock"
@@ -82,9 +79,10 @@ buildtest:search-with-index-cache:
     policy: pull-push
     key: $CI_JOB_NAME
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
+      - "project/project/target"
   variables:
     # 2.5gb heap
     # unload classes we don't need
@@ -98,7 +96,7 @@ buildtest:search-with-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
-      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
+      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache
   retry: 2
   tags:
     - heavy
@@ -106,9 +104,10 @@ buildtest:search-with-index-cache:
     - sbt "intTest/testOnly au.csiro.data61.magda.api.*Spec"
   artifacts:
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
+      - "project/project/target"
     expire_in: 30 days
 
 buildtest:search-no-index-cache:
@@ -122,9 +121,10 @@ buildtest:search-no-index-cache:
     policy: pull-push
     key: $CI_JOB_NAME
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
+      - "project/project/target"
   services:
     - postgres:9.6
   variables:
@@ -144,7 +144,7 @@ buildtest:search-no-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
-      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
+      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache
   retry: 2
   tags:
     - heavy
@@ -152,9 +152,10 @@ buildtest:search-no-index-cache:
     - sbt "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
   artifacts:
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
+      - "project/project/target"
     expire_in: 30 days
 
 buildtest:ui:
@@ -182,9 +183,10 @@ buildtest:registry:
     policy: pull-push
     key: $CI_JOB_NAME
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
+      - "project/project/target"
   services:
     - postgres:9.6
   before_script:
@@ -198,9 +200,10 @@ buildtest:registry:
     - sbt registryApi/test
   artifacts:
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
+      - "project/project/target"
     expire_in: 30 days
     
 buildtest:map:
@@ -278,9 +281,10 @@ dockerize:scala:
     policy: pull-push
     key: $CI_JOB_NAME
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
+      - "project/project/target"
   services:
     - docker:dind
   before_script:
