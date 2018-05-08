@@ -60,7 +60,7 @@ prebuild:
     - "*/target"
     - "yarn.lock"
   before_script:
-    - "cp -RT /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
     - yarn install
   script:
     - lerna run generate --scope=@magda/typescript-common --stream
@@ -81,7 +81,7 @@ buildtest:search-with-index-cache:
   dependencies:
     - prebuild
   before_script:
-    - "cp -RT /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   cache:
     policy: pull-push
     key: $CI_JOB_NAME
@@ -121,7 +121,7 @@ buildtest:search-no-index-cache:
   dependencies:
     - prebuild
   before_script:
-    - "cp -RT /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   cache:
     policy: pull-push
     key: $CI_JOB_NAME
@@ -192,7 +192,7 @@ buildtest:registry:
   services:
     - postgres:9.6
   before_script:
-    - "cp -RT /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
@@ -288,7 +288,7 @@ dockerize:scala:
   services:
     - docker:dind
   before_script:
-    - "cp -RT /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - cat /dev/null | sbt -Drepository=$CI_REGISTRY/magda-data/magda -Dversion=$CI_COMMIT_REF_SLUG dockerBuildAndPush
