@@ -18,6 +18,7 @@
 *   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
 *   Fixed distribution previews
+*   Made CSP report uri configurable
 *   Added stubbed correspondence api
 *   Added link to publisher page for publisher on dataset summary.
 *   Recent search will not save "\*" search
