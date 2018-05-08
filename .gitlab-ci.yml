@@ -15,9 +15,6 @@ stages:
   - release
   - deploy-prod
 
-# before_script:
-#   - yarn install
-
 builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
@@ -94,10 +91,8 @@ buildtest:search-with-index-cache:
     - sbt "intTest/testOnly au.csiro.data61.magda.api.*Spec"
   artifacts:
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
-      - "project/project/target"
     expire_in: 30 days
 
 buildtest:search-no-index-cache:
@@ -140,10 +135,8 @@ buildtest:search-no-index-cache:
     - sbt "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
   artifacts:
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
-      - "project/project/target"
     expire_in: 30 days
 
 buildtest:ui:
@@ -186,10 +179,8 @@ buildtest:registry:
     - sbt registryApi/test
   artifacts:
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
-      - "project/project/target"
     expire_in: 30 days
     
 buildtest:map:
