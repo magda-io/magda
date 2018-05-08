@@ -1,6 +1,9 @@
 ## 0.0.39
 
 *   Use DTA design system for Feedback form
+*   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
+*   Made linked data rating sleuther take output of broken link sleuther into account
+*   Removed datasetQualityAspectDef from sleuther-broken-link
 *   Update the look of facet searchbox to be consistent with DTA design system
 *   Mobile Aus Gov logo links to homepage
 *   Change the tag type of the background link on the homepage in order to correct the page refreshing when it shouldn't

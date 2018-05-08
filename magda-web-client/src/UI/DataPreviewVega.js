@@ -188,7 +188,7 @@ export default class DataPreviewVega extends Component<{
                     this.chartWidthDiv = chartWidthDiv;
                 }}
             >
-                <div className="mui-col-md-6">
+                <div className="col-md-6">
                     <div className="data-preview-vis_file-name">{fileName}</div>
                     <VegaLite
                         className="data-preview-vis_chart"
@@ -197,7 +197,7 @@ export default class DataPreviewVega extends Component<{
                     />
                 </div>
                 <Medium>
-                    <div className="mui-col-md-6">
+                    <div className="col-md-6">
                         <ChartConfig
                             chartType={spec.mark}
                             chartTitle={spec.description}

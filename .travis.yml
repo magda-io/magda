@@ -75,11 +75,10 @@ matrix:
           - magda-web-server/node_modules
       script:
         - npm install -g lerna
-        - lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map bootstrap
-        - lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map run postinstall
+        - lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map bootstrap --include-filtered-dependencies
         - ./node_modules/.bin/eslint magda-web-client/src/
-        - lerna --scope @magda/web-client --scope @magda/preview-map run build
-        - lerna --scope @magda/preview-map --scope @magda/web-client run test
+        - lerna run build --scope @magda/web-client --scope @magda/preview-map --include-filtered-dependencies
+        - lerna run test --scope @magda/preview-map --scope @magda/web-client
       env:
         global:
           - CI=true
