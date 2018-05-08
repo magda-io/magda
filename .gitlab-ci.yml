@@ -2,7 +2,7 @@ image: registry.gitlab.com/magda-data/magda/data61/magda-builder:$CI_COMMIT_REF_
 
 variables:
   CI: "true"
-  SBT_OPTS: "-Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache"
+  SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache"
   DOCKER_DRIVER: overlay2
 
 stages:
@@ -83,8 +83,6 @@ buildtest:search-with-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
-      -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
-      -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache
   retry: 2
   tags:
@@ -129,8 +127,6 @@ buildtest:search-no-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
-      -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
-      -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache
   retry: 2
   tags:
@@ -203,6 +199,7 @@ buildtest:map:
     - "*/dist"
     - "magda-preview-map/wwwroot/build"
     expire_in: 30 days
+  retry: 1
 
 buildtest:typescript-apis:
   stage: buildtest
