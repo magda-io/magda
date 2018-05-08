@@ -3,7 +3,6 @@ import fbLogo from "./fb-logo.svg";
 import googleLogo from "./google-logo.svg";
 import "./Login.css";
 import { config } from "../../config";
-import Input from "muicss/lib/react/input";
 const { baseUrl } = config;
 
 export default function Login(props) {
@@ -84,7 +83,10 @@ export default function Login(props) {
                             <div className="input-group-addon">
                                 <span className="glyphicon glyphicon-user" />
                             </div>
-                            <Input
+                            <label htmlFor="username">User name</label>
+                            <input
+                                className="au-text-input au-text-input--block"
+                                id="username"
                                 type="text"
                                 placeholder="Username"
                                 name="username"
@@ -94,14 +96,16 @@ export default function Login(props) {
                             <div className="input-group-addon">
                                 <span className="glyphicon glyphicon-lock" />
                             </div>
-                            <Input
+                            <label htmlFor="password">Password</label>
+                            <input
+                                className="au-text-input au-text-input--block"
                                 type="password"
                                 name="password"
                                 placeholder="Password"
                             />
                         </div>
                         <div className="pull-right">
-                            <input type="submit" className="au-btn  " />
+                            <input type="submit" className="au-btn" />
                         </div>
                     </form>
                 </div>
