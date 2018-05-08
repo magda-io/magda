@@ -3,6 +3,7 @@ image: registry.gitlab.com/magda-data/magda/data61/magda-builder:$CI_COMMIT_REF_
 variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
+  SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy"
 
 stages:
   - builders
