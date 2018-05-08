@@ -26,6 +26,11 @@
 *   Brought back homepage animation
 *   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
+*   Fixed a few issues with `format-sleuther`
+*   `format-sleuther` will use accessURL if download URL not available
+*   `MagdaCatalogItem` will use accessURL if download URL not available
+*   `MagdaCatalogItem` will use `dataset-format` (if available) to determine CatalogItem type
+*   Added `ESRI REST` (ArcGIS) support to `MapPreview`
 
 ## 0.0.38
 
