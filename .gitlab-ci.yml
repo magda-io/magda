@@ -51,6 +51,7 @@ registry-typescript-api:
   script:
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - ls -R $CI_PROJECT_DIR/sbt-cache/
+    - ls -R */target
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
     paths:
