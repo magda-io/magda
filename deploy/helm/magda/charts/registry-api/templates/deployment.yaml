@@ -52,6 +52,7 @@ spec:
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds | default 10 }}
+{{- end }}
         ports:
         - containerPort: 80
         resources:

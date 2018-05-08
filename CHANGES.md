@@ -1,5 +1,6 @@
 ## 0.0.39
 
+*   Mobile Aus Gov logo links to homepage
 *   Change the tag type of the background link on the homepage in order to correct the page refreshing when it shouldn't
 *   Added gitlab CI build config
 *   Fixed indexer's ability to make/retrieve ES backups
