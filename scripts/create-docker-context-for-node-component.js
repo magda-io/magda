@@ -106,6 +106,7 @@ if (argv.build) {
                 env: env
             }
         );
+        wrapConsoleOutput(dockerPullProcess);
     }
 
     const tarProcess = childProcess.spawn(
@@ -143,6 +144,8 @@ if (argv.build) {
             env: env
         }
     );
+
+    wrapConsoleOutput(dockerProcess);
 
     dockerProcess.on("close", code => {
         fse.removeSync(dockerContextDir);
@@ -415,4 +418,17 @@ function getPackageList(dependencies, basePath, result) {
     });
 
     return result;
+}
+
+function wrapConsoleOutput(process) {
+    if (process.stdout) {
+        process.stdout.on("data", data => {
+            console.log(data.toString());
+        });
+    }
+    if (process.stderr) {
+        process.stderr.on("data", data => {
+            console.error(data.toString());
+        });
+    }
 }
