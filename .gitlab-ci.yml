@@ -18,7 +18,7 @@ stages:
 # before_script:
 #   - yarn install
 
-build-builders:
+builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   cache:
@@ -41,7 +41,7 @@ build-builders:
       - "yarn.lock"
     expire_in: 30 days
 
-build:registry-api:
+registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
@@ -150,8 +150,7 @@ buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   dependencies:
-    - build:registry-api
-    - build:builders-and-yarn
+    - builders-and-yarn
   cache: 
     paths: []
   script:
@@ -166,9 +165,6 @@ buildtest:ui:
 buildtest:registry:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  dependencies:
-    - build:registry-api
-    - build:builders-and-yarn
   cache:
     policy: pull-push
     key: $CI_JOB_NAME
@@ -200,7 +196,7 @@ buildtest:map:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   dependencies:
-    - build:builders-and-yarn
+    - builders-and-yarn
   cache: 
     paths: []
   script:
@@ -217,7 +213,8 @@ buildtest:typescript-apis:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   dependencies: 
-    - build:registry-api
+    - builders-and-yarn
+    - registry-typescript-api
   cache: 
     paths: []
   script:
@@ -232,7 +229,8 @@ buildtest:sleuthers:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   dependencies: 
-    - build:registry-api
+    - builders-and-yarn
+    - registry-typescript-api
   cache: 
     paths: []
   script:
@@ -247,7 +245,8 @@ buildtest:connectors:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   dependencies: 
-    - build:registry-api
+    - builders-and-yarn
+    - registry-typescript-api
   cache: 
     paths: []
   script:
@@ -263,8 +262,8 @@ dockerize:scala:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
   dependencies:
-    - build:registry-api
-    - build:builders-and-yarn
+    - registry-typescript-api
+    - builders-and-yarn
     - buildtest:registry
     - buildtest:search-no-index-cache
     - buildtest:search-with-index-cache
@@ -293,8 +292,8 @@ dockerize:ui:
   services:
     - docker:dind
   dependencies:
-    - build:registry-api
-    - build:builders-and-yarn
+    - builders-and-yarn
+    - registry-typescript-api
     - buildtest:ui
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
@@ -309,8 +308,8 @@ dockerize:map:
   services:
     - docker:dind
   dependencies:
-    - build:registry-api
-    - build:builders-and-yarn
+    - builders-and-yarn
+    - registry-typescript-api
     - buildtest:map
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
@@ -325,7 +324,8 @@ dockerize:typescript-apis:
   services:
     - docker:dind
   dependencies: 
-    - build:registry-api
+    - builders-and-yarn
+    - registry-typescript-api
     - buildtest:typescript-apis
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
@@ -340,7 +340,8 @@ dockerize:sleuthers:
   services:
     - docker:dind
   dependencies: 
-    - build:registry-api
+    - builders-and-yarn
+    - registry-typescript-api
     - buildtest:sleuthers
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
@@ -355,7 +356,8 @@ dockerize:connectors:
   services:
     - docker:dind
   dependencies: 
-    - build:registry-api
+    - builders-and-yarn
+    - registry-typescript-api
     - buildtest:connectors
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
@@ -369,8 +371,6 @@ dockerize:migrators:
     paths: []
   services:
     - docker:dind
-  dependencies: 
-    - build:registry-api
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
@@ -383,8 +383,6 @@ dockerize:dockerExtensions:
     paths: []
   services:
   - docker:dind
-  dependencies: 
-    - build:registry-api
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
