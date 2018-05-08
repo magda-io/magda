@@ -26,6 +26,7 @@ build-builders:
   stage: build-builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   cache:
+    key: prebuild-yarn
     policy: pull
     paths:
     - "node_modules"
@@ -49,6 +50,7 @@ prebuild:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
+    key: prebuild-yarn
     policy: pull-push
     paths:
     - "node_modules"
