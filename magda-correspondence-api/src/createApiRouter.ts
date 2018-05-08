@@ -18,15 +18,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.get("/healthz", (req, res) => res.status(200).send("OK"));
 
     router.post("/public/send/dataset/request", function(req, res) {
-        sendMail(options, req);
+        sendMail(options, req, res);
     });
 
     router.post("/public/send/dataset/:datasetId/question", function(req, res) {
-        sendMail(options, req);
+        sendMail(options, req, res);
     });
 
     router.post("/public/send/dataset/:datasetId/report", function(req, res) {
-        sendMail(options, req);
+        sendMail(options, req, res);
     });
 
     return router;

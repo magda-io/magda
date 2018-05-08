@@ -14,29 +14,36 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
  * @param msg - to, from, message contents
  * @param postData - form posted data, used to fetch recordID
  */
-export function sendMail(options: ApiRouterOptions, request: any) {
+export function sendMail(
+    options: ApiRouterOptions,
+    request: any,
+    response: any
+) {
     const opts = resolveConnectionOptions(options);
-
     getRecordAsPromise(
         options,
-        encodeURIComponent(request.body.datasetId || "")
+        encodeURIComponent(request.params.datasetId || "")
     )
         .then(result => {
             let templateContext = {
-                agencyName: result.aspects["dcat-dataset-strings"].contactPoint,
-                agencyEmail: "agency.email@example.com",
-                dataset: result.name,
+                agencyName: result.aspects["dcat-dataset-strings"].publisher,
+                agencyEmail:
+                    result.aspects["dcat-dataset-strings"].contactPoint,
+                dataset: result.aspects["dcat-dataset-strings"].title,
                 requesterName: request.body.senderName,
                 requesterEmail: request.body.senderEmail,
                 requesterMsg: request.body.message
             };
 
             //Mail configuration
-            const postmaster = {
-                to: "",
+            const messageConfig = {
+                to: result.aspects["dcat-dataset-strings"].contactPoint,
+                cc: request.body.senderEmail,
                 replyTo: request.body.senderEmail,
-                from: "",
-                subject: "",
+                from: "data@digital.gov.au",
+                subject: `A question for ${
+                    result.aspects["dcat-dataset-strings"].publisher
+                } from Data.gov.au`,
                 text: html2text.fromString(
                     resolveTemplate(templateContext, request)
                 ),
@@ -69,22 +76,25 @@ export function sendMail(options: ApiRouterOptions, request: any) {
                 console.log(`...Verifying SMTP Transport connection...`);
                 if (err) {
                     console.error(err);
+                    response.status(500).send("Something blew up");
                 } else {
                     console.log(
                         `...Connection established! \n Attempting to send mail...`
                     );
-                    transporter.sendMail(postmaster, (err, info) => {
+                    transporter.sendMail(messageConfig, (err, info) => {
                         if (err) {
                             console.error(err);
                             transporter.close();
+                            response.status(500).send("Something blew up");
                         } else {
                             console.log(`Mail sent!`);
                             console.log(
                                 `Attempting to close SMTP transporter connection...`
                             );
                             transporter.close();
+                            response.status(200).send("OK");
                             console.log(
-                                `...Closed SMTP transporter connection!`
+                                `...Closed SMTP transporter connection. \n Success!!!`
                             );
                         }
                     });

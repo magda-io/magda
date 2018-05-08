@@ -21,7 +21,7 @@ const argv = addJwtSecretFromEnvVar(
             default:
                 process.env.REGISTRY_URL ||
                 process.env.npm_package_config_registryUrl ||
-                "http://localhost:6101/v0"
+                "http://localhost:6117/api/v0/registry"
         })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
@@ -45,7 +45,8 @@ const argv = addJwtSecretFromEnvVar(
         .option("smtpUsername", {
             describe: "The username to authenticate with the SMTP server",
             type: "string",
-            default: ""
+            default:
+                ""
         })
         .option("smtpPassword", {
             describe: "The password to authenticate with the SMTP server",
