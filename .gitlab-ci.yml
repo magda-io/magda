@@ -169,8 +169,6 @@ buildtest:ui:
   script:
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.ui=true -- run test
-  tags:
-    - heavy
   artifacts:
     paths:
     - "*/build"
