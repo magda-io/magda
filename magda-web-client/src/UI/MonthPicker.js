@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import Input from "muicss/lib/react/input";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import "./MonthPicker.css";
@@ -149,18 +148,18 @@ class MonthPicker extends Component {
     render() {
         const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
         return (
-            <table className="month-picker mui-table">
+            <table className="month-picker">
                 <tbody>
                     <tr>
                         <th colSpan="3">
-                            <Input
+                            <input
                                 type="year"
                                 placeholder="select a year"
                                 onChange={this.onChange}
                                 onFocus={this.onFocus}
                                 onBlur={this.onBlur}
                                 value={this.state.yearValue}
-                                className={`${
+                                className={`au-text-input au-text-input--block ${
                                     this.state.isDefault ? "is-default" : ""
                                 }`}
                             />
