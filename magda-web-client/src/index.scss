@@ -2,6 +2,7 @@
 @import "../pancake/sass/pancake.scss";
 html {
     @include AU-fontgrid(sm);
+    font-family: $font-base;
 }
 .au-body a {
     text-decoration: none;
