@@ -74,8 +74,8 @@ matrix:
         - yarn global add lerna
         - yarn install
         - ./node_modules/.bin/eslint magda-web-client/src/
-        - lerna --scope @magda/web-client --scope @magda/preview-map run build
-        - lerna --scope @magda/preview-map --scope @magda/web-client run test
+        - lerna run build --scope @magda/web-client --scope @magda/preview-map --include-filtered-dependencies
+        - lerna run test --scope @magda/preview-map --scope @magda/web-client
       env:
         global:
           - CI=true

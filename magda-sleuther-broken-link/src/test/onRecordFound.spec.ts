@@ -137,7 +137,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      * recorded on a by-distribution basis as link status as well as on a by-record
      * basis as a part of dataset quality.
      */
-    it("Should correctly record link statuses and quality", function() {
+    it("Should correctly record link statuses", function() {
         return jsc.assert(
             jsc.forall(recordArbWithSuccesses, ({ record, successLookup }) => {
                 beforeEachProperty();
@@ -184,7 +184,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                     }
                 );
 
-                const results = allDists.map((dist: Record) => {
+                allDists.forEach((dist: Record) => {
                     const { downloadURL, accessURL } = dist.aspects[
                         "dcat-distribution-strings"
                     ];
@@ -212,8 +212,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         success === "success"
                             ? "active"
                             : downloadUnknown || accessUnknown
-                              ? "unknown"
-                              : "broken";
+                                ? "unknown"
+                                : "broken";
 
                     registryScope
                         .put(
@@ -299,33 +299,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                             }
                         )
                         .reply(201);
-
-                    return result;
                 });
-
-                if (allDists.length > 0) {
-                    const expectedQualityScore =
-                        results.filter((result: string) => result === "active")
-                            .length / allDists.length;
-
-                    registryScope
-                        .patch(
-                            `/records/${encodeURIComponentWithApost(
-                                record.id
-                            )}/aspects/dataset-quality-rating`,
-                            [
-                                {
-                                    op: "add",
-                                    path: "/source-link-status",
-                                    value: {
-                                        score: expectedQualityScore,
-                                        weighting: 1
-                                    }
-                                }
-                            ]
-                        )
-                        .reply(201);
-                }
 
                 return onRecordFound(record, registry, 0, 0, 0, fakeFtpHandler)
                     .then(() => {
@@ -518,29 +492,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                     .reply(201);
                             });
 
-                            if (allDists.length > 0) {
-                                registryScope
-                                    .patch(
-                                        `/records/${encodeURIComponentWithApost(
-                                            record.id
-                                        )}/aspects/dataset-quality-rating`,
-                                        [
-                                            {
-                                                op: "add",
-                                                path: "/source-link-status",
-                                                value: {
-                                                    score:
-                                                        result === "success"
-                                                            ? 1
-                                                            : 0,
-                                                    weighting: 1
-                                                }
-                                            }
-                                        ]
-                                    )
-                                    .reply(201);
-                            }
-
                             return onRecordFound(
                                 record,
                                 registry,
@@ -656,7 +607,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                     const allDists =
                         record.aspects["dataset-distributions"].distributions;
 
-                    registryScope.patch(/.*/).reply(201);
                     registryScope
                         .put(/.*/)
                         .times(allDists.length)

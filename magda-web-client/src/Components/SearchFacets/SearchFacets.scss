@@ -16,17 +16,8 @@
     .sub-heading {
         width: 100%;
     }
-    .mui-form {
-        margin-bottom: 0;
-    }
     .au-btn + .au-btn {
         margin-left: 0;
-    }
-    .mui-textfield {
-        margin-bottom: 0;
-    }
-    .mui-list--unstyled {
-        margin-bottom: 0;
     }
 }
 
@@ -123,12 +114,12 @@
     overflow: hidden;
     margin: 0 0 1px 0;
     text-align: left;
-    background: transparent;
     height: auto;
     border: 0;
     box-shadow: none;
     margin: 0;
     padding: 0;
+    margin-bottom: 2px;
     cursor: pointer;
     &.is-active,
     &:hover,
@@ -150,7 +141,7 @@
     font-size: 14px;
     line-height: 20px;
     display: block;
-    padding: 16px 0;
+    padding: 8px 0;
     font-weight: 400;
 }
 
