@@ -1,5 +1,6 @@
 ## 0.0.39
 
+*   Use DTA design system for Feedback form
 *   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
 *   Made linked data rating sleuther take output of broken link sleuther into account
 *   Removed datasetQualityAspectDef from sleuther-broken-link
