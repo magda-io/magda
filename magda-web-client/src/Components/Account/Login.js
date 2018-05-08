@@ -105,7 +105,11 @@ export default function Login(props) {
                             />
                         </div>
                         <div className="pull-right">
-                            <input type="submit" className="au-btn" />
+                            <input
+                                type="submit"
+                                className="au-btn"
+                                value="Sign in"
+                            />
                         </div>
                     </form>
                 </div>

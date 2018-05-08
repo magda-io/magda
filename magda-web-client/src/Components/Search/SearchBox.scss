@@ -2,7 +2,7 @@
 
 @mixin text() {
     border-bottom: 0;
-    padding: 0 8px;
+    padding: 16px 8px;
     box-sizing: border-box;
     display: block;
     background-color: transparent;
@@ -10,16 +10,19 @@
     border: none;
     outline: 0;
     width: 100%;
-    padding: 0;
     box-shadow: none;
     border-radius: 0;
     background-image: none;
     @media (min-width: $medium) {
+        padding-bottom: 5px;
+        margin-bottom: 0;
+        border-bottom: 2px solid hsla(0, 0%, 100%, 0.2);
+        display: block;
+        padding-top: 15px;
         font-family: $font-base;
         font-size: 33px;
         font-weight: 300;
         height: 57px;
-        padding: 8px 0;
         border-bottom: 1px solid rgba(73, 73, 73, 0.15);
         padding-right: 50px;
         padding-bottom: 5px;
@@ -36,9 +39,6 @@
             background-color: transparent;
         }
     }
-    .container-mobile {
-        padding: 0;
-    }
 }
 
 .home {
@@ -51,7 +51,6 @@
 
 .searchBox {
     position: relative;
-
     color: $body;
     box-sizing: border-box;
     display: flex;
@@ -137,23 +136,28 @@
         display: none;
         @media (min-width: $medium) {
             display: inline;
+            bottom: 0px;
         }
     }
 
     input::-webkit-input-placeholder {
         /* Chrome/Opera/Safari */
         @include text();
+        color: rgba(0, 0, 0, 0.6);
     }
     input::-moz-placeholder {
         /* Firefox 19+ */
         @include text();
+        color: rgba(0, 0, 0, 0.6);
     }
     input:-ms-input-placeholder {
         /* IE 10+ */
         @include text();
+        color: rgba(0, 0, 0, 0.6);
     }
     input:-moz-placeholder {
         /* Firefox 18- */
         @include text();
+        color: rgba(0, 0, 0, 0.6);
     }
 }
