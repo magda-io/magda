@@ -47,9 +47,7 @@ class Account extends React.Component {
 }
 
 function mapStateToProps(state) {
-    let {
-        userManagement: { user, providers, providersError }
-    } = state;
+    let { userManagement: { user, providers, providersError } } = state;
 
     return {
         user,
