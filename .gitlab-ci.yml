@@ -28,8 +28,8 @@ build-builders:
   cache:
     policy: pull
     paths:
-    - "npm_modules"
-    - "*/npm_modules"
+    - "node_modules"
+    - "*/node_modules"
     - "yarn.lock"
   before_script:
     - yarn install
@@ -43,7 +43,7 @@ build-builders:
       - "node_modules"
       - "*/node_modules"
       - "yarn.lock"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 prebuild:
   stage: prebuild
@@ -51,8 +51,8 @@ prebuild:
   cache:
     policy: pull-push
     paths:
-    - "npm_modules"
-    - "*/npm_modules"
+    - "node_modules"
+    - "*/node_modules"
     - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
     - "target"
     - "*/target"
@@ -71,7 +71,7 @@ prebuild:
       - "node_modules"
       - "*/node_modules"
       - "yarn.lock"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 buildtest:search-with-index-cache:
   stage: buildtest
@@ -111,7 +111,7 @@ buildtest:search-with-index-cache:
       - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
       - "target"
       - "*/target"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 buildtest:search-no-index-cache:
   stage: buildtest
@@ -157,7 +157,7 @@ buildtest:search-no-index-cache:
       - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
       - "target"
       - "*/target"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 buildtest:ui:
   stage: buildtest
@@ -175,7 +175,7 @@ buildtest:ui:
     paths:
     - "*/build"
     - "*/dist"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 buildtest:registry:
   stage: buildtest
@@ -205,7 +205,7 @@ buildtest:registry:
       - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
       - "target"
       - "*/target"
-    expire_in: 60 minutes
+    expire_in: 30 days
     
 buildtest:map:
   stage: buildtest
@@ -222,7 +222,7 @@ buildtest:map:
     - "*/build"
     - "*/dist"
     - "magda-preview-map/wwwroot/build"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 buildtest:typescript-apis:
   stage: buildtest
@@ -237,7 +237,7 @@ buildtest:typescript-apis:
   artifacts:
     paths:
       - "*/dist"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 buildtest:sleuthers:
   stage: buildtest
@@ -252,7 +252,7 @@ buildtest:sleuthers:
   artifacts:
     paths:
       - "*/dist"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 buildtest:connectors:
   stage: buildtest
@@ -267,7 +267,7 @@ buildtest:connectors:
   artifacts:
     paths:
       - "*/dist"
-    expire_in: 60 minutes
+    expire_in: 30 days
 
 dockerize:scala:
   stage: dockerize
