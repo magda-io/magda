@@ -8,6 +8,7 @@ import Spinner from "../Components/Spinner";
 
 export const defaultDataSourcePreference = [
     "WMS",
+    "ESRI REST",
     "GeoJSON",
     "WFS",
     "csv-geo-au",
