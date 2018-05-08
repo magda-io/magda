@@ -83,6 +83,8 @@ buildtest:search-with-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
+      -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
+      -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache
   retry: 2
   tags:
@@ -127,6 +129,8 @@ buildtest:search-no-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
+      -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
+      -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache
   retry: 2
   tags:
