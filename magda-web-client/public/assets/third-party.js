@@ -122,7 +122,6 @@ try {
     return (e.m = r), (e.c = o), (e.p = ""), e(0);
 })([
     function(r, e, o) {
-        "use strict";
         var n = o(1),
             t = o(4);
         (_rollbarConfig = _rollbarConfig || {}),
@@ -143,7 +142,6 @@ try {
             );
     },
     function(r, e, o) {
-        "use strict";
         function n(r) {
             return function() {
                 try {
@@ -161,14 +159,14 @@ try {
             (this.shimId = function() {
                 return o;
             }),
-                "undefined" != typeof window &&
+                "undefined" !== typeof window &&
                     window._rollbarShims &&
                     (window._rollbarShims[o] = { handler: e, messages: [] });
         }
         function a(r, e) {
             if (r) {
                 var o = e.globalAlias || "Rollbar";
-                if ("object" == typeof r[o]) return r[o];
+                if ("object" === typeof r[o]) return r[o];
                 (r._rollbarShims = {}), (r._rollbarWrappedError = null);
                 var t = new p(e);
                 return n(function() {
@@ -183,7 +181,7 @@ try {
                         e.enabled !== !1 &&
                             (void 0 === n ||
                                 n === !0 ||
-                                ("object" == typeof n && n.network)) &&
+                                ("object" === typeof n && n.network)) &&
                             r.addEventListener &&
                             (r.addEventListener("load", t.captureLoad.bind(t)),
                             r.addEventListener(
@@ -223,12 +221,12 @@ try {
                         )
                             for (o = o.messages || []; (n = o.shift()); )
                                 for (t = n.args || [], i = 0; i < t.length; ++i)
-                                    if (((l = t[i]), "function" == typeof l)) {
+                                    if (((l = t[i]), "function" === typeof l)) {
                                         l(e);
                                         break;
                                     }
                     }
-                    "function" == typeof a && a(e);
+                    "function" === typeof a && a(e);
                 },
                 i = !1,
                 s = e.createElement("script"),
@@ -260,12 +258,12 @@ try {
                     var n;
                     if (
                         ((n =
-                            "function" == typeof e
+                            "function" === typeof e
                                 ? e
                                 : function() {
                                       return e || {};
                                   }),
-                        "function" != typeof r)
+                        "function" !== typeof r)
                     )
                         return r;
                     if (r._isWrap) return r;
@@ -273,13 +271,13 @@ try {
                         !r._rollbar_wrapped &&
                         ((r._rollbar_wrapped = function() {
                             o &&
-                                "function" == typeof o &&
+                                "function" === typeof o &&
                                 o.apply(this, arguments);
                             try {
                                 return r.apply(this, arguments);
                             } catch (o) {
                                 var e = o;
-                                throw ("string" == typeof e &&
+                                throw ("string" === typeof e &&
                                     (e = new String(e)),
                                 (e._rollbarContext = n() || {}),
                                 (e._rollbarContext._wrappedSource = r.toString()),
@@ -310,11 +308,10 @@ try {
         r.exports = { setupShim: a, Rollbar: p };
     },
     function(r, e) {
-        "use strict";
         function o(r, e, o) {
             if (r) {
                 var t;
-                "function" == typeof e._rollbarOldOnError
+                "function" === typeof e._rollbarOldOnError
                     ? (t = e._rollbarOldOnError)
                     : r.onerror &&
                       !r.onerror.belongsToShim &&
@@ -336,7 +333,7 @@ try {
         }
         function t(r, e, o) {
             if (r) {
-                "function" == typeof r._rollbarURH &&
+                "function" === typeof r._rollbarURH &&
                     r._rollbarURH.belongsToShim &&
                     r.removeEventListener("unhandledrejection", r._rollbarURH);
                 var n = function(r) {
@@ -418,7 +415,6 @@ try {
         };
     },
     function(r, e) {
-        "use strict";
         function o(r, e) {
             (this.impl = r(e, this)), (this.options = e), n(o.prototype);
         }
@@ -446,7 +442,7 @@ try {
                 (n = o.method),
                     (t = o.args),
                     this[n] &&
-                        "function" == typeof this[n] &&
+                        "function" === typeof this[n] &&
                         ("captureDomContentLoaded" === n || "captureLoad" === n
                             ? this[n].apply(this, [t[0], o.ts])
                             : this[n].apply(this, t));
@@ -455,7 +451,6 @@ try {
             (r.exports = o);
     },
     function(r, e) {
-        "use strict";
         r.exports = function(r) {
             return function(e) {
                 if (!e && !window._rollbarInitialized) {
