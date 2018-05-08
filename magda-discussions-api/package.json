@@ -37,5 +37,11 @@
             "name": "data61/magda-discussions-api",
             "include": "node_modules dist Dockerfile"
         }
+    },
+    "magda": {
+        "language": "typescript",
+        "categories": {
+            "api": true
+        }
     }
 }

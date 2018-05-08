@@ -5,6 +5,7 @@ global:
     image:
         pullPolicy: IfNotPresent
         tag: "0.0.38-RC2"
+    enableLivenessProbes: true
 tags:
     all: false
 

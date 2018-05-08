@@ -74,6 +74,18 @@ dependencies:
     tags:
       - all
       - session-db
+  - name: web-server
+    version: 0.1.0
+    tags:
+      - all
+      - web-server
+  - name: correspondence-api
+    version: 0.1.0
+    tags:
+      - all
+      - correspondence-api
+
+# Sleuthers
   - name: sleuther-format
     version: 0.1.0
     tags:
@@ -90,14 +102,10 @@ dependencies:
     version: 0.1.0
     tags:
       - sleuther-linked-data-rating
-  - name: web-server
+
+# One-namespace-per-PR dev ingress setup
+  - name: dev-ingress
     version: 0.1.0
     tags:
-      - all
-      - web-server
-  - name: correspondence-api
-    version: 0.1.0
-    tags:
-      - all
-      - correspondence-api
+      - dev-ingress
 

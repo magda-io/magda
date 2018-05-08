@@ -3,7 +3,7 @@ import TemporalAspectViewer from "../../UI/TemporalAspectViewer";
 import DatasetPreview from "./DatasetPreview";
 import DescriptionBox from "../../UI/DescriptionBox";
 import MarkdownViewer from "../../UI/MarkdownViewer";
-import QualityIndicator from "../../UI/QualityIndicator";
+import StarRating from "../../UI/StarRating";
 import TagsBox from "../../UI/TagsBox";
 import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
@@ -42,7 +42,8 @@ class DatasetDetails extends Component {
                     </Medium>
                 </div>
                 <div className="quality-rating-box">
-                    <QualityIndicator quality={dataset.linkedDataRating} />
+                    <span>Open Data Quality</span>:
+                    <StarRating stars={dataset.linkedDataRating} />
                 </div>
                 <TagsBox tags={dataset.tags} />
                 <div className="dataset-preview">
@@ -77,7 +78,6 @@ class DatasetDetails extends Component {
                             <a
                                 className="landing-page"
                                 href={dataset.landingPage}
-                                itemProp="sameAs"
                             >
                                 {dataset.landingPage}
                             </a>

@@ -10,7 +10,7 @@ import {
 import ReactDocumentTitle from "react-document-title";
 import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
-import CrappyChat from "../../Components/CrappyChat/CrappyChat";
+// import CrappyChat from "../../Components/CrappyChat/CrappyChat";
 
 class ProjectDetails extends Component {
     componentWillMount() {
@@ -80,11 +80,13 @@ class ProjectDetails extends Component {
                                     {" "}
                                     Discussion{" "}
                                 </h2>
+                                {/*
                                 <CrappyChat
                                     typeName="project"
                                     typeId={this.props.project.id}
                                     location={this.props.location}
-                                />
+                                /> 
+                                */}
                             </div>
                             <div className="col-sm-4">
                                 <Link

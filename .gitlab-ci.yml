@@ -1,0 +1,437 @@
+image: registry.gitlab.com/magda-data/magda/data61/magda-builder:$CI_COMMIT_REF_SLUG
+
+variables:
+  CI: "true"
+  SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy"
+  DOCKER_DRIVER: overlay2
+
+stages:
+  - build-builders
+  - prebuild
+  - buildtest
+  - dockerize
+  - preview
+  - deploy-dev
+  - release
+  - deploy-prod
+
+cache:
+  key: $CI_COMMIT_REF_SLUG-$CI_JOB_NAME
+  paths:
+  - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+  - "node_modules/"
+  - "*/node_modules"
+  - target
+  - "*/target"
+
+before_script:
+- lerna bootstrap --scope=@magda/scripts
+
+build-builders:
+  stage: build-builders
+  image: data61/magda-builder-docker:latest
+  cache:
+    paths: []
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - npm run in-submodules -- -f categories.builder=true -- bootstrap --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+
+prebuild:
+  stage: prebuild
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  script:
+    - cp -r /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/
+    - ls $CI_PROJECT_DIR/sbt-cache/
+    - echo $SBT_OPTS
+    - cat /dev/null | sbt compile
+    - lerna bootstrap --scope=@magda/typescript-common 
+    - lerna run generate --scope=@magda/typescript-common 
+  artifacts:
+    paths:
+      - "node_modules"
+      - "magda-typescript-common/src/generated"
+      - "*/node_modules"
+      - "target"
+      - "*/target"
+      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+    expire_in: 60 minutes
+
+test:search-with-index-cache:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  dependencies:
+    - prebuild
+  before_script: []
+  variables:
+    # 2.5gb heap
+    # unload classes we don't need
+    # aim for < 1000ms gc pauses (largely ignored)
+    # use the next-gen collector that every blog on the internet says not to use because we know better than them
+    # use < 25% of time for GC
+    # put the ivy cache in the workspace where gitlab can cache it
+    SBT_OPTS: >
+      -Xms2500M -Xmx2500M
+      -XX:+CMSClassUnloadingEnabled
+      -XX:MaxGCPauseMillis=1000
+      -XX:+UseG1GC
+      -XX:GCTimeRatio=3
+      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
+  retry: 2
+  tags:
+    - heavy
+  script:
+    - sbt "intTest/testOnly au.csiro.data61.magda.api.*Spec"
+
+test:search-no-index-cache:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  dependencies:
+    - prebuild
+  before_script: []
+  services:
+    - postgres:9.6
+  variables:
+    POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: ""
+    # 2.5gb heap
+    # unload classes we don't need
+    # aim for < 1000ms gc pauses (largely ignored)
+    # use the next-gen collector that every blog on the internet says not to use because we know better than them
+    # use < 25% of time for GC
+    # put the ivy cache in the workspace where gitlab can cache it
+    SBT_OPTS: >
+      -Xms2500M -Xmx2500M
+      -XX:+CMSClassUnloadingEnabled
+      -XX:MaxGCPauseMillis=1000
+      -XX:+UseG1GC
+      -XX:GCTimeRatio=3
+      -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
+  retry: 2
+  tags:
+    - heavy
+  script:
+    - sbt "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
+
+buildtest:ui:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+      - node_modules/
+      - magda-web-client/node_modules/
+      - magda-web-server/node_modules/
+  dependencies:
+    - prebuild
+  script:
+    - npm run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.ui=true -- run test
+  tags:
+    - heavy
+  artifacts:
+    paths:
+    - "*/build"
+    - "node_modules"
+    - "*/dist"
+    - magda-web-client/node_modules/
+    - magda-web-server/node_modules/
+    expire_in: 60 minutes
+
+test:registry:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  dependencies:
+    - prebuild
+  services:
+    - postgres:9.6
+  before_script: []
+  variables:
+    POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: ""
+  script:
+    - sbt registryApi/test
+    
+buildtest:map:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+      - node_modules/
+      - magda-preview-map/node_modules/
+  dependencies:
+    - prebuild
+  script:
+    - npm run in-submodules -- -f categories.map=true -- bootstrap --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.map=true -- run build --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.map=true -- run test
+  artifacts:
+    paths:
+    - "*/build"
+    - "node_modules"
+    - "*/dist"
+    - "*/node_modules"
+    - "magda-preview-map/wwwroot/build"
+    expire_in: 60 minutes
+
+buildtest:typescript-apis:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+    - "node_modules/"
+    - "*/node_modules"
+  dependencies: 
+    - prebuild
+  script:
+    - npm run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
+  artifacts:
+    paths:
+      - "node_modules"
+      - "*/dist"
+      - "*/node_modules"
+    expire_in: 60 minutes
+
+buildtest:sleuthers:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+    - "node_modules/"
+    - "*/node_modules"
+  dependencies: 
+    - prebuild
+  script:
+    - npm run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.sleuther=true -- run test 
+  artifacts:
+    paths:
+      - "node_modules"
+      - "*/dist"
+      - "*/node_modules"
+    expire_in: 60 minutes
+
+buildtest:connectors:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache:
+    paths:
+    - "node_modules/"
+    - "*/node_modules"
+  dependencies: 
+    - prebuild
+  script:
+    - npm run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
+    - npm run in-submodules -- -f categories.connector=true -- run test 
+  artifacts:
+    paths:
+      - "node_modules"
+      - "*/dist"
+      - "*/node_modules"
+    expire_in: 60 minutes
+
+dockerize:scala:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  before_script: []
+  cache:
+    paths: 
+      - "$CI_PROJECT_DIR/sbt-cache/ivy/cache"
+      - target
+      - "*/target"
+  dependencies:
+    - prebuild
+  services:
+    - docker:dind
+  script:
+    - cp -r /sbt-cache/ $CI_PROJECT_DIR/sbt-cache/
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - cat /dev/null | sbt -Drepository=$CI_REGISTRY/magda-data/magda -Dversion=$CI_COMMIT_REF_SLUG dockerBuildAndPush
+
+dockerize:ui:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  services:
+    - docker:dind
+  cache:
+    paths: []
+  dependencies:
+    - buildtest:ui
+  script:
+    - npm run in-submodules -- -f categories.ui=true -- bootstrap --include-filtered-dependencies 
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - npm run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+
+dockerize:map:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  services:
+    - docker:dind
+  cache:
+    paths: []
+  dependencies:
+    - buildtest:map
+  script:
+    - npm run in-submodules -- -f categories.map=true -- bootstrap --include-filtered-dependencies 
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - npm run in-submodules -- -f categories.map=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+
+dockerize:typescript-apis:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  services:
+    - docker:dind
+  cache:
+    paths: []
+  dependencies: 
+    - buildtest:typescript-apis
+  script:
+    - npm run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies 
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - npm run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+
+dockerize:sleuthers:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  services:
+    - docker:dind
+  cache:
+    paths: []
+  dependencies: 
+    - buildtest:sleuthers
+  script:
+    - npm run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - npm run in-submodules -- -f categories.sleuther=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+
+dockerize:connectors:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  services:
+    - docker:dind
+  cache:
+    paths: []
+  dependencies: 
+    - buildtest:connectors
+  script:
+    - npm run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - npm run in-submodules -- -f categories.connector=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+
+dockerize:migrators:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  services:
+    - docker:dind
+  cache:
+    paths: []
+  dependencies: []
+  script:
+    - npm run in-submodules -- -f categories.migrator=true -- bootstrap --include-filtered-dependencies
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - npm run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+
+dockerize:dockerExtensions:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  services:
+  - docker:dind
+  cache:
+    paths: []
+  dependencies: []
+  script:
+    - npm run in-submodules -- -f categories.dockerExtension=true -- bootstrap --include-filtered-dependencies
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - npm run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+
+Run As Preview:
+  stage: preview
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+  dependencies: []
+  cache: 
+    paths: []
+  image: 
+    name: dtzar/helm-kubectl
+  before_script: []
+  environment:
+    name: preview/$CI_COMMIT_REF_NAME
+    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
+    on_stop: Stop Preview
+  script:
+  # Add PWGEN for generating passwords
+  - apk add --update pwgen
+
+  # Env vars
+  - JWT_SECRET="${JWT_SECRET:-$(pwgen 16 1)}"
+  - SESSION_SECRET="${SESSION_SECRET:-$(pwgen 16 1)}"
+  - DB_PASSWORD="${DB_PASSWORD:-p4ssw0rd}"
+
+  # Kube Config
+  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
+  - export KUBECONFIG=kubectlconfig.yaml
+
+  # Create kube namespace
+  - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
+
+  # Create kube secrets
+  - 'echo {\"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"${JWT_SECRET}\", \"session-secret\":\"${SESSION_SECRET}\"}} | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -'
+  - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+  - kubectl create secret generic db-passwords --from-literal=combined-db=$DB_PASSWORD --from-literal=authorization-db=$DB_PASSWORD --from-literal=discussions-db=$DB_PASSWORD --from-literal=session-db=$DB_PASSWORD  --from-literal=registry-db=$DB_PASSWORD --from-literal=combined-db-client=$DB_PASSWORD --from-literal=authorization-db-client=$DB_PASSWORD --from-literal=discussions-db-client=$DB_PASSWORD --from-literal=session-db-client=$DB_PASSWORD --from-literal=registry-db-client=$DB_PASSWORD --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+  - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+  - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > db-service-account-private-key.json
+  - kubectl create secret generic storage-account-credentials --from-file db-service-account-private-key.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+
+  # Helm upgrade
+  - helm init --upgrade
+  - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait
+
+Stop Preview:
+  stage: preview
+  when: manual
+  dependencies: []
+  cache: 
+    paths: []
+  image: 
+    name: dtzar/helm-kubectl
+  before_script: []
+  environment:
+    name: preview/$CI_COMMIT_REF_NAME
+    action: stop
+  script:
+  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
+  - export KUBECONFIG=kubectlconfig.yaml
+  - helm del --purge $CI_COMMIT_REF_SLUG
+  - kubectl delete namespace $CI_COMMIT_REF_SLUG
+
+deploy-master-to-dev:
+  stage: deploy-dev
+  only:
+    - master
+  dependencies: []
+  cache: 
+    paths: []
+  image: 
+    name: dtzar/helm-kubectl
+  before_script: []
+  environment:
+    name: dev
+    url: http://magda-dev.terria.io
+  script:
+  # Kube Config
+  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
+  - export KUBECONFIG=kubectlconfig.yaml
+  - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG --timeout 1200 --wait

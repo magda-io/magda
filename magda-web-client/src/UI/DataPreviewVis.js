@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import Tabs from "muicss/lib/react/tabs";
 import Tab from "muicss/lib/react/tab";
 import DataPreviewTable from "./DataPreviewTable";
-import DataPreviewVega from "./DataPreviewVega";
+import DataPreviewChart from "./DataPreviewChart";
 
 import type { ParsedDistribution } from "../helpers/record";
 
@@ -25,7 +25,7 @@ class DataPreviewVis extends Component<{
     }
 
     renderChart() {
-        return <DataPreviewVega distribution={this.props.distribution} />;
+        return <DataPreviewChart distribution={this.props.distribution} />;
     }
 
     renderTable() {
@@ -49,7 +49,6 @@ class DataPreviewVis extends Component<{
     renderByState() {
         const distribution = this.props.distribution;
         if (distribution && distribution.identifier) {
-            console.log(distribution);
             // Render chart if there's chart fields, table if fields, both if both
             const tabs = [
                 distribution.compatiblePreviews.chart &&
