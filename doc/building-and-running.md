@@ -9,7 +9,8 @@ You need to install following in order to build MAGDA:
 *   [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.
 *   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 *   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
-*   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have Node.js installed, installing lerna is as simple as `yarn global add lerna`.
+*   [yarn](https://yarnpkg.com/) - Npm replacement that makes node deps in a monorepo much easier.
+*   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as `yarn global add lerna`.
 *   [pancake](https://github.com/govau/pancake) - To manage design components. Once you have Node.js installed, installing pancake is as simple as `yarn global add @gov.au/pancake`.
 
 To push the images and run them on kubernetes, you'll need to install:
@@ -28,7 +29,7 @@ First clone the magda directory and `cd` into it.
 Then install `npm` dependencies and set up the links between components by running:
 
 ```bash
-lerna bootstrap
+yarn install
 ```
 
 Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
