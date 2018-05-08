@@ -3,6 +3,17 @@
 @mixin text() {
     border-bottom: 0;
     padding: 0 8px;
+    box-sizing: border-box;
+    display: block;
+    background-color: transparent;
+    color: rgba(0, 0, 0, 0.87);
+    border: none;
+    outline: 0;
+    width: 100%;
+    padding: 0;
+    box-shadow: none;
+    border-radius: 0;
+    background-image: none;
     @media (min-width: $medium) {
         font-family: $font-base;
         font-size: 33px;
@@ -11,6 +22,8 @@
         padding: 8px 0;
         border-bottom: 1px solid rgba(73, 73, 73, 0.15);
         padding-right: 50px;
+        padding-bottom: 5px;
+        margin-bottom: 0px;
     }
 }
 
@@ -108,7 +121,7 @@
     .search-input__highlight {
         z-index: 10;
         position: absolute;
-        bottom: 9px;
+        bottom: 0px;
         font-size: 33px;
         height: 0;
         overflow: hidden;
@@ -142,11 +155,5 @@
     input:-moz-placeholder {
         /* Firefox 18- */
         @include text();
-    }
-
-    .mui-textfield {
-        padding-bottom: 5px;
-        margin-bottom: 0px;
-        border-bottom: 2px solid rgba(#fff, 0.2);
     }
 }

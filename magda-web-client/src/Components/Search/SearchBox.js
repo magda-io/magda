@@ -7,8 +7,6 @@ import debounce from "lodash.debounce";
 import defined from "../../helpers/defined";
 import React, { Component } from "react";
 import { fetchRegionMapping } from "../../actions/regionMappingActions";
-import Form from "muicss/lib/react/form";
-import Input from "muicss/lib/react/input";
 import searchGrey from "../../assets/search-grey.svg";
 import searchDark from "../../assets/search-dark.svg";
 // eslint-disable-next-line
@@ -67,7 +65,7 @@ class SearchBox extends Component {
     updateSearchText(text) {
         if (text === "") text = "*";
         // dismiss keyboard on mobile when new search initiates
-        if (this.searchInputFieldRef) this.searchInputFieldRef.controlEl.blur();
+        if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
         this.updateQuery({
             q: text,
             publisher: [],
@@ -141,7 +139,7 @@ class SearchBox extends Component {
 
     render() {
         const input = (
-            <Input
+            <input
                 type="text"
                 name="search"
                 id="search"
@@ -169,7 +167,7 @@ class SearchBox extends Component {
         );
 
         return (
-            <Form className="searchBox">
+            <div className="searchBox">
                 <label htmlFor="search">
                     <span className="sr-only">
                         {"Search " + config.appName}
@@ -198,7 +196,7 @@ class SearchBox extends Component {
                 </label>
 
                 <Small>{suggestionBox}</Small>
-            </Form>
+            </div>
         );
     }
 }
