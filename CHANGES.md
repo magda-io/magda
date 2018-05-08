@@ -1,5 +1,6 @@
 ## 0.0.39
 
+*   Use DTA design system for Feedback form
 *   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
 *   Made linked data rating sleuther take output of broken link sleuther into account
 *   Removed datasetQualityAspectDef from sleuther-broken-link
@@ -17,6 +18,7 @@
 *   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
 *   Fixed distribution previews
+*   Made CSP report uri configurable
 *   Added stubbed correspondence api
 *   Added link to publisher page for publisher on dataset summary.
 *   Recent search will not save "\*" search
