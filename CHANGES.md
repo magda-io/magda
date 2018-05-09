@@ -56,6 +56,7 @@
 *   Added standard space in between Download / New tab buttons on `DatasetDetails`.
 *   Reimplemented links from publisher names to their respective page.
 *   Create Suggest a Dataset Page
+*   Add Suggest a Dataset on search results page
 
 ## 0.0.38
 
