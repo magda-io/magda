@@ -3,6 +3,7 @@
 *   Use colours from DTA design guide
 *   Fixed distribution previews
 *   Create Suggest a Dataset Page
+*   Add Suggest a Dataset on search results page
 
 ## 0.0.38
 
