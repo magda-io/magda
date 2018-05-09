@@ -6,12 +6,12 @@
     "scripts": {
         "flow": "flow; test $? -eq 0 -o $? -eq 2",
         "build-css": "node-sass src/ -o src/",
-        "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
+        "watch-css": "yarn run build-css && node-sass src/ -o src/ --watch",
         "start-js": "react-scripts start",
         "start": "npm-run-all -p watch-css start-js",
-        "dev": "npm run start",
-        "build": "npm run compile",
-        "compile": "npm run build-css && react-scripts build",
+        "dev": "yarn run start",
+        "build": "yarn run compile",
+        "compile": "yarn run build-css && react-scripts build",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject",
         "watch": "react-scripts build --watch"

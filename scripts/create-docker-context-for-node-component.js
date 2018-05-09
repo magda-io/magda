@@ -5,6 +5,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const process = require("process");
 const yargs = require("yargs");
+const _ = require("lodash");
 
 const argv = yargs
     .options({
@@ -68,11 +69,6 @@ const componentDestDir = path.resolve(dockerContextDir, "component");
 
 fse.emptyDirSync(dockerContextDir);
 fse.ensureDirSync(componentDestDir);
-fse.ensureSymlinkSync(
-    path.resolve(componentSrcDir, "..", "node_modules"),
-    path.resolve(dockerContextDir, "node_modules"),
-    "junction"
-);
 
 preparePackage(componentSrcDir, componentDestDir);
 
@@ -183,7 +179,6 @@ if (argv.build) {
     });
 } else if (argv.output) {
     const outputPath = path.resolve(process.cwd(), argv.output);
-    console.log(outputPath);
 
     const outputTar = fse.openSync(outputPath, "w", 0o644);
 
@@ -301,35 +296,42 @@ function preparePackage(packageDir, destDir) {
             if (include === "node_modules") {
                 fse.ensureDirSync(dest);
 
+                const env = Object.create(process.env);
+                env.NODE_ENV = "production";
+
                 // Get the list of production packages required by this package.
-                const productionPackageResult = JSON.parse(
-                    childProcess.spawnSync(
-                        "npm",
-                        ["list", "--prod", "--json"],
-                        {
-                            encoding: "utf8",
-                            cwd: packageDir,
-                            shell: true
-                        }
-                    ).stdout
-                );
-                const productionPackages = getPackageList(
-                    productionPackageResult.dependencies,
-                    path.join(packageDir, "node_modules"),
-                    []
+                const rawYarnList = childProcess.spawnSync(
+                    "yarn",
+                    ["list", "--json"],
+                    {
+                        encoding: "utf8",
+                        cwd: packageDir,
+                        shell: true,
+                        env
+                    }
+                ).stdout;
+                const jsonYarnList = JSON.parse(rawYarnList);
+
+                const productionPackages = _.uniq(
+                    getPackageList(
+                        jsonYarnList.data.trees,
+                        packageJson.name,
+                        path.resolve(packageDir, "node_modules"),
+                        []
+                    )
                 );
 
                 prepareNodeModules(src, dest, productionPackages);
+
                 return;
             }
 
-            const type = fse.statSync(src).isFile() ? "file" : "junction";
-
-            // On Windows we can't create symlinks to files without special permissions.
-            // So just copy the file instead.  Usually creating directory junctions is
-            // fine without special permissions, but fall back on copying in the unlikely
-            // event that fails, too.
             try {
+                // On Windows we can't create symlinks to files without special permissions.
+                // So just copy the file instead.  Usually creating directory junctions is
+                // fine without special permissions, but fall back on copying in the unlikely
+                // event that fails, too.
+                const type = fse.statSync(src).isFile() ? "file" : "junction";
                 fse.ensureSymlinkSync(src, dest, type);
             } catch (e) {
                 fse.copySync(src, dest);
@@ -338,51 +340,41 @@ function preparePackage(packageDir, destDir) {
 }
 
 function prepareNodeModules(packageDir, destDir, productionPackages) {
-    const subPackages = fse.readdirSync(packageDir);
-    subPackages.forEach(function(subPackageName) {
-        const src = path.join(packageDir, subPackageName);
-        const dest = path.join(destDir, subPackageName);
+    console.log("destDir " + destDir);
+    productionPackages.forEach(src => {
+        const dest = path.join(destDir, src.name);
 
-        if (subPackageName[0] === "@") {
-            // This is a scope directory, recurse.
-            fse.ensureDirSync(dest);
-            prepareNodeModules(src, dest, productionPackages);
-            return;
-        }
-
-        if (productionPackages.indexOf(src) == -1) {
-            // Not a production dependency, skip it.
-            return;
-        }
-
-        const stat = fse.lstatSync(src);
-        if (stat.isSymbolicLink()) {
-            // This is a link to another package, presumably created by Lerna.
-            fse.ensureDirSync(dest);
-            preparePackage(src, dest);
-            return;
-        }
-
-        // Regular package, link/copy the whole thing.
         try {
+            const stat = fse.lstatSync(src.path);
             const type = stat.isFile() ? "file" : "junction";
-            fse.ensureSymlinkSync(src, dest, type);
+            fse.ensureSymlinkSync(src.path, dest, type);
         } catch (e) {
-            fse.copySync(src, dest);
+            fse.copySync(src.path, dest);
         }
     });
 }
 
-function getPackageList(dependencies, basePath, result) {
-    if (!dependencies) {
+function getNameFromPackageListing(listing) {
+    // Split the name to get the version (after @)
+    const splitName = listing.split("@");
+
+    // Some packages (particularly @magda) start with an @ - in this case we want the middle part
+    return splitName.length === 2 ? splitName[0] : "@" + splitName[1];
+}
+
+function getPackageList(trees, packageName, basePath, result) {
+    const dependencies = trees.filter(
+        tree => getNameFromPackageListing(tree.name) === packageName
+    );
+
+    if (dependencies.length === 0 || dependencies[0].children.length === 0) {
         return result;
     }
 
-    Object.keys(dependencies).forEach(function(dependencyName) {
-        const dependencyDetails = dependencies[dependencyName];
-        if (dependencyDetails.extraneous) {
-            return;
-        }
+    dependencies[0].children.forEach(function(dependencyDetails) {
+        const dependencyName = getNameFromPackageListing(
+            dependencyDetails.name
+        );
 
         let dependencyDir = path.join(
             basePath,
@@ -392,29 +384,47 @@ function getPackageList(dependencies, basePath, result) {
         // Does this directory exist?  If not, imitate node's module resolution by walking
         // up the directory tree.
         while (!fse.existsSync(dependencyDir)) {
-            const upOne = path.resolve(
-                dependencyDir,
-                "..",
-                "..",
-                "..",
-                "node_modules",
-                path.basename(dependencyDir)
-            );
+            let upOne;
+            if (dependencyName.indexOf(path.sep) === -1) {
+                upOne = path.resolve(
+                    dependencyDir,
+                    "..",
+                    "..",
+                    "..",
+                    "node_modules",
+                    dependencyName
+                );
+            } else {
+                upOne = path.resolve(
+                    dependencyDir,
+                    "..",
+                    "..",
+                    "..",
+                    "..",
+                    "node_modules",
+                    dependencyName
+                );
+            }
+
             if (upOne === dependencyDir) {
                 break;
             }
+
             dependencyDir = upOne;
         }
 
-        result.push(dependencyDir);
-
-        if (dependencyDetails.dependencies) {
-            getPackageList(
-                dependencyDetails.dependencies,
-                path.join(dependencyDir, "node_modules"),
-                result
-            );
+        if (!fse.existsSync(dependencyDir)) {
+            throw new Error("Could not find path for " + dependencyName);
         }
+
+        result.push({ name: dependencyName, path: dependencyDir });
+
+        getPackageList(
+            trees,
+            dependencyName,
+            path.resolve(dependencyDir, "node_modules"),
+            result
+        );
     });
 
     return result;
