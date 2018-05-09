@@ -92,7 +92,7 @@ export function recordForHighestStarCountArb(
         record => {
             return record.aspects["dataset-distributions"].distributions.map(
                 (dist: Record) => dist.aspects["dcat-distribution-strings"]
-            )
+            );
         }
     );
 }

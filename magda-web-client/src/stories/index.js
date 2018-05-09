@@ -20,7 +20,6 @@ import QualityIndicator from "../UI/QualityIndicator";
 import TemporalAspectViewer from "../UI/TemporalAspectViewer";
 import ToggleList from "../UI/ToggleList";
 import Tabs from "../UI/Tabs";
-import ContactForm from "../UI/ContactForm";
 import MonthPicker from "../UI/MonthPicker";
 // doc
 import ApiViewer from "./ApiViewer";
@@ -153,10 +152,6 @@ storiesOf("Aspect Viewer", module).add("Temporal Aspect Viewer", () => (
     <TemporalAspectViewer
         data={{ intervals: [{ start: "2017-12-25", end: "2017-12-25" }] }}
     />
-));
-
-storiesOf("Contact Form", module).add("Generic contact from", () => (
-    <ContactForm />
 ));
 
 iconTypes.map(iconname =>

@@ -74,9 +74,9 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
         {{- end }}
         {{- if .Values.waleBackup }}
         - name: BACKUP
-          value: {{ .Values.waleBackup.method | quote }}
+          value: {{ .Values.waleBackup.method | default "NONE" | quote }}
         - name: BACKUP_RO
-          value: {{ .Values.waleBackup.readOnly | upper | quote }}
+          value: {{ .Values.waleBackup.readOnly | default "FALSE" | upper | quote }}
         - name: BACKUP_RECOVERY_MODE
           value: {{ .Values.waleBackup.recoveryMode | quote }}
         - name: WALE_S3_PREFIX

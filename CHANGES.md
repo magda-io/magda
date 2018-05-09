@@ -1,5 +1,6 @@
 ## 0.0.39
 
+*   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form
 *   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
 *   Made linked data rating sleuther take output of broken link sleuther into account
@@ -27,6 +28,7 @@
 *   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
 *   Fixed the GAP under preview map loading box
+*   Switched to using yarn as the package manager
 
 ## 0.0.38
 

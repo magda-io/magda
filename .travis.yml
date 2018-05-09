@@ -26,7 +26,7 @@ matrix:
         postgresql: "9.6"
       script: travis_retry sbt test
     - language: node_js
-      node_js: "6"
+      node_js: "8"
       cache:
         directories:
           - $HOME/.ivy2/cache
@@ -51,21 +51,18 @@ matrix:
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
         - find $HOME/.sbt        -name "*.lock"               -print -delete
       script: 
-        - npm install -g lerna
-        - npm run in-submodules -- -f categories.api=true -f language=typescript -- bootstrap --include-filtered-dependencies
-        - npm run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
-        - npm run in-submodules -- -f categories.api=true -f language=typescript -- run test 
-        - npm run in-submodules -- -f categories.connector=true -- bootstrap --include-filtered-dependencies
-        - npm run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
-        - npm run in-submodules -- -f categories.connector=true -- run test 
-        - npm run in-submodules -- -f categories.sleuther=true -- bootstrap --include-filtered-dependencies
-        - npm run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
-        - npm run in-submodules -- -f categories.sleuther=true -- run test
+        - yarn install
+        - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
+        - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test 
+        - yarn run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
+        - yarn run in-submodules -- -f categories.connector=true -- run test 
+        - yarn run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
+        - yarn run in-submodules -- -f categories.sleuther=true -- run test
       env:
         global:
           - CI=true
     - language: node_js
-      node_js: "6"
+      node_js: "8"
       cache:
         directories:
           - node_modules
@@ -74,8 +71,8 @@ matrix:
           - magda-web-admin/node_modules
           - magda-web-server/node_modules
       script:
-        - npm install -g lerna
-        - lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map bootstrap --include-filtered-dependencies
+        - yarn global add lerna
+        - yarn install
         - ./node_modules/.bin/eslint magda-web-client/src/
         - lerna run build --scope @magda/web-client --scope @magda/preview-map --include-filtered-dependencies
         - lerna run test --scope @magda/preview-map --scope @magda/web-client

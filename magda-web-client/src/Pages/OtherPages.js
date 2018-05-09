@@ -2,7 +2,6 @@ import React from "react";
 import { Route, Switch } from "react-router-dom";
 import Search from "../Components/Search/Search";
 import Feedback from "../Components/Feedback";
-import Contact from "../Components/Contact";
 import Account from "../Components/Account/Account";
 import Login from "../Components/Account/Login";
 import SignInRedirect from "../Components/Account/SignInRedirect";
@@ -23,7 +22,6 @@ const renderBody = () => {
         <Switch>
             <Route exact path="/search" component={Search} />
             <Route exact path="/feedback" component={Feedback} />
-            <Route exact path="/contact" component={Contact} />
             <Route exact path="/account" component={Account} />
             <Route exact path="/login" component={Login} />
             <Route exact path="/sign-in-redirect" component={SignInRedirect} />

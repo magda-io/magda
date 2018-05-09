@@ -6,7 +6,7 @@ To run, make sure the registry-api is running at http://localhost:6101 (or chang
 
 ```
 cd magda-ckan-connector
-npm run generateSwaggerApis
+yarn run generateSwaggerApis
 ```
 
 To build:

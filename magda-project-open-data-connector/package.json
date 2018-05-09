@@ -4,8 +4,8 @@
     "version": "0.0.39-0",
     "license": "Apache-2.0",
     "scripts": {
-        "build": "npm run compile",
-        "compile": "npm run compile-node && npm run compile-browser",
+        "build": "yarn run compile",
+        "compile": "yarn run compile-node && yarn run compile-browser",
         "compile-node": "tsc -p tsconfig-build.json",
         "compile-browser": "webpack --config src/webpack.config.js",
         "watch": "tsc -p tsconfig-build.json --watch",

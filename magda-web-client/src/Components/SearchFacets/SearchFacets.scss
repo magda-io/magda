@@ -57,6 +57,7 @@
 .search-facets-mobile {
     margin: 0 -15px;
     width: calc(100% + 30px);
+
     .facet-header au-btn {
         text-align: left;
         padding: 5px 8px;
@@ -109,6 +110,7 @@
 }
 
 .btn-facet-option {
+    font-family: $font-base;
     position: relative;
     width: 100%;
     overflow: hidden;

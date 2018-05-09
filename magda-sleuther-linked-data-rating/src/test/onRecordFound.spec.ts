@@ -272,9 +272,7 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
     });
 
     it(`If format is in dcat-distribution-strings, dataset-format takes precedence`, () => {
-        const starNumberArb = jsc.oneof(
-            [1, 2, 3, 4].map(x => jsc.constant(x))
-        );
+        const starNumberArb = jsc.oneof([1, 2, 3, 4].map(x => jsc.constant(x)));
 
         const starsArb = jsc.record({
             distStrings: starNumberArb,
@@ -314,7 +312,7 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                     record: everything.record,
                     starCount: everything.numbers.formatAspect
                 });
-                
+
                 return onRecordFound(everything.record, registry)
                     .then(() => {
                         afterEachProperty();
