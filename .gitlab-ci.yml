@@ -47,7 +47,7 @@ registry-typescript-api:
     - "$CI_PROJECT_DIR/sbt-cache"
     - "target"
     - "*/target"
-    - "project/project/target"
+    - "*/project/target"
   script:
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - lerna run generate --scope=@magda/typescript-common --stream
@@ -66,7 +66,7 @@ buildtest:search-with-index-cache:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
-      - "project/project/target"
+      - "*/project/target"
   variables:
     # 2.5gb heap
     # unload classes we don't need
@@ -105,7 +105,7 @@ buildtest:search-no-index-cache:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
-      - "project/project/target"
+      - "*/project/target"
   services:
     - postgres:9.6
   variables:
@@ -164,7 +164,7 @@ buildtest:registry:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
-      - "project/project/target"
+      - "*/project/target"
   services:
     - postgres:9.6
   variables:
@@ -264,7 +264,7 @@ dockerize:scala:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
       - "*/target"
-      - "project/project/target"
+      - "*/project/target"
   services:
     - docker:dind
   before_script:
