@@ -22,6 +22,7 @@
     "prepare": "pancake"
   },
   "devDependencies": {
+    "@gov.au/accordion": "^2.0.1",
     "@gov.au/buttons": "^2.0.1",
     "@gov.au/core": "^2.0.0",
     "@gov.au/grid-12": "^2.0.1",
@@ -163,6 +164,12 @@
     },
     "react": {
       "location": "pancake/react/"
+    },
+    "js": {
+      "minified": true,
+      "modules": false,
+      "location": "pancake/js/",
+      "name": "pancake.min.js"
     }
   }
 }

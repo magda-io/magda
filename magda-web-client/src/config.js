@@ -22,7 +22,10 @@ const serverConfig: {
     feedbackApiBaseUrl?: string
 } =
     window.magda_server_config || {};
-
+//this below const enables suggest a Dataset when enabled
+export const enableSuggestDatasetPage = false;
+export const correspondenceApiUrl =
+    "https://magda-dev.terria.io/api/v0/correspondence/send/dataset/request";
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 const previewMapUrl =
@@ -55,7 +58,6 @@ export const config = {
     downloadLinksSize: 3,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
-    enableSuggestDatasetPage: false,
     breakpoints: {
         small: 768,
         medium: 992,
@@ -79,7 +81,12 @@ export const config = {
             category: "Data.gov.au",
             links: [
                 ["About", "page/about"],
-                ["Suggest a dataset", "mailto:data@digital.gov.au"],
+                [
+                    "Suggest a dataset",
+                    !enableSuggestDatasetPage
+                        ? "mailto:data@digital.gov.au"
+                        : "suggest"
+                ],
                 ["Privacy Policy", "page/privacy-policy"]
             ]
         },
