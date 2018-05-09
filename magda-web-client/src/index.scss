@@ -9,7 +9,9 @@ html {
     color: $body;
     overflow-x: hidden;
 }
-
+.au-body a:hover {
+    color: white;
+}
 .au-body p {
     max-width: 100%;
 }
