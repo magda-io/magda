@@ -1,0 +1,23 @@
+.suggest-dataset-text {
+    font-weight: 500;
+}
+.suggest-dataset-icon {
+    height: 1em;
+    width: 1em;
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.suggest-dataset-div {
+    padding: 4px;
+}
+
+.close-button {
+    height: 2em;
+    width: 2em;
+    float: right;
+    &:hover {
+        cursor: pointer;
+    }
+}

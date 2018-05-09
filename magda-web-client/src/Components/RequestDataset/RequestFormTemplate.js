@@ -3,7 +3,6 @@ import AUtextInput from "@gov.au/text-inputs";
 import AUbutton from "@gov.au/buttons";
 import AUheader from "@gov.au/header";
 import "./FormTemplate.css";
-import Form from "muicss/lib/react/form";
 
 export default class RequestFormTemplate extends React.Component {
     constructor(props) {
@@ -81,8 +80,8 @@ export default class RequestFormTemplate extends React.Component {
 
     render() {
         return (
-            <Form>
-                <AUheader title={this.props.title} />
+            <form>
+                {this.props.title && <AUheader title={this.props.title} />}
                 <label htmlFor="textarea-input">
                     {this.props.textAreaLabel}
                 </label>
@@ -127,7 +126,7 @@ export default class RequestFormTemplate extends React.Component {
                 >
                     Send
                 </AUbutton>
-            </Form>
+            </form>
         );
     }
 }
