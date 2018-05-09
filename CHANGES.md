@@ -28,6 +28,7 @@
 *   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
 *   Switched to using yarn as the package manager
+*   Merge duplicate publisher records before display on publisher page
 
 ## 0.0.38
 
