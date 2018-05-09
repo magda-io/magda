@@ -28,6 +28,7 @@
 *   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
 *   Switched to using yarn as the package manager
+*   Made frontend GA post to both terria and dga google analytics.
 
 ## 0.0.38
 
