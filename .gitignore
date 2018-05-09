@@ -32,5 +32,6 @@ snapshots
 node_modules/
 dist/
 
+pancake
 package-lock.json
 */package-lock.json

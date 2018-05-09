@@ -1,5 +1,6 @@
 ## 0.0.39
 
+*   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form
 *   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
 *   Made linked data rating sleuther take output of broken link sleuther into account
@@ -33,6 +34,7 @@
 *   `MagdaCatalogItem` will use accessURL if download URL not available
 *   `MagdaCatalogItem` will use `dataset-format` (if available) to determine CatalogItem type
 *   Added `ESRI REST` (ArcGIS) support to `MapPreview`
+*   Switched to using yarn as the package manager
 
 ## 0.0.38
 

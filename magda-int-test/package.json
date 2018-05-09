@@ -3,7 +3,7 @@
     "version": "0.0.39-0",
     "description": "Integration tests",
     "scripts": {
-        "build": "npm run compile",
+        "build": "yarn run compile",
         "test": "cd .. && sbt intTest/test",
         "compile": "cd .. && sbt intTest/compile"
     },

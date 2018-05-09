@@ -46,7 +46,11 @@ export default async function onRecordFound(
         const isLicenseOpen = isOpenLicense(distribution.distStrings.license);
 
         if (isLicenseOpen) {
-            const format = _.get(distribution, "datasetFormat.format", distribution.distStrings.format);
+            const format = _.get(
+                distribution,
+                "datasetFormat.format",
+                distribution.distStrings.format
+            );
             return Math.max(starsForFormat(format), 1);
         } else {
             return 0;

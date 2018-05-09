@@ -4,7 +4,7 @@
     "description": "The registry API.",
     "license": "Apache-2.0",
     "scripts": {
-        "build": "npm run compile",
+        "build": "yarn run compile",
         "test": "cd .. && sbt registryApi/test",
         "compile": "cd .. && sbt registryApi/compile",
         "docker-build-local":

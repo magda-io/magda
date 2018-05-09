@@ -12,7 +12,7 @@ class AccountNavbar extends React.Component {
 
     render() {
         return (
-            <div className="account-navbar">
+            <React.Fragment>
                 {this.props.user ? (
                     [
                         <span>
@@ -27,7 +27,7 @@ class AccountNavbar extends React.Component {
                 ) : (
                     <Link to={`/account`}>Sign in</Link>
                 )}
-            </div>
+            </React.Fragment>
         );
     }
 }

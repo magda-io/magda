@@ -431,7 +431,7 @@ function checkForDuplicateCesium() {
                 "Please verify that node_modules/terriajs-cesium is the correct version and\n" +
                 "  rm -rf node_modules/terriajs/node_modules/terriajs-cesium\n" +
                 "Also consider running:\n" +
-                "  npm run gulp sync-terriajs-dependencies\n" +
+                "  yarn run gulp sync-terriajs-dependencies\n" +
                 "to prevent this problem from recurring the next time you `npm install`."
         );
         throw new gutil.PluginError(

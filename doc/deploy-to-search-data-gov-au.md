@@ -59,8 +59,8 @@ helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/mag
 
 ```bash
 cd deploy
-npm run create-connector-configmap
-npm run generate-connector-jobs-dev
+yarn run create-connector-configmap
+yarn run generate-connector-jobs-dev
 mkdir kubernetes/generated/prod/cron
 mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
 kubectl apply -f kubernetes/generated/prod/cron
@@ -98,8 +98,8 @@ kubectl port-forward <cloud-sql-proxy-pod-name> 5432:5432
 
 ```bash
 cd deploy
-npm run create-connector-configmap
-npm run generate-connector-jobs-prod
+yarn run create-connector-configmap
+yarn run generate-connector-jobs-prod
 mkdir kubernetes/generated/prod/cron
 mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
 kubectl apply -f kubernetes/generated/prod/cron

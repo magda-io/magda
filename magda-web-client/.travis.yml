@@ -6,7 +6,7 @@ script:
 - npm test
 - npm config set magda-web:awsProfile ""
 - npm config set magda-web:awsS3Dir $TRAVIS_BRANCH
-- if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then npm run deploy-without-reinstall; fi
+- if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then yarn run deploy-without-reinstall; fi
 env:
   global:
   - secure: Z05S5EnUl/NMUGmFOqlnOhni2ILUaClCxrmUoCY5zzuFXilc/TSsBJEFJLxe1Vfa6U5zkNUepPfvYlw/Y6Mc1Oj1sxGw83r9tW336GCWbYbNC7A16DvcCNRDQEyNVFsI4je2vo8VmizvKcrnCKulDuBpRdLV0hpKaw8MSpyOu93cFSFxwoxt+odCh+2330qvVD4LsslOyOHyJ/RNSME0JuUoCxN5S6MqxmacdJqqnaPWZJQ7Jz0lB4qvZpebE/SMXsL7Dbe+CqBw5oYLlqsq0kWXHon7O73Q8RKmXhHTea2ivBz6vX8t5O6e9Ggj6Q0OTgCyo7dPMBwQk43WQ3K3O/LJ8MVgTcDCrPf54hi0JEUc96a6CEZgMIWQp9rdsQLg7xmg+jbJhXKAcEXs6lUv7S+w7PpRRam2k4ft49RDUeiGAfJCLjg8ZgK9J5w/5rlae08u5ZBIUqGLp7WCUlmN0lPx5QVYbrToVM/i6pmj3J+uyof6ViWLNC6DdWpr4gzV/64Qa7EovZoYfYrL9fskusvnwxTcLcZEg4W0AR9IarWwPb6XgFG1N0ffJctfNDAty69YW2lH5p1WSlKu5xjCfKsZSwlZDfW+MgJXL4r2xNvSf0fH8CNdor8UyyIYrm1ukakT0S+iUCwbO3PVez35qavWHn24AHQ/QeX9/QufNRE=

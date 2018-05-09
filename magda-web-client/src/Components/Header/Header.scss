@@ -42,19 +42,6 @@
             }
         }
     }
-
-    .account-navbar {
-        display: inline-block;
-        a {
-            color: $body;
-            text-decoration: none;
-            border-bottom: 0;
-            transition: background-color 0.1s ease-in-out,
-                border-color 0.1s ease-in-out;
-            margin-right: 0px;
-            display: inline-block;
-        }
-    }
 }
 
 .mobile-header {
@@ -109,13 +96,5 @@
         &.isOpen {
             height: auto;
         }
-    }
-    .account-navbar a,
-    a {
-        display: block;
-        line-height: 40px;
-    }
-    .account-navbar {
-        display: block;
     }
 }

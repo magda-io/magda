@@ -53,6 +53,7 @@ const result = childProcess.spawnSync(
     "lerna",
     [
         ...jsPackages.map(package => "--scope " + package),
+        "--stream",
         "--concurrency",
         os.cpus().length,
         ...argv._

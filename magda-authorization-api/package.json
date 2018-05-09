@@ -2,13 +2,13 @@
     "name": "@magda/authorization-api",
     "version": "0.0.39-0",
     "scripts": {
-        "build": "npm run compile",
+        "build": "yarn run compile",
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "start": "node dist/index.js",
         "dev": "run-typescript-in-nodemon src/index.ts",
         "test":
-            "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+            "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
         "docker-build-local":
             "create-docker-context-for-node-component --build --push --tag auto --local",
         "docker-build-prod":

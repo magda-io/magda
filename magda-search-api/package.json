@@ -4,7 +4,7 @@
     "description": "The search API.",
     "license": "Apache-2.0",
     "scripts": {
-        "build": "npm run compile",
+        "build": "yarn run compile",
         "test": "cd .. && sbt searchApi/test",
         "compile": "cd .. && sbt searchApi/compile",
         "docker-build-local":

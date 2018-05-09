@@ -4,6 +4,7 @@
     display: flex;
     &.not-empty {
         button {
+            font-family: $font-base;
             &,
             &:hover,
             &:focus {
