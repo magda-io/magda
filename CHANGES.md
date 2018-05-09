@@ -26,6 +26,7 @@
 *   Brought back homepage animation
 *   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
+*   Fixed the GAP under preview map loading box
 
 ## 0.0.38
 
