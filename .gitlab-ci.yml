@@ -462,7 +462,7 @@ Stop Preview:
 deploy-master-to-dev:
   stage: deploy-dev
   only:
-    - branches
+    - master
   dependencies:
     - generate-connector-jobs
   cache: 
