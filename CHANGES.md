@@ -31,6 +31,7 @@
 *   Switched to using yarn as the package manager
 *   Made frontend GA post to both terria and dga google analytics.
 *   Tagged correspondence api as a typescript api.
+*   Made auto deploy for master -> dev server reconfigure jobs.
 
 ## 0.0.38
 
