@@ -126,15 +126,16 @@ app.use(
 
 app.use(morgan("combined"));
 
-const magda = path.join(__dirname, "..", "node_modules", "@magda");
-
-const clientRoot = path.join(magda, "web-client");
+const clientRoot = path.resolve(
+    require.resolve("@magda/web-client/package.json"),
+    ".."
+);
 const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
-const adminRoot = path.join(magda, "web-admin");
-const adminBuild = path.join(adminRoot, "build");
-console.log("Admin: " + adminBuild);
+// const adminRoot = require.resolve("@magda/web-admin");
+// const adminBuild = path.join(adminRoot, "build");
+// console.log("Admin: " + adminBuild);
 
 const apiBaseUrl = addTrailingSlash(
     argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
@@ -200,7 +201,7 @@ app.get("/server-config.js", function(req, res) {
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
 });
 
-app.use("/admin", express.static(adminBuild));
+// app.use("/admin", express.static(adminBuild));
 app.use(express.static(clientBuild));
 
 // URLs in this list will load index.html and be handled by React routing.
@@ -228,12 +229,12 @@ app.get("/page/*", function(req, res) {
     res.sendFile(path.join(clientBuild, "index.html"));
 });
 
-app.get("/admin", function(req, res) {
-    res.sendFile(path.join(adminBuild, "index.html"));
-});
-app.get("/admin/*", function(req, res) {
-    res.sendFile(path.join(adminBuild, "index.html"));
-});
+// app.get("/admin", function(req, res) {
+//     res.sendFile(path.join(adminBuild, "index.html"));
+// });
+// app.get("/admin/*", function(req, res) {
+//     res.sendFile(path.join(adminBuild, "index.html"));
+// });
 
 if (argv.devProxy) {
     app.get("/api/*", function(req, res) {
