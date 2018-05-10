@@ -103,7 +103,7 @@
             "protocol": "inspector",
             "name": "format sleuther api tests",
             "program":
-                "${workspaceRoot}/magda-sleuther-format/node_modules/mocha/bin/_mocha",
+                "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-sleuther-format",
             "args": [
                 "--compilers",
