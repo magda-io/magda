@@ -45,5 +45,8 @@
     "rss": ["RSS", "RSS+XML"],
     "rdf": ["RDF", "RDF+XML"],
     "zip": ["7Zip", "ZIPPED", "X-7Z-COMPRESSED"],
-    "csiro open app": ["WWW:DOWNLOAD-1.0-http--csiro-oa-app"]
+    "csiro open app": ["WWW:DOWNLOAD-1.0-http--csiro-oa-app", {
+        "data": "csiro-oa-app",
+        "type": "as-keyword"
+    }]
 }
