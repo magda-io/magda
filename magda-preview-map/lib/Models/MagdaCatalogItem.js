@@ -383,7 +383,8 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
     var dcatJson = distribution.aspects["dcat-distribution-strings"];
     var datasetFormat = distribution.aspects["dataset-format"];
     let formatString = dcatJson.format;
-    if(datasetFormat && datasetFormat.format) formatString=datasetFormat.format;
+    if (datasetFormat && datasetFormat.format)
+        formatString = datasetFormat.format;
 
     var baseUrl = dcatJson.downloadURL;
     if (!defined(baseUrl)) {
