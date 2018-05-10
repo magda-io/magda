@@ -33,6 +33,7 @@
 *   Merge duplicate publisher records before display on publisher page
 *   Made frontend GA post to both terria and dga google analytics.
 *   Tagged correspondence api as a typescript api.
+*   Fixed up docker scripts to make them handle multiple versions of yarn packages coexisting.
 
 ## 0.0.38
 

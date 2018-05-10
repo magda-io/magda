@@ -312,13 +312,15 @@ function preparePackage(packageDir, destDir) {
                 ).stdout;
                 const jsonYarnList = JSON.parse(rawYarnList);
 
-                const productionPackages = _.uniq(
+                const productionPackages = _.uniqBy(
                     getPackageList(
+                        null,
                         jsonYarnList.data.trees,
                         packageJson.name,
                         path.resolve(packageDir, "node_modules"),
                         []
-                    )
+                    ),
+                    package => package.path
                 );
 
                 prepareNodeModules(src, dest, productionPackages);
@@ -340,16 +342,19 @@ function preparePackage(packageDir, destDir) {
 }
 
 function prepareNodeModules(packageDir, destDir, productionPackages) {
-    console.log("destDir " + destDir);
     productionPackages.forEach(src => {
-        const dest = path.join(destDir, src.name);
+        const relativePath = path.relative(packageDir, src.path);
+        const dest = path.resolve(destDir, relativePath);
+        const srcPath = path.resolve(packageDir, relativePath);
+
+        console.log("src " + srcPath + " to " + dest);
 
         try {
-            const stat = fse.lstatSync(src.path);
+            const stat = fse.lstatSync(srcPath);
             const type = stat.isFile() ? "file" : "junction";
-            fse.ensureSymlinkSync(src.path, dest, type);
+            fse.ensureSymlinkSync(srcPath, dest, type);
         } catch (e) {
-            fse.copySync(src.path, dest);
+            fse.copySync(srcPath, dest);
         }
     });
 }
@@ -362,16 +367,26 @@ function getNameFromPackageListing(listing) {
     return splitName.length === 2 ? splitName[0] : "@" + splitName[1];
 }
 
-function getPackageList(trees, packageName, basePath, result) {
-    const dependencies = trees.filter(
-        tree => getNameFromPackageListing(tree.name) === packageName
-    );
+function getPackageList(
+    localChildren,
+    rootPackages,
+    packageName,
+    basePath,
+    result
+) {
+    // If the package that we're finding subpackages for doesn't have its own local children, find it in the root and see if that version of it has any children.
+    const childrenToUse =
+        localChildren ||
+        (depFromRoot = rootPackages
+            .filter(tree => !tree.shadow)
+            .find(tree => getNameFromPackageListing(tree.name) === packageName))
+            .children;
 
-    if (dependencies.length === 0 || dependencies[0].children.length === 0) {
+    if (!childrenToUse) {
         return result;
     }
 
-    dependencies[0].children.forEach(function(dependencyDetails) {
+    childrenToUse.forEach(function(dependencyDetails) {
         const dependencyName = getNameFromPackageListing(
             dependencyDetails.name
         );
@@ -419,8 +434,10 @@ function getPackageList(trees, packageName, basePath, result) {
 
         result.push({ name: dependencyName, path: dependencyDir });
 
+        // Now that we've added this package to the list to resolve, add all its children.
         getPackageList(
-            trees,
+            dependencyDetails.children,
+            rootPackages,
             dependencyName,
             path.resolve(dependencyDir, "node_modules"),
             result
