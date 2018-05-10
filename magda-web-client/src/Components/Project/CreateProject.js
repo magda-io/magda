@@ -13,7 +13,6 @@ import {
 import { fetchDatasetFromRegistry } from "../../actions/recordActions";
 import Notification from "../../UI/Notification";
 import { Link } from "react-router-dom";
-import Input from "muicss/lib/react/input";
 import { Redirect } from "react-router-dom";
 
 const uuidV1 = require("uuid/v1");
@@ -179,10 +178,10 @@ class CreateProject extends Component {
                                             {this.props.fieldErrors.name}
                                         </div>
                                     )}
-                                    <Input
+                                    <input
                                         type="text"
                                         name="name"
-                                        className={`${
+                                        className={`au-text-input au-text-input--block ${
                                             this.props.fieldErrors.name
                                                 ? "form-error"
                                                 : ""
@@ -200,10 +199,10 @@ class CreateProject extends Component {
                                             {this.props.fieldErrors.description}
                                         </div>
                                     )}
-                                    <Input
+                                    <input
                                         type="text"
                                         name="description"
-                                        className={`${
+                                        className={`au-text-input au-text-input--block ${
                                             this.props.fieldErrors.description
                                                 ? "form-error"
                                                 : ""

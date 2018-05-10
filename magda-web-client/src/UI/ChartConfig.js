@@ -52,7 +52,7 @@ export default class ChartConfig extends Component {
 
     renderIconSelect() {
         return (
-            <div className="mui-textfield chart-config_icon-select">
+            <div className="chart-config_icon-select">
                 <label tabIndex="-1">Chart type</label>
                 {ChartDatasetEncoder.avlChartTypes.map(v => (
                     <button
