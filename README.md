@@ -1,7 +1,7 @@
 # MAGDA
 
 [![GitHub release](https://img.shields.io/github/release/TerriaJS/magda.svg)](https://github.com/TerriaJS/magda/releases)
-[![Travis](https://img.shields.io/travis/TerriaJS/magda/master.svg)](https://travis-ci.org/TerriaJS/magda)
+[![GitLab Pipeline](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/pipelines)
 [![Try it out at search.data.gov.au](https://img.shields.io/badge/try%20it%20out%20at-search.data.gov.au-blue.svg)](https://search.data.gov.au)
 [![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
