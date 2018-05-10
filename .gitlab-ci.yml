@@ -62,7 +62,7 @@ generate-connector-jobs:
   cache: {}
   script:
     - cd deploy
-    - yarn run generate-connector-jobs-dev
+    - yarn run generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod --imageVersion=$CI_COMMIT_REF_SLUG
     - mkdir kubernetes/generated/prod/cron
     - mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
   artifacts:
@@ -474,7 +474,6 @@ deploy-master-to-dev:
     name: dev
     url: https://magda-dev.terria.io
   script:
-  # Kube Config
   - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
   - export KUBECONFIG=kubectlconfig.yaml
   - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace default -f -

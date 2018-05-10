@@ -30,6 +30,11 @@ const argv = yargs
             "Whether to use values appropriate for a dev cluster or a prod cluster",
         type: "boolean",
         default: false
+    })
+    .option("imageVersion", {
+        describe:
+            "Overrides the version of the image that will be given to the jobs. Defaults to 'latest' if 'local' is specified, otherwise it will match the version of this package.",
+        type: "string"
     }).argv;
 
 fs.ensureDirSync(argv.out);
@@ -45,9 +50,18 @@ files.forEach(function(connectorConfigFile) {
         fs.readFileSync(path.join(connectorPackagePath, "package.json"), "utf8")
     );
 
+    function getImageVersion() {
+        if (argv.imageVersion) {
+            return argv.imageVersion;
+        } else if (argv.local) {
+            return "latest";
+        } else {
+            return connectorPackageJson.version;
+        }
+    }
+
     const imagePrefix = argv.local ? "localhost:5000/data61/" : "data61/";
-    const imageVersion = argv.local ? "latest" : connectorPackageJson.version;
-    const image = imagePrefix + configFile.type + ":" + imageVersion;
+    const image = imagePrefix + configFile.type + ":" + getImageVersion();
     const prod = argv.prod;
 
     const basename = path.basename(connectorConfigFile.path, ".json");
