@@ -212,11 +212,14 @@ class DataPreviewMap extends Component {
                                 "#mode=preview&hideExplorerPanel=1&clean"
                             }
                             ref={f => (this.iframeRef = f)}
-                            style={{
-                                visibility: this.state.isMapLoading
-                                    ? "hidden"
-                                    : "visible"
-                            }}
+                            style={
+                                this.state.isMapLoading
+                                    ? {
+                                          visibility: "hidden",
+                                          position: "absolute"
+                                      }
+                                    : {}
+                            }
                         />
                     </Medium>
                     <Small>
@@ -230,11 +233,14 @@ class DataPreviewMap extends Component {
                                 "#mode=preview&hideExplorerPanel=1&clean"
                             }
                             ref={f => (this.iframeRef = f)}
-                            style={{
-                                visibility: this.state.isMapLoading
-                                    ? "hidden"
-                                    : "visible"
-                            }}
+                            style={
+                                this.state.isMapLoading
+                                    ? {
+                                          visibility: "hidden",
+                                          position: "absolute"
+                                      }
+                                    : {}
+                            }
                         />
                     </Small>
                 </div>

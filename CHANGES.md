@@ -2,6 +2,7 @@
 
 *   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form
+*   Use DTA design system for all form elements
 *   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
 *   Made linked data rating sleuther take output of broken link sleuther into account
 *   Removed datasetQualityAspectDef from sleuther-broken-link
@@ -27,8 +28,11 @@
 *   Brought back homepage animation
 *   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
+*   Fixed the GAP under preview map loading box
 *   Switched to using yarn as the package manager
 *   Merge duplicate publisher records before display on publisher page
+*   Made frontend GA post to both terria and dga google analytics.
+*   Tagged correspondence api as a typescript api.
 
 ## 0.0.38
 

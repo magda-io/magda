@@ -179,6 +179,16 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~1"
 
+"@gov.au/text-inputs@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@gov.au/text-inputs/-/text-inputs-2.0.2.tgz#c6c5c202ec66e3a0c87acea7f54f71f6502f7f96"
+  dependencies:
+    "@gov.au/core" "^2.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~1"
+
 "@mapbox/point-geometry@^0.1.0", "@mapbox/point-geometry@~0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@mapbox/point-geometry/-/point-geometry-0.1.0.tgz#8a83f9335c7860effa2eeeca254332aa0aeed8f2"
