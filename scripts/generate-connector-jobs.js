@@ -35,6 +35,11 @@ const argv = yargs
         describe:
             "Overrides the version of the image that will be given to the jobs. Defaults to 'latest' if 'local' is specified, otherwise it will match the version of this package.",
         type: "string"
+    })
+    .option("imagePrefix", {
+        describe:
+            "Overrides the prefix for the image that will be given to the jobs. Defaults to 'localhost:5000/data61' if 'local' is specified, otherwise data61/",
+        type: "string"
     }).argv;
 
 fs.ensureDirSync(argv.out);
@@ -60,8 +65,17 @@ files.forEach(function(connectorConfigFile) {
         }
     }
 
-    const imagePrefix = argv.local ? "localhost:5000/data61/" : "data61/";
-    const image = imagePrefix + configFile.type + ":" + getImageVersion();
+    function getImagePrefix() {
+        if (argv.imagePrefix) {
+            return argv.imagePrefix;
+        } else if (argv.local) {
+            return "localhost:5000/data61/";
+        } else {
+            return "data61/";
+        }
+    }
+
+    const image = getImagePrefix() + configFile.type + ":" + getImageVersion();
     const prod = argv.prod;
 
     const basename = path.basename(connectorConfigFile.path, ".json");
