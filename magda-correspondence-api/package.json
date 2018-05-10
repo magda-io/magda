@@ -33,5 +33,11 @@
             "name": "data61/magda-correspondence-api",
             "include": "node_modules dist Dockerfile"
         }
+    },
+    "magda": {
+        "language": "typescript",
+        "categories": {
+            "api": true
+        }
     }
 }

@@ -11,6 +11,9 @@ import ProgressBar from "../../UI/ProgressBar";
 import queryString from "query-string";
 import PropTypes from "prop-types";
 import sortBy from "lodash.sortby";
+import reduce from "lodash/reduce";
+import findIndex from "lodash/findIndex";
+import trim from "lodash/trim";
 
 import "./PublishersViewer.css";
 class PublishersViewer extends Component {
@@ -35,13 +38,65 @@ class PublishersViewer extends Component {
         });
     }
 
+    mergedPublishers() {
+        const publishers = reduce(
+            this.props.publishers,
+            (r, p) => {
+                const idx = findIndex(
+                    r,
+                    item =>
+                        trim(item.name).toLowerCase() ===
+                        trim(p.name).toLowerCase()
+                );
+                if (idx === -1) {
+                    r.push(p);
+                    return r;
+                } else {
+                    const findItem = r[idx];
+                    if (
+                        !p.aspects ||
+                        !p.aspects["organization-details"] ||
+                        !p.aspects["organization-details"]["description"]
+                    )
+                        return r;
+                    else if (
+                        !findItem.aspects ||
+                        !findItem.aspects["organization-details"] ||
+                        !findItem.aspects["organization-details"]["description"]
+                    ) {
+                        r.splice(idx, 1, p);
+                        return r;
+                    } else {
+                        if (
+                            trim(
+                                p.aspects["organization-details"]["description"]
+                            ).length >
+                            trim(
+                                findItem.aspects["organization-details"][
+                                    "description"
+                                ]
+                            ).length
+                        ) {
+                            r.splice(idx, 1, p);
+                            return r;
+                        } else {
+                            return r;
+                        }
+                    }
+                }
+            },
+            []
+        );
+        return publishers;
+    }
+
     renderContent() {
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
         } else {
             return (
                 <div className="col-sm-8">
-                    {sortBy(this.props.publishers, [
+                    {sortBy(this.mergedPublishers(), [
                         function(o) {
                             return o.name.toLowerCase();
                         }

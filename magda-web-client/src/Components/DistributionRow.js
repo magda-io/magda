@@ -9,6 +9,7 @@ import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
+import ga from "../analytics/googleAnalytics";
 import ReactTooltip from "react-tooltip";
 const formatIcons = {
     default: defaultFormatIcon
@@ -209,8 +210,8 @@ class DistributionRow extends Component {
                                 const resource_url = encodeURIComponent(
                                     distribution.downloadURL
                                 );
-                                if (resource_url && window.ga) {
-                                    window.ga("send", {
+                                if (resource_url) {
+                                    ga("send", {
                                         hitType: "event",
                                         eventCategory: "Resource",
                                         eventAction: "Download",
